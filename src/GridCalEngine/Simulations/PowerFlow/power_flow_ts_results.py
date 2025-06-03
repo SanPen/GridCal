@@ -182,7 +182,7 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
         self.area_names = [a.name for a in grid.get_areas()]
         self.bus_area_indices = np.array([area_dict.get(b.area, 0) for b in grid.buses])
 
-        branches = grid.get_branches_wo_hvdc()
+        branches = grid.get_branches(add_hvdc=False, add_vsc=False, add_switch=True)
         self.F = np.zeros(len(branches), dtype=int)
         self.T = np.zeros(len(branches), dtype=int)
         for k, elm in enumerate(branches):

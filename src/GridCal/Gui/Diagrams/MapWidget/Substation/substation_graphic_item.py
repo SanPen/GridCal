@@ -453,7 +453,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         devs = list()
         # find associated Branches in reverse order
         for obj in substation_buses:
-            for branch_list in self.editor.circuit.get_branch_lists():
+            for branch_list in self.editor.circuit.get_branch_lists(add_vsc=True, add_hvdc=True, add_switch=True):
                 for i in range(len(branch_list) - 1, -1, -1):
                     if branch_list[i].bus_from == obj:
                         devs.append(branch_list[i])

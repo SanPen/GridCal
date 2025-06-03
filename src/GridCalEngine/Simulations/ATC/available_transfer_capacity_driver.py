@@ -406,7 +406,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         self.options = options
 
         # OPF results
-        rates = self.grid.get_branch_rates_wo_hvdc()
+        rates = self.grid.get_branch_rates()
         self.results = AvailableTransferCapacityResults(br_names=self.grid.get_branch_names(add_hvdc=False,
                                                                                             add_vsc=False,
                                                                                             add_switch=True),
@@ -444,10 +444,10 @@ class AvailableTransferCapacityDriver(DriverTemplate):
 
         # declare the results
         self.results = AvailableTransferCapacityResults(
-            br_names=linear.numerical_circuit.passive_branch_data.names,
-            bus_names=linear.numerical_circuit.bus_data.names,
-            rates=nc.Rates,
-            contingency_rates=nc.ContingencyRates,
+            br_names=nc.passive_branch_data.names,
+            bus_names=nc.bus_data.names,
+            rates=nc.passive_branch_data.rates,
+            contingency_rates=nc.passive_branch_data.contingency_rates,
             clustering_results=None
         )
 
@@ -464,9 +464,11 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                       AvailableTransferMode.Load: 2,
                       AvailableTransferMode.GenerationAndLoad: 3}
 
+        Sbus = nc.get_power_injections_pu()
+
         alpha = compute_alpha(ptdf=linear.PTDF,
-                              P0=nc.Sbus.real,
-                              Pinstalled=nc.bus_installed_power,
+                              P0=Sbus.real,
+                              Pinstalled=nc.bus_data.installed_power,
                               Pgen=nc.generator_data.get_injections_per_bus().real,
                               Pload=nc.load_data.get_injections_per_bus().real,
                               bus_a1_idx=idx1b,
@@ -486,7 +488,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
             (Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc,
              loading_hvdc, n_free) = nc.hvdc_data.get_power(Sbase=nc.Sbase, theta=np.zeros(nc.nbus))
 
-            flows = linear.get_flows(nc.Sbus + Shvdc)
+            flows = linear.get_flows(Sbus + Shvdc)
 
         # base exchange
         base_exchange = (self.options.inter_area_branch_sense * flows[self.options.inter_area_branch_idx]).sum()
@@ -503,8 +505,8 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                                   lodf=linear.LODF,
                                   alpha=alpha,
                                   flows=flows,
-                                  rates=nc.Rates,
-                                  contingency_rates=nc.ContingencyRates,
+                                  rates=nc.passive_branch_data.rates,
+                                  contingency_rates=nc.passive_branch_data.contingency_rates,
                                   base_exchange=base_exchange,
                                   time_idx=0,
                                   threshold=self.options.threshold)

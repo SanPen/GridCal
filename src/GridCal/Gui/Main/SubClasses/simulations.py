@@ -218,7 +218,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionLinearAnalysis.triggered.connect(self.linear_pf_dispatcher)
         self.ui.actionContingency_analysis.triggered.connect(self.contingencies_dispatcher)
         self.ui.actionOTDF_time_series.triggered.connect(self.run_contingency_analysis_ts)
-        self.ui.actionATC.triggered.connect(self.optimal_ntc_dispatcher)
+        self.ui.actionATC.triggered.connect(self.atc_dispatcher)
         self.ui.actionATC_Time_Series.triggered.connect(self.run_available_transfer_capacity_ts)
         self.ui.actionPTDF_time_series.triggered.connect(self.run_linear_analysis_ts)
         self.ui.actionClustering.triggered.connect(self.run_clustering)
@@ -850,16 +850,16 @@ class SimulationsMain(TimeEventsMain):
             else:
                 self.run_opf()
 
-    def optimal_ntc_dispatcher(self):
+    def atc_dispatcher(self):
         """
         Dispatch the NTC action
         :return:
         """
         if self.server_driver.is_running():
             if self.ts_flag():
-                instruction = RemoteInstruction(operation=SimulationTypes.OPF_NTC_TS_run)
+                instruction = RemoteInstruction(operation=SimulationTypes.NetTransferCapacityTS_run)
             else:
-                instruction = RemoteInstruction(operation=SimulationTypes.OPF_NTC_run)
+                instruction = RemoteInstruction(operation=SimulationTypes.NetTransferCapacity_run)
 
             self.run_remote(instruction=instruction)
         else:
@@ -2277,12 +2277,20 @@ class SimulationsMain(TimeEventsMain):
         """
         Actions to run after the OPF simulation
         """
-        _, results = self.session.optimal_net_transfer_capacity
+        drv, results = self.session.optimal_net_transfer_capacity
 
         if results is not None:
             self.remove_simulation(SimulationTypes.OPF_NTC_run)
             self.update_available_results()
             self.colour_diagrams()
+
+            if results.converged:
+                if drv.logger.error_count() == 0:
+                    self.show_info_toast("Optimal result")
+                else:
+                    self.show_warning_toast("Optimal result with errors :/")
+            else:
+                self.show_warning_toast("Not optimal result :/")
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -2600,20 +2608,32 @@ class SimulationsMain(TimeEventsMain):
                         )
 
                     elif obj_fn_tpe == InvestmentsEvaluationObjectives.GenerationAdequacy:
-                        problem = sim.AdequacyInvestmentProblem(
-                            grid=self.circuit,
-                            n_monte_carlo_sim=self.ui.max_iterations_reliability_spinBox.value(),
-                            use_monte_carlo=True,
-                            save_file=False
-                        )
+
+                        if self.circuit.has_time_series:
+                            problem = sim.AdequacyInvestmentProblem(
+                                grid=self.circuit,
+                                n_monte_carlo_sim=self.ui.max_iterations_reliability_spinBox.value(),
+                                use_monte_carlo=True,
+                                save_file=False,
+                                time_indices=self.get_time_indices()
+                            )
+                        else:
+                            self.show_warning_toast('Adequacy studies need time data...')
+                            return
 
                     elif obj_fn_tpe == InvestmentsEvaluationObjectives.SimpleDispatch:
-                        problem = sim.AdequacyInvestmentProblem(
-                            grid=self.circuit,
-                            n_monte_carlo_sim=self.ui.max_iterations_reliability_spinBox.value(),
-                            use_monte_carlo=False,
-                            save_file=False
-                        )
+
+                        if self.circuit.has_time_series:
+                            problem = sim.AdequacyInvestmentProblem(
+                                grid=self.circuit,
+                                n_monte_carlo_sim=self.ui.max_iterations_reliability_spinBox.value(),
+                                use_monte_carlo=False,
+                                save_file=False,
+                                time_indices=self.get_time_indices()
+                            )
+                        else:
+                            self.show_warning_toast('Adequacy studies need time data...')
+                            return
 
                     else:
                         self.show_error_toast("Objective not supported yet :/")
@@ -2893,30 +2913,34 @@ class SimulationsMain(TimeEventsMain):
         """
         if self.circuit.valid_for_simulation():
 
-            if not self.session.is_this_running(SimulationTypes.Reliability_run):
+            if self.circuit.get_time_number() > 0:
 
-                self.add_simulation(SimulationTypes.Reliability_run)
+                if not self.session.is_this_running(SimulationTypes.Reliability_run):
 
-                self.LOCK()
+                    self.add_simulation(SimulationTypes.Reliability_run)
 
-                # Compile the grid
-                self.ui.progress_label.setText('Compiling the grid...')
-                QtGui.QGuiApplication.processEvents()
+                    self.LOCK()
 
-                pf_options = self.get_selected_power_flow_options()
+                    # Compile the grid
+                    self.ui.progress_label.setText('Compiling the grid...')
+                    QtGui.QGuiApplication.processEvents()
 
-                drv = sim.ReliabilityStudyDriver(grid=self.circuit,
-                                                 pf_options=pf_options,
-                                                 n_sim=self.ui.max_iterations_reliability_spinBox.value())
+                    pf_options = self.get_selected_power_flow_options()
 
-                self.session.run(drv,
-                                 post_func=self.post_reliability,
-                                 prog_func=self.ui.progressBar.setValue,
-                                 text_func=self.ui.progress_label.setText)
+                    drv = sim.ReliabilityStudyDriver(grid=self.circuit,
+                                                     pf_options=pf_options,
+                                                     time_indices=self.get_time_indices(),
+                                                     n_sim=self.ui.max_iterations_reliability_spinBox.value())
 
+                    self.session.run(drv,
+                                     post_func=self.post_reliability,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
+
+                else:
+                    self.show_warning_toast('Another reliability study is running already...')
             else:
-                self.show_warning_toast('Another OPF time series is running already...')
-
+                self.show_warning_toast('Reliability studies need time data...')
         else:
             pass
 

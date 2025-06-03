@@ -208,7 +208,7 @@ class ShortCircuitDriver(DriverTemplate):
             sc_bus_index = list()
 
             # modify the grid by inserting a mid-line short circuit bus
-            branch = self.grid.get_branches_wo_hvdc()[self.options.branch_index]
+            branch = self.grid.get_branches(add_hvdc=False, add_vsc=False, add_switch=True)[self.options.branch_index]
             br1, br2, middle_bus = self.split_branch(branch=branch,
                                                      fault_position=self.options.branch_fault_locations,
                                                      r_fault=self.options.branch_fault_r,

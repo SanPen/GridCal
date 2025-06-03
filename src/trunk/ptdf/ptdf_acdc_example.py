@@ -14,6 +14,6 @@ grid = gce.FileOpen(fname).open()
 
 nc = gce.compile_numerical_circuit_at(grid)
 
-PTDF = make_acdc_ptdf(nc=nc)
+PTDF = make_acdc_ptdf(nc=nc, logger=gce.Logger())
 
 print(PTDF)

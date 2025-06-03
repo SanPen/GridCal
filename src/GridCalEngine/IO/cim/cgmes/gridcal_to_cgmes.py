@@ -1659,7 +1659,8 @@ def get_cgmes_sv_tap_step(multi_circuit: MultiCircuit,
                           cgmes_model: CgmesCircuit,
                           pf_results: PowerFlowResults,
                           logger: DataLogger) -> None:
-    branch_objects = multi_circuit.get_branches_wo_hvdc()
+
+    branch_objects = multi_circuit.get_branches(add_vsc=False, add_hvdc=False, add_switch=True)
 
     tap_modules = pf_results.tap_module
 

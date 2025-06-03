@@ -79,6 +79,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             bus_names=self.grid.get_bus_names(),
             branch_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
             hvdc_names=self.grid.get_hvdc_names(),
+            vsc_names=self.grid.get_vsc_names(),
             contingency_group_names=self.grid.get_contingency_group_names()
         )
 
@@ -101,6 +102,9 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
         self.results.hvdc_Pf = opf_vars.hvdc_vars.flows[0, :]
         self.results.hvdc_loading = opf_vars.hvdc_vars.loading[0, :]
+
+        self.results.vsc_Pf = opf_vars.vsc_vars.flows[0, :]
+        self.results.vsc_loading = opf_vars.vsc_vars.loading[0, :]
 
         self.results.sending_bus_idx = self.options.sending_bus_idx
         self.results.receiving_bus_idx = self.options.receiving_bus_idx

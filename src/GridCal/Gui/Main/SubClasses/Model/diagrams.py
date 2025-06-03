@@ -827,13 +827,21 @@ class DiagramsMain(CompiledArraysMain):
                                              bus_active=bus_active,
                                              loadings=results.loading,
                                              types=results.bus_types,
+
                                              Sf=results.Sf,
                                              St=results.St,
                                              br_active=br_active,
+
                                              hvdc_Pf=results.hvdc_Pf,
                                              hvdc_Pt=-results.hvdc_Pf,
                                              hvdc_loading=results.hvdc_loading,
                                              hvdc_active=hvdc_active,
+
+                                             vsc_Pf=results.vsc_Pf,
+                                             vsc_Pt=-results.vsc_Pf,
+                                             vsc_loading=results.vsc_loading,
+                                             vsc_active=vsc_active,
+
                                              use_flow_based_width=use_flow_based_width,
                                              min_branch_width=min_branch_width,
                                              max_branch_width=max_branch_width,

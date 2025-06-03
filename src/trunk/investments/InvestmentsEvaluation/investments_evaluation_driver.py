@@ -136,7 +136,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                                          status=True,
                                          all_elements_dict=self.get_all_elements_dict)
 
-        branches = self.grid.get_branches_wo_hvdc()
+        branches = self.grid.get_branches(add_hvdc=False, add_vsc=False, add_switch=True)
         buses = self.grid.get_buses()
 
         # do something

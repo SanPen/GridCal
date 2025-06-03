@@ -29,6 +29,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                  bus_names: StrVec,
                  branch_names: StrVec,
                  hvdc_names: StrVec,
+                 vsc_names: StrVec,
                  contingency_group_names: StrVec, ):
         """
 
@@ -56,6 +57,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                      ResultTypes.HvdcResults: [
                                          ResultTypes.HvdcPowerFrom,
                                      ],
+                                     ResultTypes.VscResults: [
+                                         ResultTypes.VscPowerFrom,
+                                     ],
                                      ResultTypes.FlowReports: [
                                          ResultTypes.ContingencyFlowsReport,
                                          ResultTypes.InterSpaceBranchPower,
@@ -70,6 +74,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         n = len(bus_names)
         m = len(branch_names)
         nhvdc = len(hvdc_names)
+        nvsc = len(vsc_names)
 
         self.bus_names = bus_names
         self.branch_names = branch_names
@@ -97,6 +102,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.hvdc_Pf = np.zeros(nhvdc, dtype=float)
         self.hvdc_loading = np.zeros(nhvdc, dtype=float)
         self.hvdc_losses = np.zeros(nhvdc, dtype=float)
+
+        self.vsc_Pf = np.zeros(nvsc, dtype=float)
+        self.vsc_loading = np.zeros(nvsc, dtype=float)
+        self.vsc_losses = np.zeros(nvsc, dtype=float)
 
         # indices to post process
         self.sending_bus_idx: List[int] = list()
@@ -135,6 +144,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.register(name='hvdc_Pf', tpe=Vec)
         self.register(name='hvdc_loading', tpe=Vec)
         self.register(name='hvdc_losses', tpe=Vec)
+
+        self.register(name='vsc_Pf', tpe=Vec)
+        self.register(name='vsc_loading', tpe=Vec)
+        self.register(name='vsc_losses', tpe=Vec)
 
         self.register(name='converged', tpe=bool)
         self.register(name='contingency_flows_list', tpe=list)
@@ -278,6 +291,17 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 ylabel='(MW)',
                 cols_device_type=DeviceType.NoDevice,
                 idx_device_type=DeviceType.HVDCLineDevice
+            )
+
+        elif result_type == ResultTypes.VscPowerFrom:
+            return ResultsTable(
+                data=self.vsc_Pf,
+                index=self.vsc_names,
+                columns=['Pf'],
+                title=str(result_type.value),
+                ylabel='(MW)',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.VscDevice
             )
 
         elif result_type == ResultTypes.AvailableTransferCapacityAlpha:

@@ -23,10 +23,11 @@ from GridCalEngine.DataStructures.load_data import LoadData
 from GridCalEngine.DataStructures.passive_branch_data import PassiveBranchData
 from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
+from GridCalEngine.DataStructures.vsc_data import VscData
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, StrVec, CxMat
 from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, set_var_bounds, join
-from GridCalEngine.enumerations import TapPhaseControl, HvdcControlType, AvailableTransferMode
+from GridCalEngine.enumerations import TapPhaseControl, HvdcControlType, AvailableTransferMode, ConverterControlType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
 from GridCalEngine.IO.file_system import opf_file_path
@@ -374,7 +375,7 @@ def pmode3_formulation(prob, t_idx, m, rate, P0, droop, theta_f, theta_t):
     return flow
 
 
-def pmode3_formulation2(prob, t_idx, m, rate, P0, droop, theta_f, theta_t):
+def pmode3_formulation2(prob, t_idx, m, rate, P0, droop, theta_f, theta_t, base_name: str = "hvdc"):
     """
     Formulation
     ------------------------------------------------------------
@@ -406,7 +407,7 @@ def pmode3_formulation2(prob, t_idx, m, rate, P0, droop, theta_f, theta_t):
     flow = prob.add_var(
         lb=-prob.INFINITY,
         ub=prob.INFINITY,
-        name=join("hvdc_flow_", [t_idx, m], "_")
+        name=join(f"{base_name}_flow_", [t_idx, m], "_")
     )
 
     flow_lin = prob.add_var(
@@ -414,8 +415,8 @@ def pmode3_formulation2(prob, t_idx, m, rate, P0, droop, theta_f, theta_t):
         ub=prob.INFINITY,
         name=join("pmode3_eq", [t_idx, m], "_")
     )
-    z1 = prob.add_int(lb=0, ub=1, name=join("hvdc_z1_", [t_idx, m], "_"))
-    z2 = prob.add_int(lb=0, ub=1, name=join("hvdc_z2_", [t_idx, m], "_"))
+    z1 = prob.add_int(lb=0, ub=1, name=join(f"{base_name}_z1_", [t_idx, m], "_"))
+    z2 = prob.add_int(lb=0, ub=1, name=join(f"{base_name}_z2_", [t_idx, m], "_"))
 
     M = 2 * rate  # exactly this
 
@@ -642,7 +643,8 @@ class BusNtcVars:
         :param nt: Number of time steps
         :param n_elm: Number of branches
         """
-        self.theta = np.zeros((nt, n_elm), dtype=object)
+        self.Va = np.zeros((nt, n_elm), dtype=object)
+        self.Vm = np.ones((nt, n_elm), dtype=object)
         self.kirchhoff = np.zeros((nt, n_elm), dtype=object)
         self.shadow_prices = np.zeros((nt, n_elm), dtype=float)
 
@@ -661,7 +663,7 @@ class BusNtcVars:
         Return an instance of this class where the arrays content are not LP vars but their value
         :return: BusVars
         """
-        nt, n_elm = self.theta.shape
+        nt, n_elm = self.Va.shape
         data = BusNtcVars(nt=nt, n_elm=n_elm)
 
         data.shadow_prices = self.shadow_prices
@@ -671,7 +673,8 @@ class BusNtcVars:
         for t in range(nt):
 
             for i in range(n_elm):
-                data.theta[t, i] = model.get_value(self.theta[t, i])
+                data.Va[t, i] = model.get_value(self.Va[t, i])
+                data.Vm[t, i] = model.get_value(self.Vm[t, i])
                 data.shadow_prices[t, i] = model.get_dual_value(self.kirchhoff[t, i])
                 data.load_shedding[t, i] = model.get_value(self.load_shedding[t, i]) * Sbase
                 data.Pbalance[t, i] = model.get_value(self.Pbalance[t, i]) * Sbase
@@ -679,7 +682,8 @@ class BusNtcVars:
                 data.delta_p[t, i] = model.get_value(self.delta_p[t, i]) * Sbase
 
         # format the arrays appropriately
-        data.theta = data.theta.astype(float, copy=False)
+        data.Va = data.Va.astype(float, copy=False)
+        data.Vm = data.Vm.astype(float, copy=False)
 
         data.load_shedding = data.load_shedding.astype(float, copy=False)
 
@@ -831,12 +835,57 @@ class HvdcNtcVars:
         return data
 
 
+class VscNtcVars:
+    """
+    Struct to store the VSC vars
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        VscNtcVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of VSC
+        """
+        self.flows = np.zeros((nt, n_elm), dtype=object)
+        self.z = np.zeros((nt, n_elm), dtype=object)
+        self.y = np.zeros((nt, n_elm), dtype=object)
+
+        self.rates = np.zeros((nt, n_elm), dtype=float)
+        self.loading = np.zeros((nt, n_elm), dtype=float)
+
+        self.inter_space_hvdc: List[Tuple[int, float]] = list()  # index, sense
+
+    def get_values(self, Sbase: float, model: LpModel) -> "VscNtcVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :return: HvdcVars
+        """
+        nt, n_elm = self.flows.shape
+        data = VscNtcVars(nt=nt, n_elm=n_elm)
+        data.rates = self.rates
+        data.inter_space_hvdc = self.inter_space_hvdc
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.flows[t, i] = model.get_value(self.flows[t, i]) * Sbase
+                data.y[t, i] = model.get_value(self.y[t, i]) * Sbase
+                data.z[t, i] = model.get_value(self.z[t, i])
+
+        # format the arrays appropriately
+        data.flows = data.flows.astype(float, copy=False)
+
+        data.loading = data.flows / (data.rates + 1e-20)
+
+        return data
+
+
 class NtcVars:
     """
     Structure to host the opf variables
     """
 
-    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int, model: LpModel):
+    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int, n_vsc: int,
+                 model: LpModel):
         """
         Constructor
         :param nt: number of time steps
@@ -855,6 +904,7 @@ class NtcVars:
         self.nl = nl
         self.nbr = nbr
         self.n_hvdc = n_hvdc
+        self.n_vsc = n_vsc
         self.model = model
 
         self.acceptable_solution = np.zeros(nt, dtype=bool)
@@ -862,6 +912,7 @@ class NtcVars:
         self.bus_vars = BusNtcVars(nt=nt, n_elm=nbus)
         self.branch_vars = BranchNtcVars(nt=nt, n_elm=nbr)
         self.hvdc_vars = HvdcNtcVars(nt=nt, n_elm=n_hvdc)
+        self.vsc_vars = VscNtcVars(nt=nt, n_elm=n_vsc)
 
         # power shift
         self.delta_1 = np.zeros(nt, dtype=object)  # array of vars at the beginning
@@ -886,11 +937,13 @@ class NtcVars:
                        nl=self.nl,
                        nbr=self.nbr,
                        n_hvdc=self.n_hvdc,
+                       n_vsc=self.n_vsc,
                        model=self.model)
 
         data.bus_vars = self.bus_vars.get_values(Sbase, model)
         data.branch_vars = self.branch_vars.get_values(Sbase, model)
         data.hvdc_vars = self.hvdc_vars.get_values(Sbase, model)
+        data.vsc_vars = self.vsc_vars.get_values(Sbase, model)
 
         data.acceptable_solution = self.acceptable_solution
 
@@ -909,7 +962,7 @@ class NtcVars:
 
         :return:
         """
-        return np.ones((self.nt, self.nbus)) * np.exp(1j * self.bus_vars.theta)
+        return self.bus_vars.Vm * np.exp(1j * self.bus_vars.Va)
 
 
 def get_base_power(Sbase: float,
@@ -1082,8 +1135,7 @@ def add_linear_branches_formulation(t_idx: int,
                                     alpha_threshold: float,
                                     structural_ntc: float,
                                     ntc_load_rule: float,
-                                    inf=1e20,
-                                    add_flow_slacks: bool = True):
+                                    inf=1e20):
     """
     Formulate the branches
     :param t_idx: time index
@@ -1118,60 +1170,80 @@ def add_linear_branches_formulation(t_idx: int,
             # compute rate in per unit
             rate_pu = branch_data_t.rates[m] / Sbase
 
-            # declare the flow LPVar
-            branch_vars.flows[t_idx, m] = prob.add_var(
-                lb=-inf,
-                ub=inf,
-                name=join("flow_", [t_idx, m], "_")
-            )
+            if branch_data_t.dc[m]:
 
-            # compute the branch susceptance
-            if branch_data_t.X[m] == 0.0:
-                if branch_data_t.R[m] != 0.0:
+                # declare the flow LPVar
+                branch_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-inf,
+                    ub=inf,
+                    name=join("dc_flow_", [t_idx, m], "_")
+                )
+
+                # DC Branch
+                # compute the branch susceptance
+                if branch_data_t.R[m] == 0.0:
+                    bk = 1e-6  # setting a value too low will "break" the linear solver
+                else:
                     bk = 1.0 / branch_data_t.R[m]
-                else:
-                    bk = 1e-20
-            else:
-                bk = 1.0 / branch_data_t.X[m]
 
-            # compute the flow
-            if (active_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf or
-                    active_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pt):
-
-                # add angle
-                branch_vars.tap_angles[t_idx, m] = prob.add_var(
-                    lb=active_branch_data_t.tap_angle_min[m],
-                    ub=active_branch_data_t.tap_angle_max[m],
-                    name=join("tap_ang_", [t_idx, m], "_")
-                )
-
-                # is a phase shifter device (like phase shifter transformer or VSC with P control)
                 prob.add_cst(
-                    cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.theta[t_idx, fr] -
-                                                             bus_vars.theta[t_idx, to] +
-                                                             branch_vars.tap_angles[t_idx, m]),
-                    name=join("flows_ps_", [t_idx, m], "_")
+                    cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.Vm[t_idx, fr] - bus_vars.Vm[t_idx, to]),
+                    name=join("dc_flows_", [t_idx, m], "_")
                 )
 
             else:
+                # AC branch
+                # declare the flow LPVar
+                branch_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-inf,
+                    ub=inf,
+                    name=join("ac_flow_", [t_idx, m], "_")
+                )
 
-                if active_branch_data_t.tap_angle[m] != 0.0:
-                    branch_vars.tap_angles[t_idx, m] = active_branch_data_t.tap_angle[m]
-
-                    # rest of the branches
-                    prob.add_cst(
-                        cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.theta[t_idx, fr] -
-                                                                 bus_vars.theta[t_idx, to] +
-                                                                 branch_vars.tap_angles[t_idx, m]),
-                        name=join("flow_ps_fix", [t_idx, m], "_")
-                    )
+                # compute the branch susceptance
+                if branch_data_t.X[m] == 0.0:
+                    bk = 1e-6  # setting a value too low will "break" the linear solver
                 else:
-                    # rest of the branches with tau = 0
-                    prob.add_cst(
-                        cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.theta[t_idx, fr] -
-                                                                 bus_vars.theta[t_idx, to]),
-                        name=join("flow_", [t_idx, m], "_")
+                    bk = 1.0 / branch_data_t.X[m]
+
+                # compute the flow
+                if (active_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf or
+                        active_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pt):
+
+                    # add angle
+                    branch_vars.tap_angles[t_idx, m] = prob.add_var(
+                        lb=active_branch_data_t.tap_angle_min[m],
+                        ub=active_branch_data_t.tap_angle_max[m],
+                        name=join("tap_ang_", [t_idx, m], "_")
                     )
+
+                    # is a phase shifter device (like phase shifter transformer or VSC with P control)
+                    prob.add_cst(
+                        cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.Va[t_idx, fr] -
+                                                                 bus_vars.Va[t_idx, to] +
+                                                                 branch_vars.tap_angles[t_idx, m]),
+                        name=join("flows_ps_", [t_idx, m], "_")
+                    )
+
+                else:
+
+                    if active_branch_data_t.tap_angle[m] != 0.0:
+                        branch_vars.tap_angles[t_idx, m] = active_branch_data_t.tap_angle[m]
+
+                        # rest of the branches
+                        prob.add_cst(
+                            cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.Va[t_idx, fr] -
+                                                                     bus_vars.Va[t_idx, to] +
+                                                                     branch_vars.tap_angles[t_idx, m]),
+                            name=join("flow_ps_fix", [t_idx, m], "_")
+                        )
+                    else:
+                        # rest of the branches with tau = 0
+                        prob.add_cst(
+                            cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.Va[t_idx, fr] -
+                                                                     bus_vars.Va[t_idx, to]),
+                            name=join("ac_flow_", [t_idx, m], "_")
+                        )
 
             # We save in Pcalc the balance of the branch flows
             bus_vars.Pbalance[t_idx, fr] -= branch_vars.flows[t_idx, m]
@@ -1224,7 +1296,7 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                                                   branch_vars: BranchNtcVars,
                                                   bus_vars: BusNtcVars,
                                                   hvdc_vars: HvdcNtcVars,
-                                                  # vsc_vars: BusNtcVars,
+                                                  vsc_vars: VscNtcVars,
                                                   prob: LpModel,
                                                   linear_multicontingencies: LinearMultiContingencies,
                                                   monitor_only_ntc_load_rule_branches: bool,
@@ -1239,6 +1311,8 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
     :param branch_data_t: BranchData
     :param branch_vars: BranchVars
     :param bus_vars: BusVars
+    :param hvdc_vars: HvdcNtcVars
+    :param vsc_vars: VscNtcVars
     :param prob: OR problem
     :param linear_multicontingencies: LinearMultiContingencies
     :param monitor_only_ntc_load_rule_branches:
@@ -1253,7 +1327,8 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
 
         contingency_flows = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
                                                                  injections=bus_vars.Pinj[t_idx, :],
-                                                                 hvdc_flow=hvdc_vars.flows[t_idx, :])
+                                                                 hvdc_flow=hvdc_vars.flows[t_idx, :],
+                                                                 vsc_flow=vsc_vars.flows[t_idx, :])
 
         for m, contingency_flow in enumerate(contingency_flows):
             if isinstance(contingency_flow, LpExp):
@@ -1371,8 +1446,9 @@ def add_linear_hvdc_formulation(t_idx: int,
                                                                     rate=hvdc_data_t.rates[m] / Sbase,
                                                                     P0=P0,
                                                                     droop=droop,
-                                                                    theta_f=vars_bus.theta[t_idx, fr],
-                                                                    theta_t=vars_bus.theta[t_idx, to])
+                                                                    theta_f=vars_bus.Va[t_idx, fr],
+                                                                    theta_t=vars_bus.Va[t_idx, to],
+                                                                    base_name="hvdc")
 
                     # hvdc_vars.flows[t_idx, m] = formulate_hvdc_Pmode3_single_flow(
                     #     solver=prob,
@@ -1402,7 +1478,7 @@ def add_linear_hvdc_formulation(t_idx: int,
                     # flow = P0 + k · (theta_f - theta_t)
                     prob.add_cst(
                         cst=hvdc_vars.flows[t_idx, m] == P0 + droop * (
-                                vars_bus.theta[t_idx, fr] - vars_bus.theta[t_idx, to]),
+                                vars_bus.Va[t_idx, fr] - vars_bus.Va[t_idx, to]),
                         name=join("hvdc_flow_cst_", [t_idx, m], "_")
                     )
 
@@ -1455,6 +1531,194 @@ def add_linear_hvdc_formulation(t_idx: int,
     return f_obj
 
 
+def add_linear_vsc_formulation(t_idx: int,
+                               Sbase: float,
+                               vsc_data_t: VscData,
+                               vsc_vars: VscNtcVars,
+                               bus_vars: BusNtcVars,
+                               prob: LpModel,
+                               logger: Logger,
+                               saturate: bool = True):
+    """
+
+    :param t_idx:
+    :param Sbase:
+    :param vsc_data_t:
+    :param vsc_vars:
+    :param bus_vars:
+    :param bus_vars:
+    :param prob:
+    :param logger:
+    :param saturate:
+    :return:
+    """
+
+    f_obj = 0.0
+    any_dc_slack = False
+    for m in range(vsc_data_t.nelm):
+
+        fr = vsc_data_t.F[m]
+        to = vsc_data_t.T[m]
+
+        control_bus_idx = vsc_data_t.control1_bus_idx[m]
+        if control_bus_idx == -1:
+            control_bus_idx = t_idx
+
+        vsc_vars.rates[t_idx, m] = vsc_data_t.rates[m]
+
+        if vsc_data_t.active[m]:
+
+            if (vsc_data_t.control1[m] == ConverterControlType.Pdc_angle_droop and
+                    vsc_data_t.control2[m] == ConverterControlType.Pac):  # P-MODE 3
+
+                # set the flow based on the angular difference
+                P0 = vsc_data_t.control2_val[m] / Sbase
+
+                # convert MW/deg to pu/rad
+                droop = vsc_data_t.control1_val * 57.295779513 / Sbase  # MW/deg -> p.u./rad
+
+                if saturate:
+
+                    vsc_vars.flows[t_idx, m] = pmode3_formulation2(
+                        prob=prob,
+                        t_idx=t_idx,
+                        m=m,
+                        rate=vsc_data_t.rates[m] / Sbase,
+                        P0=P0,
+                        droop=droop,
+                        theta_f=bus_vars.Va[t_idx, fr],
+                        theta_t=bus_vars.Va[control_bus_idx, to],
+                        base_name="vsc"
+                    )
+
+                else:
+
+                    # Simple Pmode 3 with no saturation magic
+
+                    # declare the flow var
+                    vsc_vars.flows[t_idx, m] = prob.add_var(
+                        lb=-vsc_data_t.rates[m] / Sbase,
+                        ub=vsc_data_t.rates[m] / Sbase,
+                        name=join("vsc_flow_", [t_idx, m], "_")
+                    )
+
+                    # flow = P0 + k · (theta_f - theta_t)
+                    prob.add_cst(
+                        cst=vsc_vars.flows[t_idx, m] == P0 + droop * (
+                                bus_vars.Va[t_idx, fr] - bus_vars.Va[control_bus_idx, to]),
+                        name=join("vsc_flow_cst_", [t_idx, m], "_")
+                    )
+
+            elif (vsc_data_t.control1[m] == ConverterControlType.Vm_dc and
+                  vsc_data_t.control2[m] == ConverterControlType.Pac):
+
+                # set the DC slack
+                val = vsc_data_t.control1_val[m]
+                if val == 0:
+                    val = 1
+                set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
+                any_dc_slack = True
+
+                # declare the flow var
+                vsc_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-vsc_data_t.rates[m] / Sbase,
+                    ub=vsc_data_t.rates[m] / Sbase,
+                    name=join("vsc_flow_", [t_idx, m], "_")
+                )
+
+            elif (vsc_data_t.control1[m] == ConverterControlType.Pac and
+                  vsc_data_t.control2[m] == ConverterControlType.Vm_dc):
+
+                # set the DC slack
+                val = vsc_data_t.control2_val[m]
+                if val == 0:
+                    val = 1
+                set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
+                any_dc_slack = True
+
+                # declare the flow var
+                vsc_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-vsc_data_t.rates[m] / Sbase,
+                    ub=vsc_data_t.rates[m] / Sbase,
+                    name=join("vsc_flow_", [t_idx, m], "_")
+                )
+
+            elif (vsc_data_t.control1[m] == ConverterControlType.Vm_dc and
+                  vsc_data_t.control2[m] == ConverterControlType.Pdc):
+
+                # set the DC slack
+                val = vsc_data_t.control1_val[m]
+                if val == 0:
+                    val = 1
+                set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
+                any_dc_slack = True
+
+                # declare the flow var
+                vsc_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-vsc_data_t.rates[m] / Sbase,
+                    ub=vsc_data_t.rates[m] / Sbase,
+                    name=join("vsc_flow_", [t_idx, m], "_")
+                )
+
+            elif (vsc_data_t.control1[m] == ConverterControlType.Pdc and
+                  vsc_data_t.control2[m] == ConverterControlType.Vm_dc):
+
+                # set the DC slack
+                val = vsc_data_t.control2_val[m]
+                if val == 0:
+                    val = 1
+                set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
+                any_dc_slack = True
+
+                # declare the flow var
+                vsc_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-vsc_data_t.rates[m] / Sbase,
+                    ub=vsc_data_t.rates[m] / Sbase,
+                    name=join("vsc_flow_", [t_idx, m], "_")
+                )
+
+            elif (vsc_data_t.control1[m] == ConverterControlType.Pdc and
+                  vsc_data_t.control2[m] == ConverterControlType.Pac):
+
+                # declare the flow var
+                vsc_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-vsc_data_t.rates[m] / Sbase,
+                    ub=vsc_data_t.rates[m] / Sbase,
+                    name=join("vsc_flow_", [t_idx, m], "_")
+                )
+
+            elif (vsc_data_t.control1[m] == ConverterControlType.Pac and
+                  vsc_data_t.control2[m] == ConverterControlType.Pdc):
+
+                # declare the flow var
+                vsc_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-vsc_data_t.rates[m] / Sbase,
+                    ub=vsc_data_t.rates[m] / Sbase,
+                    name=join("vsc_flow_", [t_idx, m], "_")
+                )
+
+            else:
+                logger.add_error(msg=f"Unsupported controls",
+                                 value=f"{vsc_data_t.control1[m]}, {vsc_data_t.control2[m]}")
+
+            # add the injections matching the flow
+            bus_vars.Pbalance[t_idx, fr] -= vsc_vars.flows[t_idx, m]
+            bus_vars.Pbalance[t_idx, to] += vsc_vars.flows[t_idx, m]
+
+        else:
+            # not active, therefore the flow is exactly zero
+            set_var_bounds(var=vsc_vars.flows[t_idx, m], ub=0.0, lb=0.0)
+
+    # add the flows to the objective function
+    for k, sense in vsc_vars.inter_space_hvdc:
+        f_obj -= vsc_vars.flows[t_idx, k] * sense
+
+    if not any_dc_slack and vsc_data_t.nelm > 0:
+        logger.add_warning("No DC Slack! set Vm_dc in any of the converters")
+
+    return f_obj
+
+
 def add_linear_node_balance(t_idx: int,
                             vd: IntVec,
                             bus_data: BusData,
@@ -1477,9 +1741,10 @@ def add_linear_node_balance(t_idx: int,
             cst=bus_vars.Pbalance[t_idx, k] == 0,
             name=join("kirchhoff_", [t_idx, k], "_"))
 
+    # set this to the set value
     Va = np.angle(bus_data.Vbus)
     for i in vd:
-        set_var_bounds(var=bus_vars.theta[t_idx, i], lb=Va[i], ub=Va[i])
+        set_var_bounds(var=bus_vars.Va[t_idx, i], lb=Va[i], ub=Va[i])
 
 
 def run_linear_ntc_opf(grid: MultiCircuit,
@@ -1544,12 +1809,14 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     nb = grid.get_batteries_number()
     nl = grid.get_load_like_device_number()
     n_hvdc = grid.get_hvdc_number()
+    n_vsc = grid.get_vsc_number()
 
     # Declare the LP model
     lp_model: LpModel = LpModel(solver_type)
 
     # declare structures of LP vars
-    mip_vars = NtcVars(nt=1, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc, model=lp_model)
+    mip_vars = NtcVars(nt=1, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc, n_vsc=n_vsc,
+                       model=lp_model)
 
     # objective function
     f_obj = 0.0
@@ -1577,11 +1844,18 @@ def run_linear_ntc_opf(grid: MultiCircuit,
 
     # formulate the bus angles ---------------------------------------------------------------------------------
     for k in range(nc.bus_data.nbus):
-        mip_vars.bus_vars.theta[t_idx, k] = lp_model.add_var(
-            lb=nc.bus_data.angle_min[k],
-            ub=nc.bus_data.angle_max[k],
-            name=join("th_", [t_idx, k], "_")
-        )
+        if nc.bus_data.is_dc[k]:
+            mip_vars.bus_vars.Vm[t_idx, k] = lp_model.add_var(
+                lb=nc.bus_data.Vmin[k],
+                ub=nc.bus_data.Vmax[k],
+                name=join("Vm_", [t_idx, k], "_")
+            )
+        else:
+            mip_vars.bus_vars.Va[t_idx, k] = lp_model.add_var(
+                lb=nc.bus_data.angle_min[k],
+                ub=nc.bus_data.angle_max[k],
+                name=join("Va_", [t_idx, k], "_")
+            )
 
     # formulate injections -------------------------------------------------------------------------------------
     indices = nc.get_simulation_indices()
@@ -1621,12 +1895,24 @@ def run_linear_ntc_opf(grid: MultiCircuit,
         prob=lp_model,
     )
 
+    # formulate vsc -------------------------------------------------------------------------------------------
+    f_obj += add_linear_vsc_formulation(
+        t_idx=t_idx,
+        Sbase=nc.Sbase,
+        vsc_data_t=nc.vsc_data,
+        vsc_vars=mip_vars.vsc_vars,
+        bus_vars=mip_vars.bus_vars,
+        prob=lp_model,
+        logger=logger
+    )
+
     if zonal_grouping == ZonalGrouping.NoGrouping:
 
         # declare the linear analysis and compute the PTDF and LODF
         ls = LinearAnalysis(nc=nc,
                             distributed_slack=False,
-                            correct_values=True)
+                            correct_values=True,
+                            logger=logger)
 
         # compute the sensitivity to the exchange
         alpha = compute_alpha(ptdf=ls.PTDF,
@@ -1661,7 +1947,6 @@ def run_linear_ntc_opf(grid: MultiCircuit,
             structural_ntc=float(structural_ntc),
             ntc_load_rule=ntc_load_rule,
             inf=1e20,
-            add_flow_slacks=False,
         )
 
         # formulate nodes ---------------------------------------------------------------------------------------
@@ -1690,8 +1975,9 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                     Sbase=nc.Sbase,
                     branch_data_t=nc.passive_branch_data,
                     branch_vars=mip_vars.branch_vars,
-                    hvdc_vars=mip_vars.hvdc_vars,
                     bus_vars=mip_vars.bus_vars,
+                    hvdc_vars=mip_vars.hvdc_vars,
+                    vsc_vars=mip_vars.vsc_vars,
                     prob=lp_model,
                     linear_multicontingencies=mctg,
                     monitor_only_sensitive_branches=monitor_only_sensitive_branches,

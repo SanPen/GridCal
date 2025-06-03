@@ -51,8 +51,8 @@ def helm_contingency_analysis(grid: MultiCircuit,
     # get contingency groups dictionary
     cg_dict = grid.get_contingency_group_dict()
 
-    branches_dict = grid.get_branches_wo_hvdc_dict()
-    calc_branches = grid.get_branches_wo_hvdc()
+    branches_dict = grid.get_branches_dict(add_vsc=False, add_hvdc=False, add_switch=True)
+    calc_branches = grid.get_branches(add_hvdc=False, add_vsc=False, add_switch=True)
     mon_idx = numerical_circuit.passive_branch_data.get_monitor_enabled_indices()
 
     # keep the original states

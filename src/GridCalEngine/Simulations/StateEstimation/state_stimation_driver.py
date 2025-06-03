@@ -81,7 +81,7 @@ class StateEstimation(DriverTemplate):
             se_input.vm_m.append(elm)
 
         # branch measurements
-        branch_dict = circuit.get_branches_wo_hvdc_index_dict()
+        branch_dict = circuit.get_branches_index_dict(add_vsc=False, add_hvdc=False, add_switch=True)
 
         for elm in circuit.get_pf_measurements():
             se_input.pf_idx.append(branch_dict[elm.api_object])
