@@ -7,7 +7,7 @@ import torch.nn as nn
 
 # Load dataset
 df = pd.read_csv(
-    '/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scopf_dataset_14.csv')
+    '/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/scopf_dataset_14.csv')
 input_cols = [f'Pg_{i}' for i in range(5)] + ['contingency_index']
 output_cols = ['W_k'] + [f'u_j_{i}' for i in range(5)] + [f'Z_k_{i}' for i in range(5)]
 
@@ -54,7 +54,7 @@ class SCOPFModel(nn.Module):
 # Load model
 model = SCOPFModel(input_dim=X.shape[1], output_dim=y.shape[1])
 model.load_state_dict(torch.load(
-    '/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scopf_model.pt'))
+    '/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scopf_model.pt'))
 model.eval()
 
 # Predict
