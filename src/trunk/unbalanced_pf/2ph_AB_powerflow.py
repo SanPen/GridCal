@@ -30,6 +30,7 @@ def power_flow_3ph(grid, t_idx=None):
 
     return res
 
-grid = gce.open_file("mask_case.gridcal")
+# grid = gce.open_file("mask_case.gridcal")
+grid = gce.open_file("src/trunk/unbalanced_pf/mask_case.gridcal")
 res_3ph = power_flow_3ph(grid)
 print()
