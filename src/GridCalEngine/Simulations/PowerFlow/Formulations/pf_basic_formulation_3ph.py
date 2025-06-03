@@ -27,12 +27,6 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
     :return: Ybus, Yf, Yt, Yshunt_bus
     """
 
-    # Mask
-
-
-
-    #
-
     n = nc.bus_data.nbus
     m = nc.passive_branch_data.nelm
     Cf = lil_matrix((3 * m, 3 * n), dtype=int)
@@ -57,14 +51,14 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
         Yt[np.ix_(k3, f3)] = nc.passive_branch_data.Ytf3[k3, :]
         Yt[np.ix_(k3, t3)] = nc.passive_branch_data.Ytt3[k3, :]
 
-        R[k, 0] = nc.passive_branch_data.phA
-        R[k, 1] = nc.passive_branch_data.phB
-        R[k, 2] = nc.passive_branch_data.phC
+        R[k, 0] = nc.passive_branch_data.phA[k]
+        R[k, 1] = nc.passive_branch_data.phB[k]
+        R[k, 2] = nc.passive_branch_data.phC[k]
 
         Cf[k3, f3] = 1
         Ct[k3, t3] = 1
 
-    N = R @ Cf + R @ Ct
+    N = Cf @ R.T + Ct @ R.T
 
     Ysh_bus = np.zeros(n * 3, dtype=complex)
     for k in range(nc.shunt_data.nelm):

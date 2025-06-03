@@ -47,6 +47,43 @@ class AdmittanceMatrix:
 
         self.__values: CxMat = np.zeros((size, size), dtype=complex)
 
+        self._phA: int = 0
+        self._phB: int = 0
+        self._phC: int = 0
+
+    @property
+    def phA(self):
+        return self._phA
+
+    @phA.setter
+    def phA(self, val: int):
+        if isinstance(val, int):
+            self._phA = val
+        else:
+            raise ValueError(f'{val} is not an int')
+
+    @property
+    def phB(self):
+        return self._phB
+
+    @phB.setter
+    def phB(self, val: int):
+        if isinstance(val, int):
+            self._phB = val
+        else:
+            raise ValueError(f'{val} is not an int')
+
+    @property
+    def phC(self):
+        return self._phC
+
+    @phC.setter
+    def phC(self, val: int):
+        if isinstance(val, int):
+            self._phC = val
+        else:
+            raise ValueError(f'{val} is not an int')
+
     @property
     def size(self) -> int:
         return self.__size
@@ -80,6 +117,9 @@ class AdmittanceMatrix:
             "size": self.__size,
             "values_r": self.__values.real.tolist(),
             "values_i": self.__values.imag.tolist(),
+            "phase_a": self._phA,
+            "phase_b": self._phB,
+            "phase_c": self._phC,
         }
 
     def parse(self, data: Dict[str, Union[str, float]]) -> None:
@@ -92,6 +132,9 @@ class AdmittanceMatrix:
 
         data_r = list_to_matrix(data.get("values_r", None), self.__size)
         data_i = list_to_matrix(data.get("values_i", None), self.__size)
+        self.phA = data.get("phase_a", 0)
+        self.phB = data.get("phase_b", 0)
+        self.phC = data.get("phase_c", 0)
 
         self.__values = data_r + 1j * data_i
 

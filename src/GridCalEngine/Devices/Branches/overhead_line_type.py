@@ -10,6 +10,7 @@ import numpy as np
 from numpy import pi, log, sqrt
 from matplotlib import pyplot as plt
 
+from GridCalEngine.Devices.admittance_matrix import AdmittanceMatrix
 from GridCalEngine.basic_structures import Logger, Mat, IntVec, Vec, CxMat
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Devices.Branches.wire import Wire
@@ -363,14 +364,14 @@ class OverheadLineType(EditableDevice):
             phC = 1
         return phC
 
-    def get_ys(self, circuit_idx: int, Sbase: float, length: float, Vnom: float):
+    def get_ys(self, circuit_idx: int, Sbase: float, length: float, Vnom: float) -> AdmittanceMatrix:
         """
         get the series admittance matrix in p.u. (total)
         :param circuit_idx: Circuit index (starting by 1)
         :param Sbase: Base power (MVA)
         :param length: Line length (km)
         :param Vnom: Nominal voltage (kV)
-        :return: Series admittance in p.u.
+        :return: AdmittanceMatrix with series admittance in p.u.
         """
         Zbase = (Vnom * Vnom) / Sbase
 
@@ -381,16 +382,25 @@ class OverheadLineType(EditableDevice):
         y_3x3 = np.zeros((3,3), dtype=complex)
         y_3x3[np.ix_(phases,phases)] = y
 
-        return y_3x3
+        adm = AdmittanceMatrix(size=3)
+        adm.values = y_3x3
+        if 1 in self.y_phases_abcn:
+            adm.phA = 1
+        if 2 in self.y_phases_abcn:
+            adm.phB = 1
+        if 3 in self.y_phases_abcn:
+            adm.phC = 1
 
-    def get_ysh(self, circuit_idx: int, Sbase: float, length: float, Vnom: float):
+        return adm
+
+    def get_ysh(self, circuit_idx: int, Sbase: float, length: float, Vnom: float) -> AdmittanceMatrix:
         """
         get the shunt admittance matrix in p.u. (total)
         :param circuit_idx: Circuit index (starting by 1)
         :param Sbase: Base power (MVA)
         :param length: Line length (km)
         :param Vnom: Nominal voltage (kV)
-        :return: Shunt admittance in p.u.
+        :return: AdmittanceMatrix with shunt admittance in p.u.
         """
         Zbase = (Vnom * Vnom) / Sbase
         Ybase = 1 / Zbase
@@ -400,7 +410,16 @@ class OverheadLineType(EditableDevice):
         y_3x3 = np.zeros((3, 3), dtype=complex)
         y_3x3[np.ix_(phases, phases)] = y
 
-        return y_3x3
+        adm = AdmittanceMatrix(size=3)
+        adm.values = y_3x3
+        if 1 in self.y_phases_abcn:
+            adm.phA = 1
+        if 2 in self.y_phases_abcn:
+            adm.phB = 1
+        if 3 in self.y_phases_abcn:
+            adm.phC = 1
+
+        return adm
 
     def add_wire_relationship(self, wire: Wire,
                               xpos: float = 0.0,
@@ -575,8 +594,9 @@ class OverheadLineType(EditableDevice):
             I_kA = self.Imax[circuit_idx - 1]
             return R1, X1, Bsh1, I_kA
         else:
-            warn(f"{self.name} tower is incorrect :(")
-            return 0.0, 1e-20, 0.0
+            #warn(f"{self.name} tower is incorrect :(")
+            I_kA = self.Imax[circuit_idx - 1]
+            return 0.0, 1e-20, 0.0, I_kA
 
     def get_values(self, Sbase, length, circuit_index: int = 1, round_vals: bool = False, Vnom: float | None = None):
         """
@@ -590,6 +610,12 @@ class OverheadLineType(EditableDevice):
         """
 
         Vn = self.Vnom if Vnom is None else Vnom
+
+        if self.z_seq is None and self.y_seq is None:
+            # get the rating in MVA = kA * kV
+            rate = self.Imax[circuit_index - 1] * Vn * np.sqrt(3)
+            return 0.0, 1e-20, 0.0, 0.0, 1e-20, 0.0, rate
+
         Zbase = (Vn * Vn) / Sbase
         Ybase = 1 / Zbase
 
@@ -1089,7 +1115,10 @@ def calc_z_matrix(wires_in_tower: ListOfWires, f: float = 50, rho: float = 100, 
     phases_abc = phases_abcn[a]
 
     # compute the sequence components
-    z_seq = abc_2_seq(z_abc)
+    if z_abc.shape[0] == 3:
+        z_seq = abc_2_seq(z_abc)
+    else:
+        z_seq = None
 
     return z_abcn, phases_abcn, z_abc, phases_abc, z_seq
 
@@ -1174,6 +1203,9 @@ def calc_y_matrix(wires_in_tower: ListOfWires, f: float = 50):
     y_abc = 1j * w * np.linalg.inv(p_abc)  # [S/km]
 
     # compute the sequence components
-    y_seq = abc_2_seq(y_abc)  # [S/km]
+    if y_abc.shape[0] == 3:
+        y_seq = abc_2_seq(y_abc)  # [S/km]
+    else:
+        y_seq = None
 
     return y_abcn, phases_abcn, y_abc, phases_abc, y_seq

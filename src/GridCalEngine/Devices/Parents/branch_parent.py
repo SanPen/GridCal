@@ -127,10 +127,6 @@ class BranchParent(PhysicalDevice):
         self._ys = AdmittanceMatrix()
         self._ysh = AdmittanceMatrix()
 
-        self._phA = int()
-        self._phB = int()
-        self._phC = int()
-
         # line rating in MVA
         if not isinstance(rate, Union[float, int]):
             raise ValueError("Rate must be a float")
@@ -149,7 +145,7 @@ class BranchParent(PhysicalDevice):
         self._protection_rating_factor = float(protection_rating_factor)
         self._protection_rating_factor_prof = Profile(default_value=protection_rating_factor, data_type=float)
 
-        self.color = color if color is not None else "#909090" # light gray
+        self.color = color if color is not None else "#909090"  # light gray
 
         # group of this branch
         self.group: Union[BranchGroup, None] = None
@@ -199,12 +195,6 @@ class BranchParent(PhysicalDevice):
         self.register('ysh', units="p.u.", tpe=SubObjectType.AdmittanceMatrix,
                       definition='Shunt admittance matrix of the branch', editable=False, display=False)
 
-        self.register('phA', units=" ", tpe=int,
-                      definition='Set to 1 if the line has phase A', editable=False, display=False)
-        self.register('phB', units=" ", tpe=int,
-                      definition='Set to 1 if the line has phase B', editable=False, display=False)
-        self.register('phC', units=" ", tpe=int,
-                      definition='Set to 1 if the line has phase C', editable=False, display=False)
         self.register(key='color', units='', tpe=str, definition='Color to paint the element in the map diagram')
 
     @property
@@ -436,39 +426,6 @@ class BranchParent(PhysicalDevice):
             self._ysh = val
         else:
             raise ValueError(f'{val} is not a AdmittanceMatrix')
-
-    @property
-    def phA(self):
-        return self._phA
-
-    @phA.setter
-    def phA(self, val: int):
-        if isinstance(val, int):
-            self._phA = val
-        else:
-            raise ValueError(f'{val} is not an int')
-
-    @property
-    def phB(self):
-        return self._phB
-
-    @phB.setter
-    def phB(self, val: int):
-        if isinstance(val, int):
-            self._phB = val
-        else:
-            raise ValueError(f'{val} is not an int')
-
-    @property
-    def phC(self):
-        return self._phC
-
-    @phC.setter
-    def phC(self, val: int):
-        if isinstance(val, int):
-            self._phC = val
-        else:
-            raise ValueError(f'{val} is not an int')
 
     def get_max_bus_nominal_voltage(self):
         """

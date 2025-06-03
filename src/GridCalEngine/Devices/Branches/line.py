@@ -469,12 +469,8 @@ class Line(BranchParent):
                                          circuit_index=self.circuit_idx,
                                          Vnom=vn)
 
-            self.ys.values = obj.get_ys(circuit_idx=self.circuit_idx, Sbase=Sbase, length=self.length, Vnom=vn)
-            self.ysh.values = obj.get_ysh(circuit_idx=self.circuit_idx, Sbase=Sbase, length=self.length, Vnom=vn)
-
-            self.phA = obj.get_phA()
-            self.phB = obj.get_phB()
-            self.phC = obj.get_phC()
+            self.ys = obj.get_ys(circuit_idx=self.circuit_idx, Sbase=Sbase, length=self.length, Vnom=vn)
+            self.ysh = obj.get_ysh(circuit_idx=self.circuit_idx, Sbase=Sbase, length=self.length, Vnom=vn)
 
             self.template = obj
 

@@ -30,6 +30,6 @@ def power_flow_3ph(grid, t_idx=None):
 
     return res
 
-grid = gce.open_file("2ph_AB.gridcal")
+grid = gce.open_file("mask_case.gridcal")
 res_3ph = power_flow_3ph(grid)
 print()
