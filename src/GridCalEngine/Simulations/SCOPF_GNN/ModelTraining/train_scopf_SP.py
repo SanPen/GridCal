@@ -701,7 +701,7 @@ if __name__ == '__main__':
 
     mp_results = MPResultsMock()
 
-    json_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs"  # your directory with saved JSONs
+    json_dir = "/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_14"  # your directory with saved JSONs
     dataset = load_scopf_json_dataset(json_dir)
 
     print(f"Loaded {len(dataset)} contingency samples from JSON")

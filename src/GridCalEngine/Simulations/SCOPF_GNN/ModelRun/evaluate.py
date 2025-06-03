@@ -7,7 +7,7 @@ import numpy as np
 
 # Load data
 df = pd.read_csv('/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining'
-                 '/scopf_dataset.csv')
+                 '/scopf_dataset_14.csv')
 
 # Define columns
 input_cols = [f'Pg_{i}' for i in range(5)] + ['contingency_index']

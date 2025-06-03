@@ -11,12 +11,18 @@ import matplotlib.pyplot as plt
 import os
 
 # Load dataset (replace with your actual path and loading logic)
-data = pd.read_csv("../../ModelTraining/scopf_dataset.csv")
+data = pd.read_csv(
+    "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/scopf_dataset_5.csv")
+# data = pd.read_csv("/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTraining/scopf_dataset_14.csv")
 # data = pd.read_csv("/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/scopf_dataset_39.csv")
 
 # Define input and output columns
-input_cols = [f'Pg_{i}' for i in range(5)] + ['contingency_index']
-output_cols = ['W_k'] + [f'u_j_{i}' for i in range(5)] + [f'Z_k_{i}' for i in range(5)]
+all_cols = data.columns.tolist()
+num_pg = len([col for col in all_cols if col.startswith('Pg_')])
+input_cols = [f'Pg_{i}' for i in range(num_pg)] + ['contingency_index']
+num_uj = sum(col.startswith('u_j_') for col in all_cols)
+num_zk = sum(col.startswith('Z_k_') for col in all_cols)
+output_cols = ['W_k'] + [f'u_j_{i}' for i in range(num_uj)] + [f'Z_k_{i}' for i in range(num_zk)]
 
 X = data[input_cols]
 y = data[output_cols]
@@ -29,8 +35,10 @@ X_scaled = scaler_X.fit_transform(X)
 y_scaled = scaler_y.fit_transform(y)
 
 # Train/val/test split
-X_train, X_temp, y_train, y_temp, c_train, c_temp = train_test_split(X_scaled, y_scaled, c, test_size=0.3, stratify=c, random_state=42)
-X_val, X_test, y_val, y_test, c_val, c_test = train_test_split(X_temp, y_temp, c_temp, test_size=0.5, stratify=c_temp, random_state=42)
+X_train, X_temp, y_train, y_temp, c_train, c_temp = train_test_split(X_scaled, y_scaled, c, test_size=0.3, stratify=c,
+                                                                     random_state=42)
+X_val, X_test, y_val, y_test, c_val, c_test = train_test_split(X_temp, y_temp, c_temp, test_size=0.5, stratify=c_temp,
+                                                               random_state=42)
 
 # Convert to tensors
 X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
@@ -44,6 +52,7 @@ y_test_tensor = torch.tensor(y_test, dtype=torch.float32)
 train_loader = DataLoader(TensorDataset(X_train_tensor, y_train_tensor), batch_size=64, shuffle=True)
 val_loader = DataLoader(TensorDataset(X_val_tensor, y_val_tensor), batch_size=64)
 test_loader = DataLoader(TensorDataset(X_test_tensor, y_test_tensor), batch_size=64)
+
 
 # Model definition
 class Net(nn.Module):
@@ -61,23 +70,25 @@ class Net(nn.Module):
     def forward(self, x):
         return self.model(x)
 
+
+num_u_j = len([f for f in output_cols if f.startswith('u_j_')])
+num_Z_k = len([f for f in output_cols if f.startswith('Z_k_')])
+
 model = Net(input_dim=X.shape[1], output_dim=y.shape[1])
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 # Weights: [W_k, u_j_0..4, Z_k_0..4]
-loss_weights = torch.tensor([
-    100.0,     # W_k
-    1.0, 1.0, 1.0, 1.0, 1.0,
-    100.0, 100.0, 100.0, 100.0, 100.0
-], dtype=torch.float32)
+loss_weights = torch.tensor(
+    [100.0] + [1.0] * num_u_j + [100.0] * num_Z_k,
+    dtype=torch.float32
+)
 loss_weights /= loss_weights.sum()
 
 
 def weighted_mse_loss(pred, target, weights):
-    return ((weights * (pred - target)**2).mean())
+    return ((weights * (pred - target) ** 2).mean())
 
 
 loss_fn = nn.MSELoss()
-
 
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=10, factor=0.5)
 
@@ -120,7 +131,8 @@ for epoch in range(EPOCHS):
 
     if val_loss < best_val_loss:
         best_val_loss = val_loss
-        torch.save(model.state_dict(), "../../ModelTraining/best_model.pt")
+        torch.save(model.state_dict(), "../../ModelTraining/best_model_5.pt")
+        # torch.save(model.state_dict(), "../../ModelTraining/best_model_14.pt")
         # torch.save(model.state_dict(), "../../ModelTraining/best_model_39.pt")
         patience_counter = 0
     else:
@@ -130,7 +142,8 @@ for epoch in range(EPOCHS):
             break
 
 # Evaluation
-model.load_state_dict(torch.load("../../ModelTraining/best_model.pt"))
+model.load_state_dict(torch.load("../../ModelTraining/best_model_5.pt"))
+# model.load_state_dict(torch.load("../../ModelTraining/best_model_14.pt"))
 # model.load_state_dict(torch.load("../../ModelTraining/best_model_39.pt"))
 model.eval()
 all_preds, all_targets, all_conts = [], [], []
@@ -155,6 +168,7 @@ for i, col in enumerate(output_cols):
     df_eval[f'{col}_pred'] = preds_inv[:, i]
     df_eval[f'{col}_true'] = targets_inv[:, i]
 
+
 def compute_metrics(group):
     metrics = {}
     for col in output_cols:
@@ -163,6 +177,7 @@ def compute_metrics(group):
         metrics[f'{col}_MSE'] = mean_squared_error(true, pred)
         metrics[f'{col}_MAE'] = mean_absolute_error(true, pred)
     return pd.Series(metrics)
+
 
 grouped = df_eval.groupby('contingency').apply(compute_metrics).reset_index()
 print("\nPer-Contingency Metrics:")

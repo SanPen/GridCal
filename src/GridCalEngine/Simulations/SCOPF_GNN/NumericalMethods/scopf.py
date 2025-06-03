@@ -2001,7 +2001,7 @@ def case_loop() -> None:
     # file_path = 'src/trunk/scopf/bus5_v10.gridcal'
     # file_path = 'src/trunk/scopf/bus5_v10_noQ.gridcal'
     # file_path = 'C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v12.gridcal'
-    # file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal'
+    file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal'
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v2.gridcal')
@@ -2018,7 +2018,7 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v16.gridcal')
-    file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
+    # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
     # ieee 39 is infeasible
 
@@ -2279,7 +2279,7 @@ def case_loop_perturbed() -> None:
     Simple 5 bus system from where to build the SCOPF, looping
     :return:
     """
-    time_start = time.time()
+    # time_start = time.time()
     num_perturbations = 100
     for p in range(num_perturbations):
         print(f"\n====== Perturbation case {p + 1} of {num_perturbations} ======\n")
@@ -2289,7 +2289,7 @@ def case_loop_perturbed() -> None:
         # file_path = 'src/trunk/scopf/bus5_v10.gridcal'
         # file_path = 'src/trunk/scopf/bus5_v10_noQ.gridcal'
         # file_path = 'C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v12.gridcal'
-        # file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal'
+        file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal'
         # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case14_cont_v2.gridcal')
@@ -2306,7 +2306,7 @@ def case_loop_perturbed() -> None:
         # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v16.gridcal')
-        file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
+        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
         # ieee 39 is infeasible
 
@@ -2611,21 +2611,21 @@ def case_loop_perturbed() -> None:
         #     "total_cost": iteration_data['total_cost'][-1]
         # }
 
-        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs"
+        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_5"
         os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, f"scopf_result_39_{p:03d}.json")
+        save_path = os.path.join(save_dir, f"scopf_result_5_{p:03d}.json")
         with open(save_path, "w") as f:
             json.dump(result, f, indent=2)
 
         print(f"Saved results for perturbation {p} to {save_path}")
 
-    time_end = time.time()
-    print(f"Total time for {num_perturbations} perturbations: {time_end - time_start:.2f} seconds")
+    # time_end = time.time()
+    # print(f"Total time for {num_perturbations} perturbations: {time_end - time_start:.2f} seconds")
 
     return None
 
 
 if __name__ == '__main__':
     # case_v0()
-    case_loop()
-    # case_loop_perturbed()
+    # case_loop()
+    case_loop_perturbed()

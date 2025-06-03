@@ -7,7 +7,7 @@ import torch.nn as nn
 
 # Load dataset
 df = pd.read_csv(
-    '/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scopf_dataset.csv')
+    '/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scopf_dataset_14.csv')
 input_cols = [f'Pg_{i}' for i in range(5)] + ['contingency_index']
 output_cols = ['W_k'] + [f'u_j_{i}' for i in range(5)] + [f'Z_k_{i}' for i in range(5)]
 

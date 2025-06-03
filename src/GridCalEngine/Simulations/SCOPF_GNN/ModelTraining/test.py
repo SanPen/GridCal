@@ -31,7 +31,7 @@ class SCOPFModel(nn.Module):
 # ----------------------------
 
 # Load dataset to fit scalers again (use same file used during training)
-data = pd.read_csv("scopf_dataset.csv")
+data = pd.read_csv("../FinalFolder/ModelTrain/scopf_dataset_14.csv")
 input_cols = [f'Pg_{i}' for i in range(5)] + ['contingency_index']
 output_cols = ['W_k'] + [f'u_j_{i}' for i in range(5)] + [f'Z_k_{i}' for i in range(5)]
 
@@ -45,7 +45,7 @@ scaler_y.fit(y)
 
 # Load trained model
 model = SCOPFModel(input_dim=X.shape[1], output_dim=y.shape[1])
-model.load_state_dict(torch.load("best_model.pt"))
+model.load_state_dict(torch.load("best_model_14.pt"))
 model.eval()
 
 # ----------------------------
