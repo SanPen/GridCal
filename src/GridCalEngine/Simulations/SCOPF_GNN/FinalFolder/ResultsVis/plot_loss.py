@@ -2,11 +2,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load loss history
-df = pd.read_csv('/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/loss_curve.csv')
+df = pd.read_csv('/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/loss_curve.csv')
 
 # Plot
 # Load test loss
-with open('/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/test_loss.txt', 'r') as f:
+with open('/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/test_loss.txt', 'r') as f:
     test_loss = float(f.read())
 
 # Plot

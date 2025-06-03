@@ -561,7 +561,7 @@ def visualize_grid_sample(data, node_key='y_node', edge_key='y_edge', title="Gri
 if __name__ == '__main__':
     tracker = EmissionsTracker(
         project_name="SCOPF_GNN_Training",
-        output_dir="/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/CO2",
+        output_dir="/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/CO2",
     )
     tracker.start()
 

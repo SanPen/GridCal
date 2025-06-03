@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import numpy as np
 
+
 def process_json_file(filepath):
     with open(filepath, 'r') as f:
         data = json.load(f)
@@ -28,6 +29,7 @@ def process_json_file(filepath):
 
     return rows
 
+
 def collate_json_folder(folder_path, output_csv='scopf_dataset.csv'):
     all_rows = []
     for fname in os.listdir(folder_path):
@@ -39,5 +41,7 @@ def collate_json_folder(folder_path, output_csv='scopf_dataset.csv'):
     df.to_csv(output_csv, index=False)
     print(f"Dataset saved to {output_csv}")
 
+
 # Example usage
-collate_json_folder('/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs', 'scopf_dataset.csv')
+# collate_json_folder('/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs', 'scopf_dataset.csv')
+collate_json_folder('/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_39', 'scopf_dataset_39.csv')

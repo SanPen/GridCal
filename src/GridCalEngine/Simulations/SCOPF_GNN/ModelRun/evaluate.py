@@ -4,10 +4,10 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import numpy as np
-import joblib
 
 # Load data
-df = pd.read_csv('/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scopf_dataset.csv')
+df = pd.read_csv('/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining'
+                 '/scopf_dataset.csv')
 
 # Define columns
 input_cols = [f'Pg_{i}' for i in range(5)] + ['contingency_index']

@@ -650,7 +650,7 @@ def generate_augmented_scopf_data(grid_file_path, num_variants=10, variation_sca
 if __name__ == '__main__':
     tracker = EmissionsTracker(
         project_name="SCOPF_GNN_Training",
-        output_dir="/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/CO2",  # You can change this path
+        output_dir="/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/CO2",  # You can change this path
     )
     tracker.start()
 

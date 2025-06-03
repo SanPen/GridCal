@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+import json
 import os
 import numpy as np
 import timeit
@@ -2008,9 +2009,9 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case39_v15.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case39_vjosep2.gridcal')
-    # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep2.gridcal')
+    file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case39_vjosep4.gridcal')
-    file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
+    # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v15.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
@@ -2081,6 +2082,8 @@ def case_loop() -> None:
     Z_k_vec = np.zeros((n_con_all, nc.generator_data.nelm))
     # Z_k_vec = np.ones((n_con_all, nc.generator_data.nelm)) * -0.0001  # largely negative if not filled
     u_j_vec = np.zeros((n_con_all, nc.generator_data.nelm))
+
+    contingency_outputs = []
 
     # Start main loop over iterations
     for klm in range(max_iter):
@@ -2167,6 +2170,13 @@ def case_loop() -> None:
                         print(f"Sf slack: {slack_sol_cont.sl_sf}")
                         print(f"St slack: {slack_sol_cont.sl_st}")
 
+                        contingency_outputs.append({
+                            "contingency_index": int(ic),
+                            "W_k": float(slack_sol_cont.W_k),
+                            "Z_k": slack_sol_cont.Z_k.tolist(),
+                            "u_j": slack_sol_cont.u_j.tolist()
+                        })
+
                     else:
                         print("No valid voltage-dependent nodes found in island. Skipping.")
 
@@ -2236,6 +2246,19 @@ def case_loop() -> None:
         # print(f"W_k_vec: {W_k_vec}")
         # print(f"Z_k_vec: {Z_k_vec}")
         # print(f"u_j_vec: {u_j_vec}")
+
+        result = {
+            "Pg": nc.generator_data.p.tolist(),
+            "contingency_outputs": contingency_outputs,
+        }
+
+        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_39"
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = os.path.join(save_dir, f"scopf_result_39_{klm:03d}.json")
+        with open(save_path, "w") as f:
+            json.dump(result, f, indent=2)
+
+        print(f"Saved results for perturbation {klm} to {save_path}")
 
     # Plot the results
     plot_scopf_progress(iteration_data)

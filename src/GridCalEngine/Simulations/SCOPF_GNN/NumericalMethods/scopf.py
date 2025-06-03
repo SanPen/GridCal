@@ -3,6 +3,8 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import os
+import time
+
 import numpy as np
 import timeit
 import pandas as pd
@@ -166,7 +168,8 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
 
 def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, admittances, Cg, R, X, Sd, slack,
                                 from_idx, to_idx, f_nd_dc, t_nd_dc, fdc, tdc, ndc, nsh, capacity_nodes_idx,
-                                nodal_capacity_sign, nslcap, pq, pv, Pf_nondisp, Pdcmax, Inom, nshed, shedding_cost, V_U, V_L,
+                                nodal_capacity_sign, nslcap, pq, pv, Pf_nondisp, Pdcmax, Inom, nshed, shedding_cost,
+                                V_U, V_L,
                                 P_U, P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
                                 k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, il, nll, ig, nig, Sg_undis, ctQ,
                                 W_k_vec, Z_k_vec, u_j_vec, acopf_mode) -> Tuple[IpsFunctionReturn, Vec]:
@@ -238,8 +241,8 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     alltapt0 = alltapt.copy()
 
     _, _, _, _, _, _, _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, nshed=nshed, npq=npq,
-                                                     M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
-                                                     nslcap=nslcap, acopf_mode=acopf_mode)
+                                                        M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
+                                                        nslcap=nslcap, acopf_mode=acopf_mode)
 
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
@@ -276,8 +279,10 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     #                    tapm_min=tapm_min, tapt_max=tapt_max, tapt_min=tapt_min, Pdcmax=Pdcmax,
     #                    rates=rates, il=il, ig=ig, ctQ=ctQ,
     #                    acopf_mode=acopf_mode)
-    H, Sf, St = eval_h_scopf(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, nslcap=nslcap, pq=pq, k_m=k_m, k_tau=k_tau,
-                             Cg=Cg, Inom=Inom, nshed=nshed, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L,
+    H, Sf, St = eval_h_scopf(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, nslcap=nslcap, pq=pq, k_m=k_m,
+                             k_tau=k_tau,
+                             Cg=Cg, Inom=Inom, nshed=nshed, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U,
+                             Qg_min=Q_L,
                              tapm_max=tapm_max, tapm_min=tapm_min, tapt_max=tapt_max, tapt_min=tapt_min, Pdcmax=Pdcmax,
                              rates=rates, il=il, ig=ig, ctQ=ctQ, W_k_vec=W_k_vec, Z_k_vec=Z_k_vec, u_j_vec=u_j_vec,
                              acopf_mode=acopf_mode, Sd=Sd)
@@ -570,7 +575,7 @@ def scopf_subproblem(nc: NumericalCircuit,
                      pf_init: bool = False,
                      Sbus_pf: Union[CxVec, None] = None,
                      load_shedding: bool = False,
-                     voltage_pf : Union[CxVec, None] = None,
+                     voltage_pf: Union[CxVec, None] = None,
                      plot_error: bool = False,
                      mp_results: NonlinearSCOPFResults = None,
                      logger: Logger = Logger()) -> NonlinearSCOPFResults:
@@ -820,9 +825,9 @@ def scopf_subproblem(nc: NumericalCircuit,
 
     else:
         p0gen = np.r_[(nc.generator_data.pmax[gen_disp_idx[:ngen]] +
-                    nc.generator_data.pmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
+                       nc.generator_data.pmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
         q0gen = np.r_[(nc.generator_data.qmax[gen_disp_idx[:ngen]] +
-                    nc.generator_data.qmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
+                       nc.generator_data.qmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
         p0gen = mp_results.Pg[nc.generator_data.original_idx]
         q0gen = mp_results.Qg[nc.generator_data.original_idx]
         va0 = np.angle(nc.bus_data.Vbus)
@@ -903,7 +908,8 @@ def scopf_subproblem(nc: NumericalCircuit,
                                                   arg=(admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_hvdc,
                                                        t_nd_hvdc, f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, nsh,
                                                        capacity_nodes_idx, nodal_capacity_sign, nslcap, pq, pv,
-                                                       Pf_nondisp, P_hvdc_max, Inom, nshed, shedding_cost, Vm_max, Vm_min, Pg_max, Pg_min,
+                                                       Pf_nondisp, P_hvdc_max, Inom, nshed, shedding_cost, Vm_max,
+                                                       Vm_min, Pg_max, Pg_min,
                                                        tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
                                                        alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates,
                                                        br_mon_idx, n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis,
@@ -917,7 +923,8 @@ def scopf_subproblem(nc: NumericalCircuit,
     # convert the solution to the problem variables
     (Va, Vm, Pg_dis, Qg_dis, Pshed, sl_sf, sl_st,
      sl_vmax, sl_vmin, slcap, tapm, tapt, Pfdc) = x2var(result.x, nVa=nbus, nVm=nbus, nPg=n_gen_disp, nQg=n_gen_disp,
-                                                        nshed=nshed, M=n_br_mon, npq=npq, ntapm=ntapm, ntapt=ntapt, ndc=n_disp_hvdc,
+                                                        nshed=nshed, M=n_br_mon, npq=npq, ntapm=ntapm, ntapt=ntapt,
+                                                        ndc=n_disp_hvdc,
                                                         nslcap=nslcap, acopf_mode=opf_options.acopf_mode)
 
     # Save Results DataFrame for tests
@@ -1490,7 +1497,8 @@ def scopf_MP_OPF(nc: NumericalCircuit,
                                                   arg=(admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_hvdc,
                                                        t_nd_hvdc, f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, nsh,
                                                        capacity_nodes_idx, nodal_capacity_sign, nslcap, pq, pv,
-                                                       Pf_nondisp, P_hvdc_max, Inom, nshed, shedding_cost, Vm_max, Vm_min, Pg_max, Pg_min,
+                                                       Pf_nondisp, P_hvdc_max, Inom, nshed, shedding_cost, Vm_max,
+                                                       Vm_min, Pg_max, Pg_min,
                                                        tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
                                                        alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates,
                                                        br_mon_idx, n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis,
@@ -1504,7 +1512,8 @@ def scopf_MP_OPF(nc: NumericalCircuit,
     # convert the solution to the problem variables
     (Va, Vm, Pg_dis, Qg_dis, Pshed, sl_sf, sl_st,
      sl_vmax, sl_vmin, slcap, tapm, tapt, Pfdc) = x2var(result.x, nVa=nbus, nVm=nbus, nPg=n_gen_disp, nQg=n_gen_disp,
-                                                        nshed=nshed, M=n_br_mon, npq=npq, ntapm=ntapm, ntapt=ntapt, ndc=n_disp_hvdc,
+                                                        nshed=nshed, M=n_br_mon, npq=npq, ntapm=ntapm, ntapt=ntapt,
+                                                        ndc=n_disp_hvdc,
                                                         nslcap=nslcap, acopf_mode=opf_options.acopf_mode)
 
     # Save Results DataFrame for tests
@@ -1861,7 +1870,6 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
     # Sbus_pf = nc.bus_data.installed_power
     # voltage_pf = nc.bus_data.Vbus
 
-
     if pf_init:
         if Sbus_pf0 is None:
             # run power flow to initialize
@@ -1934,6 +1942,7 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
 
     return results
 
+
 def plot_scopf_progress(iteration_data):
     """
     Plot the evolution of various metrics across SCOPF iterations
@@ -1985,6 +1994,8 @@ def case_loop() -> None:
     Simple 5 bus system from where to build the SCOPF, looping
     :return:
     """
+    time_start = time.time()
+
     # Load basic grid
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v9.gridcal')
     # file_path = 'src/trunk/scopf/bus5_v10.gridcal'
@@ -2005,9 +2016,9 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
-    file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
+    # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v16.gridcal')
-    # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep.gridcal')
+    file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
     # ieee 39 is infeasible
 
@@ -2067,8 +2078,10 @@ def case_loop() -> None:
     linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
     prob_cont = 0
-    max_iter = 50
+    max_iter = 10
     tolerance = 1e-5
+
+    contingency_outputs = []
 
     n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
     n_con_all = n_con_groups * 100
@@ -2155,14 +2168,21 @@ def case_loop() -> None:
                             prob_cont += 1
                             viols += 1
 
-                            # print('nbus', island.nbus, 'ngen', island.ngen)
-                            print(f"W_k: {slack_sol_cont.W_k}")
-                            print(f"Z_k: {slack_sol_cont.Z_k}")
-                            print(f"u_j: {slack_sol_cont.u_j}")
-                            print(f"Vmax slack: {slack_sol_cont.sl_vmax}")
-                            print(f"Vmin slack: {slack_sol_cont.sl_vmin}")
-                            print(f"Sf slack: {slack_sol_cont.sl_sf}")
-                            print(f"St slack: {slack_sol_cont.sl_st}")
+                        # print('nbus', island.nbus, 'ngen', island.ngen)
+                        print(f"W_k: {slack_sol_cont.W_k}")
+                        print(f"Z_k: {slack_sol_cont.Z_k}")
+                        print(f"u_j: {slack_sol_cont.u_j}")
+                        print(f"Vmax slack: {slack_sol_cont.sl_vmax}")
+                        print(f"Vmin slack: {slack_sol_cont.sl_vmin}")
+                        print(f"Sf slack: {slack_sol_cont.sl_sf}")
+                        print(f"St slack: {slack_sol_cont.sl_st}")
+
+                        contingency_outputs.append({
+                            "contingency_index": int(ic),
+                            "W_k": float(slack_sol_cont.W_k),
+                            "Z_k": slack_sol_cont.Z_k.tolist(),
+                            "u_j": slack_sol_cont.u_j.tolist()
+                        })
 
                     else:
                         print("No valid voltage-dependent nodes found in island. Skipping.")
@@ -2179,7 +2199,6 @@ def case_loop() -> None:
             W_k_vec_used = W_k_vec[:prob_cont]
             Z_k_vec_used = Z_k_vec[:prob_cont, :]
             u_j_vec_used = u_j_vec[:prob_cont, :]
-
 
         # Store metrics for this iteration
         if viols > 0:
@@ -2210,7 +2229,6 @@ def case_loop() -> None:
                                              u_j_vec=u_j_vec_used,
                                              load_shedding=False)
 
-
         # Store generation cost
         total_cost = np.sum(acopf_results.Pcost)
         iteration_data['total_cost'].append(total_cost)
@@ -2235,8 +2253,24 @@ def case_loop() -> None:
         # print(f"Z_k_vec: {Z_k_vec}")
         # print(f"u_j_vec: {u_j_vec}")
 
+        result = {
+            "Pg": nc.generator_data.p.tolist(),
+            "contingency_outputs": contingency_outputs,
+        }
+
+        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_39"
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = os.path.join(save_dir, f"scopf_result_39_{klm:03d}.json")
+        with open(save_path, "w") as f:
+            json.dump(result, f, indent=2)
+
+        print(f"Saved results for perturbation {klm} to {save_path}")
+
+    time_end = time.time()
+    print(f"Total time for convergence: {time_end - time_start:.2f} seconds")
+
     # Plot the results
-    plot_scopf_progress(iteration_data)
+    # plot_scopf_progress(iteration_data)
 
     return None
 
@@ -2245,6 +2279,7 @@ def case_loop_perturbed() -> None:
     Simple 5 bus system from where to build the SCOPF, looping
     :return:
     """
+    time_start = time.time()
     num_perturbations = 100
     for p in range(num_perturbations):
         print(f"\n====== Perturbation case {p + 1} of {num_perturbations} ======\n")
@@ -2269,12 +2304,11 @@ def case_loop_perturbed() -> None:
         # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
-        file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
+        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v16.gridcal')
-        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep.gridcal')
+        file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
         # ieee 39 is infeasible
-
 
         grid = FileOpen(file_path).open()
 
@@ -2488,7 +2522,6 @@ def case_loop_perturbed() -> None:
                 Z_k_vec_used = Z_k_vec[:prob_cont, :]
                 u_j_vec_used = u_j_vec[:prob_cont, :]
 
-
             # Store metrics for this iteration
             if viols > 0:
                 iteration_data['max_wk'].append(W_k_local.max())
@@ -2517,7 +2550,6 @@ def case_loop_perturbed() -> None:
                                                  Z_k_vec=Z_k_vec_used,
                                                  u_j_vec=u_j_vec_used,
                                                  load_shedding=False)
-
 
             # Store generation cost
             total_cost = np.sum(acopf_results.Pcost)
@@ -2581,15 +2613,19 @@ def case_loop_perturbed() -> None:
 
         save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs"
         os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, f"scopf_result_{p:03d}.json")
+        save_path = os.path.join(save_dir, f"scopf_result_39_{p:03d}.json")
         with open(save_path, "w") as f:
             json.dump(result, f, indent=2)
 
         print(f"Saved results for perturbation {p} to {save_path}")
+
+    time_end = time.time()
+    print(f"Total time for {num_perturbations} perturbations: {time_end - time_start:.2f} seconds")
 
     return None
 
 
 if __name__ == '__main__':
     # case_v0()
-    case_loop_perturbed()
+    case_loop()
+    # case_loop_perturbed()
