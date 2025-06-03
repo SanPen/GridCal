@@ -28,17 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Found error when lines doesn't have 3 phases.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/LineBuilderDialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/LineBuilderDialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/branch_parent.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/branch_parent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/admittance_matrix.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/admittance_matrix.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/2ph_AB_powerflow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/2ph_AB_powerflow.py" afterDir="false" />
-    </list>
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Mask I" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -2360,7 +2350,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="730" />
+    <option name="localTasksCounter" value="731" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2406,7 +2396,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Caught possible bug in the adjacency formation" />
     <MESSAGE value="minor change in the test_fubm_new voltage comparison, now checking also the imaginary part" />
     <MESSAGE value="5.3.37" />
     <MESSAGE value="gslv interface improvements" />
@@ -2431,7 +2420,8 @@
     <MESSAGE value="Some Zigzag and Delta transformer admittance matrices solved." />
     <MESSAGE value="Save the phases that each line has." />
     <MESSAGE value="Found error when lines doesn't have 3 phases." />
-    <option name="LAST_COMMIT_MESSAGE" value="Found error when lines doesn't have 3 phases." />
+    <MESSAGE value="Mask I" />
+    <option name="LAST_COMMIT_MESSAGE" value="Mask I" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2759,16 +2749,6 @@
           <url>file://$PROJECT_DIR$/src/trunk/three_phase/line_constants.py</url>
           <line>168</line>
           <option name="timeStamp" value="2609" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
-          <line>62</line>
-          <option name="timeStamp" value="2610" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
-          <line>60</line>
-          <option name="timeStamp" value="2611" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
