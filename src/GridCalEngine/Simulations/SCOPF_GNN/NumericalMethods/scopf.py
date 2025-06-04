@@ -2279,8 +2279,14 @@ def case_loop_perturbed() -> None:
     Simple 5 bus system from where to build the SCOPF, looping
     :return:
     """
-    # time_start = time.time()
-    num_perturbations = 100
+    from codecarbon import EmissionsTracker
+    tracker = EmissionsTracker(
+        project_name="SCOPF_GNN_Training",
+        output_dir="//Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/CO2",  # You can change this path
+    )
+    tracker.start()
+    time_start = time.time()
+    num_perturbations = 200
     for p in range(num_perturbations):
         print(f"\n====== Perturbation case {p + 1} of {num_perturbations} ======\n")
 
@@ -2312,27 +2318,6 @@ def case_loop_perturbed() -> None:
 
         grid = FileOpen(file_path).open()
 
-        # --- Perturb LOADS ---
-        load_perturbation_factor = 0.1  # ±10%
-        for load in grid.loads:
-            original_p = load.P
-            delta_p = (np.random.rand() * 2 - 1) * load_perturbation_factor * original_p
-            load.P = max(original_p + delta_p, 0)  # ensure non-negative
-
-            original_q = load.Q
-            delta_q = (np.random.rand() * 2 - 1) * load_perturbation_factor * original_q
-            load.Q = max(original_q + delta_q, 0)
-
-        # --- Perturb LINE IMPEDANCES ---
-        line_perturbation_factor = 0.05  # ±5%
-        for line in grid.lines:
-            r = line.R
-            x = line.X
-            delta_r = (np.random.rand() * 2 - 1) * line_perturbation_factor * r
-            delta_x = (np.random.rand() * 2 - 1) * line_perturbation_factor * x
-            line.r = max(r + delta_r, 1e-6)  # avoid zero or negative
-            line.x = max(x + delta_x, 1e-6)
-
         print(grid.lines[0].rate)
 
         # configure grid for load shedding testing
@@ -2357,15 +2342,15 @@ def case_loop_perturbed() -> None:
 
         nc = compile_numerical_circuit_at(grid, t_idx=None)
 
-        # --- Perturb Pg before any solving ---
         Pg = nc.generator_data.p.copy()
-        Pmin = nc.generator_data.pmin
-        Pmax = nc.generator_data.pmax
-        perturbation_factor = 0.1  # ±10%
-        delta = (np.random.rand(*Pg.shape) * 2 - 1) * perturbation_factor * Pmax
-        Pg_perturbed = np.clip(Pg + delta, Pmin, Pmax)
-        nc.generator_data.Pg = Pg_perturbed
-        print(f"Perturbed Pg: {Pg_perturbed}")
+        print("Original Pg:", Pg)
+        perturbation_factor = 0.2  # ±20% of original Pg
+        delta = (np.random.rand(*Pg.shape) * 2 - 1) * perturbation_factor * np.maximum(Pg, 1.0)
+        Pg_perturbed_init = Pg + delta
+
+        nc.generator_data.p = Pg_perturbed_init
+
+        print("Perturbed Pg:", Pg_perturbed_init)
 
         acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
                                              opf_options=opf_slack_options, pf_init=False, load_shedding=False)
@@ -2379,6 +2364,9 @@ def case_loop_perturbed() -> None:
         print(f"Generators P: {acopf_results.Pg}")
         print(f"Generators Q: {acopf_results.Qg}")
         print(f"Error: {acopf_results.error}")
+
+        Pg_perturbed = acopf_results.Pg
+        print("Perturbed Pg after OPF:", Pg_perturbed)
 
         print()
         print("--- Starting loop with fixed number of repetitions, then breaking ---")
@@ -2497,11 +2485,24 @@ def case_loop_perturbed() -> None:
                                 print(f"Sf slack: {slack_sol_cont.sl_sf}")
                                 print(f"St slack: {slack_sol_cont.sl_st}")
 
+                            for line in grid.lines:
+                                from_idx = grid.buses.index(line.bus_from)
+                                to_idx = grid.buses.index(line.bus_to)
+                                contingency_outputs.append({
+                                    "from_bus": from_idx,
+                                    "to_bus": to_idx,
+                                    "R": line.R,
+                                    "X": line.X,
+                                    "B": line.B,
+                                    "is_active": bool(nc.passive_branch_data.active[grid.lines.index(line)])
+                                })
+
                             contingency_outputs.append({
                                 "contingency_index": int(ic),
                                 "W_k": float(slack_sol_cont.W_k),
                                 "Z_k": slack_sol_cont.Z_k.tolist(),
                                 "u_j": slack_sol_cont.u_j.tolist()
+
                             })
 
 
@@ -2591,6 +2592,7 @@ def case_loop_perturbed() -> None:
             # "perturbation_index": p,
             "Pg": Pg_perturbed.tolist(),
             # "loads": [(load.P, load.Q) for load in grid.loads],
+            "line_data": line_data,
             "contingency_outputs": contingency_outputs,
             # "violation": prob_cont > 0,
             # "max_voltage_slack": iteration_data['max_voltage_slack'][-1],
@@ -2598,29 +2600,20 @@ def case_loop_perturbed() -> None:
             # "total_cost": iteration_data['total_cost'][-1]
         }
 
-        # # Save the result for this perturbation - this one didn't save all the data, just the final result
-        # result = {
-        #     "perturbation_index": p,
-        #     "Pg": Pg_perturbed.tolist(),
-        #     "loads": [(load.P, load.Q) for load in grid.loads],
-        #     "W_k": W_k_vec_used.tolist() if viols > 0 else [],
-        #     "Z_k": Z_k_vec_used.tolist() if viols > 0 else [],
-        #     "u_j": u_j_vec_used.tolist() if viols > 0 else [],
-        #     "max_voltage_slack": iteration_data['max_voltage_slack'][-1],
-        #     "max_flow_slack": iteration_data['max_flow_slack'][-1],
-        #     "total_cost": iteration_data['total_cost'][-1]
-        # }
-
-        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_5"
+        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_5_nn"
+        # save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_14_nn"
         os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, f"scopf_result_5_{p:03d}.json")
+        save_path = os.path.join(save_dir, f"scopf_result_5_nn_{p:03d}.json")
         with open(save_path, "w") as f:
             json.dump(result, f, indent=2)
 
         print(f"Saved results for perturbation {p} to {save_path}")
 
-    # time_end = time.time()
-    # print(f"Total time for {num_perturbations} perturbations: {time_end - time_start:.2f} seconds")
+    time_end = time.time()
+    print(f"Total time for {num_perturbations} perturbations: {time_end - time_start:.2f} seconds")
+
+    emissions = tracker.stop()
+    print(f"Estimated CO2 emissions: {emissions:.6f} kg")
 
     return None
 
