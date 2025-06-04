@@ -41,6 +41,7 @@ for k, (f, t, x) in enumerate(LINES):
         B_bus[red_id[t], red_id[t]] += b
     elif t == SLACK and f != SLACK:
         B_bus[red_id[f], red_id[f]] += b
+
     if f != SLACK:
         B_f[k, red_id[f]] =  b
     if t != SLACK:

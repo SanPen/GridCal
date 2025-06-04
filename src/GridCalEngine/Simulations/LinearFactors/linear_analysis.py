@@ -178,7 +178,7 @@ def make_ptdf(Bpqpv: sp.csc_matrix,
 
 
 def make_acdc_ptdf(nc: NumericalCircuit, logger: Logger,
-                   distribute_slack: bool = True) -> Mat:
+                   distribute_slack: bool = False) -> Mat:
     """
     Build the ACDC PTDF matrix
     :param nc: NumericalCircuit
@@ -215,6 +215,17 @@ def make_acdc_ptdf(nc: NumericalCircuit, logger: Logger,
         A[f, t] -= ys
         A[t, f] -= ys
         A[t, t] += ys
+
+    # fake impedances for converters
+    for k in range(nc.nvsc):
+        f = nc.vsc_data.F[k]
+        t = nc.vsc_data.T[k]
+        ys = 1e15
+        A[f, f] += ys
+        A[f, t] -= ys
+        A[t, f] -= ys
+        A[t, t] += ys
+
 
     # detect how to slice
     no_slack = list()
