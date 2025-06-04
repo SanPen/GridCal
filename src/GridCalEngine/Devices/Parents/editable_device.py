@@ -225,13 +225,15 @@ class EditableDevice:
                  idtag: Union[str, None],
                  code: str,
                  device_type: DeviceType,
-                 comment: str = ""):
+                 comment: str = "",
+                 rdfid: str = ""):
         """
         Class to generalize any editable device
         :param name: Asset's name
-        :param device_type: DeviceType instance
         :param idtag: unique ID, if not provided it is generated
         :param code: alternative code to identify this object in other databases (i.e. psse number tec...)
+        :param device_type: DeviceType instance
+        :param rdfid: RDFID code optional
         """
 
         self._idtag = parse_idtag(val=idtag)
@@ -239,6 +241,8 @@ class EditableDevice:
         self._name: str = name
 
         self._code: str = code
+
+        self._rdfid = rdfid
 
         self.device_type: DeviceType = device_type
 
@@ -266,6 +270,7 @@ class EditableDevice:
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='name', units='', tpe=str, definition='Name of the device.')
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
+        self.register(key='rdfid', units='', tpe=str, definition='RDF ID for further compatibility')
         self.register(key='action', units='', tpe=ActionType,
                       definition='Object action to perform.\nOnly used for model merging.',
                       display=False)
@@ -361,9 +366,17 @@ class EditableDevice:
         """
         self._code = val
 
+    @property
+    def rdfid(self) -> str:
+        return self._rdfid
+
+    @rdfid.setter
+    def rdfid(self, val: str):
+        self._rdfid = val
+
     def flatten_idtag(self):
         """
-        Remove useless undercore and
+        Remove useless underscore (_) and dash (-)
         :return:
         """
         self._idtag = self._idtag.replace('_', '').replace('-', '')
@@ -381,14 +394,17 @@ class EditableDevice:
         Convert the idtag to RDFID
         :return: UUID converted to RDFID
         """
-        lenghts = [8, 4, 4, 4, 12]
-        chunks = list()
-        s = 0
-        for length_ in lenghts:
-            a = self.idtag[s:s + length_]
-            chunks.append(a)
-            s += length_
-        return "-".join(chunks)
+        if len(self._rdfid) == 0:
+            lenghts = [8, 4, 4, 4, 12]
+            chunks = list()
+            s = 0
+            for length_ in lenghts:
+                a = self.idtag[s:s + length_]
+                chunks.append(a)
+                s += length_
+            return "-".join(chunks)
+        else:
+            return self.rdfid
 
     def register(self,
                  key: str,

@@ -4799,8 +4799,8 @@ class Assets:
                                                                   add_switch=add_switch))}
 
     def get_branches_index_dict2(self, add_vsc: bool = True,
-                                add_hvdc: bool = True,
-                                add_switch: bool = False) -> Dict[str, int]:
+                                 add_hvdc: bool = True,
+                                 add_switch: bool = False) -> Dict[str, int]:
         """
         Get the branch to index dictionary
         :param add_vsc: Include the list of VSC?
@@ -4809,8 +4809,8 @@ class Assets:
         :return: Branch idtag to index
         """
         return {b.idtag: i for i, b in enumerate(self.get_branches_iter(add_vsc=add_vsc,
-                                                                  add_hvdc=add_hvdc,
-                                                                  add_switch=add_switch))}
+                                                                        add_hvdc=add_hvdc,
+                                                                        add_switch=add_switch))}
 
     def get_branches_dict(self, add_vsc: bool = True,
                           add_hvdc: bool = True,
@@ -5942,22 +5942,36 @@ class Assets:
             for elm in elements:
                 yield elm
 
-    def get_all_elements_dict(self, logger=Logger()) -> Tuple[Dict[str, ALL_DEV_TYPES], bool]:
+    def get_all_elements_dict(self,
+                              use_secondary_key: bool = False,
+                              use_rdfid: bool = False,
+                              logger=Logger()) -> Tuple[Dict[str, ALL_DEV_TYPES], bool]:
         """
         Get a dictionary of all elements
+        :param use_secondary_key: if true the code i˘s used as key
+        :param use_rdfid: if true the rdfid is used as key
         :param: logger: Logger
         :return: Dict[idtag] -> object, ok
         """
         data = dict()
         ok = True
         for key, tpe in self.device_type_name_dict.items():
+
             elements = self.get_elements_by_type(device_type=tpe)
 
             for elm in elements:
 
                 e = data.get(elm.idtag, None)
+
                 if e is None:
-                    data[elm.idtag] = elm
+
+                    if use_secondary_key:
+                        data[elm.code] = elm
+                    elif use_rdfid:
+                        data[elm.rdfid] = elm
+                    else:
+                        data[elm.idtag] = elm
+
                 else:
                     logger.add_error(
                         msg="Duplicated idtag!",
@@ -5996,17 +6010,22 @@ class Assets:
 
         return data
 
-    def get_elements_dict_by_type(self, element_type: DeviceType,
-                                  use_secondary_key=False) -> Dict[str, ALL_DEV_TYPES]:
+    def get_elements_dict_by_type(self,
+                                  element_type: DeviceType,
+                                  use_secondary_key: bool = False,
+                                  use_rdfid: bool = False) -> Dict[str, ALL_DEV_TYPES]:
         """
         Get dictionary of elements
         :param element_type: element type (Bus, Line, etc...)
         :param use_secondary_key: use the code as dictionary key? otherwise the idtag is used
+        :param use_rdfid: if true the rdfid is used as key
         :return: Dict[str, dev.EditableDevice]
         """
 
         if use_secondary_key:
             return {elm.code: elm for elm in self.get_elements_by_type(element_type)}
+        elif use_rdfid:
+            return {elm.rdfid: elm for elm in self.get_elements_by_type(element_type)}
         else:
             return {elm.idtag: elm for elm in self.get_elements_by_type(element_type)}
 
