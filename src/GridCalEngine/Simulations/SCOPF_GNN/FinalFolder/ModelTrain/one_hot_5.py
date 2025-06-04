@@ -12,7 +12,7 @@ import os
 
 # Load dataset
 data = pd.read_csv(
-    "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/scopf_dataset_5.csv")
+    "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/scopf_dataset_5_nn.csv")
 
 # Define input and output columns
 all_cols = data.columns.tolist()
@@ -124,7 +124,7 @@ for epoch in range(EPOCHS):
 
     if val_loss < best_val_loss:
         best_val_loss = val_loss
-        torch.save(model.state_dict(), "../../ModelTraining/best_model_5.pt")
+        torch.save(model.state_dict(), "../../ModelTraining/best_model_5_nn.pt")
         patience_counter = 0
     else:
         patience_counter += 1
@@ -133,7 +133,7 @@ for epoch in range(EPOCHS):
             break
 
 # Evaluation
-model.load_state_dict(torch.load("../../ModelTraining/best_model_5.pt"))
+model.load_state_dict(torch.load("../../ModelTraining/best_model_5_nn.pt"))
 model.eval()
 all_preds, all_targets, all_conts = [], [], []
 
