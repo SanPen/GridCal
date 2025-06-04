@@ -20,7 +20,7 @@ num_pg = len([col for col in all_cols if col.startswith('Pg_')])
 input_cols = [f'Pg_{i}' for i in range(num_pg)] + ['contingency_index']
 num_uj = sum(col.startswith('u_j_') for col in all_cols)
 num_zk = sum(col.startswith('Z_k_') for col in all_cols)
-output_cols = ['W_k'] + [f'u_j_{i}' for i in range(num_uj)] + [f'Z_k_{i}' for i in range(num_zk)]
+output_cols = ['W_k'] + [f'Z_k_{i}' for i in range(num_zk)]
 
 X = data[input_cols]
 y = data[output_cols]
@@ -56,12 +56,12 @@ class Net(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(Net, self).__init__()
         self.model = nn.Sequential(
-            nn.Linear(input_dim, 110),
+            nn.Linear(input_dim, 128),
             nn.ReLU(),
-            nn.Dropout(0.2021058695461571),
-            nn.Linear(110, 70),
+            nn.Dropout(0.2),
+            nn.Linear(128, 64),
             nn.ReLU(),
-            nn.Linear(70, output_dim)
+            nn.Linear(64, output_dim)
         )
 
     def forward(self, x):
@@ -74,14 +74,11 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=10, factor=
 # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=100)
 
 # Optimized loss weights
+
 loss_weights = torch.tensor(
-    [12.871747431482653] + [1.413266760763378] * num_uj + [428.7769371213206] * num_zk,
+    [14.85] + [94.58] * num_zk,  # Remove u_j weights
     dtype=torch.float32
 )
-# loss_weights = torch.tensor(
-#     [11.236502324978742] + [0.45987065248126274] * num_uj + [230.0827622476121] * num_zk,
-#     dtype=torch.float32
-# )
 loss_weights /= loss_weights.sum()
 
 def weighted_mse_loss(pred, target, weights):
@@ -200,3 +197,39 @@ plt.show()
 
 print("Training samples:", len(X_train))
 print(c['contingency_index'].value_counts())
+
+# Predict
+with torch.no_grad():
+    y_pred_scaled = model(X_test_tensor).numpy()
+y_pred = scaler_y.inverse_transform(y_pred_scaled)
+y_true = scaler_y.inverse_transform(y_test)
+
+
+# Plot parity plots with coloring
+# output_labels = ['W_k'] + [f'u_j_{i}' for i in range(5)] + [f'Z_k_{i}' for i in range(5)]
+output_labels = ['W_k'] + [f'Z_k_{i}' for i in range(num_zk)]
+
+plt.figure(figsize=(15, 10))
+for i in range(len(output_labels)):
+    plt.subplot(3, 4, i + 1)
+    sc = plt.scatter(
+        y_true[:, i], y_pred[:, i],
+        c=c_test.values.ravel(),  # FIXED: flatten the contingency index array
+        cmap='tab20', s=10, alpha=0.8
+    )
+    plt.plot(
+        [y_true[:, i].min(), y_true[:, i].max()],
+        [y_true[:, i].min(), y_true[:, i].max()], 'r--'
+    )
+    plt.xlabel("True")
+    plt.ylabel("Predicted")
+    plt.title(output_labels[i])
+    plt.grid(True)
+
+plt.tight_layout()
+plt.subplots_adjust(right=0.9)
+cbar_ax = plt.gcf().add_axes([0.93, 0.15, 0.015, 0.7])
+plt.colorbar(sc, cax=cbar_ax, label='Contingency Index')
+
+plt.savefig("parity_colored_by_contingency.png", dpi=300)
+plt.show()
