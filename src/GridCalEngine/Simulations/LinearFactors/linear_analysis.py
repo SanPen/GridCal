@@ -226,6 +226,15 @@ def make_acdc_ptdf(nc: NumericalCircuit, logger: Logger,
         A[t, f] -= ys
         A[t, t] += ys
 
+    # fake impedances for hvdc
+    for k in range(nc.nhvdc):
+        f = nc.hvdc_data.F[k]
+        t = nc.hvdc_data.T[k]
+        ys = 1e15
+        A[f, f] += ys
+        A[f, t] -= ys
+        A[t, f] -= ys
+        A[t, t] += ys
 
     # detect how to slice
     no_slack = list()

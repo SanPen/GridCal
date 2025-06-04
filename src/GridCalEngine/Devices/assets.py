@@ -600,7 +600,7 @@ class Assets:
         :param logger: Logger to record events
         """
         if obj.should_this_be_a_transformer(branch_connection_voltage_tolerance=0.1, logger=logger):
-            tr = obj.get_equivalent_transformer()
+            tr = obj.get_equivalent_transformer(index=self.time_profile)
             self.add_transformer2w(tr)
         else:
             if self.time_profile is not None:
@@ -4647,7 +4647,7 @@ class Assets:
         elif obj.device_type == DeviceType.BranchDevice:
 
             if obj.should_this_be_a_transformer():
-                self.add_transformer2w(obj.get_equivalent_transformer())
+                self.add_transformer2w(obj.get_equivalent_transformer(index=self.time_profile))
             else:
                 self.add_line(obj.get_equivalent_line())
         else:
