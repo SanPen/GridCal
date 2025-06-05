@@ -2009,7 +2009,8 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case39_v15.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case39_vjosep2.gridcal')
-    file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
+    # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
+    file_path = os.path.join('src/trunk/scopf/case39_vjosep3.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case39_vjosep4.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal')
@@ -2211,6 +2212,12 @@ def case_loop() -> None:
 
         iteration_data['num_violations'].append(viols)
 
+        result = {
+            # "Pg": nc.generator_data.p.tolist(),
+            "Pg": acopf_results.Pg.tolist(),
+            "contingency_outputs": contingency_outputs,
+        }
+
         # Run the MP with information from the SPs
         print('')
         print("--- Feeding SPs info to MP ---")
@@ -2247,12 +2254,10 @@ def case_loop() -> None:
         # print(f"Z_k_vec: {Z_k_vec}")
         # print(f"u_j_vec: {u_j_vec}")
 
-        result = {
-            "Pg": nc.generator_data.p.tolist(),
-            "contingency_outputs": contingency_outputs,
-        }
 
-        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_39"
+
+        # save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_39"
+        save_dir = "src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_39"
         os.makedirs(save_dir, exist_ok=True)
         save_path = os.path.join(save_dir, f"scopf_result_39_{klm:03d}.json")
         with open(save_path, "w") as f:
