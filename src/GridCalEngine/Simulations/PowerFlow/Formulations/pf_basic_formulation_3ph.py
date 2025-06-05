@@ -59,7 +59,7 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
         Cf[k3, f3] = 1
         Ct[k3, t3] = 1
 
-    Rflat = R.flatten()
+    Rflat = R.flatten().astype(bool)
     zero_mask = (Rflat == 0)
     Cfcopy = Cf.copy()
     Ctcopy = Ct.copy()
@@ -228,8 +228,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         self.Ybus, self.Yf, self.Yt, self.Yshunt_bus, self.mask = compute_ybus(nc)
 
-        self.Qmin = expand3ph(Qmin)
-        self.Qmax = expand3ph(Qmax)
+        self.Qmin = expand3ph(Qmin)[self.mask]
+        self.Qmax = expand3ph(Qmax)[self.mask]
 
         self.nc.bus_data.bus_types[0] = 3
         self.nc.bus_data.bus_types[5] = 2
@@ -239,8 +239,6 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
             types=self.nc.bus_data.bus_types
         )
 
-        n_bus_3x = len(self.mask)
-
         self.vd = expand_indices_3ph(vd)
         self.pq = expand_indices_3ph(pq)
         self.pv = expand_indices_3ph(pv)
@@ -248,11 +246,11 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self.p = expand_indices_3ph(p)
         self.no_slack = expand_indices_3ph(no_slack)
 
-        self.pq = self.slice_indices(self.pq, n_bus_3x)
-        # self.pv = self.slice_indices(self.pv, self.lookup, n_bus_3x)
-        # self.pqv = self.slice_indices(self.pqv, self.lookup, n_bus_3x)
-        # self.p = self.slice_indices(self.p, self.lookup, n_bus_3x)
-        # self.no_slack = self.slice_indices(self.no_slack, self.lookup, n_bus_3x)
+        self.pq = self.slice_indices(self.pq, self.mask)
+        # self.pv = self.slice_indices(self.pv, n_bus_3x)
+        # self.pqv = self.slice_indices(self.pqv, n_bus_3x)
+        # self.p = self.slice_indices(self.p, n_bus_3x)
+        # self.no_slack = self.slice_indices(self.no_slack, n_bus_3x)
 
         self.idx_dVa = np.r_[self.pv, self.pq, self.pqv, self.p]
         self.idx_dVm = np.r_[self.pq, self.p]
@@ -281,29 +279,13 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
             self.Vm[self.idx_dVm]
         ]
 
-    def slice_indices(self, bus_indices: IntVec, nbus:int) -> IntVec:
-        """
-        Slice the bus indices based on the lookup table
-        :param bus_indices: for example original pq
-        :param nbus: number of buses
-        :return:
-        """
+    def slice_indices(self, pq: IntVec, mask: BoolVec) -> IntVec:
 
-        lookup = make_lookup(nbus, bus_indices)
-        bus_indices_sliced = np.where(lookup > -1)[0]
-    
-        max_vector = np.zeros(nbus, dtype=np.int32)
+        indices = np.where(mask)[0]
 
-        count = 0
-        for i, val in enumerate(bus_indices):
-            idx = lookup[val]
-            if idx > -1:
-                max_vector[idx] = 1
-                count += 1
+        same_indices = [i for i in pq if i in indices]
 
-        bus_indices_sliced = bus_indices[:count]
-
-        return bus_indices_sliced
+        return same_indices
 
     def update_bus_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec):
         """
