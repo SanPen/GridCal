@@ -19,6 +19,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.Topology.simulation_indices import compile_types
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
 from GridCalEngine.Utils.Sparse.csc2 import CSC
+from GridCalEngine.Utils.NumericalMethods.common import make_lookup
 
 def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matrix, CxVec, BoolVec]:
     """
@@ -86,8 +87,9 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
 
     Ybus = Cf.T @ Yf + Ct.T @ Yt + diags(Ysh_bus / nc.Sbase)
     Ybus = Ybus[binary_bus_mask, :][:, binary_bus_mask]
-    Ysh_bus = Ybus[binary_bus_mask]
-    # TODO: Think about the application of the mask into the Yf and Yt
+    Ysh_bus = Ysh_bus[binary_bus_mask]
+    Yf = Yf[Rflat, :][:, binary_bus_mask]
+    Yt = Yt[Rflat, :][:, binary_bus_mask]
     
     return Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Ysh_bus, binary_bus_mask
 
@@ -229,10 +231,15 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self.Qmin = expand3ph(Qmin)
         self.Qmax = expand3ph(Qmax)
 
+        self.nc.bus_data.bus_types[0] = 3
+        self.nc.bus_data.bus_types[5] = 2
+
         vd, pq, pv, pqv, p, no_slack = compile_types(
             Pbus=S0.real,
             types=self.nc.bus_data.bus_types
         )
+
+        n_bus_3x = len(self.mask)
 
         self.vd = expand_indices_3ph(vd)
         self.pq = expand_indices_3ph(pq)
@@ -240,6 +247,12 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self.pqv = expand_indices_3ph(pqv)
         self.p = expand_indices_3ph(p)
         self.no_slack = expand_indices_3ph(no_slack)
+
+        self.pq = self.slice_indices(self.pq, n_bus_3x)
+        # self.pv = self.slice_indices(self.pv, self.lookup, n_bus_3x)
+        # self.pqv = self.slice_indices(self.pqv, self.lookup, n_bus_3x)
+        # self.p = self.slice_indices(self.p, self.lookup, n_bus_3x)
+        # self.no_slack = self.slice_indices(self.no_slack, self.lookup, n_bus_3x)
 
         self.idx_dVa = np.r_[self.pv, self.pq, self.pqv, self.p]
         self.idx_dVm = np.r_[self.pq, self.p]
@@ -267,6 +280,30 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
             self.Va[self.idx_dVa],
             self.Vm[self.idx_dVm]
         ]
+
+    def slice_indices(self, bus_indices: IntVec, nbus:int) -> IntVec:
+        """
+        Slice the bus indices based on the lookup table
+        :param bus_indices: for example original pq
+        :param nbus: number of buses
+        :return:
+        """
+
+        lookup = make_lookup(nbus, bus_indices)
+        bus_indices_sliced = np.where(lookup > -1)[0]
+    
+        max_vector = np.zeros(nbus, dtype=np.int32)
+
+        count = 0
+        for i, val in enumerate(bus_indices):
+            idx = lookup[val]
+            if idx > -1:
+                max_vector[idx] = 1
+                count += 1
+
+        bus_indices_sliced = bus_indices[:count]
+
+        return bus_indices_sliced
 
     def update_bus_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec):
         """

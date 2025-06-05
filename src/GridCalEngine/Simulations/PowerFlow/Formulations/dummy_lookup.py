@@ -18,15 +18,19 @@ print(indices)
 print(len(indices))
 
 pq = np.array([0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], dtype=np.int32)
-max_vector = np.zeros(ntotal_bus, dtype=np.int32)
 
-count = 0
-for i, val in enumerate(pq):
-    idx = lookup[val]
-    if idx > -1:
-        max_vector[idx] = 1
-        count += 1
 
-pq_sliced = pq[:count]
+def slice_indices(pq, lookup, ntotal_bus):
+    
+    max_vector = np.zeros(ntotal_bus, dtype=np.int32)
 
-print(pq_sliced)
+    count = 0
+    for i, val in enumerate(pq):
+        idx = lookup[val]
+        if idx > -1:
+            max_vector[idx] = 1
+            count += 1
+
+    pq_sliced = pq[:count]
+
+    print(pq_sliced)
