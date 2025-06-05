@@ -68,10 +68,8 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
 
     Ctot = Cfcopy + Ctcopy
     col_sums = Ctot.sum(axis=0) 
-    binary_bus_mask = (col_sums > 0).astype(int)
-    binary_bus_mask = np.array(binary_bus_mask.flatten()).flatten()
-
-    # N = Cf @ R.T + Ct @ R.T
+    binary_bus_mask = (col_sums > 0).astype(bool)
+    binary_bus_mask = np.array(binary_bus_mask).flatten()
 
     Ysh_bus = np.zeros(n * 3, dtype=complex)
     for k in range(nc.shunt_data.nelm):
@@ -87,9 +85,7 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
         Ysh_bus[f3] += nc.load_data.Y3_star[k3]
 
     Ybus = Cf.T @ Yf + Ct.T @ Yt + diags(Ysh_bus / nc.Sbase)
-    
-    bool_mask = binary_bus_mask.astype(bool)
-    Ybus_final = Ybus[bool_mask, :][:, bool_mask]
+    Ybus = Ybus[binary_bus_mask, :][:, binary_bus_mask]
     
     return Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Ysh_bus
 
