@@ -1562,7 +1562,7 @@ def add_linear_vsc_formulation(t_idx: int,
 
         control_bus_idx = vsc_data_t.control1_bus_idx[m]
         if control_bus_idx == -1:
-            control_bus_idx = t_idx
+            control_bus_idx = fr  # pick the DC angle which is 0
 
         vsc_vars.rates[t_idx, m] = vsc_data_t.rates[m]
 
@@ -1586,8 +1586,8 @@ def add_linear_vsc_formulation(t_idx: int,
                         rate=vsc_data_t.rates[m] / Sbase,
                         P0=P0,
                         droop=droop,
-                        theta_f=bus_vars.Va[t_idx, fr],
-                        theta_t=bus_vars.Va[control_bus_idx, to],
+                        theta_f=bus_vars.Va[t_idx, control_bus_idx], # control bus
+                        theta_t=bus_vars.Va[t_idx, to],  # ac bus
                         base_name="vsc"
                     )
 

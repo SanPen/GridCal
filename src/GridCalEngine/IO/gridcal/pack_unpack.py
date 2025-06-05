@@ -361,11 +361,12 @@ def get_profile_from_dict(profile: Profile,
             default_value = collection.get(data['default'], default_value)
             map_data = {int(key): collection.get(val, default_value) for key, val in sp_data['map'].items()}
 
-        if profile.dtype == DeviceType.BusDevice:  # manual correction for buses profile incorrect value
+        if isinstance(profile.dtype, DeviceType):  # manual correction for buses profile incorrect value
             if default_value == "None":
                 default_value = profile.default_value
 
-        profile.create_sparse(default_value=default_value, size=data['size'], map_data=map_data)
+        profile.create_sparse(default_value=default_value,
+                              size=data['size'], map_data=map_data)
     else:
 
         if collection is None:
@@ -1063,6 +1064,19 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                     oh_templates = elements_dict_by_type.get(DeviceType.SequenceLineDevice, dict())
                                     ug_templates = elements_dict_by_type.get(DeviceType.UnderGroundLineDevice, dict())
                                     collection = {**seq_templates, **oh_templates, **ug_templates}
+
+                                elif gc_prop.tpe == DeviceType.BusOrBranch:
+                                    bus_dic = elements_dict_by_type.get(DeviceType.BusDevice, None)
+                                    lines_dict = elements_dict_by_type.get(DeviceType.LineDevice, None)
+
+                                    if bus_dic is not None and lines_dict is not None:
+                                        collection = bus_dic | lines_dict
+                                    elif bus_dic is not None and lines_dict is None:
+                                        collection = bus_dic
+                                    elif bus_dic is None and lines_dict is not None:
+                                        collection = bus_dic
+                                    else:
+                                        collection = None
                                 else:
                                     # this is a hyperlink to another object
                                     # we must look for the reference in elements_dict
