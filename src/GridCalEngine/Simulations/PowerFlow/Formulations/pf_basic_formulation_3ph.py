@@ -21,11 +21,27 @@ from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
 from GridCalEngine.Utils.Sparse.csc2 import CSC
 from GridCalEngine.Utils.NumericalMethods.common import make_lookup
 
-def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matrix, CxVec, BoolVec]:
+def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matrix, CxVec, BoolVec, IntVec]:
     """
-    Compute admittances
+    Compute admittances and masks
+
+    The mask is a boolean vector that indicates which bus phases are active
+
+    The bus_idx_lookup will relate the original bus indices with the sliced bus indices
+    This is useful for managing the sliced bus indices in the power flow problem. For instance:
+
+    original_pq_buses = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    mask = [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
+
+    And the lookup becomes:
+    bus_idx_lookup = [0, 1, -1, 2, -1, 3, -1, 4, -1, 5, -1, 6, -1, 7, -1, 8, -1, 9, -1, 10, -1]
+
+    And then it will be simple to get the sliced bus indices that we finally need:
+    sliced_pq_buses = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+
     :param nc: NumericalCircuit
-    :return: Ybus, Yf, Yt, Yshunt_bus, mask
+    :return: Ybus, Yf, Yt, Yshunt_bus, mask, bus_idx_lookup
     """
 
     n = nc.bus_data.nbus
@@ -90,8 +106,15 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
     Ysh_bus = Ysh_bus[binary_bus_mask]
     Yf = Yf[Rflat, :][:, binary_bus_mask]
     Yt = Yt[Rflat, :][:, binary_bus_mask]
+
+    bus_idx_lookup = [-1] * len(binary_bus_mask)  # start with all -1
+    counter = 0
+    for i, m in enumerate(binary_bus_mask):
+        if m:
+            bus_idx_lookup[i] = counter
+            counter += 1
     
-    return Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Ysh_bus, binary_bus_mask
+    return Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Ysh_bus, binary_bus_mask, bus_idx_lookup
 
 
 def compute_Ibus(nc: NumericalCircuit) -> CxVec:
@@ -175,9 +198,31 @@ def expand3ph(x: np.ndarray):
         x3[3 * k + idx3] = x[k]
     return x3
 
-def expand_indices_3ph(x: np.ndarray):
+
+def slice_indices(pq: IntVec, bus_lookup: IntVec) -> IntVec:
+        """
+        Slice the indices based on the bus_lookup
+        :param pq: original bus indices
+        :param bus_lookup: mapping between original and sliced bus indices
+        :return:
+        """
+
+        max_nnz = len(pq)
+        vec = np.zeros(max_nnz, dtype=int)
+
+        counter = 0
+        for pq_idx in pq:
+            val = bus_lookup[pq_idx]
+            if val > -1:
+                vec[counter] = val
+                counter += 1
+
+        return vec[:counter]
+
+
+def expand_indices_3ph(x: np.ndarray, bus_lookup: IntVec):
     """
-    Expands a numpy array to 3-pase copying the same values
+    Expands and slices a numpy array to 3-phase copying the same values
     :param x:
     :return:
     """
@@ -187,7 +232,10 @@ def expand_indices_3ph(x: np.ndarray):
 
     for k in range(n):
         x3[3 * k + idx3] = 3 * x[k] + idx3
-    return x3
+
+    x3_final = slice_indices(x3, bus_lookup)
+    return np.sort(x3_final)
+
 
 def expandVoltage3ph(V0: CxVec):
     """
@@ -226,7 +274,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self.S0: CxVec = compute_Sbus_star(nc) / (nc.Sbase / 3)
         self.I0: CxVec = compute_Ibus(nc) / (nc.Sbase / 3)
 
-        self.Ybus, self.Yf, self.Yt, self.Yshunt_bus, self.mask = compute_ybus(nc)
+        self.Ybus, self.Yf, self.Yt, self.Yshunt_bus, self.mask, bus_lookup = compute_ybus(nc)
 
         self.Qmin = expand3ph(Qmin)[self.mask]
         self.Qmax = expand3ph(Qmax)[self.mask]
@@ -239,18 +287,12 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
             types=self.nc.bus_data.bus_types
         )
 
-        self.vd = expand_indices_3ph(vd)
-        self.pq = expand_indices_3ph(pq)
-        self.pv = expand_indices_3ph(pv)
-        self.pqv = expand_indices_3ph(pqv)
-        self.p = expand_indices_3ph(p)
-        self.no_slack = expand_indices_3ph(no_slack)
-
-        self.pq = self.slice_indices(self.pq, self.mask)
-        # self.pv = self.slice_indices(self.pv, n_bus_3x)
-        # self.pqv = self.slice_indices(self.pqv, n_bus_3x)
-        # self.p = self.slice_indices(self.p, n_bus_3x)
-        # self.no_slack = self.slice_indices(self.no_slack, n_bus_3x)
+        self.vd = expand_indices_3ph(vd, bus_lookup)
+        self.pq = expand_indices_3ph(pq, bus_lookup)
+        self.pv = expand_indices_3ph(pv, bus_lookup)
+        self.pqv = expand_indices_3ph(pqv, bus_lookup)
+        self.p = expand_indices_3ph(p, bus_lookup)
+        self.no_slack = expand_indices_3ph(no_slack, bus_lookup)
 
         self.idx_dVa = np.r_[self.pv, self.pq, self.pqv, self.p]
         self.idx_dVm = np.r_[self.pq, self.p]
@@ -279,13 +321,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
             self.Vm[self.idx_dVm]
         ]
 
-    def slice_indices(self, pq: IntVec, mask: BoolVec) -> IntVec:
 
-        indices = np.where(mask)[0]
-
-        same_indices = [i for i in pq if i in indices]
-
-        return same_indices
 
     def update_bus_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec):
         """
