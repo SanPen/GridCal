@@ -2294,8 +2294,8 @@ def case_loop_perturbed() -> None:
         # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v9.gridcal')
         # file_path = 'src/trunk/scopf/bus5_v10.gridcal'
         # file_path = 'src/trunk/scopf/bus5_v10_noQ.gridcal'
-        # file_path = 'C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v12.gridcal'
-        file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal'
+        # file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/bus5_v12.gridcal'
+        # file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal'
         # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case14_cont_v2.gridcal')
@@ -2310,7 +2310,7 @@ def case_loop_perturbed() -> None:
         # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
-        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
+        file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v16.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
@@ -2340,20 +2340,28 @@ def case_loop_perturbed() -> None:
                                                     acopf_mode=AcOpfMode.ACOPFslacks,
                                                     verbose=0)
 
+        # --- Perturb Load Real Power (P) and Reactive Power (Q) ---
+        print("Original load P and Q values:")
+        for load in grid.loads:
+            print(f"  Load at bus {load.bus.name}: P = {load.P:.4f}, Q = {load.Q:.4f}")
+
+        perturbation_factor = 0.1  # ±10%
+
+        for load in grid.loads:
+
+            original_P = load.P
+            delta_P = (np.random.rand() * 2 - 1) * perturbation_factor * max(original_P, 1.0)
+            load.P = max(original_P + delta_P, 0.0)  # Ensure P stays ≥ 0
+
+            original_Q = load.Q
+            delta_Q = (np.random.rand() * 2 - 1) * perturbation_factor * max(original_Q, 1.0)
+            load.Q = max(original_Q + delta_Q, 0.0)  # Ensure Q stays ≥ 0
+
+
         nc = compile_numerical_circuit_at(grid, t_idx=None)
 
-        Pg = nc.generator_data.p.copy()
-        print("Original Pg:", Pg)
-        perturbation_factor = 0.2  # ±20% of original Pg
-        delta = (np.random.rand(*Pg.shape) * 2 - 1) * perturbation_factor * np.maximum(Pg, 1.0)
-        Pg_perturbed_init = Pg + delta
-
-        nc.generator_data.p = Pg_perturbed_init
-
-        print("Perturbed Pg:", Pg_perturbed_init)
-
         acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
-                                             opf_options=opf_slack_options, pf_init=False, load_shedding=False)
+                                             opf_options=opf_slack_options, pf_init=True, load_shedding=False)
 
         contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
@@ -2386,7 +2394,7 @@ def case_loop_perturbed() -> None:
         linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
         prob_cont = 0
-        max_iter = 50
+        max_iter = 15
         tolerance = 1e-5
 
         n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
@@ -2476,35 +2484,44 @@ def case_loop_perturbed() -> None:
                                 prob_cont += 1
                                 viols += 1
 
-                                # print('nbus', island.nbus, 'ngen', island.ngen)
-                                print(f"W_k: {slack_sol_cont.W_k}")
-                                print(f"Z_k: {slack_sol_cont.Z_k}")
-                                print(f"u_j: {slack_sol_cont.u_j}")
-                                print(f"Vmax slack: {slack_sol_cont.sl_vmax}")
-                                print(f"Vmin slack: {slack_sol_cont.sl_vmin}")
-                                print(f"Sf slack: {slack_sol_cont.sl_sf}")
-                                print(f"St slack: {slack_sol_cont.sl_st}")
+                            # # print('nbus', island.nbus, 'ngen', island.ngen)
+                            # print(f"W_k: {slack_sol_cont.W_k}")
+                            # print(f"Z_k: {slack_sol_cont.Z_k}")
+                            # print(f"u_j: {slack_sol_cont.u_j}")
+                            # print(f"Vmax slack: {slack_sol_cont.sl_vmax}")
+                            # print(f"Vmin slack: {slack_sol_cont.sl_vmin}")
+                            # print(f"Sf slack: {slack_sol_cont.sl_sf}")
+                            # print(f"St slack: {slack_sol_cont.sl_st}")
 
-                            for line in grid.lines:
-                                from_idx = grid.buses.index(line.bus_from)
-                                to_idx = grid.buses.index(line.bus_to)
-                                contingency_outputs.append({
-                                    "from_bus": from_idx,
-                                    "to_bus": to_idx,
-                                    "R": line.R,
-                                    "X": line.X,
-                                    "B": line.B,
-                                    "is_active": bool(nc.passive_branch_data.active[grid.lines.index(line)])
-                                })
+                            # for line in grid.lines:
+                            #     from_idx = grid.buses.index(line.bus_from)
+                            #     to_idx = grid.buses.index(line.bus_to)
+                            #     contingency_outputs.append({
+                            #         "from_bus": from_idx,
+                            #         "to_bus": to_idx,
+                            #         "R": line.R,
+                            #         "X": line.X,
+                            #         "B": line.B,
+                            #         "is_active": bool(nc.passive_branch_data.active[grid.lines.index(line)])
+                            #     })
 
                             contingency_outputs.append({
                                 "contingency_index": int(ic),
                                 "W_k": float(slack_sol_cont.W_k),
                                 "Z_k": slack_sol_cont.Z_k.tolist(),
-                                "u_j": slack_sol_cont.u_j.tolist()
-
+                                "u_j": slack_sol_cont.u_j.tolist(),
+                                "Pg": acopf_results.Pg.tolist(),
+                                "R": [line.R for line in grid.lines],
+                                "X": [line.X for line in grid.lines],
+                                "B": [line.B for line in grid.lines],
+                                "active": [bool(nc.passive_branch_data.active[grid.lines.index(line)]) for line in grid.lines]
                             })
 
+                            # print("Contingency outputs:", contingency_outputs[-1])
+
+                            # result = {
+                            #     "contingency_outputs": contingency_outputs,
+                            # }
 
 
                         else:
@@ -2539,6 +2556,19 @@ def case_loop_perturbed() -> None:
                 print('Master problem solution found')
 
             iteration_data['num_violations'].append(viols)
+
+            # result = {
+            #     # "perturbation_index": p,
+            #     "Pg": acopf_results.Pg.tolist(),
+            #     # "loads": [(load.P, load.Q) for load in grid.loads],
+            #     # "line_data": line_data,
+            #     "contingency_outputs": contingency_outputs,
+            #     # "violation": prob_cont > 0,
+            #     # "max_voltage_slack": iteration_data['max_voltage_slack'][-1],
+            #     # "max_flow_slack": iteration_data['max_flow_slack'][-1],
+            #     # "total_cost": iteration_data['total_cost'][-1]
+            # }
+            # print("Result for perturbation:", result)
 
             # Run the MP with information from the SPs
             print('')
@@ -2588,24 +2618,15 @@ def case_loop_perturbed() -> None:
         #         "u_j": u_j_vec[i].tolist()
         #     })
 
-        result = {
-            # "perturbation_index": p,
-            "Pg": Pg_perturbed.tolist(),
-            # "loads": [(load.P, load.Q) for load in grid.loads],
-            "line_data": line_data,
-            "contingency_outputs": contingency_outputs,
-            # "violation": prob_cont > 0,
-            # "max_voltage_slack": iteration_data['max_voltage_slack'][-1],
-            # "max_flow_slack": iteration_data['max_flow_slack'][-1],
-            # "total_cost": iteration_data['total_cost'][-1]
-        }
 
-        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_5_nn"
+        # print(result)
+
+        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/load_var_14"
         # save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_14_nn"
         os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, f"scopf_result_5_nn_{p:03d}.json")
+        save_path = os.path.join(save_dir, f"scopf_result_14_gnn_{p:03d}.json")
         with open(save_path, "w") as f:
-            json.dump(result, f, indent=2)
+            json.dump(contingency_outputs, f, indent=2)
 
         print(f"Saved results for perturbation {p} to {save_path}")
 
