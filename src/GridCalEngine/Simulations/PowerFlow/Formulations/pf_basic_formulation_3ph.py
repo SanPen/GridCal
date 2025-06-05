@@ -17,14 +17,14 @@ from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template im
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
                                                                                    compute_fx, polar_to_rect)
 from GridCalEngine.Topology.simulation_indices import compile_types
-from GridCalEngine.basic_structures import Vec, IntVec, CxVec
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
 from GridCalEngine.Utils.Sparse.csc2 import CSC
 
-def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matrix, CxVec]:
+def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matrix, CxVec, BoolVec]:
     """
     Compute admittances
     :param nc: NumericalCircuit
-    :return: Ybus, Yf, Yt, Yshunt_bus
+    :return: Ybus, Yf, Yt, Yshunt_bus, mask
     """
 
     n = nc.bus_data.nbus
@@ -86,8 +86,10 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
 
     Ybus = Cf.T @ Yf + Ct.T @ Yt + diags(Ysh_bus / nc.Sbase)
     Ybus = Ybus[binary_bus_mask, :][:, binary_bus_mask]
+    Ysh_bus = Ybus[binary_bus_mask]
+    # TODO: Think about the application of the mask into the Yf and Yt
     
-    return Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Ysh_bus
+    return Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Ysh_bus, binary_bus_mask
 
 
 def compute_Ibus(nc: NumericalCircuit) -> CxVec:
@@ -222,7 +224,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self.S0: CxVec = compute_Sbus_star(nc) / (nc.Sbase / 3)
         self.I0: CxVec = compute_Ibus(nc) / (nc.Sbase / 3)
 
-        self.Ybus, self.Yf, self.Yt, self.Yshunt_bus = compute_ybus(nc)
+        self.Ybus, self.Yf, self.Yt, self.Yshunt_bus, self.mask = compute_ybus(nc)
 
         self.Qmin = expand3ph(Qmin)
         self.Qmax = expand3ph(Qmax)
