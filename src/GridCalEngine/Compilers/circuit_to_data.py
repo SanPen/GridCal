@@ -58,9 +58,9 @@ def delta2StarAdmittance(Yab: complex,
     :return: Ya, Yb, Yc
     """
     return np.array([
-        (Yab * Ybc + Ybc * Yca + Yca * Yab) / Ybc,
-        (Yab * Ybc + Ybc * Yca + Yca * Yab) / Yca,
-        (Yab * Ybc + Ybc * Yca + Yca * Yab) / Yab
+        (Yab * Ybc + Ybc * Yca + Yca * Yab) / (Ybc + 1e-20),
+        (Yab * Ybc + Ybc * Yca + Yca * Yab) / (Yca + 1e-20),
+        (Yab * Ybc + Ybc * Yca + Yca * Yab) / (Yab + 1e-20)
     ])
 
 
@@ -412,9 +412,9 @@ def get_load_data(data: LoadData,
                             data.S3_delta[3 * ii + 2] = complex(elm.P3, elm.Q3)
 
                             data.I3_star[3 * ii + idx3] = delta2StarCurrent(
-                                Iab=complex(elm.Ir1[t_idx], elm.Ii1[t_idx]),
-                                Ibc=complex(elm.Ir2[t_idx], elm.Ii2[t_idx]),
-                                Ica=complex(elm.Ir3[t_idx], elm.Ii3[t_idx])
+                                Iab=complex(elm.Ir1, elm.Ii1),
+                                Ibc=complex(elm.Ir2, elm.Ii2),
+                                Ica=complex(elm.Ir3, elm.Ii3)
                             )
 
                             data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(

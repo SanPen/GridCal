@@ -279,13 +279,15 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self.Qmin = expand3ph(Qmin)[self.mask]
         self.Qmax = expand3ph(Qmax)[self.mask]
 
-        self.nc.bus_data.bus_types[0] = 3
-        self.nc.bus_data.bus_types[5] = 2
+        #self.nc.bus_data.bus_types[0] = 3
+        #self.nc.bus_data.bus_types[5] = 2
 
         vd, pq, pv, pqv, p, no_slack = compile_types(
             Pbus=S0.real,
             types=self.nc.bus_data.bus_types
         )
+
+        self.S0 = expand_indices_3ph(S0, bus_lookup)
 
         self.vd = expand_indices_3ph(vd, bus_lookup)
         self.pq = expand_indices_3ph(pq, bus_lookup)
@@ -320,8 +322,6 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
             self.Va[self.idx_dVa],
             self.Vm[self.idx_dVm]
         ]
-
-
 
     def update_bus_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec):
         """
