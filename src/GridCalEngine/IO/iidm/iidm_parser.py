@@ -18,6 +18,9 @@ from GridCalEngine.IO.iidm.devices.busbar_section import BusbarSection
 from GridCalEngine.IO.iidm.devices.static_var_compensator import StaticVarCompensator
 from GridCalEngine.IO.iidm.devices.iidm_circuit import IidmCircuit
 
+"""
+# See: https://powsybl.readthedocs.io/projects/pypowsybl/en/latest/reference/network.html
+"""
 
 def strip_ns(tag: str) -> str:
     """
@@ -29,6 +32,11 @@ def strip_ns(tag: str) -> str:
 
 
 def parse_xiidm_file_to_circuit_non_recursive(file_path: str) -> IidmCircuit:
+    """
+
+    :param file_path:
+    :return:
+    """
     tree = ET.parse(file_path)
     root = tree.getroot()
     circuit = IidmCircuit()
@@ -151,7 +159,7 @@ def parse_xiidm_file_to_circuit_non_recursive(file_path: str) -> IidmCircuit:
 
 if __name__ == "__main__":
 
-    # See: https://powsybl.readthedocs.io/projects/pypowsybl/en/latest/reference/network.html
+
 
     fname = "/home/santi/Documentos/Git/GitHub/RTE7000/2021/01/01/recollement-auto-20210101-0000-enrichi.xiidm"
     # parse_xiidm_file_to_circuit_non_recursive(fname)
