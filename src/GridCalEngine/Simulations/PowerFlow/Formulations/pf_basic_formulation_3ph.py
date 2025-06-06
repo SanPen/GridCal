@@ -247,24 +247,7 @@ def expand_slice_indices_3ph(x: np.ndarray, bus_lookup: IntVec):
     x3_final = slice_indices(x3, bus_lookup)
     return np.sort(x3_final)
 
-
-def expand_Sbus_3ph(x: np.ndarray, bus_mask: BoolVec):
-    """
-    Expands the Sbus vector to 3 phase 
-    :param x:
-    :return:
-    """
-    n = len(x)
-    idx3 = np.array([0, 1, 2])
-    x3 = np.zeros(3 * n, dtype=x.dtype)
-
-    for k in range(n):
-        x3[3 * k + idx3] = x[k]
-
-    return x3[bus_mask]
-
-
-def expandVoltage3ph(V0: CxVec, bus_mask: BoolVec):
+def expandVoltage3ph(V0: CxVec) -> CxVec:
     """
     Expands a numpy array to 3-pase copying the same values
     :param V0:
@@ -280,7 +263,7 @@ def expandVoltage3ph(V0: CxVec, bus_mask: BoolVec):
 
     for k in range(n):
         x3[3 * k + idx3] = Vm[k] * np.exp(1j * (Va[k] + angles))
-    return x3[bus_mask]
+    return x3
 
 
 class PfBasicFormulation3Ph(PfFormulationTemplate):
@@ -295,7 +278,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         :param nc: NumericalCircuit
         :param options: PowerFlowOptions
         """
-        PfFormulationTemplate.__init__(self, V0=expandVoltage3ph(V0, self.mask).astype(complex), options=options)
+        PfFormulationTemplate.__init__(self, V0=expandVoltage3ph(V0).astype(complex), options=options)
 
         self.nc = nc
 
@@ -315,7 +298,9 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
             types=self.nc.bus_data.bus_types
         )
 
-        self.S0 = expand_Sbus_3ph(S0, self.mask)
+        self.S0 = self.S0[self.mask]
+        self.I0 = self.I0[self.mask]
+        self.V = self.V[self.mask]
 
         self.vd = expand_slice_indices_3ph(vd, bus_lookup)
         self.pq = expand_slice_indices_3ph(pq, bus_lookup)
@@ -422,14 +407,14 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self.x2var(x)
 
         # compute the complex voltage
-        self.V = polar_to_rect(self.Vm, self.Va)
+        self.V = polar_to_rect(self.Vm, self.Va)[self.mask]
 
         # compute the function residual
         # Assumes the internal vars were updated already with self.x2var()
         Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
                                          Sdelta=self.nc.load_data.S3_delta,
                                          V=self.V)
-        Sbus = self.S0 + Sdelta2star
+        Sbus = self.S0 + Sdelta2star[self.mask]
         self.Scalc = compute_power(self.Ybus, self.V)
         dS = self.Scalc - Sbus  # compute the mismatch
         self._f = np.r_[
