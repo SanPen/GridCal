@@ -155,12 +155,13 @@ def compute_Sbus_star(nc: NumericalCircuit) -> CxVec:
     return Sbus
 
 
-def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, V: CxVec, bus_mask: BoolVec) -> CxVec:
+def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, V: CxVec, bus_lookup: IntVec) -> CxVec:
     """
 
     :param bus_idx:
     :param Sdelta:
     :param V:
+    :param bus_lookup:
     :return:
     """
     n = len(V)
@@ -177,14 +178,19 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, V: CxVec, bus_mask: BoolV
         bc = 3 * k + 1
         ca = 3 * k + 2
 
-        if bus_mask[a] and bus_mask[b] and bus_mask[c]:
-            S[a] = -1 * ((V[a] * Sdelta[ab]) / (V[a] - V[b]) - (V[a] * Sdelta[ca]) / (V[c] - V[a]))
-            S[b] = -1 * ((V[b] * Sdelta[bc]) / (V[b] - V[c]) - (V[b] * Sdelta[ab]) / (V[a] - V[b]))
-            S[c] = -1 * ((V[c] * Sdelta[ca]) / (V[c] - V[a]) - (V[c] * Sdelta[bc]) / (V[b] - V[c]))
+        a2 = bus_lookup[a]
+        b2 = bus_lookup[b]
+        c2 = bus_lookup[c]
+
+        if a2 > -1 and b2 > -1 and c2 > -1:
+            S[a2] = -1 * ((V[a] * Sdelta[ab]) / (V[a] - V[b]) - (V[a] * Sdelta[ca]) / (V[c] - V[a]))
+            S[b2] = -1 * ((V[b] * Sdelta[bc]) / (V[b] - V[c]) - (V[b] * Sdelta[ab]) / (V[a] - V[b]))
+            S[c2] = -1 * ((V[c] * Sdelta[ca]) / (V[c] - V[a]) - (V[c] * Sdelta[bc]) / (V[b] - V[c]))
         else:
-            S[a] = 0
-            S[b] = 0
-            S[c] = 0
+            pass
+            # S[a2] = 0
+            # S[b2] = 0
+            # S[c2] = 0
 
     return S
 
@@ -389,11 +395,11 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         # compute the function residual
         # Assumes the internal vars were updated already with self.x2var()
-        # Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
-        #                                  Sdelta=self.nc.load_data.S3_delta,
-        #                                  V=V,
-        #                                  bus_mask=self.bus_lookup)
-        # Sbus = self.S0 + Sdelta2star
+        Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
+                                         Sdelta=self.nc.load_data.S3_delta,
+                                         V=V,
+                                         bus_lookup=self.bus_lookup)
+        Sbus = self.S0 + Sdelta2star
         Sbus = self.S0
         Scalc = compute_power(self.Ybus, V)
         dS = Scalc - Sbus  # compute the mismatch
@@ -498,7 +504,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
                                          Sdelta=self.nc.load_data.S3_delta,
-                                         V=self.V)
+                                         V=self.V,
+                                         bus_lookup=self.bus_lookup)
         Sbus = self.S0 + Sdelta2star
         self.Scalc = self.V * np.conj(self.Ybus @ self.V - self.I0)
 
