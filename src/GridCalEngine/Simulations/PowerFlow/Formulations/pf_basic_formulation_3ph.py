@@ -220,9 +220,9 @@ def slice_indices(pq: IntVec, bus_lookup: IntVec) -> IntVec:
         return vec[:counter]
 
 
-def expand_indices_3ph(x: np.ndarray, bus_lookup: IntVec):
+def expand_indices_3ph(x: np.ndarray) -> np.ndarray:
     """
-    Expands and slices a numpy array to 3-phase copying the same values
+    Expands a numpy array to 3-pase copying the same values
     :param x:
     :return:
     """
@@ -233,14 +233,42 @@ def expand_indices_3ph(x: np.ndarray, bus_lookup: IntVec):
     for k in range(n):
         x3[3 * k + idx3] = 3 * x[k] + idx3
 
+    return x3
+
+
+def expand_slice_indices_3ph(x: np.ndarray, bus_lookup: IntVec):
+    """
+    Expands and slices a numpy array to 3-phase copying the same values
+    :param x:
+    :return:
+    """
+    x3 = expand_indices_3ph(x)
+
     x3_final = slice_indices(x3, bus_lookup)
     return np.sort(x3_final)
 
 
-def expandVoltage3ph(V0: CxVec):
+def expand_Sbus_3ph(x: np.ndarray, bus_mask: BoolVec):
+    """
+    Expands the Sbus vector to 3 phase 
+    :param x:
+    :return:
+    """
+    n = len(x)
+    idx3 = np.array([0, 1, 2])
+    x3 = np.zeros(3 * n, dtype=x.dtype)
+
+    for k in range(n):
+        x3[3 * k + idx3] = x[k]
+
+    return x3[bus_mask]
+
+
+def expandVoltage3ph(V0: CxVec, bus_mask: BoolVec):
     """
     Expands a numpy array to 3-pase copying the same values
     :param V0:
+    :param bus_mask:
     :return:
     """
     n = len(V0)
@@ -252,7 +280,7 @@ def expandVoltage3ph(V0: CxVec):
 
     for k in range(n):
         x3[3 * k + idx3] = Vm[k] * np.exp(1j * (Va[k] + angles))
-    return x3
+    return x3[bus_mask]
 
 
 class PfBasicFormulation3Ph(PfFormulationTemplate):
@@ -267,7 +295,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         :param nc: NumericalCircuit
         :param options: PowerFlowOptions
         """
-        PfFormulationTemplate.__init__(self, V0=expandVoltage3ph(V0).astype(complex), options=options)
+        PfFormulationTemplate.__init__(self, V0=expandVoltage3ph(V0, self.mask).astype(complex), options=options)
 
         self.nc = nc
 
@@ -287,14 +315,14 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
             types=self.nc.bus_data.bus_types
         )
 
-        self.S0 = expand_indices_3ph(S0, bus_lookup)
+        self.S0 = expand_Sbus_3ph(S0, self.mask)
 
-        self.vd = expand_indices_3ph(vd, bus_lookup)
-        self.pq = expand_indices_3ph(pq, bus_lookup)
-        self.pv = expand_indices_3ph(pv, bus_lookup)
-        self.pqv = expand_indices_3ph(pqv, bus_lookup)
-        self.p = expand_indices_3ph(p, bus_lookup)
-        self.no_slack = expand_indices_3ph(no_slack, bus_lookup)
+        self.vd = expand_slice_indices_3ph(vd, bus_lookup)
+        self.pq = expand_slice_indices_3ph(pq, bus_lookup)
+        self.pv = expand_slice_indices_3ph(pv, bus_lookup)
+        self.pqv = expand_slice_indices_3ph(pqv, bus_lookup)
+        self.p = expand_slice_indices_3ph(p, bus_lookup)
+        self.no_slack = expand_slice_indices_3ph(no_slack, bus_lookup)
 
         self.idx_dVa = np.r_[self.pv, self.pq, self.pqv, self.p]
         self.idx_dVm = np.r_[self.pq, self.p]
