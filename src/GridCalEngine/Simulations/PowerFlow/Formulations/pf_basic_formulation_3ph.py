@@ -283,7 +283,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         :param nc: NumericalCircuit
         :param options: PowerFlowOptions
         """
-        self.Ybus, self.Yf, self.Yt, self.Yshunt_bus, self.mask, bus_lookup = compute_ybus(nc)
+        self.Ybus, self.Yf, self.Yt, self.Yshunt_bus, self.mask, self.bus_lookup = compute_ybus(nc)
         V0new = expandVoltage3ph(V0)[self.mask]
 
         PfFormulationTemplate.__init__(self, V0=V0new.astype(complex), options=options)
@@ -309,12 +309,12 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self.I0 = self.I0[self.mask]
         # self.V = self.V[self.mask]
 
-        self.vd = expand_slice_indices_3ph(vd, bus_lookup)
-        self.pq = expand_slice_indices_3ph(pq, bus_lookup)
-        self.pv = expand_slice_indices_3ph(pv, bus_lookup)
-        self.pqv = expand_slice_indices_3ph(pqv, bus_lookup)
-        self.p = expand_slice_indices_3ph(p, bus_lookup)
-        self.no_slack = expand_slice_indices_3ph(no_slack, bus_lookup)
+        self.vd = expand_slice_indices_3ph(vd, self.bus_lookup)
+        self.pq = expand_slice_indices_3ph(pq, self.bus_lookup)
+        self.pv = expand_slice_indices_3ph(pv, self.bus_lookup)
+        self.pqv = expand_slice_indices_3ph(pqv, self.bus_lookup)
+        self.p = expand_slice_indices_3ph(p, self.bus_lookup)
+        self.no_slack = expand_slice_indices_3ph(no_slack, self.bus_lookup)
 
         self.idx_dVa = np.r_[self.pv, self.pq, self.pqv, self.p]
         self.idx_dVm = np.r_[self.pq, self.p]
@@ -391,7 +391,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         # Assumes the internal vars were updated already with self.x2var()
         # Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
         #                                  Sdelta=self.nc.load_data.S3_delta,
-        #                                  V=V)
+        #                                  V=V,
+        #                                  bus_mask=self.bus_lookup)
         # Sbus = self.S0 + Sdelta2star
         Sbus = self.S0
         Scalc = compute_power(self.Ybus, V)
