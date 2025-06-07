@@ -11,6 +11,7 @@ from typing import Dict, Union, List, Tuple, Any, Generator
 from collections.abc import Callable
 from warnings import warn
 
+from GridCalEngine import SCOPFDriver
 from GridCalEngine.Simulations import (ContingencyAnalysisOptions, AvailableTransferCapacityOptions,
                                        ContinuationPowerFlowOptions, ContinuationPowerFlowInput, PowerFlowOptions,
                                        ClusteringAnalysisOptions,
@@ -34,6 +35,7 @@ from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_driver import (L
 from GridCalEngine.Simulations.OPF.opf_driver import OptimalPowerFlowDriver, OptimalPowerFlowResults
 from GridCalEngine.Simulations.OPF.opf_ts_driver import (OptimalPowerFlowTimeSeriesDriver,
                                                          OptimalPowerFlowTimeSeriesResults)
+from GridCalEngine.Simulations.OPF.scopf_driver import SCOPFResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_driver import (PowerFlowTimeSeriesDriver,
                                                                       PowerFlowTimeSeriesResults)
@@ -517,6 +519,15 @@ class SimulationSession:
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.OPFTimeSeries_run)
+        return drv, results
+
+    @property
+    def security_constrained_optimal_power_flow(self) -> Tuple[SCOPFDriver, SCOPFResult]:
+        """
+
+        :return:
+        """
+        drv, results = self.get_driver_results(SimulationTypes.SCOPF_run)
         return drv, results
 
     @property

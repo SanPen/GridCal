@@ -10,6 +10,7 @@ from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options 
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_options import AvailableTransferCapacityOptions
 from GridCalEngine.Simulations.ContinuationPowerFlow.continuation_power_flow_options import ContinuationPowerFlowOptions
 from GridCalEngine.Simulations.ContinuationPowerFlow.continuation_power_flow_input import ContinuationPowerFlowInput
+from GridCalEngine.Simulations.OPF.scopf_driver import SCOPFDriver
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.Clustering.clustering_options import ClusteringAnalysisOptions
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
@@ -98,6 +99,9 @@ def create_driver(grid: MultiCircuit,
 
     elif driver_tpe == SimulationTypes.OPF_run:
         drv = OptimalPowerFlowDriver(grid=grid, options=None)
+
+    elif driver_tpe == SimulationTypes.SCOPF_run:
+        drv = SCOPFDriver(grid=grid, pf_options=PowerFlowOptions(), scopf_options=None)
 
     elif driver_tpe == SimulationTypes.OPFTimeSeries_run:
         drv = OptimalPowerFlowTimeSeriesDriver(grid=grid,

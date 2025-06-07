@@ -74,7 +74,7 @@
        </font>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="GridTab">
        <attribute name="icon">
@@ -3976,7 +3976,7 @@
            <enum>QTabWidget::TabPosition::South</enum>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>3</number>
           </property>
           <property name="iconSize">
            <size>
@@ -6044,6 +6044,147 @@
               </property>
               <property name="pixmap">
                <pixmap resource="icons.qrc">:/Icons/icons/dcopf.svg</pixmap>
+              </property>
+              <property name="scaledContents">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="scopf_tab">
+           <property name="toolTip">
+            <string>Scopf settings</string>
+           </property>
+           <attribute name="icon">
+            <iconset resource="icons.qrc">
+             <normaloff>:/Icons/icons/scopf.svg</normaloff>:/Icons/icons/scopf.svg</iconset>
+           </attribute>
+           <attribute name="title">
+            <string>Scopf</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_81">
+            <item row="1" column="0" colspan="2">
+             <widget class="Line" name="line_18">
+              <property name="palette">
+               <palette>
+                <active>
+                 <colorrole role="WindowText">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>186</red>
+                    <green>189</green>
+                    <blue>182</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </active>
+                <inactive>
+                 <colorrole role="WindowText">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>186</red>
+                    <green>189</green>
+                    <blue>182</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </inactive>
+                <disabled>
+                 <colorrole role="WindowText">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>190</red>
+                    <green>190</green>
+                    <blue>190</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </disabled>
+               </palette>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Shadow::Plain</enum>
+              </property>
+              <property name="lineWidth">
+               <number>4</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="label_100">
+              <property name="palette">
+               <palette>
+                <active>
+                 <colorrole role="WindowText">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>85</red>
+                    <green>87</green>
+                    <blue>83</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </active>
+                <inactive>
+                 <colorrole role="WindowText">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>85</red>
+                    <green>87</green>
+                    <blue>83</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </inactive>
+                <disabled>
+                 <colorrole role="WindowText">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>190</red>
+                    <green>190</green>
+                    <blue>190</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </disabled>
+               </palette>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>16</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Security-Constrained Optimal Power Flow</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_99">
+              <property name="minimumSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="pixmap">
+               <pixmap resource="icons.qrc">:/Icons/icons/scopf.svg</pixmap>
               </property>
               <property name="scaledContents">
                <bool>true</bool>
@@ -10223,7 +10364,7 @@ QProgressBar::chunk{
      <x>0</x>
      <y>0</y>
      <width>1182</width>
-     <height>20</height>
+     <height>33</height>
     </rect>
    </property>
    <property name="font">
@@ -10444,6 +10585,7 @@ QProgressBar::chunk{
    <addaction name="actionNodal_capacity"/>
    <addaction name="actionOPF"/>
    <addaction name="actionOpf_to_Power_flow"/>
+   <addaction name="actionSCOPF"/>
    <addaction name="separator"/>
    <addaction name="actionInvestments_evaluation"/>
    <addaction name="actionPower_flow_Stochastic"/>
@@ -12056,6 +12198,21 @@ QProgressBar::chunk{
     <font>
      <pointsize>10</pointsize>
     </font>
+   </property>
+  </action>
+  <action name="actionSCOPF">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/scopf.svg</normaloff>:/Icons/icons/scopf.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Security-constrained optimal power flow</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Security-constrained optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an SCOPF&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::TextHeuristicRole</enum>
    </property>
   </action>
  </widget>

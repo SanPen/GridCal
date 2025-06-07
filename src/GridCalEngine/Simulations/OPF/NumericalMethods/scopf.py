@@ -13,25 +13,20 @@ from scipy import sparse as sp
 from typing import Tuple, List
 from dataclasses import dataclass
 
-import GridCalEngine
-from GridCalEngine import ContingencyGroup, Contingency, LinearMultiContingencies, BranchType
-from GridCalEngine.Simulations.LinearFactors.linear_analysis import ContingencyIndices
+from GridCalEngine.Simulations.OPF.scopf_driver import LinearMultiContingencies
 from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
 import GridCalEngine.Utils.NumericalMethods.autodiff as ad
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at, NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from GridCalEngine.enumerations import AcOpfMode, SolverType, ContingencyOperationTypes
+from GridCalEngine.enumerations import AcOpfMode, SolverType
 from typing import Union
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger, CscMat, Mat
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger, Mat
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import (x2var, var2x, eval_f,
                                                                                eval_g, eval_h,
                                                                                eval_h_scopf,
-                                                                               jacobians_and_hessians,
                                                                                jacobians_and_hessians_scopf)
-from GridCalEngine.IO.file_handler import FileOpen, FileSave
+from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 import matplotlib.pyplot as plt
 
@@ -56,7 +51,6 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
     :param slack:
     :param from_idx:
     :param to_idx:
-    :param n_shed:
     :param fdc:
     :param tdc:
     :param ndc:
@@ -1990,13 +1984,13 @@ def case_loop() -> None:
     Simple 5 bus system from where to build the SCOPF, looping
     :return:
     """
-    from codecarbon import EmissionsTracker
-    tracker = EmissionsTracker(
-        project_name="SCOPF_GNN_Training",
-        output_dir="//Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/CO2",
-        # You can change this path
-    )
-    tracker.start()
+    # from codecarbon import EmissionsTracker
+    # tracker = EmissionsTracker(
+    #     project_name="SCOPF_GNN_Training",
+    #     output_dir="//Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/CO2",
+    #     # You can change this path
+    # )
+    # tracker.start()
     time_start = time.time()
 
     # Load basic grid
@@ -2288,8 +2282,8 @@ def case_loop() -> None:
     time_end = time.time()
     print(f"Total time for {klm} perturbations: {time_end - time_start:.2f} seconds")
 
-    emissions = tracker.stop()
-    print(f"Estimated CO2 emissions: {emissions:.6f} kg")
+    # emissions = tracker.stop()
+    # print(f"Estimated CO2 emissions: {emissions:.6f} kg")
 
     # Plot the results
     plot_scopf_progress(iteration_data)

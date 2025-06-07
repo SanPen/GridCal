@@ -14,7 +14,7 @@ from dataclasses import dataclass
 import json
 
 import GridCalEngine
-from GridCalEngine import ContingencyGroup, Contingency, LinearMultiContingencies, BranchType
+from GridCalEngine.Simulations.OPF.scopf_driver import LinearMultiContingencies
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import ContingencyIndices
 from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
 import GridCalEngine.Utils.NumericalMethods.autodiff as ad
@@ -2279,12 +2279,12 @@ def case_loop_perturbed() -> None:
     Simple 5 bus system from where to build the SCOPF, looping
     :return:
     """
-    from codecarbon import EmissionsTracker
-    tracker = EmissionsTracker(
-        project_name="SCOPF_GNN_Training",
-        output_dir="//Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/CO2",  # You can change this path
-    )
-    tracker.start()
+    # from codecarbon import EmissionsTracker
+    # tracker = EmissionsTracker(
+    #     project_name="SCOPF_GNN_Training",
+    #     output_dir="//Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/CO2",  # You can change this path
+    # )
+    # tracker.start()
     time_start = time.time()
     num_perturbations = 200
     for p in range(num_perturbations):
@@ -2296,7 +2296,7 @@ def case_loop_perturbed() -> None:
         # file_path = 'src/trunk/scopf/bus5_v10_noQ.gridcal'
         # file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/bus5_v12.gridcal'
         # file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal'
-        # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
+        file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/case14_cont_v12.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case14_cont_v2.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case14_cont_v3.gridcal')
@@ -2310,7 +2310,7 @@ def case_loop_perturbed() -> None:
         # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
-        file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
+        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v16.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
@@ -2357,13 +2357,10 @@ def case_loop_perturbed() -> None:
             delta_Q = (np.random.rand() * 2 - 1) * perturbation_factor * max(original_Q, 1.0)
             load.Q = max(original_Q + delta_Q, 0.0)  # Ensure Q stays ≥ 0
 
-
         nc = compile_numerical_circuit_at(grid, t_idx=None)
 
         acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
                                              opf_options=opf_slack_options, pf_init=True, load_shedding=False)
-
-        contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
         print()
         print(f"--- Base case ---")
@@ -2523,7 +2520,6 @@ def case_loop_perturbed() -> None:
                             #     "contingency_outputs": contingency_outputs,
                             # }
 
-
                         else:
                             print("No valid voltage-dependent nodes found in island. Skipping.")
 
@@ -2633,8 +2629,8 @@ def case_loop_perturbed() -> None:
     time_end = time.time()
     print(f"Total time for {num_perturbations} perturbations: {time_end - time_start:.2f} seconds")
 
-    emissions = tracker.stop()
-    print(f"Estimated CO2 emissions: {emissions:.6f} kg")
+    # emissions = tracker.stop()
+    # print(f"Estimated CO2 emissions: {emissions:.6f} kg")
 
     return None
 

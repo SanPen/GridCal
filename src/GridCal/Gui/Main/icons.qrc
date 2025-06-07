@@ -202,6 +202,7 @@
     <file>icons/short_circuit.svg</file>
     <file>icons/stochastic_power_flow.svg</file>
     <file>icons/pf_ts.svg</file>
+    <file>icons/scopf.svg</file>
   </qresource>
   <qresource prefix="Program icon">
     <file>GridCal_icon.svg</file>

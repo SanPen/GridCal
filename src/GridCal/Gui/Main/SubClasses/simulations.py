@@ -209,6 +209,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionPower_flow_Stochastic.triggered.connect(self.run_stochastic)
         self.ui.actionOPF.triggered.connect(self.optimal_power_flow_dispatcher)
         self.ui.actionOPF_time_series.triggered.connect(self.run_opf_time_series)
+        self.ui.actionSCOPF.triggered.connect(self.run_scopf)
         self.ui.actionOptimal_Net_Transfer_Capacity.triggered.connect(self.optimal_ntc_opf_dispatcher)
         self.ui.actionOptimal_Net_Transfer_Capacity_Time_Series.triggered.connect(self.run_opf_ntc_ts)
         self.ui.actionInputs_analysis.triggered.connect(self.run_inputs_analysis)
@@ -657,6 +658,7 @@ class SimulationsMain(TimeEventsMain):
             SimulationTypes.PowerFlowTimeSeries_run.value: ':/Icons/icons/pf_ts.svg',
             SimulationTypes.OPF_run.value: ':/Icons/icons/dcopf.svg',
             SimulationTypes.OPFTimeSeries_run.value: ':/Icons/icons/dcopf_ts.svg',
+            SimulationTypes.SCOPF_run.value: ':/Icons/icons/scopf.svg',
             SimulationTypes.ShortCircuit_run.value: ':/Icons/icons/short_circuit.svg',
             SimulationTypes.LinearAnalysis_run.value: ':/Icons/icons/ptdf.svg',
             SimulationTypes.LinearAnalysis_TS_run.value: ':/Icons/icons/ptdf_ts.svg',
@@ -2331,6 +2333,62 @@ class SimulationsMain(TimeEventsMain):
 
         else:
             pass
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()
+
+    def run_scopf(self):
+        """
+        Run SCOPF simulation
+        """
+        if self.circuit.valid_for_simulation():
+
+            if not self.session.is_this_running(SimulationTypes.SCOPF_run):
+
+                self.remove_simulation(SimulationTypes.SCOPF_run)
+
+                self.ui.progress_label.setText('Running security-constrained optimal power flow...')
+                QtGui.QGuiApplication.processEvents()
+
+                # set power flow object instance
+                drv = sim.SCOPFDriver(grid=self.circuit,
+                                      pf_options=self.get_selected_power_flow_options(),
+                                      scopf_options=self.get_opf_options(),
+                                      engine=self.get_preferred_engine())
+
+                self.LOCK()
+                self.session.run(drv,
+                                 post_func=self.post_scopf,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
+            else:
+                self.show_warning_toast('Another SCOPF is being run...')
+        else:
+            pass
+
+    def post_scopf(self):
+        """
+        Actions to run after the OPF simulation
+        """
+        _, results = self.session.security_constrained_optimal_power_flow
+
+        if results is not None:
+
+            self.remove_simulation(SimulationTypes.SCOPF_run)
+
+            if results.converged:
+                self.show_info_toast("Security-constrained optimal power flow converged :)")
+            else:
+                self.show_warning_toast('Power flow not converged :/\n'
+                                        'Check that all Branches have rating and \n'
+                                        'that the generator bounds are ok.\n'
+                                        'You may also use the diagnostic tool (F8)',
+                                        duration=4000)
+
+            self.update_available_results()
+
+            self.colour_diagrams()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
