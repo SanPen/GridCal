@@ -186,11 +186,18 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, V: CxVec, bus_lookup: Int
             S[a2] = -1 * ((V[a] * Sdelta[ab]) / (V[a] - V[b]) - (V[a] * Sdelta[ca]) / (V[c] - V[a]))
             S[b2] = -1 * ((V[b] * Sdelta[bc]) / (V[b] - V[c]) - (V[b] * Sdelta[ab]) / (V[a] - V[b]))
             S[c2] = -1 * ((V[c] * Sdelta[ca]) / (V[c] - V[a]) - (V[c] * Sdelta[bc]) / (V[b] - V[c]))
-        else:
-            pass
-            # S[a2] = 0
-            # S[b2] = 0
-            # S[c2] = 0
+
+        elif a2 > -1 and b2 > -1:
+            S[a2] = -1 * V[a2] * Sdelta[ab] / (V[a2] - V[b2])
+            S[b2] = -1 * V[b2] * Sdelta[ab] / (V[b2] - V[a2])
+
+        elif b2 > -1 and c2 > -1:
+            S[b2] = -1 * V[b2] * Sdelta[bc] / (V[b2] - V[c2])
+            S[c2] = -1 * V[c2] * Sdelta[bc] / (V[c2] - V[b2])
+
+        elif c2 > -1 and a2 > -1:
+            S[c2] = -1 * V[c2] * Sdelta[ca] / (V[c2] - V[a2])
+            S[a2] = -1 * V[a2] * Sdelta[ca] / (V[a2] - V[c2])
 
     return S
 
