@@ -2289,12 +2289,34 @@ def case_loop_perturbed() -> None:
 
     # === Define 5 known Pg perturbations for testing ===
     # Each entry is: [(P1, Q1), (P2, Q2)] for 2 loads
+    # test_perturbations = [
+    #     [(12.0, 6.0), (10.0, 4.0)],  # Base
+    #     [(13.0, 6.5), (9.0, 3.5)],  # Slight shift
+    #     [(11.5, 5.5), (10.5, 4.2)],  # Inverse trend
+    #     [(14.0, 7.0), (8.5, 3.8)],  # More aggressive
+    #     [(12.2, 6.1), (9.8, 3.9)]  # Subtle realistic
+    # ]
     test_perturbations = [
-        [(12.0, 6.0), (10.0, 4.0)],  # Base
-        [(13.0, 6.5), (9.0, 3.5)],  # Slight shift
-        [(11.5, 5.5), (10.5, 4.2)],  # Inverse trend
-        [(14.0, 7.0), (8.5, 3.8)],  # More aggressive
-        [(12.2, 6.1), (9.8, 3.9)]  # Subtle realistic
+        [  # Base (original)
+            (21.7, 12.7), (94.2, 19.0), (47.8, -3.9), (7.6, 1.6), (11.2, 7.5),
+            (29.5, 16.6), (9.0, 5.8), (3.5, 1.8), (6.1, 1.6), (13.5, 5.8), (14.9, 5.0)
+        ],
+        [  # Slight shift
+            (22.4, 13.1), (92.5, 18.3), (49.1, -4.0), (7.9, 1.7), (11.6, 7.8),
+            (30.3, 17.0), (9.3, 6.0), (3.6, 1.9), (6.3, 1.7), (13.9, 5.9), (15.3, 5.1)
+        ],
+        [  # Inverse trend
+            (21.0, 12.2), (95.1, 19.5), (46.5, -3.7), (7.3, 1.5), (10.8, 7.2),
+            (28.9, 16.1), (8.7, 5.5), (3.4, 1.7), (5.9, 1.5), (13.1, 5.6), (14.5, 4.8)
+        ],
+        [  # More aggressive
+            (23.0, 13.5), (96.8, 20.2), (50.0, -4.2), (8.2, 1.9), (12.0, 8.0),
+            (31.2, 17.5), (9.8, 6.3), (3.8, 2.0), (6.5, 1.8), (14.2, 6.1), (15.6, 5.3)
+        ],
+        [  # Subtle realistic
+            (22.0, 12.9), (93.4, 18.7), (48.5, -3.8), (7.7, 1.6), (11.3, 7.6),
+            (29.8, 16.7), (9.1, 5.9), (3.6, 1.8), (6.2, 1.6), (13.6, 5.8), (15.0, 5.1)
+        ]
     ]
 
     num_pg = len(test_perturbations[0])
@@ -2305,30 +2327,9 @@ def case_loop_perturbed() -> None:
         print(f"\n====== Perturbation case {p + 1} of {num_perturbations} ======\n")
 
         # Load basic grid
-        # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v9.gridcal')
-        # file_path = 'src/trunk/scopf/bus5_v10.gridcal'
-        # file_path = 'src/trunk/scopf/bus5_v10_noQ.gridcal'
-        # file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/bus5_v12.gridcal'
-        file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal'
-        # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
-        # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
-        # file_path = os.path.join('src/trunk/scopf/case14_cont_v2.gridcal')
-        # file_path = os.path.join('src/trunk/scopf/case14_cont_v3.gridcal')
-        # file_path = os.path.join('src/trunk/scopf/case14_cont_v4.gridcal')
-        # file_path = os.path.join('src/trunk/scopf/case14_cont_v0_freeze.gridcal')
-        # file_path = os.path.join('src/trunk/scopf/case14_cont_v5.gridcal')
-        # file_path = os.path.join('src/trunk/scopf/case14_cont_v6.gridcal')
-        # file_path = os.path.join('src/trunk/scopf/case14_cont_v7.gridcal')
-        # file_path = os.path.join('src/trunk/scopf/case14_cont_v8.gridcal')
-        # file_path = os.path.join('src/trunk/scopf/case14_cont_v8_cristina.gridcal')
-        # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
-        # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
-        # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
-        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
-        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v16.gridcal')
+        # file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal'
+        file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
-        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
-        # ieee 39 is infeasible
 
         grid = FileOpen(file_path).open()
 
@@ -2380,8 +2381,6 @@ def case_loop_perturbed() -> None:
 
         acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
                                              opf_options=opf_slack_options, pf_init=True, load_shedding=False)
-
-        contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
         print()
         print(f"--- Base case ---")
@@ -2588,21 +2587,6 @@ def case_loop_perturbed() -> None:
             # }
             # print("Result for perturbation:", result)
 
-            # if klm == 3:
-            #     final_save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/debug_outputs_final"
-            #     os.makedirs(final_save_dir, exist_ok=True)
-            #
-            #     np.save(os.path.join(final_save_dir, f"W_k_vec_final_p{p:03d}.npy"), W_k_vec_used)
-            #     np.save(os.path.join(final_save_dir, f"Z_k_vec_final_p{p:03d}.npy"), Z_k_vec_used)
-            #     np.save(os.path.join(final_save_dir, f"u_j_vec_final_p{p:03d}.npy"), u_j_vec_used)
-            #
-            #     with open(os.path.join(final_save_dir, f"gnn_pred_vectors_p{p:03d}.json"), "w") as f:
-            #         json.dump({
-            #             "W_k_vec": W_k_vec_used.tolist(),
-            #             "Z_k_vec": Z_k_vec_used.tolist(),
-            #             "u_j_vec": u_j_vec_used.tolist()
-            #         }, f, indent=2)
-
             # Run the MP with information from the SPs
             print('')
             print("--- Feeding SPs info to MP ---")
@@ -2615,9 +2599,26 @@ def case_loop_perturbed() -> None:
                                                  u_j_vec=u_j_vec_used,
                                                  load_shedding=False)
 
+
             # Store generation cost
             total_cost = np.sum(acopf_results.Pcost)
             iteration_data['total_cost'].append(total_cost)
+            saved_cost = {
+                "Perturbation": p + 1,
+                "Pg": nc.generator_data.p.tolist(),
+                "contingency_outputs": contingency_outputs,
+                "total_cost": total_cost
+            }
+            # save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/true_costs_5"
+            save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/true_costs_14"
+            os.makedirs(save_dir, exist_ok=True)
+
+            # save_path = os.path.join(save_dir, f"true_costs_5{p:03d}.json")
+            save_path = os.path.join(save_dir, f"true_costs_14{p:03d}.json")
+            with open(save_path, "w") as f:
+                json.dump(saved_cost, f, indent=2)
+            print(f"Saved true costs for perturbation {p} to {save_path}")
+
 
             # Print current iteration metrics
             print(f"Maximum W_k: {iteration_data['max_wk'][-1]}")
@@ -2629,6 +2630,7 @@ def case_loop_perturbed() -> None:
             print(f"Total generation cost: {total_cost}")
 
             if viols == 0:
+                print(f"Contingency {ic}: W_k = {W_k_vec_used}, u_j = {u_j_vec_used}, Z_k = {Z_k_vec_used}")
                 break
 
             iteration_data['num_cuts'].append(prob_cont)
@@ -2640,25 +2642,11 @@ def case_loop_perturbed() -> None:
             # print(f"Z_k_vec: {Z_k_vec}")
             # print(f"u_j_vec: {u_j_vec}")
 
-        # Plot the results
-        # plot_scopf_progress(iteration_data)
-
-        # contingency_outputs = []
-        # for i in range(len(contingencies)):
-        #     contingency_outputs.append({
-        #         "contingency_index": i,
-        #         "W_k": float(W_k_vec[i]),
-        #         "Z_k": Z_k_vec[i].tolist(),
-        #         "u_j": u_j_vec[i].tolist()
-        #     })
-
-
-        # print(result)
-
-        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/gt_5"
-        # save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_14_nn"
+        # save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/gt_5"
+        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/gt_14"
         os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, f"gt_5{p:03d}.json")
+        # save_path = os.path.join(save_dir, f"gt_5{p:03d}.json")
+        save_path = os.path.join(save_dir, f"gt_14{p:03d}.json")
         with open(save_path, "w") as f:
             json.dump(contingency_outputs, f, indent=2)
 

@@ -26,7 +26,7 @@ output_cols = ['W_k'] + [f'u_j_{i}' for i in range(num_uj)] + [f'Z_k_{i}' for i 
 
 X = data[input_cols]
 y = data[output_cols]
-print(y.describe())
+# print(y.describe())
 
 c = data[['contingency_index']]
 
@@ -189,7 +189,7 @@ for epoch in range(EPOCHS):
 
     if val_loss < best_val_loss:
         best_val_loss = val_loss
-        torch.save(model.state_dict(), "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_v2.pt")
+        torch.save(model.state_dict(), "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_integrate.pt")
         patience_counter = 0
     else:
         patience_counter += 1
@@ -199,7 +199,7 @@ for epoch in range(EPOCHS):
 
 
 # Evaluation
-model.load_state_dict(torch.load("/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_v2.pt"))
+model.load_state_dict(torch.load("/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_integrate.pt"))
 model.eval()
 all_preds, all_targets, all_conts = [], [], []
 

@@ -20,7 +20,7 @@ from sklearn.preprocessing import StandardScaler
 import GridCalEngine
 from GridCalEngine import ContingencyGroup, Contingency, LinearMultiContingencies, BranchType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import ContingencyIndices
-from GridCalEngine.Simulations.SCOPF_GNN.FinalFolder.ModelTrain.one_hot_5_integrate import Net
+from GridCalEngine.Simulations.SCOPF_GNN.FinalFolder.ModelTrain.one_hot_14_integrate import Net
 from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
 import GridCalEngine.Utils.NumericalMethods.autodiff as ad
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -2293,16 +2293,17 @@ def case_loop_perturbed() -> None:
     # tracker.start()
     time_start = time.time()
 
-    # model_path = "/Users/CristinaFray/PycharmProjects/GridCal/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_v2.pt"
-    # scaler_X_path = "/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_X_load_var_14.pkl"
-    # scaler_y_path = "/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_y_load_var_14.pkl"
+    model_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_integrate.pt"
+    scaler_X_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_X_load_var_14.pkl"
+    scaler_y_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_y_load_var_14.pkl"
 
-    model_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_5_v4.pt"
-    scaler_X_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_X_load_var_5.pkl"
-    scaler_y_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_y_load_var_5.pkl"
-
-    data = pd.read_csv(
-        "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/load_var_5_v4.csv")
+    # model_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_5_v4.pt"
+    # scaler_X_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_X_load_var_5.pkl"
+    # scaler_y_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_y_load_var_5.pkl"
+    #
+    # data = pd.read_csv(
+    #     "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/load_var_5_v4.csv")
+    data = pd.read_csv("/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/load_var_14.csv")
 
     # Define input and output columns
     all_cols = data.columns.tolist()
@@ -2329,12 +2330,34 @@ def case_loop_perturbed() -> None:
     # === Define 5 known Pg perturbations for testing ===
     # Format: [Pg_0, Pg_1, Pg_2, ..., Pg_n]
     # Each entry is: [(P1, Q1), (P2, Q2)] for 2 loads
+    # test_perturbations = [
+    #     [(12.0, 6.0), (10.0, 4.0)],  # Base
+    #     [(13.0, 6.5), (9.0, 3.5)],  # Slight shift
+    #     [(11.5, 5.5), (10.5, 4.2)],  # Inverse trend
+    #     [(14.0, 7.0), (8.5, 3.8)],  # More aggressive
+    #     [(12.2, 6.1), (9.8, 3.9)]  # Subtle realistic
+    # ]
     test_perturbations = [
-        [(12.0, 6.0), (10.0, 4.0)],  # Base
-        [(13.0, 6.5), (9.0, 3.5)],  # Slight shift
-        [(11.5, 5.5), (10.5, 4.2)],  # Inverse trend
-        [(14.0, 7.0), (8.5, 3.8)],  # More aggressive
-        [(12.2, 6.1), (9.8, 3.9)]  # Subtle realistic
+        [  # Base (original)
+            (21.7, 12.7), (94.2, 19.0), (47.8, -3.9), (7.6, 1.6), (11.2, 7.5),
+            (29.5, 16.6), (9.0, 5.8), (3.5, 1.8), (6.1, 1.6), (13.5, 5.8), (14.9, 5.0)
+        ],
+        [  # Slight shift
+            (22.4, 13.1), (92.5, 18.3), (49.1, -4.0), (7.9, 1.7), (11.6, 7.8),
+            (30.3, 17.0), (9.3, 6.0), (3.6, 1.9), (6.3, 1.7), (13.9, 5.9), (15.3, 5.1)
+        ],
+        [  # Inverse trend
+            (21.0, 12.2), (95.1, 19.5), (46.5, -3.7), (7.3, 1.5), (10.8, 7.2),
+            (28.9, 16.1), (8.7, 5.5), (3.4, 1.7), (5.9, 1.5), (13.1, 5.6), (14.5, 4.8)
+        ],
+        [  # More aggressive
+            (23.0, 13.5), (96.8, 20.2), (50.0, -4.2), (8.2, 1.9), (12.0, 8.0),
+            (31.2, 17.5), (9.8, 6.3), (3.8, 2.0), (6.5, 1.8), (14.2, 6.1), (15.6, 5.3)
+        ],
+        [  # Subtle realistic
+            (22.0, 12.9), (93.4, 18.7), (48.5, -3.8), (7.7, 1.6), (11.3, 7.6),
+            (29.8, 16.7), (9.1, 5.9), (3.6, 1.8), (6.2, 1.6), (13.6, 5.8), (15.0, 5.1)
+        ]
     ]
 
     num_pg = len(test_perturbations[0])
@@ -2345,11 +2368,9 @@ def case_loop_perturbed() -> None:
         print(f"\n====== Perturbation case {p + 1} of {num_perturbations} ======\n")
 
         # Load basic grid
-        file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal')
-        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
+        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal')
+        file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
-        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
-        # ieee 39 is infeasible
 
         grid = FileOpen(file_path).open()
 
@@ -2483,7 +2504,7 @@ def case_loop_perturbed() -> None:
                 "Pg": [float(pg) for pg in Pg_perturbed]
             })
 
-            print(f"Contingency {ic}: W_k = {W_k}, u_j = {u_j}, Z_k = {Z_k}")
+            # print(f"Contingency {ic}: W_k = {W_k}, u_j = {u_j}, Z_k = {Z_k}")
 
             if W_k > tolerance:
                 viols += 1
@@ -2500,16 +2521,33 @@ def case_loop_perturbed() -> None:
 
         total_cost = np.sum(acopf_results.Pcost)
         iteration_data['total_cost'].append(total_cost)
+        print(f"Total generation cost: {total_cost}")
+        # save the total_cost to json
+        saved_cost = {
+            "Perturbation": p + 1,
+            "Pg": nc.generator_data.p.tolist(),
+            "contingency_outputs": contingency_outputs,
+            "total_cost": total_cost
+        }
+        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/pred_costs_14"
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = os.path.join(save_dir, f"pred_costs_14_{p:03d}.json")
+        with open(save_path, "w") as f:
+            json.dump(saved_cost, f, indent=2)
+        print(f"Saved results for perturbation {p} to {save_path}")
+
 
         if viols == 0:
+            print(f"Contingency {ic}: W_k = {W_k_vec}, u_j = {u_j_vec}, Z_k = {Z_k_vec}")
             print("Master problem solution found immediately with GNN predictions.")
         else:
+            print(f"Contingency {ic}: W_k = {W_k_vec}, u_j = {u_j_vec}, Z_k = {Z_k_vec}")
             print(f"{viols} predicted violations found. Continuing...")
 
         # Save predictions
         save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src//GridCalEngine/Simulations/SCOPF_GNN/gnn_preds"
         os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, f"pred5{p:03d}.json")
+        save_path = os.path.join(save_dir, f"pred14{p:03d}.json")
         with open(save_path, "w") as f:
             json.dump(contingency_outputs, f, indent=2)
         print(f"Saved results for perturbation {p} to {save_path}")
