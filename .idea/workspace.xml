@@ -28,22 +28,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Deleted repeated lines">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons/scopf.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/scopf_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/scopf_results.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="SCOPF implemented on GUI">
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons/scopf_gnn.svg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Session/session.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Session/session.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/scopf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/scopf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/NumericalMethods/scopf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/NumericalMethods/scopf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/driver_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/driver_handler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -2040,7 +2031,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="587" />
+    <option name="localTasksCounter" value="588" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2093,7 +2084,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed some bugs" />
     <MESSAGE value="Added some comment" />
     <MESSAGE value="Massive refactor to split branch_data into branch_data and controllable_branch_data" />
     <MESSAGE value="Renamed branch_data to passive_branch_data and controllable_branch_data to active_branch_data" />
@@ -2118,7 +2108,8 @@
     <MESSAGE value="Training with scopf variables visualised" />
     <MESSAGE value="Model using subproblem training data" />
     <MESSAGE value="New way of saving dataset for each cont+Pg perturbations" />
-    <option name="LAST_COMMIT_MESSAGE" value="New way of saving dataset for each cont+Pg perturbations" />
+    <MESSAGE value="SCOPF implemented on GUI" />
+    <option name="LAST_COMMIT_MESSAGE" value="SCOPF implemented on GUI" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

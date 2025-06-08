@@ -3976,7 +3976,7 @@
            <enum>QTabWidget::TabPosition::South</enum>
           </property>
           <property name="currentIndex">
-           <number>3</number>
+           <number>11</number>
           </property>
           <property name="iconSize">
            <size>
@@ -10593,6 +10593,7 @@ QProgressBar::chunk{
    <addaction name="actionUse_clustering"/>
    <addaction name="actionEdit_simulation_time_limits"/>
    <addaction name="actionactivate_time_series"/>
+   <addaction name="actionSCOPF_GNN"/>
    <addaction name="separator"/>
    <addaction name="actionAdd_selected_to_contingency"/>
    <addaction name="actionAdd_selected_as_remedial_action"/>
@@ -12210,6 +12211,18 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Security-constrained optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an SCOPF&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::TextHeuristicRole</enum>
+   </property>
+  </action>
+  <action name="actionSCOPF_GNN">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/scopf_gnn.svg</normaloff>:/Icons/icons/scopf_gnn.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Graph neural network for SCOPF</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::TextHeuristicRole</enum>
