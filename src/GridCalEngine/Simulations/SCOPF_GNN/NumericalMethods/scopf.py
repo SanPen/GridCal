@@ -2296,7 +2296,7 @@ def case_loop_perturbed() -> None:
         # file_path = 'src/trunk/scopf/bus5_v10_noQ.gridcal'
         # file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/bus5_v12.gridcal'
         # file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal'
-        file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/case14_cont_v12.gridcal')
+        # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/case14_cont_v12.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case14_cont_v2.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case14_cont_v3.gridcal')
@@ -2310,7 +2310,7 @@ def case_loop_perturbed() -> None:
         # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
         # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
-        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
+        file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v16.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
         # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
@@ -2318,7 +2318,7 @@ def case_loop_perturbed() -> None:
 
         grid = FileOpen(file_path).open()
 
-        print(grid.lines[0].rate)
+        # print(grid.lines[0].rate)
 
         # configure grid for load shedding testing
         for ll in range(len(grid.lines)):
@@ -2341,9 +2341,9 @@ def case_loop_perturbed() -> None:
                                                     verbose=0)
 
         # --- Perturb Load Real Power (P) and Reactive Power (Q) ---
-        print("Original load P and Q values:")
-        for load in grid.loads:
-            print(f"  Load at bus {load.bus.name}: P = {load.P:.4f}, Q = {load.Q:.4f}")
+        # print("Original load P and Q values:")
+        # for load in grid.loads:
+        #     print(f"  Load at bus {load.bus.name}: P = {load.P:.4f}, Q = {load.Q:.4f}")
 
         perturbation_factor = 0.1  # ±10%
 
@@ -2360,7 +2360,7 @@ def case_loop_perturbed() -> None:
         nc = compile_numerical_circuit_at(grid, t_idx=None)
 
         acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
-                                             opf_options=opf_slack_options, pf_init=True, load_shedding=False)
+                                             opf_options=opf_slack_options, pf_init=False, load_shedding=False)
 
         print()
         print(f"--- Base case ---")
@@ -2391,7 +2391,7 @@ def case_loop_perturbed() -> None:
         linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
         prob_cont = 0
-        max_iter = 15
+        max_iter = 10
         tolerance = 1e-5
 
         n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
@@ -2451,7 +2451,7 @@ def case_loop_perturbed() -> None:
                         indices = island.get_simulation_indices()
 
                         if len(indices.vd) > 0:
-                            print('Selected island with size:', island.nbus)
+                            # print('Selected island with size:', island.nbus)
 
                             slack_sol_cont = run_nonlinear_SP_scopf(
                                 nc=island,
@@ -2461,7 +2461,7 @@ def case_loop_perturbed() -> None:
                                 mp_results=acopf_results,
                                 load_shedding=False,
                             )
-                            # print(f"Error: {slack_sol_cont.error}")
+                            print(f"Error: {slack_sol_cont.error}")
 
                             # Collect slacks
                             v_slack = max(np.maximum(slack_sol_cont.sl_vmax, slack_sol_cont.sl_vmin))
@@ -2470,9 +2470,9 @@ def case_loop_perturbed() -> None:
                             f_slacks[ic] = f_slack
                             W_k_local[ic] = slack_sol_cont.W_k
 
-                            if slack_sol_cont.error > 1e-6:
-                                print(f"Error: {slack_sol_cont.error}")
-                            print(f"u_j: {slack_sol_cont.u_j}")
+                            # if slack_sol_cont.error > 1e-6:
+                            #     print(f"Error: {slack_sol_cont.error}")
+                            # print(f"u_j: {slack_sol_cont.u_j}")
 
                             if slack_sol_cont.W_k > tolerance:
                                 W_k_vec[prob_cont] = slack_sol_cont.W_k
@@ -2480,15 +2480,16 @@ def case_loop_perturbed() -> None:
                                 u_j_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.u_j
                                 prob_cont += 1
                                 viols += 1
+                                print('VIOLATION')
 
                             # # print('nbus', island.nbus, 'ngen', island.ngen)
-                            # print(f"W_k: {slack_sol_cont.W_k}")
-                            # print(f"Z_k: {slack_sol_cont.Z_k}")
-                            # print(f"u_j: {slack_sol_cont.u_j}")
-                            # print(f"Vmax slack: {slack_sol_cont.sl_vmax}")
-                            # print(f"Vmin slack: {slack_sol_cont.sl_vmin}")
-                            # print(f"Sf slack: {slack_sol_cont.sl_sf}")
-                            # print(f"St slack: {slack_sol_cont.sl_st}")
+                            print(f"W_k: {slack_sol_cont.W_k}")
+                            print(f"Z_k: {slack_sol_cont.Z_k}")
+                            print(f"u_j: {slack_sol_cont.u_j}")
+                            print(f"Vmax slack: {slack_sol_cont.sl_vmax}")
+                            print(f"Vmin slack: {slack_sol_cont.sl_vmin}")
+                            print(f"Sf slack: {slack_sol_cont.sl_sf}")
+                            print(f"St slack: {slack_sol_cont.sl_st}")
 
                             # for line in grid.lines:
                             #     from_idx = grid.buses.index(line.bus_from)
@@ -2513,6 +2514,11 @@ def case_loop_perturbed() -> None:
                                 "B": [line.B for line in grid.lines],
                                 "active": [bool(nc.passive_branch_data.active[grid.lines.index(line)]) for line in grid.lines]
                             })
+
+                            result = {
+                                "Pg": nc.generator_data.p.tolist(),
+                                "contingency_outputs": contingency_outputs,
+                            }
 
                             # print("Contingency outputs:", contingency_outputs[-1])
 
@@ -2605,26 +2611,16 @@ def case_loop_perturbed() -> None:
         # Plot the results
         # plot_scopf_progress(iteration_data)
 
-        # contingency_outputs = []
-        # for i in range(len(contingencies)):
-        #     contingency_outputs.append({
-        #         "contingency_index": i,
-        #         "W_k": float(W_k_vec[i]),
-        #         "Z_k": Z_k_vec[i].tolist(),
-        #         "u_j": u_j_vec[i].tolist()
-        #     })
-
-
         # print(result)
 
-        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/load_var_14"
-        # save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_14_nn"
+        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/load_var_14_v5"
+        # save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/load_var_39"
         os.makedirs(save_dir, exist_ok=True)
         save_path = os.path.join(save_dir, f"scopf_result_14_gnn_{p:03d}.json")
         with open(save_path, "w") as f:
             json.dump(contingency_outputs, f, indent=2)
 
-        print(f"Saved results for perturbation {p} to {save_path}")
+        # print(f"Saved results for perturbation {p} to {save_path}")
 
     time_end = time.time()
     print(f"Total time for {num_perturbations} perturbations: {time_end - time_start:.2f} seconds")

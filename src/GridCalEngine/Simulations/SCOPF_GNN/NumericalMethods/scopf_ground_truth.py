@@ -2380,7 +2380,7 @@ def case_loop_perturbed() -> None:
         nc = compile_numerical_circuit_at(grid, t_idx=None)
 
         acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
-                                             opf_options=opf_slack_options, pf_init=True, load_shedding=False)
+                                             opf_options=opf_slack_options, pf_init=False, load_shedding=False)
 
         print()
         print(f"--- Base case ---")
@@ -2531,14 +2531,12 @@ def case_loop_perturbed() -> None:
                                 "R": [line.R for line in grid.lines],
                                 "X": [line.X for line in grid.lines],
                                 "B": [line.B for line in grid.lines],
-                                "active": [bool(nc.passive_branch_data.active[grid.lines.index(line)]) for line in grid.lines]
+                                "active": [bool(nc.passive_branch_data.active[grid.lines.index(line)]) for line in
+                                           grid.lines]
                             })
 
-                            # print("Contingency outputs:", contingency_outputs[-1])
 
-                            # result = {
-                            #     "contingency_outputs": contingency_outputs,
-                            # }
+                            # print("Contingency outputs:", contingency_outputs[-1])
 
 
                         else:
@@ -2587,6 +2585,18 @@ def case_loop_perturbed() -> None:
             # }
             # print("Result for perturbation:", result)
 
+            # contingency_outputs.append({
+            #     "contingency_index": int(ic),
+            #     "W_k": float(slack_sol_cont.W_k),
+            #     "Z_k": slack_sol_cont.Z_k.tolist(),
+            #     "u_j": slack_sol_cont.u_j.tolist(),
+            #     "Pg": acopf_results.Pg.tolist(),
+            #     "R": [line.R for line in grid.lines],
+            #     "X": [line.X for line in grid.lines],
+            #     "B": [line.B for line in grid.lines],
+            #     "active": [bool(nc.passive_branch_data.active[grid.lines.index(line)]) for line in grid.lines]
+            # })
+
             # Run the MP with information from the SPs
             print('')
             print("--- Feeding SPs info to MP ---")
@@ -2603,12 +2613,18 @@ def case_loop_perturbed() -> None:
             # Store generation cost
             total_cost = np.sum(acopf_results.Pcost)
             iteration_data['total_cost'].append(total_cost)
-            saved_cost = {
-                "Perturbation": p + 1,
-                "Pg": nc.generator_data.p.tolist(),
+
+            result = {
                 "contingency_outputs": contingency_outputs,
-                "total_cost": total_cost
+                "total_cost": acopf_results.Pcost.tolist(),
             }
+
+            # saved_cost = {
+            #     "Perturbation": p + 1,
+            #     "Pg": nc.generator_data.p.tolist(),
+            #     "contingency_outputs": contingency_outputs,
+            #     "total_cost": total_cost
+            # }
             # save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/true_costs_5"
             save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/true_costs_14"
             os.makedirs(save_dir, exist_ok=True)
@@ -2616,7 +2632,7 @@ def case_loop_perturbed() -> None:
             # save_path = os.path.join(save_dir, f"true_costs_5{p:03d}.json")
             save_path = os.path.join(save_dir, f"true_costs_14{p:03d}.json")
             with open(save_path, "w") as f:
-                json.dump(saved_cost, f, indent=2)
+                json.dump(result, f, indent=2)
             print(f"Saved true costs for perturbation {p} to {save_path}")
 
 

@@ -13,7 +13,7 @@ import os
 
 # Load dataset
 data = pd.read_csv(
-    "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/load_var_14.csv")
+    "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/load_var_14_v5.csv")
 
 # Define input and output columns
 all_cols = data.columns.tolist()
@@ -29,20 +29,17 @@ y = data[output_cols]
 # print(y.describe())
 
 c = data[['contingency_index']]
+cont3_mask = c['contingency_index'] == 3
+X_3 = X[cont3_mask]
+y_3 = y[cont3_mask]
+c_3 = c[cont3_mask]
 
-# # Oversample contingency 3 to increase its training influence
-# cont3_mask = c['contingency_index'] == 3
-# X_3 = X[cont3_mask]
-# y_3 = y[cont3_mask]
-# c_3 = c[cont3_mask]
-#
-# # Choose how many times to duplicate contingency 3 samples (e.g., 5x)
-# oversample_factor = 5
-#
-# # Concatenate oversampled contingency 3 samples
-# X = pd.concat([X] + [X_3] * oversample_factor, ignore_index=True)
-# y = pd.concat([y] + [y_3] * oversample_factor, ignore_index=True)
-# c = pd.concat([c] + [c_3] * oversample_factor, ignore_index=True)
+# Increase oversampling factor
+oversample_factor = 10  # Try 10–20 for strong emphasis
+
+X = pd.concat([X] + [X_3] * oversample_factor, ignore_index=True)
+y = pd.concat([y] + [y_3] * oversample_factor, ignore_index=True)
+c = pd.concat([c] + [c_3] * oversample_factor, ignore_index=True)
 
 # Scale features and target
 scaler_X = StandardScaler()
@@ -53,8 +50,8 @@ scaler_X.fit(X)
 scaler_y.fit(y)
 
 # Save the fitted scalers
-scaler_X_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_X_load_var_14.pkl"
-scaler_y_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_y_load_var_14.pkl"
+scaler_X_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_X_load_var_14_v5.pkl"
+scaler_y_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_y_load_var_14_v5.pkl"
 
 joblib.dump(scaler_X, scaler_X_path)
 joblib.dump(scaler_y, scaler_y_path)
@@ -70,6 +67,20 @@ X_train, X_temp, y_train, y_temp, c_train, c_temp = train_test_split(X_scaled, y
 X_val, X_test, y_val, y_test, c_val, c_test = train_test_split(X_temp, y_temp, c_temp, test_size=0.5, stratify=c_temp,
                                                                random_state=42)
 
+# Count frequency of each contingency in training set
+contingency_counts = c_train['contingency_index'].value_counts()
+contingency_weights = 1.0 / contingency_counts
+contingency_weights = contingency_weights / contingency_weights.sum()  # Normalize
+contingency_weights[3] *= 3  # Manually boost weight for contingency 3
+contingency_weights = contingency_weights / contingency_weights.sum()  # Renormalize
+
+
+# Map to tensor (for fast lookup)
+max_index = c_train['contingency_index'].max()
+contingency_weight_tensor = torch.zeros(max_index + 1)
+for idx, weight in contingency_weights.items():
+    contingency_weight_tensor[int(idx)] = weight
+
 # Convert to tensors
 X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
 y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
@@ -82,34 +93,43 @@ y_test_tensor = torch.tensor(y_test, dtype=torch.float32)
 # train_loader = DataLoader(TensorDataset(X_train_tensor, y_train_tensor), batch_size=32, shuffle=True)
 # val_loader = DataLoader(TensorDataset(X_val_tensor, y_val_tensor), batch_size=32)
 # test_loader = DataLoader(TensorDataset(X_test_tensor, y_test_tensor), batch_size=32)
-train_loader = DataLoader(TensorDataset(X_train_tensor, y_train_tensor), batch_size=64, shuffle=True)
-val_loader = DataLoader(TensorDataset(X_val_tensor, y_val_tensor), batch_size=64)
-test_loader = DataLoader(TensorDataset(X_test_tensor, y_test_tensor), batch_size=64)
+c_train_tensor = torch.tensor(c_train.values, dtype=torch.int64)
+c_val_tensor = torch.tensor(c_val.values, dtype=torch.int64)
+c_test_tensor = torch.tensor(c_test.values, dtype=torch.int64)
+
+train_loader = DataLoader(TensorDataset(X_train_tensor, y_train_tensor, c_train_tensor), batch_size=64, shuffle=True)
+val_loader = DataLoader(TensorDataset(X_val_tensor, y_val_tensor, c_val_tensor), batch_size=64)
+test_loader = DataLoader(TensorDataset(X_test_tensor, y_test_tensor, c_test_tensor), batch_size=64)
+
+# train_loader = DataLoader(TensorDataset(X_train_tensor, y_train_tensor), batch_size=64, shuffle=True)
+# val_loader = DataLoader(TensorDataset(X_val_tensor, y_val_tensor), batch_size=64)
+# test_loader = DataLoader(TensorDataset(X_test_tensor, y_test_tensor), batch_size=64)
 
 # Optimized model architecture
 class Net(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(Net, self).__init__()
         self.model = nn.Sequential(
-            nn.Linear(input_dim, 203),  # hidden1
+            nn.Linear(input_dim, 128),  # hidden1
             nn.ReLU(),
-            nn.Dropout(0.2),  # dropout
-            nn.Linear(203, 91),  # hidden2
+            nn.Dropout(0.3),  # dropout
+            nn.Linear(128, 64),  # hidden2
             nn.ReLU(),
-            nn.Linear(91, output_dim)
+            nn.Linear(64, output_dim)
         )
 
     def forward(self, x):
         return self.model(x)
 
+
 model = Net(input_dim=X.shape[1], output_dim=y.shape[1])
-optimizer = optim.Adam(model.parameters(), lr=0.000833245668463311)
+optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)  # Optimized learning rate and weight decay
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=10, factor=0.5)
 # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
 # Best loss weights from latest trial
 loss_weights = torch.tensor(
-    [14.853780140469974] + [0.4056086018453528] * num_uj + [94.58529365514049] * num_zk,
+    [10] + [0.1] * num_uj + [100] * num_zk,
     dtype=torch.float32
 )
 # loss_weights = torch.tensor(
@@ -129,21 +149,43 @@ def weighted_mse_loss(pred, target, weights, alpha=0.8):
 
 
 # Training loop with early stopping
-EPOCHS = 200
+EPOCHS = 50
 early_stop_patience = 20
 best_val_loss = float('inf')
 patience_counter = 0
 train_losses, val_losses = [], []
 
+# Initialize lists for storing test loss
+test_losses = []
+
+# Training loop with early stopping
 for epoch in range(EPOCHS):
     model.train()
     train_loss = 0
-    for xb, yb in train_loader:
+    # for xb, yb in train_loader:
+    #     optimizer.zero_grad()
+    #     pred = model(xb)
+    #     loss = weighted_mse_loss(pred, yb, loss_weights)
+    #     loss.backward()
+    #     optimizer.step()
+    #     train_loss += loss.item() * xb.size(0)
+    #
+    # train_loss /= len(train_loader.dataset)
+    for xb, yb, cb in train_loader:  # cb = contingency_index batch
         optimizer.zero_grad()
         pred = model(xb)
-        loss = weighted_mse_loss(pred, yb, loss_weights)
+
+        # Get per-sample weights based on contingency
+        sample_weights = contingency_weight_tensor[cb.view(-1).long()]  # shape: (batch_size,)
+        sample_weights = sample_weights.to(xb.device)
+
+        # Compute weighted loss
+        loss_per_sample = ((pred - yb) ** 2).mean(dim=1)  # shape: (batch_size,)
+        loss = (sample_weights * loss_per_sample).mean()
+
         loss.backward()
         optimizer.step()
+
         train_loss += loss.item() * xb.size(0)
 
     train_loss /= len(train_loader.dataset)
@@ -151,45 +193,36 @@ for epoch in range(EPOCHS):
     model.eval()
     val_loss = 0
     with torch.no_grad():
-        for xb, yb in val_loader:
+        for xb, yb, _ in val_loader:
             pred = model(xb)
             loss = weighted_mse_loss(pred, yb, loss_weights)
             val_loss += loss.item() * xb.size(0)
 
     val_loss /= len(val_loader.dataset)
+
+    # Add test loss computation
+    test_loss = 0
+    with torch.no_grad():
+        for xb, yb, _ in test_loader:
+            pred = model(xb)
+            loss = weighted_mse_loss(pred, yb, loss_weights)
+            test_loss += loss.item() * xb.size(0)
+
+    test_loss /= len(test_loader.dataset)
+
+    # Store the losses for plotting
     train_losses.append(train_loss)
     val_losses.append(val_loss)
+    test_losses.append(test_loss)
+
     scheduler.step(val_loss)
 
-    # model.eval()
-    # val_loss = 0
-    # with torch.no_grad():
-    #     for xb, yb in val_loader:
-    #         pred = model(xb)
-    #         loss = weighted_mse_loss(pred, yb, loss_weights)
-    #         val_loss += loss.item() * xb.size(0)
-    #
-    # val_loss /= len(val_loader.dataset)
-    # train_losses.append(train_loss)
-    # val_losses.append(val_loss)
-    # scheduler.step(val_loss)
-    #
-    # # Evaluate loss on only contingency 3 samples
-    # model.eval()
-    # with torch.no_grad():
-    #     cont3_mask = (c_val['contingency_index'].values == 3)
-    #     if np.any(cont3_mask):
-    #         X_val_3 = torch.tensor(X_val[cont3_mask], dtype=torch.float32)
-    #         y_val_3 = torch.tensor(y_val[cont3_mask], dtype=torch.float32)
-    #         preds_3 = model(X_val_3)
-            # cont3_loss = weighted_mse_loss(preds_3, y_val_3, loss_weights).item()
-            # print(f"    Contingency 3 Val Loss: {cont3_loss:.4f}")
-
-    print(f"Epoch {epoch + 1}/{EPOCHS} - Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f}")
+    print(
+        f"Epoch {epoch + 1}/{EPOCHS} - Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Test Loss: {test_loss:.4f}")
 
     if val_loss < best_val_loss:
         best_val_loss = val_loss
-        torch.save(model.state_dict(), "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_integrate.pt")
+        torch.save(model.state_dict(), "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_v5.pt")
         patience_counter = 0
     else:
         patience_counter += 1
@@ -197,9 +230,71 @@ for epoch in range(EPOCHS):
             print("Early stopping")
             break
 
+# for epoch in range(EPOCHS):
+#     model.train()
+#     train_loss = 0
+#     for xb, yb in train_loader:
+#         optimizer.zero_grad()
+#         pred = model(xb)
+#         loss = weighted_mse_loss(pred, yb, loss_weights)
+#         loss.backward()
+#         optimizer.step()
+#         train_loss += loss.item() * xb.size(0)
+#
+#     train_loss /= len(train_loader.dataset)
+#
+#     model.eval()
+#     val_loss = 0
+#     with torch.no_grad():
+#         for xb, yb in val_loader:
+#             pred = model(xb)
+#             loss = weighted_mse_loss(pred, yb, loss_weights)
+#             val_loss += loss.item() * xb.size(0)
+#
+#     val_loss /= len(val_loader.dataset)
+#     train_losses.append(train_loss)
+#     val_losses.append(val_loss)
+#     scheduler.step(val_loss)
+#
+#     # model.eval()
+#     # val_loss = 0
+#     # with torch.no_grad():
+#     #     for xb, yb in val_loader:
+#     #         pred = model(xb)
+#     #         loss = weighted_mse_loss(pred, yb, loss_weights)
+#     #         val_loss += loss.item() * xb.size(0)
+#     #
+#     # val_loss /= len(val_loader.dataset)
+#     # train_losses.append(train_loss)
+#     # val_losses.append(val_loss)
+#     # scheduler.step(val_loss)
+#     #
+#     # # Evaluate loss on only contingency 3 samples
+#     # model.eval()
+#     # with torch.no_grad():
+#     #     cont3_mask = (c_val['contingency_index'].values == 3)
+#     #     if np.any(cont3_mask):
+#     #         X_val_3 = torch.tensor(X_val[cont3_mask], dtype=torch.float32)
+#     #         y_val_3 = torch.tensor(y_val[cont3_mask], dtype=torch.float32)
+#     #         preds_3 = model(X_val_3)
+#             # cont3_loss = weighted_mse_loss(preds_3, y_val_3, loss_weights).item()
+#             # print(f"    Contingency 3 Val Loss: {cont3_loss:.4f}")
+#
+#     print(f"Epoch {epoch + 1}/{EPOCHS} - Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f}")
+#
+#     if val_loss < best_val_loss:
+#         best_val_loss = val_loss
+#         torch.save(model.state_dict(), "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_500.pt")
+#         patience_counter = 0
+#     else:
+#         patience_counter += 1
+#         if patience_counter >= early_stop_patience:
+#             print("Early stopping")
+#             break
+
 
 # Evaluation
-model.load_state_dict(torch.load("/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_integrate.pt"))
+model.load_state_dict(torch.load("/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_v5.pt"))
 model.eval()
 all_preds, all_targets, all_conts = [], [], []
 
@@ -240,16 +335,29 @@ grouped = df_eval.groupby('contingency', group_keys=False).apply(compute_metrics
 print("\nPer-Contingency Metrics:")
 # print(grouped)
 
+# # Plot loss curves
+# plt.figure()
+# plt.plot(train_losses, label="Train Loss")
+# plt.plot(val_losses, label="Val Loss")
+# plt.xlabel("Epoch")
+# plt.ylabel("Loss")
+# plt.legend()
+# plt.title("Training and Validation Loss")
+# plt.grid(True)
+# plt.show()
+
 # Plot loss curves
 plt.figure()
 plt.plot(train_losses, label="Train Loss")
-plt.plot(val_losses, label="Val Loss")
+plt.plot(val_losses, label="Validation Loss")
+plt.plot(test_losses, label="Test Loss", linestyle='--')  # Test loss in dashed line
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
-plt.title("Training and Validation Loss")
+plt.title("Training, Validation, and Test Loss")
 plt.grid(True)
 plt.show()
+
 
 print("Training samples:", len(X_train))
 print(c['contingency_index'].value_counts())
@@ -297,3 +405,8 @@ fig.colorbar(sc, cax=cbar_ax, label='Contingency Index')
 
 plt.savefig("parity_colored_by_contingency.png", dpi=300)
 plt.show()
+
+from sklearn.metrics import r2_score
+
+r2 = r2_score(y_true, y_pred)
+print(f"R²: {r2:.4f}")

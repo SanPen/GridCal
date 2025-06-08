@@ -2293,9 +2293,9 @@ def case_loop_perturbed() -> None:
     # tracker.start()
     time_start = time.time()
 
-    model_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_integrate.pt"
-    scaler_X_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_X_load_var_14.pkl"
-    scaler_y_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_y_load_var_14.pkl"
+    model_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_v5.pt"
+    scaler_X_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_X_load_var_14_v5.pkl"
+    scaler_y_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_y_load_var_14_v5.pkl"
 
     # model_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_5_v4.pt"
     # scaler_X_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/scaler_X_load_var_5.pkl"
@@ -2303,7 +2303,7 @@ def case_loop_perturbed() -> None:
     #
     # data = pd.read_csv(
     #     "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/load_var_5_v4.csv")
-    data = pd.read_csv("/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/load_var_14.csv")
+    data = pd.read_csv("/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/load_var_14_V5.csv")
 
     # Define input and output columns
     all_cols = data.columns.tolist()
@@ -2435,7 +2435,7 @@ def case_loop_perturbed() -> None:
         # === Set generator Pg values from the test perturbation ===
 
         acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
-                                             opf_options=opf_slack_options, pf_init=True, load_shedding=False)
+                                             opf_options=opf_slack_options, pf_init=False, load_shedding=False)
 
         print()
         print(f"--- Base case ---")
@@ -2478,9 +2478,11 @@ def case_loop_perturbed() -> None:
 
         # === Replaced SP loop with GNN prediction ===
         for ic in range(n_con_groups):
-            x_input = np.concatenate([Pg_perturbed, [ic]])
+            x_input = np.concatenate([acopf_results.Pg, [ic]])
             x_input_df = pd.DataFrame([x_input], columns=input_cols)
             x_scaled = scaler_X.transform(x_input_df)
+
+            print(x_input_df)
 
             x_tensor = torch.tensor(x_scaled, dtype=torch.float32)
 
@@ -2501,7 +2503,13 @@ def case_loop_perturbed() -> None:
                 "W_k": float(W_k_vec[ic]),
                 "Z_k": Z_k_vec[ic].tolist(),
                 "u_j": u_j_vec[ic].tolist(),
-                "Pg": [float(pg) for pg in Pg_perturbed]
+                "Pg": acopf_results.Pg.tolist(),
+                # save line features R, X, B, is_active
+                "R": [float(line.R) for line in grid.lines],
+                "X": [float(line.X) for line in grid.lines],
+                "B": [float(line.B) for line in grid.lines],
+                "is_active": [bool(nc.passive_branch_data.active[grid.lines.index(line)]) for line in
+                                           grid.lines]
             })
 
             # print(f"Contingency {ic}: W_k = {W_k}, u_j = {u_j}, Z_k = {Z_k}")
@@ -2522,18 +2530,17 @@ def case_loop_perturbed() -> None:
         total_cost = np.sum(acopf_results.Pcost)
         iteration_data['total_cost'].append(total_cost)
         print(f"Total generation cost: {total_cost}")
-        # save the total_cost to json
-        saved_cost = {
-            "Perturbation": p + 1,
-            "Pg": nc.generator_data.p.tolist(),
+
+        result = {
             "contingency_outputs": contingency_outputs,
-            "total_cost": total_cost
+            "total_cost": acopf_results.Pcost.tolist(),
         }
+
         save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/pred_costs_14"
         os.makedirs(save_dir, exist_ok=True)
         save_path = os.path.join(save_dir, f"pred_costs_14_{p:03d}.json")
         with open(save_path, "w") as f:
-            json.dump(saved_cost, f, indent=2)
+            json.dump(result, f, indent=2)
         print(f"Saved results for perturbation {p} to {save_path}")
 
 

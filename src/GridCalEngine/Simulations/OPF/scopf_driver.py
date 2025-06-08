@@ -72,7 +72,7 @@ class SCOPFDriver(TimeSeriesDriverTemplate):
         acopf_results = run_nonlinear_MP_opf(nc=nc,
                                              pf_options=pf_options,
                                              opf_options=opf_slack_options,
-                                             pf_init=True,
+                                             pf_init=False,
                                              load_shedding=False)
 
         Pg_perturbed = acopf_results.Pg
