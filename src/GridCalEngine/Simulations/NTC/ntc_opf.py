@@ -1325,67 +1325,70 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
     f_obj = 0.0
     for c, contingency in enumerate(linear_multicontingencies.multi_contingencies):
 
-        contingency_flows = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
-                                                                 injections=bus_vars.Pinj[t_idx, :],
-                                                                 hvdc_flow=hvdc_vars.flows[t_idx, :],
-                                                                 vsc_flow=vsc_vars.flows[t_idx, :])
+        contingency_flows, mask = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
+                                                                       injections=bus_vars.Pinj[t_idx, :],
+                                                                       hvdc_flow=hvdc_vars.flows[t_idx, :],
+                                                                       vsc_flow=vsc_vars.flows[t_idx, :])
 
         for m, contingency_flow in enumerate(contingency_flows):
-            if isinstance(contingency_flow, LpExp):
 
-                # Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N-1 condition
-                # if monitor_only_ntc_load_rule_branches:
-                #     """
-                #     Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER,
-                #     y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural
-                #     significa que la linea no puede limitar el intercambio
-                #     Ejemplo:
-                #         ntc_load_rule = 0.7
-                #         rate = 1700
-                #         alpha_n1 = 0.05
-                #         structural_rate = 5200
-                #         0.7 * 1700 --> 1190 mw para el intercambio
-                #         1190 / 0.05 --> 23.800 MW en la frontera en N
-                #         23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
-                #        """
-                #     monitor_by_load_rule_n1 = ntc_load_rule * branch_data_t.rates[m] / (alpha_n1[m, c] + 1e-20) <= structural_ntc
-                # else:
-                #     monitor_by_load_rule_n1 = True
-                #
-                # # Monitoring logic: Exclude branches with not enough sensibility to exchange in N-1 condition
-                # if monitor_only_sensitive_branches:
-                #     monitor_by_sensitivity_n1 = alpha_n1[m, c] > alpha_threshold
-                # else:
-                #     monitor_by_sensitivity_n1 = True
+            if mask[m]:
 
-                # TODO: Figure out how to compute Alpha N-1 to be able to uncomment the block above
-                monitor_by_load_rule_n1 = True
-                monitor_by_sensitivity_n1 = True
+                if isinstance(contingency_flow, LpExp):
 
-                if monitor_by_load_rule_n1 and monitor_by_sensitivity_n1:
-                    # declare slack variables
-                    pos_slack = prob.add_var(0, 1e20, join("br_cst_flow_pos_sl_", [t_idx, m, c]))
-                    neg_slack = prob.add_var(0, 1e20, join("br_cst_flow_neg_sl_", [t_idx, m, c]))
+                    # Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N-1 condition
+                    # if monitor_only_ntc_load_rule_branches:
+                    #     """
+                    #     Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER,
+                    #     y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural
+                    #     significa que la linea no puede limitar el intercambio
+                    #     Ejemplo:
+                    #         ntc_load_rule = 0.7
+                    #         rate = 1700
+                    #         alpha_n1 = 0.05
+                    #         structural_rate = 5200
+                    #         0.7 * 1700 --> 1190 mw para el intercambio
+                    #         1190 / 0.05 --> 23.800 MW en la frontera en N
+                    #         23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
+                    #        """
+                    #     monitor_by_load_rule_n1 = ntc_load_rule * branch_data_t.rates[m] / (alpha_n1[m, c] + 1e-20) <= structural_ntc
+                    # else:
+                    #     monitor_by_load_rule_n1 = True
+                    #
+                    # # Monitoring logic: Exclude branches with not enough sensibility to exchange in N-1 condition
+                    # if monitor_only_sensitive_branches:
+                    #     monitor_by_sensitivity_n1 = alpha_n1[m, c] > alpha_threshold
+                    # else:
+                    #     monitor_by_sensitivity_n1 = True
 
-                    # register the contingency data to evaluate the result at the end
-                    branch_vars.add_contingency_flow(t=t_idx, m=m, c=c,
-                                                     flow_var=contingency_flow,
-                                                     neg_slack=neg_slack,
-                                                     pos_slack=pos_slack)
+                    # TODO: Figure out how to compute Alpha N-1 to be able to uncomment the block above
+                    monitor_by_load_rule_n1 = True
+                    monitor_by_sensitivity_n1 = True
 
-                    # add upper rate constraint
-                    prob.add_cst(
-                        cst=contingency_flow + pos_slack <= branch_data_t.contingency_rates[m] / Sbase,
-                        name=join("br_cst_flow_upper_lim_", [t_idx, m, c])
-                    )
+                    if monitor_by_load_rule_n1 and monitor_by_sensitivity_n1:
+                        # declare slack variables
+                        pos_slack = prob.add_var(0, 1e20, join("br_cst_flow_pos_sl_", [t_idx, m, c]))
+                        neg_slack = prob.add_var(0, 1e20, join("br_cst_flow_neg_sl_", [t_idx, m, c]))
 
-                    # add lower rate constraint
-                    prob.add_cst(
-                        cst=contingency_flow - neg_slack >= -branch_data_t.contingency_rates[m] / Sbase,
-                        name=join("br_cst_flow_lower_lim_", [t_idx, m, c])
-                    )
+                        # register the contingency data to evaluate the result at the end
+                        branch_vars.add_contingency_flow(t=t_idx, m=m, c=c,
+                                                         flow_var=contingency_flow,
+                                                         neg_slack=neg_slack,
+                                                         pos_slack=pos_slack)
 
-                    f_obj += pos_slack + neg_slack
+                        # add upper rate constraint
+                        prob.add_cst(
+                            cst=contingency_flow + pos_slack <= branch_data_t.contingency_rates[m] / Sbase,
+                            name=join("br_cst_flow_upper_lim_", [t_idx, m, c])
+                        )
+
+                        # add lower rate constraint
+                        prob.add_cst(
+                            cst=contingency_flow - neg_slack >= -branch_data_t.contingency_rates[m] / Sbase,
+                            name=join("br_cst_flow_lower_lim_", [t_idx, m, c])
+                        )
+
+                        f_obj += pos_slack + neg_slack
 
     # copy the contingency rates
     branch_vars.contingency_rates[t_idx, :] = branch_data_t.contingency_rates
@@ -1586,7 +1589,7 @@ def add_linear_vsc_formulation(t_idx: int,
                         rate=vsc_data_t.rates[m] / Sbase,
                         P0=P0,
                         droop=droop,
-                        theta_f=bus_vars.Va[t_idx, control_bus_idx], # control bus
+                        theta_f=bus_vars.Va[t_idx, control_bus_idx],  # control bus
                         theta_t=bus_vars.Va[t_idx, to],  # ac bus
                         base_name="vsc"
                     )

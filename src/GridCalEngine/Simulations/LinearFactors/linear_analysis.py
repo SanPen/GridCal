@@ -7,13 +7,13 @@ import numpy as np
 import numba as nb
 import warnings
 import scipy.sparse as sp
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Tuple
 
 from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import spsolve as scipy_spsolve
 
 from GridCalEngine import DeviceType
-from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec, CxMat
+from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec, CxMat, BoolVec
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
@@ -598,7 +598,7 @@ class LinearMultiContingency:
                                  base_flow: ObjVec,
                                  injections: ObjVec,
                                  hvdc_flow: ObjVec | None = None,
-                                 vsc_flow: ObjVec | None = None) -> ObjVec:
+                                 vsc_flow: ObjVec | None = None) -> Tuple[ObjVec, BoolVec]:
         """
         Get contingency flows using the LP interface equations
         :param base_flow: Base branch flows (nbranch)
@@ -607,23 +607,35 @@ class LinearMultiContingency:
         :param vsc_flow: Base Vsc flows (n_vsc)
         :return: New flows (nbranch)
         """
-
+        mask = np.zeros(len(base_flow), dtype=bool)
         flow = base_flow.copy()
 
-        if len(self.branch_indices):
-            flow += lpDot(self.mlodf_factors, base_flow[self.branch_indices])
+        if len(self.branch_indices) > 0:
+            inc = lpDot(self.mlodf_factors, base_flow[self.branch_indices])
+            changed_idx = np.where(inc != 0)[0]
+            mask[changed_idx] = True
+            flow[changed_idx] += inc[changed_idx]
 
-        if len(self.hvdc_indices) and hvdc_flow is not None:
-            flow += lpDot(self.hvdc_odf, hvdc_flow[self.hvdc_indices])
+        if len(self.hvdc_indices) > 0 and hvdc_flow is not None:
+            inc = lpDot(self.hvdc_odf, hvdc_flow[self.hvdc_indices])
+            changed_idx = np.where(inc != 0)[0]
+            mask[changed_idx] = True
+            flow[changed_idx] += inc[changed_idx]
 
-        if len(self.vsc_indices) and vsc_flow is not None:
-            flow += lpDot(self.vsc_odf, vsc_flow[self.vsc_indices])
+        if len(self.vsc_indices) > 0 and vsc_flow is not None:
+            inc = lpDot(self.vsc_odf, vsc_flow[self.vsc_indices])
+            changed_idx = np.where(inc != 0)[0]
+            mask[changed_idx] = True
+            flow[changed_idx] += inc[changed_idx]
 
-        if len(self.bus_indices):
+        if len(self.bus_indices) > 0:
             injection_delta = self.injections_factor * injections[self.bus_indices]
-            flow += lpDot(self.compensated_ptdf_factors, injection_delta[self.bus_indices])
+            inc = lpDot(self.compensated_ptdf_factors, injection_delta[self.bus_indices])
+            changed_idx = np.where(inc != 0)[0]
+            mask[changed_idx] = True
+            flow[changed_idx] += inc[changed_idx]
 
-        return flow
+        return flow, mask
 
 
 class ContingencyIndices:

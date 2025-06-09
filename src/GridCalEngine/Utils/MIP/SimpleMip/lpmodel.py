@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import warnings
-from typing import List, Union, Tuple, Iterable
+from typing import List, Union, Tuple, Iterable, Callable
 import numpy as np
 from uuid import uuid4
 
@@ -443,11 +443,12 @@ class LpModel:
         else:
             raise Exception(f"Unsupported solver {self.solver_type.value}")
 
-    def solve(self, robust=True, show_logs=False) -> int:
+    def solve(self, robust=True, show_logs=False, progress_text: Callable[[str], None] | None = None) -> int:
         """
         Solve the model
         :param robust: Relax the problem if infeasible
         :param show_logs: Show logs
+        :param progress_text: Function pointer to print the status
         :return: integer value matching OPTIMAL or not
         """
 
@@ -551,6 +552,15 @@ class LpModel:
                 pass
 
         return self.OPTIMAL if self.is_optimal() else 0
+
+    def status2string(self, status: int) -> str:
+        if status == self.OPTIMAL:
+            return "Optimal"
+        elif status == self.INFINITY:
+            return "Infinity"
+        else:
+            return "infeasible"
+
 
     def set_solution(self, col_values: Vec, col_duals: Vec,
                      row_values: Vec, row_duals: Vec,

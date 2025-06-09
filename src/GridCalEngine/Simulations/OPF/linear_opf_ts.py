@@ -1332,54 +1332,58 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                                                   branch_vars: BranchVars,
                                                   bus_vars: BusVars,
                                                   prob: LpModel,
-                                                  linear_multicontingencies: LinearMultiContingencies):
+                                                  linear_multi_contingencies: LinearMultiContingencies):
     """
     Formulate the branches
     :param t_idx: time index
     :param Sbase: base power (100 MVA)
     :param branch_data_t: BranchData
+    :param hvdc_vars: HvdcVars
+    :param vsc_vars: VscVars
     :param branch_vars: BranchVars
     :param bus_vars: BusVars
     :param prob: OR problem
-    :param linear_multicontingencies: LinearMultiContingencies
+    :param linear_multi_contingencies: LinearMultiContingencies
     :return objective function
     """
     f_obj = 0.0
-    for c, contingency in enumerate(linear_multicontingencies.multi_contingencies):
+    for c, contingency in enumerate(linear_multi_contingencies.multi_contingencies):
 
         # compute the contingency flow (Lp expression)
-        contingency_flows = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
-                                                                 injections=bus_vars.Pinj[t_idx, :],
-                                                                 hvdc_flow=hvdc_vars.flows[t_idx, :],
-                                                                 vsc_flow=vsc_vars.flows[t_idx, :])
+        contingency_flows, mask = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
+                                                                       injections=bus_vars.Pinj[t_idx, :],
+                                                                       hvdc_flow=hvdc_vars.flows[t_idx, :],
+                                                                       vsc_flow=vsc_vars.flows[t_idx, :])
 
         for m, contingency_flow in enumerate(contingency_flows):
 
-            if isinstance(contingency_flow, LpExp):  # if the contingency is not 0
+            if mask[m]:
 
-                # declare slack variables
-                pos_slack = prob.add_var(0, 1e20, join("br_cst_flow_pos_sl_", [t_idx, m, c]))
-                neg_slack = prob.add_var(0, 1e20, join("br_cst_flow_neg_sl_", [t_idx, m, c]))
+                if isinstance(contingency_flow, LpExp):  # if the contingency is not 0
 
-                # register the contingency data to evaluate the result at the end
-                branch_vars.add_contingency_flow(t=t_idx, m=m, c=c,
-                                                 flow_var=contingency_flow,
-                                                 neg_slack=neg_slack,
-                                                 pos_slack=pos_slack)
+                    # declare slack variables
+                    pos_slack = prob.add_var(0, 1e20, join("br_cst_flow_pos_sl_", [t_idx, m, c]))
+                    neg_slack = prob.add_var(0, 1e20, join("br_cst_flow_neg_sl_", [t_idx, m, c]))
 
-                # add upper rate constraint
-                prob.add_cst(
-                    cst=contingency_flow + pos_slack - neg_slack <= branch_data_t.rates[m] / Sbase,
-                    name=join("br_cst_flow_upper_lim_", [t_idx, m, c])
-                )
+                    # register the contingency data to evaluate the result at the end
+                    branch_vars.add_contingency_flow(t=t_idx, m=m, c=c,
+                                                     flow_var=contingency_flow,
+                                                     neg_slack=neg_slack,
+                                                     pos_slack=pos_slack)
 
-                # add lower rate constraint
-                prob.add_cst(
-                    cst=contingency_flow + pos_slack - neg_slack >= -branch_data_t.rates[m] / Sbase,
-                    name=join("br_cst_flow_lower_lim_", [t_idx, m, c])
-                )
+                    # add upper rate constraint
+                    prob.add_cst(
+                        cst=contingency_flow + pos_slack - neg_slack <= branch_data_t.rates[m] / Sbase,
+                        name=join("br_cst_flow_upper_lim_", [t_idx, m, c])
+                    )
 
-                f_obj += pos_slack + neg_slack
+                    # add lower rate constraint
+                    prob.add_cst(
+                        cst=contingency_flow + pos_slack - neg_slack >= -branch_data_t.rates[m] / Sbase,
+                        name=join("br_cst_flow_lower_lim_", [t_idx, m, c])
+                    )
+
+                    f_obj += pos_slack + neg_slack
 
     return f_obj
 
@@ -2056,7 +2060,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                         vsc_vars=mip_vars.vsc_vars,
                         bus_vars=mip_vars.bus_vars,
                         prob=lp_model,
-                        linear_multicontingencies=mctg
+                        linear_multi_contingencies=mctg
                     )
                 else:
                     logger.add_warning(msg="Contingencies enabled, but no contingency groups provided")

@@ -28,9 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved database objects performance by using __slots__">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed current ntc tests">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_ntc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_ntc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/SimpleMip/lpmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/SimpleMip/lpmodel.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -149,6 +152,7 @@
     "Python tests.Python tests in tests.executor": "Run",
     "Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor": "Debug",
     "Python tests.pytest for src.tests.test_basic.test_gridcal_basic_pi.executor": "Debug",
+    "Python tests.pytest for src.tests.test_export_results.executor": "Run",
     "Python tests.pytest for src.tests.test_export_results.test_export_results.executor": "Run",
     "Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true.executor": "Run",
     "Python tests.pytest for src.tests.test_grid_diff.test_add_stuff_roundtrip.executor": "Run",
@@ -208,7 +212,7 @@
     "Python tests.pytest in test_topology_processor.py.executor": "Run",
     "Python tests.pytest in test_tower_composition.py.executor": "Run",
     "Python tests.pytest in test_transformer_type.py.executor": "Run",
-    "Python tests.pytest in tests.executor": "Run",
+    "Python tests.pytest in tests.executor": "Debug",
     "Python tests.test_ntc.py.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
@@ -1048,7 +1052,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for src.tests.test_gslv_conversion.test_results_compatibility" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for src.tests.test_export_results" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1062,7 +1066,7 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;src.tests.test_gslv_conversion.test_results_compatibility&quot;" />
+      <option name="_new_target" value="&quot;src.tests.test_export_results&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
@@ -1146,18 +1150,18 @@
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.test_ntc.py" />
+      <item itemvalue="Python tests.pytest for src.tests.test_export_results" />
       <item itemvalue="Python tests.pytest for src.tests.test_ntc.test_issue_372_3" />
       <item itemvalue="Python tests.pytest for src.tests.test_ntc.test_ntc_pmode_saturation" />
-      <item itemvalue="Python tests.pytest for src.tests.test_gslv_conversion.test_results_compatibility" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.pytest in tests" />
+        <item itemvalue="Python tests.pytest for src.tests.test_export_results" />
         <item itemvalue="Python tests.pytest for src.tests.test_ntc.test_ntc_pmode_saturation" />
         <item itemvalue="Python tests.pytest for src.tests.test_ntc.test_issue_372_3" />
-        <item itemvalue="Python tests.pytest for src.tests.test_gslv_conversion.test_results_compatibility" />
       </list>
     </recent_temporary>
   </component>
@@ -2377,7 +2381,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="749" />
+    <option name="localTasksCounter" value="750" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2423,7 +2427,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="More pmode3..." />
     <MESSAGE value="Simple dispatch done" />
     <MESSAGE value="Worked on the `fast_dispatch_with_renewables` function" />
     <MESSAGE value="refactored fast_dispatch_with_renewables" />
@@ -2448,7 +2451,8 @@
     <MESSAGE value="Improved efficiency of the SimpleMIP" />
     <MESSAGE value="Faster PuLP objects" />
     <MESSAGE value="Improved database objects performance by using __slots__" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved database objects performance by using __slots__" />
+    <MESSAGE value="Fixed current ntc tests" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed current ntc tests" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2935,7 +2939,7 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="len(contingency_indices.hvdc_contingency_indices) &gt; 0" language="Python" />
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py</url>
-          <line>853</line>
+          <line>865</line>
           <option name="timeStamp" value="2789" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2962,6 +2966,31 @@
           <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
           <line>414</line>
           <option name="timeStamp" value="2801" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py</url>
+          <line>637</line>
+          <option name="timeStamp" value="2803" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py</url>
+          <line>635</line>
+          <option name="timeStamp" value="2804" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py</url>
+          <line>628</line>
+          <option name="timeStamp" value="2805" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py</url>
+          <line>622</line>
+          <option name="timeStamp" value="2806" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py</url>
+          <line>616</line>
+          <option name="timeStamp" value="2807" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
