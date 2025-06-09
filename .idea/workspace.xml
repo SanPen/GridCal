@@ -30,8 +30,7 @@
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved database objects performance by using __slots__">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/matpower/matpower_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/matpower/matpower_to_gridcal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_ntc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_ntc.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -159,6 +158,8 @@
     "Python tests.pytest for src.tests.test_load_save_load.test_load_save_load_xlsx.executor": "Debug",
     "Python tests.pytest for src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap.executor": "Debug",
     "Python tests.pytest for src.tests.test_ntc.executor": "Run",
+    "Python tests.pytest for src.tests.test_ntc.test_issue_372_3.executor": "Debug",
+    "Python tests.pytest for src.tests.test_ntc.test_ntc_pmode_saturation.executor": "Debug",
     "Python tests.pytest for src.tests.test_profiles.executor": "Run",
     "Python tests.pytest for src.tests.test_simple_mip.test_linear_formulation.executor": "Run",
     "Python tests.pytest for src.tests.test_tower_composition.test_acha.executor": "Run",
@@ -272,7 +273,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "Shell Script.make.sh.executor": "Run",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "use__slots",
+    "git-widget-placeholder": "devel",
     "last_opened_file_path": "/home/santi/Documentos/Git/eRoots/OffshoreExpansionPlugin",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -305,7 +306,7 @@
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in tests">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -1065,7 +1066,7 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for src.tests.test_load_all_grids.test_all_grids" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for src.tests.test_ntc.test_issue_372_3" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1079,11 +1080,11 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;src.tests.test_load_all_grids.test_all_grids&quot;" />
+      <option name="_new_target" value="&quot;src.tests.test_ntc.test_issue_372_3&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest in test_gslv_conversion.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for src.tests.test_ntc.test_ntc_pmode_saturation" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1097,8 +1098,8 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_gslv_conversion.py&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <option name="_new_target" value="&quot;src.tests.test_ntc.test_ntc_pmode_saturation&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
     <configuration name="pytest in tests" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
@@ -1145,18 +1146,18 @@
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.test_ntc.py" />
+      <item itemvalue="Python tests.pytest for src.tests.test_ntc.test_issue_372_3" />
+      <item itemvalue="Python tests.pytest for src.tests.test_ntc.test_ntc_pmode_saturation" />
       <item itemvalue="Python tests.pytest for src.tests.test_gslv_conversion.test_results_compatibility" />
-      <item itemvalue="Python tests.pytest for src.tests.test_load_all_grids.test_all_grids" />
-      <item itemvalue="Python tests.pytest in test_gslv_conversion.py" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python tests.pytest for src.tests.test_gslv_conversion.test_results_compatibility" />
-        <item itemvalue="Python tests.pytest in test_gslv_conversion.py" />
-        <item itemvalue="Python tests.pytest for src.tests.test_load_all_grids.test_all_grids" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python tests.pytest in tests" />
+        <item itemvalue="Python tests.pytest for src.tests.test_ntc.test_ntc_pmode_saturation" />
+        <item itemvalue="Python tests.pytest for src.tests.test_ntc.test_issue_372_3" />
+        <item itemvalue="Python tests.pytest for src.tests.test_gslv_conversion.test_results_compatibility" />
       </list>
     </recent_temporary>
   </component>
@@ -2948,11 +2949,6 @@
           <option name="timeStamp" value="2795" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
-          <line>740</line>
-          <option name="timeStamp" value="2797" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
           <line>886</line>
           <option name="timeStamp" value="2798" />
@@ -2961,6 +2957,11 @@
           <url>file://$PROJECT_DIR$/src/tests/test_gslv_conversion.py</url>
           <line>273</line>
           <option name="timeStamp" value="2800" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
+          <line>414</line>
+          <option name="timeStamp" value="2801" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
