@@ -11,6 +11,8 @@ class LpVar:
     """
     Variable
     """
+    __slots__ = ("name", "lower_bound", "upper_bound", "is_integer", "_index", "_hash_id")
+
     def __init__(self,
                  name: str,
                  lower_bound: float = 0.0,
@@ -155,6 +157,8 @@ class LpCst:
     """
     Constraint
     """
+    __slots__ = ("name", "linear_expression", "sense", "coefficient", "_index")
+
     def __init__(self, linear_expression: LpExp, sense: str, coefficient: float, name="", internal_index: int = 0):
         """
         constraint (<=, ==, >=) rhs
@@ -249,6 +253,8 @@ class LpExp:
     """
     Expression
     """
+    __slots__ = ("terms", "offset")
+
     def __init__(self, variable: LpVar = None, coefficient: float = 1.0, offset: float = 0.0):
         """
 
@@ -265,7 +271,7 @@ class LpExp:
     def copy(self) -> "LpExp":
         """
         Make a deep copy of this expression
-        :return: Expression
+        :return: LpExp
         """
         e = LpExp()
 
@@ -304,13 +310,12 @@ class LpExp:
         return self._comparison(sense="==", other=other)
 
     def __add__(self, other: Union[LpVar, "LpExp", int, float]) -> "LpExp":
-        new_expr = self.copy()
 
         if isinstance(other, LpVar):
             other = LpExp(other)
 
         if isinstance(other, LpExp):
-
+            new_expr = self.copy()
             new_expr.offset += other.offset
             for var, coeff in other.terms.items():
                 if var in new_expr.terms:
@@ -319,6 +324,7 @@ class LpExp:
                     new_expr.terms[var] = coeff
 
         elif isinstance(other, (int, float)):  # Handling constants in expressions
+            new_expr = self.copy()
             new_expr.offset += other
 
         else:
@@ -330,9 +336,25 @@ class LpExp:
         return self.__add__(other)
 
     def __iadd__(self, other: Union[LpVar, "LpExp", int, float]) -> "LpExp":
-        return self.__add__(other)
+        # return self.__add__(other)
+        """Mutating add —no temporary expression objects."""
 
-    def __mul__(self, other: Union[float, int]) -> "LpExp":
+        if isinstance(other, (int, float)):
+            self.offset += other
+            return self
+
+        if isinstance(other, LpVar):
+            other = LpExp(other)
+
+        if isinstance(other, LpExp):
+            self.offset += other.offset
+            for v, c in other.terms.items():
+                self.terms[v] = self.terms.get(v, 0.0) + c
+                return self
+
+        raise TypeError("Unsupported operand type for +=: {}".format(type(other)))
+
+    def __mul__(self, other: float | int) -> "LpExp":
 
         if isinstance(other, (int, float)):
             new_expr = LpExp()
@@ -349,7 +371,7 @@ class LpExp:
         else:
             raise ValueError("Can only multiply by a scalar")
 
-    def __rmul__(self, other: Union[float, int]) -> "LpExp":
+    def __rmul__(self, other: float | int) -> "LpExp":
         return self.__mul__(other)
 
     def __sub__(self, other: Union[LpVar, "LpExp", int, float]) -> "LpExp":
@@ -378,7 +400,21 @@ class LpExp:
         return (-1 * self).__add__(other)
 
     def __isub__(self, other: Union[LpVar, "LpExp", int, float]) -> "LpExp":
-        return self.__sub__(other)
+        # return self.__sub__(other)
+        if isinstance(other, (int, float)):
+            self.offset -= other
+            return self
+
+        if isinstance(other, LpVar):
+            other = LpExp(other)
+
+        if isinstance(other, LpExp):
+            self.offset -= other.offset
+            for v, c in other.terms.items():
+                self.terms[v] = self.terms.get(v, 0.0) - c
+            return self
+
+        raise TypeError("Unsupported operand type for -=: {}".format(type(other)))
 
     def __neg__(self) -> "LpExp":
         """

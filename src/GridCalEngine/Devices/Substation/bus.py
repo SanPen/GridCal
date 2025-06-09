@@ -66,7 +66,8 @@ class Bus(PhysicalDevice):
         :param active: Is the bus active?
         :param is_slack: Is this bus a slack bus?
         :param is_dc: Is this bus a DC bus?
-        :param is_internal: Is this bus an internal bus? (i.e. the central bus on a 3W transformer, or the bus of a FluidNode)
+        :param is_internal: Is this bus an internal bus?
+                            (i.e. the central bus on a 3W transformer, or the bus of a FluidNode)
         :param area: Area object
         :param zone: Zone object
         :param substation: Substation object

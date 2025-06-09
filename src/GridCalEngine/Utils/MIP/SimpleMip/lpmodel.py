@@ -369,7 +369,7 @@ class LpModel:
 
     def get_coefficients_data(self) -> Tuple[np.ndarray, csc_matrix, np.ndarray]:
         """
-        Returns the coefficients matrix
+        Returns the coefficient matrix
         :return:
         """
 
@@ -381,6 +381,8 @@ class LpModel:
         n = len(self.constraints)
         lower = np.empty(n)
         upper = np.empty(n)
+
+        var_idx_dict = {v: i for i, v in enumerate(self.variables)}
 
         # Iterate through each constraint, populating the lists
         for i, constraint in enumerate(self.constraints):
@@ -394,7 +396,7 @@ class LpModel:
                     row_indices.append(i)
 
                     # Column index is the variable's index
-                    col_indices.append(self.variables.index(var))
+                    col_indices.append(var_idx_dict[var])
 
                     # Coefficient is the data
                     data.append(coeff)
@@ -592,7 +594,7 @@ class LpModel:
 
         return self._objective_value
 
-    def get_value(self, var: LpVar) -> float:
+    def get_value(self, var: LpVar | LpCst | LpExp | float | int) -> float:
         """
         Get the value of a variable
         :param var: LpVar object
@@ -604,15 +606,15 @@ class LpModel:
             return self._row_value[var.get_index()]
         elif isinstance(var, LpExp):
             val = var.offset
-            for var2, coeff in var.terms.items():
-                val += coeff * self._col_value[var2.get_index()]
+            for var2, _coef in var.terms.items():
+                val += _coef * self._col_value[var2.get_index()]
             return val
         elif isinstance(var, int) or isinstance(var, float):
             return var
         else:
             raise TypeError("Unsupported variable type {0}".format(type(var)))
 
-    def get_dual_value(self, var: LpVar) -> float:
+    def get_dual_value(self, var: LpVar | LpCst | LpExp | float | int) -> float:
         """
         Get the dual value of a variable
         :param var: LpVar object

@@ -28,9 +28,16 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed pmode3 in the ntc linear calculation">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="implemented bz2 decompression for xiidm files">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/iidm/iidm_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/iidm/iidm_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Substation/bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Substation/bus.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/SimpleMip/lpmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/SimpleMip/lpmodel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/SimpleMip/lpobjects.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/SimpleMip/lpobjects.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/cplex_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/cplex_cmd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/lp_solver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/lp_solver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/lp_solver_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/lp_solver_cmd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_ntc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_ntc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_opf.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -299,7 +306,7 @@
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.iidm_parser">
+  <component name="RunManager" selected="Python.test_ntc">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -1087,7 +1094,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest in test_ptdf.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest in test_opf.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1101,7 +1108,7 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_ptdf.py&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_opf.py&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
@@ -1151,16 +1158,16 @@
       <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.test_ntc.py" />
-      <item itemvalue="Python tests.pytest in test_ptdf.py" />
+      <item itemvalue="Python tests.pytest in test_opf.py" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.pytest in test_opf.py" />
         <item itemvalue="Python.iidm_parser" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python tests.pytest in test_ptdf.py" />
       </list>
     </recent_temporary>
   </component>
@@ -2380,7 +2387,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="745" />
+    <option name="localTasksCounter" value="746" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2426,7 +2433,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improvements in the CGMES handling of garbage data" />
     <MESSAGE value="Improved handling of sparse arrays" />
     <MESSAGE value="Embedded darkdetect" />
     <MESSAGE value="5.3.42" />
@@ -2451,7 +2457,8 @@
     <MESSAGE value="Added capex to the investment group" />
     <MESSAGE value="Fixed broken test" />
     <MESSAGE value="Fixed pmode3 in the ntc linear calculation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed pmode3 in the ntc linear calculation" />
+    <MESSAGE value="implemented bz2 decompression for xiidm files" />
+    <option name="LAST_COMMIT_MESSAGE" value="implemented bz2 decompression for xiidm files" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2812,18 +2819,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_opf.py</url>
-          <line>394</line>
-          <option name="timeStamp" value="2679" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_opf.py</url>
           <line>431</line>
           <option name="timeStamp" value="2680" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_opf.py</url>
-          <line>392</line>
-          <option name="timeStamp" value="2690" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/table_models.py</url>
@@ -2844,11 +2841,6 @@
           <url>file://$PROJECT_DIR$/src/trunk/ntc/pmode3_eqs.py</url>
           <line>53</line>
           <option name="timeStamp" value="2712" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
-          <line>738</line>
-          <option name="timeStamp" value="2714" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/doc/make.py</url>
@@ -2960,6 +2952,16 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/iidm/iidm_parser.py</url>
           <line>182</line>
           <option name="timeStamp" value="2793" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
+          <line>193</line>
+          <option name="timeStamp" value="2795" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
+          <line>740</line>
+          <option name="timeStamp" value="2797" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

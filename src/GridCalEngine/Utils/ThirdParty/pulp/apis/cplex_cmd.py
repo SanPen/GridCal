@@ -40,19 +40,19 @@ class CPLEX_CMD(LpSolver_CMD):
     name = "CPLEX_CMD"
 
     def __init__(self,
-                 mip=True,
-                 msg=True,
-                 timeLimit=None,
-                 gapRel=None,
-                 gapAbs=None,
+                 mip: bool = True,
+                 msg: bool = True,
+                 timeLimit: float | None = None,
+                 gapRel: float | None = None,
+                 gapAbs: float | None = None,
                  options=None,
-                 warmStart=False,
-                 keepFiles=False,
-                 path=None,
-                 threads=None,
-                 logPath=None,
-                 maxMemory=None,
-                 maxNodes=None):
+                 warmStart: bool = False,
+                 keepFiles: bool = False,
+                 path: str | None = None,
+                 threads: int | None = None,
+                 logPath: str | None = None,
+                 maxMemory: float | None = None,
+                 maxNodes: int | None = None):
         """
         :param bool mip: if False, assume LP even if integer variables
         :param bool msg: if False, no log is shown
