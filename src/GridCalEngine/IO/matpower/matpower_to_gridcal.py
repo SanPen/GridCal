@@ -287,29 +287,37 @@ def convert_branches(circuit: MultiCircuit,
                 if Pfset != 0.0:
                     control1 = ConverterControlType.Pdc
                     control1val = Pfset
+                    control1_dev = bus_f
                 elif Ptset != 0.0:
                     control1 = ConverterControlType.Pac
                     control1val = Ptset
+                    control1_dev = bus_t
                 else:
                     control1 = ConverterControlType.Qac
                     control1val = 0.0
+                    control1_dev = None
 
                 # m based controls
                 if Qtset != 0.0:
                     control2 = ConverterControlType.Qac
                     control2val = Qtset
+                    control2_dev = bus_t
                 elif Qfset != 0.0:
                     control2 = ConverterControlType.Qac
                     control2val = 0.0
+                    control2_dev = bus_t
                 elif Vt_set != 0.0:
                     control2 = ConverterControlType.Vm_ac
                     control2val = Vt_set
+                    control2_dev = bus_t
                 elif Vf_set != 0.0:
                     control2 = ConverterControlType.Vm_dc
                     control2val = Vf_set
+                    control2_dev = bus_f
                 else:
                     control2 = ConverterControlType.Qac
                     control2val = 0.0
+                    control2_dev = None
 
                 # set the from bus as a DC bus
                 # this is by design of the matpower FUBM model,
@@ -370,9 +378,10 @@ def convert_branches(circuit: MultiCircuit,
                                  control1=control1,
                                  control2=control2,
                                  control1_val=control1val,
-                                 control2_val=control2val)
+                                 control2_val=control2val,
+                                 control1_dev=control1_dev,
+                                 control2_dev=control2_dev)
 
-                # branch.regulation_bus = control_bus
 
                 circuit.add_vsc(obj=branch)
 
