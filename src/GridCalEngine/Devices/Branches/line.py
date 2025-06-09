@@ -41,6 +41,33 @@ def accept_line_connection(V1: float, V2: float, branch_connection_voltage_toler
 
 
 class Line(BranchParent):
+    __slots__ = (
+        '_length',
+        'tolerance',
+        'r_fault',
+        'x_fault',
+        'fault_pos',
+        '_R',
+        '_X',
+        '_B',
+        '_R0',
+        '_X0',
+        '_B0',
+        '_R2',
+        '_X2',
+        '_B2',
+        'temp_base',
+        'temp_oper',
+        '_temp_oper_prof',
+        'alpha',
+        '_circuit_idx',
+        'template',
+        'possible_tower_types',
+        'possible_underground_line_types',
+        'possible_sequence_line_types',
+        '_locations',
+    )
+
 
     def __init__(self,
                  bus_from: Bus = None,

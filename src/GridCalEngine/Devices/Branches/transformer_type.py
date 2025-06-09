@@ -10,6 +10,18 @@ from GridCalEngine.Devices.Branches.tap_changer import TapChanger
 
 
 class TransformerType(EditableDevice):
+    __slots__ = (
+        'HV',
+        'LV',
+        'Sn',
+        'Pcu',
+        'Pfe',
+        'I0',
+        'Vsc',
+        'GR_hv1',
+        'GX_hv1',
+        '_tap_changer',
+    )
 
     def __init__(self,
                  hv_nominal_voltage: float = 0.0,

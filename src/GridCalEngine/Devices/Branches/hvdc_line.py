@@ -125,6 +125,34 @@ class HvdcLine(BranchParent):
     """
     HvdcLine
     """
+    __slots__ = (
+        '_length',
+        'dispatchable',
+        'Pset',
+        'r',
+        'dc_link_voltage',
+        'angle_droop',
+        'loss_factor',
+        'mttf',
+        'mttr',
+        'Vset_f',
+        'Vset_t',
+        'min_firing_angle_f',
+        'max_firing_angle_f',
+        'min_firing_angle_t',
+        'max_firing_angle_t',
+        'capex',
+        'opex',
+        'build_status',
+        'control_mode',
+        '_Pset_prof',
+        '_active_prof',
+        '_Vset_f_prof',
+        '_Vset_t_prof',
+        '_angle_droop_prof',
+        '_locations',
+    )
+
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None,
                  cn_from: ConnectivityNode = None,

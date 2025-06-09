@@ -40,6 +40,16 @@ class WireInTower:
     """
     Wire -> Tower association
     """
+    __slots__ = (
+        'wire',
+        'name',
+        'xpos',
+        'ypos',
+        '_phase',
+        'circuit_index',
+        'phase_type',
+        'device_type',
+    )
 
     def __init__(self, wire: Wire, xpos: float = 0.0, ypos: float = 0.0, phase: int = 1):
         """
@@ -156,6 +166,7 @@ class WireInTower:
 
 
 class ListOfWires:
+    __slots__ = ("data")
 
     def __init__(self):
         self.data: List[WireInTower] = list()
@@ -225,6 +236,25 @@ class ListOfWires:
 
 
 class OverheadLineType(EditableDevice):
+    __slots__ = (
+        'wires_in_tower',
+        '_Vnom',
+        'earth_resistivity',
+        'frequency',
+        '_Imax',
+        '_z_abcn',
+        '_z_phases_abcn',
+        '_z_abc',
+        '_z_phases_abc',
+        '_z_seq',
+        '_z_0123',
+        '_y_abcn',
+        '_y_phases_abcn',
+        '_y_abc',
+        '_y_phases_abc',
+        '_y_seq',
+        '_y_0123',
+    )
 
     def __init__(self, name='Tower', idtag: str | None = None,
                  Vnom: float = 1.0,

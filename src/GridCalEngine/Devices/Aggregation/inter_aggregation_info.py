@@ -22,6 +22,16 @@ class InterAggregationInfo(EditableDevice):
     """
     Class to store information of inter area, inter country, etc
     """
+    __slots__ = (
+        'valid',
+        'lst_from',
+        'lst_to',
+        'lst_br',
+        'lst_br_hvdc',
+        'objects_from',
+        'objects_to',
+        'logger',
+    )
 
     def __init__(self,
                  valid: bool,

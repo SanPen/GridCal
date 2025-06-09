@@ -17,6 +17,45 @@ from GridCalEngine.Devices.profile import Profile
 
 
 class Bus(PhysicalDevice):
+    __slots__ = (
+        'active',
+        '_active_prof',
+        'Vnom',
+        'Vmin',
+        'Vm_cost',
+        'Vmax',
+        'Vm0',
+        'Va0',
+        '_Vmin_prof',
+        '_Vmax_prof',
+        'angle_min',
+        'angle_max',
+        'angle_cost',
+        'Qmin_sum',
+        'Qmax_sum',
+        'r_fault',
+        'x_fault',
+        'country',
+        'area',
+        'zone',
+        'substation',
+        '_voltage_level',
+        'type',
+        'is_slack',
+        'is_dc',
+        '_internal',
+        'x',
+        'y',
+        'h',
+        'w',
+        'longitude',
+        'latitude',
+        'ph_a',
+        'ph_b',
+        'ph_c',
+        'ph_n',
+        'is_grounded',
+    )
 
     def __init__(self, name="Bus",
                  idtag=None,
@@ -134,8 +173,8 @@ class Bus(PhysicalDevice):
 
             if voltage_level.Vnom != Vnom:
                 print(f"{self.idtag} {self.name} "
-                f"The nominal voltage of the voltage level is different from bus nominal voltage!"
-                f"{voltage_level.Vnom} != {Vnom}")
+                      f"The nominal voltage of the voltage level is different from bus nominal voltage!"
+                      f"{voltage_level.Vnom} != {Vnom}")
 
             if voltage_level.substation is not None:
                 if substation is None:
@@ -143,7 +182,7 @@ class Bus(PhysicalDevice):
                 else:
                     if substation != voltage_level.substation:
                         print(f"{self.idtag} {self.name} "
-                        f"The substation from the voltage level is different from bus substation!")
+                              f"The substation from the voltage level is different from bus substation!")
 
         # Bus type
         self.type = BusMode.PQ_tpe
@@ -274,7 +313,6 @@ class Bus(PhysicalDevice):
             self._Vmax_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a Vmax_prof')
-
 
     @property
     def voltage_level(self) -> Union[VoltageLevel, None]:

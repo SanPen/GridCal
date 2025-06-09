@@ -11,6 +11,11 @@ class InvestmentsGroup(EditableDevice):
     """
     Investments group
     """
+    __slots__ = (
+        'category',
+        'discount_rate',
+        'CAPEX',
+    )
 
     def __init__(self,
                  idtag: Union[str, None] = None,

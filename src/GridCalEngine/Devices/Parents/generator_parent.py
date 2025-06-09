@@ -18,6 +18,20 @@ class GeneratorParent(InjectionParent):
     Template for objects that behave like generators
     """
 
+    __slots__ = (
+        'control_bus',
+        '_control_bus_prof',
+        'control_cn',
+        '_P',
+        '_P_prof',
+        'Pmax',
+        '_Pmax_prof',
+        'Pmin',
+        '_Pmin_prof',
+        'srap_enabled',
+        '_srap_enabled_prof',
+    )
+
     def __init__(self,
                  name: str,
                  idtag: Union[str, None],
@@ -93,8 +107,6 @@ class GeneratorParent(InjectionParent):
         self.srap_enabled = bool(srap_enabled)
         self._srap_enabled_prof = Profile(default_value=self.srap_enabled, data_type=bool)
 
-
-
         self.register(key='control_bus', units='', tpe=DeviceType.BusDevice, definition='Control bus',
                       editable=True, profile_name="control_bus_prof")
 
@@ -110,7 +122,7 @@ class GeneratorParent(InjectionParent):
                       editable=True, profile_name="srap_enabled_prof")
 
     @property
-    def P(self)->float:
+    def P(self) -> float:
         """
         Get the active power value
         :return: float

@@ -372,7 +372,7 @@ def convert_branches(circuit: MultiCircuit,
                                  control1_val=control1val,
                                  control2_val=control2val)
 
-                branch.regulation_bus = control_bus
+                # branch.regulation_bus = control_bus
 
                 circuit.add_vsc(obj=branch)
 

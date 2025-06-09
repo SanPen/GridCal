@@ -86,6 +86,15 @@ class Profile:
     Profile
     """
 
+    __slots__ = (
+        '_is_sparse',
+        '_sparse_array',
+        '_dense_array',
+        '_sparsity_threshold',
+        '_dtype',
+        '_initialized',
+    )
+
     def __init__(self,
                  default_value,
                  data_type: PROFILE_TYPES,
@@ -540,3 +549,25 @@ class Profile:
             if not self._is_sparse:
                 if self._dense_array is not None:
                     np.nan_to_num(self._dense_array, nan=default_value)  # this is supposed to happen in-place
+
+
+    def copy(self):
+        """
+        Deep copy
+        :return:
+        """
+        new_prof = Profile(
+            default_value=self.default_value,
+            data_type=self.dtype,
+            arr=None,
+            sparsity_threshold=self._sparsity_threshold,
+            is_sparse=self.is_sparse
+        )
+
+        if self._sparse_array is not None:
+            new_prof._sparse_array = self._sparse_array.copy()
+
+        if self._dense_array is not None:
+            new_prof._dense_array = self._dense_array.copy()
+
+        return new_prof

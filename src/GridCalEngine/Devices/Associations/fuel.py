@@ -9,6 +9,7 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice, Device
 
 
 class Fuel(EditableDevice):
+    __slots__ = ('cost', '_cost_prof', 'color')
 
     def __init__(self, name='',
                  code='',

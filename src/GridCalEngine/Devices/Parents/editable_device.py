@@ -219,6 +219,21 @@ class EditableDevice:
     """
     This is the main device class from which all inherit
     """
+    __slots__ = (
+        '_idtag',
+        '_name',
+        '_code',
+        '_rdfid',
+        'device_type',
+        'comment',
+        'action',
+        'selected_to_merge',
+        'property_list',
+        'registered_properties',
+        'non_editable_properties',
+        'properties_with_profile',
+        '__auto_update_enabled',
+    )
 
     def __init__(self,
                  name: str,
@@ -841,8 +856,13 @@ class EditableDevice:
         except TypeError:
             new_obj = tpe()
 
-        for prop_name, value in self.__dict__.items():
+        for prop_name, gc_prop in self.registered_properties.items():
+            value = getattr(self, prop_name)
             setattr(new_obj, prop_name, value)
+
+            if gc_prop.has_profile():
+                my_prof = getattr(self, gc_prop.profile_name)
+                setattr(new_obj, gc_prop.profile_name, my_prof.copy())
 
         if forced_new_idtag:
             new_obj.idtag = uuid.uuid4().hex

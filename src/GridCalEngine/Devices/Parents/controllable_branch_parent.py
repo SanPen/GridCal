@@ -16,6 +16,38 @@ from GridCalEngine.Devices.profile import Profile
 
 
 class ControllableBranchParent(BranchParent):
+    __slots__ = (
+        'tolerance',
+        'R', 'X', 'G', 'B',
+        'R0', 'X0', 'G0', 'B0',
+        'R2', 'X2', 'G2', 'B2',
+        'temp_base',
+        'temp_oper',
+        '_temp_oper_prof',
+        'alpha',
+        '_tap_changer',
+        'tap_module',
+        '_tap_module_prof',
+        '_tap_module_max',
+        '_tap_module_min',
+        '_tap_phase_control_mode',
+        '_tap_phase_control_mode_prof',
+        'Pset',
+        '_Pset_prof',
+        'Qset',
+        '_Qset_prof',
+        'tap_phase',
+        '_tap_phase_prof',
+        '_tap_phase_max',
+        '_tap_phase_min',
+        '_tap_module_control_mode',
+        '_tap_module_control_mode_prof',
+        'vset',
+        '_vset_prof',
+        'regulation_branch',
+        'regulation_bus',
+        'regulation_cn',
+    )
 
     def __init__(self,
                  bus_from: Bus | None,

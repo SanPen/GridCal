@@ -17,6 +17,36 @@ from GridCalEngine.Devices.profile import Profile
 
 
 class Generator(GeneratorParent):
+    __slots__ = (
+        'enabled_dispatch',
+        'R1', 'X1', 'R0', 'X0', 'R2', 'X2',
+        'Pf',
+        '_Pf_prof',
+        'is_controlled',
+        '_Snom',
+        'Vset',
+        '_Vset_prof',
+        'use_reactive_power_curve',
+        'qmin_set',
+        'qmax_set',
+        'q_curve',
+        'custom_q_points',
+        'Cost2',
+        'Cost0',
+        'StartupCost',
+        'ShutdownCost',
+        'MinTimeUp',
+        'MinTimeDown',
+        'RampUp',
+        'RampDown',
+        '_Qmin_prof',
+        '_Qmax_prof',
+        '_Cost2_prof',
+        '_Cost0_prof',
+        'emissions',
+        'fuels',
+        'Sbase',
+    )
 
     def __init__(self,
                  name='gen',

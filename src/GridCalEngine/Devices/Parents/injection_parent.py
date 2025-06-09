@@ -41,6 +41,24 @@ class InjectionParent(PhysicalDevice):
     Parent class for Injections
     """
 
+    __slots__ = (
+        '_bus',
+        '_cn',
+        'active',
+        '_active_prof',
+        'mttf',
+        'mttr',
+        'Cost',
+        '_Cost_prof',
+        'capex',
+        'opex',
+        'build_status',
+        'facility',
+        'technologies',
+        'scalable',
+        '_use_kw',
+    )
+
     def __init__(self,
                  name: str,
                  idtag: Union[str, None],

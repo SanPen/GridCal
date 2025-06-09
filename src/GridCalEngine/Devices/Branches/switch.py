@@ -15,6 +15,13 @@ class Switch(BranchParent):
     The **Switch** class represents the connections between nodes (i.e.
     :ref:`buses<bus>`) in **GridCal**. A Switch is a devices that cuts or allows the flow.
     """
+    __slots__ = (
+        'R',
+        'X',
+        'retained',
+        'normal_open',
+        'rated_current',
+    )
 
     def __init__(self,
                  bus_from: Bus = None,

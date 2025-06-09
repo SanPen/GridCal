@@ -15,6 +15,8 @@ from GridCalEngine.enumerations import BuildStatus, DeviceType
 
 
 class FluidInjectionTemplate(PhysicalDevice):
+    __slots__ = ('active', '_active_prof', 'efficiency', 'max_flow_rate',
+                 '_plant', '_generator', 'build_status', 'facility')
 
     def __init__(self,
                  name: str = '',

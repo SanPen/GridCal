@@ -290,6 +290,5 @@ class ShortCircuitDriver(DriverTemplate):
             results.voltage2 = nc.propagate_bus_result(results.voltage2)
 
         self.results = results
-        self.grid.short_circuit_results = results
         self._is_running = False
         self.toc()

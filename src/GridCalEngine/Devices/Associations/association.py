@@ -15,9 +15,14 @@ class Association:
     """
     GridCal relationship object, this handles the unit of association
     """
+    __slots__ = ('api_object', 'value')
 
     def __init__(self, api_object: Union[None, ASSOCIATION_TYPES] = None, value: float = 1.0):
+        """
 
+        :param api_object:
+        :param value:
+        """
         self.api_object: ASSOCIATION_TYPES = api_object
 
         self.value = value
@@ -66,6 +71,7 @@ class Associations:
     """
     GridCal associations object, this handles a set of associations
     """
+    __slots__ = ('_data', '_device_type')
 
     def __init__(self, device_type: DeviceType):
         """

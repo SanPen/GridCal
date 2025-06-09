@@ -13,6 +13,11 @@ class PointerDeviceParent(EditableDevice):
     Investment
     """
 
+    __slots__ = (
+        '_device_idtag',
+        '_tpe',
+    )
+
     def __init__(self,
                  idtag: Union[str, None],
                  device: EditableDevice,

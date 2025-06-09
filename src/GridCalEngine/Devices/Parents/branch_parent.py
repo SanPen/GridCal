@@ -44,6 +44,35 @@ class BranchParent(PhysicalDevice):
     All other branches inherit from this one
     """
 
+    __slots__ = (
+        '_bus_from',
+        '_cn_from',
+        '_bus_to',
+        '_cn_to',
+        'active',
+        '_active_prof',
+        'reducible',
+        'contingency_enabled',
+        'monitor_loading',
+        'mttf',
+        'mttr',
+        'Cost',
+        '_Cost_prof',
+        'capex',
+        'opex',
+        'build_status',
+        '_ys',
+        '_ysh',
+        '_rate',
+        '_rate_prof',
+        '_contingency_factor',
+        '_contingency_factor_prof',
+        '_protection_rating_factor',
+        '_protection_rating_factor_prof',
+        'color',
+        'group',
+    )
+
     def __init__(self,
                  name: str,
                  idtag: Union[str, None],

@@ -14,6 +14,7 @@ class RemedialAction(PointerDeviceParent):
     """
     The RemedialAction object
     """
+    __slots__ = ('_prop', '_value', '_group')
 
     def __init__(self,
                  device: EditableDevice | None = None,

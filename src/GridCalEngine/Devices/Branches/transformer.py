@@ -19,6 +19,18 @@ from GridCalEngine.Devices.Parents.editable_device import DeviceType
 
 
 class Transformer2W(ControllableBranchParent):
+    __slots__ = (
+        'HV',
+        'LV',
+        'Sn',
+        'Pcu',
+        'Pfe',
+        'I0',
+        'Vsc',
+        'conn',
+        'template',
+        'possible_transformer_types',
+    )
 
     def __init__(self,
                  bus_from: Bus | None = None,

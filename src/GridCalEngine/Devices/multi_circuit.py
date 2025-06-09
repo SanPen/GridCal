@@ -149,6 +149,16 @@ class MultiCircuit(Assets):
         grid = MultiCircuit(name="My grid")
 
     """
+    __slots__ = (
+        'name',
+        'idtag',
+        'comments',
+        'model_version',
+        'user_name',
+        'Sbase',
+        'fBase',
+        'logger',
+    )
 
     def __init__(self,
                  name: str = '',

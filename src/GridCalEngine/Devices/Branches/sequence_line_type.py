@@ -68,6 +68,21 @@ def get_line_impedances_with_b(r_ohm: float, x_ohm: float, b_us: float, length: 
 
 
 class SequenceLineType(EditableDevice):
+    __slots__ = (
+        'Imax',
+        'Vnom',
+        'R',
+        'X',
+        'B',
+        'Cnf',
+        'R0',
+        'X0',
+        'B0',
+        'Cnf0',
+        'use_conductance',
+        'n_circuits'
+    )
+
 
     def __init__(self, name='SequenceLine', idtag=None, Imax=1, Vnom=1,
                  R=0, X=0, B=0, R0=0, X0=0, B0=0, CnF=0, CnF0=0, use_conductance: bool = False):
@@ -107,6 +122,8 @@ class SequenceLineType(EditableDevice):
 
         self.use_conductance = use_conductance
 
+        self.n_circuits = 1
+
         self.register(key='Imax', units='kA', tpe=float, definition='Current rating of the line', old_names=['rating'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Voltage rating of the line')
         self.register(key='R', units='Ohm/km', tpe=float, definition='Positive-sequence resistance per km')
@@ -119,6 +136,7 @@ class SequenceLineType(EditableDevice):
         self.register(key='Cnf0', units='nF/km', tpe=float, definition='Zero-sequence shunt conductance per km')
         self.register(key='use_conductance', units='', tpe=bool,
                       definition='Use conductance? else the susceptance is used')
+        self.register(key='n_circuits', units='', tpe=int, definition='number of circuits')
 
     def get_values(self, Sbase: float, freq: float, length: float, line_Vnom: float, ):
         """

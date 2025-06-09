@@ -15,6 +15,18 @@ class Load(LoadParent):
     """
     Load
     """
+    __slots__ = (
+        'G',
+        'B',
+        'Ir',
+        'Ii',
+        '_G_prof',
+        '_B_prof',
+        '_Ir_prof',
+        '_Ii_prof',
+        '_n_customers',
+        '_n_customers_prof',
+    )
 
     def __init__(self, name='Load', idtag=None, code='',
                  G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, Cost=1200.0,

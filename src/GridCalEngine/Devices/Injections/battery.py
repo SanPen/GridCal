@@ -12,6 +12,21 @@ class Battery(Generator):
     """
     Battery
     """
+    __slots__ = (
+        'device_type',
+        'charge_efficiency',
+        'discharge_efficiency',
+        'max_soc',
+        'min_soc',
+        'min_soc_charge',
+        'charge_per_cycle',
+        'discharge_per_cycle',
+        'Enom',
+        'soc_0',
+        'soc',
+        'min_energy',
+        'energy',
+    )
 
     def __init__(self, name='batt', idtag=None, P=0.0, power_factor=0.8, vset=1.0,
                  is_controlled=True, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999,

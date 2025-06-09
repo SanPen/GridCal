@@ -16,6 +16,14 @@ if TYPE_CHECKING:
 
 
 class FluidPath(PhysicalDevice):
+    __slots__ = (
+        'source',
+        'target',
+        'min_flow',
+        'max_flow',
+        'color',
+        '_locations',
+    )
 
     def __init__(self,
                  name: str = '',

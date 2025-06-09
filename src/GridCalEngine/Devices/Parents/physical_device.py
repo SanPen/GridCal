@@ -13,7 +13,11 @@ class PhysicalDevice(EditableDevice):
     """
     Parent class for Injections, Branches, Buses and other physical devices
     """
-
+    __slots__ = (
+        "modelling_authority",
+        "_commissioned_date",
+        "_decommissioned_date"
+    )
     def __init__(self,
                  name: str,
                  idtag: Union[str, None],
