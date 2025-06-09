@@ -50,7 +50,8 @@ def lpDot(mat: csc_matrix, arr: Union[ObjVec, ObjMat]) -> Union[ObjVec, ObjMat]:
         for i in range(n_cols):
             for ii in range(mat.indptr[i], mat.indptr[i + 1]):
                 j = mat.indices[ii]  # row index
-                res[j] += mat.data[ii] * arr[i]  # C.data[ii] is equivalent to C[i, j]
+                if mat.data[ii] != 0.0:
+                    res[j] += mat.data[ii] * arr[i]  # C.data[ii] is equivalent to C[i, j]
 
         return res
 
@@ -65,7 +66,8 @@ def lpDot(mat: csc_matrix, arr: Union[ObjVec, ObjMat]) -> Union[ObjVec, ObjMat]:
             for i in range(n_cols):
                 for ii in range(mat.indptr[i], mat.indptr[i + 1]):
                     j = mat.indices[ii]  # row index
-                    res[j, k] += mat.data[ii] * arr[i, k]  # C.data[ii] is equivalent to C[i, j]
+                    if mat.data[ii] != 0.0:
+                        res[j, k] += mat.data[ii] * arr[i, k]  # C.data[ii] is equivalent to C[i, j]
 
         return res
 
