@@ -304,8 +304,15 @@ class OverheadLineType(EditableDevice):
         return self._z_phases_abcn
 
     @property
-    def z_abc(self) -> CxMat | None:
+    def z_abc(self) -> CxMat:
         return self._z_abc
+
+    @z_abc.setter
+    def z_abc(self, val):
+        if isinstance(val, np.ndarray):
+            self._z_abc = val
+        else:
+            raise Exception("z_abc is not a numpy array")
 
     @property
     def z_phases_abc(self) -> CxMat | None:
@@ -331,9 +338,23 @@ class OverheadLineType(EditableDevice):
     def y_abc(self) -> CxMat | None:
         return self._y_abc
 
+    @y_abc.setter
+    def y_abc(self, val):
+        if isinstance(val, np.ndarray):
+            self._y_abc = val
+        else:
+            raise Exception("y_abc is not a numpy array")
+
     @property
     def y_phases_abc(self) -> CxMat | None:
         return self._y_phases_abc
+
+    @y_phases_abc.setter
+    def y_phases_abc(self, val):
+        if isinstance(val, np.ndarray):
+            self._y_phases_abc = val
+        else:
+            raise Exception("y_phases_abc is not a numpy array")
 
     @property
     def y_seq(self) -> CxMat | None:
@@ -384,11 +405,11 @@ class OverheadLineType(EditableDevice):
 
         adm = AdmittanceMatrix(size=3)
         adm.values = y_3x3
-        if 1 in self.y_phases_abcn:
+        if 1 in self.y_phases_abc:
             adm.phA = 1
-        if 2 in self.y_phases_abcn:
+        if 2 in self.y_phases_abc:
             adm.phB = 1
-        if 3 in self.y_phases_abcn:
+        if 3 in self.y_phases_abc:
             adm.phC = 1
 
         return adm
@@ -412,11 +433,11 @@ class OverheadLineType(EditableDevice):
 
         adm = AdmittanceMatrix(size=3)
         adm.values = y_3x3
-        if 1 in self.y_phases_abcn:
+        if 1 in self.y_phases_abc:
             adm.phA = 1
-        if 2 in self.y_phases_abcn:
+        if 2 in self.y_phases_abc:
             adm.phB = 1
-        if 3 in self.y_phases_abcn:
+        if 3 in self.y_phases_abc:
             adm.phC = 1
 
         return adm
@@ -612,9 +633,12 @@ class OverheadLineType(EditableDevice):
         Vn = self.Vnom if Vnom is None else Vnom
 
         if self.z_seq is None and self.y_seq is None:
-            # get the rating in MVA = kA * kV
-            rate = self.Imax[circuit_index - 1] * Vn * np.sqrt(3)
-            return 0.0, 1e-20, 0.0, 0.0, 1e-20, 0.0, rate
+            if self.Imax is not None:
+                # get the rating in MVA = kA * kV
+                rate = self.Imax[circuit_index - 1] * Vn * np.sqrt(3)
+                return 0.0, 1e-20, 0.0, 0.0, 1e-20, 0.0, rate
+            else:
+                return 0.0, 1e-20, 0.0, 0.0, 1e-20, 0.0, 0.0
 
         Zbase = (Vn * Vn) / Sbase
         Ybase = 1 / Zbase
