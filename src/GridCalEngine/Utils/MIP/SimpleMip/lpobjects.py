@@ -336,23 +336,7 @@ class LpExp:
         return self.__add__(other)
 
     def __iadd__(self, other: Union[LpVar, "LpExp", int, float]) -> "LpExp":
-        # return self.__add__(other)
-        """Mutating add —no temporary expression objects."""
-
-        if isinstance(other, (int, float)):
-            self.offset += other
-            return self
-
-        if isinstance(other, LpVar):
-            other = LpExp(other)
-
-        if isinstance(other, LpExp):
-            self.offset += other.offset
-            for v, c in other.terms.items():
-                self.terms[v] = self.terms.get(v, 0.0) + c
-                return self
-
-        raise TypeError("Unsupported operand type for +=: {}".format(type(other)))
+        return self.__add__(other)
 
     def __mul__(self, other: float | int) -> "LpExp":
 
@@ -400,21 +384,7 @@ class LpExp:
         return (-1 * self).__add__(other)
 
     def __isub__(self, other: Union[LpVar, "LpExp", int, float]) -> "LpExp":
-        # return self.__sub__(other)
-        if isinstance(other, (int, float)):
-            self.offset -= other
-            return self
-
-        if isinstance(other, LpVar):
-            other = LpExp(other)
-
-        if isinstance(other, LpExp):
-            self.offset -= other.offset
-            for v, c in other.terms.items():
-                self.terms[v] = self.terms.get(v, 0.0) - c
-            return self
-
-        raise TypeError("Unsupported operand type for -=: {}".format(type(other)))
+        return self.__sub__(other)
 
     def __neg__(self) -> "LpExp":
         """
