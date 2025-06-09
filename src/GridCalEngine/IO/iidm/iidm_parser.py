@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from typing import List
+import bz2
 import xml.etree.ElementTree as ET
 from GridCalEngine.IO.iidm.devices.substation import Substation
 from GridCalEngine.IO.iidm.devices.voltage_level import VoltageLevel
@@ -19,7 +20,9 @@ from GridCalEngine.IO.iidm.devices.static_var_compensator import StaticVarCompen
 from GridCalEngine.IO.iidm.devices.iidm_circuit import IidmCircuit
 
 """
-# See: https://powsybl.readthedocs.io/projects/pypowsybl/en/latest/reference/network.html
+# See: 
+    https://powsybl.readthedocs.io/projects/pypowsybl/en/latest/reference/network.html
+    https://powsybl.readthedocs.io/projects/powsybl-core/en/stable/grid_model/network_subnetwork.html
 """
 
 def strip_ns(tag: str) -> str:
@@ -31,13 +34,20 @@ def strip_ns(tag: str) -> str:
     return tag.split("}")[-1] if "}" in tag else tag
 
 
-def parse_xiidm_file_to_circuit_non_recursive(file_path: str) -> IidmCircuit:
+def parse_xiidm_file(file_path: str) -> IidmCircuit:
+    """
+    Parse Xiidm to IidmCircuit
+    :param file_path: xiidm file path
+    :return: IidmCircuit
     """
 
-    :param file_path:
-    :return:
-    """
-    tree = ET.parse(file_path)
+    # Read as a text file (assuming UTF-8 encoding)
+    if file_path.endswith(".bz2"):
+        with bz2.open(file_path, mode='rt', encoding='utf-8') as file:
+            tree = ET.parse(file)
+    else:
+        tree = ET.parse(file_path)
+
     root = tree.getroot()
     circuit = IidmCircuit()
 
@@ -161,13 +171,14 @@ if __name__ == "__main__":
 
 
 
-    fname = "/home/santi/Documentos/Git/GitHub/RTE7000/2021/01/01/recollement-auto-20210101-0000-enrichi.xiidm"
-    # parse_xiidm_file_to_circuit_non_recursive(fname)
-    import pypowsybl as pp
+    # fname = "/home/santi/Documentos/Git/GitHub/RTE7000/2021/01/01/recollement-auto-20210101-0000-enrichi.xiidm"
+    fname = "/home/santi/Documentos/Git/GitHub/RTE7000/2021/01/01/recollement-auto-20210101-0000-enrichi.xiidm.bz2"
 
-    grid = pp.network.load(fname)
+    # import pypowsybl as pp
+    # grid = pp.network.load(fname)
+    # res = pp.loadflow.run_dc(grid, pp.loadflow.Parameters(distributed_slack=False))
 
-    res = pp.loadflow.run_dc(grid, pp.loadflow.Parameters(distributed_slack=False))
+    iidm_circuit = parse_xiidm_file(fname)
 
     print()
 
