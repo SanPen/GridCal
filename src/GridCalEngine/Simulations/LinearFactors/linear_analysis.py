@@ -772,8 +772,7 @@ class LinearMultiContingencies:
 
         # lodf: Mat = lin.LODF
         # ptdf: Mat = lin.PTDF
-
-        self.multi_contingencies = list()
+        self.multi_contingencies.clear()
 
         # for each contingency group
         for ic, contingency_group in enumerate(self.contingency_groups_used):

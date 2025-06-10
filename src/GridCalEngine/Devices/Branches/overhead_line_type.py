@@ -449,8 +449,8 @@ class OverheadLineType(EditableDevice):
             ax.set_ylabel('m', fontsize=8)
             ax.tick_params(axis='x', labelsize=8)
             ax.tick_params(axis='y', labelsize=8)
-            ax.set_xlim([min(0, np.min(x) - 1), np.max(x) + 1])
-            ax.set_ylim([0, np.max(y) + 1])
+            ax.set_xlim((min(0, np.min(x) - 1), np.max(x) + 1))
+            ax.set_ylim((0, np.max(y) + 1))
             ax.patch.set_facecolor('white')
             ax.grid(False)
             ax.grid(which='major', axis='y', linestyle='--')
@@ -459,11 +459,9 @@ class OverheadLineType(EditableDevice):
             pass
 
     def is_computed(self) -> bool:
-
         """
-
-        return: Boolean that tells if the template has already been computed or not
-
+        Boolean that tells if the template has already been computed or not
+        :return: if computed or not
         """
 
         ok = True
