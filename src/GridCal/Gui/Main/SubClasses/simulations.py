@@ -2404,7 +2404,7 @@ class SimulationsMain(TimeEventsMain):
 
                 self.remove_simulation(SimulationTypes.SCOPF_accelerated_run)
 
-                self.ui.progress_label.setText('Running security-constrained optimal power flow...')
+                self.ui.progress_label.setText('Training neural network...')
                 QtGui.QGuiApplication.processEvents()
 
                 _, results = self.session.security_constrained_optimal_power_flow
@@ -2413,10 +2413,9 @@ class SimulationsMain(TimeEventsMain):
                 # self.ui.scopf_nn_dropout_rate_SpinBox.value()
 
                 # set power flow object instance
-                drv = sim.SCOPFDriver(grid=self.circuit,
-                                      pf_options=self.get_selected_power_flow_options(),
-                                      scopf_options=self.get_opf_options(),
-                                      engine=self.get_preferred_engine())
+                drv = sim.SCOPFNNDriver(grid=self.circuit,
+                                      engine=self.get_preferred_engine(),
+                                      df=df)
 
                 self.LOCK()
                 self.session.run(drv,
@@ -2425,7 +2424,7 @@ class SimulationsMain(TimeEventsMain):
                                  text_func=self.ui.progress_label.setText)
 
             else:
-                self.show_warning_toast('Another SCOPF is being run...')
+                self.show_warning_toast('Another neural network is being trained...')
         else:
             pass
 
@@ -2440,7 +2439,7 @@ class SimulationsMain(TimeEventsMain):
             self.remove_simulation(SimulationTypes.SCOPF_accelerated_run)
 
             if results.converged:
-                self.show_info_toast("Security-constrained optimal power flow converged :)")
+                self.show_info_toast("Neural network has trained for SCOPF :)")
             else:
                 self.show_warning_toast('Power flow not converged :/\n'
                                         'Check that all Branches have rating and \n'

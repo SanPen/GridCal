@@ -44,18 +44,7 @@ class SCOPFDriver(TimeSeriesDriverTemplate):
 
         self.scopf_options = scopf_options
         self.pf_options = pf_options
-        # Will hold the final SCOPFResult
         self.results: SCOPFResults = None
-
-    #
-    # def run(self) -> SCOPFResults:
-    #     """
-    #     Runs the security-constrained optimal power flow (SCOPF) simulation.
-    #
-    #     :return: SCOPFResults object containing the results of the simulation.
-    #     """
-    #     # Call the actual SCOPF run method
-    #     scopf_res = case_loop()
 
 
     def run(self) -> SCOPFResults:
@@ -304,64 +293,64 @@ class SCOPFDriver(TimeSeriesDriverTemplate):
 
         return self.results
 
-        def opf(self, remote=False, batteries_energy_0=None) -> OptimalPowerFlowResults:
-            """
-            Run a power flow for every circuit
-            :param remote: is this function being called from the time series?
-            :param batteries_energy_0: initial state of the batteries, if None the default values are taken
-            :return: OptimalPowerFlowResults object
-            """
-
-            self.report_progress(0.0)
-            for it, t in enumerate(self.time_indices):
-
-                # report progress
-                self.report_text('Nonlinear OPF at ' + str(self.grid.time_profile[t]) + '...')
-                self.report_progress2(it, len(self.time_indices))
-
-                # run opf
-                res = run_nonlinear_opf(
-                    grid=self.grid,
-                    opf_options=self.options,
-                    pf_options=self.pf_options,
-                    t_idx=t,
-                    # for the first power flow, use the given strategy
-                    # for the successive ones, use the previous solution
-                    pf_init=self.options.ips_init_with_pf if it == 0 else True,
-                    Sbus_pf0=self.results.Sbus[it - 1, :] if it > 0 else None,
-                    voltage_pf0=self.results.voltage[it - 1, :] if it > 0 else None,
-                    logger=self.logger
-                )
-                Sbase = self.grid.Sbase
-                self.results.voltage[it, :] = res.V
-                self.results.Sbus[it, :] = res.S * Sbase
-                self.results.bus_shadow_prices[it, :] = res.lam_p
-                # self.results.load_shedding = npa_res.load_shedding[0, :]
-                # self.results.battery_power = npa_res.battery_p[0, :]
-                # self.results.battery_energy = npa_res.battery_energy[0, :]
-                self.results.generator_power[it, :] = res.Pg * Sbase
-                self.results.generator_reactive_power[it, :] = res.Qg * Sbase
-                self.results.generator_cost[it, :] = res.Pcost
-
-                self.results.shunt_like_reactive_power[it, :] = res.Qsh * Sbase
-
-                self.results.Sf[it, :] = res.Sf * Sbase
-                self.results.St[it, :] = res.St * Sbase
-                self.results.overloads[it, :] = (res.sl_sf - res.sl_st) * Sbase
-                self.results.loading[it, :] = res.loading
-                self.results.phase_shift[it, :] = res.tap_phase
-
-                self.results.hvdc_Pf[it, :] = res.hvdc_Pf
-                self.results.hvdc_loading[it, :] = res.hvdc_loading
-                self.results.converged[it] = res.converged
-
-                if self.__cancel__:
-                    return self.results
-
-            # Compute the emissions, fuel costs and energy used
-            (self.results.system_fuel,
-             self.results.system_emissions,
-             self.results.system_energy_cost) = self.get_fuel_emissions_energy_calculations(
-                gen_p=self.results.generator_power,
-                gen_cost=self.results.generator_cost
-            )
+        # def opf(self, remote=False, batteries_energy_0=None) -> OptimalPowerFlowResults:
+        #     """
+        #     Run a power flow for every circuit
+        #     :param remote: is this function being called from the time series?
+        #     :param batteries_energy_0: initial state of the batteries, if None the default values are taken
+        #     :return: OptimalPowerFlowResults object
+        #     """
+        #
+        #     self.report_progress(0.0)
+        #     for it, t in enumerate(self.time_indices):
+        #
+        #         # report progress
+        #         self.report_text('Nonlinear OPF at ' + str(self.grid.time_profile[t]) + '...')
+        #         self.report_progress2(it, len(self.time_indices))
+        #
+        #         # run opf
+        #         res = run_nonlinear_opf(
+        #             grid=self.grid,
+        #             opf_options=self.options,
+        #             pf_options=self.pf_options,
+        #             t_idx=t,
+        #             # for the first power flow, use the given strategy
+        #             # for the successive ones, use the previous solution
+        #             pf_init=self.options.ips_init_with_pf if it == 0 else True,
+        #             Sbus_pf0=self.results.Sbus[it - 1, :] if it > 0 else None,
+        #             voltage_pf0=self.results.voltage[it - 1, :] if it > 0 else None,
+        #             logger=self.logger
+        #         )
+        #         Sbase = self.grid.Sbase
+        #         self.results.voltage[it, :] = res.V
+        #         self.results.Sbus[it, :] = res.S * Sbase
+        #         self.results.bus_shadow_prices[it, :] = res.lam_p
+        #         # self.results.load_shedding = npa_res.load_shedding[0, :]
+        #         # self.results.battery_power = npa_res.battery_p[0, :]
+        #         # self.results.battery_energy = npa_res.battery_energy[0, :]
+        #         self.results.generator_power[it, :] = res.Pg * Sbase
+        #         self.results.generator_reactive_power[it, :] = res.Qg * Sbase
+        #         self.results.generator_cost[it, :] = res.Pcost
+        #
+        #         self.results.shunt_like_reactive_power[it, :] = res.Qsh * Sbase
+        #
+        #         self.results.Sf[it, :] = res.Sf * Sbase
+        #         self.results.St[it, :] = res.St * Sbase
+        #         self.results.overloads[it, :] = (res.sl_sf - res.sl_st) * Sbase
+        #         self.results.loading[it, :] = res.loading
+        #         self.results.phase_shift[it, :] = res.tap_phase
+        #
+        #         self.results.hvdc_Pf[it, :] = res.hvdc_Pf
+        #         self.results.hvdc_loading[it, :] = res.hvdc_loading
+        #         self.results.converged[it] = res.converged
+        #
+        #         if self.__cancel__:
+        #             return self.results
+        #
+        #     # Compute the emissions, fuel costs and energy used
+        #     (self.results.system_fuel,
+        #      self.results.system_emissions,
+        #      self.results.system_energy_cost) = self.get_fuel_emissions_energy_calculations(
+        #         gen_p=self.results.generator_power,
+        #         gen_cost=self.results.generator_cost
+        #     )

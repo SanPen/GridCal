@@ -230,69 +230,6 @@ for epoch in range(EPOCHS):
             print("Early stopping")
             break
 
-# for epoch in range(EPOCHS):
-#     model.train()
-#     train_loss = 0
-#     for xb, yb in train_loader:
-#         optimizer.zero_grad()
-#         pred = model(xb)
-#         loss = weighted_mse_loss(pred, yb, loss_weights)
-#         loss.backward()
-#         optimizer.step()
-#         train_loss += loss.item() * xb.size(0)
-#
-#     train_loss /= len(train_loader.dataset)
-#
-#     model.eval()
-#     val_loss = 0
-#     with torch.no_grad():
-#         for xb, yb in val_loader:
-#             pred = model(xb)
-#             loss = weighted_mse_loss(pred, yb, loss_weights)
-#             val_loss += loss.item() * xb.size(0)
-#
-#     val_loss /= len(val_loader.dataset)
-#     train_losses.append(train_loss)
-#     val_losses.append(val_loss)
-#     scheduler.step(val_loss)
-#
-#     # model.eval()
-#     # val_loss = 0
-#     # with torch.no_grad():
-#     #     for xb, yb in val_loader:
-#     #         pred = model(xb)
-#     #         loss = weighted_mse_loss(pred, yb, loss_weights)
-#     #         val_loss += loss.item() * xb.size(0)
-#     #
-#     # val_loss /= len(val_loader.dataset)
-#     # train_losses.append(train_loss)
-#     # val_losses.append(val_loss)
-#     # scheduler.step(val_loss)
-#     #
-#     # # Evaluate loss on only contingency 3 samples
-#     # model.eval()
-#     # with torch.no_grad():
-#     #     cont3_mask = (c_val['contingency_index'].values == 3)
-#     #     if np.any(cont3_mask):
-#     #         X_val_3 = torch.tensor(X_val[cont3_mask], dtype=torch.float32)
-#     #         y_val_3 = torch.tensor(y_val[cont3_mask], dtype=torch.float32)
-#     #         preds_3 = model(X_val_3)
-#             # cont3_loss = weighted_mse_loss(preds_3, y_val_3, loss_weights).item()
-#             # print(f"    Contingency 3 Val Loss: {cont3_loss:.4f}")
-#
-#     print(f"Epoch {epoch + 1}/{EPOCHS} - Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f}")
-#
-#     if val_loss < best_val_loss:
-#         best_val_loss = val_loss
-#         torch.save(model.state_dict(), "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_500.pt")
-#         patience_counter = 0
-#     else:
-#         patience_counter += 1
-#         if patience_counter >= early_stop_patience:
-#             print("Early stopping")
-#             break
-
-
 # Evaluation
 model.load_state_dict(torch.load("/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/load_var_14_v5.pt"))
 model.eval()
