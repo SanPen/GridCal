@@ -1,6 +1,8 @@
 import GridCalEngine.api as gce
-from GridCalEngine import WindingType, ShuntConnectionType
+from GridCalEngine import WindingType, ShuntConnectionType, AdmittanceMatrix
 import numpy as np
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 
 logger = gce.Logger()
 
@@ -13,7 +15,7 @@ grid.fBase = 60
 bus_650 = gce.Bus(name='650', Vnom=4.16, xpos=0, ypos=30)
 bus_650.is_slack = True
 grid.add_bus(obj=bus_650)
-gen = gce.Generator(vset = 1.0)
+gen = gce.Generator(vset = 1.0625)
 grid.add_generator(bus = bus_650, api_obj = gen)
 
 bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=20)
@@ -209,23 +211,15 @@ load_611 = gce.Load(Ir1=0.0,
 load_611.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_611, api_obj=load_611)
 
-load_632_distrib = gce.Load(P1=0.017/2,
+load_632_671_distrib = gce.Load(P1=0.017/2,
                             Q1=0.010/2,
                             P2=0.066/2,
                             Q2=0.038/2,
                             P3=0.117/2,
                             Q3=0.068/2)
-load_632_distrib.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_632, api_obj=load_632_distrib)
-
-load_671_distrib = gce.Load(P1=0.017/2,
-                            Q1=0.010/2,
-                            P2=0.066/2,
-                            Q2=0.038/2,
-                            P3=0.117/2,
-                            Q3=0.068/2)
-load_671_distrib.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_671, api_obj=load_671_distrib)
+load_632_671_distrib.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus_632, api_obj=load_632_671_distrib)
+grid.add_load(bus=bus_671, api_obj=load_632_671_distrib)
 
 """
 Capacitors
@@ -241,6 +235,22 @@ cap_611 = gce.Shunt(B1=0.0,
                     B3=0.1)
 cap_611.conn = ShuntConnectionType.GroundedStar
 grid.add_shunt(bus=bus_611, api_obj=cap_611)
+
+"""
+Transformer between 633 and 634
+"""
+XFM_1 = gce.Transformer2W(name='XFM-1',
+                          bus_from=bus_633,
+                          bus_to=bus_634,
+                          HV=4.16,
+                          LV=0.48,
+                          nominal_power=0.5,
+                          rate=0.5,
+                          r=1.1*2,
+                          x=2*2)
+XFM_1.conn_f = WindingType.GroundedStar
+XFM_1.conn_t = WindingType.GroundedStar
+grid.add_transformer2w(XFM_1)
 
 """
 Line Configurations
@@ -302,25 +312,8 @@ config_607.y_phases_abc = np.array([1])
 grid.add_overhead_line(config_607)
 
 """
-Transformer between 633 and 634
-"""
-XFM_1 = gce.Transformer2W(name='XFM-1',
-                          bus_from=bus_633,
-                          bus_to=bus_634,
-                          HV=4.16,
-                          LV=0.48,
-                          nominal_power=0.5,
-                          rate=0.5,
-                          r=1.1*2,
-                          x=2*2)
-XFM_1.conn_f = WindingType.GroundedStar
-XFM_1.conn_t = WindingType.GroundedStar
-grid.add_transformer2w(XFM_1)
-
-"""
 Lines
 """
-
 line_632_645 = gce.Line(bus_from=bus_632,
                         bus_to=bus_645,
                         length=500 * 0.0003048)
@@ -388,4 +381,35 @@ switch = gce.Switch(name='Switch',
                     bus_from=bus_671,
                     bus_to=bus_692)
 grid.add_switch(obj=switch)
-print()
+
+
+"""
+Power Flow
+"""
+def power_flow_3ph(grid, t_idx=None):
+    nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx = t_idx)
+
+    V0 = nc.bus_data.Vbus
+    S0 = nc.get_power_injections_pu()
+    Qmax, Qmin = nc.get_reactive_power_limits()
+
+    options = gce.PowerFlowOptions(tolerance=1e-10, max_iter=1000)
+
+    problem = PfBasicFormulation3Ph(V0=V0, S0=S0, Qmin=Qmin*100, Qmax=Qmax*100, nc=nc, options=options)
+
+    print('Ybus = \n', problem.Ybus.toarray())
+    print('S0 = \n', problem.S0)
+    print('I0 = \n', problem.I0)
+    print('V0 = \n', problem.V)
+
+    res = newton_raphson_fx(problem=problem, verbose=1)
+
+    Ibus = problem.Ybus.dot(res.V)
+    print('Ibus = \n', Ibus)
+
+    Sbus = res.V * np.conj(Ibus)
+    print('Sbuss = \n', Sbus)
+
+    return res
+
+res_3ph = power_flow_3ph(grid)

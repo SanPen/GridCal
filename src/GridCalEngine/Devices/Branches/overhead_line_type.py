@@ -394,23 +394,40 @@ class OverheadLineType(EditableDevice):
         :param Vnom: Nominal voltage (kV)
         :return: AdmittanceMatrix with series admittance in p.u.
         """
+
         Zbase = (Vnom * Vnom) / Sbase
 
-        phases = self.y_phases_abc
-        phases -= np.ones(len(phases), dtype=int)
-        z = self.z_abc * length / Zbase
-        y = np.linalg.inv(z)
-        y_3x3 = np.zeros((3,3), dtype=complex)
-        y_3x3[np.ix_(phases,phases)] = y
+        rows, columns = self.z_abc.shape
 
         adm = AdmittanceMatrix(size=3)
-        adm.values = y_3x3
-        if 1 in self.y_phases_abc:
+
+        if rows % 3 == 0 and columns % 3 == 0:
+            k = (3 * (circuit_idx - 1)) + np.array([0, 1, 2])
+            z = self.z_abc[np.ix_(k, k)] * length / Zbase
+            adm.values = np.linalg.inv(z)
             adm.phA = 1
-        if 2 in self.y_phases_abc:
             adm.phB = 1
-        if 3 in self.y_phases_abc:
             adm.phC = 1
+
+        else:
+            phases = self.y_phases_abc
+
+            phases = phases[phases > 3*(circuit_idx - 1)]
+            phases = phases[phases <= 3 * circuit_idx]
+            phases = phases - 3 * (circuit_idx - 1) - 1
+
+            z = self.z_abc * length / Zbase
+            y = np.linalg.inv(z)
+            y_3x3 = np.zeros((3,3), dtype=complex)
+            y_3x3[np.ix_(phases,phases)] = y
+
+            adm.values = y_3x3
+            if 1 in self.y_phases_abc:
+                adm.phA = 1
+            if 2 in self.y_phases_abc:
+                adm.phB = 1
+            if 3 in self.y_phases_abc:
+                adm.phC = 1
 
         return adm
 
@@ -426,19 +443,35 @@ class OverheadLineType(EditableDevice):
         Zbase = (Vnom * Vnom) / Sbase
         Ybase = 1 / Zbase
 
-        phases = self.y_phases_abc
-        y = self.y_abc * length * -1e6 / Ybase
-        y_3x3 = np.zeros((3, 3), dtype=complex)
-        y_3x3[np.ix_(phases, phases)] = y
-
+        rows, columns = self.y_abc.shape
         adm = AdmittanceMatrix(size=3)
-        adm.values = y_3x3
-        if 1 in self.y_phases_abc:
+
+        if rows % 3 == 0 and columns % 3 == 0:
+            k = (3 * (circuit_idx - 1)) + np.array([0, 1, 2])
+            y = self.y_abc[np.ix_(k, k)] * length * -1e6 / Ybase
+            adm.values = y
             adm.phA = 1
-        if 2 in self.y_phases_abc:
             adm.phB = 1
-        if 3 in self.y_phases_abc:
             adm.phC = 1
+
+        else:
+            phases = self.y_phases_abc
+
+            phases = phases[phases > 3 * (circuit_idx - 1)]
+            phases = phases[phases <= 3 * circuit_idx]
+            phases = phases - 3 * (circuit_idx - 1) - 1
+
+            y = self.y_abc * length * -1e6 / Ybase
+            y_3x3 = np.zeros((3, 3), dtype=complex)
+            y_3x3[np.ix_(phases, phases)] = y
+
+            adm.values = y_3x3
+            if 1 in self.y_phases_abc:
+                adm.phA = 1
+            if 2 in self.y_phases_abc:
+                adm.phB = 1
+            if 3 in self.y_phases_abc:
+                adm.phC = 1
 
         return adm
 

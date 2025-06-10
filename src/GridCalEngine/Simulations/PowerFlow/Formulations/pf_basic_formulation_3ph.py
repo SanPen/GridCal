@@ -53,7 +53,7 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
 
     idx3 = np.array([0, 1, 2])  # array that we use to generate the 3-phase indices
 
-    R = np.zeros((m, 3), dtype=int)
+    R = np.zeros(3 * m, dtype=bool)
 
     for k in range(m):
         f = nc.passive_branch_data.F[k]
@@ -68,15 +68,14 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
         Yt[np.ix_(k3, f3)] = nc.passive_branch_data.Ytf3[k3, :]
         Yt[np.ix_(k3, t3)] = nc.passive_branch_data.Ytt3[k3, :]
 
-        R[k, 0] = nc.passive_branch_data.phA[k]
-        R[k, 1] = nc.passive_branch_data.phB[k]
-        R[k, 2] = nc.passive_branch_data.phC[k]
+        R[3 * k + 0] = nc.passive_branch_data.phA[k]
+        R[3 * k + 1] = nc.passive_branch_data.phB[k]
+        R[3 * k + 2] = nc.passive_branch_data.phC[k]
 
         Cf[k3, f3] = 1
         Ct[k3, t3] = 1
 
-    Rflat = R.flatten().astype(bool)
-    zero_mask = (Rflat == 0)
+    zero_mask = (R == 0)
     Cfcopy = Cf.copy()
     Ctcopy = Ct.copy()
     
@@ -84,9 +83,8 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
     Ctcopy[zero_mask, :] = 0
 
     Ctot = Cfcopy + Ctcopy
-    col_sums = Ctot.sum(axis=0) 
+    col_sums = np.array(Ctot.sum(axis=0))[0,:]
     binary_bus_mask = (col_sums > 0).astype(bool)
-    binary_bus_mask = np.array(binary_bus_mask).flatten()
 
     Ysh_bus = np.zeros(n * 3, dtype=complex)
     for k in range(nc.shunt_data.nelm):
@@ -104,8 +102,8 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
     Ybus = Cf.T @ Yf + Ct.T @ Yt + diags(Ysh_bus / nc.Sbase)
     Ybus = Ybus[binary_bus_mask, :][:, binary_bus_mask]
     Ysh_bus = Ysh_bus[binary_bus_mask]
-    Yf = Yf[Rflat, :][:, binary_bus_mask]
-    Yt = Yt[Rflat, :][:, binary_bus_mask]
+    Yf = Yf[R, :][:, binary_bus_mask]
+    Yt = Yt[R, :][:, binary_bus_mask]
 
     bus_idx_lookup = [-1] * len(binary_bus_mask)  # start with all -1
     counter = 0
