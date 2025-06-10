@@ -43,16 +43,43 @@ class SCOPFResults(ResultsTemplate):
     def get_generator_df(self) -> pd.DataFrame:
         return pd.DataFrame(data={'P': self.Pg}, index=self.generator_names)
 
+    # def get_contingency_df(self) -> pd.DataFrame:
+    #     records = []
+    #     for output in self.contingency_outputs:
+    #         records.append({
+    #             'Contingency Index': output.get("contingency_index", -1),
+    #             'W_k': output.get("W_k", 0.0),
+    #             'Z_k (sum)': output.get("Z_k", []),
+    #             'u_j (sum)': output.get("u_j", []),
+    #             'Active Branches': np.sum(output.get("active", [])),
+    #         })
+    #     return pd.DataFrame(records)
     def get_contingency_df(self) -> pd.DataFrame:
         records = []
-        for output in self.contingency_outputs:
-            records.append({
-                'Contingency Index': output.get("contingency_index", -1),
-                'W_k': output.get("W_k", 0.0),
-                'Z_k (sum)': np.sum(output.get("Z_k", [])),
-                'u_j (sum)': np.sum(output.get("u_j", [])),
-                'Active Branches': np.sum(output.get("active", [])),
-            })
+
+        # Filter out only valid SCOPF result dicts
+        valid_outputs = [o for o in self.contingency_outputs if "Z_k" in o and "u_j" in o]
+
+        # Determine max lengths for column headers
+        max_z_len = max((len(o["Z_k"]) for o in valid_outputs), default=0)
+        max_u_len = max((len(o["u_j"]) for o in valid_outputs), default=0)
+
+        for output in valid_outputs:
+            record = {
+                "Contingency Index": output.get("contingency_index", -1),
+                "W_k": output.get("W_k", 0.0),
+            }
+
+            # Z_k elements
+            for i in range(max_z_len):
+                record[f"Z_k[{i}]"] = output["Z_k"][i] if i < len(output["Z_k"]) else np.nan
+
+            # u_j elements
+            for i in range(max_u_len):
+                record[f"u_j[{i}]"] = output["u_j"][i] if i < len(output["u_j"]) else np.nan
+
+            records.append(record)
+
         return pd.DataFrame(records)
 
     def mdl(self, result_type) -> ResultsTable:
