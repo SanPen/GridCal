@@ -72,7 +72,7 @@ class Line(BranchParent):
                  r2=1e-20, x2=1e-20, b2=1e-20,
                  capex=0,
                  opex=0,
-                 circuit_idx: int = 0,
+                 circuit_idx: int = 1,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
         AC current Line

@@ -394,11 +394,8 @@ class OverheadLineType(EditableDevice):
         :param Vnom: Nominal voltage (kV)
         :return: AdmittanceMatrix with series admittance in p.u.
         """
-
         Zbase = (Vnom * Vnom) / Sbase
-
         rows, columns = self.z_abc.shape
-
         adm = AdmittanceMatrix(size=3)
 
         if rows % 3 == 0 and columns % 3 == 0:
@@ -409,9 +406,10 @@ class OverheadLineType(EditableDevice):
             adm.phB = 1
             adm.phC = 1
 
-        else:
-            phases = self.y_phases_abc
+            return adm
 
+        elif rows < 3 and columns < 3:
+            phases = self.y_phases_abc
             phases = phases[phases > 3*(circuit_idx - 1)]
             phases = phases[phases <= 3 * circuit_idx]
             phases = phases - 3 * (circuit_idx - 1) - 1
@@ -429,7 +427,10 @@ class OverheadLineType(EditableDevice):
             if 3 in self.y_phases_abc:
                 adm.phC = 1
 
-        return adm
+            return adm
+
+        else:
+            raise Exception("Invalid overhead line type configuration")
 
     def get_ysh(self, circuit_idx: int, Sbase: float, length: float, Vnom: float) -> AdmittanceMatrix:
         """
@@ -440,6 +441,10 @@ class OverheadLineType(EditableDevice):
         :param Vnom: Nominal voltage (kV)
         :return: AdmittanceMatrix with shunt admittance in p.u.
         """
+
+        if circuit_idx == 0:
+            circuit_idx = 1
+
         Zbase = (Vnom * Vnom) / Sbase
         Ybase = 1 / Zbase
 

@@ -61,94 +61,80 @@ Tap Changer between 650 - 632 ?
 """
 Impedances [Ohm/mile]
 """
-z_601 = AdmittanceMatrix(size=3)
-z_601.values = np.array([
+z_601 = np.array([
     [0.3465 + 1j * 1.0179, 0.1560 + 1j * 0.5017, 0.1580 + 1j * 0.4236],
     [0.1560 + 1j * 0.5017, 0.3375 + 1j * 1.0478, 0.1535 + 1j * 0.3849],
     [0.1580 + 1j * 0.4236, 0.1535 + 1j * 0.3849, 0.3414 + 1j * 1.0348]
-]) / 1.60934
+], dtype=complex) / 1.60934
 
-z_602 = AdmittanceMatrix(size=3)
-z_602.values = np.array([
+z_602 = np.array([
     [0.7526 + 1j * 1.1814, 0.1580 + 1j * 0.4236, 0.1560 + 1j * 0.5017],
     [0.1580 + 1j * 0.4236, 0.7475 + 1j * 1.1983, 0.1535 + 1j * 0.3849],
     [0.1560 + 1j * 0.5017, 0.1535 + 1j * 0.3849, 0.7436 + 1j * 1.2112]
-]) / 1.60934
+], dtype=complex) / 1.60934
 
-z_603 = AdmittanceMatrix(size=2)
-z_603.values = np.array([
+z_603 = np.array([
     [1.3294 + 1j * 1.3471, 0.2066 + 1j * 0.4591],
     [0.2066 + 1j * 0.4591, 1.3238 + 1j * 1.3569]
-]) / 1.60934
+], dtype=complex) / 1.60934
 
-z_604 = AdmittanceMatrix(size=2)
-z_604.values = np.array([
+z_604 = np.array([
     [1.3238 + 1j * 1.3569, 0.2066 + 1j * 0.4591],
     [0.2066 + 1j * 0.4591, 1.3294 + 1j * 1.3471]
-]) / 1.60934
+], dtype=complex) / 1.60934
 
-z_605 = AdmittanceMatrix(size=1)
-z_605.values = np.array([
+z_605 = np.array([
     [1.3292 + 1j * 1.3475]
-]) / 1.60934
+], dtype=complex) / 1.60934
 
-z_606 = AdmittanceMatrix(size=3)
-z_606.values = np.array([
+z_606 = np.array([
     [0.7982 + 1j * 0.4463, 0.3192 + 1j * 0.0328, 0.2849 + 1j * -0.0143],
     [0.3192 + 1j * 0.0328, 0.7891 + 1j * 0.4041, 0.3192 + 1j * 0.0328],
     [0.2849 + 1j * -0.0143, 0.3192 + 1j * 0.0328, 0.7982 + 1j * 0.4463]
-]) / 1.60934
+], dtype=complex) / 1.60934
 
-z_607 = AdmittanceMatrix(size=1)
-z_607.values  = np.array([
+z_607 = np.array([
     [1.3425 + 1j * 0.5124]
-]) / 1.60934
+], dtype=complex) / 1.60934
 
 """
 Admittances [uS/mile]
 """
-y_601 = AdmittanceMatrix(size=3)
-y_601.values = np.array([
+y_601 = np.array([
     [1j * 6.2998, 1j * -1.9958, 1j * -1.2595],
     [1j * -1.9958, 1j * 5.9597, 1j * -0.7417],
     [1j * -1.2595, 1j * -0.7417, 1j * 5.6386]
-]) / 10**6 / 1.60934
+], dtype=complex) / 10**6 / 1.60934
 
-y_602 = AdmittanceMatrix(size=3)
-y_602.values = np.array([
+y_602 = np.array([
     [1j * 5.6990, 1j * -1.0817, 1j * -1.6905],
     [1j * -1.0817, 1j * 5.1795, 1j * -0.6588],
     [1j * -1.6905, 1j * -0.6588, 1j * 5.4246]
-]) / 10**6 / 1.60934
+], dtype=complex) / 10**6 / 1.60934
 
-y_603 = AdmittanceMatrix(size=2)
-y_603.values = np.array([
+y_603 = np.array([
     [1j * 4.7097, 1j * -0.8999],
     [1j * -0.8999, 1j * 4.6658]
-]) / 10**6 / 1.60934
+], dtype=complex) / 10**6 / 1.60934
 
-y_604 = AdmittanceMatrix(size=2)
-y_604.values = np.array([
+y_604 = np.array([
     [1j * 4.6658, 1j * -0.8999],
     [1j * -0.8999, 1j * 4.7097]
-]) / 10**6 / 1.60934
+], dtype=complex) / 10**6 / 1.60934
 
-y_605 = AdmittanceMatrix(size=1)
-y_605.values = np.array([
+y_605 = np.array([
     [1j * 4.5193]
-]) / 10**6 / 1.60934
+], dtype=complex) / 10**6 / 1.60934
 
-y_606 = AdmittanceMatrix(size=3)
-y_606.values = np.array([
+y_606 = np.array([
     [1j * 96.8897, 1j * 0.0000, 1j * 0.0000],
     [1j * 0.0000, 1j * 96.8897, 1j * 0.0000],
     [1j * 0.0000, 1j * 0.0000, 1j * 96.8897]
-]) / 10**6 / 1.60934
+], dtype=complex) / 10**6 / 1.60934
 
-y_607 = AdmittanceMatrix(size=1)
-y_607.values = np.array([
+y_607 = np.array([
     [1j * 88.9912]
-]) / 10**6 / 1.60934
+], dtype=complex) / 10**6 / 1.60934
 
 """
 Loads

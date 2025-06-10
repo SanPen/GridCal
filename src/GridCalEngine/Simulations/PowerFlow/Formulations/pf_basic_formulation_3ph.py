@@ -155,7 +155,6 @@ def compute_Sbus_star(nc: NumericalCircuit) -> CxVec:
 
 def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, V: CxVec, bus_lookup: IntVec) -> CxVec:
     """
-
     :param bus_idx:
     :param Sdelta:
     :param V:
