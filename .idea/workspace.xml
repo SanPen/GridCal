@@ -28,12 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="IEEE 13-bus Test Feeder Case">
-      <change afterPath="$PROJECT_DIR$/src/tests/test_3ph_admittance_matrix.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Solutions/13bus_powerflow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Tests for 2x2 and 3x3 three-phase admittance matrices.">
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -317,7 +312,7 @@
       <recent name="$PROJECT_DIR$/src/trunk/line_parameters" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Python tests for test_3ph_admittance_matrix.test_3x3_abc">
+  <component name="RunManager">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -2343,7 +2338,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="738" />
+    <option name="localTasksCounter" value="739" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2389,7 +2384,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="GSLV improvements" />
     <MESSAGE value="5.3.39" />
     <MESSAGE value="Improvements in cim/cgmes bad file handling&#10;Added roundtrip trunk example" />
     <MESSAGE value="Some cgmes handling improvements" />
@@ -2414,7 +2408,8 @@
     <MESSAGE value="Slice Indices" />
     <MESSAGE value="Dealing with lines and loads with one, two or three phases indifferently." />
     <MESSAGE value="IEEE 13-bus Test Feeder Case" />
-    <option name="LAST_COMMIT_MESSAGE" value="IEEE 13-bus Test Feeder Case" />
+    <MESSAGE value="Tests for 2x2 and 3x3 three-phase admittance matrices." />
+    <option name="LAST_COMMIT_MESSAGE" value="Tests for 2x2 and 3x3 three-phase admittance matrices." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2747,11 +2742,6 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/dummy_lookup.py</url>
           <line>15</line>
           <option name="timeStamp" value="2635" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
-          <line>407</line>
-          <option name="timeStamp" value="2695" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
