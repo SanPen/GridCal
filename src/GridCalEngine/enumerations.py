@@ -1590,6 +1590,7 @@ class SimulationTypes(Enum):
     OPF_NTC_TS_run = 'Optimal net transfer capacity time series'
     OPFTimeSeries_run = 'Optimal power flow time series'
     SCOPF_run = 'Security-constrained optimal power flow'
+    SCOPF_accelerated_run = 'Security-constrained Accelerated optimal power flow'
     TransientStability_run = 'Transient stability'
     TopologyReduction_run = 'Topology reduction'
     LinearAnalysis_run = 'Linear analysis'

@@ -3165,25 +3165,25 @@ class Ui_mainWindow(object):
         self.gridGroupBox.setFont(font5)
         self.gridLayout_36 = QGridLayout(self.gridGroupBox)
         self.gridLayout_36.setObjectName(u"gridLayout_36")
-        self.spinBox = QSpinBox(self.gridGroupBox)
-        self.spinBox.setObjectName(u"spinBox")
-        self.spinBox.setFont(font1)
-        self.spinBox.setMinimum(1)
+        self.scopf_number_of_perturbations_SpinBox = QSpinBox(self.gridGroupBox)
+        self.scopf_number_of_perturbations_SpinBox.setObjectName(u"scopf_number_of_perturbations_SpinBox")
+        self.scopf_number_of_perturbations_SpinBox.setFont(font1)
+        self.scopf_number_of_perturbations_SpinBox.setMinimum(1)
 
-        self.gridLayout_36.addWidget(self.spinBox, 0, 1, 1, 1)
+        self.gridLayout_36.addWidget(self.scopf_number_of_perturbations_SpinBox, 0, 1, 1, 1)
 
-        self.spinBox_2 = QSpinBox(self.gridGroupBox)
-        self.spinBox_2.setObjectName(u"spinBox_2")
-        self.spinBox_2.setFont(font1)
-        self.spinBox_2.setValue(10)
+        self.scopf_max_iterations_SpinBox = QSpinBox(self.gridGroupBox)
+        self.scopf_max_iterations_SpinBox.setObjectName(u"scopf_max_iterations_SpinBox")
+        self.scopf_max_iterations_SpinBox.setFont(font1)
+        self.scopf_max_iterations_SpinBox.setValue(10)
 
-        self.gridLayout_36.addWidget(self.spinBox_2, 2, 1, 1, 1)
+        self.gridLayout_36.addWidget(self.scopf_max_iterations_SpinBox, 2, 1, 1, 1)
 
-        self.doubleSpinBox = QDoubleSpinBox(self.gridGroupBox)
-        self.doubleSpinBox.setObjectName(u"doubleSpinBox")
-        self.doubleSpinBox.setFont(font1)
+        self.scopf_load_perturbance_SpinBox = QDoubleSpinBox(self.gridGroupBox)
+        self.scopf_load_perturbance_SpinBox.setObjectName(u"scopf_load_perturbance_SpinBox")
+        self.scopf_load_perturbance_SpinBox.setFont(font1)
 
-        self.gridLayout_36.addWidget(self.doubleSpinBox, 1, 1, 1, 1)
+        self.gridLayout_36.addWidget(self.scopf_load_perturbance_SpinBox, 1, 1, 1, 1)
 
         self.label_157 = QLabel(self.gridGroupBox)
         self.label_157.setObjectName(u"label_157")
@@ -3242,58 +3242,23 @@ class Ui_mainWindow(object):
         self.gridGroupBox_2.setFont(font5)
         self.gridLayout_35 = QGridLayout(self.gridGroupBox_2)
         self.gridLayout_35.setObjectName(u"gridLayout_35")
-        self.doubleSpinBox_3 = QDoubleSpinBox(self.gridGroupBox_2)
-        self.doubleSpinBox_3.setObjectName(u"doubleSpinBox_3")
-        self.doubleSpinBox_3.setFont(font1)
-        self.doubleSpinBox_3.setDecimals(5)
+        self.scopf_nn_larning_rate_SpinBox = QDoubleSpinBox(self.gridGroupBox_2)
+        self.scopf_nn_larning_rate_SpinBox.setObjectName(u"scopf_nn_larning_rate_SpinBox")
+        self.scopf_nn_larning_rate_SpinBox.setFont(font1)
+        self.scopf_nn_larning_rate_SpinBox.setDecimals(5)
+        self.scopf_nn_larning_rate_SpinBox.setValue(0.001000000000000)
 
-        self.gridLayout_35.addWidget(self.doubleSpinBox_3, 2, 1, 1, 1)
-
-        self.spinBox_3 = QSpinBox(self.gridGroupBox_2)
-        self.spinBox_3.setObjectName(u"spinBox_3")
-        self.spinBox_3.setFont(font1)
-
-        self.gridLayout_35.addWidget(self.spinBox_3, 0, 1, 1, 1)
-
-        self.doubleSpinBox_4 = QDoubleSpinBox(self.gridGroupBox_2)
-        self.doubleSpinBox_4.setObjectName(u"doubleSpinBox_4")
-        self.doubleSpinBox_4.setFont(font)
-
-        self.gridLayout_35.addWidget(self.doubleSpinBox_4, 4, 1, 1, 1)
-
-        self.label_160 = QLabel(self.gridGroupBox_2)
-        self.label_160.setObjectName(u"label_160")
-        self.label_160.setFont(font1)
-
-        self.gridLayout_35.addWidget(self.label_160, 2, 0, 1, 1)
-
-        self.doubleSpinBox_2 = QDoubleSpinBox(self.gridGroupBox_2)
-        self.doubleSpinBox_2.setObjectName(u"doubleSpinBox_2")
-        self.doubleSpinBox_2.setFont(font1)
-
-        self.gridLayout_35.addWidget(self.doubleSpinBox_2, 3, 1, 1, 1)
-
-        self.spinBox_4 = QSpinBox(self.gridGroupBox_2)
-        self.spinBox_4.setObjectName(u"spinBox_4")
-        self.spinBox_4.setFont(font1)
-
-        self.gridLayout_35.addWidget(self.spinBox_4, 1, 1, 1, 1)
-
-        self.label_159 = QLabel(self.gridGroupBox_2)
-        self.label_159.setObjectName(u"label_159")
-        self.label_159.setFont(font1)
-
-        self.gridLayout_35.addWidget(self.label_159, 1, 0, 1, 1)
+        self.gridLayout_35.addWidget(self.scopf_nn_larning_rate_SpinBox, 1, 1, 1, 1)
 
         self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.gridLayout_35.addItem(self.verticalSpacer_4, 7, 0, 1, 1)
+        self.gridLayout_35.addItem(self.verticalSpacer_4, 6, 0, 1, 1)
 
         self.label_161 = QLabel(self.gridGroupBox_2)
         self.label_161.setObjectName(u"label_161")
         self.label_161.setFont(font1)
 
-        self.gridLayout_35.addWidget(self.label_161, 3, 0, 1, 1)
+        self.gridLayout_35.addWidget(self.label_161, 2, 0, 1, 1)
 
         self.label_158 = QLabel(self.gridGroupBox_2)
         self.label_158.setObjectName(u"label_158")
@@ -3305,13 +3270,41 @@ class Ui_mainWindow(object):
         self.label_162.setObjectName(u"label_162")
         self.label_162.setFont(font)
 
-        self.gridLayout_35.addWidget(self.label_162, 4, 0, 1, 1)
+        self.gridLayout_35.addWidget(self.label_162, 3, 0, 1, 1)
+
+        self.scopf_nn_epochs_SpinBox = QSpinBox(self.gridGroupBox_2)
+        self.scopf_nn_epochs_SpinBox.setObjectName(u"scopf_nn_epochs_SpinBox")
+        self.scopf_nn_epochs_SpinBox.setFont(font1)
+        self.scopf_nn_epochs_SpinBox.setMaximum(999999)
+        self.scopf_nn_epochs_SpinBox.setValue(200)
+
+        self.gridLayout_35.addWidget(self.scopf_nn_epochs_SpinBox, 0, 1, 1, 1)
+
+        self.scopf_nn_dropout_rate_SpinBox = QDoubleSpinBox(self.gridGroupBox_2)
+        self.scopf_nn_dropout_rate_SpinBox.setObjectName(u"scopf_nn_dropout_rate_SpinBox")
+        self.scopf_nn_dropout_rate_SpinBox.setFont(font1)
+        self.scopf_nn_dropout_rate_SpinBox.setValue(0.300000000000000)
+
+        self.gridLayout_35.addWidget(self.scopf_nn_dropout_rate_SpinBox, 2, 1, 1, 1)
 
         self.label_163 = QLabel(self.gridGroupBox_2)
         self.label_163.setObjectName(u"label_163")
         self.label_163.setFont(font1)
 
-        self.gridLayout_35.addWidget(self.label_163, 5, 0, 1, 2)
+        self.gridLayout_35.addWidget(self.label_163, 4, 0, 1, 2)
+
+        self.scopf_nn_trainig_set_split_SPinBox = QDoubleSpinBox(self.gridGroupBox_2)
+        self.scopf_nn_trainig_set_split_SPinBox.setObjectName(u"scopf_nn_trainig_set_split_SPinBox")
+        self.scopf_nn_trainig_set_split_SPinBox.setFont(font)
+        self.scopf_nn_trainig_set_split_SPinBox.setValue(80.000000000000000)
+
+        self.gridLayout_35.addWidget(self.scopf_nn_trainig_set_split_SPinBox, 3, 1, 1, 1)
+
+        self.label_160 = QLabel(self.gridGroupBox_2)
+        self.label_160.setObjectName(u"label_160")
+        self.label_160.setFont(font1)
+
+        self.gridLayout_35.addWidget(self.label_160, 1, 0, 1, 1)
 
 
         self.gridLayout_81.addWidget(self.gridGroupBox_2, 2, 3, 1, 2)
@@ -4898,7 +4891,7 @@ class Ui_mainWindow(object):
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1182, 33))
+        self.menuBar.setGeometry(QRect(0, 0, 1182, 20))
         self.menuBar.setFont(font)
         self.menuProject = QMenu(self.menuBar)
         self.menuProject.setObjectName(u"menuProject")
@@ -5081,13 +5074,13 @@ class Ui_mainWindow(object):
 
         self.retranslateUi(mainWindow)
 
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(0)
         self.tabWidget_3.setCurrentIndex(0)
         self.tabWidget_6.setCurrentIndex(0)
         self.tabWidget_5.setCurrentIndex(0)
         self.tabWidget_4.setCurrentIndex(0)
         self.tabWidget_2.setCurrentIndex(0)
-        self.settings_tabWidget.setCurrentIndex(3)
+        self.settings_tabWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(mainWindow)
@@ -6005,12 +5998,11 @@ class Ui_mainWindow(object):
         self.label_156.setText(QCoreApplication.translate("mainWindow", u"   Percentage load perturbance", None))
         self.label_24.setText(QCoreApplication.translate("mainWindow", u"   Number of perturbations", None))
         self.gridGroupBox_2.setTitle(QCoreApplication.translate("mainWindow", u"Neural Network Settings", None))
-        self.label_160.setText(QCoreApplication.translate("mainWindow", u"   Learning rate", None))
-        self.label_159.setText(QCoreApplication.translate("mainWindow", u"   Early stopping patience", None))
         self.label_161.setText(QCoreApplication.translate("mainWindow", u"   Dropout rate", None))
         self.label_158.setText(QCoreApplication.translate("mainWindow", u"   Number of epochs", None))
         self.label_162.setText(QCoreApplication.translate("mainWindow", u"   Training set split", None))
         self.label_163.setText(QCoreApplication.translate("mainWindow", u"   Validation and test sets are 50% each of the remaining amount.", None))
+        self.label_160.setText(QCoreApplication.translate("mainWindow", u"   Learning rate", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.scopf_tab), QCoreApplication.translate("mainWindow", u"Scopf", None))
 #if QT_CONFIG(tooltip)
         self.ntc_tab.setToolTip(QCoreApplication.translate("mainWindow", u"Net transfer capacity settings", None))
