@@ -206,7 +206,7 @@ def get_It(k: IntVec, V: CxVec, ytf: CxVec, ytt: CxVec, F: IntVec, T: IntVec):
 
 def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVec,
                                       pv: IntVec, vd: IntVec, Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
-                                      branch_rates: Vec, Sbase: float):
+                                      branch_rates: Vec, Sbase: float, Lookup: IntVec):
     """
 
     :param Sbus:
@@ -221,6 +221,7 @@ def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVe
     :param Yshunt_bus:
     :param branch_rates:
     :param Sbase:
+    :param Lookup:
     :return:
     """
 
@@ -236,7 +237,16 @@ def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVe
     Vm = np.abs(V)
     Sbus += Vm * Vm * np.conj(Yshunt_bus)
 
-    # Branches current, loading, etc
+    # Expand
+    n_buses_total = len(Lookup)
+    V_expanded = np.zeros(n_buses_total, dtype=complex)
+    for i, value in enumerate(Lookup):
+        if value < 0:
+            V_expanded[i] = 0.0 + 0.0j
+        else:
+            V_expanded[i] = V[value]
+
+            # Branches current, loading, etc
     Vf = V[F]
     Vt = V[T]
     If = Yf @ V

@@ -180,9 +180,9 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, V: CxVec, bus_lookup: Int
         c2 = bus_lookup[c]
 
         if a2 > -1 and b2 > -1 and c2 > -1:
-            S[a2] = -1 * ((V[a] * Sdelta[ab]) / (V[a] - V[b]) - (V[a] * Sdelta[ca]) / (V[c] - V[a]))
-            S[b2] = -1 * ((V[b] * Sdelta[bc]) / (V[b] - V[c]) - (V[b] * Sdelta[ab]) / (V[a] - V[b]))
-            S[c2] = -1 * ((V[c] * Sdelta[ca]) / (V[c] - V[a]) - (V[c] * Sdelta[bc]) / (V[b] - V[c]))
+            S[a2] = -1 * ((V[a2] * Sdelta[ab]) / (V[a2] - V[b2]) - (V[a2] * Sdelta[ca]) / (V[c2] - V[a2]))
+            S[b2] = -1 * ((V[b2] * Sdelta[bc]) / (V[b2] - V[c2]) - (V[b2] * Sdelta[ab]) / (V[a2] - V[b2]))
+            S[c2] = -1 * ((V[c2] * Sdelta[ca]) / (V[c2] - V[a2]) - (V[c2] * Sdelta[bc]) / (V[b2] - V[c2]))
 
         elif a2 > -1 and b2 > -1:
             S[a2] = -1 * V[a2] * Sdelta[ab] / (V[a2] - V[b2])
@@ -573,7 +573,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
             Yt=self.Yt,
             Yshunt_bus=self.Yshunt_bus,
             branch_rates=expand3ph(self.nc.passive_branch_data.rates),
-            Sbase=self.nc.Sbase
+            Sbase=self.nc.Sbase,
+            lookup=self.bus_lookup
         )
 
         return NumericPowerFlowResults(V=self.V,

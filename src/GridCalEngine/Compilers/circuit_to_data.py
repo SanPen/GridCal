@@ -1582,6 +1582,9 @@ def get_branch_data(
              data.Ytt3[k3, :]) = elm.transformer_admittance(vtap_f=data.virtual_tap_f[ii],
                                                             vtap_t=data.virtual_tap_t[ii],
                                                             logger=logger)
+            data.phA[ii] = 1
+            data.phB[ii] = 1
+            data.phC[ii] = 1
 
         data.conn[ii] = elm.conn
         data.m_taps[ii] = elm.tap_changer.tap_modules_array
@@ -1738,6 +1741,11 @@ def get_branch_data(
                            bus_dict=bus_dict,
                            t_idx=t_idx,
                            time_series=time_series)
+
+        if fill_three_phase:
+            data.phA[ii] = 1
+            data.phB[ii] = 1
+            data.phC[ii] = 1
 
         data.R[ii] = elm.R
         data.X[ii] = elm.X
