@@ -57,7 +57,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             zonal_grouping=self.options.opf_options.zonal_grouping,
             skip_generation_limits=self.options.skip_generation_limits,
             consider_contingencies=self.options.consider_contingencies,
-            contingency_groups_used=self.options.opf_options.contingency_groups_used,
+            contingency_groups_used=self.grid.contingency_groups,
             lodf_threshold=self.options.lin_options.lodf_threshold,
             bus_a1_idx=self.options.sending_bus_idx,
             bus_a2_idx=self.options.receiving_bus_idx,
@@ -110,6 +110,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         self.results.receiving_bus_idx = self.options.receiving_bus_idx
         self.results.inter_space_branches = opf_vars.branch_vars.inter_space_branches
         self.results.inter_space_hvdc = opf_vars.hvdc_vars.inter_space_hvdc
+
+        self.results.inter_area_flows = opf_vars.inter_area_flows
 
         self.results.converged = opf_vars.acceptable_solution
 

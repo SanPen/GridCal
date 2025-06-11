@@ -1171,6 +1171,39 @@ class MultiCircuit(Assets):
                 lst.append((k, branch, -1.0))
         return lst
 
+
+    def get_inter_areas_vsc_branches(self, a1: List[dev.Area], a2: List[dev.Area]) -> List[Tuple[int, object, float]]:
+        """
+        Get the inter-area VSC
+        :param a1: Area from
+        :param a2: Area to
+        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        """
+        lst: List[Tuple[int, object, float]] = list()
+        for k, branch in enumerate(self.vsc_devices):
+            if branch.bus_from.area in a1 and branch.bus_to.area in a2:
+                lst.append((k, branch, 1.0))
+            elif branch.bus_from.area in a2 and branch.bus_to.area in a1:
+                lst.append((k, branch, -1.0))
+            else:
+                pass
+        return lst
+
+    def get_inter_buses_vsc_branches(self, a1: Set[dev.Bus], a2: Set[dev.Bus]) -> List[Tuple[int, object, float]]:
+        """
+        Get the inter-area VSC
+        :param a1: Group of Buses 1
+        :param a2: Group of Buses 1
+        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        """
+        lst: List[Tuple[int, object, float]] = list()
+        for k, branch in enumerate(self.vsc_devices):
+            if branch.bus_from in a1 and branch.bus_to in a2:
+                lst.append((k, branch, 1.0))
+            elif branch.bus_from in a2 and branch.bus_to in a1:
+                lst.append((k, branch, -1.0))
+        return lst
+
     def get_inter_zone_branches(self, z1: dev.Zone, z2: dev.Zone) -> List[Tuple[int, object, float]]:
         """
         Get the inter-area Branches
@@ -1179,7 +1212,7 @@ class MultiCircuit(Assets):
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
         """
         lst: List[Tuple[int, object, float]] = list()
-        for k, branch in enumerate(self.get_branches()):
+        for k, branch in enumerate(self.get_branches(add_vsc=False, add_hvdc=False, add_switch=True)):
             if branch.bus_from.zone == z1 and branch.bus_to.zone == z2:
                 lst.append((k, branch, 1.0))
             elif branch.bus_from.zone == z2 and branch.bus_to.zone == z1:

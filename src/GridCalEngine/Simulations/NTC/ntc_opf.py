@@ -922,6 +922,8 @@ class NtcVars:
         # structural NTC
         self.structural_ntc = np.zeros(nt, dtype=float)
 
+        self.inter_area_flows = 0
+
     def get_values(self, Sbase: float, model: LpModel) -> "NtcVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
@@ -1991,7 +1993,9 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                 )
 
             else:
-                logger.add_warning(msg="Contingencies enabled, but no contingency groups provided")
+                print("Contingencies enabled, but no contingency groups provided")
+                logger.add_warning(msg="Contingencies enabled, but no contingency groups provided. "
+                                       "You need to add them in the OptimalPowerFlowOptions")
 
     elif zonal_grouping == ZonalGrouping.All:
         # this is the copper plate approach
@@ -2035,5 +2039,26 @@ def run_linear_ntc_opf(grid: MultiCircuit,
 
     # add the model logger to the main logger
     logger += lp_model.logger
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Total inter area flows
+
+    # List of (branch index, branch object, flow sense w.r.t the area exchange)
+    inter_info = nc.passive_branch_data.get_inter_areas(bus_idx_from=bus_a1_idx, bus_idx_to=bus_a2_idx)
+    inter_area_branch_idx = [x[0] for x in inter_info]
+    inter_area_branch_sense = [x[1] for x in inter_info]
+
+    inter_info_hvdc = nc.hvdc_data.get_inter_areas(bus_idx_from=bus_a1_idx, bus_idx_to=bus_a2_idx)
+    inter_area_hvdc_idx = [x[0] for x in inter_info_hvdc]
+    inter_area_hvdc_sense = [x[1] for x in inter_info_hvdc]
+
+    inter_info_vsc = nc.vsc_data.get_inter_areas(bus_idx_from=bus_a1_idx, bus_idx_to=bus_a2_idx)
+    inter_area_vsc_idx = [x[0] for x in inter_info_vsc]
+    inter_area_vsc_sense = [x[2] for x in inter_info_vsc]
+
+    # The summation of flow increments in the inter-area branches must be ΔP in A1.
+    vars_v.inter_area_flows = (np.sum(vars_v.branch_vars.flows[0, inter_area_branch_idx] * inter_area_branch_sense)
+                               + np.sum(vars_v.hvdc_vars.flows[0, inter_area_hvdc_idx] * inter_area_hvdc_sense)
+                               + np.sum(vars_v.vsc_vars.flows[0, inter_area_vsc_idx] * inter_area_vsc_sense))
 
     return vars_v

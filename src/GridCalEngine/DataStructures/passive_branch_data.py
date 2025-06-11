@@ -134,50 +134,6 @@ class PassiveBranchData(BranchParentData):
         """
         return 1.0 / (self.R + 1.0j * self.X + 1e-20)
 
-    def get_ac_indices(self) -> IntVec:
-        """
-        Get ac branch indices
-        :return:
-        """
-        return np.where(self.dc == 0)[0]
-
-    def get_dc_indices(self) -> IntVec:
-        """
-        Get dc branch indices
-        :return:
-        """
-        return np.where(self.dc != 0)[0]
-
-    def get_monitor_enabled_indices(self) -> IntVec:
-        """
-        Get monitored branch indices
-        :return:
-        """
-        return np.where(self.monitor_loading == 1)[0]
-
-    def get_contingency_enabled_indices(self) -> IntVec:
-        """
-        Get contingency branch indices
-        :return:
-        """
-        return np.where(self.contingency_enabled == 1)[0]
-
-    def get_inter_areas(self, bus_idx_from: IntVec | Set[int], bus_idx_to: IntVec | Set[int]):
-        """
-        Get the Branches that join two areas
-        :param bus_idx_from: Area from
-        :param bus_idx_to: Area to
-        :return: List of (branch index, flow sense w.r.t the area exchange)
-        """
-
-        lst: List[Tuple[int, float]] = list()
-        for k in range(self.nelm):
-            if self.F[k] in bus_idx_from and self.T[k] in bus_idx_to:
-                lst.append((k, 1.0))
-            elif self.F[k] in bus_idx_to and self.T[k] in bus_idx_from:
-                lst.append((k, -1.0))
-        return lst
-
     def detect_superconductor_at(self, k) -> None:
         """
         There is a beyond terrible practice of setting branches with R=0 and X=0 as "superconductor"....
