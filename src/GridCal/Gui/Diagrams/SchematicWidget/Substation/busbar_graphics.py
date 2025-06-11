@@ -11,7 +11,7 @@ from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
-from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import SHUNT_GRAPHICS
+from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import INJECTION_GRAPHICS
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, DEACTIVATED,
@@ -82,7 +82,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.w = w if w >= self.min_w else self.min_w
 
         # loads, shunts, generators, etc...
-        self._child_graphics: List[SHUNT_GRAPHICS] = list()
+        self._child_graphics: List[INJECTION_GRAPHICS] = list()
 
         # Enabled for short circuit
         self.sc_enabled = [False, False, False, False]
@@ -509,7 +509,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         if ok:
             self._editor.remove_element(device=self.api_object, graphic_object=self)
 
-    def delete_child(self, obj: SHUNT_GRAPHICS | InjectionTemplateGraphicItem):
+    def delete_child(self, obj: INJECTION_GRAPHICS | InjectionTemplateGraphicItem):
         """
         Delete a child object
         :param obj:
@@ -661,6 +661,17 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         else:
             raise Exception("Cannot add device of type {}".format(api_obj.device_type.value))
 
+    def add_child_graphic(self, elm: INJECTION_DEVICE_TYPES, graphic: INJECTION_GRAPHICS):
+        """
+        Add a api object and its graphic to this bus graphics domain
+        :param elm:
+        :param graphic:
+        :return:
+        """
+        self._child_graphics.append(graphic)
+        self.arrange_children()
+        self._editor.graphics_manager.add_device(elm=elm, graphic=graphic)
+
     def add_load(self, api_obj: Union[Load, None] = None) -> LoadGraphicItem:
         """
         Add load object to bus
@@ -671,8 +682,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_load(cn=self._api_object.cn)
 
         _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
         return _grph
 
     def add_shunt(self, api_obj: Union[Shunt, None] = None) -> ShuntGraphicItem:
@@ -684,8 +694,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_shunt(cn=self._api_object.cn)
 
         _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
         return _grph
 
     def add_generator(self, api_obj: Union[Generator, None] = None) -> GeneratorGraphicItem:
@@ -697,8 +706,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_generator(cn=self._api_object.cn)
 
         _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
         return _grph
 
     def add_static_generator(self, api_obj: Union[StaticGenerator, None] = None) -> StaticGeneratorGraphicItem:
@@ -711,9 +719,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_static_generator(cn=self._api_object.cn)
 
         _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
-
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
         return _grph
 
     def add_battery(self, api_obj: Union[Battery, None] = None) -> BatteryGraphicItem:
@@ -726,8 +732,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_battery(cn=self._api_object.cn)
 
         _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
 
         return _grph
 
@@ -741,8 +746,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_external_grid(cn=self._api_object.cn)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
 
         return _grph
 
@@ -756,8 +760,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_current_injection(cn=self._api_object.cn)
 
         _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
 
         return _grph
 
@@ -771,8 +774,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_controllable_shunt(cn=self._api_object.cn)
 
         _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
 
         return _grph
 

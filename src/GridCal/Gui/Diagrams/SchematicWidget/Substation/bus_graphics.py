@@ -39,7 +39,7 @@ from GridCalEngine.Devices.Substation import Bus
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 
-SHUNT_GRAPHICS = Union[
+INJECTION_GRAPHICS = Union[
     BatteryGraphicItem,
     ShuntGraphicItem,
     ExternalGridGraphicItem,
@@ -117,7 +117,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.r = r
 
         # loads, shunts, generators, etc...
-        self._child_graphics: List[SHUNT_GRAPHICS] = list()
+        self._child_graphics: List[INJECTION_GRAPHICS] = list()
 
         # Enabled for short circuit
         self.sc_enabled = [False, False, False, False]
@@ -173,16 +173,16 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Get a list of all associated branch graphics
         :return:
         """
-        conn: List[GenericDiagramWidget | SHUNT_GRAPHICS] = self._terminal.get_hosted_graphics()
+        conn: List[GenericDiagramWidget | INJECTION_GRAPHICS] = self._terminal.get_hosted_graphics()
 
         return conn
 
-    def get_associated_widgets(self) -> List[GenericDiagramWidget | SHUNT_GRAPHICS]:
+    def get_associated_widgets(self) -> List[GenericDiagramWidget | INJECTION_GRAPHICS]:
         """
         Get a list of all associated graphics
         :return:
         """
-        conn: List[GenericDiagramWidget | SHUNT_GRAPHICS] = self.get_associated_branch_graphics()
+        conn: List[GenericDiagramWidget | INJECTION_GRAPHICS] = self.get_associated_branch_graphics()
 
         for graphics in self._child_graphics:
             conn.append(graphics)
@@ -562,7 +562,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         if deleted:
             self._terminal.clear()
 
-    def delete_child(self, obj: SHUNT_GRAPHICS | InjectionTemplateGraphicItem):
+    def delete_child(self, obj: INJECTION_GRAPHICS | InjectionTemplateGraphicItem):
         """
         Delete a child object
         :param obj:
@@ -773,6 +773,17 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         else:
             raise Exception("Cannot add device of type {}".format(api_obj.device_type.value))
 
+    def add_child_graphic(self, elm: INJECTION_DEVICE_TYPES, graphic: INJECTION_GRAPHICS):
+        """
+        Add a api object and its graphic to this bus graphics domain
+        :param elm:
+        :param graphic:
+        :return:
+        """
+        self._child_graphics.append(graphic)
+        self.arrange_children()
+        self.editor.graphics_manager.add_device(elm=elm, graphic=graphic)
+
     def add_load(self, api_obj: Union[Load, None] = None):
         """
         Add load object to bus
@@ -783,8 +794,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_load(bus=self._api_object)
 
         _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
         return _grph
 
     def add_shunt(self, api_obj: Union[Shunt, None] = None):
@@ -796,8 +806,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_shunt(bus=self._api_object)
 
         _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
         return _grph
 
     def add_generator(self, api_obj: Union[Generator, None] = None):
@@ -809,8 +818,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_generator(bus=self._api_object)
 
         _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
         return _grph
 
     def add_static_generator(self, api_obj: Union[StaticGenerator, None] = None):
@@ -823,8 +831,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_static_generator(bus=self._api_object)
 
         _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
 
         return _grph
 
@@ -838,8 +845,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_battery(bus=self._api_object)
 
         _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
 
         return _grph
 
@@ -853,9 +859,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_external_grid(bus=self._api_object)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
-
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
         return _grph
 
     def add_current_injection(self, api_obj: Union[CurrentInjection, None] = None):
@@ -868,9 +872,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_current_injection(bus=self._api_object)
 
         _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
-
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
         return _grph
 
     def add_controllable_shunt(self, api_obj: Union[ControllableShunt, None] = None):
@@ -883,8 +885,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_controllable_shunt(bus=self._api_object)
 
         _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
 
         return _grph
 
