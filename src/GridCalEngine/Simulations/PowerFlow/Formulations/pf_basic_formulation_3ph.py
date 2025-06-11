@@ -438,7 +438,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
                                          Sdelta=self.nc.load_data.S3_delta,
                                          V=self.V,
-                                         bus_mask=self.mask)
+                                         bus_lookup=self.bus_lookup)
         Sbus = self.S0 + Sdelta2star
         # Sbus = self.S0
         self.Scalc = compute_power(self.Ybus, self.V)

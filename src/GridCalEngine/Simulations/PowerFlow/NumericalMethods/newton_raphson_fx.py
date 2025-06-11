@@ -136,5 +136,8 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                     print(time.time() - start)
                 else:
                     print(f'error {error}, \n converged {converged}')
+
+            idx = np.where((f > 1) | (f < -1))[0]
+
     print(time.time() - start)
     return problem.get_solution(elapsed=time.time() - start, iterations=iteration)

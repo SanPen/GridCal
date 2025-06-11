@@ -28,10 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Expand voltage - post process">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="IEEE 13-bus case running but not converging">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -2340,7 +2340,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="742" />
+    <option name="localTasksCounter" value="743" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2386,7 +2386,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Some cgmes handling improvements" />
     <MESSAGE value="Fixed the round trip" />
     <MESSAGE value="minimal changes" />
     <MESSAGE value="early iidm reader" />
@@ -2411,7 +2410,8 @@
     <MESSAGE value="Tests for 2x2 and 3x3 three-phase admittance matrices." />
     <MESSAGE value="IEEE 13-bus Test Feeder Case - Admittance matrices" />
     <MESSAGE value="Expand voltage - post process" />
-    <option name="LAST_COMMIT_MESSAGE" value="Expand voltage - post process" />
+    <MESSAGE value="IEEE 13-bus case running but not converging" />
+    <option name="LAST_COMMIT_MESSAGE" value="IEEE 13-bus case running but not converging" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2744,6 +2744,16 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/dummy_lookup.py</url>
           <line>15</line>
           <option name="timeStamp" value="2635" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
+          <line>502</line>
+          <option name="timeStamp" value="2738" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
+          <line>420</line>
+          <option name="timeStamp" value="2739" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
