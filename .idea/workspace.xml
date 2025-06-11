@@ -28,10 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="5.3.53">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added 2-bus inter area test">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_ntc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_ntc.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -259,7 +257,7 @@
     "Python.simple_dispatch_ts.executor": "Debug",
     "Python.stack_plot_pos_neg.executor": "Run",
     "Python.test_gslv_conversion.executor": "Run",
-    "Python.test_ntc.executor": "Debug",
+    "Python.test_ntc.executor": "Run",
     "Python.test_opf.executor": "Debug",
     "Python.test_power_flow.executor": "Run",
     "Python.test_raw_cgmes_cross_roundtrip.executor": "Run",
@@ -308,7 +306,7 @@
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.upload_to_pypi">
+  <component name="RunManager" selected="Python tests.test_ntc.py">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -2384,7 +2382,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="756" />
+    <option name="localTasksCounter" value="757" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2430,7 +2428,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Migrated Contingency and RemedialAction to inherit from PointerDevice" />
     <MESSAGE value="Removed the unused topology driver logic" />
     <MESSAGE value="Fixed date editing" />
     <MESSAGE value="Fixed issue with dates and colors" />
@@ -2455,7 +2452,8 @@
     <MESSAGE value="added vsc to the NTC time series" />
     <MESSAGE value="Fixed issue that prevented deleting injection items from the schematic" />
     <MESSAGE value="5.3.53" />
-    <option name="LAST_COMMIT_MESSAGE" value="5.3.53" />
+    <MESSAGE value="Added 2-bus inter area test" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added 2-bus inter area test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

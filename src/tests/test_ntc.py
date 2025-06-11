@@ -916,8 +916,11 @@ def test_ntc_vsc_contingencies():
 
     assert np.isclose(res.inter_area_flows, 2000.0)  # 2000 is the summation of the inter-area branches (N-1) rates
 
-def test_2_node_several_conditions_ntc():
 
+def test_2_node_several_conditions_ntc():
+    """
+    2-Bus example with some behaviors
+    """
     grid = gce.MultiCircuit()
 
     area1 = gce.Area(name="Area1")
@@ -1157,5 +1160,3 @@ if __name__ == '__main__':
     # test_ntc_vsc()
     # test_ntc_vsc_contingencies()
     test_2_node_several_conditions_ntc()
-
-
