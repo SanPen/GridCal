@@ -13,48 +13,41 @@ grid.fBase = 60
 """
 13 Buses
 """
-bus_650 = gce.Bus(name='650', Vnom=4.16, xpos=0, ypos=3000)
-bus_650.is_slack = True
-grid.add_bus(obj=bus_650)
-gen = gce.Generator(vset = 1.0625)
-grid.add_generator(bus = bus_650, api_obj = gen)
-
-bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=2000)
+bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=0)
+bus_632.is_slack = True
 grid.add_bus(obj=bus_632)
+gen = gce.Generator(vset = 1.0)
+grid.add_generator(bus = bus_632, api_obj = gen)
 
-bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-1000, ypos=2000)
+bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100*5, ypos=0)
 grid.add_bus(obj=bus_645)
 
-bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-2000, ypos=2000)
+bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-200*5, ypos=0)
 grid.add_bus(obj=bus_646)
 
-bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=1000, ypos=2000)
+bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
 grid.add_bus(obj=bus_633)
 
-bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=2000, ypos=2000)
+bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0)
 grid.add_bus(obj=bus_634)
 
-bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=1000)
+bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100*5)
 grid.add_bus(obj=bus_671)
 
-bus_684 = gce.Bus(name='684', Vnom=4.16, xpos=-1000, ypos=1000)
+bus_684 = gce.Bus(name='684', Vnom=4.16, xpos=-100*5, ypos=100*5)
 grid.add_bus(obj=bus_684)
 
-bus_611 = gce.Bus(name='611', Vnom=4.16, xpos=-2000, ypos=1000)
+bus_611 = gce.Bus(name='611', Vnom=4.16, xpos=-200*5, ypos=100*5)
 grid.add_bus(obj=bus_611)
 
-bus_675 = gce.Bus(name='675', Vnom=4.16, xpos=2000, ypos=1000)
+bus_675 = gce.Bus(name='675', Vnom=4.16, xpos=200*5, ypos=100*5)
 grid.add_bus(obj=bus_675)
 
-bus_680 = gce.Bus(name='680', Vnom=4.16, xpos=0, ypos=0)
+bus_680 = gce.Bus(name='680', Vnom=4.16, xpos=0, ypos=200*5)
 grid.add_bus(obj=bus_680)
 
-bus_652 = gce.Bus(name='652', Vnom=4.16, xpos=-1000, ypos=0)
+bus_652 = gce.Bus(name='652', Vnom=4.16, xpos=-100*5, ypos=200*5)
 grid.add_bus(obj=bus_652)
-
-"""
-Tap Changer between 650 - 632 ?
-"""
 
 """
 Impedances [Ohm/mile]
@@ -191,14 +184,14 @@ load_675 = gce.Load(P1=0.485,
 load_675.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_675, api_obj=load_675)
 
-load_671 = gce.Load(Ir1=0.0,
+load_671_692 = gce.Load(Ir1=0.0,
                     Ii1=0.0,
                     Ir2=0.0,
                     Ii2=0.0,
                     Ir3=0.17,
                     Ii3=0.151)
-load_671.conn = ShuntConnectionType.Delta
-grid.add_load(bus=bus_671, api_obj=load_671)
+load_671_692.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus_671, api_obj=load_671_692)
 
 load_611 = gce.Load(Ir1=0.0,
                     Ii1=0.0,
@@ -338,12 +331,6 @@ line_645_646 = gce.Line(bus_from=bus_645,
 line_645_646.apply_template(config_603, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_645_646)
 
-line_650_632 = gce.Line(bus_from=bus_650,
-                        bus_to=bus_632,
-                        length= 2000 * 0.0003048)
-line_650_632.apply_template(config_601, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_650_632)
-
 line_684_652 = gce.Line(bus_from=bus_684,
                         bus_to=bus_652,
                         length= 800 * 0.0003048)
@@ -412,13 +399,13 @@ print(U)
 print()
 print(angle)
 
+bus_numbers = [632, 645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
+
+# Asegurar que U y angle son arrays NumPy
 U = np.array(U)
 angle = np.array(angle)
 
-# Número de buses
-n_buses = len(U) // 3
-
-# Separar por fases
+# Separar magnitudes y ángulos por fases
 U_A = U[0::3]
 U_B = U[1::3]
 U_C = U[2::3]
@@ -427,12 +414,13 @@ angle_A = angle[0::3]
 angle_B = angle[1::3]
 angle_C = angle[2::3]
 
-# Formatear como "MAG at ANGLE"
+# Crear columnas "MAG at ANGLE"
 def format_column(mags, angles):
     return [f"{m:.4f} at {a:.2f}" for m, a in zip(mags, angles)]
 
-# Crear el DataFrame
+# Crear DataFrame con columna Buses
 df = pd.DataFrame({
+    'Buses': bus_numbers,
     'A–N': format_column(U_A, angle_A),
     'B–N': format_column(U_B, angle_B),
     'C–N': format_column(U_C, angle_C),
