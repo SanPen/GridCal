@@ -409,7 +409,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          V=V,
                                          bus_lookup=self.bus_lookup)
         Sbus = self.S0 + Sdelta2star
-        Sbus = self.S0
+        # Sbus = self.S0
         Scalc = compute_power(self.Ybus, V)
         dS = Scalc - Sbus  # compute the mismatch
         _f = np.r_[
@@ -435,12 +435,12 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         # compute the function residual
         # Assumes the internal vars were updated already with self.x2var()
-        # Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
-        #                                  Sdelta=self.nc.load_data.S3_delta,
-        #                                  V=self.V,
-        #                                  bus_mask=self.mask)
-        # Sbus = self.S0 + Sdelta2star
-        Sbus = self.S0
+        Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
+                                         Sdelta=self.nc.load_data.S3_delta,
+                                         V=self.V,
+                                         bus_mask=self.mask)
+        Sbus = self.S0 + Sdelta2star
+        # Sbus = self.S0
         self.Scalc = compute_power(self.Ybus, self.V)
         dS = self.Scalc - Sbus  # compute the mismatch
         self._f = np.r_[
