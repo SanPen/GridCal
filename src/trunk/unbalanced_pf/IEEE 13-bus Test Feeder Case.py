@@ -408,7 +408,7 @@ def power_flow_3ph(grid, t_idx=None):
     print('Ibus = \n', Ibus)
 
     Sbus = res.V * np.conj(Ibus)
-    print('Sbuss = \n', Sbus)
+    print('Sbus = \n', Sbus)
 
     return res
 

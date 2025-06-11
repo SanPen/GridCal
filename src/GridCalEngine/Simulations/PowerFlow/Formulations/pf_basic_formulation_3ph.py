@@ -21,7 +21,17 @@ from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
 from GridCalEngine.Utils.Sparse.csc2 import CSC
 from GridCalEngine.Utils.NumericalMethods.common import make_lookup
 
-def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matrix, CxVec, BoolVec, IntVec]:
+def lookup_from_mask(mask):
+    lookup = [-1] * len(mask)  # start with all -1
+    counter = 0
+    for i, m in enumerate(mask):
+        if m:
+            lookup[i] = counter
+            counter += 1
+
+    return lookup
+
+def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matrix, CxVec, BoolVec, IntVec, IntVec]:
     """
     Compute admittances and masks
 
@@ -105,15 +115,10 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
     Yf = Yf[R, :][:, binary_bus_mask]
     Yt = Yt[R, :][:, binary_bus_mask]
 
-    bus_idx_lookup = [-1] * len(binary_bus_mask)  # start with all -1
-    counter = 0
-    for i, m in enumerate(binary_bus_mask):
-        if m:
-            bus_idx_lookup[i] = counter
-            counter += 1
+    bus_idx_lookup = lookup_from_mask(binary_bus_mask)
+    branch_lookup = lookup_from_mask(R)
     
-    return Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Ysh_bus, binary_bus_mask, bus_idx_lookup
-
+    return Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Ysh_bus, binary_bus_mask, bus_idx_lookup, branch_lookup
 
 def compute_Ibus(nc: NumericalCircuit) -> CxVec:
     """
@@ -293,7 +298,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         :param nc: NumericalCircuit
         :param options: PowerFlowOptions
         """
-        self.Ybus, self.Yf, self.Yt, self.Yshunt_bus, self.mask, self.bus_lookup = compute_ybus(nc)
+        self.Ybus, self.Yf, self.Yt, self.Yshunt_bus, self.mask, self.bus_lookup, self.branch_lookup = compute_ybus(nc)
         V0new = expandVoltage3ph(V0)[self.mask]
 
         PfFormulationTemplate.__init__(self, V0=V0new.astype(complex), options=options)
@@ -574,7 +579,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
             Yshunt_bus=self.Yshunt_bus,
             branch_rates=expand3ph(self.nc.passive_branch_data.rates),
             Sbase=self.nc.Sbase,
-            lookup=self.bus_lookup
+            bus_lookup=self.bus_lookup,
+            branch_lookup=self.branch_lookup
         )
 
         return NumericPowerFlowResults(V=self.V,

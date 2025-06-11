@@ -203,12 +203,26 @@ def get_It(k: IntVec, V: CxVec, ytf: CxVec, ytt: CxVec, F: IntVec, T: IntVec):
     t = T[k]
     return np.conj(V[t]) * np.conj(ytt[k]) + np.conj(V[f]) * np.conj(ytf[k])
 
+def expand_magnitudes(magnitude: CxVec, lookup: IntVec):
+    """
+    :param magnitude:
+    :param lookup:
+    :return:
+    """
+    n_buses_total = len(lookup)
+    magnitude_expanded = np.zeros(n_buses_total, dtype=complex)
+    for i, value in enumerate(lookup):
+        if value < 0:
+            magnitude_expanded[i] = 0.0 + 0.0j
+        else:
+            magnitude_expanded[i] = magnitude[value]
+
+    return magnitude_expanded
 
 def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVec,
                                       pv: IntVec, vd: IntVec, Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
-                                      branch_rates: Vec, Sbase: float, Lookup: IntVec):
+                                      branch_rates: Vec, Sbase: float, bus_lookup: IntVec, branch_lookup: IntVec):
     """
-
     :param Sbus:
     :param V:
     :param F:
@@ -225,6 +239,8 @@ def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVe
     :return:
     """
 
+    V_expanded = expand_magnitudes(V, bus_lookup)
+
     # power at the slack nodes
     Sbus[vd] = V[vd] * np.conj(Ybus[vd, :] @ V)
 
@@ -237,33 +253,30 @@ def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVe
     Vm = np.abs(V)
     Sbus += Vm * Vm * np.conj(Yshunt_bus)
 
-    # Expand
-    n_buses_total = len(Lookup)
-    V_expanded = np.zeros(n_buses_total, dtype=complex)
-    for i, value in enumerate(Lookup):
-        if value < 0:
-            V_expanded[i] = 0.0 + 0.0j
-        else:
-            V_expanded[i] = V[value]
+    # Branches current, loading, etc
+    Vf_expanded = V_expanded[F]
+    Vt_expanded = V_expanded[T]
 
-            # Branches current, loading, etc
-    Vf = V[F]
-    Vt = V[T]
     If = Yf @ V
     It = Yt @ V
-    Sf = Vf * np.conj(If) * Sbase
-    St = Vt * np.conj(It) * Sbase
+    If_expanded = expand_magnitudes(If, branch_lookup)
+    It_expanded = expand_magnitudes(It, branch_lookup)
+
+    Sf_expanded = Vf_expanded * np.conj(If_expanded) * Sbase
+    St_expanded = Vt_expanded * np.conj(It_expanded) * Sbase
 
     # Branch losses in MVA
-    losses = (Sf + St)
+    losses = (Sf_expanded + St_expanded)
 
     # branch voltage increment
-    Vbranch = Vf - Vt
+    Vbranch = Vf_expanded - Vt_expanded
 
     # Branch loading in p.u.
-    loading = Sf / (branch_rates + 1e-9)
+    loading = Sf_expanded / (branch_rates + 1e-9)
 
-    return Sf, St, If, It, Vbranch, loading, losses, Sbus
+    Sbus_expanded = expand_magnitudes(Sbus, bus_lookup)
+
+    return Sf_expanded, St_expanded, If_expanded, It_expanded, Vbranch, loading, losses, Sbus_expanded
 
 
 def power_flow_post_process_linear(Sbus: CxVec, V: CxVec,
