@@ -110,6 +110,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         self.results.receiving_bus_idx = self.options.receiving_bus_idx
         self.results.inter_space_branches = opf_vars.branch_vars.inter_space_branches
         self.results.inter_space_hvdc = opf_vars.hvdc_vars.inter_space_hvdc
+        self.results.inter_space_vsc = opf_vars.vsc_vars.inter_space_vsc
 
         self.results.inter_area_flows = opf_vars.inter_area_flows
 

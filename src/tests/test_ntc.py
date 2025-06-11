@@ -914,7 +914,7 @@ def test_ntc_vsc_contingencies():
     # asserts
     # ------------------------------------------------------------------------------------------------------------------
 
-    assert np.isclose(res.inter_area_flows, 2000.0)  # 2000 is the summation of the inter-area branch minus 1 rates
+    assert np.isclose(res.inter_area_flows, 2000.0)  # 2000 is the summation of the inter-area branches (N-1) rates
 
 if __name__ == '__main__':
     # test_issue_372_1()

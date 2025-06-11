@@ -687,15 +687,23 @@ class SimulationsMain(TimeEventsMain):
         Get the lists that help defining the inter area objects
         :return: InterAggregationInfo
         """
-        dev_tpe_from = self.exchange_places_dict[self.ui.fromComboBox.currentText()]
-        devs_from = self.circuit.get_elements_by_type(dev_tpe_from)
-        from_idx = gf.get_checked_indices(self.ui.fromListView.model())
-        objects_from = [devs_from[i] for i in from_idx]
+        if self.ui.fromListView.model() is not None:
+            dev_tpe_from = self.exchange_places_dict[self.ui.fromComboBox.currentText()]
+            devs_from = self.circuit.get_elements_by_type(dev_tpe_from)
+            from_idx = gf.get_checked_indices(self.ui.fromListView.model())
+            objects_from = [devs_from[i] for i in from_idx]
+        else:
+            objects_from = []
+            self.show_error_toast("No from areas!")
 
-        dev_tpe_to = self.exchange_places_dict[self.ui.toComboBox.currentText()]
-        devs_to = self.circuit.get_elements_by_type(dev_tpe_to)
-        to_idx = gf.get_checked_indices(self.ui.toListView.model())
-        objects_to = [devs_to[i] for i in to_idx]
+        if self.ui.toListView.model() is not None:
+            dev_tpe_to = self.exchange_places_dict[self.ui.toComboBox.currentText()]
+            devs_to = self.circuit.get_elements_by_type(dev_tpe_to)
+            to_idx = gf.get_checked_indices(self.ui.toListView.model())
+            objects_to = [devs_to[i] for i in to_idx]
+        else:
+            objects_to = []
+            self.show_error_toast("No to areas!")
 
         info: dev.InterAggregationInfo = self.circuit.get_inter_aggregation_info(objects_from=objects_from,
                                                                                  objects_to=objects_to)

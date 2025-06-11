@@ -59,6 +59,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             branch_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
             bus_names=self.grid.get_bus_names(),
             hvdc_names=self.grid.get_hvdc_names(),
+            vsc_names=self.grid.get_vsc_names(),
             contingency_group_names=self.grid.get_contingency_group_names(),
             time_array=self.grid.time_profile[self.time_indices],
             time_indices=self.time_indices,
@@ -94,6 +95,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.results.receiving_bus_idx = self.options.receiving_bus_idx
                 self.results.inter_space_branches = opf_vars.branch_vars.inter_space_branches
                 self.results.inter_space_hvdc = opf_vars.hvdc_vars.inter_space_hvdc
+                self.results.inter_space_vsc = opf_vars.hvdc_vars.inter_space_vsc
 
             self.results.voltage[t_idx, :] = opf_vars.get_voltages()[0, :]
             self.results.Sbus[t_idx, :] = opf_vars.bus_vars.Pinj[0, :]
@@ -116,7 +118,11 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.hvdc_Pf[t_idx, :] = opf_vars.hvdc_vars.flows[0, :]
             self.results.hvdc_loading[t_idx, :] = opf_vars.hvdc_vars.loading[0, :]
 
+            self.results.vsc_Pf[t_idx, :] = opf_vars.vsc_vars.flows[0, :]
+            self.results.vsc_loading[t_idx, :] = opf_vars.vsc_vars.loading[0, :]
+
             self.results.converged[t_idx] = opf_vars.acceptable_solution
+            self.results.inter_area_flows[t_idx] = opf_vars.inter_area_flows
 
             # update progress bar
             self.report_progress2(t_idx, len(self.time_indices))

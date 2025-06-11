@@ -79,6 +79,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.bus_names = bus_names
         self.branch_names = branch_names
         self.hvdc_names = hvdc_names
+        self.vsc_names = vsc_names
         self.contingency_group_names = contingency_group_names
         self.bus_types = np.ones(n, dtype=int)
 
@@ -112,6 +113,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.receiving_bus_idx: List[int] = list()
         self.inter_space_branches: List[tuple[int, float]] = list()  # index, sense
         self.inter_space_hvdc: List[tuple[int, float]] = list()  # index, sense
+        self.inter_space_vsc: List[tuple[int, float]] = list()  # index, sense
 
         # t, m, c, contingency, negative_slack, positive_slack
         self.contingency_flows_list = list()
@@ -123,6 +125,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.register(name='bus_names', tpe=StrVec)
         self.register(name='branch_names', tpe=StrVec)
         self.register(name='hvdc_names', tpe=StrVec)
+        self.register(name='vsc_names', tpe=StrVec)
         self.register(name='contingency_group_names', tpe=StrVec)
         self.register(name='bus_types', tpe=IntVec)
 
@@ -161,6 +164,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.register(name='receiving_bus_idx', tpe=list)
         self.register(name='inter_space_branches', tpe=list)
         self.register(name='inter_space_hvdc', tpe=list)
+        self.register(name='inter_space_vsc', tpe=list)
 
     def get_bus_df(self) -> pd.DataFrame:
         """
@@ -334,6 +338,13 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 index.append(self.hvdc_names[k])
                 data.append(self.hvdc_Pf[k])
 
+            for k, sense in self.inter_space_vsc:
+                index.append(self.vsc_names[k])
+                data.append(self.vsc_Pf[k])
+
+            index.append("Total")
+            data.append(self.inter_area_flows)
+
             return ResultsTable(
                 data=np.array(data),
                 index=np.array(index),
@@ -356,6 +367,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             for k, sense in self.inter_space_hvdc:
                 index.append(self.hvdc_names[k])
                 data.append(self.hvdc_loading[k])
+
+            for k, sense in self.inter_space_vsc:
+                index.append(self.vsc_names[k])
+                data.append(self.vsc_loading[k])
 
             return ResultsTable(
                 data=np.array(data) * 100.0,

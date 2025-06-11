@@ -853,7 +853,7 @@ class VscNtcVars:
         self.rates = np.zeros((nt, n_elm), dtype=float)
         self.loading = np.zeros((nt, n_elm), dtype=float)
 
-        self.inter_space_hvdc: List[Tuple[int, float]] = list()  # index, sense
+        self.inter_space_vsc: List[Tuple[int, float]] = list()  # index, sense
 
     def get_values(self, Sbase: float, model: LpModel) -> "VscNtcVars":
         """
@@ -863,7 +863,7 @@ class VscNtcVars:
         nt, n_elm = self.flows.shape
         data = VscNtcVars(nt=nt, n_elm=n_elm)
         data.rates = self.rates
-        data.inter_space_hvdc = self.inter_space_hvdc
+        data.inter_space_vsc = self.inter_space_vsc
 
         for t in range(nt):
             for i in range(n_elm):
@@ -1224,7 +1224,7 @@ def add_linear_branches_formulation(t_idx: int,
                         cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.Va[t_idx, fr] -
                                                                  bus_vars.Va[t_idx, to] +
                                                                  branch_vars.tap_angles[t_idx, m]),
-                        name=join("flows_ps_", [t_idx, m], "_")
+                        name=join("ac_flows_ps_", [t_idx, m], "_")
                     )
 
                 else:
@@ -1237,13 +1237,12 @@ def add_linear_branches_formulation(t_idx: int,
                             cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.Va[t_idx, fr] -
                                                                      bus_vars.Va[t_idx, to] +
                                                                      branch_vars.tap_angles[t_idx, m]),
-                            name=join("flow_ps_fix", [t_idx, m], "_")
+                            name=join("ac_flow_ps_fix", [t_idx, m], "_")
                         )
                     else:
                         # rest of the branches with tau = 0
                         prob.add_cst(
-                            cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.Va[t_idx, fr] -
-                                                                     bus_vars.Va[t_idx, to]),
+                            cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.Va[t_idx, fr] - bus_vars.Va[t_idx, to]),
                             name=join("ac_flow_", [t_idx, m], "_")
                         )
 
@@ -1715,7 +1714,7 @@ def add_linear_vsc_formulation(t_idx: int,
             set_var_bounds(var=vsc_vars.flows[t_idx, m], ub=0.0, lb=0.0)
 
     # add the flows to the objective function
-    for k, sense in vsc_vars.inter_space_hvdc:
+    for k, sense in vsc_vars.inter_space_vsc:
         f_obj -= vsc_vars.flows[t_idx, k] * sense
 
     if not any_dc_slack and vsc_data_t.nelm > 0:
@@ -2013,6 +2012,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
 
     if export_model_fname is not None:
         lp_model.save_model(file_name=export_model_fname)
+        logger.add_info("LP model saved", value=export_model_fname)
         print('LP model saved as:', export_model_fname)
 
     # solve the model

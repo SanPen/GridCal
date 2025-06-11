@@ -21,6 +21,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                  bus_names: StrVec,
                  branch_names: StrVec,
                  hvdc_names: StrVec,
+                 vsc_names: StrVec,
                  contingency_group_names: StrVec,
                  time_array: DateVec,
                  time_indices: IntVec,
@@ -31,6 +32,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         :param bus_names:
         :param branch_names:
         :param hvdc_names:
+        :param vsc_names:
         :param contingency_group_names:
         :param time_array:
         :param time_indices:
@@ -56,6 +58,9 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 ResultTypes.HvdcResults: [
                     ResultTypes.HvdcPowerFrom,
                 ],
+                ResultTypes.VscResults: [
+                    ResultTypes.VscPowerFrom,
+                ],
                 ResultTypes.FlowReports: [
                     ResultTypes.ContingencyFlowsReport,
                     ResultTypes.InterSpaceBranchPower,
@@ -77,6 +82,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.branch_names = np.array(branch_names, dtype=object)
         self.bus_names = bus_names
         self.hvdc_names = hvdc_names
+        self.vsc_names = vsc_names
         self.contingency_group_names = contingency_group_names
         self.bus_types = np.ones(n, dtype=int)
 
@@ -102,16 +108,22 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.hvdc_loading = np.zeros((nt, nhvdc), dtype=float)
         self.hvdc_losses = np.zeros((nt, nhvdc), dtype=float)
 
+        self.vsc_Pf = np.zeros((nt, nhvdc), dtype=float)
+        self.vsc_loading = np.zeros((nt, nhvdc), dtype=float)
+        self.vsc_losses = np.zeros((nt, nhvdc), dtype=float)
+
         # indices to post process
         self.sending_bus_idx: List[int] = list()
         self.receiving_bus_idx: List[int] = list()
         self.inter_space_branches: List[tuple[int, float]] = list()  # index, sense
         self.inter_space_hvdc: List[tuple[int, float]] = list()  # index, sense
+        self.inter_space_vsc: List[tuple[int, float]] = list()
 
         # t, m, c, contingency, negative_slack, positive_slack
         self.contingency_flows_list = list()
 
         self.converged = np.zeros(nt, dtype=bool)
+        self.inter_area_flows = np.zeros(nt, dtype=float)
 
         self.register(name='time_indices', tpe=DateVec)
         self.register(name='bus_names', tpe=StrVec)
@@ -141,12 +153,18 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.register(name='hvdc_loading', tpe=Mat)
         self.register(name='hvdc_losses', tpe=Mat)
 
+        self.register(name='vsc_Pf', tpe=Mat)
+        self.register(name='vsc_loading', tpe=Mat)
+        self.register(name='vsc_losses', tpe=Mat)
+
         self.register(name='sending_bus_idx', tpe=list)
         self.register(name='receiving_bus_idx', tpe=list)
         self.register(name='inter_space_branches', tpe=list)
         self.register(name='inter_space_hvdc', tpe=list)
+        self.register(name='inter_space_vsc', tpe=list)
 
         self.register(name='converged', tpe=BoolVec)
+        self.register(name='inter_area_flows', tpe=Vec)
         self.register(name='contingency_flows_list', tpe=list)
 
     def mdl(self, result_type) -> ResultsTable:
@@ -255,6 +273,17 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 idx_device_type=DeviceType.HVDCLineDevice
             )
 
+        elif result_type == ResultTypes.VscPowerFrom:
+            return ResultsTable(
+                data=self.vsc_Pf,
+                index=self.time_array,
+                columns=self.vsc_names,
+                title=str(result_type.value),
+                ylabel='(MW)',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.VscDevice
+            )
+
         elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
             return ResultsTable(
                 data=self.alpha,
@@ -271,7 +300,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         elif result_type == ResultTypes.InterSpaceBranchPower:
 
             nt = len(self.time_array)
-            ndev = len(self.inter_space_branches) + len(self.inter_space_hvdc)
+            ndev = len(self.inter_space_branches) + len(self.inter_space_hvdc) + len(self.inter_space_vsc)
             data = np.empty((nt, ndev))
             cols = list()
             i = 0
@@ -280,10 +309,14 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 data[:, i] = self.Sf[:, k].real
                 i += 1
 
-            offset = len(self.inter_space_branches)
             for k, sense in self.inter_space_hvdc:
                 cols.append(self.hvdc_names[k])
                 data[:, i] = self.hvdc_Pf[:, k]
+                i += 1
+
+            for k, sense in self.inter_space_vsc:
+                cols.append(self.vsc_names[k])
+                data[:, i] = self.vsc_Pf[:, k]
                 i += 1
 
             return ResultsTable(
