@@ -276,7 +276,7 @@ def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVe
 
     Sbus_expanded = expand_magnitudes(Sbus, bus_lookup)
 
-    return Sf_expanded, St_expanded, If_expanded, It_expanded, Vbranch, loading, losses, Sbus_expanded
+    return Sf_expanded, St_expanded, If_expanded, It_expanded, Vbranch, loading, losses, Sbus_expanded, V_expanded
 
 
 def power_flow_post_process_linear(Sbus: CxVec, V: CxVec,

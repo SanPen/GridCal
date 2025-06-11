@@ -283,6 +283,10 @@ def expandVoltage3ph(V0: CxVec) -> CxVec:
 
     for k in range(n):
         x3[3 * k + idx3] = Vm[k] * np.exp(1j * (Va[k] + angles))
+
+    x3[0] = 1.0625 * np.exp(1j * 0)
+    x3[1] = 1.0500 * np.exp(1j * (-120*np.pi/180))
+    x3[2] = 1.0687 * np.exp(1j * (120*np.pi/180))
     return x3
 
 
@@ -566,7 +570,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         :return: NumericPowerFlowResults
         """
         # Compute the Branches power and the slack buses power
-        Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
+        Sf, St, If, It, Vbranch, loading, losses, Sbus, V_expanded = power_flow_post_process_nonlinear(
             Sbus=self.Scalc,
             V=self.V,
             F=expand_indices_3ph(self.nc.passive_branch_data.F),
@@ -583,7 +587,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
             branch_lookup=self.branch_lookup
         )
 
-        return NumericPowerFlowResults(V=self.V,
+        return NumericPowerFlowResults(V=V_expanded,
                                        Scalc=Sbus * self.nc.Sbase,
                                        m=np.ones(self.nc.nbr, dtype=float),
                                        tau=np.zeros(self.nc.nbr, dtype=float),

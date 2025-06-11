@@ -3,6 +3,7 @@ from GridCalEngine import WindingType, ShuntConnectionType, AdmittanceMatrix
 import numpy as np
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
+import pandas as pd
 
 logger = gce.Logger()
 
@@ -208,15 +209,23 @@ load_611 = gce.Load(Ir1=0.0,
 load_611.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_611, api_obj=load_611)
 
-load_632_671_distrib = gce.Load(P1=0.017/2,
+load_632_distrib = gce.Load(P1=0.017/2,
                             Q1=0.010/2,
                             P2=0.066/2,
                             Q2=0.038/2,
                             P3=0.117/2,
                             Q3=0.068/2)
-load_632_671_distrib.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_632, api_obj=load_632_671_distrib)
-grid.add_load(bus=bus_671, api_obj=load_632_671_distrib)
+load_632_distrib.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus_632, api_obj=load_632_distrib)
+
+load_671_distrib = gce.Load(P1=0.017/2,
+                            Q1=0.010/2,
+                            P2=0.066/2,
+                            Q2=0.038/2,
+                            P3=0.117/2,
+                            Q3=0.068/2)
+load_671_distrib.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus_671, api_obj=load_671_distrib)
 
 """
 Capacitors
@@ -372,6 +381,11 @@ line_671_675.apply_template(config_606, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_671_675)
 
 """
+Save Grid
+"""
+gce.save_file(grid=grid, filename='IEEE 13-bus.gridcal')
+
+"""
 Power Flow
 """
 def power_flow_3ph(grid, t_idx=None):
@@ -385,19 +399,44 @@ def power_flow_3ph(grid, t_idx=None):
 
     problem = PfBasicFormulation3Ph(V0=V0, S0=S0, Qmin=Qmin*100, Qmax=Qmax*100, nc=nc, options=options)
 
-    print('Ybus = \n', problem.Ybus.toarray())
-    print('S0 = \n', problem.S0)
-    print('I0 = \n', problem.I0)
-    print('V0 = \n', problem.V)
-
     res = newton_raphson_fx(problem=problem, verbose=1)
-
-    Ibus = problem.Ybus.dot(res.V)
-    print('Ibus = \n', Ibus)
-
-    Sbus = res.V * np.conj(Ibus)
-    print('Sbus = \n', Sbus)
 
     return res
 
 res_3ph = power_flow_3ph(grid)
+
+U = abs(res_3ph.V)
+angle = np.degrees(np.angle((res_3ph.V)))
+print()
+print(U)
+print()
+print(angle)
+
+U = np.array(U)
+angle = np.array(angle)
+
+# Número de buses
+n_buses = len(U) // 3
+
+# Separar por fases
+U_A = U[0::3]
+U_B = U[1::3]
+U_C = U[2::3]
+
+angle_A = angle[0::3]
+angle_B = angle[1::3]
+angle_C = angle[2::3]
+
+# Formatear como "MAG at ANGLE"
+def format_column(mags, angles):
+    return [f"{m:.4f} at {a:.2f}" for m, a in zip(mags, angles)]
+
+# Crear el DataFrame
+df = pd.DataFrame({
+    'A–N': format_column(U_A, angle_A),
+    'B–N': format_column(U_B, angle_B),
+    'C–N': format_column(U_C, angle_C),
+})
+
+# Exportar a Excel
+df.to_excel("tensiones_trifasicas.xlsx", index=False)
