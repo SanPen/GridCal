@@ -916,6 +916,238 @@ def test_ntc_vsc_contingencies():
 
     assert np.isclose(res.inter_area_flows, 2000.0)  # 2000 is the summation of the inter-area branches (N-1) rates
 
+def test_2_node_several_conditions_ntc():
+
+    grid = gce.MultiCircuit()
+
+    area1 = gce.Area(name="Area1")
+    grid.add_area(area1)
+
+    area2 = gce.Area(name="Area2")
+    grid.add_area(area2)
+
+    bus1 = gce.Bus(name="Bus1", area=area1)
+    grid.add_bus(bus1)
+
+    bus2 = gce.Bus(name="Bus2", area=area2)
+    grid.add_bus(bus2)
+
+    load1 = gce.Load(name="Load1", P=10.0)
+    grid.add_load(bus1, load1)
+
+    load2 = gce.Load(name="Load2", P=10.0)
+    grid.add_load(bus2, load2)
+
+    gen1 = gce.Generator(name="Generator1", P=10.0, Pmax=10000.0)
+    grid.add_generator(bus1, gen1)
+
+    gen2 = gce.Generator(name="Generator2", P=10.0, Pmax=10000.0)
+    grid.add_generator(bus2, gen2)
+
+    line12 = gce.Line(bus_from=bus1, bus_to=bus2, name="Line 1-2", x=1e-4, rate=1000.0)
+    grid.add_line(line12)
+
+    transformer12 = gce.Transformer2W(bus_from=bus1, bus_to=bus2, name="Transformer 1-2", x=1e-4, rate=1000.0)
+    grid.add_transformer2w(transformer12)
+
+    cg1 = gce.ContingencyGroup(name="Line12 contingency")
+    con1 = gce.Contingency(device=line12, name=cg1.name, group=cg1)
+    grid.add_contingency_group(cg1)
+    grid.add_contingency(con1)
+
+    cg2 = gce.ContingencyGroup(name="Transformer12 contingency")
+    con2 = gce.Contingency(device=transformer12, name=cg1.name, group=cg2)
+    grid.add_contingency_group(cg2)
+    grid.add_contingency(con2)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # run study:
+    # - No contingencies
+    # - transformer behaving like a line
+    # ------------------------------------------------------------------------------------------------------------------
+
+    info = grid.get_inter_aggregation_info(objects_from=[area1],
+                                           objects_to=[area2])
+
+    opf_options = gce.OptimalPowerFlowOptions(contingency_groups_used=grid.contingency_groups)
+    lin_options = gce.LinearAnalysisOptions()
+
+    ntc_options = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=info.idx_bus_from,
+        receiving_bus_idx=info.idx_bus_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        loading_threshold_to_report=98.0,
+        skip_generation_limits=True,
+        transmission_reliability_margin=0.1,
+        branch_exchange_sensitivity=0.01,
+        use_branch_exchange_sensitivity=True,
+        branch_rating_contribution=1.0,
+        use_branch_rating_contribution=True,
+        consider_contingencies=False,
+        opf_options=opf_options,
+        lin_options=lin_options
+    )
+
+    drv = gce.OptimalNetTransferCapacityDriver(grid, ntc_options)
+
+    drv.run()
+
+    res = drv.results
+
+    assert np.isclose(res.inter_area_flows, 2000)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # run study:
+    # - No contingencies
+    # - transformer behaving like a phase shifter
+    # ------------------------------------------------------------------------------------------------------------------
+
+    transformer12.tap_phase_control_mode = gce.TapPhaseControl.Pf
+
+    info = grid.get_inter_aggregation_info(objects_from=[area1],
+                                           objects_to=[area2])
+
+    opf_options = gce.OptimalPowerFlowOptions(contingency_groups_used=grid.contingency_groups)
+    lin_options = gce.LinearAnalysisOptions()
+
+    ntc_options = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=info.idx_bus_from,
+        receiving_bus_idx=info.idx_bus_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        loading_threshold_to_report=98.0,
+        skip_generation_limits=True,
+        transmission_reliability_margin=0.1,
+        branch_exchange_sensitivity=0.01,
+        use_branch_exchange_sensitivity=True,
+        branch_rating_contribution=1.0,
+        use_branch_rating_contribution=True,
+        consider_contingencies=False,
+        opf_options=opf_options,
+        lin_options=lin_options
+    )
+
+    drv = gce.OptimalNetTransferCapacityDriver(grid, ntc_options)
+
+    drv.run()
+
+    res = drv.results
+
+    assert np.isclose(res.inter_area_flows, 2000)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # run study:
+    # - contingencies enabled
+    # - transformer behaving like a line
+    # ------------------------------------------------------------------------------------------------------------------
+
+    info = grid.get_inter_aggregation_info(objects_from=[area1],
+                                           objects_to=[area2])
+
+    opf_options = gce.OptimalPowerFlowOptions(contingency_groups_used=grid.contingency_groups)
+    lin_options = gce.LinearAnalysisOptions()
+
+    ntc_options = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=info.idx_bus_from,
+        receiving_bus_idx=info.idx_bus_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        loading_threshold_to_report=98.0,
+        skip_generation_limits=True,
+        transmission_reliability_margin=0.1,
+        branch_exchange_sensitivity=0.01,
+        use_branch_exchange_sensitivity=True,
+        branch_rating_contribution=1.0,
+        use_branch_rating_contribution=True,
+        consider_contingencies=True,
+        opf_options=opf_options,
+        lin_options=lin_options
+    )
+
+    drv = gce.OptimalNetTransferCapacityDriver(grid, ntc_options)
+
+    drv.run()
+
+    res = drv.results
+
+    assert np.isclose(res.inter_area_flows, 1000)  # half the transfer
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # run study:
+    # - contingencies enabled
+    # - transformer behaving like a phase shifter
+    # ------------------------------------------------------------------------------------------------------------------
+
+    transformer12.tap_phase_control_mode = gce.TapPhaseControl.Pf
+
+    info = grid.get_inter_aggregation_info(objects_from=[area1],
+                                           objects_to=[area2])
+
+    opf_options = gce.OptimalPowerFlowOptions(contingency_groups_used=grid.contingency_groups)
+    lin_options = gce.LinearAnalysisOptions()
+
+    ntc_options = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=info.idx_bus_from,
+        receiving_bus_idx=info.idx_bus_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        loading_threshold_to_report=98.0,
+        skip_generation_limits=True,
+        transmission_reliability_margin=0.1,
+        branch_exchange_sensitivity=0.01,
+        use_branch_exchange_sensitivity=True,
+        branch_rating_contribution=1.0,
+        use_branch_rating_contribution=True,
+        consider_contingencies=True,
+        opf_options=opf_options,
+        lin_options=lin_options
+    )
+
+    drv = gce.OptimalNetTransferCapacityDriver(grid, ntc_options)
+
+    drv.run()
+
+    res = drv.results
+
+    assert np.isclose(res.inter_area_flows, 1000)  # half the transfer
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # run study:
+    # - contingencies enabled
+    # - transformer behaving like a phase shifter with a fixed angle
+    # ------------------------------------------------------------------------------------------------------------------
+
+    transformer12.tap_phase_control_mode = gce.TapPhaseControl.fixed
+    transformer12.tap_phase = 0.02
+
+    info = grid.get_inter_aggregation_info(objects_from=[area1],
+                                           objects_to=[area2])
+
+    opf_options = gce.OptimalPowerFlowOptions(contingency_groups_used=grid.contingency_groups)
+    lin_options = gce.LinearAnalysisOptions()
+
+    ntc_options = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=info.idx_bus_from,
+        receiving_bus_idx=info.idx_bus_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        loading_threshold_to_report=98.0,
+        skip_generation_limits=True,
+        transmission_reliability_margin=0.1,
+        branch_exchange_sensitivity=0.01,
+        use_branch_exchange_sensitivity=True,
+        branch_rating_contribution=1.0,
+        use_branch_rating_contribution=True,
+        consider_contingencies=True,
+        opf_options=opf_options,
+        lin_options=lin_options
+    )
+
+    drv = gce.OptimalNetTransferCapacityDriver(grid, ntc_options)
+
+    drv.run()
+
+    res = drv.results
+
+    assert not res.converged  # you cannot hard fix the inter area angle difference and enforce movement by proportions
+
+
 if __name__ == '__main__':
     # test_issue_372_1()
     # test_issue_372_2()
@@ -923,6 +1155,7 @@ if __name__ == '__main__':
     # test_ntc_ultra_simple()
     # test_ntc_pmode_saturation()
     # test_ntc_vsc()
-    test_ntc_vsc_contingencies()
+    # test_ntc_vsc_contingencies()
+    test_2_node_several_conditions_ntc()
 
 
