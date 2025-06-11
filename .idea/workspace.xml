@@ -28,10 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="IEEE 13-bus case converging">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="IEEE 13-bus case not saving G, B, Ir and Ii">
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -2341,7 +2338,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="745" />
+    <option name="localTasksCounter" value="746" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2387,7 +2384,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="minimal changes" />
     <MESSAGE value="early iidm reader" />
     <MESSAGE value="Fixed bug in the time series power flow when there are hvdc lines" />
     <MESSAGE value="Test Single and Three phase test cases." />
@@ -2412,7 +2408,8 @@
     <MESSAGE value="Expand voltage - post process" />
     <MESSAGE value="IEEE 13-bus case running but not converging" />
     <MESSAGE value="IEEE 13-bus case converging" />
-    <option name="LAST_COMMIT_MESSAGE" value="IEEE 13-bus case converging" />
+    <MESSAGE value="IEEE 13-bus case not saving G, B, Ir and Ii" />
+    <option name="LAST_COMMIT_MESSAGE" value="IEEE 13-bus case not saving G, B, Ir and Ii" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2750,11 +2747,6 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py</url>
           <line>59</line>
           <option name="timeStamp" value="2747" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py</url>
-          <line>390</line>
-          <option name="timeStamp" value="2748" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

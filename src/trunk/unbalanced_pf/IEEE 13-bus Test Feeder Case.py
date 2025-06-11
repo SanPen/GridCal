@@ -13,43 +13,43 @@ grid.fBase = 60
 """
 13 Buses
 """
-bus_650 = gce.Bus(name='650', Vnom=4.16, xpos=0, ypos=30)
+bus_650 = gce.Bus(name='650', Vnom=4.16, xpos=0, ypos=3000)
 bus_650.is_slack = True
 grid.add_bus(obj=bus_650)
 gen = gce.Generator(vset = 1.0625)
 grid.add_generator(bus = bus_650, api_obj = gen)
 
-bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=20)
+bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=2000)
 grid.add_bus(obj=bus_632)
 
-bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-10, ypos=20)
+bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-1000, ypos=2000)
 grid.add_bus(obj=bus_645)
 
-bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-20, ypos=20)
+bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-2000, ypos=2000)
 grid.add_bus(obj=bus_646)
 
-bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=10, ypos=20)
+bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=1000, ypos=2000)
 grid.add_bus(obj=bus_633)
 
-bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=20, ypos=20)
+bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=2000, ypos=2000)
 grid.add_bus(obj=bus_634)
 
-bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=10)
+bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=1000)
 grid.add_bus(obj=bus_671)
 
-bus_684 = gce.Bus(name='684', Vnom=4.16, xpos=-10, ypos=10)
+bus_684 = gce.Bus(name='684', Vnom=4.16, xpos=-1000, ypos=1000)
 grid.add_bus(obj=bus_684)
 
-bus_611 = gce.Bus(name='611', Vnom=4.16, xpos=-20, ypos=10)
+bus_611 = gce.Bus(name='611', Vnom=4.16, xpos=-2000, ypos=1000)
 grid.add_bus(obj=bus_611)
 
-bus_675 = gce.Bus(name='675', Vnom=4.16, xpos=20, ypos=10)
+bus_675 = gce.Bus(name='675', Vnom=4.16, xpos=2000, ypos=1000)
 grid.add_bus(obj=bus_675)
 
 bus_680 = gce.Bus(name='680', Vnom=4.16, xpos=0, ypos=0)
 grid.add_bus(obj=bus_680)
 
-bus_652 = gce.Bus(name='652', Vnom=4.16, xpos=-10, ypos=0)
+bus_652 = gce.Bus(name='652', Vnom=4.16, xpos=-1000, ypos=0)
 grid.add_bus(obj=bus_652)
 
 """
