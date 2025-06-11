@@ -42,9 +42,6 @@ grid.add_bus(obj=bus_684)
 bus_611 = gce.Bus(name='611', Vnom=4.16, xpos=-20, ypos=10)
 grid.add_bus(obj=bus_611)
 
-bus_692 = gce.Bus(name='692', Vnom=4.16, xpos=10, ypos=10)
-grid.add_bus(obj=bus_692)
-
 bus_675 = gce.Bus(name='675', Vnom=4.16, xpos=20, ypos=10)
 grid.add_bus(obj=bus_675)
 
@@ -193,14 +190,14 @@ load_675 = gce.Load(P1=0.485,
 load_675.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_675, api_obj=load_675)
 
-load_692 = gce.Load(Ir1=0.0,
+load_671 = gce.Load(Ir1=0.0,
                     Ii1=0.0,
                     Ir2=0.0,
                     Ii2=0.0,
                     Ir3=0.17,
                     Ii3=0.151)
-load_692.conn = ShuntConnectionType.Delta
-grid.add_load(bus=bus_692, api_obj=load_692)
+load_671.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus_671, api_obj=load_671)
 
 load_611 = gce.Load(Ir1=0.0,
                     Ii1=0.0,
@@ -368,20 +365,11 @@ line_684_611 = gce.Line(bus_from=bus_684,
 line_684_611.apply_template(config_605, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_684_611)
 
-line_692_675 = gce.Line(bus_from=bus_692,
+line_671_675 = gce.Line(bus_from=bus_671,
                         bus_to=bus_675,
                         length= 500 * 0.0003048)
-line_692_675.apply_template(config_606, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_692_675)
-
-"""
-Switch between 671 and 692
-"""
-switch = gce.Switch(name='Switch',
-                    bus_from=bus_671,
-                    bus_to=bus_692)
-grid.add_switch(obj=switch)
-
+line_671_675.apply_template(config_606, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_671_675)
 
 """
 Power Flow
