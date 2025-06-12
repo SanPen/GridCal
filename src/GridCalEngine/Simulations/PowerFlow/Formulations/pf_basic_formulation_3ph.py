@@ -158,7 +158,7 @@ def compute_Sbus_star(nc: NumericalCircuit) -> CxVec:
     return Sbus
 
 
-def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, V: CxVec, bus_lookup: IntVec) -> CxVec:
+def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, bus_lookup: IntVec) -> CxVec:
     """
     :param bus_idx:
     :param Sdelta:
@@ -176,13 +176,17 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, V: CxVec, bus_lookup: Int
         b = 3 * f + 1
         c = 3 * f + 2
 
-        ab = 3 * k + 0
-        bc = 3 * k + 1
-        ca = 3 * k + 2
+        ab = 3 * f + 0
+        bc = 3 * f + 1
+        ca = 3 * f + 2
 
         a2 = bus_lookup[a]
         b2 = bus_lookup[b]
         c2 = bus_lookup[c]
+
+        ab2 = bus_lookup[ab]
+        bc2 = bus_lookup[bc]
+        ca2 = bus_lookup[ca]
 
         if a2 > -1 and b2 > -1 and c2 > -1:
             S[a2] = -1 * ((V[a2] * Sdelta[ab]) / (V[a2] - V[b2]) - (V[a2] * Sdelta[ca]) / (V[c2] - V[a2]))
@@ -193,13 +197,25 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, V: CxVec, bus_lookup: Int
             S[a2] = -1 * V[a2] * Sdelta[ab] / (V[a2] - V[b2])
             S[b2] = -1 * V[b2] * Sdelta[ab] / (V[b2] - V[a2])
 
+            # Admittance
+            S[a2] = -1 * V[a2] * np.conj((V[a2] - V[b2]) * Ydelta[ab2])
+            S[b2] = -1 * V[b2] * np.conj((V[b2] - V[a2]) * Ydelta[ab2])
+
         elif b2 > -1 and c2 > -1:
             S[b2] = -1 * V[b2] * Sdelta[bc] / (V[b2] - V[c2])
             S[c2] = -1 * V[c2] * Sdelta[bc] / (V[c2] - V[b2])
 
+            # Admittance
+            S[b2] = -1 * V[b2] * np.conj((V[b2] - V[c2]) * Ydelta[bc2])
+            S[c2] = -1 * V[c2] * np.conj((V[c2] - V[b2]) * Ydelta[bc2])
+
         elif c2 > -1 and a2 > -1:
             S[c2] = -1 * V[c2] * Sdelta[ca] / (V[c2] - V[a2])
             S[a2] = -1 * V[a2] * Sdelta[ca] / (V[a2] - V[c2])
+
+            # Admittance
+            S[c2] = -1 * V[c2] * np.conj((V[c2] - V[a2]) * Ydelta[ca2])
+            S[a2] = -1 * V[a2] * np.conj((V[a2] - V[c2]) * Ydelta[ca2])
 
     return S
 
@@ -410,6 +426,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         # Assumes the internal vars were updated already with self.x2var()
         Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
                                          Sdelta=self.nc.load_data.S3_delta,
+                                         Ydelta=self.nc.load_data.Y3_delta,
                                          V=V,
                                          bus_lookup=self.bus_lookup)
         Sbus = self.S0 + Sdelta2star
@@ -441,6 +458,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         # Assumes the internal vars were updated already with self.x2var()
         Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
                                          Sdelta=self.nc.load_data.S3_delta,
+                                         Ydelta=self.nc.load_data.Y3_delta,
                                          V=self.V,
                                          bus_lookup=self.bus_lookup)
         Sbus = self.S0 + Sdelta2star
@@ -517,6 +535,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
                                          Sdelta=self.nc.load_data.S3_delta,
+                                         Ydelta=self.nc.load_data.Y3_delta,
                                          V=self.V,
                                          bus_lookup=self.bus_lookup)
         Sbus = self.S0 + Sdelta2star
