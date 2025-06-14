@@ -25,11 +25,11 @@ grid.add_bus(obj=bus_645)
 bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-200*5, ypos=0)
 grid.add_bus(obj=bus_646)
 
-bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
-grid.add_bus(obj=bus_633)
+# bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
+# grid.add_bus(obj=bus_633)
 
-bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0)
-grid.add_bus(obj=bus_634)
+# bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0)
+# grid.add_bus(obj=bus_634)
 
 # bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100*5)
 # grid.add_bus(obj=bus_671)
@@ -130,14 +130,14 @@ y_607 = np.array([
 """
 Loads
 """
-load_634 = gce.Load(P1=0.16,
-                    Q1=0.11,
-                    P2=0.12,
-                    Q2=0.09,
-                    P3=0.12,
-                    Q3=0.09)
-load_634.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_634, api_obj=load_634)
+# load_634 = gce.Load(P1=0.16,
+#                     Q1=0.11,
+#                     P2=0.12,
+#                     Q2=0.09,
+#                     P3=0.12,
+#                     Q3=0.09)
+# load_634.conn = ShuntConnectionType.GroundedStar
+# grid.add_load(bus=bus_634, api_obj=load_634)
 
 load_645 = gce.Load(P1=0.0,
                     Q1=0.0,
@@ -148,12 +148,19 @@ load_645 = gce.Load(P1=0.0,
 load_645.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_645, api_obj=load_645)
 
-load_646 = gce.Load(G1=0.0,
-                    B1=0.0,
-                    G2=0.23,
-                    B2=0.132,
-                    G3=0.0,
-                    B3=0.0)
+# load_646 = gce.Load(G1=0.0,
+#                     B1=0.0,
+#                     G2=0.23,
+#                     B2=0.132,
+#                     G3=0.0,
+#                     B3=0.0)
+# load_646.conn = ShuntConnectionType.Delta
+load_646 = gce.Load(P1=0.0,
+                    Q1=0.0,
+                    P2=0.23,
+                    Q2=0.132,
+                    P3=0.0,
+                    Q3=0.0)
 load_646.conn = ShuntConnectionType.Delta
 grid.add_load(bus=bus_646, api_obj=load_646)
 
@@ -238,18 +245,18 @@ Capacitors
 """
 Transformer between 633 and 634
 """
-XFM_1 = gce.Transformer2W(name='XFM-1',
-                          bus_from=bus_633,
-                          bus_to=bus_634,
-                          HV=4.16,
-                          LV=0.48,
-                          nominal_power=0.5,
-                          rate=0.5,
-                          r=1.1*2,
-                          x=2*2)
-XFM_1.conn_f = WindingType.GroundedStar
-XFM_1.conn_t = WindingType.GroundedStar
-grid.add_transformer2w(XFM_1)
+# XFM_1 = gce.Transformer2W(name='XFM-1',
+#                           bus_from=bus_633,
+#                           bus_to=bus_634,
+#                           HV=4.16,
+#                           LV=0.48,
+#                           nominal_power=0.5,
+#                           rate=0.5,
+#                           r=1.1*2,
+#                           x=2*2)
+# XFM_1.conn_f = WindingType.GroundedStar
+# XFM_1.conn_t = WindingType.GroundedStar
+# grid.add_transformer2w(XFM_1)
 
 """
 Line Configurations
@@ -319,11 +326,11 @@ line_632_645 = gce.Line(bus_from=bus_632,
 line_632_645.apply_template(config_603, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_632_645)
 
-line_632_633 = gce.Line(bus_from=bus_632,
-                        bus_to=bus_633,
-                        length=500 * 0.0003048)
-line_632_633.apply_template(config_602, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_632_633)
+# line_632_633 = gce.Line(bus_from=bus_632,
+#                         bus_to=bus_633,
+#                         length=500 * 0.0003048)
+# line_632_633.apply_template(config_602, grid.Sbase, grid.fBase, logger)
+# grid.add_line(obj=line_632_633)
 
 line_645_646 = gce.Line(bus_from=bus_645,
                         bus_to=bus_646,
@@ -382,11 +389,11 @@ def power_flow_3ph(grid, t_idx=None):
     S0 = nc.get_power_injections_pu()
     Qmax, Qmin = nc.get_reactive_power_limits()
 
-    options = gce.PowerFlowOptions(tolerance=1e-10, max_iter=1000)
+    options = gce.PowerFlowOptions(tolerance=1e-10, max_iter=100)
 
     problem = PfBasicFormulation3Ph(V0=V0, S0=S0, Qmin=Qmin*100, Qmax=Qmax*100, nc=nc, options=options)
 
-    res = newton_raphson_fx(problem=problem, verbose=1, max_iter=1000)
+    res = newton_raphson_fx(problem=problem, verbose=1, max_iter=100)
 
     return res
 
@@ -399,7 +406,8 @@ print(U)
 print()
 print(angle)
 
-bus_numbers = [632, 645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
+# bus_numbers = [632, 645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
+bus_numbers = [632, 645, 646]
 
 # Asegurar que U y angle son arrays NumPy
 U = np.array(U)

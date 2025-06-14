@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from typing import Tuple, List
+from typing import Tuple, List, Callable
 import numpy as np
 from scipy.sparse import diags, lil_matrix, csc_matrix
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
@@ -18,7 +18,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
                                                                                    compute_fx, polar_to_rect)
 from GridCalEngine.Topology.simulation_indices import compile_types
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
-from GridCalEngine.Utils.Sparse.csc2 import CSC
+from GridCalEngine.Utils.Sparse.csc2 import (CSC, scipy_to_mat)
 from GridCalEngine.Utils.NumericalMethods.common import make_lookup
 
 def lookup_from_mask(mask):
@@ -203,11 +203,11 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, 
 
         elif b2 > -1 and c2 > -1:
             S[b2] = -1 * V[b2] * Sdelta[bc] / (V[b2] - V[c2])
-            S[c2] = -1 * V[c2] * Sdelta[bc] / (V[c2] - V[b2])
+            S[c2] = 1 * V[c2] * Sdelta[bc] / (V[b2] - V[c2])
 
             # Admittance
             S[b2] = -1 * V[b2] * np.conj((V[b2] - V[c2]) * Ydelta[bc])
-            S[c2] = -1 * V[c2] * np.conj((V[c2] - V[b2]) * Ydelta[bc])
+            S[c2] = 1 * V[c2] * np.conj((V[b2] - V[c2]) * Ydelta[bc])
 
         elif c2 > -1 and a2 > -1:
             S[c2] = -1 * V[c2] * Sdelta[ca] / (V[c2] - V[a2])
@@ -218,6 +218,34 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, 
             S[a2] = -1 * V[a2] * np.conj((V[a2] - V[c2]) * Ydelta[ca])
 
     return S
+
+def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-8) -> CSC:
+    """
+    Compute the Jacobian matrix of `func` at `x` using finite differences.
+
+    :param func: function accepting a vector x and args, and returning either a vector or a
+                 tuple where the first argument is a vector and the second.
+    :param x: Point at which to evaluate the Jacobian (numpy array).
+    :param h: Small step for finite difference.
+    :return: Jacobian matrix as a CSC matrix.
+    """
+    nx = len(x)
+    f0 = func(x)
+
+    n_rows = len(f0)
+
+    jac = lil_matrix((n_rows, nx))
+
+    for j in range(nx):
+        x_plus_h = np.copy(x)
+        x_plus_h[j] += h
+        f_plus_h = func(x_plus_h)
+        row = (f_plus_h - f0) / h
+        for i in range(n_rows):
+            if row[i] != 0.0:
+                jac[i, j] = row[i]
+
+    return scipy_to_mat(jac.tocsc())
 
 
 def expand3ph(x: np.ndarray):
@@ -300,9 +328,14 @@ def expandVoltage3ph(V0: CxVec) -> CxVec:
     for k in range(n):
         x3[3 * k + idx3] = Vm[k] * np.exp(1j * (Va[k] + angles))
 
+    # x3[0] = 1.0210 * np.exp(1j * (0*np.pi/180))
+    # x3[1] = 1.0420 * np.exp(1j * (-120*np.pi/180))
+    # x3[2] = 1.0174 * np.exp(1j * (120*np.pi/180))
     x3[0] = 1.0210 * np.exp(1j * (-2.49*np.pi/180))
     x3[1] = 1.0420 * np.exp(1j * (-121.72*np.pi/180))
     x3[2] = 1.0174 * np.exp(1j * (117.83*np.pi/180))
+
+
     return x3
 
 
@@ -404,6 +437,45 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         """
         return len(self.idx_dVa) + len(self.idx_dVm)
 
+    def compute_f(self, x: Vec) -> Vec:
+        """
+        Compute the function residual
+        :param x: Solution vector
+        :return: f
+        """
+
+        a = len(self.idx_dVa)
+        b = a + len(self.idx_dVm)
+
+
+        # copy the sliceable vectors
+        Va = self.Va.copy()
+        Vm = self.Vm.copy()
+
+        # update the vectors
+        Va[self.idx_dVa] = x[0:a]
+        Vm[self.idx_dVm] = x[a:b]
+
+        V = polar_to_rect(Vm, Va)
+
+        # compute the function residual
+        # Assumes the internal vars were updated already with self.x2var()
+        Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
+                                         Sdelta=self.nc.load_data.S3_delta,
+                                         Ydelta=self.nc.load_data.Y3_delta,
+                                         V=V,
+                                         bus_lookup=self.bus_lookup)
+
+        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
+        Scalc = compute_power(self.Ybus, V)
+        dS = Scalc - Sbus  # compute the mismatch
+        _f = np.r_[
+            dS[self.idx_dP].real,
+            dS[self.idx_dQ].imag
+        ]
+
+        return _f
+
     def check_error(self, x: Vec) -> Tuple[float, Vec]:
         """
         Check error of the solution without affecting the problem
@@ -429,7 +501,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          Ydelta=self.nc.load_data.Y3_delta,
                                          V=V,
                                          bus_lookup=self.bus_lookup)
-        Sbus = self.S0 + Sdelta2star
+        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
         # Sbus = self.S0
         Scalc = compute_power(self.Ybus, V)
         dS = Scalc - Sbus  # compute the mismatch
@@ -461,7 +533,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          Ydelta=self.nc.load_data.Y3_delta,
                                          V=self.V,
                                          bus_lookup=self.bus_lookup)
-        Sbus = self.S0 + Sdelta2star
+        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
         # Sbus = self.S0
         self.Scalc = compute_power(self.Ybus, self.V)
         dS = self.Scalc - Sbus  # compute the mismatch
@@ -538,14 +610,15 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          Ydelta=self.nc.load_data.Y3_delta,
                                          V=self.V,
                                          bus_lookup=self.bus_lookup)
-        Sbus = self.S0 + Sdelta2star
+        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
         self.Scalc = self.V * np.conj(self.Ybus @ self.V - self.I0)
 
         self._f = compute_fx(self.Scalc, Sbus, self.idx_dP, self.idx_dQ)
         return self._f
 
-    def Jacobian(self) -> CSC:
+    def Jacobian(self, autodiff: bool = True) -> CSC:
         """
+        :param autodiff: If True, use autodiff to compute the Jacobian
 
         :return:
         """
@@ -553,11 +626,20 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         if self.Ybus.format != 'csc':
             self.Ybus = self.Ybus.tocsc()
 
-        nbus = self.Ybus.shape[0]
+            
+        if autodiff:
+            J = calc_autodiff_jacobian(func=self.compute_f,
+                                       x=self.var2x(),
+                                       h=1e-8)
 
-        # Create J in CSC order
-        J = create_J_vc_csc(nbus, self.Ybus.data, self.Ybus.indptr, self.Ybus.indices,
-                            self.V, self.idx_dVa, self.idx_dVm, self.idx_dP, self.idx_dQ)
+            return J
+
+        else:
+            nbus = self.Ybus.shape[0]
+
+            # Create J in CSC order
+            J = create_J_vc_csc(nbus, self.Ybus.data, self.Ybus.indptr, self.Ybus.indices,
+                                self.V, self.idx_dVa, self.idx_dVm, self.idx_dP, self.idx_dQ)
 
         return J
 
