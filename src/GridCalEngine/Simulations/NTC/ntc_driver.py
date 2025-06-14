@@ -112,7 +112,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         self.results.inter_space_hvdc = opf_vars.hvdc_vars.inter_space_hvdc
         self.results.inter_space_vsc = opf_vars.vsc_vars.inter_space_vsc
 
-        self.results.inter_area_flows = opf_vars.inter_area_flows
+        self.results.inter_area_flows = opf_vars.inter_area_flows[0]
+        self.results.structural_inter_area_flows = opf_vars.structural_ntc[0]
 
         self.results.converged = opf_vars.acceptable_solution
 

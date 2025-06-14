@@ -121,6 +121,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.converged = False
 
         self.inter_area_flows = 0
+        self.structural_inter_area_flows = 0
 
         self.register(name='bus_names', tpe=StrVec)
         self.register(name='branch_names', tpe=StrVec)
@@ -157,6 +158,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.register(name='converged', tpe=bool)
 
         self.register(name='inter_area_flows', tpe=float)
+        self.register(name='structural_inter_area_flows', tpe=float)
 
         self.register(name='contingency_flows_list', tpe=list)
 

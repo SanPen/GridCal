@@ -80,23 +80,26 @@ def scale_proportional_sensed(P, idx1, idx2, dT=1.0):
 
 
 @nb.njit()
-def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, bus_a1_idx, bus_a2_idx, dT=1.0, mode=0, lodf=None):
+def compute_alpha(ptdf: Mat, P0: Vec, Pgen: Vec, Pinstalled: Vec, Pload: Vec,
+                  bus_a1_idx: IntVec, bus_a2_idx: IntVec,
+                  dT: float = 1.0, mode: int = 0, lodf: Mat | None = None):
     """
     Compute line sensitivity to power transfer
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
     :param lodf: Optional. Line outage distribution factor (n-branch, n-branch). Needed to compute alpha n-1.
     :param P0: all bus Injections [p.u.]
-    :param Pinstalled: bus generation installed power [p.u.]
     :param Pgen: bus generation current power [p.u.]
+    :param Pinstalled: bus generation installed power [p.u.]
     :param Pload: bus load power [p.u.]
     :param bus_a1_idx: bus indices of the sending region
     :param bus_a2_idx: bus indices of the receiving region
-    :param dT: Exchange amount
+    :param dT: Exchange amount (MW) usually a unitary increment is sufficient
+    :param lodf: Line outage distributions factor matrix
     :param mode: Type of power shift
                  0: shift generation based on the current generated power
                  1: shift generation based on the installed power
                  2: shift load
-                 3 (or else): shift udasing generation and load
+                 3 (or else): shift using generation and load
 
     :return: Exchange sensitivity vector for all the lines
     """
@@ -120,23 +123,21 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, bus_a1_idx, bus_a2_idx, dT=
     # compute the bus injection increments due to the exchange
     dPu = get_proportional_deltas_sensed(P, bus_a1_idx, dP=dT)
     dPd = get_proportional_deltas_sensed(P, bus_a2_idx, dP=-dT)
-
     dP = dPu + dPd
 
     # compute the line flow increments due to the exchange increment dT in MW
-    dflow = ptdf.dot(dP)
+    dflow = ptdf @ dP
 
     # compute the sensitivity
     alpha = dflow / dT
-    # alpha_n1 = np.zeros((len(alpha), len(alpha)))
-    #
-    # if lodf is not None:
-    #     for m in range(len(alpha)):
-    #         for c in range(len(alpha)):
-    #             if m != c:
-    #                 dflow_n1 = dflow[m] + lodf[m, c] * dflow[c]
-    #                 alpha_c = dflow_n1 / dT
-    #                 alpha_n1[m, c] = alpha_c
+
+    alpha_n1 = np.zeros((len(alpha), len(alpha)))
+    if lodf is not None:
+        for m in range(len(alpha)):
+            for c in range(len(alpha)):
+                if m != c:
+                    dflow_n1 = dflow[m] + lodf[m, c] * dflow[c]
+                    alpha_n1[m, c] = dflow_n1 / dT
 
     return alpha
 

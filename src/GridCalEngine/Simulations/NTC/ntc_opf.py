@@ -922,7 +922,7 @@ class NtcVars:
         # structural NTC
         self.structural_ntc = np.zeros(nt, dtype=float)
 
-        self.inter_area_flows = 0
+        self.inter_area_flows = np.zeros(nt, dtype=float)
 
     def get_values(self, Sbase: float, model: LpModel) -> "NtcVars":
         """
@@ -1137,7 +1137,7 @@ def add_linear_branches_formulation(t_idx: int,
                                     alpha_threshold: float,
                                     structural_ntc: float,
                                     ntc_load_rule: float,
-                                    inf=1e20):
+                                    inf=1e20) -> LpExp:
     """
     Formulate the branches
     :param t_idx: time index
@@ -1149,12 +1149,11 @@ def add_linear_branches_formulation(t_idx: int,
     :param prob: OR problem
     :param monitor_only_ntc_load_rule_branches:
     :param monitor_only_sensitive_branches:
+    :param alpha: Array of branch sensitivity to the exchange
+    :param alpha_threshold: Threshold for sensitivity consideration
     :param structural_ntc
     :param ntc_load_rule
-    :param alpha_threshold
-    :param alpha
     :param inf: number considered infinite
-    :param add_flow_slacks: add slacks to the branch flows?
     :return objective function
     """
     f_obj = 0.0
@@ -1338,33 +1337,34 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                 if isinstance(contingency_flow, LpExp):
 
                     # Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N-1 condition
-                    # if monitor_only_ntc_load_rule_branches:
-                    #     """
-                    #     Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER,
-                    #     y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural
-                    #     significa que la linea no puede limitar el intercambio
-                    #     Ejemplo:
-                    #         ntc_load_rule = 0.7
-                    #         rate = 1700
-                    #         alpha_n1 = 0.05
-                    #         structural_rate = 5200
-                    #         0.7 * 1700 --> 1190 mw para el intercambio
-                    #         1190 / 0.05 --> 23.800 MW en la frontera en N
-                    #         23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
-                    #        """
-                    #     monitor_by_load_rule_n1 = ntc_load_rule * branch_data_t.rates[m] / (alpha_n1[m, c] + 1e-20) <= structural_ntc
-                    # else:
-                    #     monitor_by_load_rule_n1 = True
-                    #
-                    # # Monitoring logic: Exclude branches with not enough sensibility to exchange in N-1 condition
-                    # if monitor_only_sensitive_branches:
-                    #     monitor_by_sensitivity_n1 = alpha_n1[m, c] > alpha_threshold
-                    # else:
-                    #     monitor_by_sensitivity_n1 = True
+                    if monitor_only_ntc_load_rule_branches:
+                        """
+                        Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER,
+                        y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural
+                        significa que la linea no puede limitar el intercambio
+                        Ejemplo:
+                            ntc_load_rule = 0.7
+                            rate = 1700
+                            alpha_n1 = 0.05
+                            structural_rate = 5200
+                            0.7 * 1700 --> 1190 mw para el intercambio
+                            1190 / 0.05 --> 23.800 MW en la frontera en N
+                            23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
+                           """
+                        monitor_by_load_rule_n1 = (ntc_load_rule * branch_data_t.rates[m] / (alpha_n1[m, c_br] + 1e-20)
+                                                   <= structural_ntc)
+                    else:
+                        monitor_by_load_rule_n1 = True
+
+                    # Monitoring logic: Exclude branches with not enough sensibility to exchange in N-1 condition
+                    if monitor_only_sensitive_branches:
+                        monitor_by_sensitivity_n1 = alpha_n1[m, c_br] > alpha_threshold
+                    else:
+                        monitor_by_sensitivity_n1 = True
 
                     # TODO: Figure out how to compute Alpha N-1 to be able to uncomment the block above
-                    monitor_by_load_rule_n1 = True
-                    monitor_by_sensitivity_n1 = True
+                    # monitor_by_load_rule_n1 = True
+                    # monitor_by_sensitivity_n1 = True
 
                     if monitor_by_load_rule_n1 and monitor_by_sensitivity_n1:
                         # declare slack variables
@@ -1928,6 +1928,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                               bus_a1_idx=bus_a1_idx,
                               bus_a2_idx=bus_a2_idx,
                               mode=mode_2_int[transfer_method])
+
         mip_vars.branch_vars.alpha[t_idx, :] = alpha
 
         # compute the structural NTC: this is the sum of ratings in the inter-area
@@ -2057,8 +2058,8 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     inter_area_vsc_sense = [x[2] for x in inter_info_vsc]
 
     # The summation of flow increments in the inter-area branches must be ΔP in A1.
-    vars_v.inter_area_flows = (np.sum(vars_v.branch_vars.flows[0, inter_area_branch_idx] * inter_area_branch_sense)
-                               + np.sum(vars_v.hvdc_vars.flows[0, inter_area_hvdc_idx] * inter_area_hvdc_sense)
-                               + np.sum(vars_v.vsc_vars.flows[0, inter_area_vsc_idx] * inter_area_vsc_sense))
+    vars_v.inter_area_flows[0] = (np.sum(vars_v.branch_vars.flows[0, inter_area_branch_idx] * inter_area_branch_sense)
+                                  + np.sum(vars_v.hvdc_vars.flows[0, inter_area_hvdc_idx] * inter_area_hvdc_sense)
+                                  + np.sum(vars_v.vsc_vars.flows[0, inter_area_vsc_idx] * inter_area_vsc_sense))
 
     return vars_v
