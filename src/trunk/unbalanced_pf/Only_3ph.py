@@ -165,15 +165,15 @@ grid.add_load(bus=bus_634, api_obj=load_634)
 #                     B3=0.0)
 # load_652.conn = ShuntConnectionType.GroundedStar
 # grid.add_load(bus=bus_652, api_obj=load_652)
-#
-# load_671 = gce.Load(P1=0.385,
-#                     Q1=0.22,
-#                     P2=0.385,
-#                     Q2=0.22,
-#                     P3=0.385,
-#                     Q3=0.22)
-# load_671.conn = ShuntConnectionType.Delta
-# grid.add_load(bus=bus_671, api_obj=load_671)
+
+load_671 = gce.Load(P1=0.385,
+                    Q1=0.22,
+                    P2=0.385,
+                    Q2=0.22,
+                    P3=0.385,
+                    Q3=0.22)
+load_671.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus_671, api_obj=load_671)
 #
 # load_675 = gce.Load(P1=0.485,
 #                     Q1=0.190,
