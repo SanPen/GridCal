@@ -29,8 +29,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Some changes to compute IEEE 13-bus case">
+      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Only_3ph.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/tensiones_trifasicas.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/tensiones_trifasicas.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -220,8 +224,9 @@
     "Python.Carson_vs_Dubanton.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
     "Python.GridCalMain.executor": "Run",
-    "Python.IEEE 13-bus Test Feeder Case.executor": "Debug",
+    "Python.IEEE 13-bus Test Feeder Case.executor": "Run",
     "Python.LineBuilderDialogue.executor": "Run",
+    "Python.Only_3ph.executor": "Run",
     "Python.Panther_Cable.executor": "Run",
     "Python.Transformers.executor": "Run",
     "Python.Ua_time_series.executor": "Run",
@@ -265,7 +270,7 @@
     "Python.short_circuit_driver.executor": "Run",
     "Python.stack_plot_pos_neg.executor": "Run",
     "Python.test_gslv_conversion.executor": "Run",
-    "Python.test_ntc.executor": "Debug",
+    "Python.test_ntc.executor": "Run",
     "Python.test_power_flow.executor": "Run",
     "Python.test_raw_cgmes_cross_roundtrip.executor": "Run",
     "Python.toast_widget.executor": "Run",
@@ -281,7 +286,7 @@
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "#398 on #343__3phase",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/GridCal/src/trunk/unbalanced_pf/Solutions",
+    "last_opened_file_path": "C:/GridCal/src/trunk/unbalanced_pf",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -299,8 +304,8 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\GridCal\src\trunk\unbalanced_pf\Solutions" />
       <recent name="C:\GridCal\src\trunk\unbalanced_pf" />
+      <recent name="C:\GridCal\src\trunk\unbalanced_pf\Solutions" />
       <recent name="C:\GridCal\src\trunk\three_phase" />
       <recent name="C:\Users\alexb\OneDrive\eRoots\GridCal\src\trunk\three_phase" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/Stochastic" />
@@ -2339,7 +2344,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="748" />
+    <option name="localTasksCounter" value="749" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2746,8 +2751,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
-          <line>191</line>
-          <option name="timeStamp" value="2636" />
+          <line>222</line>
+          <option name="timeStamp" value="2638" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
+          <line>541</line>
+          <option name="timeStamp" value="2640" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

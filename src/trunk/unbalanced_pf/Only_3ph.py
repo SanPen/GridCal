@@ -19,11 +19,11 @@ grid.add_bus(obj=bus_632)
 gen = gce.Generator(vset = 1.0)
 grid.add_generator(bus = bus_632, api_obj = gen)
 
-bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100*5, ypos=0)
-grid.add_bus(obj=bus_645)
-
-bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-200*5, ypos=0)
-grid.add_bus(obj=bus_646)
+# bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100*5, ypos=0)
+# grid.add_bus(obj=bus_645)
+#
+# bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-200*5, ypos=0)
+# grid.add_bus(obj=bus_646)
 
 bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
 grid.add_bus(obj=bus_633)
@@ -33,21 +33,21 @@ grid.add_bus(obj=bus_634)
 
 bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100*5)
 grid.add_bus(obj=bus_671)
-
-bus_684 = gce.Bus(name='684', Vnom=4.16, xpos=-100*5, ypos=100*5)
-grid.add_bus(obj=bus_684)
-
-bus_611 = gce.Bus(name='611', Vnom=4.16, xpos=-200*5, ypos=100*5)
-grid.add_bus(obj=bus_611)
-
-bus_675 = gce.Bus(name='675', Vnom=4.16, xpos=200*5, ypos=100*5)
-grid.add_bus(obj=bus_675)
-
-bus_680 = gce.Bus(name='680', Vnom=4.16, xpos=0, ypos=200*5)
-grid.add_bus(obj=bus_680)
-
-bus_652 = gce.Bus(name='652', Vnom=4.16, xpos=-100*5, ypos=200*5)
-grid.add_bus(obj=bus_652)
+#
+# bus_684 = gce.Bus(name='684', Vnom=4.16, xpos=-100*5, ypos=100*5)
+# grid.add_bus(obj=bus_684)
+#
+# bus_611 = gce.Bus(name='611', Vnom=4.16, xpos=-200*5, ypos=100*5)
+# grid.add_bus(obj=bus_611)
+#
+# bus_675 = gce.Bus(name='675', Vnom=4.16, xpos=200*5, ypos=100*5)
+# grid.add_bus(obj=bus_675)
+#
+# bus_680 = gce.Bus(name='680', Vnom=4.16, xpos=0, ypos=200*5)
+# grid.add_bus(obj=bus_680)
+#
+# bus_652 = gce.Bus(name='652', Vnom=4.16, xpos=-100*5, ypos=200*5)
+# grid.add_bus(obj=bus_652)
 
 """
 Impedances [Ohm/mile]
@@ -139,68 +139,68 @@ load_634 = gce.Load(P1=0.16,
 load_634.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_634, api_obj=load_634)
 
-load_645 = gce.Load(P1=0.0,
-                    Q1=0.0,
-                    P2=0.17,
-                    Q2=0.125,
-                    P3=0.0,
-                    Q3=0.0)
-load_645.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_645, api_obj=load_645)
-
-load_646 = gce.Load(G1=0.0,
-                    B1=0.0,
-                    G2=0.23,
-                    B2=0.132,
-                    G3=0.0,
-                    B3=0.0)
-load_646.conn = ShuntConnectionType.Delta
-grid.add_load(bus=bus_646, api_obj=load_646)
-
-load_652 = gce.Load(G1=0.128,
-                    B1=0.086,
-                    G2=0.0,
-                    B2=0.0,
-                    G3=0.0,
-                    B3=0.0)
-load_652.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_652, api_obj=load_652)
-
-load_671 = gce.Load(P1=0.385,
-                    Q1=0.22,
-                    P2=0.385,
-                    Q2=0.22,
-                    P3=0.385,
-                    Q3=0.22)
-load_671.conn = ShuntConnectionType.Delta
-grid.add_load(bus=bus_671, api_obj=load_671)
-
-load_675 = gce.Load(P1=0.485,
-                    Q1=0.190,
-                    P2=0.068,
-                    Q2=0.06,
-                    P3=0.29,
-                    Q3=0.212)
-load_675.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_675, api_obj=load_675)
-
-load_671_692 = gce.Load(Ir1=0.0,
-                    Ii1=0.0,
-                    Ir2=0.0,
-                    Ii2=0.0,
-                    Ir3=0.17,
-                    Ii3=0.151)
-load_671_692.conn = ShuntConnectionType.Delta
-grid.add_load(bus=bus_671, api_obj=load_671_692)
-
-load_611 = gce.Load(Ir1=0.0,
-                    Ii1=0.0,
-                    Ir2=0.0,
-                    Ii2=0.0,
-                    Ir3=0.17,
-                    Ii3=0.08)
-load_611.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_611, api_obj=load_611)
+# load_645 = gce.Load(P1=0.0,
+#                     Q1=0.0,
+#                     P2=0.17,
+#                     Q2=0.125,
+#                     P3=0.0,
+#                     Q3=0.0)
+# load_645.conn = ShuntConnectionType.GroundedStar
+# grid.add_load(bus=bus_645, api_obj=load_645)
+#
+# load_646 = gce.Load(G1=0.0,
+#                     B1=0.0,
+#                     G2=0.23,
+#                     B2=0.132,
+#                     G3=0.0,
+#                     B3=0.0)
+# load_646.conn = ShuntConnectionType.Delta
+# grid.add_load(bus=bus_646, api_obj=load_646)
+#
+# load_652 = gce.Load(G1=0.128,
+#                     B1=0.086,
+#                     G2=0.0,
+#                     B2=0.0,
+#                     G3=0.0,
+#                     B3=0.0)
+# load_652.conn = ShuntConnectionType.GroundedStar
+# grid.add_load(bus=bus_652, api_obj=load_652)
+#
+# load_671 = gce.Load(P1=0.385,
+#                     Q1=0.22,
+#                     P2=0.385,
+#                     Q2=0.22,
+#                     P3=0.385,
+#                     Q3=0.22)
+# load_671.conn = ShuntConnectionType.Delta
+# grid.add_load(bus=bus_671, api_obj=load_671)
+#
+# load_675 = gce.Load(P1=0.485,
+#                     Q1=0.190,
+#                     P2=0.068,
+#                     Q2=0.06,
+#                     P3=0.29,
+#                     Q3=0.212)
+# load_675.conn = ShuntConnectionType.GroundedStar
+# grid.add_load(bus=bus_675, api_obj=load_675)
+#
+# load_671_692 = gce.Load(Ir1=0.0,
+#                     Ii1=0.0,
+#                     Ir2=0.0,
+#                     Ii2=0.0,
+#                     Ir3=0.17,
+#                     Ii3=0.151)
+# load_671_692.conn = ShuntConnectionType.Delta
+# grid.add_load(bus=bus_671, api_obj=load_671_692)
+#
+# load_611 = gce.Load(Ir1=0.0,
+#                     Ii1=0.0,
+#                     Ir2=0.0,
+#                     Ii2=0.0,
+#                     Ir3=0.17,
+#                     Ii3=0.08)
+# load_611.conn = ShuntConnectionType.GroundedStar
+# grid.add_load(bus=bus_611, api_obj=load_611)
 
 load_632_distrib = gce.Load(P1=0.017/2,
                             Q1=0.010/2,
@@ -223,17 +223,17 @@ grid.add_load(bus=bus_671, api_obj=load_671_distrib)
 """
 Capacitors
 """
-cap_675 = gce.Shunt(B1=0.2,
-                    B2=0.2,
-                    B3=0.2)
-cap_675.conn = ShuntConnectionType.GroundedStar
-grid.add_shunt(bus=bus_675, api_obj=cap_675)
-
-cap_611 = gce.Shunt(B1=0.0,
-                    B2=0.0,
-                    B3=0.1)
-cap_611.conn = ShuntConnectionType.GroundedStar
-grid.add_shunt(bus=bus_611, api_obj=cap_611)
+# cap_675 = gce.Shunt(B1=0.2,
+#                     B2=0.2,
+#                     B3=0.2)
+# cap_675.conn = ShuntConnectionType.GroundedStar
+# grid.add_shunt(bus=bus_675, api_obj=cap_675)
+#
+# cap_611 = gce.Shunt(B1=0.0,
+#                     B2=0.0,
+#                     B3=0.1)
+# cap_611.conn = ShuntConnectionType.GroundedStar
+# grid.add_shunt(bus=bus_611, api_obj=cap_611)
 
 """
 Transformer between 633 and 634
@@ -313,11 +313,11 @@ grid.add_overhead_line(config_607)
 """
 Lines
 """
-line_632_645 = gce.Line(bus_from=bus_632,
-                        bus_to=bus_645,
-                        length=500 * 0.0003048)
-line_632_645.apply_template(config_603, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_632_645)
+# line_632_645 = gce.Line(bus_from=bus_632,
+#                         bus_to=bus_645,
+#                         length=500 * 0.0003048)
+# line_632_645.apply_template(config_603, grid.Sbase, grid.fBase, logger)
+# grid.add_line(obj=line_632_645)
 
 line_632_633 = gce.Line(bus_from=bus_632,
                         bus_to=bus_633,
@@ -325,47 +325,47 @@ line_632_633 = gce.Line(bus_from=bus_632,
 line_632_633.apply_template(config_602, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_632_633)
 
-line_645_646 = gce.Line(bus_from=bus_645,
-                        bus_to=bus_646,
-                        length=300 * 0.0003048)
-line_645_646.apply_template(config_603, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_645_646)
-
-line_684_652 = gce.Line(bus_from=bus_684,
-                        bus_to=bus_652,
-                        length= 800 * 0.0003048)
-line_684_652.apply_template(config_607, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_684_652)
+# line_645_646 = gce.Line(bus_from=bus_645,
+#                         bus_to=bus_646,
+#                         length=300 * 0.0003048)
+# line_645_646.apply_template(config_603, grid.Sbase, grid.fBase, logger)
+# grid.add_line(obj=line_645_646)
+#
+# line_684_652 = gce.Line(bus_from=bus_684,
+#                         bus_to=bus_652,
+#                         length= 800 * 0.0003048)
+# line_684_652.apply_template(config_607, grid.Sbase, grid.fBase, logger)
+# grid.add_line(obj=line_684_652)
 
 line_632_671 = gce.Line(bus_from=bus_632,
                         bus_to=bus_671,
                         length= 2000 * 0.0003048)
 line_632_671.apply_template(config_601, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_632_671)
-
-line_671_684 = gce.Line(bus_from=bus_671,
-                        bus_to=bus_684,
-                        length= 300 * 0.0003048)
-line_671_684.apply_template(config_604, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_671_684)
-
-line_671_680 = gce.Line(bus_from=bus_671,
-                        bus_to=bus_680,
-                        length= 1000 * 0.0003048)
-line_671_680.apply_template(config_601, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_671_680)
-
-line_684_611 = gce.Line(bus_from=bus_684,
-                        bus_to=bus_611,
-                        length= 300 * 0.0003048)
-line_684_611.apply_template(config_605, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_684_611)
-
-line_671_675 = gce.Line(bus_from=bus_671,
-                        bus_to=bus_675,
-                        length= 500 * 0.0003048)
-line_671_675.apply_template(config_606, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_671_675)
+#
+# line_671_684 = gce.Line(bus_from=bus_671,
+#                         bus_to=bus_684,
+#                         length= 300 * 0.0003048)
+# line_671_684.apply_template(config_604, grid.Sbase, grid.fBase, logger)
+# grid.add_line(obj=line_671_684)
+#
+# line_671_680 = gce.Line(bus_from=bus_671,
+#                         bus_to=bus_680,
+#                         length= 1000 * 0.0003048)
+# line_671_680.apply_template(config_601, grid.Sbase, grid.fBase, logger)
+# grid.add_line(obj=line_671_680)
+#
+# line_684_611 = gce.Line(bus_from=bus_684,
+#                         bus_to=bus_611,
+#                         length= 300 * 0.0003048)
+# line_684_611.apply_template(config_605, grid.Sbase, grid.fBase, logger)
+# grid.add_line(obj=line_684_611)
+#
+# line_671_675 = gce.Line(bus_from=bus_671,
+#                         bus_to=bus_675,
+#                         length= 500 * 0.0003048)
+# line_671_675.apply_template(config_606, grid.Sbase, grid.fBase, logger)
+# grid.add_line(obj=line_671_675)
 
 """
 Save Grid
@@ -399,7 +399,7 @@ print(np.round(U, 4))
 print()
 print(np.round(angle, 2))
 
-bus_numbers = [632, 645]
+bus_numbers = [632, 633, 634, 671]
 
 # Asegurar que U y angle son arrays NumPy
 U = np.array(U)
