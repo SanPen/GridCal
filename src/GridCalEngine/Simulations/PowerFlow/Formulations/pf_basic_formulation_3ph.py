@@ -101,15 +101,15 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
         f = nc.shunt_data.bus_idx[k]
         k3 = 3 * k + idx3
         f3 = 3 * f + idx3
-        Ysh_bus[f3] += nc.shunt_data.Y3_star[k3]
+        Ysh_bus[f3] += nc.shunt_data.Y3_star[k3] / nc.Sbase
 
     for k in range(nc.load_data.nelm):
         f = nc.load_data.bus_idx[k]
         k3 = 3 * k + idx3
         f3 = 3 * f + idx3
-        Ysh_bus[f3] += nc.load_data.Y3_star[k3]
+        Ysh_bus[f3] += nc.load_data.Y3_star[k3] / nc.Sbase
 
-    Ybus = Cf.T @ Yf + Ct.T @ Yt + diags(Ysh_bus / nc.Sbase)
+    Ybus = Cf.T @ Yf + Ct.T @ Yt + diags(Ysh_bus)
     Ybus = Ybus[binary_bus_mask, :][:, binary_bus_mask]
     Ysh_bus = Ysh_bus[binary_bus_mask]
     Yf = Yf[R, :][:, binary_bus_mask]
@@ -198,30 +198,31 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, 
             S[b2] = -1 * V[b2] * Sdelta[ab] / (V[b2] - V[a2])
 
             # Admittance
-            S[a2] = -1 * V[a2] * np.conj((V[a2] - V[b2]) * Ydelta[ab])
-            S[b2] = -1 * V[b2] * np.conj((V[b2] - V[a2]) * Ydelta[ab])
+            S[a2] += -1 * V[a2] * np.conj((V[a2] - V[b2]) * Ydelta[ab])
+            S[b2] += -1 * V[b2] * np.conj((V[b2] - V[a2]) * Ydelta[ab])
 
         elif b2 > -1 and c2 > -1:
             S[b2] = -1 * V[b2] * Sdelta[bc] / (V[b2] - V[c2])
-            S[c2] = 1 * V[c2] * Sdelta[bc] / (V[b2] - V[c2])
+            S[c2] = -1 * V[c2] * Sdelta[bc] / (V[c2] - V[b2])
 
             # Admittance
-            S[b2] = -1 * V[b2] * np.conj((V[b2] - V[c2]) * Ydelta[bc])
-            S[c2] = 1 * V[c2] * np.conj((V[b2] - V[c2]) * Ydelta[bc])
+            S[b2] += -1 * V[b2] * np.conj((V[b2] - V[c2]) * Ydelta[bc])
+            S[c2] += -1 * V[c2] * np.conj((V[c2] - V[b2]) * Ydelta[bc])
 
         elif c2 > -1 and a2 > -1:
             S[c2] = -1 * V[c2] * Sdelta[ca] / (V[c2] - V[a2])
             S[a2] = -1 * V[a2] * Sdelta[ca] / (V[a2] - V[c2])
 
             # Admittance
-            S[c2] = -1 * V[c2] * np.conj((V[c2] - V[a2]) * Ydelta[ca])
-            S[a2] = -1 * V[a2] * np.conj((V[a2] - V[c2]) * Ydelta[ca])
+            S[c2] += -1 * V[c2] * np.conj((V[c2] - V[a2]) * Ydelta[ca])
+            S[a2] += -1 * V[a2] * np.conj((V[a2] - V[c2]) * Ydelta[ca])
 
     return S
 
-def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-8) -> CSC:
+def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-6) -> CSC:
     """
     Compute the Jacobian matrix of `func` at `x` using finite differences.
+    df/dx = (f(x+h) - f(x)) / h
 
     :param func: function accepting a vector x and args, and returning either a vector or a
                  tuple where the first argument is a vector and the second.
@@ -331,9 +332,9 @@ def expandVoltage3ph(V0: CxVec) -> CxVec:
     # x3[0] = 1.0210 * np.exp(1j * (0*np.pi/180))
     # x3[1] = 1.0420 * np.exp(1j * (-120*np.pi/180))
     # x3[2] = 1.0174 * np.exp(1j * (120*np.pi/180))
-    x3[0] = 1.0210 * np.exp(1j * (-2.49*np.pi/180))
-    x3[1] = 1.0420 * np.exp(1j * (-121.72*np.pi/180))
-    x3[2] = 1.0174 * np.exp(1j * (117.83*np.pi/180))
+    # x3[0] = 1.0210 * np.exp(1j * (-2.49*np.pi/180))
+    # x3[1] = 1.0420 * np.exp(1j * (-121.72*np.pi/180))
+    # x3[2] = 1.0174 * np.exp(1j * (117.83*np.pi/180))
 
 
     return x3
@@ -362,8 +363,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self.I0: CxVec = compute_Ibus(nc) / (nc.Sbase / 3)
 
 
-        self.Qmin = expand3ph(Qmin)[self.mask]
-        self.Qmax = expand3ph(Qmax)[self.mask]
+        self.Qmin = expand3ph(Qmin)[self.mask] * 100e6
+        self.Qmax = expand3ph(Qmax)[self.mask] * 100e6
 
         #self.nc.bus_data.bus_types[0] = 3
         #self.nc.bus_data.bus_types[5] = 2
@@ -616,7 +617,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self._f = compute_fx(self.Scalc, Sbus, self.idx_dP, self.idx_dQ)
         return self._f
 
-    def Jacobian(self, autodiff: bool = True) -> CSC:
+    def Jacobian(self, autodiff: bool = False) -> CSC:
         """
         :param autodiff: If True, use autodiff to compute the Jacobian
 

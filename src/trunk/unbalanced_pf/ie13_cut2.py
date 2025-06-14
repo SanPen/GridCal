@@ -8,7 +8,7 @@ import pandas as pd
 logger = gce.Logger()
 
 grid = gce.MultiCircuit()
-grid.fBase = 60
+grid.fBase = 50
 
 """
 13 Buses
@@ -64,9 +64,19 @@ z_602 = np.array([
     [0.1560 + 1j * 0.5017, 0.1535 + 1j * 0.3849, 0.7436 + 1j * 1.2112]
 ], dtype=complex) / 1.60934
 
+# z_603 = np.array([
+#     [1.3294 + 1j * 1.3471, 0.2066 + 1j * 0.4591],
+#     [0.2066 + 1j * 0.4591, 1.3238 + 1j * 1.3569]
+# ], dtype=complex) / 1.60934
+
+# z_603 = np.array([
+#     [0.0 + 1j * 1.3471, 0.0 + 1j * 0.4591],
+#     [0.0 + 1j * 0.4591, 0.0 + 1j * 1.3569]
+# ], dtype=complex) / 1.60934
+
 z_603 = np.array([
-    [1.3294 + 1j * 1.3471, 0.2066 + 1j * 0.4591],
-    [0.2066 + 1j * 0.4591, 1.3238 + 1j * 1.3569]
+    [0.0 + 1j * 1.3471, 0.0 + 1j * 0.0],
+    [0.0 + 1j * 0.0, 0.0 + 1j * 1.3569]
 ], dtype=complex) / 1.60934
 
 z_604 = np.array([
@@ -103,10 +113,15 @@ y_602 = np.array([
     [1j * -1.6905, 1j * -0.6588, 1j * 5.4246]
 ], dtype=complex) / 10**6 / 1.60934
 
+# y_603 = np.array([
+#     [1j * 4.7097, 1j * -0.8999],
+#     [1j * -0.8999, 1j * 4.6658]
+# ], dtype=complex) / 10**6 / 1.60934
+
 y_603 = np.array([
-    [1j * 4.7097, 1j * -0.8999],
-    [1j * -0.8999, 1j * 4.6658]
-], dtype=complex) / 10**6 / 1.60934
+    [1j * 4.7097, 1j * 0.0],
+    [1j * 0.0, 1j * 4.6658]
+], dtype=complex) / 10**6 / 1.60934 * 0.00001
 
 y_604 = np.array([
     [1j * 4.6658, 1j * -0.8999],
@@ -139,12 +154,27 @@ Loads
 # load_634.conn = ShuntConnectionType.GroundedStar
 # grid.add_load(bus=bus_634, api_obj=load_634)
 
-load_645 = gce.Load(P1=0.0,
-                    Q1=0.0,
-                    P2=0.17,
-                    Q2=0.125,
-                    P3=0.0,
-                    Q3=0.0)
+# load_645 = gce.Load(P1=0.0,
+#                     Q1=0.0,
+#                     P2=0.17,
+#                     Q2=0.125,
+#                     P3=0.0,
+#                     Q3=0.0)
+# load_645 = gce.Load(P1=0.0,
+#                     Q1=0.0,
+#                     P2=5.0,
+#                     Q2=0.0,
+#                     P3=0.0,
+#                     Q3=0.0)
+
+load_645 = gce.Load(G1=0.0,
+                    B1=0.0,
+                    G2=1.0,
+                    B2=0.0,
+                    G3=0.0,
+                    B3=0.0)
+
+
 load_645.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_645, api_obj=load_645)
 
@@ -155,14 +185,20 @@ grid.add_load(bus=bus_645, api_obj=load_645)
 #                     G3=0.0,
 #                     B3=0.0)
 # load_646.conn = ShuntConnectionType.Delta
+# load_646 = gce.Load(P1=0.0,
+#                     Q1=0.0,
+#                     P2=0.0,
+#                     Q2=0.0,
+#                     P3=10.0/1.1985,
+#                     Q3=0.0)
 load_646 = gce.Load(P1=0.0,
                     Q1=0.0,
-                    P2=0.23,
-                    Q2=0.132,
-                    P3=0.0,
+                    P2=0.0,
+                    Q2=0.0,
+                    P3=10.0/1.1985,
                     Q3=0.0)
-load_646.conn = ShuntConnectionType.Delta
-grid.add_load(bus=bus_646, api_obj=load_646)
+load_646.conn = ShuntConnectionType.GroundedStar
+# grid.add_load(bus=bus_646, api_obj=load_646)
 
 # load_652 = gce.Load(G1=0.128,
 #                     B1=0.086,
@@ -216,7 +252,7 @@ load_632_distrib = gce.Load(P1=0.017/2,
                             P3=0.117/2,
                             Q3=0.068/2)
 load_632_distrib.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_632, api_obj=load_632_distrib)
+# grid.add_load(bus=bus_632, api_obj=load_632_distrib)
 
 # load_671_distrib = gce.Load(P1=0.017/2,
 #                             Q1=0.010/2,
@@ -263,7 +299,7 @@ Line Configurations
 """
 config_601 = gce.OverheadLineType(name='Config. 601',
                                   Vnom=4.16,
-                                  frequency=60)
+                                  frequency=50)
 config_601.z_abc = z_601
 config_601.y_abc = y_601
 config_601.y_phases_abc = np.array([1,2,3])
@@ -271,7 +307,7 @@ grid.add_overhead_line(config_601)
 
 config_602 = gce.OverheadLineType(name='Config. 602',
                                   Vnom=4.16,
-                                  frequency=60)
+                                  frequency=50)
 config_602.z_abc = z_602
 config_602.y_abc = y_602
 config_602.y_phases_abc = np.array([1,2,3])
@@ -279,7 +315,7 @@ grid.add_overhead_line(config_602)
 
 config_603 = gce.OverheadLineType(name='Config. 603',
                                   Vnom=4.16,
-                                  frequency=60)
+                                  frequency=50)
 config_603.z_abc = z_603
 config_603.y_abc = y_603
 config_603.y_phases_abc = np.array([2,3])
@@ -287,7 +323,7 @@ grid.add_overhead_line(config_603)
 
 config_604 = gce.OverheadLineType(name='Config. 604',
                                   Vnom=4.16,
-                                  frequency=60)
+                                  frequency=50)
 config_604.z_abc = z_604
 config_604.y_abc = y_604
 config_604.y_phases_abc = np.array([1,3])
@@ -295,7 +331,7 @@ grid.add_overhead_line(config_604)
 
 config_605 = gce.OverheadLineType(name='Config. 605',
                                   Vnom=4.16,
-                                  frequency=60)
+                                  frequency=50)
 config_605.z_abc = z_605
 config_605.y_abc = y_605
 config_605.y_phases_abc = np.array([3])
@@ -303,7 +339,7 @@ grid.add_overhead_line(config_605)
 
 config_606 = gce.OverheadLineType(name='Config. 606',
                                   Vnom=4.16,
-                                  frequency=60)
+                                  frequency=50)
 config_606.z_abc = z_606
 config_606.y_abc = y_606
 config_606.y_phases_abc = np.array([1,2,3])
@@ -311,7 +347,7 @@ grid.add_overhead_line(config_606)
 
 config_607 = gce.OverheadLineType(name='Config. 607',
                                   Vnom=4.16,
-                                  frequency=60)
+                                  frequency=50)
 config_607.z_abc = z_607
 config_607.y_abc = y_607
 config_607.y_phases_abc = np.array([1])
@@ -322,7 +358,7 @@ Lines
 """
 line_632_645 = gce.Line(bus_from=bus_632,
                         bus_to=bus_645,
-                        length=500 * 0.0003048)
+                        length=1500 * 0.0003048)
 line_632_645.apply_template(config_603, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_632_645)
 
@@ -334,9 +370,9 @@ grid.add_line(obj=line_632_645)
 
 line_645_646 = gce.Line(bus_from=bus_645,
                         bus_to=bus_646,
-                        length=300 * 0.0003048)
+                        length=500 * 0.0003048)
 line_645_646.apply_template(config_603, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_645_646)
+# grid.add_line(obj=line_645_646)
 
 # line_684_652 = gce.Line(bus_from=bus_684,
 #                         bus_to=bus_652,
