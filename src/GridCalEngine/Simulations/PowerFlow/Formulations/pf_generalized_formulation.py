@@ -1708,6 +1708,17 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Qt_cbr - self.cbr_qt_set
         ]
 
+        for i in range(self.nc.nvsc):
+
+            It_i = np.sqrt(self.Pt_vsc[i]**2 + self.Qt_vsc[i]**2) / self.Vm[self.nc.vsc_data.T_ac[i]]
+            Imax = self.nc.vsc_data.rates[i] / self.nc.Sbase  # Assume 1.0 p.u. base voltage
+
+            print(f"Compute f current: {It_i}, Imax: {Imax}")
+            print(f"Control 1: {self.nc.vsc_data.control1[i]}, Control 2: {self.nc.vsc_data.control2[i]}")
+            print('-------')
+
+
+
         return _f
 
     def check_error(self, x: Vec) -> Tuple[float, Vec]:
@@ -1881,58 +1892,77 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                              device=self.nc.vsc_data.names[i],
                                              value=It_i)
 
-                        if self.nc.vsc_data.control1[i] == ConverterControlType.Pdc:
+                        if self.nc.vsc_data.control1[i] == ConverterControlType.Vm_ac:
+                            self.nc.bus_data.is_vm_controlled[self.nc.vsc_data.T_ac[i]] = False
                             self.nc.vsc_data.control1[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control1_val[i] = Imax
+                            self.nc.vsc_data.control1_branch_idx[i] = i
+                            branch_ctrl_change = True
+                        elif self.nc.vsc_data.control2[i] == ConverterControlType.Vm_ac:
+                            self.nc.bus_data.is_vm_controlled[self.nc.vsc_data.T_ac[i]] = False
+                            self.nc.vsc_data.control2[i] = ConverterControlType.Imax
+                            self.nc.vsc_data.control2_val[i] = Imax
+                            self.nc.vsc_data.control2_branch_idx[i] = i
+                            branch_ctrl_change = True
+                        elif self.nc.vsc_data.control1[i] == ConverterControlType.Pdc:
+                            self.nc.vsc_data.control1[i] = ConverterControlType.Imax
+                            self.nc.vsc_data.control1_val[i] = Imax
+                            self.nc.vsc_data.control1_branch_idx[i] = i
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control2[i] == ConverterControlType.Pdc:
                             self.nc.vsc_data.control2[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control2_val[i] = Imax
+                            self.nc.vsc_data.control2_branch_idx[i] = i
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control1[i] == ConverterControlType.Pac:
                             self.nc.vsc_data.control1[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control1_val[i] = Imax
+                            self.nc.vsc_data.control1_branch_idx[i] = i
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control2[i] == ConverterControlType.Pac:
                             self.nc.vsc_data.control2[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control2_val[i] = Imax
+                            self.nc.vsc_data.control2_branch_idx[i] = i
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control1[i] == ConverterControlType.Qac:
                             self.nc.vsc_data.control1[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control1_val[i] = Imax
+                            self.nc.vsc_data.control1_branch_idx[i] = i
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control2[i] == ConverterControlType.Qac:
                             self.nc.vsc_data.control2[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control2_val[i] = Imax
+                            self.nc.vsc_data.control2_branch_idx[i] = i
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control1[i] == ConverterControlType.Vm_dc:
+                            self.nc.bus_data.is_vm_controlled[self.nc.vsc_data.F_dcp[i]] = False
                             self.nc.vsc_data.control1[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control1_val[i] = Imax
+                            self.nc.vsc_data.control1_branch_idx[i] = i
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control2[i] == ConverterControlType.Vm_dc:
+                            self.nc.bus_data.is_vm_controlled[self.nc.vsc_data.F_dcp[i]] = False
                             self.nc.vsc_data.control2[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control2_val[i] = Imax
-                            branch_ctrl_change = True
-                        elif self.nc.vsc_data.control1[i] == ConverterControlType.Vm_ac:
-                            self.nc.vsc_data.control1[i] = ConverterControlType.Imax
-                            self.nc.vsc_data.control1_val[i] = Imax
-                            branch_ctrl_change = True
-                        elif self.nc.vsc_data.control2[i] == ConverterControlType.Vm_ac:
-                            self.nc.vsc_data.control2[i] = ConverterControlType.Imax
-                            self.nc.vsc_data.control2_val[i] = Imax
+                            self.nc.vsc_data.control2_branch_idx[i] = i
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control1[i] == ConverterControlType.Va_ac:
+                            self.nc.bus_data.is_va_controlled[self.nc.vsc_data.T_ac[i]] = False
                             self.nc.vsc_data.control1[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control1_val[i] = Imax
+                            self.nc.vsc_data.control1_branch_idx[i] = i
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control2[i] == ConverterControlType.Va_ac:
+                            self.nc.bus_data.is_va_controlled[self.nc.vsc_data.T_ac[i]] = False
                             self.nc.vsc_data.control2[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control2_val[i] = Imax
+                            self.nc.vsc_data.control2_branch_idx[i] = i
                             branch_ctrl_change = True
                         else:
                             raise ValueError(f"Unfound control type when switching to current limiting: "
                                              f"{self.nc.vsc_data.control1[i]}")
 
+                        print(It_i, Imax)
                                              
                         # Potentially add new conditionals, mainly for the 2nd iteration once saturated
                         # If letting the P naturally go to zero is not enough, no longer control Vm

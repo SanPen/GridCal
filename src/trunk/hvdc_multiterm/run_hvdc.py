@@ -82,7 +82,8 @@ def run_hvdc_multiterminal() -> None:
     options = PowerFlowOptions(control_q=False, 
                                use_stored_guess=True,
                                max_iter=25,
-                               limit_i_vsc=True)
+                               limit_i_vsc=True,
+                               tolerance=1e-12)
     problem, solution = solve_generalized(grid=grid, options=options)
 
     print(f"Converged: {solution.converged}")
