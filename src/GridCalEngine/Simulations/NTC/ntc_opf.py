@@ -25,11 +25,11 @@ from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.vsc_data import VscData
 from GridCalEngine.DataStructures.bus_data import BusData
-from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, StrVec, CxMat
+from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, StrVec, CxMat, Mat
 from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, set_var_bounds, join
 from GridCalEngine.enumerations import TapPhaseControl, HvdcControlType, AvailableTransferMode, ConverterControlType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
-from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha, compute_alpha_n1, compute_dP
 from GridCalEngine.IO.file_system import opf_file_path
 
 
@@ -1298,12 +1298,13 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                                                   hvdc_vars: HvdcNtcVars,
                                                   vsc_vars: VscNtcVars,
                                                   prob: LpModel,
-                                                  linear_multicontingencies: LinearMultiContingencies,
+                                                  linear_multi_contingencies: LinearMultiContingencies,
                                                   monitor_only_ntc_load_rule_branches: bool,
                                                   monitor_only_sensitive_branches: bool,
                                                   structural_ntc: float,
                                                   ntc_load_rule: float,
-                                                  alpha_threshold: float):
+                                                  alpha_threshold: float,
+                                                  alpha_n1: Mat):
     """
     Formulate the branches
     :param t_idx: time index
@@ -1314,16 +1315,19 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
     :param hvdc_vars: HvdcNtcVars
     :param vsc_vars: VscNtcVars
     :param prob: OR problem
-    :param linear_multicontingencies: LinearMultiContingencies
+    :param linear_multi_contingencies: LinearMultiContingencies
     :param monitor_only_ntc_load_rule_branches:
     :param monitor_only_sensitive_branches:
     :param structural_ntc
     :param ntc_load_rule
     :param alpha_threshold
+    :param dP: Vector of power increments to used for the power exchange
+    :param dT: Exchange amount (MW) usually a unitary increment is sufficient
+    :param alpha_n1
     :return objective function
     """
     f_obj = 0.0
-    for c, contingency in enumerate(linear_multicontingencies.multi_contingencies):
+    for c, contingency in enumerate(linear_multi_contingencies.multi_contingencies):
 
         contingency_flows, mask = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
                                                                        injections=bus_vars.Pinj[t_idx, :],
@@ -1351,20 +1355,23 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                             1190 / 0.05 --> 23.800 MW en la frontera en N
                             23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
                            """
-                        monitor_by_load_rule_n1 = (ntc_load_rule * branch_data_t.rates[m] / (alpha_n1[m, c_br] + 1e-20)
-                                                   <= structural_ntc)
+                        monitor_by_load_rule_n1 = True
+                        for c_br in contingency.branch_indices:
+                            monitor_by_load_rule_n1 = (monitor_by_load_rule_n1 and
+                                                       (ntc_load_rule * branch_data_t.rates[m] / (
+                                                               alpha_n1[m, c_br] + 1e-20) <= structural_ntc))
+
                     else:
                         monitor_by_load_rule_n1 = True
 
                     # Monitoring logic: Exclude branches with not enough sensibility to exchange in N-1 condition
                     if monitor_only_sensitive_branches:
-                        monitor_by_sensitivity_n1 = alpha_n1[m, c_br] > alpha_threshold
+                        monitor_by_sensitivity_n1 = True
+                        for c_br in contingency.branch_indices:
+                            monitor_by_sensitivity_n1 = (monitor_by_sensitivity_n1 and
+                                                         (alpha_n1[m, c_br] > alpha_threshold))
                     else:
                         monitor_by_sensitivity_n1 = True
-
-                    # TODO: Figure out how to compute Alpha N-1 to be able to uncomment the block above
-                    # monitor_by_load_rule_n1 = True
-                    # monitor_by_sensitivity_n1 = True
 
                     if monitor_by_load_rule_n1 and monitor_by_sensitivity_n1:
                         # declare slack variables
@@ -1919,15 +1926,22 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                             logger=logger)
 
         # compute the sensitivity to the exchange
-        alpha = compute_alpha(ptdf=ls.PTDF,
-                              lodf=ls.LODF,
-                              P0=Pbus.real,
-                              Pinstalled=nc.bus_data.installed_power,
-                              Pgen=nc.generator_data.get_injections_per_bus().real,
-                              Pload=nc.load_data.get_injections_per_bus().real,
-                              bus_a1_idx=bus_a1_idx,
-                              bus_a2_idx=bus_a2_idx,
-                              mode=mode_2_int[transfer_method])
+        dP = compute_dP(
+            P0=Pbus.real,
+            P_installed=nc.bus_data.installed_power,
+            Pgen=nc.generator_data.get_injections_per_bus().real,
+            Pload=nc.load_data.get_injections_per_bus().real,
+            bus_a1_idx=bus_a1_idx,
+            bus_a2_idx=bus_a2_idx,
+            mode=mode_2_int[transfer_method],
+            dT=1.0
+        )
+
+        alpha = compute_alpha(
+            ptdf=ls.PTDF,
+            dP=dP,
+            dT=1.0
+        )
 
         mip_vars.branch_vars.alpha[t_idx, :] = alpha
 
@@ -1974,6 +1988,14 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                              ptdf_threshold=lodf_threshold,
                              lodf_threshold=lodf_threshold)
 
+                alpha_n1 = compute_alpha_n1(
+                    ptdf=ls.PTDF,
+                    lodf=ls.LODF,
+                    alpha=alpha,
+                    dP=dP,
+                    dT=1.0
+                )
+
                 # formulate the contingencies
                 f_obj += add_linear_branches_contingencies_formulation(
                     t_idx=t_idx,
@@ -1984,12 +2006,13 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                     hvdc_vars=mip_vars.hvdc_vars,
                     vsc_vars=mip_vars.vsc_vars,
                     prob=lp_model,
-                    linear_multicontingencies=mctg,
+                    linear_multi_contingencies=mctg,
                     monitor_only_sensitive_branches=monitor_only_sensitive_branches,
                     monitor_only_ntc_load_rule_branches=monitor_only_ntc_load_rule_branches,
                     structural_ntc=structural_ntc,
                     ntc_load_rule=ntc_load_rule,
                     alpha_threshold=alpha_threshold,
+                    alpha_n1=alpha_n1
                 )
 
             else:

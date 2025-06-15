@@ -637,6 +637,26 @@ class LinearMultiContingency:
 
         return flow, mask
 
+    def get_alpha_n1(self, dP: Vec, dT: float):
+        """
+        Compute the N-1 sensitivities to the inter-area exchange
+        :param dP: Inter-area power exchanges computed with (compute_dP)
+        :param dT: Exchange amount (MW) usually a unitary increment is sufficient (use the value used to compute dP)
+        :return: N-1 branch exchange sensitivities
+        """
+
+        # (MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]) x ΔP[i]
+        dflow = self.compensated_ptdf_factors @ dP[self.bus_indices]
+
+        # dflow_n1 = dflow[m] + lodf[m, c] * dflow[c]
+
+        # MLODF[k, βδ] x Pf0[βδ]
+        dflow_n1 = self.mlodf_factors @ dflow[self.branch_indices]
+
+        alpha_n1 = dflow_n1 / dT
+
+        return alpha_n1
+
 
 class ContingencyIndices:
     """
