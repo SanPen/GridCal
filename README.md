@@ -1438,7 +1438,6 @@ All contributions must come with testing.
 - Join the [Discord GridCal channel](https://discord.com/invite/dzxctaNbvu) for a friendly chat, or quick question.
 - Submit questions or comments to our [form](https://forms.gle/MpjJAntAwZiLwE6B6).
 - Submit bugs or requests in the [Issues](https://github.com/SanPen/GridCal/issues) section.
-- Simply email [santiago@gridcal.org](santiago@gridcal.org)
 
 ## License
 
