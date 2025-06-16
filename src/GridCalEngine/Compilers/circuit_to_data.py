@@ -409,9 +409,16 @@ def get_load_data(data: LoadData,
                             data.S3_delta[3 * ii + 1] = complex(elm.P2, elm.Q2)
                             data.S3_delta[3 * ii + 2] = complex(elm.P3, elm.Q3)
 
-                            data.Y3_delta[3 * ii + 0] = complex(elm.G1, elm.B1)
-                            data.Y3_delta[3 * ii + 1] = complex(elm.G2, elm.B2)
-                            data.Y3_delta[3 * ii + 2] = complex(elm.G3, elm.B3)
+                            if elm.G1 > 0 and elm.G2 > 0 and elm.G3 > 0:
+                                data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
+                                    Yab=complex(elm.G1, elm.B1),
+                                    Ybc=complex(elm.G2, elm.B2),
+                                    Yca=complex(elm.G3, elm.B3)
+                                )
+                            else:
+                                data.Y3_delta[3 * ii + 0] = complex(elm.G1, elm.B1)
+                                data.Y3_delta[3 * ii + 1] = complex(elm.G2, elm.B2)
+                                data.Y3_delta[3 * ii + 2] = complex(elm.G3, elm.B3)
 
                             data.I3_star[3 * ii + idx3] = delta2StarCurrent(
                                 Iab=complex(elm.Ir1, elm.Ii1),
@@ -654,9 +661,9 @@ def get_load_data(data: LoadData,
                     elif elm.conn == ShuntConnectionType.Delta:
 
                         data.I3_star[3 * ii + idx3] += delta2StarCurrent(
-                            Iab=complex(elm.Ir1_prof[t_idx], elm.Ii1_prof[t_idx]),
-                            Ibc=complex(elm.Ir2_prof[t_idx], elm.Ii2_prof[t_idx]),
-                            Ica=complex(elm.Ir3_prof[t_idx], elm.Ii3_prof[t_idx])
+                            Iab=complex(elm.Ir1, elm.Ii1),
+                            Ibc=complex(elm.Ir2, elm.Ii2),
+                            Ica=complex(elm.Ir3, elm.Ii3)
                         )
 
                     else:

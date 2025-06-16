@@ -8,7 +8,7 @@ import pandas as pd
 logger = gce.Logger()
 
 grid = gce.MultiCircuit()
-grid.fBase = 50
+grid.fBase = 60
 
 """
 13 Buses
@@ -256,7 +256,7 @@ Line Configurations
 """
 config_601 = gce.OverheadLineType(name='Config. 601',
                                   Vnom=4.16,
-                                  frequency=50)
+                                  frequency=60)
 config_601.z_abc = z_601
 config_601.y_abc = y_601
 config_601.y_phases_abc = np.array([1,2,3])
@@ -264,7 +264,7 @@ grid.add_overhead_line(config_601)
 
 config_602 = gce.OverheadLineType(name='Config. 602',
                                   Vnom=4.16,
-                                  frequency=50)
+                                  frequency=60)
 config_602.z_abc = z_602
 config_602.y_abc = y_602
 config_602.y_phases_abc = np.array([1,2,3])
@@ -272,7 +272,7 @@ grid.add_overhead_line(config_602)
 
 config_603 = gce.OverheadLineType(name='Config. 603',
                                   Vnom=4.16,
-                                  frequency=50)
+                                  frequency=60)
 config_603.z_abc = z_603
 config_603.y_abc = y_603
 config_603.y_phases_abc = np.array([2,3])
@@ -280,7 +280,7 @@ grid.add_overhead_line(config_603)
 
 config_604 = gce.OverheadLineType(name='Config. 604',
                                   Vnom=4.16,
-                                  frequency=50)
+                                  frequency=60)
 config_604.z_abc = z_604
 config_604.y_abc = y_604
 config_604.y_phases_abc = np.array([1,3])
@@ -288,7 +288,7 @@ grid.add_overhead_line(config_604)
 
 config_605 = gce.OverheadLineType(name='Config. 605',
                                   Vnom=4.16,
-                                  frequency=50)
+                                  frequency=60)
 config_605.z_abc = z_605
 config_605.y_abc = y_605
 config_605.y_phases_abc = np.array([3])
@@ -296,7 +296,7 @@ grid.add_overhead_line(config_605)
 
 config_606 = gce.OverheadLineType(name='Config. 606',
                                   Vnom=4.16,
-                                  frequency=50)
+                                  frequency=60)
 config_606.z_abc = z_606
 config_606.y_abc = y_606
 config_606.y_phases_abc = np.array([1,2,3])
@@ -304,7 +304,7 @@ grid.add_overhead_line(config_606)
 
 config_607 = gce.OverheadLineType(name='Config. 607',
                                   Vnom=4.16,
-                                  frequency=50)
+                                  frequency=60)
 config_607.z_abc = z_607
 config_607.y_abc = y_607
 config_607.y_phases_abc = np.array([1])
@@ -395,11 +395,12 @@ res_3ph = power_flow_3ph(grid)
 U = abs(res_3ph.V)
 angle = np.degrees(np.angle((res_3ph.V)))
 print()
-print(np.round(U, 4))
+# print(np.round(U, 4))
+print(U)
 print()
 print(np.round(angle, 2))
 
-bus_numbers = [632, 645]
+bus_numbers = [632, 645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
 
 # Asegurar que U y angle son arrays NumPy
 U = np.array(U)
@@ -428,3 +429,5 @@ df = pd.DataFrame({
 
 # Exportar a Excel
 df.to_excel("tensiones_trifasicas.xlsx", index=False)
+
+#print(grid.lines[2].ysh.values)

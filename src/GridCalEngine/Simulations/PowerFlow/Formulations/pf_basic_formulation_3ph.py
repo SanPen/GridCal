@@ -193,14 +193,8 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, 
             S[b2] = -1 * ((V[b2] * Sdelta[bc]) / (V[b2] - V[c2]) - (V[b2] * Sdelta[ab]) / (V[a2] - V[b2]))
             S[c2] = -1 * ((V[c2] * Sdelta[ca]) / (V[c2] - V[a2]) - (V[c2] * Sdelta[bc]) / (V[b2] - V[c2]))
 
-            # Admittance
-            # S[a2] += (Ydelta[ab]*Ydelta[bc] + Ydelta[bc]*Ydelta[ca] + Ydelta[ca]*Ydelta[ab]) / Ydelta[bc]
-            # S[b2] += (Ydelta[ab] * Ydelta[bc] + Ydelta[bc] * Ydelta[ca] + Ydelta[ca] * Ydelta[ab]) / Ydelta[ca]
-            # S[c2] += (Ydelta[ab] * Ydelta[bc] + Ydelta[bc] * Ydelta[ca] + Ydelta[ca] * Ydelta[ab]) / Ydelta[ab]
-            #
-            # S[a2] += -1 * V[a2] * np.conj(S[a2] * V[a2])
-            # S[b2] += -1 * V[b2] * np.conj(S[b2] * V[b2])
-            # S[c2] += -1 * V[c2] * np.conj(S[c2] * V[c2])
+            print('\nSdelta = \n', Sdelta)
+            print('\nSalex = \n', S)
 
         elif a2 > -1 and b2 > -1:
             S[a2] = -1 * V[a2] * Sdelta[ab] / (V[a2] - V[b2])
@@ -341,9 +335,9 @@ def expandVoltage3ph(V0: CxVec) -> CxVec:
     # x3[0] = 1.0210 * np.exp(1j * (0*np.pi/180))
     # x3[1] = 1.0420 * np.exp(1j * (-120*np.pi/180))
     # x3[2] = 1.0174 * np.exp(1j * (120*np.pi/180))
-    # x3[0] = 1.0210 * np.exp(1j * (-2.49*np.pi/180))
-    # x3[1] = 1.0420 * np.exp(1j * (-121.72*np.pi/180))
-    # x3[2] = 1.0174 * np.exp(1j * (117.83*np.pi/180))
+    x3[0] = 1.0210 * np.exp(1j * (-2.49*np.pi/180))
+    x3[1] = 1.0420 * np.exp(1j * (-121.72*np.pi/180))
+    x3[2] = 1.0174 * np.exp(1j * (117.83*np.pi/180))
 
 
     return x3

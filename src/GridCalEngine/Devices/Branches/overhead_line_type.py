@@ -453,7 +453,7 @@ class OverheadLineType(EditableDevice):
 
         if rows % 3 == 0 and columns % 3 == 0:
             k = (3 * (circuit_idx - 1)) + np.array([0, 1, 2])
-            y = self.y_abc[np.ix_(k, k)] * length * -1e6 / Ybase
+            y = self.y_abc[np.ix_(k, k)] * length * 1e6 / Ybase
             adm.values = y
             adm.phA = 1
             adm.phB = 1
@@ -466,7 +466,7 @@ class OverheadLineType(EditableDevice):
             phases = phases[phases <= 3 * circuit_idx]
             phases = phases - 3 * (circuit_idx - 1) - 1
 
-            y = self.y_abc * length * -1e6 / Ybase
+            y = self.y_abc * length * 1e6 / Ybase
             y_3x3 = np.zeros((3, 3), dtype=complex)
             y_3x3[np.ix_(phases, phases)] = y
 
