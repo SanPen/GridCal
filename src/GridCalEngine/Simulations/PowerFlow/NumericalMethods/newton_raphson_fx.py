@@ -76,8 +76,7 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                 print(f'Iter: {iteration}')
                 print('-' * 200)
 
-            J: CSC = problem.Jacobian(autodiff=True)
-            # print(J.todense().shape)
+            J: CSC = problem.Jacobian(autodiff=False)
 
             if J.shape[0] != J.shape[1]:
                 logger.add_error("Jacobian not square, check the controls!", "Newton-Raphson",

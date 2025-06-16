@@ -25,7 +25,7 @@ from GridCalEngine.enumerations import (TapPhaseControl, TapModuleControl, HvdcC
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger
 
 
-# @njit()
+@njit()
 def adv_jacobian(nbus: int,
                  nbr: int,
                  nvsc: int,
@@ -1717,8 +1717,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             # print(f"Control 1: {self.nc.vsc_data.control1[i]}, Control 2: {self.nc.vsc_data.control2[i]}")
             # print('-------')
 
-
-        print(f"f: {_f}")
         return _f
 
     def check_error(self, x: Vec) -> Tuple[float, Vec]:
@@ -2170,7 +2168,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         if autodiff:
             J = calc_autodiff_jacobian(func=self.compute_f,
                                        x=self.var2x(),
-                                       h=1e-8)
+                                       h=1e-7)
 
             return J
 

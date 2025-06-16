@@ -78,13 +78,14 @@ def run_hvdc_multiterminal() -> None:
     # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'vsc_debug3.gridcal')
     # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'vsc_debug4.gridcal')
     fname = os.path.join('src', 'trunk', 'hvdc_multiterm', '5bus_bipolar.gridcal')
+    # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', '5bus_bipolar_v2.gridcal')
 
     grid = gce.FileOpen(fname).open()
 
     options = PowerFlowOptions(control_q=False, 
-                               verbose=1,
+                               verbose=0,
                                use_stored_guess=True,
-                               max_iter=25,
+                               max_iter=10,
                                limit_i_vsc=True,
                                tolerance=1e-12)
     problem, solution = solve_generalized(grid=grid, options=options)
