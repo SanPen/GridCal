@@ -1713,12 +1713,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             It_i = np.sqrt(self.Pt_vsc[i]**2 + self.Qt_vsc[i]**2) / self.Vm[self.nc.vsc_data.T_ac[i]]
             Imax = self.nc.vsc_data.rates[i] / self.nc.Sbase  # Assume 1.0 p.u. base voltage
 
-            print(f"Compute f current: {It_i}, Imax: {Imax}")
-            print(f"Control 1: {self.nc.vsc_data.control1[i]}, Control 2: {self.nc.vsc_data.control2[i]}")
-            print('-------')
+            # print(f"Compute f current: {It_i}, Imax: {Imax}")
+            # print(f"Control 1: {self.nc.vsc_data.control1[i]}, Control 2: {self.nc.vsc_data.control2[i]}")
+            # print('-------')
 
 
-
+        print(f"f: {_f}")
         return _f
 
     def check_error(self, x: Vec) -> Tuple[float, Vec]:
@@ -2273,7 +2273,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         cols = [f'dVa_{i}' for i in self.i_u_va]
         cols += [f'dVm_{i}' for i in self.i_u_vm]
 
-        cols += [f'dPf_vsc_{i}' for i in self.u_vsc_pf]
+        cols += [f'dPfp_vsc_{i}' for i in self.u_vsc_pfp]
+        cols += [f'dPfn_vsc_{i}' for i in self.u_vsc_pfn]
         cols += [f'dPt_vsc_{i}' for i in self.u_vsc_pt]
         cols += [f'dQt_vsc_{i}' for i in self.u_vsc_qt]
 
