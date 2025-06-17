@@ -7,7 +7,7 @@ from typing import Tuple, List, Dict, Callable
 import numpy as np
 from numba import njit
 from scipy.sparse import lil_matrix, isspmatrix_csc
-from GridCalEngine.Topology.admittance_matrices import compute_admittances
+from GridCalEngine.Topology.admittance_matrices import compute_admittances, compute_admittances_fast
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
@@ -578,7 +578,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
         self.Yshunt_bus = self.nc.get_Yshunt_bus_pu()  # computed here for later
 
-        self.adm = compute_admittances(
+        self.adm = compute_admittances_fast(
+            nbus=self.nc.bus_data.nbus,
             R=self.nc.passive_branch_data.R,
             X=self.nc.passive_branch_data.X,
             G=self.nc.passive_branch_data.G,
@@ -587,12 +588,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
             tap_angle=expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0),
+            F=self.nc.passive_branch_data.F,
+            T=self.nc.passive_branch_data.T,
             Cf=self.nc.passive_branch_data.Cf,
             Ct=self.nc.passive_branch_data.Ct,
             Yshunt_bus=self.Yshunt_bus,
-            conn=self.nc.passive_branch_data.conn,
-            seq=1,
-            add_windings_phase=False
         )
 
         if self.options.verbose > 1:
@@ -1249,7 +1249,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         m2[self.u_cbr_m] = m_
         tau2[self.u_cbr_tau] = tau_
 
-        adm_ = compute_admittances(
+        adm_ = compute_admittances_fast(
+            nbus=self.nc.bus_data.nbus,
             R=self.nc.passive_branch_data.R,
             X=self.nc.passive_branch_data.X,
             G=self.nc.passive_branch_data.G,
@@ -1258,12 +1259,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
             tap_angle=tau2,
+            F=self.nc.passive_branch_data.F,
+            T=self.nc.passive_branch_data.T,
             Cf=self.nc.passive_branch_data.Cf,
             Ct=self.nc.passive_branch_data.Ct,
-            Yshunt_bus=self.Yshunt_bus,
-            conn=self.nc.passive_branch_data.conn,
-            seq=1,
-            add_windings_phase=False
+            Yshunt_bus=self.Yshunt_bus
         )
 
         # adm_ = self.adm.copy()
@@ -1623,7 +1623,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         m2[self.u_cbr_m] = self.m
         tau2[self.u_cbr_tau] = self.tau
 
-        self.adm = compute_admittances(
+        self.adm = compute_admittances_fast(
+            nbus=self.nc.bus_data.nbus,
             R=self.nc.passive_branch_data.R,
             X=self.nc.passive_branch_data.X,
             G=self.nc.passive_branch_data.G,
@@ -1632,12 +1633,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
             tap_angle=tau2,
+            F=self.nc.passive_branch_data.F,
+            T=self.nc.passive_branch_data.T,
             Cf=self.nc.passive_branch_data.Cf,
             Ct=self.nc.passive_branch_data.Ct,
             Yshunt_bus=self.Yshunt_bus,
-            conn=self.nc.passive_branch_data.conn,
-            seq=1,
-            add_windings_phase=False
         )
 
         Scalc_passive = compute_power(self.adm.Ybus, V)

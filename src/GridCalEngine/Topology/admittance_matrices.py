@@ -150,7 +150,6 @@ class AdmittanceMatrices:
         return ok
 
 
-
 def compute_admittances(R: Vec,
                         X: Vec,
                         G: Vec,
@@ -274,7 +273,6 @@ def _scan_exclusive(arr):
 # ----------------------------------------------------------------------
 @nb.njit(cache=True)
 def _build_Yf_Yt(nbus, nl, fbus, tbus, yff, yft, ytf, ytt):
-
     # 1. count nnz per column
     nnz_col = np.zeros(nbus, np.int64)
     for k in range(nl):
@@ -325,7 +323,7 @@ def _build_Ybus(nbus, fbus, tbus, yff, yft, ytf, ytt, Ysh):
     — no dictionaries, no SciPy builders.
     """
     nbranch = fbus.size
-    raw_nnz = 4 * nbranch + nbus          # i-i, i-j, j-i, j-j + shunts
+    raw_nnz = 4 * nbranch + nbus  # i-i, i-j, j-i, j-j + shunts
 
     rows_raw = np.empty(raw_nnz, np.int32)
     cols_raw = np.empty(raw_nnz, np.int32)
@@ -337,12 +335,24 @@ def _build_Ybus(nbus, fbus, tbus, yff, yft, ytf, ytt, Ysh):
         j = tbus[k]
 
         # self admittances
-        rows_raw[p] = i; cols_raw[p] = i; data_raw[p] = yff[k]; p += 1
-        rows_raw[p] = j; cols_raw[p] = j; data_raw[p] = ytt[k]; p += 1
+        rows_raw[p] = i;
+        cols_raw[p] = i;
+        data_raw[p] = yff[k];
+        p += 1
+        rows_raw[p] = j;
+        cols_raw[p] = j;
+        data_raw[p] = ytt[k];
+        p += 1
 
         # mutuals
-        rows_raw[p] = i; cols_raw[p] = j; data_raw[p] = yft[k]; p += 1
-        rows_raw[p] = j; cols_raw[p] = i; data_raw[p] = ytf[k]; p += 1
+        rows_raw[p] = i;
+        cols_raw[p] = j;
+        data_raw[p] = yft[k];
+        p += 1
+        rows_raw[p] = j;
+        cols_raw[p] = i;
+        data_raw[p] = ytf[k];
+        p += 1
 
     # shunts
     for b in range(nbus):
@@ -352,46 +362,173 @@ def _build_Ybus(nbus, fbus, tbus, yff, yft, ytf, ytt, Ysh):
         p += 1
 
     # ---------- sort (col,row) ---------------------------------------
-    key    = cols_raw.astype(np.int64) * nbus + rows_raw
-    order  = np.argsort(key)
+    key = cols_raw.astype(np.int64) * nbus + rows_raw
+    order = np.argsort(key)
 
     rows_s = rows_raw[order]
     cols_s = cols_raw[order]
     data_s = data_raw[order]
 
     # ---------- merge duplicates & count per column ------------------
-    data    = np.empty(raw_nnz, np.complex128)
+    data = np.empty(raw_nnz, np.complex128)
     indices = np.empty(raw_nnz, np.int32)
-    indptr  = np.zeros(nbus + 1, np.int64)      # counts per column
+    indptr = np.zeros(nbus + 1, np.int64)  # counts per column
 
     last_col = -1
     last_row = -1
-    w        = 0                                # write cursor
+    w = 0  # write cursor
 
     for idx in range(raw_nnz):
         r = rows_s[idx]
         c = cols_s[idx]
         v = data_s[idx]
 
-        if c != last_col:                       # new column
+        if c != last_col:  # new column
             last_col = c
             last_row = -1
 
-        if r == last_row:                       # same (c,r) → accumulate
-            data[w-1] += v
-        else:                                   # new entry
-            last_row       = r
-            data[w]        = v
-            indices[w]     = r
-            indptr[c]     += 1                  # <-- FIX: count in indptr[c]
+        if r == last_row:  # same (c,r) → accumulate
+            data[w - 1] += v
+        else:  # new entry
+            last_row = r
+            data[w] = v
+            indices[w] = r
+            indptr[c] += 1  # <-- FIX: count in indptr[c]
             w += 1
 
     # ---------- convert counts → pointers ----------------------------
-    _scan_exclusive(indptr)                     # in-place prefix sum
-    indptr[-1] = w                              # set final nnz pointer
+    _scan_exclusive(indptr)  # in-place prefix sum
+    indptr[-1] = w  # set final nnz pointer
 
-    data    = data[:w]
+    data = data[:w]
     indices = indices[:w]
+
+    return data, indices, indptr
+
+
+@nb.njit(cache=True, inline="always")
+def _exclusive_scan(arr):
+    s = 0
+    for i in range(arr.size):
+        tmp = arr[i]
+        arr[i] = s
+        s += tmp
+    return s
+
+
+@nb.njit(cache=True)
+def _build_Ybus_local(nbus, fbus, tbus, yff, yft, ytf, ytt, Ysh):
+    """
+    Build Ybus [nbus × nbus] in CSC form.
+    Two-phase algorithm:
+        1) write every contribution into a column-contiguous 'scratch'
+           region (no ordering, duplicates possible);
+        2) column-by-column:   sort rows, merge duplicates, emit final
+           CSC arrays.
+    Complexity: O(nnz)  +  Σ O(k log k)  with k=nnz in each column.
+    """
+    nbranch = fbus.size
+
+    # ---- phase 0 : nnz *per column* (incl. duplicates) --------------
+    nnz_col = np.zeros(nbus, np.int64)
+    for k in range(nbranch):
+        nnz_col[fbus[k]] += 2  # self_i  + mutual_ij
+        nnz_col[tbus[k]] += 2  # self_j  + mutual_ji
+    nnz_col += 1  # shunt on every bus
+
+    scratch_ptr = np.empty(nbus + 1, np.int64)
+    scratch_ptr[0] = 0
+    for j in range(nbus):
+        scratch_ptr[j + 1] = scratch_ptr[j] + nnz_col[j]
+    scratch_nnz = scratch_ptr[-1]
+
+    rows_sc = np.empty(scratch_nnz, np.int32)
+    data_sc = np.empty(scratch_nnz, np.complex128)
+
+    # ---- phase 1 : fill scratch (column-contiguous) ------------------
+    head = scratch_ptr[:-1].copy()  # cursor per column
+    for k in range(nbranch):
+        i = fbus[k]
+        j = tbus[k]
+
+        # self admittances
+        p = head[i]
+        rows_sc[p] = i
+        data_sc[p] = yff[k]
+        head[i] += 1
+
+        p = head[j]
+        rows_sc[p] = j
+        data_sc[p] = ytt[k]
+        head[j] += 1
+
+        # mutuals
+        p = head[i]
+        rows_sc[p] = j
+        data_sc[p] = yft[k]
+        head[i] += 1
+
+        p = head[j]
+        rows_sc[p] = i
+        data_sc[p] = ytf[k]
+        head[j] += 1
+
+    # shunts
+    for b in range(nbus):
+        p = head[b]
+        rows_sc[p] = b
+        data_sc[p] = Ysh[b]
+        head[b] += 1
+
+    # ---- phase 2 : per-column sort & merge ---------------------------
+    indptr = np.zeros(nbus + 1, np.int64)
+    # first pass: figure out nnz _after_ merging duplicates
+    for j in range(nbus):
+        start, end = scratch_ptr[j], scratch_ptr[j + 1]
+        seg_rows = rows_sc[start:end]
+        # We can’t call np.unique in nopython, so:
+        seg_rows_sorted = np.sort(seg_rows.copy())
+        uniq = 1
+        last = seg_rows_sorted[0]
+        for idx in range(1, seg_rows_sorted.size):
+            if seg_rows_sorted[idx] != last:
+                uniq += 1
+                last = seg_rows_sorted[idx]
+        indptr[j + 1] = uniq
+
+    _exclusive_scan(indptr)
+    nnz_final = indptr[-1]
+    indices = np.empty(nnz_final, np.int32)
+    data = np.empty(nnz_final, np.complex128)
+
+    # second pass: actually write sorted, merged entries
+    for j in range(nbus):
+        start_s, end_s = scratch_ptr[j], scratch_ptr[j + 1]
+        if start_s == end_s:
+            continue
+        rows = rows_sc[start_s:end_s]
+        vals = data_sc[start_s:end_s]
+
+        order = np.argsort(rows)
+        rows = rows[order]
+        vals = vals[order]
+
+        w = indptr[j]  # write cursor into final arrays
+        last_r = rows[0]
+        acc = vals[0]
+        for idx in range(1, rows.size):
+            r = rows[idx]
+            v = vals[idx]
+            if r == last_r:
+                acc += v
+            else:
+                indices[w] = last_r
+                data[w] = acc
+                w += 1
+                last_r, acc = r, v
+        # flush last
+        indices[w] = last_r
+        data[w] = acc
 
     return data, indices, indptr
 
