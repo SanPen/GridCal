@@ -139,24 +139,23 @@ def update_branch_admittances(idx: IntVec,
     :return:
     """
 
-    for n in range(idx.size):
-        k = idx[n]
+    for k_idx, k in enumerate(idx):
 
         # ---- Yf ----------------------------------------------------
         p_ff = pos_yff[k]
         p_ft = pos_yft[k]
-        d_ff = new_yff[n] - Yf_data[p_ff]
-        d_ft = new_yft[n] - Yf_data[p_ft]
-        Yf_data[p_ff] = new_yff[n]
-        Yf_data[p_ft] = new_yft[n]
+        d_ff = new_yff[k_idx] - Yf_data[p_ff]
+        d_ft = new_yft[k_idx] - Yf_data[p_ft]
+        Yf_data[p_ff] = new_yff[k_idx]
+        Yf_data[p_ft] = new_yft[k_idx]
 
         # ---- Yt ----------------------------------------------------
         p_tf = pos_ytf[k]
         p_tt = pos_ytt[k]
-        d_tf = new_ytf[n] - Yt_data[p_tf]
-        d_tt = new_ytt[n] - Yt_data[p_tt]
-        Yt_data[p_tf] = new_ytf[n]
-        Yt_data[p_tt] = new_ytt[n]
+        d_tf = new_ytf[k_idx] - Yt_data[p_tf]
+        d_tt = new_ytt[k_idx] - Yt_data[p_tt]
+        Yt_data[p_tf] = new_ytf[k_idx]
+        Yt_data[p_tt] = new_ytt[k_idx]
 
         # ---- Ybus (add deltas) ------------------------------------
         Ybus_data[pos_b_ii[k]] += d_ff
@@ -215,7 +214,7 @@ class AdmittanceMatrices:
 
         self.Yshunt_bus = Yshunt_bus
 
-    def modify_taps_All(self,
+    def modify_taps_all(self,
                         m: Vec, m2: Vec,
                         tau: Vec, tau2: Vec) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
         """
@@ -613,11 +612,8 @@ class AdmittanceMatricesFast:
         self.vtap_t = vtap_t
 
         self.yff = yff
-
         self.yft = yft
-
         self.ytf = ytf
-
         self.ytt = ytt
 
         self.Yshunt_bus = Yshunt_bus
@@ -660,6 +656,12 @@ class AdmittanceMatricesFast:
         new_ytf = -self.ys[idx] / (tap_module * np.exp(1.0j * tap_angle) * mt * mf)
         new_ytt = (self.ys[idx] + self.ysh2[idx]) / (mt * mt)
 
+        # update the primitives
+        self.yff[idx] = new_yff
+        self.yft[idx] = new_yft
+        self.ytf[idx] = new_ytf
+        self.ytt[idx] = new_ytt
+
         # Update in-place
         update_branch_admittances(
             idx=idx,
@@ -684,20 +686,29 @@ class AdmittanceMatricesFast:
         """
         Get a deep copy
         """
-        return AdmittanceMatricesFast(Ybus=self.Ybus.copy(),
-                                      Yf=self.Yf.copy(),
-                                      Yt=self.Yt.copy(),
-                                      F=self.F.copy(),
-                                      T=self.T.copy(),
-                                      ys=self.ys.copy(),
-                                      ysh2=self.ysh2.copy(),
-                                      vtap_f=self.vtap_f.copy(),
-                                      vtap_t=self.vtap_t.copy(),
-                                      yff=self.yff.copy(),
-                                      yft=self.yft.copy(),
-                                      ytf=self.ytf.copy(),
-                                      ytt=self.ytt.copy(),
-                                      Yshunt_bus=self.Yshunt_bus.copy())
+        res = AdmittanceMatricesFast(Ybus=self.Ybus.copy(),
+                                     Yf=self.Yf.copy(),
+                                     Yt=self.Yt.copy(),
+                                     F=self.F.copy(),
+                                     T=self.T.copy(),
+                                     ys=self.ys.copy(),
+                                     ysh2=self.ysh2.copy(),
+                                     vtap_f=self.vtap_f.copy(),
+                                     vtap_t=self.vtap_t.copy(),
+                                     yff=self.yff.copy(),
+                                     yft=self.yft.copy(),
+                                     ytf=self.ytf.copy(),
+                                     ytt=self.ytt.copy(),
+                                     Yshunt_bus=self.Yshunt_bus.copy())
+        res.pos_yff = self.pos_yff.copy()
+        res.pos_yft = self.pos_yft.copy()
+        res.pos_ytf = self.pos_ytf.copy()
+        res.pos_ytt = self.pos_ytt.copy()
+        res.pos_b_ii = self.pos_b_ii.copy()
+        res.pos_b_ij = self.pos_b_ij.copy()
+        res.pos_b_ji = self.pos_b_ji.copy()
+        res.pos_b_jj = self.pos_b_jj.copy()
+        return res
 
     def __eq__(self, other: "AdmittanceMatricesFast"):
         ok = True

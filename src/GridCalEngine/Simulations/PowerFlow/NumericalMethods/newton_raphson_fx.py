@@ -42,10 +42,10 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
         return problem.get_solution(elapsed=time.time() - start, iterations=0)
 
     # set the problem state
-    st1 = time.time()
+    # st1 = time.time()
     error, converged, _, f = problem.update(x, update_controls=False)
-    st2 = time.time()
-    print(f'Iteration 0, f time {st2 - st1}')
+    # st2 = time.time()
+    # print(f'Iteration 0, f time {st2 - st1}')
 
     iteration = 0
     error0 = error
@@ -79,10 +79,10 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                 print(f'Iter: {iteration}')
                 print('-' * 200)
 
-            sj1 = time.time()
+            # sj1 = time.time()
             J: CSC = problem.Jacobian()
-            sj2 = time.time()
-            print(f'Iteration {iteration}, J time {sj2 - sj1}')
+            # sj2 = time.time()
+            # print(f'Iteration {iteration}, J time {sj2 - sj1}')
 
             if J.shape[0] != J.shape[1]:
                 logger.add_error("Jacobian not square, check the controls!", "Newton-Raphson",
@@ -117,17 +117,17 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
             mu = trust0
             x_sol = x
             while not converged and mu > tol and error >= error0:
-                se1 = time.time()
+                # se1 = time.time()
                 error, x_sol = problem.check_error(x + dx * mu)
-                se2 = time.time()
-                print(f'Iteration {iteration}, error time {se2 - se1}')
+                # se2 = time.time()
+                # print(f'Iteration {iteration}, error time {se2 - se1}')
                 mu *= 0.25
 
             update_controls = error < (tol * 100)
-            su1 = time.time()
+            # su1 = time.time()
             error, converged, x, f = problem.update(x=x_sol, update_controls=update_controls)
-            su2 = time.time()
-            print(f'Iteration {iteration}, update time {su2 - su1}')
+            # su2 = time.time()
+            # print(f'Iteration {iteration}, update time {su2 - su1}')
 
             # save the error evolution
             error0 = error
