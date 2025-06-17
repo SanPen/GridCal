@@ -98,10 +98,10 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
             try:
 
                 # compute update step: J x Δx = Δg
-                sx1 = time.time()
+                # sx1 = time.time()
                 dx, ok = spsolve_csc(J, -f)
-                sx2 = time.time()
-                print(f'Iteration {iteration}, solve time {sx2 - sx1}')
+                # sx2 = time.time()
+                # print(f'Iteration {iteration}, solve time {sx2 - sx1}')
 
             except RuntimeError:
                 logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")

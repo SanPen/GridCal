@@ -415,7 +415,7 @@ def compute_admittances(R: Vec,
 
 
 @nb.njit(cache=True, inline="always")
-def _scan_exclusive(arr):
+def _sum_in_place(arr):
     """
     exclusive prefix-sum in-place
     :param arr: some array, it is modified in-place
@@ -576,9 +576,10 @@ def _build_Ybus(nbus: int, nbr: int, F: IntVec, T: IntVec,
             w += 1
 
     # ---------- convert counts → pointers ----------------------------
-    _scan_exclusive(indptr)  # in-place prefix sum
+    _sum_in_place(indptr)  # in-place prefix sum
     indptr[-1] = w  # set final nnz pointer
 
+    # slice to size w
     data = data[:w]
     indices = indices[:w]
 

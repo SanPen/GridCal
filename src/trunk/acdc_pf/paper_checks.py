@@ -362,6 +362,9 @@ def run_timing_test(func, iterations=100):
     """
     Run the power flow function in a loop and collect timing data
     """
+    if iterations == 1:
+        iterations = 2
+
     times = np.zeros(iterations)
 
     # Set verbose to 0 for timing to avoid unnecessary printing
@@ -381,7 +384,7 @@ def run_timing_test(func, iterations=100):
     # Print the timing statistics
     # print(f"Mean time: {np.mean(times)} seconds")
     # print(f"Times list: {times}")
-    return times
+    return times[1:]  # avoid the first
 
 
 def scale_grid_loads(grid, scaling_factor):
@@ -1005,13 +1008,13 @@ if __name__ == '__main__':
     #
     # Timing the executions for 10 iterations
     print("GridCal - Timing for 5-bus grid case...")
-    gridcal_time5bus = run_timing_test(run_time_5bus, iterations=1)
+    gridcal_time5bus = run_timing_test(run_time_5bus, iterations=10)
     print("GridCal - Timing for 39-bus grid case...")
-    gridcal_time39bus = run_timing_test(run_time_39bus, iterations=1)
+    gridcal_time39bus = run_timing_test(run_time_39bus, iterations=10)
     # print("GridCal - Timing for 96-bus grid case...")
-    # gridcal_time96bus = run_timing_test(run_time_96bus, iterations=1)
+    # gridcal_time96bus = run_timing_test(run_time_96bus, iterations=10)
     print("GridCal - Timing for 3120-bus grid case...")
-    gridcal_time3120bus = run_timing_test(run_time_3kbus, iterations=1)
+    gridcal_time3120bus = run_timing_test(run_time_3kbus, iterations=10)
     #
     #
     # print("MatACDC - Convergence times for 5 bus system: ", matACDC_convergenceTime5bus)
@@ -1019,10 +1022,10 @@ if __name__ == '__main__':
     # print("MatACDC - Convergence times for 96 bus system: ", matACDC_convergenceTime96bus)
     # print("MatACDC - Convergence times for 3120 bus system: ", matACDC_convergenceTime3120bus)
     #
-    # print("Time list for 5-bus grid case", gridcal_time5bus)
-    # print("Time list for 39-bus grid case", gridcal_time39bus)
-    # print("Time list for 96-bus grid case", gridcal_time96bus)
-    # print("Time list for 3120-bus grid case", gridcal_time3120bus)
+    print("Time list for 5-bus grid case", gridcal_time5bus, np.mean(gridcal_time5bus))
+    print("Time list for 39-bus grid case", gridcal_time39bus, np.mean(gridcal_time39bus))
+    # print("Time list for 96-bus grid case", gridcal_time96bus, np.mean(gridcal_time96bus))
+    print("Time list for 3120-bus grid case", gridcal_time3120bus, np.mean(gridcal_time3120bus))
     #
     # # Initializing the ResultsHandler with all necessary data
     # results_handler = results_handler.ResultsHandler(
