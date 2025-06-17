@@ -12,6 +12,46 @@ from GridCalEngine.enumerations import WindingsConnection
 from GridCalEngine.basic_structures import ObjVec, Vec, CxVec, IntVec
 
 
+
+
+def csc_equal(A: sp.csc_matrix,
+              B: sp.csc_matrix,
+              tol: float = 0.0) -> bool:
+    """
+    Return True iff two CSC matrices are equal
+    (up-to a tolerance for floating–point data).
+
+    Parameters
+    ----------
+    A, B : scipy.sparse.csc_matrix
+        The matrices to compare.
+    tol : float, optional
+        Absolute tolerance.  If 0.0 an exact match is required;
+        otherwise the test is |A-B| > tol  element-wise.
+
+    Notes
+    -----
+    * Both matrices are sorted first (`sort_indices`) so the
+      result is independent of internal index ordering.
+    * Works for any SciPy sparse subtype (CSR, COO …) after
+      `.tocsc()`.
+    """
+    # 1. quick rejections
+    if A.shape != B.shape or A.dtype != B.dtype:
+        return False
+
+    # 2. canonicalise index ordering
+    A = A.copy();  A.sort_indices()
+    B = B.copy();  B.sort_indices()
+
+    # 3. exact or approximate test
+    if tol == 0.0:
+        return (A != B).nnz == 0                      # :contentReference[oaicite:0]{index=0}
+    else:
+        return (abs(A - B) > tol).nnz == 0            # :contentReference[oaicite:1]{index=1}
+
+
+
 class AdmittanceMatrices:
     """
     Class to store admittance matrices
@@ -144,9 +184,9 @@ class AdmittanceMatrices:
         ok = ok and np.isclose(self.yft, other.yft).all()
         ok = ok and np.isclose(self.ytf, other.ytf).all()
         ok = ok and np.isclose(self.ytt, other.ytt).all()
-        ok = ok and np.isclose(self.Ybus.toarray(), other.Ybus.toarray()).all()
-        ok = ok and np.isclose(self.Yf.toarray(), other.Yf.toarray()).all()
-        ok = ok and np.isclose(self.Yt.toarray(), other.Yt.toarray()).all()
+        ok = ok and csc_equal(self.Ybus, other.Ybus, tol=1e-10)
+        ok = ok and csc_equal(self.Yf, other.Yf, tol=1e-10)
+        ok = ok and csc_equal(self.Yt, other.Yt, tol=1e-10)
         return ok
 
 
@@ -364,6 +404,7 @@ def _build_Ybus(nbus, fbus, tbus, yff, yft, ytf, ytt, Ysh):
     # ---------- sort (col,row) ---------------------------------------
     key = cols_raw.astype(np.int64) * nbus + rows_raw
     order = np.argsort(key)
+    # order = np.lexsort((rows_raw, cols_raw))  # <-- one array less, same result
 
     rows_s = rows_raw[order]
     cols_s = cols_raw[order]
@@ -406,133 +447,6 @@ def _build_Ybus(nbus, fbus, tbus, yff, yft, ytf, ytt, Ysh):
     return data, indices, indptr
 
 
-@nb.njit(cache=True, inline="always")
-def _exclusive_scan(arr):
-    s = 0
-    for i in range(arr.size):
-        tmp = arr[i]
-        arr[i] = s
-        s += tmp
-    return s
-
-
-@nb.njit(cache=True)
-def _build_Ybus_local(nbus, fbus, tbus, yff, yft, ytf, ytt, Ysh):
-    """
-    Build Ybus [nbus × nbus] in CSC form.
-    Two-phase algorithm:
-        1) write every contribution into a column-contiguous 'scratch'
-           region (no ordering, duplicates possible);
-        2) column-by-column:   sort rows, merge duplicates, emit final
-           CSC arrays.
-    Complexity: O(nnz)  +  Σ O(k log k)  with k=nnz in each column.
-    """
-    nbranch = fbus.size
-
-    # ---- phase 0 : nnz *per column* (incl. duplicates) --------------
-    nnz_col = np.zeros(nbus, np.int64)
-    for k in range(nbranch):
-        nnz_col[fbus[k]] += 2  # self_i  + mutual_ij
-        nnz_col[tbus[k]] += 2  # self_j  + mutual_ji
-    nnz_col += 1  # shunt on every bus
-
-    scratch_ptr = np.empty(nbus + 1, np.int64)
-    scratch_ptr[0] = 0
-    for j in range(nbus):
-        scratch_ptr[j + 1] = scratch_ptr[j] + nnz_col[j]
-    scratch_nnz = scratch_ptr[-1]
-
-    rows_sc = np.empty(scratch_nnz, np.int32)
-    data_sc = np.empty(scratch_nnz, np.complex128)
-
-    # ---- phase 1 : fill scratch (column-contiguous) ------------------
-    head = scratch_ptr[:-1].copy()  # cursor per column
-    for k in range(nbranch):
-        i = fbus[k]
-        j = tbus[k]
-
-        # self admittances
-        p = head[i]
-        rows_sc[p] = i
-        data_sc[p] = yff[k]
-        head[i] += 1
-
-        p = head[j]
-        rows_sc[p] = j
-        data_sc[p] = ytt[k]
-        head[j] += 1
-
-        # mutuals
-        p = head[i]
-        rows_sc[p] = j
-        data_sc[p] = yft[k]
-        head[i] += 1
-
-        p = head[j]
-        rows_sc[p] = i
-        data_sc[p] = ytf[k]
-        head[j] += 1
-
-    # shunts
-    for b in range(nbus):
-        p = head[b]
-        rows_sc[p] = b
-        data_sc[p] = Ysh[b]
-        head[b] += 1
-
-    # ---- phase 2 : per-column sort & merge ---------------------------
-    indptr = np.zeros(nbus + 1, np.int64)
-    # first pass: figure out nnz _after_ merging duplicates
-    for j in range(nbus):
-        start, end = scratch_ptr[j], scratch_ptr[j + 1]
-        seg_rows = rows_sc[start:end]
-        # We can’t call np.unique in nopython, so:
-        seg_rows_sorted = np.sort(seg_rows.copy())
-        uniq = 1
-        last = seg_rows_sorted[0]
-        for idx in range(1, seg_rows_sorted.size):
-            if seg_rows_sorted[idx] != last:
-                uniq += 1
-                last = seg_rows_sorted[idx]
-        indptr[j + 1] = uniq
-
-    _exclusive_scan(indptr)
-    nnz_final = indptr[-1]
-    indices = np.empty(nnz_final, np.int32)
-    data = np.empty(nnz_final, np.complex128)
-
-    # second pass: actually write sorted, merged entries
-    for j in range(nbus):
-        start_s, end_s = scratch_ptr[j], scratch_ptr[j + 1]
-        if start_s == end_s:
-            continue
-        rows = rows_sc[start_s:end_s]
-        vals = data_sc[start_s:end_s]
-
-        order = np.argsort(rows)
-        rows = rows[order]
-        vals = vals[order]
-
-        w = indptr[j]  # write cursor into final arrays
-        last_r = rows[0]
-        acc = vals[0]
-        for idx in range(1, rows.size):
-            r = rows[idx]
-            v = vals[idx]
-            if r == last_r:
-                acc += v
-            else:
-                indices[w] = last_r
-                data[w] = acc
-                w += 1
-                last_r, acc = r, v
-        # flush last
-        indices[w] = last_r
-        data[w] = acc
-
-    return data, indices, indptr
-
-
 # ----------------------------------------------------------------------
 # user-facing wrapper
 # ----------------------------------------------------------------------
@@ -563,6 +477,8 @@ def compute_admittances_fast(nbus,
     :param Yshunt_bus:
     :param F:
     :param T:
+    :param Cf: Cf to pass along
+    :param Ct: Ct to pass along
     :return: Yf, Yt, Ybus
     """
 
