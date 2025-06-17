@@ -5,6 +5,7 @@
 
 
 import numpy as np
+import numba as nb
 import scipy.sparse as sp
 from typing import Union, Tuple, List
 from GridCalEngine.enumerations import WindingsConnection
@@ -60,76 +61,65 @@ class AdmittanceMatrices:
 
         self.Yshunt_bus = Yshunt_bus
 
-    def modify_taps(self, m: Vec, m2: Vec, tau: Vec, tau2: Vec,
-                    idx: Union[IntVec, None] = None) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
+    def modify_taps_All(self,
+                        m: Vec, m2: Vec,
+                        tau: Vec, tau2: Vec) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
         """
         Compute the new admittance matrix given the tap variation
-        :param m: previous tap module
-        :param m2: new tap module
-        :param tau: previous tap angle
-        :param tau2: new tap angle
-        :param idx: indices that apply, if none assumes that m and m2 length math yff etc...
+        :param m: previous tap module (nbr)
+        :param m2: new tap module (nbr)
+        :param tau: previous tap angle (nbr)
+        :param tau2: new tap angle (nbr)
         :return: Ybus, Yf, Yt
         """
 
-        if idx is None:
-            # update all primitives
-            self.yff = (self.yff * (m * m) / (m2 * m2))
-            self.yft = self.yft * (m * np.exp(-1.0j * tau)) / (m2 * np.exp(-1.0j * tau2))
-            self.ytf = self.ytf * (m * np.exp(1.0j * tau)) / (m2 * np.exp(1.0j * tau2))
-            self.ytt = self.ytt
-        else:
-            # add arrays must have the same size as idx
-            lidx = len(idx)
-            assert len(m) == lidx
-            assert len(m2) == lidx
-            assert len(tau) == lidx
-            assert len(tau2) == lidx
-
-            # update primitives signaled by idx
-            self.yff[idx] = (self.yff[idx] * (m * m) / (m2 * m2))
-            self.yft[idx] = self.yft[idx] * (m * np.exp(-1.0j * tau)) / (m2 * np.exp(-1.0j * tau2))
-            self.ytf[idx] = self.ytf[idx] * (m * np.exp(1.0j * tau)) / (m2 * np.exp(1.0j * tau2))
-            self.ytt[idx] = self.ytt[idx]
+        # update all primitives
+        self.yff = (self.yff * (m * m) / (m2 * m2))
+        self.yft = self.yft * (m * np.exp(-1.0j * tau)) / (m2 * np.exp(-1.0j * tau2))
+        self.ytf = self.ytf * (m * np.exp(1.0j * tau)) / (m2 * np.exp(1.0j * tau2))
+        self.ytt = self.ytt
 
         # update the matrices
-        self.Yf = sp.diags(self.yff) * self.Cf + sp.diags(self.yft) * self.Ct
-        self.Yt = sp.diags(self.ytf) * self.Cf + sp.diags(self.ytt) * self.Ct
-        self.Ybus = self.Cf.T * self.Yf + self.Ct.T * self.Yt + sp.diags(self.Yshunt_bus)
+        self.Yf = (sp.diags(self.yff) * self.Cf + sp.diags(self.yft) * self.Ct).tocsc()
+        self.Yt = (sp.diags(self.ytf) * self.Cf + sp.diags(self.ytt) * self.Ct).tocsc()
+        self.Ybus = (self.Cf.T * self.Yf + self.Ct.T * self.Yt + sp.diags(self.Yshunt_bus)).tocsc()
 
         return self.Ybus, self.Yf, self.Yt
 
-    def modify_taps2(self,
-                     m: Vec, m2: Vec, m_idx: IntVec,
-                     tau: Vec, tau2: Vec, tau_idx: IntVec) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
+    def modify_taps(self,
+                    m_prev: Vec, m_new: Vec,
+                    tau_prev: Vec, tau_new: Vec,
+                    idx: IntVec) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
         """
         Compute the new admittance matrix given the tap variation
-        :param m: previous tap module (matching m_idx)
-        :param m2: new tap module (matching m_idx)
-        :param m_idx: indices where m changed
-        :param tau: previous tap angle (matching tau_idx)
-        :param tau2: new tap angle (matching tau_idx)
-        :param tau_idx: indices where tau changed
+        :param m_prev: previous tap module (length of idx)
+        :param m_new: new tap module (length of idx)
+        :param tau_prev: previous tap angle (length of idx)
+        :param tau_new: new tap angle (length of idx)
+        :param idx: branch indices that modify either m or tau. 
+                    There has to be a single indices array because it is 
+                    very hard to maintain indices that apply only to m, 
+                    indices that apply only to tau and indices that apply to both
         :return: Ybus, Yf, Yt
         """
 
-        if len(m_idx) > 0:
-            self.yff[m_idx] *= (m * m) / (m2 * m2)
-            self.yft[m_idx] *= m / m2
-            self.ytf[m_idx] *= m / m2
-            # self.ytt[m_idx] = self.ytt[m_idx]
+        # add arrays must have the same size as idx
+        lidx = len(idx)
+        assert len(m_prev) == lidx
+        assert len(m_new) == lidx
+        assert len(tau_prev) == lidx
+        assert len(tau_new) == lidx
 
-        if len(tau_idx) > 0:
-            # self.yff[tau_idx] =
-            self.yft[tau_idx] *= np.exp(-1.0j * (tau / tau2))
-            self.ytf[tau_idx] *= np.exp(1.0j * (tau / tau2))
-            # self.ytt[tau_idx] =
+        # update primitives signaled by idx
+        self.yff[idx] = (self.yff[idx] * (m_prev * m_prev) / (m_new * m_new))
+        self.yft[idx] = self.yft[idx] * (m_prev * np.exp(-1.0j * tau_prev)) / (m_new * np.exp(-1.0j * tau_new))
+        self.ytf[idx] = self.ytf[idx] * (m_prev * np.exp(1.0j * tau_prev)) / (m_new * np.exp(1.0j * tau_new))
+        self.ytt[idx] = self.ytt[idx]
 
         # update the matrices
-        if len(m_idx) > 0 or len(tau_idx) > 0:
-            self.Yf = sp.diags(self.yff) * self.Cf + sp.diags(self.yft) * self.Ct
-            self.Yt = sp.diags(self.ytf) * self.Cf + sp.diags(self.ytt) * self.Ct
-            self.Ybus = (self.Cf.T * self.Yf + self.Ct.T * self.Yt + sp.diags(self.Yshunt_bus)).tocsc()
+        self.Yf = (sp.diags(self.yff) * self.Cf + sp.diags(self.yft) * self.Ct).tocsc()
+        self.Yt = (sp.diags(self.ytf) * self.Cf + sp.diags(self.ytt) * self.Ct).tocsc()
+        self.Ybus = (self.Cf.T * self.Yf + self.Ct.T * self.Yt + sp.diags(self.Yshunt_bus)).tocsc()
 
         return self.Ybus, self.Yf, self.Yt
 
@@ -147,6 +137,18 @@ class AdmittanceMatrices:
                                   ytf=self.ytf.copy(),
                                   ytt=self.ytt.copy(),
                                   Yshunt_bus=self.Yshunt_bus.copy())
+
+    def __eq__(self, other: "AdmittanceMatrices"):
+        ok = True
+        ok = ok and np.isclose(self.yff, other.yff).all()
+        ok = ok and np.isclose(self.yft, other.yft).all()
+        ok = ok and np.isclose(self.ytf, other.ytf).all()
+        ok = ok and np.isclose(self.ytt, other.ytt).all()
+        ok = ok and np.isclose(self.Ybus.toarray(), other.Ybus.toarray()).all()
+        ok = ok and np.isclose(self.Yf.toarray(), other.Yf.toarray()).all()
+        ok = ok and np.isclose(self.Yt.toarray(), other.Yt.toarray()).all()
+        return ok
+
 
 
 def compute_admittances(R: Vec,
@@ -254,225 +256,199 @@ def compute_admittances(R: Vec,
                               yff, yft, ytf, ytt, Yshunt_bus)
 
 
-def compute_passive_admittances(R: Vec,
-                                X: Vec,
-                                G: Vec,
-                                B: Vec,
-                                vtap_f: Vec,
-                                vtap_t: Vec,
-                                Cf: sp.csc_matrix,
-                                Ct: sp.csc_matrix,
-                                Yshunt_bus: CxVec,
-                                conn: Union[List[WindingsConnection], ObjVec],
-                                seq: int,
-                                add_windings_phase: bool = False) -> AdmittanceMatrices:
+# ----------------------------------------------------------------------
+# helper: exclusive prefix-sum (in-place, returns total)
+# ----------------------------------------------------------------------
+@nb.njit(cache=True, inline="always")
+def _scan_exclusive(arr):
+    s = 0
+    for i in range(arr.size):
+        tmp = arr[i]
+        arr[i] = s
+        s += tmp
+    return s
+
+
+# ----------------------------------------------------------------------
+# branch matrices (identical pattern ⇒ share indices/indptr)
+# ----------------------------------------------------------------------
+@nb.njit(cache=True)
+def _build_Yf_Yt(nbus, nl, fbus, tbus, yff, yft, ytf, ytt):
+
+    # 1. count nnz per column
+    nnz_col = np.zeros(nbus, np.int64)
+    for k in range(nl):
+        nnz_col[fbus[k]] += 1
+        nnz_col[tbus[k]] += 1
+
+    # 2. build indptr (length nb+1!)
+    indptr = np.empty(nbus + 1, np.int64)
+    indptr[0] = 0
+    for j in range(nbus):
+        indptr[j + 1] = indptr[j] + nnz_col[j]
+    nnz = indptr[-1]
+
+    # 3. allocate arrays
+    indices = np.empty(nnz, np.int32)
+    data_F = np.empty(nnz, np.complex128)
+    data_T = np.empty(nnz, np.complex128)
+
+    # 4. cursors that advance inside each column
+    head = indptr[:-1].copy()  # length nb, one cursor per column
+
+    for k in range(nl):
+        i = fbus[k]
+        j = tbus[k]
+
+        p = head[i]
+        indices[p] = k
+        data_F[p] = yff[k]
+        data_T[p] = ytf[k]
+        head[i] += 1
+
+        p = head[j]
+        indices[p] = k
+        data_F[p] = yft[k]
+        data_T[p] = ytt[k]
+        head[j] += 1
+
+    return data_F, data_T, indices, indptr  # <- length nb+1
+
+
+# ----------------------------------------------------------------------
+# bus admittance without dictionaries
+# ----------------------------------------------------------------------
+@nb.njit(cache=True)
+def _build_Ybus(nbus, fbus, tbus, yff, yft, ytf, ytt, Ysh):
     """
-    Compute the complete admittance matrices only using passive elements
-
-    :param R: array of branch resistance (p.u.)
-    :param X: array of branch reactance (p.u.)
-    :param G: array of branch conductance (p.u.)
-    :param B: array of branch susceptance (p.u.)
-    :param vtap_f: array of virtual taps at the "from" side
-    :param vtap_t: array of virtual taps at the "to" side
-    :param Cf: Connectivity branch-bus "from" with the branch states computed
-    :param Ct: Connectivity branch-bus "to" with the branch states computed
-    :param Yshunt_bus: array of shunts equivalent power per bus, from the shunt devices (p.u.)
-    :param seq: Sequence [0, 1, 2]
-    :param conn: array of windings connections (numpy array of WindingsConnection)
-    :param add_windings_phase: Add the phases of the transformer windings (for short circuits mainly)
-    :return: Admittance instance
+    Return (data, indices, indptr) for the bus admittance matrix in CSC
+    — no dictionaries, no SciPy builders.
     """
+    nbranch = fbus.size
+    raw_nnz = 4 * nbranch + nbus          # i-i, i-j, j-i, j-j + shunts
 
-    # form the admittance matrices
-    ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
-    bc2 = (G + 1j * B) / 2.0  # shunt admittance
+    rows_raw = np.empty(raw_nnz, np.int32)
+    cols_raw = np.empty(raw_nnz, np.int32)
+    data_raw = np.empty(raw_nnz, np.complex128)
 
-    # compose the primitives
-    if add_windings_phase:
-        r30_deg = np.exp(1.0j * np.pi / 6.0)
+    p = 0
+    for k in range(nbranch):
+        i = fbus[k]
+        j = tbus[k]
 
-        if seq == 0:  # zero sequence
-            # add always the shunt term, the series depends on the connection
-            # one ys vector for the from side, another for the to side, and the shared one
-            ysf = np.zeros(len(ys), dtype=complex)
-            yst = np.zeros(len(ys), dtype=complex)
-            ysft = np.zeros(len(ys), dtype=complex)
+        # self admittances
+        rows_raw[p] = i; cols_raw[p] = i; data_raw[p] = yff[k]; p += 1
+        rows_raw[p] = j; cols_raw[p] = j; data_raw[p] = ytt[k]; p += 1
 
-            for i, con in enumerate(conn):
-                if con == WindingsConnection.GG:
-                    ysf[i] = ys[i]
-                    yst[i] = ys[i]
-                    ysft[i] = ys[i]
-                elif con == WindingsConnection.GD:
-                    ysf[i] = ys[i]
+        # mutuals
+        rows_raw[p] = i; cols_raw[p] = j; data_raw[p] = yft[k]; p += 1
+        rows_raw[p] = j; cols_raw[p] = i; data_raw[p] = ytf[k]; p += 1
 
-            yff = (ysf + bc2) / (vtap_f * vtap_f)
-            yft = -ysft / (vtap_f * vtap_t)
-            ytf = -ysft / (vtap_t * vtap_f)
-            ytt = (yst + bc2) / (vtap_t * vtap_t)
+    # shunts
+    for b in range(nbus):
+        rows_raw[p] = b
+        cols_raw[p] = b
+        data_raw[p] = Ysh[b]
+        p += 1
 
-        elif seq == 2:  # negative sequence
-            # only need to include the phase shift of +-30 degrees
-            factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1
-                                   for con in conn])
+    # ---------- sort (col,row) ---------------------------------------
+    key    = cols_raw.astype(np.int64) * nbus + rows_raw
+    order  = np.argsort(key)
 
-            yff = (ys + bc2) / (vtap_f * vtap_f)
-            yft = -ys / (vtap_f * vtap_t) * factor_psh
-            ytf = -ys / (vtap_t * vtap_f) * np.conj(factor_psh)
-            ytt = (ys + bc2) / (vtap_t * vtap_t)
+    rows_s = rows_raw[order]
+    cols_s = cols_raw[order]
+    data_s = data_raw[order]
 
-        elif seq == 1:  # positive sequence
+    # ---------- merge duplicates & count per column ------------------
+    data    = np.empty(raw_nnz, np.complex128)
+    indices = np.empty(raw_nnz, np.int32)
+    indptr  = np.zeros(nbus + 1, np.int64)      # counts per column
 
-            # only need to include the phase shift of +-30 degrees
-            factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1.0
-                                   for con in conn])
+    last_col = -1
+    last_row = -1
+    w        = 0                                # write cursor
 
-            yff = (ys + bc2) / (vtap_f * vtap_f)
-            yft = -ys / (vtap_f * vtap_t) * factor_psh
-            ytf = -ys / (vtap_t * vtap_f) * np.conj(factor_psh)
-            ytt = (ys + bc2) / (vtap_t * vtap_t)
-        else:
-            raise Exception('Unsupported sequence when computing the admittance matrix sequence={}'.format(seq))
+    for idx in range(raw_nnz):
+        r = rows_s[idx]
+        c = cols_s[idx]
+        v = data_s[idx]
 
-    else:  # original
-        yff = (ys + bc2) / (vtap_f * vtap_f)
-        yft = -ys / (vtap_f * vtap_t)
-        ytf = -ys / (vtap_t * vtap_f)
-        ytt = (ys + bc2) / (vtap_t * vtap_t)
+        if c != last_col:                       # new column
+            last_col = c
+            last_row = -1
 
-    # compose the matrices
-    Yf = sp.diags(yff) * Cf + sp.diags(yft) * Ct
-    Yt = sp.diags(ytf) * Cf + sp.diags(ytt) * Ct
-    Ybus = Cf.T * Yf + Ct.T * Yt + sp.diags(Yshunt_bus)
+        if r == last_row:                       # same (c,r) → accumulate
+            data[w-1] += v
+        else:                                   # new entry
+            last_row       = r
+            data[w]        = v
+            indices[w]     = r
+            indptr[c]     += 1                  # <-- FIX: count in indptr[c]
+            w += 1
 
-    return AdmittanceMatrices(Ybus, Yf, Yt, Cf, Ct, yff, yft, ytf, ytt, Yshunt_bus)
+    # ---------- convert counts → pointers ----------------------------
+    _scan_exclusive(indptr)                     # in-place prefix sum
+    indptr[-1] = w                              # set final nnz pointer
+
+    data    = data[:w]
+    indices = indices[:w]
+
+    return data, indices, indptr
 
 
-def compute_tap_control_admittances_injectins(
-        tap_module: Vec,
-        tap_angle: Vec,
-        Cf: sp.csc_matrix,
-        Ct: sp.csc_matrix,
-        seq: int,
-        conn: Union[List[WindingsConnection], ObjVec],
-        add_windings_phase: bool = False) -> Tuple[CxVec, CxVec, CxVec, CxVec]:
+# ----------------------------------------------------------------------
+# user-facing wrapper
+# ----------------------------------------------------------------------
+def compute_admittances_fast(nbus,
+                             R: Vec,
+                             X: Vec,
+                             G: Vec,
+                             B: Vec,
+                             tap_module: Vec,
+                             vtap_f: Vec,
+                             vtap_t: Vec,
+                             tap_angle: Vec,
+                             Yshunt_bus: CxVec,
+                             F: IntVec,
+                             T: IntVec,
+                             Cf, Ct):
     """
-    Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)
-
-    :param tap_module: array of tap modules (for all Branches, regardless of their type)
-    :param tap_angle: array of tap angles (for all Branches, regardless of their type)
-    :param Cf: Connectivity branch-bus "from" with the branch states computed
-    :param Ct: Connectivity branch-bus "to" with the branch states computed
-    :param seq: Sequence [0, 1, 2]
-    :param conn: array of windings connections (numpy array of WindingsConnection)
-    :param add_windings_phase: Add the phases of the transformer windings (for short circuits mainly)
-    :return: Admittance instance
-    """
-
-    # compose the primitives
-    if add_windings_phase:
-        r30_deg = np.exp(1.0j * np.pi / 6.0)
-
-        if seq == 0:  # zero sequence
-
-            Yff = 1.0 / (tap_module * tap_module)
-            Yft = -1.0 / (tap_module * np.exp(-1.0j * tap_angle))
-            Ytf = -1.0 / (tap_module * np.exp(+1.0j * tap_angle))
-            Ytt = np.zeros_like(tap_module)
-
-        elif seq == 2:  # negative sequence
-            # only need to include the phase shift of +-30 degrees
-            factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1
-                                   for con in conn])
-
-            Yff = 1.0 / (tap_module * tap_module)
-            Yft = -1.0 / (tap_module * np.exp(+1.0j * tap_angle)) * factor_psh
-            Ytf = -1.0 / (tap_module * np.exp(-1.0j * tap_angle)) * np.conj(factor_psh)
-            Ytt = np.zeros_like(tap_module)
-
-        elif seq == 1:  # positive sequence
-
-            # only need to include the phase shift of +-30 degrees
-            factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1.0
-                                   for con in conn])
-
-            Yff = 1.0 / (tap_module * tap_module)
-            Yft = -1.0 / (tap_module * np.exp(-1.0j * tap_angle)) * factor_psh
-            Ytf = -1.0 / (tap_module * np.exp(1.0j * tap_angle)) * np.conj(factor_psh)
-            Ytt = np.zeros_like(tap_module)
-        else:
-            raise Exception('Unsupported sequence when computing the admittance matrix sequence={}'.format(seq))
-
-    else:  # original
-        Yff = 1.0 / (tap_module * tap_module)
-        Yft = -1.0 / (tap_module * np.exp(-1.0j * tap_angle))
-        Ytf = -1.0 / (tap_module * np.exp(1.0j * tap_angle))
-        Ytt = np.zeros_like(tap_module)
-
-    # Yf_bus = Cf.T @ Yff + Ct.T @ Yft
-    # Yt_bus = Cf.T @ Ytf
-
-    return Yff, Yft, Ytf, Ytt
-
-
-def compile_y_acdc(Cf: sp.csc_matrix,
-                   Ct: sp.csc_matrix,
-                   C_bus_shunt: sp.csc_matrix,
-                   shunt_admittance: CxVec,
-                   shunt_active: IntVec,
-                   ys: CxVec,
-                   B: Vec,
-                   Sbase: float,
-                   tap_module: Vec,
-                   tap_angle: Vec,
-                   Beq: Vec,
-                   Gsw: Vec,
-                   virtual_tap_from: Vec,
-                   virtual_tap_to: Vec) -> Tuple[
-    sp.csc_matrix, sp.csc_matrix, sp.csc_matrix, CxVec, CxVec, CxVec, CxVec, CxVec]:
-    """
-    Compile the admittance matrices using the variable elements
-    :param Cf: Connectivity branch-bus "from" with the branch states computed
-    :param Ct: Connectivity branch-bus "to" with the branch states computed
-    :param C_bus_shunt:
-    :param shunt_admittance:
-    :param shunt_active:
-    :param ys: array of branch series admittances
-    :param B: array of branch susceptances
-    :param Sbase: base power (i.e. 100 MVA)
-    :param tap_module: array of tap modules (for all Branches, regardless of their type)
-    :param tap_angle: array of tap angles (for all Branches, regardless of their type)
-    :param Beq: Array of equivalent susceptance
-    :param Gsw: Array of branch (converter) losses
-    :param virtual_tap_from: array of virtual taps at the "from" side
-    :param virtual_tap_to: array of virtual taps at the "to" side
-    :return: Ybus, Yf, Yt, tap
+    Hardcore build of admittance matrices
+    :param nbus:
+    :param R:
+    :param X:
+    :param G:
+    :param B:
+    :param tap_module:
+    :param vtap_f:
+    :param vtap_t:
+    :param tap_angle:
+    :param Yshunt_bus:
+    :param F:
+    :param T:
+    :return: Yf, Yt, Ybus
     """
 
-    # SHUNT --------------------------------------------------------------------------------------------------------
-    Yshunt_from_devices = C_bus_shunt * (shunt_admittance * shunt_active / Sbase)
-    yshunt_f = Cf * Yshunt_from_devices
-    yshunt_t = Ct * Yshunt_from_devices
+    ys = 1.0 / (R + 1.0j * (X + 1e-20))  # series admittance
+    ysh_2 = (G + 1j * B) / 2.0  # shunt admittance
+    yff = (ys + ysh_2) / (tap_module * tap_module * vtap_f * vtap_f)
+    yft = -ys / (tap_module * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+    ytf = -ys / (tap_module * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
+    ytt = (ys + ysh_2) / (vtap_t * vtap_t)
 
-    # form the admittance matrices ---------------------------------------------------------------------------------
-    bc2 = 1j * B / 2  # shunt conductance
-    # mp = circuit.k * m  # k is already filled with the appropriate value for each type of branch
+    # ---------- branch matrices --------------------------------------
+    nl = len(F)
+    data_F, data_T, idx_FT, ptr_FT = _build_Yf_Yt(nbus, nl, F, T, yff, yft, ytf, ytt)
 
-    tap = tap_module * np.exp(1.0j * tap_angle)
+    Yf = sp.csc_matrix((data_F, idx_FT, ptr_FT), shape=(nl, nbus))
+    Yt = sp.csc_matrix((data_T, idx_FT, ptr_FT), shape=(nl, nbus))
 
-    # compose the primitives
-    yff = Gsw + (ys + bc2 + 1.0j * Beq + yshunt_f) / (tap_module * tap_module * virtual_tap_from * virtual_tap_from)
-    yft = -ys / (np.conj(tap) * virtual_tap_from * virtual_tap_to)
-    ytf = -ys / (tap * virtual_tap_from * virtual_tap_to)
-    ytt = ys + bc2 + yshunt_t / (virtual_tap_to * virtual_tap_to)
+    # ---------- bus matrix -------------------------------------------
+    data_B, idx_B, ptr_B = _build_Ybus(nbus, F, T, yff, yft, ytf, ytt, Yshunt_bus)
+    Ybus = sp.csc_matrix((data_B, idx_B, ptr_B), shape=(nbus, nbus))
 
-    # compose the matrices
-    Yf = sp.diags(yff) * Cf + sp.diags(yft) * Ct
-    Yt = sp.diags(ytf) * Cf + sp.diags(ytt) * Ct
-    Ybus = sp.csc_matrix(Cf.T * Yf + Ct.T * Yt)
-
-    return Ybus, Yf.tocsc(), Yt.tocsc(), tap, yff, yft, ytf, ytt
+    return AdmittanceMatrices(Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Cf, Ct,
+                              yff, yft, ytf, ytt, Yshunt_bus)
 
 
 class SeriesAdmittanceMatrices:

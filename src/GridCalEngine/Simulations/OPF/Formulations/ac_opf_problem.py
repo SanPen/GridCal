@@ -261,7 +261,6 @@ class NonLinearOptimalPfProblem:
         self.Ctmon = nc.passive_branch_data.monitored_Ct(self.br_mon_idx)
         self.Ctmon_t = self.Ctmon.T
 
-
         self.R = nc.passive_branch_data.R
         self.X = nc.passive_branch_data.X
 
@@ -400,7 +399,7 @@ class NonLinearOptimalPfProblem:
                 np.zeros(self.nsh)
             ]
             self.Qg = np.r_[
-                (self.Qg_max[gen_disp_idx_2] +  self.Qg_min[gen_disp_idx_2]) / (2 * self.Sbase),
+                (self.Qg_max[gen_disp_idx_2] + self.Qg_min[gen_disp_idx_2]) / (2 * self.Sbase),
                 np.zeros(self.nsh)
             ]
             self.Va = np.angle(nc.bus_data.Vbus)
@@ -445,7 +444,6 @@ class NonLinearOptimalPfProblem:
 
         self.Sf2 = np.conj(self.Sf) * self.Sf
         self.St2 = np.conj(self.St) * self.St
-
 
     def analyze_branch_controls(self) -> None:
         """
@@ -504,7 +502,6 @@ class NonLinearOptimalPfProblem:
 
             else:
                 raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
-
 
         # convert lists to integer arrays
         k_pf_tau = np.array(k_pf_tau, dtype=int)
@@ -606,10 +603,10 @@ class NonLinearOptimalPfProblem:
             self.all_tap_m[self.k_m] = self.tap_m
             self.all_tap_tau[self.k_tau] = self.tap_tau
 
-            self.admittances.modify_taps(m=prev_all_tap_m,
-                                         m2=self.all_tap_m,
-                                         tau=prev_all_tap_tau,
-                                         tau2=self.all_tap_tau)
+            self.admittances.modify_taps_all(m=prev_all_tap_m,
+                                             m2=self.all_tap_m,
+                                             tau=prev_all_tap_tau,
+                                             tau2=self.all_tap_tau)
 
         else:
             pass
@@ -1095,7 +1092,7 @@ class NonLinearOptimalPfProblem:
             #     self.Vm)
             Hqmaxv_data = np.power(self.Inom, 2) * self.Vm[self.gen_bus_idx[self.gen_disp_idx]]
             Hqmaxv = csc((- 2 * Hqmaxv_data, (np.arange(self.n_gen_disp), self.gen_bus_idx[self.gen_disp_idx])),
-                               shape=(self.n_gen_disp, self.nbus))
+                         shape=(self.n_gen_disp, self.nbus))
 
             Hqmax = sp.hstack(
                 [lil_matrix((nqct, self.nbus)), Hqmaxv, diags(Hqmaxp), lil_matrix((nqct, self.nsh)), diags(Hqmaxq),
