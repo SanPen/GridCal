@@ -99,6 +99,40 @@ class AdmittanceMatrices:
 
         return self.Ybus, self.Yf, self.Yt
 
+    def modify_taps2(self,
+                     m: Vec, m2: Vec, m_idx: IntVec,
+                     tau: Vec, tau2: Vec, tau_idx: IntVec) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
+        """
+        Compute the new admittance matrix given the tap variation
+        :param m: previous tap module (matching m_idx)
+        :param m2: new tap module (matching m_idx)
+        :param m_idx: indices where m changed
+        :param tau: previous tap angle (matching tau_idx)
+        :param tau2: new tap angle (matching tau_idx)
+        :param tau_idx: indices where tau changed
+        :return: Ybus, Yf, Yt
+        """
+
+        if len(m_idx) > 0:
+            self.yff[m_idx] *= (m * m) / (m2 * m2)
+            self.yft[m_idx] *= m / m2
+            self.ytf[m_idx] *= m / m2
+            # self.ytt[m_idx] = self.ytt[m_idx]
+
+        if len(tau_idx) > 0:
+            # self.yff[tau_idx] =
+            self.yft[tau_idx] *= np.exp(-1.0j * (tau / tau2))
+            self.ytf[tau_idx] *= np.exp(1.0j * (tau / tau2))
+            # self.ytt[tau_idx] =
+
+        # update the matrices
+        if len(m_idx) > 0 or len(tau_idx) > 0:
+            self.Yf = sp.diags(self.yff) * self.Cf + sp.diags(self.yft) * self.Ct
+            self.Yt = sp.diags(self.ytf) * self.Cf + sp.diags(self.ytt) * self.Ct
+            self.Ybus = (self.Cf.T * self.Yf + self.Ct.T * self.Yt + sp.diags(self.Yshunt_bus)).tocsc()
+
+        return self.Ybus, self.Yf, self.Yt
+
     def copy(self) -> "AdmittanceMatrices":
         """
         Get a deep copy

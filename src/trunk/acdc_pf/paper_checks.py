@@ -1010,8 +1010,8 @@ if __name__ == '__main__':
     gridcal_time39bus = run_timing_test(run_time_39bus, iterations=1)
     # print("GridCal - Timing for 96-bus grid case...")
     # gridcal_time96bus = run_timing_test(run_time_96bus, iterations=1)
-    # print("GridCal - Timing for 3120-bus grid case...")
-    # gridcal_time3120bus = run_timing_test(run_time_3kbus, iterations=1)
+    print("GridCal - Timing for 3120-bus grid case...")
+    gridcal_time3120bus = run_timing_test(run_time_3kbus, iterations=1)
     #
     #
     # print("MatACDC - Convergence times for 5 bus system: ", matACDC_convergenceTime5bus)

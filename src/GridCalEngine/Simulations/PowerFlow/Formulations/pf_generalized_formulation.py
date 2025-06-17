@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-
+import time
 from typing import Tuple, List, Dict, Callable
 import numpy as np
 from numba import njit
@@ -1204,7 +1204,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :param update_class_vars: Update the class vars related to the calculation step
         :return: Residual vector
         """
+        tm = [None] * 9
 
+        tm[0] = time.time()
         nhvdc = self.nc.hvdc_data.nelm
 
         a = len(self.i_u_va)
@@ -1240,6 +1242,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         tau_ = x[j:k]
 
         # Controllable branches ----------------------------------------------------------------------------------------
+        tm[1] = time.time()
+
         m2 = self.nc.active_branch_data.tap_module.copy()
         tau2 = self.nc.active_branch_data.tap_angle.copy()
         m2[self.u_cbr_m] = m_
@@ -1262,7 +1266,13 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             add_windings_phase=False
         )
 
+        # adm_ = self.adm.copy()
+        # adm_.modify_taps2(m=self.m, m2=m_, m_idx=self.u_cbr_m,
+        #                   tau=self.tau, tau2=tau_, tau_idx=self.u_cbr_tau)
+
         # Passive branches ---------------------------------------------------------------------------------------------
+        tm[2] = time.time()
+
         V = polar_to_rect(Vm_, Va_)
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm_)
         Scalc_passive = compute_power(adm_.Ybus, V)
@@ -1320,6 +1330,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
 
         # VSC ----------------------------------------------------------------------------------------------------------
+        tm[3] = time.time()
+
         T_vsc = self.nc.vsc_data.T
         It = np.sqrt(Pt_vsc_ * Pt_vsc_ + Qt_vsc_ * Qt_vsc_) / Vm_[T_vsc]
         It2 = It * It
@@ -1329,8 +1341,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         loss_vsc = PLoss_IEC - Pt_vsc_ - Pf_vsc_
         St_vsc = make_complex(Pt_vsc_, Qt_vsc_)
+        Scalc_vsc = Pf_vsc_ @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
 
         # HVDC ---------------------------------------------------------------------------------------------------------
+        tm[4] = time.time()
+
         Vmf_hvdc = Vm_[self.nc.hvdc_data.F]
         zbase = self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase
         Ploss_hvdc = self.nc.hvdc_data.r / zbase * np.power(Pf_hvdc_ / Vmf_hvdc, 2.0)
@@ -1345,24 +1360,30 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         Sf_hvdc = make_complex(Pf_hvdc_, Qf_hvdc_)
         St_hvdc = make_complex(Pt_hvdc_, Qt_hvdc_)
+        Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
 
         # total nodal power --------------------------------------------------------------------------------------------
-        Scalc_active = calc_flows_active_branch_per_bus(
-            nbus=self.nc.bus_data.nbus,
-            F_hvdc=self.nc.hvdc_data.F,
-            T_hvdc=self.nc.hvdc_data.T,
-            Sf_hvdc=Sf_hvdc,
-            St_hvdc=St_hvdc,
-            F_vsc=self.nc.vsc_data.F,
-            T_vsc=self.nc.vsc_data.T,
-            Pf_vsc=Pf_vsc_,
-            St_vsc=St_vsc)
+        tm[5] = time.time()
 
-        Scalc_ = Scalc_active + Scalc_passive
+        # Scalc_active = calc_flows_active_branch_per_bus(
+        #     nbus=self.nc.bus_data.nbus,
+        #     F_hvdc=self.nc.hvdc_data.F,
+        #     T_hvdc=self.nc.hvdc_data.T,
+        #     Sf_hvdc=Sf_hvdc,
+        #     St_hvdc=St_hvdc,
+        #     F_vsc=self.nc.vsc_data.F,
+        #     T_vsc=self.nc.vsc_data.T,
+        #     Pf_vsc=Pf_vsc_,
+        #     St_vsc=St_vsc)
+        # Scalc_ = Scalc_active + Scalc_passive
+
+        Scalc_ = Scalc_hvdc + Scalc_vsc + Scalc_passive
 
         dS = Scalc_ - Sbus
 
         # compose the residuals vector ---------------------------------------------------------------------------------
+        tm[6] = time.time()
+
         f_ = np.r_[
             dS[self.i_k_p].real,
             dS[self.i_k_q].imag,
@@ -1375,6 +1396,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Qt_cbr - self.cbr_qt_set
         ]
 
+        tm[7] = time.time()
         if update_class_vars:
             self._Va = Va_
             self._Vm = Vm_
@@ -1390,6 +1412,16 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             self.Scalc = Scalc_
             self.adm = adm_
             self._f = f_
+
+        tm[8] = time.time()
+
+        # print("\tInit", tm[1] - tm[0])
+        # print("\tControllable branches", tm[2] - tm[1])
+        # print("\tPassive branches", tm[3] - tm[2])
+        # print("\tVSC", tm[4] - tm[3])
+        # print("\tHVDC", tm[5] - tm[4])
+        # print("\ttotal nodal power", tm[6] - tm[5])
+        # print("\tcompose the residuals vector", tm[7] - tm[6])
 
         return f_
 
