@@ -12,8 +12,6 @@ from GridCalEngine.enumerations import WindingsConnection
 from GridCalEngine.basic_structures import ObjVec, Vec, CxVec, IntVec
 
 
-
-
 def csc_equal(A: sp.csc_matrix,
               B: sp.csc_matrix,
               tol: float = 0.0) -> bool:
@@ -41,15 +39,131 @@ def csc_equal(A: sp.csc_matrix,
         return False
 
     # 2. canonicalise index ordering
-    A = A.copy();  A.sort_indices()
-    B = B.copy();  B.sort_indices()
+    A = A.copy();
+    A.sort_indices()
+    B = B.copy();
+    B.sort_indices()
 
     # 3. exact or approximate test
     if tol == 0.0:
-        return (A != B).nnz == 0                      # :contentReference[oaicite:0]{index=0}
+        return (A != B).nnz == 0  # :contentReference[oaicite:0]{index=0}
     else:
-        return (abs(A - B) > tol).nnz == 0            # :contentReference[oaicite:1]{index=1}
+        return (abs(A - B) > tol).nnz == 0  # :contentReference[oaicite:1]{index=1}
 
+
+@nb.njit(cache=True)
+def _prepare_branch_maps(nbus: int, fbus: IntVec, tbus: IntVec,
+                         Yf_indices: IntVec, Yf_indptr: IntVec,
+                         Ybus_indices: IntVec, Ybus_indptr: IntVec):
+    """
+    Returns:
+        pos_yff, pos_yft, pos_ytf, pos_ytt   (nbranch,) int32
+        pos_b_ii, pos_b_ij, pos_b_ji, pos_b_jj  (nbranch,) int32
+    Preconditions:
+        * Yf / Yt were built with the 'row == branch index' pattern.
+        * Yf and Yt share the same indices / indptr (as produced earlier).
+        * Ybus contains exactly one entry per (row,col) pair.
+    """
+
+    nbranch = fbus.size
+
+    pos_yff = np.empty(nbranch, np.int32)
+    pos_yft = np.empty(nbranch, np.int32)
+    pos_ytf = np.empty(nbranch, np.int32)
+    pos_ytt = np.empty(nbranch, np.int32)
+
+    # ------- locate branch rows in Yf / Yt --------------------------
+    for col in range(nbus):
+        start = Yf_indptr[col]
+        end = Yf_indptr[col + 1]
+        for p in range(start, end):
+            br = Yf_indices[p]  # row == branch
+            if col == fbus[br]:
+                pos_yff[br] = p  # Yf  (k,fbus)
+                pos_ytf[br] = p  # Yt  (k,fbus)
+            else:  # must be to-bus
+                pos_yft[br] = p  # Yf  (k,tbus)
+                pos_ytt[br] = p  # Yt  (k,tbus)
+
+    # ------- build (row,col) → position map for Ybus ---------------
+    # key = col*nbus + row  (fits in int64 for any realistic grid)
+    nnz_bus = Ybus_indices.size
+    pos_bus = {}
+    for col in range(nbus):
+        start = Ybus_indptr[col]
+        end = Ybus_indptr[col + 1]
+        for p in range(start, end):
+            row = Ybus_indices[p]
+            pos_bus[col * nbus + row] = p
+
+    pos_b_ii = np.empty(nbranch, np.int32)
+    pos_b_ij = np.empty(nbranch, np.int32)
+    pos_b_ji = np.empty(nbranch, np.int32)
+    pos_b_jj = np.empty(nbranch, np.int32)
+
+    for k in range(nbranch):
+        i = fbus[k]
+        j = tbus[k]
+        pos_b_ii[k] = pos_bus[i * nbus + i]  # self @ from-bus
+        pos_b_jj[k] = pos_bus[j * nbus + j]  # self @ to-bus
+        pos_b_ij[k] = pos_bus[j * nbus + i]  # mutual j,i  (note: column = j)
+        pos_b_ji[k] = pos_bus[i * nbus + j]  # mutual i,j
+
+    return pos_yff, pos_yft, pos_ytf, pos_ytt, pos_b_ii, pos_b_ij, pos_b_ji, pos_b_jj
+
+
+@nb.njit(cache=True)
+def update_branch_admittances(idx: IntVec,
+                              new_yff: CxVec, new_yft: CxVec, new_ytf: CxVec, new_ytt: CxVec,
+                              Yf_data: CxVec, Yt_data: CxVec, Ybus_data: CxVec,
+                              pos_yff: IntVec, pos_yft: IntVec, pos_ytf: IntVec, pos_ytt: IntVec,
+                              pos_b_ii: IntVec, pos_b_ij: IntVec, pos_b_ji: IntVec, pos_b_jj: IntVec):
+    """
+    Update Yf, Yt, Ybus *in place*.  All arrays are pre-allocated.
+    :param idx: branches you change
+    :param new_yff:
+    :param new_yft:
+    :param new_ytf:
+    :param new_ytt:
+    :param Yf_data:
+    :param Yt_data:
+    :param Ybus_data:
+    :param pos_yff:
+    :param pos_yft:
+    :param pos_ytf:
+    :param pos_ytt:
+    :param pos_b_ii:
+    :param pos_b_ij:
+    :param pos_b_ji:
+    :param pos_b_jj:
+    :return:
+    """
+
+    for n in range(idx.size):
+        k = idx[n]
+
+        # ---- Yf ----------------------------------------------------
+        p_ff = pos_yff[k]
+        p_ft = pos_yft[k]
+        d_ff = new_yff[n] - Yf_data[p_ff]
+        d_ft = new_yft[n] - Yf_data[p_ft]
+        Yf_data[p_ff] = new_yff[n]
+        Yf_data[p_ft] = new_yft[n]
+
+        # ---- Yt ----------------------------------------------------
+        p_tf = pos_ytf[k]
+        p_tt = pos_ytt[k]
+        d_tf = new_ytf[n] - Yt_data[p_tf]
+        d_tt = new_ytt[n] - Yt_data[p_tt]
+        Yt_data[p_tf] = new_ytf[n]
+        Yt_data[p_tt] = new_ytt[n]
+
+        # ---- Ybus (add deltas) ------------------------------------
+        Ybus_data[pos_b_ii[k]] += d_ff
+        Ybus_data[pos_b_jj[k]] += d_tt
+        Ybus_data[pos_b_ji[k]] += d_ff * 0  # placeholder if needed
+        Ybus_data[pos_b_ji[k]] += d_tf
+        Ybus_data[pos_b_ij[k]] += d_ft
 
 
 class AdmittanceMatrices:
@@ -447,9 +561,152 @@ def _build_Ybus(nbus, fbus, tbus, yff, yft, ytf, ytt, Ysh):
     return data, indices, indptr
 
 
-# ----------------------------------------------------------------------
-# user-facing wrapper
-# ----------------------------------------------------------------------
+class AdmittanceMatricesFast:
+    """
+    Class to store admittance matrices
+    """
+
+    def __init__(self,
+                 Ybus: sp.csc_matrix,
+                 Yf: sp.csc_matrix,
+                 Yt: sp.csc_matrix,
+                 F: sp.csc_matrix,
+                 T: sp.csc_matrix,
+                 ys: CxVec,
+                 ysh2: CxVec,
+                 vtap_f: Vec,
+                 vtap_t: Vec,
+                 yff: CxVec,
+                 yft: CxVec,
+                 ytf: CxVec,
+                 ytt: CxVec,
+                 Yshunt_bus: CxVec):
+        """
+        Constructor
+        :param Ybus: Admittance matrix
+        :param Yf: Admittance matrix of the branches with their "from" bus
+        :param Yt: Admittance matrix of the branches with their "to" bus
+        :param Cf: Connectivity matrix of the branches with their "from" bus
+        :param Ct: Connectivity matrix of the branches with their "to" bus
+        :param yff: admittance from-from primitives vector
+        :param yft: admittance from-to primitives vector
+        :param ytf: admittance to-from primitives vector
+        :param ytt: admittance to-to primitives vector
+        :param Yshunt_bus: array of shunt admittances per bus
+        """
+        self.Ybus = Ybus if Ybus.format == 'csc' else Ybus.tocsc()
+
+        self.Yf = Yf if Yf.format == 'csc' else Yf.tocsc()
+
+        self.Yt = Yt if Yt.format == 'csc' else Yt.tocsc()
+
+        self.F = F
+
+        self.T = T
+
+        self.ys = ys  # ys = 1.0 / (R + 1.0j * (X + 1e-20))  # series admittance
+
+        self.ysh2 = ysh2  # ysh_2 = (G + 1j * B) / 2.0  # shunt admittance
+
+        self.vtap_f = vtap_f
+
+        self.vtap_t = vtap_t
+
+        self.yff = yff
+
+        self.yft = yft
+
+        self.ytf = ytf
+
+        self.ytt = ytt
+
+        self.Yshunt_bus = Yshunt_bus
+
+        self.pos_yff = np.zeros(0, dtype=int)
+        self.pos_yft = np.zeros(0, dtype=int)
+        self.pos_ytf = np.zeros(0, dtype=int)
+        self.pos_ytt = np.zeros(0, dtype=int)
+        self.pos_b_ii = np.zeros(0, dtype=int)
+        self.pos_b_ij = np.zeros(0, dtype=int)
+        self.pos_b_ji = np.zeros(0, dtype=int)
+        self.pos_b_jj = np.zeros(0, dtype=int)
+
+    def initialize_update(self):
+        (self.pos_yff,
+         self.pos_yft,
+         self.pos_ytf,
+         self.pos_ytt,
+         self.pos_b_ii,
+         self.pos_b_ij,
+         self.pos_b_ji,
+         self.pos_b_jj) = _prepare_branch_maps(nbus=self.Ybus.shape[0],
+                                               fbus=self.F, tbus=self.T,
+                                               Yf_indices=self.Yf.indices,
+                                               Yf_indptr=self.Yf.indptr,
+                                               Ybus_indices=self.Ybus.indices,
+                                               Ybus_indptr=self.Ybus.indptr)
+
+    def modify_taps_fast(self, idx, tap_module: Vec, tap_angle: Vec) -> None:
+        """
+        Modify in-place Ybus, Yf and Yt
+        :param idx: indices of the branches to modify
+        :param tap_module: tap modules of the positions given by idx
+        :param tap_angle: tap angles of the positions given by idx
+        """
+        mf = self.vtap_f[idx]
+        mt = self.vtap_t[idx]
+        new_yff = (self.ys[idx] + self.ysh2[idx]) / (tap_module * tap_module * mf * mf)
+        new_yft = -self.ys[idx] / (tap_module * np.exp(-1.0j * tap_angle) * mf * mt)
+        new_ytf = -self.ys[idx] / (tap_module * np.exp(1.0j * tap_angle) * mt * mf)
+        new_ytt = (self.ys[idx] + self.ysh2[idx]) / (mt * mt)
+
+        # Update in-place
+        update_branch_admittances(
+            idx=idx,
+            new_yff=new_yff,
+            new_yft=new_yft,
+            new_ytf=new_ytf,
+            new_ytt=new_ytt,
+            Yf_data=self.Yf.data,
+            Yt_data=self.Yt.data,
+            Ybus_data=self.Ybus.data,
+            pos_yff=self.pos_yff,
+            pos_yft=self.pos_yft,
+            pos_ytf=self.pos_ytf,
+            pos_ytt=self.pos_ytt,
+            pos_b_ii=self.pos_b_ii,
+            pos_b_ij=self.pos_b_ij,
+            pos_b_ji=self.pos_b_ji,
+            pos_b_jj=self.pos_b_jj
+        )
+
+    def copy(self) -> "AdmittanceMatricesFast":
+        """
+        Get a deep copy
+        """
+        return AdmittanceMatricesFast(Ybus=self.Ybus.copy(),
+                                      Yf=self.Yf.copy(),
+                                      Yt=self.Yt.copy(),
+                                      F=self.F.copy(),
+                                      T=self.T.copy(),
+                                      ys=self.ys.copy(),
+                                      ysh2=self.ysh2.copy(),
+                                      vtap_f=self.vtap_f.copy(),
+                                      vtap_t=self.vtap_t.copy(),
+                                      yff=self.yff.copy(),
+                                      yft=self.yft.copy(),
+                                      ytf=self.ytf.copy(),
+                                      ytt=self.ytt.copy(),
+                                      Yshunt_bus=self.Yshunt_bus.copy())
+
+    def __eq__(self, other: "AdmittanceMatricesFast"):
+        ok = True
+        ok = ok and csc_equal(self.Ybus, other.Ybus, tol=1e-10)
+        ok = ok and csc_equal(self.Yf, other.Yf, tol=1e-10)
+        ok = ok and csc_equal(self.Yt, other.Yt, tol=1e-10)
+        return ok
+
+
 def compute_admittances_fast(nbus,
                              R: Vec,
                              X: Vec,
@@ -461,22 +718,21 @@ def compute_admittances_fast(nbus,
                              tap_angle: Vec,
                              Yshunt_bus: CxVec,
                              F: IntVec,
-                             T: IntVec,
-                             Cf, Ct):
+                             T: IntVec) -> AdmittanceMatricesFast:
     """
     Hardcore build of admittance matrices
-    :param nbus:
-    :param R:
-    :param X:
-    :param G:
-    :param B:
-    :param tap_module:
-    :param vtap_f:
-    :param vtap_t:
-    :param tap_angle:
-    :param Yshunt_bus:
-    :param F:
-    :param T:
+    :param nbus: number of nodes
+    :param R: array of branch resistance (p.u.)
+    :param X: array of branch reactance (p.u.)
+    :param G: array of branch conductance (p.u.)
+    :param B: array of branch susceptance (p.u.)
+    :param tap_module: array of tap modules (for all Branches, regardless of their type)
+    :param vtap_f: array of virtual taps at the "from" side
+    :param vtap_t: array of virtual taps at the "to" side
+    :param tap_angle: array of tap angles (for all Branches, regardless of their type)
+    :param Yshunt_bus: array of shunts equivalent power per bus, from the shunt devices (p.u.)
+    :param F: Array of branch-from bus indices
+    :param T: Array of branch-to bus indices
     :param Cf: Cf to pass along
     :param Ct: Ct to pass along
     :return: Yf, Yt, Ybus
@@ -500,8 +756,20 @@ def compute_admittances_fast(nbus,
     data_B, idx_B, ptr_B = _build_Ybus(nbus, F, T, yff, yft, ytf, ytt, Yshunt_bus)
     Ybus = sp.csc_matrix((data_B, idx_B, ptr_B), shape=(nbus, nbus))
 
-    return AdmittanceMatrices(Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Cf, Ct,
-                              yff, yft, ytf, ytt, Yshunt_bus)
+    return AdmittanceMatricesFast(Ybus=Ybus.tocsc(),
+                                  Yf=Yf.tocsc(),
+                                  Yt=Yt.tocsc(),
+                                  F=F,
+                                  T=T,
+                                  ys=ys,
+                                  ysh2=ysh_2,
+                                  vtap_f=vtap_f,
+                                  vtap_t=vtap_t,
+                                  yff=yff,
+                                  yft=yft,
+                                  ytf=ytf,
+                                  ytt=ytt,
+                                  Yshunt_bus=Yshunt_bus)
 
 
 class SeriesAdmittanceMatrices:

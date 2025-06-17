@@ -125,15 +125,13 @@ def test_fast_admittance():
                     tap_angle=tau,
                     F=nc.passive_branch_data.F,
                     T=nc.passive_branch_data.T,
-                    Cf=nc.passive_branch_data.Cf,
-                    Ct=nc.passive_branch_data.Ct,
                     Yshunt_bus=Yshunt_bus,
                 )
 
                 t2 = time.time()
 
-                t_old = t1-t0
-                t_new = t2-t1
+                t_old = t1 - t0
+                t_new = t2 - t1
                 print(t_old, t_new)
                 profiling.append((file, t_old, t_new))
 
@@ -142,5 +140,83 @@ def test_fast_admittance():
     df = pd.DataFrame(data=profiling, columns=("name", "normal (s)", "fast (s)"))
     print(df)
 
+
+def test_fast_admittance_update():
+    """
+
+    :return:
+    """
+    path = os.path.join('data', 'grids', "case14.m")
+
+    # run this one to compile the stuff
+    folder = os.path.join("data", "grids", "Matpower")
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            if file.endswith(".m"):
+                print(file, "...", end="")
+
+                path = os.path.join(root, file)
+
+                # load the file
+                grid = FileOpen(path).open()
+
+                # compile the data
+                nc = compile_numerical_circuit_at(grid, apply_temperature=False)
+
+                Yshunt_bus = nc.get_Yshunt_bus_pu()
+                m = nc.active_branch_data.tap_module
+                tau = nc.active_branch_data.tap_angle
+
+                adm0 = compute_admittances_fast(
+                    nbus=nc.bus_data.nbus,
+                    R=nc.passive_branch_data.R,
+                    X=nc.passive_branch_data.X,
+                    G=nc.passive_branch_data.G,
+                    B=nc.passive_branch_data.B,
+                    tap_module=m,
+                    vtap_f=nc.passive_branch_data.virtual_tap_f,
+                    vtap_t=nc.passive_branch_data.virtual_tap_t,
+                    tap_angle=tau,
+                    F=nc.passive_branch_data.F,
+                    T=nc.passive_branch_data.T,
+                    Yshunt_bus=Yshunt_bus,
+                )
+
+                # modify the indices
+                m_idices = np.where(m != 1.0)[0]
+                tau_idices = np.where(tau != 0.0)[0]
+                m2 = m.copy()
+                tau2 = tau.copy()
+                m2[m_idices] *= 0.95
+                tau2[tau_idices] *= 1.15
+                br_idx = np.unique(np.r_[m_idices, tau_idices])
+
+                adm = compute_admittances_fast(
+                    nbus=nc.bus_data.nbus,
+                    R=nc.passive_branch_data.R,
+                    X=nc.passive_branch_data.X,
+                    G=nc.passive_branch_data.G,
+                    B=nc.passive_branch_data.B,
+                    tap_module=m2,
+                    vtap_f=nc.passive_branch_data.virtual_tap_f,
+                    vtap_t=nc.passive_branch_data.virtual_tap_t,
+                    tap_angle=tau2,
+                    F=nc.passive_branch_data.F,
+                    T=nc.passive_branch_data.T,
+                    Yshunt_bus=Yshunt_bus,
+                )
+
+                adm2 = adm0.copy()
+                adm2.initialize_update()
+                adm2.modify_taps_fast(idx=br_idx,
+                                      tap_module=m2[br_idx],
+                                      tap_angle=tau2[br_idx])
+
+                assert adm == adm2
+                print("ok")
+
+
+
+
 if __name__ == '__main__':
-    test_fast_admittance()
+    test_fast_admittance_update()
