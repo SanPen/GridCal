@@ -28,14 +28,14 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Trying to understand IEEE 13-bus test case results">
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Impedance IEEE 13-bus Test Feeder Case.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ReducedImpedance IEEE 13-bus Test Feeder Case.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="IEEE13-bus">
+      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/632_645.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Test_PF_645_646_GridCal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Test_PF_645_646_GridCal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ReducedImpedance IEEE 13-bus Test Feeder Case.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ReducedImpedance IEEE 13-bus Test Feeder Case.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/tensiones_trifasicas.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/tensiones_trifasicas.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -222,6 +222,7 @@
     "Python tests.pytest in tests.executor": "Run",
     "Python tests.test_ntc.py.executor": "Debug",
     "Python.2ph_AB_powerflow.executor": "Debug",
+    "Python.632_645.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
     "Python.Carson_vs_Dubanton.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
@@ -229,6 +230,7 @@
     "Python.IEEE 13-bus Test Feeder Case.executor": "Run",
     "Python.Impedance IEEE 13-bus Test Feeder Case.executor": "Run",
     "Python.LineBuilderDialogue.executor": "Run",
+    "Python.Matrices.executor": "Debug",
     "Python.Only_3ph.executor": "Debug",
     "Python.Panther_Cable.executor": "Run",
     "Python.ReducedImpedance IEEE 13-bus Test Feeder Case.executor": "Run",
@@ -2352,7 +2354,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="752" />
+    <option name="localTasksCounter" value="753" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2398,7 +2400,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="European LV Test Feeder" />
     <MESSAGE value="European LV Test Feeder Power Flow" />
     <MESSAGE value="Some files" />
     <MESSAGE value="Time series comparation." />
@@ -2423,7 +2424,8 @@
     <MESSAGE value="Some changes to compute IEEE 13-bus case" />
     <MESSAGE value="Only 3ph lines and loads in the IEEE 13-bus Test Case" />
     <MESSAGE value="Trying to understand IEEE 13-bus test case results" />
-    <option name="LAST_COMMIT_MESSAGE" value="Trying to understand IEEE 13-bus test case results" />
+    <MESSAGE value="IEEE13-bus" />
+    <option name="LAST_COMMIT_MESSAGE" value="IEEE13-bus" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2758,19 +2760,24 @@
           <option name="timeStamp" value="2635" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
-          <line>120</line>
-          <option name="timeStamp" value="2657" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/trunk/unbalanced_pf/Test_PF_645_646.py</url>
           <line>79</line>
           <option name="timeStamp" value="2659" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/trunk/unbalanced_pf/ReducedImpedance IEEE 13-bus Test Feeder Case.py</url>
-          <line>372</line>
+          <line>377</line>
           <option name="timeStamp" value="2660" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/unbalanced_pf/Matrices.py</url>
+          <line>14</line>
+          <option name="timeStamp" value="2661" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
+          <line>396</line>
+          <option name="timeStamp" value="2662" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

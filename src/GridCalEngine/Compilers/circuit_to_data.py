@@ -400,9 +400,9 @@ def get_load_data(data: LoadData,
                             data.I3_star[3 * ii + 1] = complex(elm.Ir2, elm.Ii2)
                             data.I3_star[3 * ii + 2] = complex(elm.Ir3, elm.Ii3)
 
-                            data.Y3_star[3 * ii + 0] = complex(elm.G1, elm.B1)
-                            data.Y3_star[3 * ii + 1] = complex(elm.G2, elm.B2)
-                            data.Y3_star[3 * ii + 2] = complex(elm.G3, elm.B3)
+                            data.Y3_star[3 * ii + 0] = complex(elm.G1, elm.B1) * 3
+                            data.Y3_star[3 * ii + 1] = complex(elm.G2, elm.B2) * 3
+                            data.Y3_star[3 * ii + 2] = complex(elm.G3, elm.B3) * 3
 
                         elif elm.conn == ShuntConnectionType.Delta:
                             data.S3_delta[3 * ii + 0] = complex(elm.P1, elm.Q1)

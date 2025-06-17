@@ -334,7 +334,7 @@ def expandVoltage3ph(V0: CxVec) -> CxVec:
     # x3[2] = 1.0174 * np.exp(1j * (120*np.pi/180))
     x3[0] = 1.0210 * np.exp(1j * (-2.49*np.pi/180))
     x3[1] = 1.0420 * np.exp(1j * (-121.72*np.pi/180))
-    x3[2] = 1.0174 * np.exp(1j * (117.83*np.pi/180))
+    x3[2] = 1.0174* np.exp(1j * (117.83*np.pi/180))
 
 
     return x3

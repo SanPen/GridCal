@@ -22,8 +22,8 @@ grid.add_generator(bus = bus_632, api_obj = gen)
 bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100*5, ypos=0)
 grid.add_bus(obj=bus_645)
 
-bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-200*5, ypos=0)
-grid.add_bus(obj=bus_646)
+# bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-200*5, ypos=0)
+# grid.add_bus(obj=bus_646)
 
 # bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
 # grid.add_bus(obj=bus_633)
@@ -63,6 +63,11 @@ z_602 = np.array([
     [0.1580 + 1j * 0.4236, 0.7475 + 1j * 1.1983, 0.1535 + 1j * 0.3849],
     [0.1560 + 1j * 0.5017, 0.1535 + 1j * 0.3849, 0.7436 + 1j * 1.2112]
 ], dtype=complex) / 1.60934
+
+# z_603 = np.array([
+#     [1.3294 + 1j * 1.3471, 0.2066 + 1j * 0.4591],
+#     [0.2066 + 1j * 0.4591, 1.3238 + 1j * 1.3569]
+# ], dtype=complex) / 1.60934
 
 z_603 = np.array([
     [1.3294 + 1j * 1.3471, 0.2066 + 1j * 0.4591],
@@ -141,8 +146,8 @@ Loads
 
 load_645 = gce.Load(G1=0.0,
                     B1=0.0,
-                    G2=0.3644 * 3,
-                    B2=0.2679 * 3,
+                    G2=0.170 * 3,
+                    B2=0.0,
                     G3=0.0,
                     B3=0.0)
 load_645.conn = ShuntConnectionType.GroundedStar
@@ -325,11 +330,11 @@ grid.add_line(obj=line_632_645)
 # line_632_633.apply_template(config_602, grid.Sbase, grid.fBase, logger)
 # grid.add_line(obj=line_632_633)
 
-line_645_646 = gce.Line(bus_from=bus_645,
-                        bus_to=bus_646,
-                        length=300 * 0.0003048)
-line_645_646.apply_template(config_603, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_645_646)
+# line_645_646 = gce.Line(bus_from=bus_645,
+#                         bus_to=bus_646,
+#                         length=300 * 0.0003048)
+# line_645_646.apply_template(config_603, grid.Sbase, grid.fBase, logger)
+# grid.add_line(obj=line_645_646)
 
 # line_684_652 = gce.Line(bus_from=bus_684,
 #                         bus_to=bus_652,
@@ -400,7 +405,7 @@ print(np.round(U, 10))
 print()
 print(np.round(angle, 2))
 
-bus_numbers = [632, 645, 646]
+bus_numbers = [632, 645]
 
 # Asegurar que U y angle son arrays NumPy
 U = np.array(U)

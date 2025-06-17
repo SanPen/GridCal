@@ -394,7 +394,7 @@ class OverheadLineType(EditableDevice):
         :param Vnom: Nominal voltage (kV)
         :return: AdmittanceMatrix with series admittance in p.u.
         """
-        Zbase = (Vnom * Vnom) / Sbase
+        Zbase = (Vnom * Vnom) / (Sbase)
         rows, columns = self.z_abc.shape
         adm = AdmittanceMatrix(size=3)
 
@@ -445,7 +445,7 @@ class OverheadLineType(EditableDevice):
         if circuit_idx == 0:
             circuit_idx = 1
 
-        Zbase = (Vnom * Vnom) / Sbase
+        Zbase = (Vnom * Vnom) / (Sbase)
         Ybase = 1 / Zbase
 
         rows, columns = self.y_abc.shape
