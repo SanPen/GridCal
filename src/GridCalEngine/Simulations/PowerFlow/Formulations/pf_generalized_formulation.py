@@ -576,8 +576,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Admittance ---------------------------------------------------------------------------------------------------
 
-        self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
-        self.Yshunt_bus = self.nc.get_Yshunt_bus_pu()  # computed here for later
+        # self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
+        # self.Yshunt_bus = self.nc.get_Yshunt_bus_pu()  # computed here for later
 
         self.adm = compute_admittances_fast(
             nbus=self.nc.bus_data.nbus,
@@ -585,13 +585,13 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             X=self.nc.passive_branch_data.X,
             G=self.nc.passive_branch_data.G,
             B=self.nc.passive_branch_data.B,
-            tap_module=expand(self.nc.nbr, self.m, self.u_cbr_m, 1.0),
+            tap_module=self.nc.active_branch_data.tap_module,
             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-            tap_angle=expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0),
+            tap_angle=self.nc.active_branch_data.tap_angle,
             F=self.nc.passive_branch_data.F,
             T=self.nc.passive_branch_data.T,
-            Yshunt_bus=self.Yshunt_bus,
+            Yshunt_bus=self.nc.get_Yshunt_bus_pu(),
         )
         self.adm.initialize_update()  # allows mega fast matrix updates
 
@@ -1849,7 +1849,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 Pf_hvdc=self.Pf_hvdc,
 
                 # Admittances and Connections
-                Ys=self.Ys,
+                Ys=self.adm.ys,
                 Bc=self.nc.passive_branch_data.B,
 
                 yff_cbr=self.adm.yff,

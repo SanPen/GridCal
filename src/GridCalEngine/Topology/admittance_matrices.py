@@ -24,7 +24,7 @@ def csc_equal(A: sp.csc_matrix,
     A, B : scipy.sparse.csc_matrix
         The matrices to compare.
     tol : float, optional
-        Absolute tolerance.  If 0.0 an exact match is required;
+        Absolute tolerance.  If 0.0 an exact match is required
         otherwise the test is |A-B| > tol  element-wise.
 
     Notes
@@ -39,9 +39,9 @@ def csc_equal(A: sp.csc_matrix,
         return False
 
     # 2. canonicalise index ordering
-    A = A.copy();
+    A = A.copy()
     A.sort_indices()
-    B = B.copy();
+    B = B.copy()
     B.sort_indices()
 
     # 3. exact or approximate test
@@ -678,6 +678,9 @@ class AdmittanceMatricesFast:
         :param tap_module: tap modules of the positions given by idx
         :param tap_angle: tap angles of the positions given by idx
         """
+        if len(self.pos_yff) == 0 and self.yff != 0:
+            self.initialize_update()  # your forgot to initialize...
+
         mf = self.vtap_f[idx]
         mt = self.vtap_t[idx]
         new_yff = (self.ys[idx] + self.ysh2[idx]) / (tap_module * tap_module * mf * mf)
