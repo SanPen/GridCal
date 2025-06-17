@@ -193,9 +193,6 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, 
             S[b2] = -1 * ((V[b2] * Sdelta[bc]) / (V[b2] - V[c2]) - (V[b2] * Sdelta[ab]) / (V[a2] - V[b2]))
             S[c2] = -1 * ((V[c2] * Sdelta[ca]) / (V[c2] - V[a2]) - (V[c2] * Sdelta[bc]) / (V[b2] - V[c2]))
 
-            print('\nSdelta = \n', Sdelta)
-            print('\nSalex = \n', S)
-
         elif a2 > -1 and b2 > -1:
             S[a2] = -1 * V[a2] * Sdelta[ab] / (V[a2] - V[b2])
             S[b2] = -1 * V[b2] * Sdelta[ab] / (V[b2] - V[a2])

@@ -28,17 +28,14 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Only 3ph lines and loads in the IEEE 13-bus Test Case">
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Test_PF_645_646.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Test_PF_645_646_GridCal.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Test_Ysh.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Trying to understand IEEE 13-bus test case results">
+      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Impedance IEEE 13-bus Test Feeder Case.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ReducedImpedance IEEE 13-bus Test Feeder Case.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Only_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Only_3ph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Test_PF_645_646_GridCal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Test_PF_645_646_GridCal.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/tensiones_trifasicas.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/tensiones_trifasicas.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -230,16 +227,19 @@
     "Python.ExecuteGridCal.executor": "Run",
     "Python.GridCalMain.executor": "Run",
     "Python.IEEE 13-bus Test Feeder Case.executor": "Run",
+    "Python.Impedance IEEE 13-bus Test Feeder Case.executor": "Run",
     "Python.LineBuilderDialogue.executor": "Run",
     "Python.Only_3ph.executor": "Debug",
     "Python.Panther_Cable.executor": "Run",
+    "Python.ReducedImpedance IEEE 13-bus Test Feeder Case.executor": "Run",
     "Python.Test_PF_645_646.executor": "Run",
-    "Python.Test_PF_645_646_GridCal.executor": "Run",
+    "Python.Test_PF_645_646_GridCal.executor": "Debug",
     "Python.Test_Ysh.executor": "Debug",
     "Python.Transformers.executor": "Run",
     "Python.Ua_time_series.executor": "Run",
     "Python.bucle.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
+    "Python.circuit_to_data.executor": "Debug",
     "Python.circuit_to_optimods.executor": "Run",
     "Python.compare_to_excel.executor": "Run",
     "Python.demo_code.executor": "Run",
@@ -2352,7 +2352,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="751" />
+    <option name="localTasksCounter" value="752" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2398,7 +2398,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Test Single and Three phase test cases." />
     <MESSAGE value="European LV Test Feeder" />
     <MESSAGE value="European LV Test Feeder Power Flow" />
     <MESSAGE value="Some files" />
@@ -2423,7 +2422,8 @@
     <MESSAGE value="IEEE 13-bus case not saving G, B, Ir and Ii" />
     <MESSAGE value="Some changes to compute IEEE 13-bus case" />
     <MESSAGE value="Only 3ph lines and loads in the IEEE 13-bus Test Case" />
-    <option name="LAST_COMMIT_MESSAGE" value="Only 3ph lines and loads in the IEEE 13-bus Test Case" />
+    <MESSAGE value="Trying to understand IEEE 13-bus test case results" />
+    <option name="LAST_COMMIT_MESSAGE" value="Trying to understand IEEE 13-bus test case results" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2759,22 +2759,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
-          <line>358</line>
-          <option name="timeStamp" value="2651" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
           <line>120</line>
           <option name="timeStamp" value="2657" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/trunk/unbalanced_pf/Test_PF_645_646.py</url>
-          <line>38</line>
+          <line>79</line>
           <option name="timeStamp" value="2659" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/trunk/unbalanced_pf/Test_PF_645_646_GridCal.py</url>
-          <line>41</line>
+          <url>file://$PROJECT_DIR$/src/trunk/unbalanced_pf/ReducedImpedance IEEE 13-bus Test Feeder Case.py</url>
+          <line>372</line>
           <option name="timeStamp" value="2660" />
         </line-breakpoint>
       </breakpoints>

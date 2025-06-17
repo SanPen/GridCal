@@ -130,21 +130,21 @@ y_607 = np.array([
 """
 Loads
 """
-load_634 = gce.Load(P1=0.160,
-                    Q1=0.110,
-                    P2=0.120,
-                    Q2=0.090,
-                    P3=0.120,
-                    Q3=0.090)
+load_634 = gce.Load(G1=0.160,
+                    B1=0.110,
+                    G2=0.120,
+                    B2=0.090,
+                    G3=0.120,
+                    B3=0.090)
 load_634.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_634, api_obj=load_634)
 
-load_645 = gce.Load(P1=0.0,
-                    Q1=0.0,
-                    P2=0.170,
-                    Q2=0.125,
-                    P3=0.0,
-                    Q3=0.0)
+load_645 = gce.Load(G1=0.0,
+                    B1=0.0,
+                    G2=0.170,
+                    B2=0.125,
+                    G3=0.0,
+                    B3=0.0)
 load_645.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_645, api_obj=load_645)
 
@@ -166,57 +166,57 @@ load_652 = gce.Load(G1=0.128,
 load_652.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_652, api_obj=load_652)
 
-load_671 = gce.Load(P1=0.385,
-                    Q1=0.220,
-                    P2=0.385,
-                    Q2=0.220,
-                    P3=0.385,
-                    Q3=0.220)
+load_671 = gce.Load(G1=0.385,
+                    B1=0.220,
+                    G2=0.385,
+                    B2=0.220,
+                    G3=0.385,
+                    B3=0.220)
 load_671.conn = ShuntConnectionType.Delta
 grid.add_load(bus=bus_671, api_obj=load_671)
 
-load_675 = gce.Load(P1=0.485,
-                    Q1=0.190,
-                    P2=0.068,
-                    Q2=0.060,
-                    P3=0.290,
-                    Q3=0.212)
+load_675 = gce.Load(G1=0.485,
+                    B1=0.190,
+                    G2=0.068,
+                    B2=0.060,
+                    G3=0.290,
+                    B3=0.212)
 load_675.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_675, api_obj=load_675)
 
-load_671_692 = gce.Load(Ir1=0.0,
-                        Ii1=0.0,
-                        Ir2=0.0,
-                        Ii2=0.0,
-                        Ir3=0.170,
-                        Ii3=0.151)
+load_671_692 = gce.Load(G1=0.0,
+                        B1=0.0,
+                        G2=0.0,
+                        B2=0.0,
+                        G3=0.170,
+                        B3=0.151)
 load_671_692.conn = ShuntConnectionType.Delta
 grid.add_load(bus=bus_671, api_obj=load_671_692)
 
-load_611 = gce.Load(Ir1=0.0,
-                    Ii1=0.0,
-                    Ir2=0.0,
-                    Ii2=0.0,
-                    Ir3=0.170,
-                    Ii3=0.080)
+load_611 = gce.Load(G1=0.0,
+                    B1=0.0,
+                    G2=0.0,
+                    B2=0.0,
+                    G3=0.170,
+                    B3=0.080)
 load_611.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_611, api_obj=load_611)
 
-load_632_distrib = gce.Load(P1=0.017/2,
-                            Q1=0.010/2,
-                            P2=0.066/2,
-                            Q2=0.038/2,
-                            P3=0.117/2,
-                            Q3=0.068/2)
+load_632_distrib = gce.Load(G1=0.017/2,
+                            B1=0.010/2,
+                            G2=0.066/2,
+                            B2=0.038/2,
+                            G3=0.117/2,
+                            B3=0.068/2)
 load_632_distrib.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_632, api_obj=load_632_distrib)
 
-load_671_distrib = gce.Load(P1=0.017/2,
-                            Q1=0.010/2,
-                            P2=0.066/2,
-                            Q2=0.038/2,
-                            P3=0.117/2,
-                            Q3=0.068/2)
+load_671_distrib = gce.Load(G1=0.017/2,
+                            B1=0.010/2,
+                            G2=0.066/2,
+                            B2=0.038/2,
+                            G3=0.117/2,
+                            B3=0.068/2)
 load_671_distrib.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_671, api_obj=load_671_distrib)
 
