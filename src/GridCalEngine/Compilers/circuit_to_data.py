@@ -68,7 +68,7 @@ def delta2StarCurrent(Iab: complex,
                       Ibc: complex,
                       Ica: complex):
     """
-    Converts delta to scar in currents
+    Converts delta to star in currents
     :param Iab:
     :param Ibc:
     :param Ica:

@@ -22,6 +22,9 @@ grid.add_generator(bus = bus_632, api_obj = gen)
 bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100*5, ypos=0)
 grid.add_bus(obj=bus_645)
 
+bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-200*5, ypos=0)
+grid.add_bus(obj=bus_646)
+
 """
 Impedances [Ohm/km]
 """
@@ -47,6 +50,15 @@ load_645 = gce.Load(G1=0.0,
 load_645.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_645, api_obj=load_645)
 
+load_646 = gce.Load(G1=0.0,
+                    B1=0.0,
+                    G2=0.230,
+                    B2=-0.132,
+                    G3=0.0,
+                    B3=0.0)
+load_646.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus_646, api_obj=load_646)
+
 """
 Line Configurations
 """
@@ -66,6 +78,12 @@ line_632_645 = gce.Line(bus_from=bus_632,
                         length=500 * 0.0003048)
 line_632_645.apply_template(config_603, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_632_645)
+
+line_645_646 = gce.Line(bus_from=bus_645,
+                        bus_to=bus_646,
+                        length=300 * 0.0003048)
+line_645_646.apply_template(config_603, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_645_646)
 
 """
 Save Grid

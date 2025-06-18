@@ -101,7 +101,7 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
         f = nc.shunt_data.bus_idx[k]
         k3 = 3 * k + idx3
         f3 = 3 * f + idx3
-        Ysh_bus[f3] += nc.shunt_data.Y3_star[k3] / nc.Sbase
+        Ysh_bus[f3] += nc.shunt_data.Y3_star[k3] / (nc.Sbase / 3)
 
     for k in range(nc.load_data.nelm):
         f = nc.load_data.bus_idx[k]
@@ -188,34 +188,50 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, 
         # bc2 = bus_lookup[bc]
         # ca2 = bus_lookup[ca]
 
-        if a2 > -1 and b2 > -1 and c2 > -1:
-            S[a2] = -1 * ((V[a2] * Sdelta[ab]) / (V[a2] - V[b2]) - (V[a2] * Sdelta[ca]) / (V[c2] - V[a2]))
-            S[b2] = -1 * ((V[b2] * Sdelta[bc]) / (V[b2] - V[c2]) - (V[b2] * Sdelta[ab]) / (V[a2] - V[b2]))
-            S[c2] = -1 * ((V[c2] * Sdelta[ca]) / (V[c2] - V[a2]) - (V[c2] * Sdelta[bc]) / (V[b2] - V[c2]))
+        ab_connected = (Sdelta[ab] != 0.0 + 0.0j or Ydelta[ab] != 0.0 + 0.0j)
+        bc_connected = (Sdelta[bc] != 0.0 + 0.0j or Ydelta[bc] != 0.0 + 0.0j)
+        ca_connected = (Sdelta[ca] != 0.0 + 0.0j or Ydelta[ca] != 0.0 + 0.0j)
 
-        elif a2 > -1 and b2 > -1:
-            S[a2] = -1 * V[a2] * Sdelta[ab] / (V[a2] - V[b2])
-            S[b2] = -1 * V[b2] * Sdelta[ab] / (V[b2] - V[a2])
+        if ab_connected and bc_connected and ca_connected:
+            if a2 > -1 and b2 > -1 and c2 > -1:
+                S[a2] = -1 * ((V[a2] * Sdelta[ab]) / (V[a2] - V[b2]) - (V[a2] * Sdelta[ca]) / (V[c2] - V[a2]))
+                S[b2] = -1 * ((V[b2] * Sdelta[bc]) / (V[b2] - V[c2]) - (V[b2] * Sdelta[ab]) / (V[a2] - V[b2]))
+                S[c2] = -1 * ((V[c2] * Sdelta[ca]) / (V[c2] - V[a2]) - (V[c2] * Sdelta[bc]) / (V[b2] - V[c2]))
+            else:
+                raise Exception('Incorrect load phasing, non-existing phases for this load')
 
-            # Admittance
-            S[a2] += -1 * V[a2] * np.conj((V[a2] - V[b2]) * Ydelta[ab])
-            S[b2] += -1 * V[b2] * np.conj((V[b2] - V[a2]) * Ydelta[ab])
+        elif ab_connected:
+            if a2 > -1 and b2 > -1:
+                S[a2] = -1 * V[a2] * Sdelta[ab] / (V[a2] - V[b2])
+                S[b2] = -1 * V[b2] * Sdelta[ab] / (V[b2] - V[a2])
 
-        elif b2 > -1 and c2 > -1:
-            S[b2] = -1 * V[b2] * Sdelta[bc] / (V[b2] - V[c2])
-            S[c2] = -1 * V[c2] * Sdelta[bc] / (V[c2] - V[b2])
+                # Admittance
+                S[a2] += -1 * V[a2] * np.conj((V[a2] - V[b2]) * Ydelta[ab] / 3)
+                S[b2] += -1 * V[b2] * np.conj((V[b2] - V[a2]) * Ydelta[ab] / 3)
+            else:
+                raise Exception('Incorrect load phasing, non-existing phases for this load')
 
-            # Admittance
-            S[b2] += -1 * V[b2] * np.conj((V[b2] - V[c2]) * Ydelta[bc])
-            S[c2] += -1 * V[c2] * np.conj((V[c2] - V[b2]) * Ydelta[bc])
+        elif bc_connected:
+            if b2 > -1 and c2 > -1:
+                S[b2] = -1 * V[b2] * Sdelta[bc] / (V[b2] - V[c2])
+                S[c2] = -1 * V[c2] * Sdelta[bc] / (V[c2] - V[b2])
 
-        elif c2 > -1 and a2 > -1:
-            S[c2] = -1 * V[c2] * Sdelta[ca] / (V[c2] - V[a2])
-            S[a2] = -1 * V[a2] * Sdelta[ca] / (V[a2] - V[c2])
+                # Admittance
+                S[b2] += -1 * V[b2] * np.conj((V[b2] - V[c2]) * Ydelta[bc] / 3)
+                S[c2] += -1 * V[c2] * np.conj((V[c2] - V[b2]) * Ydelta[bc] / 3)
+            else:
+                raise Exception('Incorrect load phasing, non-existing phases for this load')
 
-            # Admittance
-            S[c2] += -1 * V[c2] * np.conj((V[c2] - V[a2]) * Ydelta[ca])
-            S[a2] += -1 * V[a2] * np.conj((V[a2] - V[c2]) * Ydelta[ca])
+        elif ca_connected:
+            if c2 > -1 and a2 > -1:
+                S[c2] = -1 * V[c2] * Sdelta[ca] / (V[c2] - V[a2])
+                S[a2] = -1 * V[a2] * Sdelta[ca] / (V[a2] - V[c2])
+
+                # Admittance
+                S[c2] += -1 * V[c2] * np.conj((V[c2] - V[a2]) * Ydelta[ca] / 3)
+                S[a2] += -1 * V[a2] * np.conj((V[a2] - V[c2]) * Ydelta[ca] / 3)
+            else:
+                raise Exception('Incorrect load phasing, non-existing phases for this load')
 
     return S
 
@@ -467,7 +483,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          V=V,
                                          bus_lookup=self.bus_lookup)
 
-        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
+        Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.Vm)
+                + Sdelta2star) / (self.nc.Sbase / 3))
         Scalc = compute_power(self.Ybus, V)
         dS = Scalc - Sbus  # compute the mismatch
         _f = np.r_[
@@ -502,8 +519,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          Ydelta=self.nc.load_data.Y3_delta,
                                          V=V,
                                          bus_lookup=self.bus_lookup)
-        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
-        # Sbus = self.S0
+        Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), Vm)
+                 + Sdelta2star) / (self.nc.Sbase / 3))
         Scalc = compute_power(self.Ybus, V)
         dS = Scalc - Sbus  # compute the mismatch
         _f = np.r_[
@@ -534,8 +551,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          Ydelta=self.nc.load_data.Y3_delta,
                                          V=self.V,
                                          bus_lookup=self.bus_lookup)
-        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
-        # Sbus = self.S0
+        Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.Vm)
+                 + Sdelta2star) / (self.nc.Sbase / 3))
         self.Scalc = compute_power(self.Ybus, self.V)
         dS = self.Scalc - Sbus  # compute the mismatch
         self._f = np.r_[
@@ -611,7 +628,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          Ydelta=self.nc.load_data.Y3_delta,
                                          V=self.V,
                                          bus_lookup=self.bus_lookup)
-        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
+        Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.Vm)
+                 + Sdelta2star) / (self.nc.Sbase / 3))
         self.Scalc = self.V * np.conj(self.Ybus @ self.V - self.I0)
 
         self._f = compute_fx(self.Scalc, Sbus, self.idx_dP, self.idx_dQ)
