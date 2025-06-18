@@ -178,8 +178,8 @@ def get_transfer_power_scaling_per_bus(
     elif transfer_method == AvailableTransferMode.GenerationAndLoad:
         p_ref = gen_per_bus - load_per_bus
         if skip_generation_limits:
-            p_min = np.full(bus_data_t.nbus, -inf_value)
-            p_max = np.full(bus_data_t.nbus, inf_value)
+            p_min = np.full(nbus, -inf_value)
+            p_max = np.full(nbus, inf_value)
         else:
             p_min = gen_data_t.get_pmin_per_bus() / Sbase
             p_max = gen_data_t.get_pmax_per_bus() / Sbase
