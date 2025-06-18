@@ -188,8 +188,8 @@ load_671_692 = gce.Load(Ir1=0.0,
                         Ii1=0.0,
                         Ir2=0.0,
                         Ii2=0.0,
-                        Ir3=0.170,
-                        Ii3=0.151)
+                        Ir3=-0.170/np.sqrt(3),
+                        Ii3=0.151 /np.sqrt(3))
 load_671_692.conn = ShuntConnectionType.Delta
 grid.add_load(bus=bus_671, api_obj=load_671_692)
 
@@ -198,7 +198,7 @@ load_611 = gce.Load(Ir1=0.0,
                     Ir2=0.0,
                     Ii2=0.0,
                     Ir3=0.170,
-                    Ii3=0.080)
+                    Ii3=-0.080)
 load_611.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_611, api_obj=load_611)
 

@@ -68,7 +68,7 @@ def expand(n, arr: Vec, idx: IntVec, default: float) -> Vec:
 
 
 @nb.njit(cache=True, fastmath=True)
-def compute_zip_power(S0: CxVec, I0: CxVec, Y0: CxVec, Vm: Vec) -> CxVec:
+def compute_zip_power(S0: CxVec, I0: CxVec, Y0: CxVec, V: CxVec) -> CxVec:
     """
     Compute the equivalent power injection
     :param S0: Base power (P + jQ)
@@ -77,7 +77,7 @@ def compute_zip_power(S0: CxVec, I0: CxVec, Y0: CxVec, Vm: Vec) -> CxVec:
     :param Vm: voltage module
     :return: complex power injection
     """
-    return S0 + np.conj(I0 + Y0 * Vm) * Vm
+    return S0 + np.conj(I0 + Y0 * V) * V
 
 
 def compute_power(Ybus: csc_matrix, V: CxVec) -> CxVec:
