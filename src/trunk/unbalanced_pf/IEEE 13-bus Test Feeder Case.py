@@ -188,10 +188,10 @@ load_671_692 = gce.Load(Ir1=0.0,
                         Ii1=0.0,
                         Ir2=0.0,
                         Ii2=0.0,
-                        Ir3=-0.170/np.sqrt(3),
-                        Ii3=0.151 /np.sqrt(3))
+                        Ir3=-0.170 /np.sqrt(3),
+                        Ii3=-0.151 /np.sqrt(3))
 load_671_692.conn = ShuntConnectionType.Delta
-grid.add_load(bus=bus_671, api_obj=load_671_692)
+# grid.add_load(bus=bus_671, api_obj=load_671_692)
 
 load_611 = gce.Load(Ir1=0.0,
                     Ii1=0.0,
@@ -234,22 +234,6 @@ cap_611 = gce.Shunt(B1=0.0,
                     B3=0.1)
 cap_611.conn = ShuntConnectionType.GroundedStar
 grid.add_shunt(bus=bus_611, api_obj=cap_611)
-
-"""
-Transformer between 633 and 634
-"""
-XFM_1 = gce.Transformer2W(name='XFM-1',
-                          bus_from=bus_633,
-                          bus_to=bus_634,
-                          HV=4.16,
-                          LV=0.48,
-                          nominal_power=0.5,
-                          rate=0.5,
-                          r=1.1*2,
-                          x=2*2)
-XFM_1.conn_f = WindingType.GroundedStar
-XFM_1.conn_t = WindingType.GroundedStar
-grid.add_transformer2w(XFM_1)
 
 """
 Line Configurations
@@ -319,23 +303,33 @@ line_632_645 = gce.Line(bus_from=bus_632,
 line_632_645.apply_template(config_603, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_632_645)
 
-line_632_633 = gce.Line(bus_from=bus_632,
-                        bus_to=bus_633,
-                        length=500 * 0.0003048)
-line_632_633.apply_template(config_602, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_632_633)
-
 line_645_646 = gce.Line(bus_from=bus_645,
                         bus_to=bus_646,
                         length=300 * 0.0003048)
 line_645_646.apply_template(config_603, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_645_646)
 
-line_684_652 = gce.Line(bus_from=bus_684,
-                        bus_to=bus_652,
-                        length= 800 * 0.0003048)
-line_684_652.apply_template(config_607, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_684_652)
+line_632_633 = gce.Line(bus_from=bus_632,
+                        bus_to=bus_633,
+                        length=500 * 0.0003048)
+line_632_633.apply_template(config_602, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_632_633)
+
+"""
+Transformer between 633 and 634
+"""
+XFM_1 = gce.Transformer2W(name='XFM-1',
+                          bus_from=bus_633,
+                          bus_to=bus_634,
+                          HV=4.16,
+                          LV=0.48,
+                          nominal_power=0.5,
+                          rate=0.5,
+                          r=1.1*2,
+                          x=2*2)
+XFM_1.conn_f = WindingType.GroundedStar
+XFM_1.conn_t = WindingType.GroundedStar
+grid.add_transformer2w(XFM_1)
 
 line_632_671 = gce.Line(bus_from=bus_632,
                         bus_to=bus_671,
@@ -349,12 +343,6 @@ line_671_684 = gce.Line(bus_from=bus_671,
 line_671_684.apply_template(config_604, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_671_684)
 
-line_671_680 = gce.Line(bus_from=bus_671,
-                        bus_to=bus_680,
-                        length= 1000 * 0.0003048)
-line_671_680.apply_template(config_601, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_671_680)
-
 line_684_611 = gce.Line(bus_from=bus_684,
                         bus_to=bus_611,
                         length= 300 * 0.0003048)
@@ -366,6 +354,18 @@ line_671_675 = gce.Line(bus_from=bus_671,
                         length= 500 * 0.0003048)
 line_671_675.apply_template(config_606, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_671_675)
+
+line_684_652 = gce.Line(bus_from=bus_684,
+                        bus_to=bus_652,
+                        length= 800 * 0.0003048)
+line_684_652.apply_template(config_607, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_684_652)
+
+line_671_680 = gce.Line(bus_from=bus_671,
+                        bus_to=bus_680,
+                        length= 1000 * 0.0003048)
+line_671_680.apply_template(config_601, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_671_680)
 
 """
 Save Grid
@@ -399,6 +399,21 @@ print(np.round(U, 10))
 # print(U)
 print()
 print(np.round(angle, 10))
+
+print(len(res_3ph.St))
+print('\nSf =', np.round(res_3ph.St/3,4))
+
+# print('U671 =', U[15:18])
+# dU_632_671 = U[0:3] - U[15:18]
+# print(dU_632_671)
+#
+# bus_numbers = [645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
+#
+# k=0
+# for i in range(len(bus_numbers)):
+#     bus = bus_numbers[i]
+#     print(f'\nSbus {bus} =\n', np.round(res_3ph.Sf[k:k+3],4))
+#     k+=3
 
 bus_numbers = [632, 645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
 

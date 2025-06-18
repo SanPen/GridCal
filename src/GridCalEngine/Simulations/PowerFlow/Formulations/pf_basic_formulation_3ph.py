@@ -348,12 +348,28 @@ def expandVoltage3ph(V0: CxVec) -> CxVec:
     # x3[0] = 1.0210 * np.exp(1j * (0*np.pi/180))
     # x3[1] = 1.0420 * np.exp(1j * (-120*np.pi/180))
     # x3[2] = 1.0174 * np.exp(1j * (120*np.pi/180))
-    x3[0] = 1.0210 * np.exp(1j * (-2.49*np.pi/180))
-    x3[1] = 1.0420 * np.exp(1j * (-121.72*np.pi/180))
-    x3[2] = 1.0174* np.exp(1j * (117.83*np.pi/180))
+    # x3[0] = 1.0210 * np.exp(1j * (-2.49*np.pi/180))
+    # x3[1] = 1.0420 * np.exp(1j * (-121.72*np.pi/180))
+    # x3[2] = 1.0174* np.exp(1j * (117.83*np.pi/180))
 
 
     return x3
+
+def expand_magnitudes(magnitude: CxVec, lookup: IntVec):
+    """
+    :param magnitude:
+    :param lookup:
+    :return:
+    """
+    n_buses_total = len(lookup)
+    magnitude_expanded = np.zeros(n_buses_total, dtype=complex)
+    for i, value in enumerate(lookup):
+        if value < 0:
+            magnitude_expanded[i] = 0.0 + 0.0j
+        else:
+            magnitude_expanded[i] = magnitude[value]
+
+    return magnitude_expanded
 
 
 class PfBasicFormulation3Ph(PfFormulationTemplate):
@@ -564,7 +580,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
             dS[self.idx_dQ].imag
         ]
         # self._f = compute_fx(self.Scalc, Sbus, self.idx_dP, self.idx_dQ)
-
+        Sbus_expanded = expand_magnitudes(Sbus, self.bus_lookup)
+        print('\nSbus =\n', Sbus_expanded)
         # compute the error
         self._error = compute_fx_error(self._f)
 

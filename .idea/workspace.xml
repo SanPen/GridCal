@@ -28,12 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Sbus updated with I0">
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/2-bus case test.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/power 2-bus case test.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="IEEE 13-bus test case">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/2-bus case test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/2-bus case test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/tensiones_trifasicas.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/tensiones_trifasicas.xlsx" afterDir="false" />
@@ -229,7 +227,7 @@
     "Python.632_645_646_633_634_671.executor": "Run",
     "Python.632_645_646_633_634_671_684.executor": "Run",
     "Python.632_645_646_633_634_671_684_652.executor": "Run",
-    "Python.632_645_646_633_634_671_684_652_611_675.executor": "Run",
+    "Python.632_645_646_633_634_671_684_652_611_675.executor": "Debug",
     "Python.AnalysisDialogue.executor": "Run",
     "Python.Carson_vs_Dubanton.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
@@ -2362,7 +2360,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="757" />
+    <option name="localTasksCounter" value="758" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2408,7 +2406,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Correction of the Dubanton approximation." />
     <MESSAGE value="Developing phase number" />
     <MESSAGE value="get_ys and get_ysh corrected" />
     <MESSAGE value="Now get_ys and get_ysh always return 3x3 y matrices." />
@@ -2433,7 +2430,8 @@
     <MESSAGE value="IEEE13-bus things" />
     <MESSAGE value="IEEE 13-bus working considering all loads as impedance." />
     <MESSAGE value="Sbus updated with I0" />
-    <option name="LAST_COMMIT_MESSAGE" value="Sbus updated with I0" />
+    <MESSAGE value="IEEE 13-bus test case" />
+    <option name="LAST_COMMIT_MESSAGE" value="IEEE 13-bus test case" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2784,13 +2782,28 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
-          <line>396</line>
-          <option name="timeStamp" value="2671" />
+          <line>505</line>
+          <option name="timeStamp" value="2677" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
-          <line>634</line>
-          <option name="timeStamp" value="2672" />
+          <line>654</line>
+          <option name="timeStamp" value="2679" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
+          <line>198</line>
+          <option name="timeStamp" value="2682" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
+          <line>235</line>
+          <option name="timeStamp" value="2683" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
+          <line>575</line>
+          <option name="timeStamp" value="2684" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

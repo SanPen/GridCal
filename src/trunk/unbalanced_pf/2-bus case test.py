@@ -25,34 +25,36 @@ grid.add_bus(obj=bus_2)
 """
 Impedances [Ohm/km]
 """
-z_604 = np.array([
-    [1.3238 + 1j * 1.3569, 0.2066 + 1j * 0.4591],
-    [0.2066 + 1j * 0.4591, 1.3294 + 1j * 1.3471]
+z_602 = np.array([
+    [0.7526 + 1j * 1.1814, 0.1580 + 1j * 0.4236, 0.1560 + 1j * 0.5017],
+    [0.1580 + 1j * 0.4236, 0.7475 + 1j * 1.1983, 0.1535 + 1j * 0.3849],
+    [0.1560 + 1j * 0.5017, 0.1535 + 1j * 0.3849, 0.7436 + 1j * 1.2112]
 ], dtype=complex) / 1.60934
 
-y_604 = np.array([
-    [1j * 4.6658, 1j * -0.8999],
-    [1j * -0.8999, 1j * 4.7097]
+y_602 = np.array([
+    [1j * 5.6990, 1j * -1.0817, 1j * -1.6905],
+    [1j * -1.0817, 1j * 5.1795, 1j * -0.6588],
+    [1j * -1.6905, 1j * -0.6588, 1j * 5.4246]
 ], dtype=complex) / 10**6 / 1.60934
 
 """
 Line Configurations
 """
-config_604 = gce.OverheadLineType(name='Config. 604',
+config_602 = gce.OverheadLineType(name='Config. 602',
                                   Vnom=4.16,
                                   frequency=60)
-config_604.z_abc = z_604
-config_604.y_abc = y_604
-config_604.y_phases_abc = np.array([1,3])
-grid.add_overhead_line(config_604)
+config_602.z_abc = z_602
+config_602.y_abc = y_602
+config_602.y_phases_abc = np.array([1,2,3])
+grid.add_overhead_line(config_602)
 
 """
 Lines
 """
 line_1_2 = gce.Line(bus_from=bus_1,
                         bus_to=bus_2,
-                        length= 300 * 0.0003048)
-line_1_2.apply_template(config_604, grid.Sbase, grid.fBase, logger)
+                        length= 500 * 0.0003048)
+line_1_2.apply_template(config_602, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_1_2)
 
 """
@@ -62,8 +64,8 @@ load_2 = gce.Load(Ir1=0.0,
                         Ii1=0.0,
                         Ir2=0.0,
                         Ii2=0.0,
-                        Ir3=0.17 *100,
-                        Ii3=-0.08 *100)
+                        Ir3=0.17 /np.array(3) * 100,
+                        Ii3=-0.08 /np.array(3) * 100)
 load_2.conn = ShuntConnectionType.Delta
 grid.add_load(bus=bus_2, api_obj=load_2)
 
