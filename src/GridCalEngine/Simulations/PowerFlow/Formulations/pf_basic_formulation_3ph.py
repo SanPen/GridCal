@@ -348,9 +348,9 @@ def expandVoltage3ph(V0: CxVec) -> CxVec:
     # x3[0] = 1.0210 * np.exp(1j * (0*np.pi/180))
     # x3[1] = 1.0420 * np.exp(1j * (-120*np.pi/180))
     # x3[2] = 1.0174 * np.exp(1j * (120*np.pi/180))
-    x3[0] = 1.0210 * np.exp(1j * (-2.49*np.pi/180))
-    x3[1] = 1.0420 * np.exp(1j * (-121.72*np.pi/180))
-    x3[2] = 1.0174* np.exp(1j * (117.83*np.pi/180))
+    # x3[0] = 1.0210 * np.exp(1j * (-2.49*np.pi/180))
+    # x3[1] = 1.0420 * np.exp(1j * (-121.72*np.pi/180))
+    # x3[2] = 1.0174* np.exp(1j * (117.83*np.pi/180))
 
 
     return x3
@@ -483,8 +483,9 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          V=V,
                                          bus_lookup=self.bus_lookup)
 
-        Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.Vm)
-                + Sdelta2star) / (self.nc.Sbase / 3))
+        # Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.Vm)
+        #         + Sdelta2star) / (self.nc.Sbase / 3))
+        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
         Scalc = compute_power(self.Ybus, V)
         dS = Scalc - Sbus  # compute the mismatch
         _f = np.r_[
@@ -519,8 +520,9 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          Ydelta=self.nc.load_data.Y3_delta,
                                          V=V,
                                          bus_lookup=self.bus_lookup)
-        Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), Vm)
-                 + Sdelta2star) / (self.nc.Sbase / 3))
+        # Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), Vm)
+        #          + Sdelta2star) / (self.nc.Sbase / 3))
+        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
         Scalc = compute_power(self.Ybus, V)
         dS = Scalc - Sbus  # compute the mismatch
         _f = np.r_[
@@ -551,8 +553,9 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          Ydelta=self.nc.load_data.Y3_delta,
                                          V=self.V,
                                          bus_lookup=self.bus_lookup)
-        Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.Vm)
-                 + Sdelta2star) / (self.nc.Sbase / 3))
+        # Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.Vm)
+        #          + Sdelta2star) / (self.nc.Sbase / 3))
+        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
         self.Scalc = compute_power(self.Ybus, self.V)
         dS = self.Scalc - Sbus  # compute the mismatch
         self._f = np.r_[
@@ -628,8 +631,9 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          Ydelta=self.nc.load_data.Y3_delta,
                                          V=self.V,
                                          bus_lookup=self.bus_lookup)
-        Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.Vm)
-                 + Sdelta2star) / (self.nc.Sbase / 3))
+        # Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.Vm)
+        #          + Sdelta2star) / (self.nc.Sbase / 3))
+        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
         self.Scalc = self.V * np.conj(self.Ybus @ self.V - self.I0)
 
         self._f = compute_fx(self.Scalc, Sbus, self.idx_dP, self.idx_dQ)
