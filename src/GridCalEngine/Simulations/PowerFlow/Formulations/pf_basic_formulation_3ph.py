@@ -485,7 +485,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         # Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.Vm)
         #         + Sdelta2star) / (self.nc.Sbase / 3))
-        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
+        # Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
+        Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), Vm) + Sdelta2star / (self.nc.Sbase / 3)
         Scalc = compute_power(self.Ybus, V)
         dS = Scalc - Sbus  # compute the mismatch
         _f = np.r_[
@@ -522,7 +523,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          bus_lookup=self.bus_lookup)
         # Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), Vm)
         #          + Sdelta2star) / (self.nc.Sbase / 3))
-        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
+        Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), Vm) + Sdelta2star / (self.nc.Sbase / 3)
         Scalc = compute_power(self.Ybus, V)
         dS = Scalc - Sbus  # compute the mismatch
         _f = np.r_[
@@ -555,7 +556,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          bus_lookup=self.bus_lookup)
         # Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.Vm)
         #          + Sdelta2star) / (self.nc.Sbase / 3))
-        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
+        Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.Vm) + Sdelta2star / (self.nc.Sbase / 3)
         self.Scalc = compute_power(self.Ybus, self.V)
         dS = self.Scalc - Sbus  # compute the mismatch
         self._f = np.r_[
@@ -633,7 +634,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                          bus_lookup=self.bus_lookup)
         # Sbus = ((compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.Vm)
         #          + Sdelta2star) / (self.nc.Sbase / 3))
-        Sbus = self.S0 + Sdelta2star / (self.nc.Sbase / 3)
+        Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.Vm) + Sdelta2star / (self.nc.Sbase / 3)
         self.Scalc = self.V * np.conj(self.Ybus @ self.V - self.I0)
 
         self._f = compute_fx(self.Scalc, Sbus, self.idx_dP, self.idx_dQ)
