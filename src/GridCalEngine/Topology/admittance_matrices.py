@@ -342,10 +342,6 @@ def compute_admittances(R: Vec,
     :param add_windings_phase: Add the phases of the transformer windings (for short circuits mainly)
     :return: Admittance instance
     """
-
-    # compute G-switch
-    # Gsw = G0sw + a * np.power(If, 2) + b * If + c
-
     # form the admittance matrices
     ys = 1.0 / (R + 1.0j * (X + 1e-20))  # series admittance
     ysh_2 = (G + 1j * B) / 2.0  # shunt admittance
@@ -675,9 +671,9 @@ class AdmittanceMatricesFast:
     def modify_taps_fast(self, idx, tap_module: Vec, tap_angle: Vec) -> None:
         """
         Modify in-place Ybus, Yf and Yt
-        :param idx: indices of the branches to modify
-        :param tap_module: tap modules of the positions given by idx
-        :param tap_angle: tap angles of the positions given by idx
+        :param idx: indices of the branches to modify. Both the tap angle and module are updated for every index.
+        :param tap_module: Tap modules of the positions given by idx
+        :param tap_angle: Tap angles of the positions given by idx
         """
         if len(self.pos_yff) == 0 and self.yff != 0:
             self.initialize_update()  # your forgot to initialize...

@@ -28,8 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="wip">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="refactored a bit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/admittance_matrices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/admittance_matrices.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -163,8 +164,13 @@
     &quot;Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest for src.tests.test_line_circuit_idx_setter.test_valid_circuit_idx.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest for src.tests.test_load_save_load.test_load_save_load_xlsx.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_power_flow.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_power_flow.test_voltage_control_with_ltc.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_power_flow_acdc_generalized.test_ieee_grids.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_power_flow_acdc_generalized.test_voltage_control_with_ltc.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest for src.tests.test_profiles.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest for src.tests.test_tower_composition.test_acha.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_transformer_controls.test_v_control_true.executor&quot;: &quot;Debug&quot;,
     &quot;Python tests.pytest for src.tests.test_transformer_type.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest for src.tests.test_transformer_type.test_transformer_type.executor&quot;: &quot;Debug&quot;,
     &quot;Python tests.pytest for test_ac_opf.test_superconductors_handling.executor&quot;: &quot;Run&quot;,
@@ -184,9 +190,11 @@
     &quot;Python tests.pytest for test_tower_composition.test_rating.executor&quot;: &quot;Debug&quot;,
     &quot;Python tests.pytest for test_tower_composition.test_ratings_with_neutral.executor&quot;: &quot;Debug&quot;,
     &quot;Python tests.pytest for test_tower_composition.test_tower_composition.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_transformer_controls.test_v_control_true.executor&quot;: &quot;Debug&quot;,
     &quot;Python tests.pytest for test_transformer_type.test_psse_conversion3.executor&quot;: &quot;Debug&quot;,
     &quot;Python tests.pytest for test_transformer_type.test_transformer_type.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest in test_ac_opf.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_admittance_matrix.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest in test_basic.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest in test_contingency.py.executor&quot;: &quot;Debug&quot;,
     &quot;Python tests.pytest in test_contongencies_filters.py.executor&quot;: &quot;Debug&quot;,
@@ -195,15 +203,18 @@
     &quot;Python tests.pytest in test_nonlinear_contingency.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest in test_ntc.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest in test_opf.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_power_flow.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest in test_power_flow_acdc_generalized.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest in test_ptdf.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest in test_tower_composition.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_transformer_controls.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest in test_transformer_type.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
     &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
     &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
     &quot;Python.GridCalMain.executor&quot;: &quot;Run&quot;,
     &quot;Python.LineBuilderDialogue.executor&quot;: &quot;Run&quot;,
+    &quot;Python.admittance_matrices.executor&quot;: &quot;Run&quot;,
     &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
     &quot;Python.circuit_to_optimods.executor&quot;: &quot;Run&quot;,
     &quot;Python.demo_code.executor&quot;: &quot;Run&quot;,
@@ -216,6 +227,7 @@
     &quot;Python.make_wheels.executor&quot;: &quot;Run&quot;,
     &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
     &quot;Python.overhead_line_calcs.executor&quot;: &quot;Run&quot;,
+    &quot;Python.paper_checks.executor&quot;: &quot;Run&quot;,
     &quot;Python.post_example.executor&quot;: &quot;Run&quot;,
     &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
     &quot;Python.python_console.executor&quot;: &quot;Run&quot;,
@@ -230,6 +242,7 @@
     &quot;Python.server_example.executor&quot;: &quot;Run&quot;,
     &quot;Python.short_circuit_driver.executor&quot;: &quot;Run&quot;,
     &quot;Python.stack_plot_pos_neg.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_admittance_matrix.executor&quot;: &quot;Run&quot;,
     &quot;Python.test_gslv_conversion.executor&quot;: &quot;Debug&quot;,
     &quot;Python.test_power_flow.executor&quot;: &quot;Run&quot;,
     &quot;Python.test_raw_cgmes_cross_roundtrip.executor&quot;: &quot;Run&quot;,
@@ -244,8 +257,8 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;devel__implement__new__alpha__n__1&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/GridCalEngine/Simulations/Stochastic&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;acdc__power__flow__improvements&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal_debug&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
@@ -277,7 +290,7 @@
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Branches" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in test_ntc.py">
+  <component name="RunManager" selected="Python tests.pytest in tests">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -704,29 +717,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -750,7 +740,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="sherman_morrison_woodbury_contingencies_single" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="admittance_matrices" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -759,12 +749,61 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/contingencies" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="SDK_NAME" value="Python 3.11 (GridCal)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCalEngine/Topology" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/contingencies/sherman_morrison_woodbury_contingencies_single.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalEngine/Topology/admittance_matrices.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="paper_checks" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.11 (GridCal)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/acdc_pf" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/acdc_pf/paper_checks.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test_admittance_matrix" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.11 (GridCal)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/tests/test_admittance_matrix.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -909,29 +948,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/tests/test_raw_cgmes_cross_roundtrip.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="upload_to_pypi" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/upload_to_pypi.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -1044,7 +1060,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest in test_ntc.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for test_transformer_controls.test_v_control_true" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1058,7 +1074,61 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_ntc.py&quot;" />
+      <option name="_new_target" value="&quot;test_transformer_controls.test_v_control_true&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="pytest in test_power_flow_acdc_generalized.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_power_flow_acdc_generalized.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="pytest in test_power_flow.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_power_flow.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="pytest in test_transformer_controls.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_transformer_controls.py&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
@@ -1081,29 +1151,33 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.admittance_matrices" />
+      <item itemvalue="Python.test_admittance_matrix" />
+      <item itemvalue="Python.paper_checks" />
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
       <item itemvalue="Python.test_gslv_conversion" />
-      <item itemvalue="Python.sherman_morrison_woodbury_contingencies_single" />
-      <item itemvalue="Python.upload_to_pypi" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python tests.pytest in test_ntc.py" />
+      <item itemvalue="Python tests.pytest for test_transformer_controls.test_v_control_true" />
+      <item itemvalue="Python tests.pytest in test_power_flow.py" />
+      <item itemvalue="Python tests.pytest in test_power_flow_acdc_generalized.py" />
+      <item itemvalue="Python tests.pytest in test_transformer_controls.py" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python tests.pytest in test_ntc.py" />
-        <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.upload_to_pypi" />
-        <item itemvalue="Python.sherman_morrison_woodbury_contingencies_single" />
+        <item itemvalue="Python tests.pytest in test_power_flow.py" />
+        <item itemvalue="Python tests.pytest in test_power_flow_acdc_generalized.py" />
+        <item itemvalue="Python tests.pytest in test_transformer_controls.py" />
+        <item itemvalue="Python tests.pytest for test_transformer_controls.test_v_control_true" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-dfff61a61320-9cdd278e9d02-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-251.25410.159" />
+        <option value="bundled-python-sdk-53e2683a6804-9cdd278e9d02-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-251.26094.141" />
       </set>
     </attachedChunks>
   </component>
@@ -2309,7 +2383,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="691" />
+    <option name="localTasksCounter" value="698" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2355,13 +2429,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Increased minimal gslv version" />
-    <MESSAGE value="Protected compilation against none buses in generators, shunts and loads&#10;Improvements to the GUI behaviour" />
-    <MESSAGE value="5.3.28" />
-    <MESSAGE value="Fixed Code scanning alert #4" />
-    <MESSAGE value="Fixed cgmes export reporting in get_cgmes_cn_nodes_from_tp_nodes" />
-    <MESSAGE value="5.3.29" />
-    <MESSAGE value="Fixed bug in gslv conversion" />
     <MESSAGE value="5.3.30" />
     <MESSAGE value="Added the ability to recolour the schematic with the design values" />
     <MESSAGE value="minor refactorings" />
@@ -2380,7 +2447,14 @@
     <MESSAGE value="Minimal refactorings" />
     <MESSAGE value="Removed &quot;kconv&quot;" />
     <MESSAGE value="wip" />
-    <option name="LAST_COMMIT_MESSAGE" value="wip" />
+    <MESSAGE value="implemented fast admittance in the generalized formulation" />
+    <MESSAGE value="Implemented csc comparison" />
+    <MESSAGE value="Implemented fast admittance matrix update" />
+    <MESSAGE value="Fixed fast update, removed prints from nr_fx" />
+    <MESSAGE value="Some admittances refactoring" />
+    <MESSAGE value="All tests passing" />
+    <MESSAGE value="refactored a bit" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactored a bit" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2709,8 +2783,49 @@
           <line>2453</line>
           <option name="timeStamp" value="2602" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_admittance_matrix.py</url>
+          <line>245</line>
+          <option name="timeStamp" value="2604" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_admittance_matrix.py</url>
+          <line>241</line>
+          <option name="timeStamp" value="2606" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <condition expression="not v_ok" language="Python" />
+          <url>file://$PROJECT_DIR$/src/tests/test_power_flow_acdc_generalized.py</url>
+          <line>118</line>
+          <option name="timeStamp" value="2615" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_power_flow.py</url>
+          <line>346</line>
+          <option name="timeStamp" value="2617" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_power_flow.py</url>
+          <line>348</line>
+          <option name="timeStamp" value="2618" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
+          <line>597</line>
+          <option name="timeStamp" value="2620" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
+          <line>1466</line>
+          <option name="timeStamp" value="2621" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="tests">
+        <watch expression="self._error" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/GridCal$update_gui_common.coverage" NAME="update_gui_common Coverage Results" MODIFIED="1662040207238" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
