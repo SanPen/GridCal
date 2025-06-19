@@ -60,13 +60,13 @@ grid.add_line(obj=line_1_2)
 """
 Loads
 """
-load_2 = gce.Load(Ir1=0.0,
-                        Ii1=0.0,
+load_2 = gce.Load(Ir1=2.0,
+                        Ii1=1.0,
                         Ir2=0.0,
                         Ii2=0.0,
-                        Ir3=0.17 /np.array(3) * 100,
-                        Ii3=-0.08 /np.array(3) * 100)
-load_2.conn = ShuntConnectionType.Delta
+                        Ir3=0.0,
+                        Ii3=0.0)
+load_2.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_2, api_obj=load_2)
 
 """

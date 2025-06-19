@@ -188,17 +188,17 @@ load_671_692 = gce.Load(Ir1=0.0,
                         Ii1=0.0,
                         Ir2=0.0,
                         Ii2=0.0,
-                        Ir3=-0.170 /np.sqrt(3),
-                        Ii3=-0.151 /np.sqrt(3))
+                        Ir3=0.170,
+                        Ii3=0.151)
 load_671_692.conn = ShuntConnectionType.Delta
-# grid.add_load(bus=bus_671, api_obj=load_671_692)
+grid.add_load(bus=bus_671, api_obj=load_671_692)
 
 load_611 = gce.Load(Ir1=0.0,
                     Ii1=0.0,
                     Ir2=0.0,
                     Ii2=0.0,
                     Ir3=0.170,
-                    Ii3=-0.080)
+                    Ii3=0.080)
 load_611.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_611, api_obj=load_611)
 
@@ -395,10 +395,10 @@ res_3ph = power_flow_3ph(grid)
 U = abs(res_3ph.V)
 angle = np.degrees(np.angle((res_3ph.V)))
 print()
-print(np.round(U, 10))
+print(np.round(U, 4))
 # print(U)
 print()
-print(np.round(angle, 10))
+print(np.round(angle, 2))
 
 print(len(res_3ph.St))
 print('\nSf =', np.round(res_3ph.St/3,4))

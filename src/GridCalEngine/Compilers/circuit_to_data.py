@@ -64,21 +64,21 @@ def delta2StarAdmittance(Yab: complex,
     ])
 
 
-def delta2StarCurrent(Iab: complex,
-                      Ibc: complex,
-                      Ica: complex):
-    """
-    Converts delta to star in currents
-    :param Iab:
-    :param Ibc:
-    :param Ica:
-    :return: Ia, Ib, Ic
-    """
-    return np.array([
-        Iab - Ica,
-        Ibc - Iab,
-        Ica - Ibc
-    ])
+# def delta2StarCurrent(Iab: complex,
+#                       Ibc: complex,
+#                       Ica: complex):
+#     """
+#     Converts delta to star in currents
+#     :param Iab:
+#     :param Ibc:
+#     :param Ica:
+#     :return: Ia, Ib, Ic
+#     """
+#     return np.array([
+#         Iab - Ica,
+#         Ibc - Iab,
+#         Ica - Ibc
+#     ])
 
 
 def set_bus_control_voltage(i: int,
@@ -368,11 +368,9 @@ def get_load_data(data: LoadData,
                         data.Y3_delta[3 * ii + 1] = complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx])
                         data.Y3_delta[3 * ii + 2] = complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
 
-                        data.I3_star[3 * ii + idx3] = delta2StarCurrent(
-                            Iab=complex(elm.Ir1_prof[t_idx], elm.Ii1_prof[t_idx]),
-                            Ibc=complex(elm.Ir2_prof[t_idx], elm.Ii2_prof[t_idx]),
-                            Ica=complex(elm.Ir3_prof[t_idx], elm.Ii3_prof[t_idx])
-                        )
+                        data.I3_delta[3 * ii + 0] = complex(elm.Ir1_prof[t_idx], elm.Ii1_prof[t_idx])
+                        data.I3_delta[3 * ii + 1] = complex(elm.Ir2_prof[t_idx], elm.Ii2_prof[t_idx])
+                        data.I3_delta[3 * ii + 2] = complex(elm.Ir3_prof[t_idx], elm.Ii3_prof[t_idx])
 
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")
@@ -420,11 +418,9 @@ def get_load_data(data: LoadData,
                                 data.Y3_delta[3 * ii + 1] = complex(elm.G2, elm.B2)
                                 data.Y3_delta[3 * ii + 2] = complex(elm.G3, elm.B3)
 
-                            data.I3_star[3 * ii + idx3] = delta2StarCurrent(
-                                Iab=complex(elm.Ir1, elm.Ii1),
-                                Ibc=complex(elm.Ir2, elm.Ii2),
-                                Ica=complex(elm.Ir3, elm.Ii3)
-                            )
+                            data.I3_delta[3 * ii + 0] = complex(elm.Ir1, elm.Ii1)
+                            data.I3_delta[3 * ii + 1] = complex(elm.Ir2, elm.Ii2)
+                            data.I3_delta[3 * ii + 2] = complex(elm.Ir3, elm.Ii3)
 
                         else:
                             raise Exception(f"Unhandled connection type {elm.conn}")
@@ -635,11 +631,9 @@ def get_load_data(data: LoadData,
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.I3_star[3 * ii + idx3] += delta2StarCurrent(
-                            Iab=complex(elm.Ir1_prof[t_idx], elm.Ii1_prof[t_idx]),
-                            Ibc=complex(elm.Ir2_prof[t_idx], elm.Ii2_prof[t_idx]),
-                            Ica=complex(elm.Ir3_prof[t_idx], elm.Ii3_prof[t_idx])
-                        )
+                        data.I3_delta[3 * ii + 0] += complex(elm.Ir1_prof[t_idx], elm.Ii1_prof[t_idx])
+                        data.I3_delta[3 * ii + 1] += complex(elm.Ir2_prof[t_idx], elm.Ii2_prof[t_idx])
+                        data.I3_delta[3 * ii + 2] += complex(elm.Ir3_prof[t_idx], elm.Ii3_prof[t_idx])
 
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")
@@ -660,11 +654,9 @@ def get_load_data(data: LoadData,
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.I3_star[3 * ii + idx3] += delta2StarCurrent(
-                            Iab=complex(elm.Ir1, elm.Ii1),
-                            Ibc=complex(elm.Ir2, elm.Ii2),
-                            Ica=complex(elm.Ir3, elm.Ii3)
-                        )
+                        data.I3_delta[3 * ii + 0] += complex(elm.Ir1, elm.Ii1)
+                        data.I3_delta[3 * ii + 1] += complex(elm.Ir2, elm.Ii2)
+                        data.I3_delta[3 * ii + 2] += complex(elm.Ir3, elm.Ii3)
 
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")

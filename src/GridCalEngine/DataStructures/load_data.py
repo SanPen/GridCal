@@ -33,7 +33,7 @@ class LoadData:
         self.S3_delta = np.zeros(self.nelm * 3, dtype=complex)
         self.S3_star = np.zeros(self.nelm * 3, dtype=complex)
 
-        # self.I3_delta = np.zeros(self.nelm * 3, dtype=complex)
+        self.I3_delta = np.zeros(self.nelm * 3, dtype=complex)
         self.I3_star = np.zeros(self.nelm * 3, dtype=complex)
 
         self.Y3_delta = np.zeros(self.nelm * 3, dtype=complex)
