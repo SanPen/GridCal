@@ -14,13 +14,13 @@ from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCal.Gui.general_dialogues import NewProfilesStructureDialogue, TimeReIndexDialogue, LogsDialogue
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
-from GridCal.Gui.Main.SubClasses.Model.objects import ObjectsTableMain
+from GridCal.Gui.Main.SubClasses.Model.data_base import DataBaseTableMain
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI, GeneratorsProfileOptionsDialogue
 from GridCal.Gui.profiles_model import ProfilesModel
 
 
-class TimeEventsMain(ObjectsTableMain):
+class TimeEventsMain(DataBaseTableMain):
     """
     Diagrams Main
     """
@@ -32,7 +32,7 @@ class TimeEventsMain(ObjectsTableMain):
         """
 
         # create main window
-        ObjectsTableMain.__init__(self, parent)
+        DataBaseTableMain.__init__(self, parent)
 
         # --------------------------------------------------------------------------------------------------------------
         self.ui.actionre_index_time.triggered.connect(self.re_index_time)

@@ -33,13 +33,19 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
         else:
             raise Exception("The parent is not a QTableView :(" + str(type(self.tableView)) + ")")
 
+    def _realModel(self) -> WrappableTableModel:
+        mdl = self.model()
+        if isinstance(mdl, QtCore.QSortFilterProxyModel):
+            mdl = mdl.sourceModel()
+        return mdl
+
     def sectionSizeFromContents(self, logicalIndex: int) -> QtCore.QSize:
         """
 
         :param logicalIndex:
         :return:
         """
-        mdl: WrappableTableModel = self.model()
+        mdl: WrappableTableModel = self._realModel()
         if mdl:
             headerText = mdl.headerData(section=logicalIndex,
                                         orientation=self.orientation(),
@@ -68,7 +74,7 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
         :param logicalIndex:
         :return:
         """
-        mdl: WrappableTableModel = self.model()  # assign with typing
+        mdl: WrappableTableModel = self._realModel()  # assign with typing
         if mdl:
             painter.save()
             mdl.hide_headers()
@@ -104,7 +110,7 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
         :param i:
         :return:
         """
-        mdl = self.model()  # assign with typing
+        mdl = self._realModel()  # assign with typing
 
         if isinstance(mdl, ResultsModel):
             mdl.sort_column(c=i)

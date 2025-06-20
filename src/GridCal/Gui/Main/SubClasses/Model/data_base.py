@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
-from typing import Union, List, Set, Tuple
+from typing import Union, List, Set, Tuple, Dict
 from PySide6 import QtGui, QtCore, QtWidgets
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -16,13 +16,13 @@ import GridCalEngine.basic_structures as bs
 import GridCalEngine.Devices as dev
 import GridCal.Gui.gui_functions as gf
 from GridCal.Gui.object_model import ObjectsModel
+from GridCal.Gui.object_proxy_model import ObjectModelFilterProxy
 from GridCal.Gui.profiles_model import ProfilesModel
-import GridCalEngine.Utils.Filtering as flt
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Topology.detect_substations import detect_substations, detect_facilities
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
-from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
+from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.general_dialogues import LogsDialogue
@@ -31,7 +31,8 @@ from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, make_d
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget, make_diagram_from_buses
 
 
-class ObjectsTableMain(DiagramsMain):
+
+class DataBaseTableMain(DiagramsMain):
     """
     Diagrams Main
     """
@@ -54,6 +55,8 @@ class ObjectsTableMain(DiagramsMain):
         # setup the tree for compiled arrays
         self.setup_compiled_arrays_tree()
 
+        self.ui.smart_search_lineEdit.setPlaceholderText("Type the object name or a smart filter expression ...")
+
         # Buttons
         self.ui.filter_pushButton.clicked.connect(self.objects_smart_search)
         self.ui.delete_selected_objects_pushButton.clicked.connect(self.delete_selected_objects)
@@ -72,7 +75,6 @@ class ObjectsTableMain(DiagramsMain):
 
         # line edit enter
         self.ui.smart_search_lineEdit.returnPressed.connect(self.objects_smart_search)
-        # self.ui.time_series_search.returnPressed.connect(self.timeseries_search)
 
         # context menu
         self.ui.dataStructureTableView.customContextMenuRequested.connect(self.show_objects_context_menu)
@@ -210,7 +212,7 @@ class ObjectsTableMain(DiagramsMain):
                 magnitudes, mag_types = self.circuit.profile_magnitudes.get(dev_type_text, (list(), list()))
 
                 if len(magnitudes) > 0:
-                    # get the enumeration univoque association with he device text
+                    # get the enumeration unique association with the device text
                     dev_type = self.circuit.device_type_name_dict[dev_type_text]
 
                     idx = self.ui.device_type_magnitude_comboBox.currentIndex()
@@ -268,26 +270,6 @@ class ObjectsTableMain(DiagramsMain):
             self.ui.associationsTableView.setModel(None)
             self.ui.association_units_label.setText("")
 
-    def display_objects_filter(self, elements: List[ALL_DEV_TYPES]):
-        """
-        Display a list of elements that comes from a filter
-        :param elements: list of devices
-        """
-        if len(elements) > 0:
-
-            # display objects
-            objects_mdl = self.create_objects_model(elements=elements, elm_type=elements[0].device_type)
-            self.ui.dataStructureTableView.setModel(objects_mdl)
-
-            # display time series
-            self.display_profiles()
-
-            # display associations
-            self.display_associations()
-
-        else:
-            self.ui.dataStructureTableView.setModel(None)
-
     def copy_objects_data(self):
         """
         Copy the current displayed objects table to the clipboard
@@ -311,10 +293,13 @@ class ObjectsTableMain(DiagramsMain):
         else:
             return None
 
-    def view_objects_data(self):
+    def get_selected_objects_model(self) -> Tuple[ObjectsModel | None, List[ALL_DEV_TYPES] | None, str | None]:
         """
-        On click, display the objects properties
+        Get the selected objects' model
+        :return: ObjectsModel, list of objects, object type name
         """
+        if len(self.ui.dataStructuresTreeView.selectedIndexes()) == 0:
+            return None, None, None
 
         if self.ui.dataStructuresTreeView.selectedIndexes()[0].parent().row() > -1:
             # if the clicked element has a valid parent...
@@ -327,26 +312,37 @@ class ObjectsTableMain(DiagramsMain):
 
                 objects_mdl = self.create_objects_model(elements=elements, elm_type=DeviceType(elm_type))
 
-                # update slice-view
-                self.type_objects_list = elements
-                self.ui.dataStructureTableView.setModel(objects_mdl)
-
-                # update time series view
-                ts_mdl = gf.get_list_model(self.circuit.profile_magnitudes[elm_type][0])
-                self.ui.device_type_magnitude_comboBox.setModel(ts_mdl)
-                self.ui.device_type_magnitude_comboBox_2.setModel(ts_mdl)
-
-                # update the associations view
-                assoc_mdl = gf.get_list_model(self.circuit.device_associations[elm_type])
-                self.ui.associationsComboBox.setModel(assoc_mdl)
-                self.display_associations()
-
+                return objects_mdl, elements, elm_type
             else:
-                self.ui.dataStructureTableView.setModel(None)
-                self.ui.device_type_magnitude_comboBox.clear()
-                self.ui.device_type_magnitude_comboBox_2.clear()
-                self.ui.associationsComboBox.clear()
-                self.ui.dataStructureTableView.setModel(None)
+                return None, None, None
+
+        return None, None, None
+
+    def view_objects_data(self):
+        """
+        On click, display the objects' properties
+        """
+
+        objects_mdl, elements, elm_type = self.get_selected_objects_model()
+
+        if objects_mdl is not None:
+
+            proxy = ObjectModelFilterProxy(mdl=objects_mdl)  # pass the same underlying list
+
+            # update slice-view
+            self.type_objects_list = elements
+            self.ui.dataStructureTableView.setModel(proxy)
+
+            # update time series view
+            ts_mdl = gf.get_list_model(self.circuit.profile_magnitudes[elm_type][0])
+            self.ui.device_type_magnitude_comboBox.setModel(ts_mdl)
+            self.ui.device_type_magnitude_comboBox_2.setModel(ts_mdl)
+
+            # update the associations view
+            assoc_mdl = gf.get_list_model(self.circuit.device_associations[elm_type])
+            self.ui.associationsComboBox.setModel(assoc_mdl)
+            self.display_associations()
+
         else:
             self.ui.dataStructureTableView.setModel(None)
             self.ui.device_type_magnitude_comboBox.clear()
@@ -469,7 +465,7 @@ class ObjectsTableMain(DiagramsMain):
 
         model = self.ui.dataStructureTableView.model()
 
-        elm2se = dict()
+        elm2se: Dict[ALL_DEV_TYPES, List[dev.Substation]] = dict()
 
         # Associate country, community, region and municipality to substation
         for se in self.circuit.substations:
@@ -587,7 +583,8 @@ class ObjectsTableMain(DiagramsMain):
 
                     self.show_info_toast(f"{len(selected_objects)} substations merged")
             else:
-                self.show_warning_toast(f'Merge function not available for {selected_objects[0].device_type.value} devices')
+                self.show_warning_toast(
+                    f'Merge function not available for {selected_objects[0].device_type.value} devices')
 
     def copy_selected_idtag(self):
         """
@@ -717,10 +714,11 @@ class ObjectsTableMain(DiagramsMain):
 
         if len(selected_buses):
 
-            ok = yes_no_question(text="This will delete_with_dialogue all buses and their connected elements that were not selected."
-                                      "This cannot be undone and it is dangerous if you don't know"
-                                      "what you are doing. \nAre you sure?",
-                                 title="Crop model to buses selection?")
+            ok = yes_no_question(
+                text="This will delete_with_dialogue all buses and their connected elements that were not selected."
+                     "This cannot be undone and it is dangerous if you don't know"
+                     "what you are doing. \nAre you sure?",
+                title="Crop model to buses selection?")
 
             if ok:
                 to_be_deleted = list()
@@ -988,7 +986,7 @@ class ObjectsTableMain(DiagramsMain):
     def get_objects_time_index(self) -> Union[None, int]:
         """
         Get the time index of the objects slider already
-        accouting for the -1 -> None converison
+        accounting for the -1 -> None conversion
         :return: None or int
         """
         t_idx = self.ui.db_step_slider.value()
@@ -997,10 +995,10 @@ class ObjectsTableMain(DiagramsMain):
         else:
             return t_idx
 
-    def get_current_objects_model_view(self) -> ObjectsModel:
+    def get_current_objects_model_view(self) -> ObjectModelFilterProxy | None:
         """
-        Get the current ObjectsModel from the GUI
-        :return: ObjectsModel
+        Get the current ObjectModelFilterProxy from the GUI
+        :return: ObjectModelFilterProxy
         """
         return self.ui.dataStructureTableView.model()
 
@@ -1145,56 +1143,37 @@ class ObjectsTableMain(DiagramsMain):
         else:
             info_msg('Select a data structure')
 
-    def timeseries_search(self):
-        """
-
-        :return:
-        """
-
-        initial_model = self.get_current_objects_model_view()
-
-        if initial_model is not None:
-            if len(initial_model.objects) > 0:
-
-                obj_filter = flt.FilterTimeSeries(objects=initial_model.objects)
-
-                try:
-                    obj_filter.parse(expression=self.ui.time_series_search.text())
-                    filtered_objects = obj_filter.apply()
-                except ValueError as e:
-                    error_msg(str(e), "Fiter parse")
-                    return None
-
-                self.display_objects_filter(filtered_objects)
-
-            else:
-                # nothing to search
-                pass
-
     def objects_smart_search(self):
         """
         Objects and time series object-based filtering
         :return:
         """
-        initial_model = self.get_current_objects_model_view()
 
-        if initial_model is not None:
-            if len(initial_model.objects) > 0:
+        # gather the model, which for sure is a ExpressionFilterProxy or None
+        proxy_mdl: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
 
-                obj_filter = flt.FilterObjects(objects=initial_model.objects)
+        if proxy_mdl is not None:
+            if len(proxy_mdl.objects) > 0:
 
-                try:
-                    obj_filter.parse(expression=self.ui.smart_search_lineEdit.text())
-                    filtered_objects = obj_filter.apply()
-                except ValueError as e:
-                    error_msg(str(e), "Fiter parse")
-                    return None
+                has_err, err_txt = proxy_mdl.setExpression(self.ui.smart_search_lineEdit.text())
 
-                self.display_objects_filter(filtered_objects)
+                # display time series
+                self.display_profiles()
+
+                # display associations
+                self.display_associations()
+
+                if has_err:
+                    self.show_error_toast(err_txt)
 
             else:
                 # nothing to search
-                pass
+                self.show_warning_toast("The collection is empty...")
+
+        else:
+            self.show_warning_toast("Nothing to search on, select an object...")
+
+        return None
 
     def delete_inconsistencies(self):
         """

@@ -337,17 +337,17 @@ class MasterFilter:
 
     def size(self) -> int:
         """
-        Get size of the stack
+        Get the size of the stack
         :return: int
         """
         return len(self.stack)
 
-    def correct_size(self) -> bool:
+    def is_correct_size(self) -> bool:
         """
-        Returs if the stack has the right size: an odd number
+        Returns if the stack has the right size: an odd number
         :return:
         """
-        return is_odd(self.size())
+        return is_odd(self.size()) and self.size() > 1
 
 
 def parse_single(token: str) -> Union[Filter, None]:
