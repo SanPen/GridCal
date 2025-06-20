@@ -58,17 +58,21 @@ class SCOPFResults(ResultsTemplate):
         records = []
 
         # Filter out only valid SCOPF result dicts
-        valid_outputs = [o for o in self.contingency_outputs if "Z_k" in o and "u_j" in o]
+        valid_outputs = [o for o in self.contingency_outputs if "Z_k" in o and "u_j" in o and "Pg" in o]
 
         # Determine max lengths for column headers
         max_z_len = max((len(o["Z_k"]) for o in valid_outputs), default=0)
         max_u_len = max((len(o["u_j"]) for o in valid_outputs), default=0)
+        max_pg_len = max((len(o["Pg"]) for o in valid_outputs), default=0)
 
         for output in valid_outputs:
             record = {
                 "Contingency Index": output.get("contingency_index", -1),
                 "W_k": output.get("W_k", 0.0),
             }
+
+            for i in range(max_pg_len):
+                record[f"Pg[{i}]"] = output["Pg"][i] if i < len(output["Pg"]) else np.nan
 
             # Z_k elements
             for i in range(max_z_len):

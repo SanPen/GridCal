@@ -12,3 +12,6 @@ from GridCalEngine.Simulations.OPF.opf_driver import OptimalPowerFlowDriver
 from GridCalEngine.Simulations.OPF.simple_dispatch_ts import run_simple_dispatch, run_simple_dispatch_ts
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, NonlinearOPFResults
 from GridCalEngine.Simulations.OPF.scopf_driver import SCOPFDriver
+from GridCalEngine.Simulations.OPF.scopf_results import SCOPFResults
+from GridCalEngine.Simulations.OPF.scopf_accelerated_driver import SCOPFNNResults
+from GridCalEngine.Simulations.OPF.scopf_accelerated_driver import SCOPFNNDriver

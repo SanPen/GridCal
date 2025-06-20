@@ -74,7 +74,7 @@
        </font>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="GridTab">
        <attribute name="icon">
@@ -3976,7 +3976,7 @@
            <enum>QTabWidget::TabPosition::South</enum>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>3</number>
           </property>
           <property name="iconSize">
            <size>
@@ -6225,7 +6225,7 @@
               </property>
               <layout class="QGridLayout" name="gridLayout_36">
                <item row="0" column="1">
-                <widget class="QSpinBox" name="scopf_number_of_perturbations_SpinBox">
+                <widget class="QSpinBox" name="spinBox">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
@@ -6237,7 +6237,7 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QSpinBox" name="scopf_max_iterations_SpinBox">
+                <widget class="QSpinBox" name="spinBox_2">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
@@ -6249,7 +6249,7 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QDoubleSpinBox" name="scopf_load_perturbance_SpinBox">
+                <widget class="QDoubleSpinBox" name="doubleSpinBox">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
@@ -6384,8 +6384,55 @@
                <string>Neural Network Settings</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_35">
+               <item row="5" column="1">
+                <widget class="QComboBox" name="comboBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="editable">
+                  <bool>true</bool>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>Random</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Contingency 0</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Contingency 1</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Contingency 2</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Contingency 3</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Contingency 4</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Contingency 5</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
                <item row="1" column="1">
-                <widget class="QDoubleSpinBox" name="scopf_nn_larning_rate_SpinBox">
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
@@ -6396,6 +6443,69 @@
                  </property>
                  <property name="value">
                   <double>0.001000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QSpinBox" name="spinBox_3">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="maximum">
+                  <number>9999999</number>
+                 </property>
+                 <property name="value">
+                  <number>200</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0" colspan="2">
+                <widget class="QLabel" name="label_163">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>   Validation and test sets are 50% each of the remaining amount.</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                 <property name="value">
+                  <double>80.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_160">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>   Learning rate</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="value">
+                  <double>0.300000000000000</double>
                  </property>
                 </widget>
                </item>
@@ -6411,6 +6521,18 @@
                   </size>
                  </property>
                 </spacer>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label_164">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>   Contingency test case</string>
+                 </property>
+                </widget>
                </item>
                <item row="2" column="0">
                 <widget class="QLabel" name="label_161">
@@ -6445,69 +6567,6 @@
                  </property>
                  <property name="text">
                   <string>   Training set split</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QSpinBox" name="scopf_nn_epochs_SpinBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="maximum">
-                  <number>999999</number>
-                 </property>
-                 <property name="value">
-                  <number>200</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QDoubleSpinBox" name="scopf_nn_dropout_rate_SpinBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="value">
-                  <double>0.300000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0" colspan="2">
-                <widget class="QLabel" name="label_163">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>   Validation and test sets are 50% each of the remaining amount.</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QDoubleSpinBox" name="scopf_nn_trainig_set_split_SPinBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>10</pointsize>
-                  </font>
-                 </property>
-                 <property name="value">
-                  <double>80.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_160">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>   Learning rate</string>
                  </property>
                 </widget>
                </item>
@@ -10687,7 +10746,7 @@ QProgressBar::chunk{
      <x>0</x>
      <y>0</y>
      <width>1182</width>
-     <height>20</height>
+     <height>33</height>
     </rect>
    </property>
    <property name="font">
@@ -12545,7 +12604,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/scopf_gnn.svg</normaloff>:/Icons/icons/scopf_gnn.svg</iconset>
    </property>
    <property name="text">
-    <string>Graph neural network for SCOPF</string>
+    <string>Neural network for accelerated SCOPF</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::TextHeuristicRole</enum>

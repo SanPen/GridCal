@@ -28,13 +28,19 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved compile_rms_models">
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/scopf_accelerated_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/scopf_accelerated_results.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Implemented accelerated scopf into gui">
+      <change afterPath="$PROJECT_DIR$/src/trunk/scopf/case39_vjosep7.gridcal" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/scopf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/scopf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/scopf_accelerated_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/scopf_accelerated_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/scopf_accelerated_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/scopf_accelerated_results.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/scopf_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/scopf_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/one_hot_14_integrate.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/FinalFolder/ModelTrain/one_hot_14_integrate.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/scopf_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/scopf_results.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -248,6 +254,7 @@
     "Python.run_contingencies_ts.executor": "Run",
     "Python.run_master.executor": "Run",
     "Python.run_server_farm.executor": "Debug",
+    "Python.scopf.executor": "Run",
     "Python.scripting_por_obj.executor": "Debug",
     "Python.server_example.executor": "Run",
     "Python.short_circuit_driver.executor": "Run",
@@ -273,7 +280,7 @@
     "Shell Script.make.sh.executor": "Run",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "355__SCOPF",
-    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/trunk/dynamics",
+    "last_opened_file_path": "C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -291,11 +298,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\some1\Desktop\GridCal_SCOPF\src\trunk\scopf" />
       <recent name="$PROJECT_DIR$/src/trunk/dynamics" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability" />
       <recent name="$PROJECT_DIR$/src/trunk/simple_dispatch" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
-      <recent name="$PROJECT_DIR$/src/GridCal/ThirdParty/darkdetect" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\some1\Desktop\GridCal_SCOPF\src\GridCalEngine\Simulations\OPF" />
@@ -2395,7 +2402,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="753" />
+    <option name="localTasksCounter" value="754" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2441,7 +2448,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactored fast_dispatch_with_renewables" />
     <MESSAGE value="more work on reliability" />
     <MESSAGE value="Integrated reliability study" />
     <MESSAGE value="Migrated Investment to inherit from PointerDevice" />
@@ -2466,7 +2472,8 @@
     <MESSAGE value="Refactor in progress" />
     <MESSAGE value="Improved file saving" />
     <MESSAGE value="Improved compile_rms_models" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved compile_rms_models" />
+    <MESSAGE value="Implemented accelerated scopf into gui" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented accelerated scopf into gui" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -3025,6 +3032,11 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/Rms/rms_driver.py</url>
           <line>57</line>
           <option name="timeStamp" value="2812" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py</url>
+          <line>12</line>
+          <option name="timeStamp" value="2814" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

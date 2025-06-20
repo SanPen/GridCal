@@ -101,7 +101,7 @@ class SCOPFDriver(TimeSeriesDriverTemplate):
         u_j_vec = np.zeros((n_con_all, nc.generator_data.nelm))
 
         contingency_outputs = []
-        num_perturbations = 1
+        num_perturbations = 10
         for p in range(num_perturbations):
             print(f"\n====== Perturbation case {p + 1} of {num_perturbations} ======\n")
 

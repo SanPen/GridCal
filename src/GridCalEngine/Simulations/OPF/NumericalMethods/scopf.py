@@ -1933,50 +1933,61 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
 
     return results
 
+import matplotlib.pyplot as plt
+
 def plot_scopf_progress(iteration_data):
     """
-    Plot the evolution of various metrics across SCOPF iterations
+    Plot the evolution of various metrics across SCOPF iterations in separate figures.
     :param iteration_data: Dictionary containing lists of metrics per iteration
     """
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 10))
 
-    # Plot maximum W_k evolution
-    ax1.plot(iteration_data['max_wk'], 'b.-', label='Max W_k')
-    ax1.set_xlabel('Iteration')
-    ax1.set_ylabel('Maximum W_k Value')
-    ax1.set_title('Evolution of Maximum W_k')
-    ax1.grid(True)
-    ax1.legend()
-
-    # Plot number of violations
-    ax2.plot(iteration_data['num_violations'], 'r.-', label='Violations')
-    ax2.set_xlabel('Iteration')
-    ax2.set_ylabel('Number of Violations')
-    ax2.set_title('Number of Constraint Violations')
-    ax2.grid(True)
-    ax2.legend()
-
-    # Plot slack values statistics
-    ax3.plot(iteration_data['max_voltage_slack'], 'g.-', label='Max V Slack')
-    ax3.plot(iteration_data['avg_voltage_slack'], 'g--', label='Avg V Slack')
-    ax3.plot(iteration_data['max_flow_slack'], 'm.-', label='Max F Slack')
-    ax3.plot(iteration_data['avg_flow_slack'], 'm--', label='Avg F Slack')
-    ax3.set_xlabel('Iteration')
-    ax3.set_ylabel('Slack Values')
-    ax3.set_title('Evolution of Slack Values in Subproblems')
-    ax3.grid(True)
-    ax3.legend()
-
-    # Plot generation cost
-    ax4.plot(iteration_data['total_cost'], 'k.-', label='Cost')
-    ax4.set_xlabel('Iteration')
-    ax4.set_ylabel('Generation Cost')
-    ax4.set_title('Evolution of Generation Cost')
-    ax4.grid(True)
-    ax4.legend()
-
+    # 1. Max W_k
+    plt.figure(figsize=(8, 5))
+    plt.plot(iteration_data['max_wk'], 'b.-', label='Max W_k')
+    plt.xlabel('Iteration')
+    plt.ylabel('Maximum W_k Value')
+    plt.title('Evolution of Maximum W_k')
+    plt.grid(True)
+    plt.legend()
     plt.tight_layout()
     plt.show()
+
+    # 2. Number of Violations
+    plt.figure(figsize=(8, 5))
+    plt.plot(iteration_data['num_violations'], 'r.-', label='Violations')
+    plt.xlabel('Iteration')
+    plt.ylabel('Number of Violations')
+    plt.title('Number of Constraint Violations')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+    # 3. Slack Values
+    plt.figure(figsize=(8, 5))
+    plt.plot(iteration_data['max_voltage_slack'], 'g.-', label='Max V Slack')
+    plt.plot(iteration_data['avg_voltage_slack'], 'g--', label='Avg V Slack')
+    plt.plot(iteration_data['max_flow_slack'], 'm.-', label='Max F Slack')
+    plt.plot(iteration_data['avg_flow_slack'], 'm--', label='Avg F Slack')
+    plt.xlabel('Iteration')
+    plt.ylabel('Slack Values')
+    plt.title('Evolution of Slack Values in Subproblems')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+    # 4. Total Cost
+    plt.figure(figsize=(8, 5))
+    plt.plot(iteration_data['total_cost'], 'k.-', label='Cost')
+    plt.xlabel('Iteration')
+    plt.ylabel('Generation Cost')
+    plt.title('Evolution of Generation Cost')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
 
 
 def case_loop() -> None:
@@ -2014,10 +2025,10 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case39_v15.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case39_vjosep2.gridcal')
-    file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal')
+    file_path = os.path.join('/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/case39_vjosep7.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case39_vjosep4.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
-    file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal')
+    # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v15.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
     # ieee 39 is infeasible
@@ -2271,13 +2282,13 @@ def case_loop() -> None:
 
 
 
-        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_39"
-        os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, f"scopf_result_39_{klm:03d}.json")
-        with open(save_path, "w") as f:
-            json.dump(result, f, indent=2)
-
-        print(f"Saved results for perturbation {klm} to {save_path}")
+        # save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs_39"
+        # os.makedirs(save_dir, exist_ok=True)
+        # save_path = os.path.join(save_dir, f"scopf_result_39_{klm:03d}.json")
+        # with open(save_path, "w") as f:
+        #     json.dump(result, f, indent=2)
+        #
+        # print(f"Saved results for perturbation {klm} to {save_path}")
 
     time_end = time.time()
     print(f"Total time for {klm} perturbations: {time_end - time_start:.2f} seconds")

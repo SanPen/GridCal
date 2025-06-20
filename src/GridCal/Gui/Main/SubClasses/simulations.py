@@ -2389,14 +2389,14 @@ class SimulationsMain(TimeEventsMain):
 
             self.update_available_results()
 
-            self.colour_diagrams()
+            # self.colour_diagrams()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_scopf_nn(self):
         """
-        Run SCOPF simulation
+        Run accelerated NN-based SCOPF simulation
         """
         if self.circuit.valid_for_simulation():
 
@@ -2414,8 +2414,10 @@ class SimulationsMain(TimeEventsMain):
 
                 # set power flow object instance
                 drv = sim.SCOPFNNDriver(grid=self.circuit,
-                                      engine=self.get_preferred_engine(),
-                                      df=df)
+                                        pf_options=self.get_selected_power_flow_options(),
+                                        scopf_options=self.get_opf_options(),
+                                        engine=self.get_preferred_engine(),
+                                        df=df)
 
                 self.LOCK()
                 self.session.run(drv,
@@ -2449,7 +2451,7 @@ class SimulationsMain(TimeEventsMain):
 
             self.update_available_results()
 
-            self.colour_diagrams()
+            # self.colour_diagrams()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
