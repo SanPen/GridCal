@@ -145,11 +145,11 @@ class FilterObjects:
         else:
 
             # try searching by name
-            to_search = expression.strip()
+            to_search = expression.strip().lower()
             if to_search != "":
                 ls = list()
                 for i, obj in enumerate(self._objects):
-                    if expression in obj.name:
+                    if expression in obj.name.lower():
                         ls.append(i)
 
                 self._filtered_indices = np.array(ls, dtype=int)
