@@ -88,7 +88,7 @@ class DataBaseTableMain(DiagramsMain):
         self.ui.associationsTableView.setHorizontalHeader(HeaderViewWithWordWrap(self.ui.associationsTableView))
 
         # combobox change
-        self.ui.associationsComboBox.currentTextChanged.connect(self.display_associations)
+        self.ui.associationsComboBox.currentTextChanged.connect(self.on_associations_combo_box_change)
 
     def setup_objects_tree(self):
         """
@@ -199,9 +199,10 @@ class DataBaseTableMain(DiagramsMain):
 
         return mdl
 
-    def display_profiles(self):
+    def display_profiles(self, proxy_mdl: ObjectModelFilterProxy):
         """
         Display profile
+        :param proxy_mdl: ObjectModelFilterProxy used for the object's table
         """
         if self.circuit.time_profile is not None:
 
@@ -219,10 +220,8 @@ class DataBaseTableMain(DiagramsMain):
                     magnitude = magnitudes[idx]
                     mtype = mag_types[idx]
 
-                    elements = self.get_current_objects_model_view().objects
-
                     mdl = ProfilesModel(time_array=self.circuit.get_time_array(),
-                                        elements=elements,
+                                        elements=proxy_mdl.objects,
                                         device_type=dev_type,
                                         magnitude=magnitude,
                                         data_format=mtype,
@@ -234,23 +233,23 @@ class DataBaseTableMain(DiagramsMain):
             else:
                 self.ui.profiles_tableView.setModel(None)
 
-    def display_associations(self):
+    def display_associations(self, proxy_mdl: ObjectModelFilterProxy):
         """
         Display the association table
+        :param proxy_mdl: ObjectModelFilterProxy used for the object's table
         :return:
         """
         dev_type_text = self.get_db_object_selected_type()
-        model = self.get_current_objects_model_view()
-        association_prperty_name = self.ui.associationsComboBox.currentText()
+        association_property_name = self.ui.associationsComboBox.currentText()
 
-        if dev_type_text is not None and model is not None and association_prperty_name != "":
+        if dev_type_text is not None and proxy_mdl is not None and association_property_name != "":
 
-            elements = model.objects
+            elements = proxy_mdl.objects
 
             if len(elements) > 0:
 
-                gc_prop = elements[0].get_property_by_name(prop_name=association_prperty_name)
-                associations: dev.Associations = elements[0].get_snapshot_value_by_name(name=association_prperty_name)
+                gc_prop = elements[0].get_property_by_name(prop_name=association_property_name)
+                associations: dev.Associations = elements[0].get_snapshot_value_by_name(name=association_property_name)
                 associated_objects = self.circuit.get_elements_by_type(device_type=associations.device_type)
                 self.ui.association_units_label.setText(gc_prop.units)
 
@@ -269,6 +268,12 @@ class DataBaseTableMain(DiagramsMain):
         else:
             self.ui.associationsTableView.setModel(None)
             self.ui.association_units_label.setText("")
+
+    def on_associations_combo_box_change(self):
+        """
+        Triggered on self.ui.associationsComboBox.currentTextChanged
+        """
+        self.display_associations(proxy_mdl=self.get_current_objects_model_view())
 
     def copy_objects_data(self):
         """
@@ -341,7 +346,7 @@ class DataBaseTableMain(DiagramsMain):
             # update the associations view
             assoc_mdl = gf.get_list_model(self.circuit.device_associations[elm_type])
             self.ui.associationsComboBox.setModel(assoc_mdl)
-            self.display_associations()
+            self.display_associations(proxy_mdl=proxy)
 
         else:
             self.ui.dataStructureTableView.setModel(None)
@@ -1153,15 +1158,15 @@ class DataBaseTableMain(DiagramsMain):
         proxy_mdl: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
 
         if proxy_mdl is not None:
-            if len(proxy_mdl.objects) > 0:
+            if len(proxy_mdl.all_objects) > 0:
 
                 has_err, err_txt = proxy_mdl.setExpression(self.ui.smart_search_lineEdit.text())
 
                 # display time series
-                self.display_profiles()
+                self.display_profiles(proxy_mdl=proxy_mdl)
 
                 # display associations
-                self.display_associations()
+                self.display_associations(proxy_mdl=proxy_mdl)
 
                 if has_err:
                     self.show_error_toast(err_txt)

@@ -83,7 +83,7 @@ class TimeEventsMain(DataBaseTableMain):
                                          step_unit=step_unit,
                                          time_base=time_base)
 
-            self.display_profiles()
+            self.display_profiles(proxy_mdl=self.get_current_objects_model_view())
 
             self.update_date_dependent_combos()
 
@@ -139,7 +139,7 @@ class TimeEventsMain(DataBaseTableMain):
 
                     # set up sliders
                     self.update_date_dependent_combos()
-                    self.display_profiles()
+                    self.display_profiles(proxy_mdl=self.get_current_objects_model_view())
                     self.show_info_toast("Profiles imported", duration=3000)
 
                     # ask to update active profile when magnitude is P for generators and loads
@@ -339,7 +339,7 @@ class TimeEventsMain(DataBaseTableMain):
                             else:
                                 print(f"P or Q profile None in {elm.name}")
 
-                        self.display_profiles()
+                        self.display_profiles(proxy_mdl=self.get_current_objects_model_view())
 
                 else:
                     # rejected the operation
@@ -437,7 +437,7 @@ class TimeEventsMain(DataBaseTableMain):
 
                 # set up sliders
                 self.update_date_dependent_combos()
-                self.display_profiles()
+                self.display_profiles(proxy_mdl=self.get_current_objects_model_view())
 
                 if logger.has_logs():
                     dialogue = LogsDialogue(name="Import profiles", logger=logger)

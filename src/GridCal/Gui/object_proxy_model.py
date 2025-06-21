@@ -35,11 +35,17 @@ class ObjectModelFilterProxy(QtCore.QSortFilterProxyModel):
         # indexes allowed after the last call to setExpression()
         self._allowed_rows: set[int] = set(range(len(self._mdl.objects)))  # start with “show all”
 
+        self._filtered_objects: List[ALL_DEV_TYPES] = list()
+
         super().setSourceModel(mdl)
 
     @property
-    def objects(self) -> List[ALL_DEV_TYPES]:
+    def all_objects(self) -> List[ALL_DEV_TYPES]:
         return self._mdl.objects
+
+    @property
+    def objects(self) -> List[ALL_DEV_TYPES]:
+        return self._filtered_objects
 
     @property
     def attributes(self):
@@ -54,7 +60,7 @@ class ObjectModelFilterProxy(QtCore.QSortFilterProxyModel):
         error_txt = ""
         if not expr.strip():
             # empty => show everything
-            self._allowed_rows = set(range(len(self._filter_engine.objects)))
+            self._allowed_rows = set(range(len(self.all_objects)))
         else:
             try:
                 self._filter_engine.filter(expr)  # updates .filtered_indices
@@ -64,6 +70,8 @@ class ObjectModelFilterProxy(QtCore.QSortFilterProxyModel):
                 error_txt = f"Filter expression error: {e}"
                 self._allowed_rows = set()
                 has_error = True
+
+        self._filtered_objects = [self._mdl.objects[i] for i in self._allowed_rows]
 
         self.invalidateFilter()  # <- triggers filterAcceptsRow()
 
