@@ -15,7 +15,8 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls impo
                                                                                     compute_slack_distribution)
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
-                                                                                   compute_fx, polar_to_rect)
+                                                                                   compute_fx, polar_to_rect,
+                                                                                   fortescue_012_to_abc)
 from GridCalEngine.Topology.simulation_indices import compile_types
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
 from GridCalEngine.Utils.Sparse.csc2 import (CSC, scipy_to_mat)
@@ -30,6 +31,38 @@ def lookup_from_mask(mask):
             counter += 1
 
     return lookup
+
+def compute_ybus_generator(nc: NumericalCircuit) -> csc_matrix:
+    """
+    Compute the Ybus matrix for a generator in a 3-phase system
+    :param nc: NumericalCircuit
+    :return: Ybus
+    """
+
+    n = nc.bus_data.nbus
+    m = nc.generator_data.nelm
+
+    Ybus_gen = lil_matrix((3 * n, 3 * n), dtype=complex)
+    idx3 = np.array([0, 1, 2])
+
+    for k in range(m):
+        f = nc.generator_data.bus_idx[k]
+        f3 = 3 * f + idx3
+
+        r0 = nc.generator_data.r0[k]
+        x0 = nc.generator_data.x0[k]
+        r1 = nc.generator_data.r1[k]
+        x1 = nc.generator_data.x1[k]
+        r2 = nc.generator_data.r2[k]
+        x2 = nc.generator_data.x2[k]
+
+        # Fortescue
+        Zabc = fortescue_012_to_abc(r0 + 1j * x0, r1 + 1j * x1, r2 + 1j * x2)
+        Yabc = np.linalg.inv(Zabc)
+        Ybus_gen[np.ix_(f3, f3)] = Yabc
+
+    return Ybus_gen.tocsc()
+
 
 def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matrix, CxVec, BoolVec, IntVec, IntVec]:
     """
