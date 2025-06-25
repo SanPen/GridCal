@@ -1556,6 +1556,7 @@ class ResultTypes(Enum):
     InvestmentsParetoPlot = 'Pareto plots'
     InvestmentsIterationsPlot = 'Iterations plot'
     InvestmentsParetoPlotNSGA2 = 'Pareto plot NSGA2'
+    InvestmentsWhenToMakePlot = "When to make them plot"
 
     # reliability
     ReliabilityLoleResults = "LOLE"

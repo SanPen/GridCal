@@ -2240,7 +2240,7 @@ class SimulationsMain(TimeEventsMain):
             branch_exchange_sensitivity=self.ui.ntcAlphaSpinBox.value() / 100.0,
             use_branch_exchange_sensitivity=self.ui.ntcSelectBasedOnExchangeSensitivityCheckBox.isChecked(),
             branch_rating_contribution=self.ui.ntcLoadRuleSpinBox.value() / 100.0,
-            use_branch_rating_contribution=self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked(),
+            monitor_only_ntc_load_rule_branches=self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked(),
             consider_contingencies=self.ui.consider_ntc_contingencies_checkBox.isChecked(),
             opf_options=self.get_opf_options(),
             lin_options=self.get_linear_options()

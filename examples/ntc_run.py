@@ -4,7 +4,7 @@ from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import Ava
 import time
 from GridCalEngine.basic_structures import BranchImpedanceMode
 from GridCalEngine.IO.file_handler import FileOpen
-from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha, compute_dP
 
 folder = r'\\mornt4\DESRED\DPE-Internacional\Interconexiones\FRANCIA\2022 MoU\5GW 8.0\Con N-x\merged\GridCal'
 fname = os.path.join(folder, 'MOU_2022_5GW_v6f_contingencias_dc.gridcal')
@@ -41,16 +41,22 @@ tm0 = time.time()
 print(f'linear analysis computed in {time.time() - tm0:.2f} scs.')
 
 tm0 = time.time()
-alpha = compute_alpha(
-    ptdf=linear.PTDF,
-    lodf=linear.LODF,
+
+dP = compute_dP(
     P0=numerical_circuit_.Sbus.real,
-    Pinstalled=numerical_circuit_.bus_installed_power,
+    P_installed=numerical_circuit_.bus_installed_power,
     Pgen=numerical_circuit_.generator_data.get_injections_per_bus()[:, 0].real,
     Pload=numerical_circuit_.load_data.get_injections_per_bus()[:, 0].real,
     bus_a1_idx=a1,
     bus_a2_idx=a2,
     mode=AvailableTransferMode.InstalledPower.value,
+    dT=1.0
+)
+
+alpha = compute_alpha(
+    ptdf=linear.PTDF,
+    dP=dP,
+    dT=1.0
 )
 
 print(f'alpha and alpha n-1 computed in {time.time() - tm0:.2f} scs.')

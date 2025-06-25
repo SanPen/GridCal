@@ -122,7 +122,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.vsc_loading[t_idx, :] = opf_vars.vsc_vars.loading[0, :]
 
             self.results.converged[t_idx] = opf_vars.acceptable_solution
-            self.results.inter_area_flows[t_idx] = opf_vars.inter_area_flows
+            self.results.inter_area_flows[t_idx] = opf_vars.inter_area_flows[0]
 
             # update progress bar
             self.report_progress2(t_idx, len(self.time_indices))

@@ -611,7 +611,7 @@ class Line(BranchParent):
             elm.rate_prof = self.rate_prof
             elm.contingency_factor_prof = self.contingency_factor_prof
             elm.protection_rating_factor_prof = self.protection_rating_factor_prof
-            elm.temperature_prof = self.temp_oper_prof
+            elm.temp_oper_prof = self.temp_oper_prof
             elm.Cost_prof = self.Cost_prof
 
         return elm

@@ -14,13 +14,13 @@ from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCal.Gui.general_dialogues import NewProfilesStructureDialogue, TimeReIndexDialogue, LogsDialogue
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
-from GridCal.Gui.Main.SubClasses.Model.objects import ObjectsTableMain
+from GridCal.Gui.Main.SubClasses.Model.data_base import DataBaseTableMain
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI, GeneratorsProfileOptionsDialogue
 from GridCal.Gui.profiles_model import ProfilesModel
 
 
-class TimeEventsMain(ObjectsTableMain):
+class TimeEventsMain(DataBaseTableMain):
     """
     Diagrams Main
     """
@@ -32,7 +32,7 @@ class TimeEventsMain(ObjectsTableMain):
         """
 
         # create main window
-        ObjectsTableMain.__init__(self, parent)
+        DataBaseTableMain.__init__(self, parent)
 
         # --------------------------------------------------------------------------------------------------------------
         self.ui.actionre_index_time.triggered.connect(self.re_index_time)
@@ -83,7 +83,7 @@ class TimeEventsMain(ObjectsTableMain):
                                          step_unit=step_unit,
                                          time_base=time_base)
 
-            self.display_profiles()
+            self.display_profiles(proxy_mdl=self.get_current_objects_model_view())
 
             self.update_date_dependent_combos()
 
@@ -139,7 +139,7 @@ class TimeEventsMain(ObjectsTableMain):
 
                     # set up sliders
                     self.update_date_dependent_combos()
-                    self.display_profiles()
+                    self.display_profiles(proxy_mdl=self.get_current_objects_model_view())
                     self.show_info_toast("Profiles imported", duration=3000)
 
                     # ask to update active profile when magnitude is P for generators and loads
@@ -339,7 +339,7 @@ class TimeEventsMain(ObjectsTableMain):
                             else:
                                 print(f"P or Q profile None in {elm.name}")
 
-                        self.display_profiles()
+                        self.display_profiles(proxy_mdl=self.get_current_objects_model_view())
 
                 else:
                     # rejected the operation
@@ -437,7 +437,7 @@ class TimeEventsMain(ObjectsTableMain):
 
                 # set up sliders
                 self.update_date_dependent_combos()
-                self.display_profiles()
+                self.display_profiles(proxy_mdl=self.get_current_objects_model_view())
 
                 if logger.has_logs():
                     dialogue = LogsDialogue(name="Import profiles", logger=logger)

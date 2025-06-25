@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-
+import time
 from typing import Tuple, List, Dict, Callable
 import numpy as np
 from numba import njit
 from scipy.sparse import lil_matrix, isspmatrix_csc
-from GridCalEngine.Topology.admittance_matrices import compute_admittances
+from GridCalEngine.Topology.admittance_matrices import compute_admittances_fast
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
@@ -531,6 +531,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.cbr_pt_set = np.zeros(0, dtype=float)
         self.cbr_qf_set = np.zeros(0, dtype=float)
         self.cbr_qt_set = np.zeros(0, dtype=float)
+        self.cbr_m_tau = np.zeros(0, dtype=float)
         self._set_branch_control_indices()
 
         # Fill VSC Indices
@@ -575,25 +576,24 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Admittance ---------------------------------------------------------------------------------------------------
 
-        self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
-        self.Yshunt_bus = self.nc.get_Yshunt_bus_pu()  # computed here for later
+        # self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
+        # self.Yshunt_bus = self.nc.get_Yshunt_bus_pu()  # computed here for later
 
-        self.adm = compute_admittances(
+        self.adm = compute_admittances_fast(
+            nbus=self.nc.bus_data.nbus,
             R=self.nc.passive_branch_data.R,
             X=self.nc.passive_branch_data.X,
             G=self.nc.passive_branch_data.G,
             B=self.nc.passive_branch_data.B,
-            tap_module=expand(self.nc.nbr, self.m, self.u_cbr_m, 1.0),
+            tap_module=self.nc.active_branch_data.tap_module,
             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-            tap_angle=expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0),
-            Cf=self.nc.passive_branch_data.Cf,
-            Ct=self.nc.passive_branch_data.Ct,
-            Yshunt_bus=self.Yshunt_bus,
-            conn=self.nc.passive_branch_data.conn,
-            seq=1,
-            add_windings_phase=False
+            tap_angle=self.nc.active_branch_data.tap_angle,
+            F=self.nc.passive_branch_data.F,
+            T=self.nc.passive_branch_data.T,
+            Yshunt_bus=self.nc.get_Yshunt_bus_pu(),
         )
+        self.adm.initialize_update()  # allows mega fast matrix updates
 
         if self.options.verbose > 1:
             print("Ybus\n", self.adm.Ybus.toarray())
@@ -701,10 +701,13 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         self.u_cbr_m = np.array(u_cbr_m, dtype=int)
         self.u_cbr_tau = np.array(u_cbr_tau, dtype=int)
+        self.cbr_m_tau = np.array(list(set(u_cbr_m + u_cbr_tau)), dtype=int)
+
         self.k_cbr_pf = np.array(k_cbr_pf, dtype=int)
         self.k_cbr_pt = np.array(k_cbr_pt, dtype=int)
         self.k_cbr_qf = np.array(k_cbr_qf, dtype=int)
         self.k_cbr_qt = np.array(k_cbr_qt, dtype=int)
+
         self.cbr_pf_set = np.array(cbr_pf_set, dtype=float)
         self.cbr_pt_set = np.array(cbr_pt_set, dtype=float)
         self.cbr_qf_set = np.array(cbr_qf_set, dtype=float)
@@ -1204,7 +1207,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :param update_class_vars: Update the class vars related to the calculation step
         :return: Residual vector
         """
+        tm = [None] * 9
 
+        tm[0] = time.time()
         nhvdc = self.nc.hvdc_data.nelm
 
         a = len(self.i_u_va)
@@ -1240,29 +1245,42 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         tau_ = x[j:k]
 
         # Controllable branches ----------------------------------------------------------------------------------------
-        m2 = self.nc.active_branch_data.tap_module.copy()
-        tau2 = self.nc.active_branch_data.tap_angle.copy()
-        m2[self.u_cbr_m] = m_
-        tau2[self.u_cbr_tau] = tau_
+        tm[1] = time.time()
 
-        adm_ = compute_admittances(
-            R=self.nc.passive_branch_data.R,
-            X=self.nc.passive_branch_data.X,
-            G=self.nc.passive_branch_data.G,
-            B=self.nc.passive_branch_data.B,
-            tap_module=m2,
-            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-            tap_angle=tau2,
-            Cf=self.nc.passive_branch_data.Cf,
-            Ct=self.nc.passive_branch_data.Ct,
-            Yshunt_bus=self.Yshunt_bus,
-            conn=self.nc.passive_branch_data.conn,
-            seq=1,
-            add_windings_phase=False
-        )
+        m2 = self.nc.active_branch_data.tap_module.copy()
+        if len(self.u_cbr_m) > 0:
+            m2[self.u_cbr_m] = m_
+
+        tau2 = self.nc.active_branch_data.tap_angle.copy()
+        if len(self.u_cbr_tau) > 0:
+            tau2[self.u_cbr_tau] = tau_
+
+            # adm_ = compute_admittances_fast(
+        #     nbus=self.nc.bus_data.nbus,
+        #     R=self.nc.passive_branch_data.R,
+        #     X=self.nc.passive_branch_data.X,
+        #     G=self.nc.passive_branch_data.G,
+        #     B=self.nc.passive_branch_data.B,
+        #     tap_module=m2,
+        #     vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+        #     vtap_t=self.nc.passive_branch_data.virtual_tap_t,
+        #     tap_angle=tau2,
+        #     F=self.nc.passive_branch_data.F,
+        #     T=self.nc.passive_branch_data.T,
+        #     Yshunt_bus=self.Yshunt_bus
+        # )
+
+        if len(self.cbr_m_tau) > 0:
+            adm_ = self.adm.copy()
+            adm_.modify_taps_fast(idx=self.cbr_m_tau,
+                                  tap_module=m2[self.cbr_m_tau],
+                                  tap_angle=tau2[self.cbr_m_tau])
+        else:
+            adm_ = self.adm  # there is no admittance change, hence we can just pick the existing adm
 
         # Passive branches ---------------------------------------------------------------------------------------------
+        tm[2] = time.time()
+
         V = polar_to_rect(Vm_, Va_)
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm_)
         Scalc_passive = compute_power(adm_.Ybus, V)
@@ -1320,6 +1338,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
 
         # VSC ----------------------------------------------------------------------------------------------------------
+        tm[3] = time.time()
+
         T_vsc = self.nc.vsc_data.T
         It = np.sqrt(Pt_vsc_ * Pt_vsc_ + Qt_vsc_ * Qt_vsc_) / Vm_[T_vsc]
         It2 = It * It
@@ -1329,8 +1349,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         loss_vsc = PLoss_IEC - Pt_vsc_ - Pf_vsc_
         St_vsc = make_complex(Pt_vsc_, Qt_vsc_)
+        # Scalc_vsc = Pf_vsc_ @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
 
         # HVDC ---------------------------------------------------------------------------------------------------------
+        tm[4] = time.time()
+
         Vmf_hvdc = Vm_[self.nc.hvdc_data.F]
         zbase = self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase
         Ploss_hvdc = self.nc.hvdc_data.r / zbase * np.power(Pf_hvdc_ / Vmf_hvdc, 2.0)
@@ -1345,8 +1368,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         Sf_hvdc = make_complex(Pf_hvdc_, Qf_hvdc_)
         St_hvdc = make_complex(Pt_hvdc_, Qt_hvdc_)
+        # Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
 
         # total nodal power --------------------------------------------------------------------------------------------
+        tm[5] = time.time()
+
         Scalc_active = calc_flows_active_branch_per_bus(
             nbus=self.nc.bus_data.nbus,
             F_hvdc=self.nc.hvdc_data.F,
@@ -1357,12 +1383,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             T_vsc=self.nc.vsc_data.T,
             Pf_vsc=Pf_vsc_,
             St_vsc=St_vsc)
-
         Scalc_ = Scalc_active + Scalc_passive
+
+        # Scalc_ = Scalc_hvdc + Scalc_vsc + Scalc_passive
 
         dS = Scalc_ - Sbus
 
         # compose the residuals vector ---------------------------------------------------------------------------------
+        tm[6] = time.time()
+
         f_ = np.r_[
             dS[self.i_k_p].real,
             dS[self.i_k_q].imag,
@@ -1375,6 +1404,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Qt_cbr - self.cbr_qt_set
         ]
 
+        tm[7] = time.time()
         if update_class_vars:
             self._Va = Va_
             self._Vm = Vm_
@@ -1390,6 +1420,16 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             self.Scalc = Scalc_
             self.adm = adm_
             self._f = f_
+
+        tm[8] = time.time()
+
+        # print("\tInit", tm[1] - tm[0])
+        # print("\tControllable branches", tm[2] - tm[1])
+        # print("\tPassive branches", tm[3] - tm[2])
+        # print("\tVSC", tm[4] - tm[3])
+        # print("\tHVDC", tm[5] - tm[4])
+        # print("\ttotal nodal power", tm[6] - tm[5])
+        # print("\tcompose the residuals vector", tm[7] - tm[6])
 
         return f_
 
@@ -1587,26 +1627,31 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Update Ybus with the new taps
         m2 = self.nc.active_branch_data.tap_module.copy()
-        tau2 = self.nc.active_branch_data.tap_angle.copy()
-        m2[self.u_cbr_m] = self.m
-        tau2[self.u_cbr_tau] = self.tau
+        if len(self.u_cbr_m) > 0:
+            m2[self.u_cbr_m] = self.m
 
-        self.adm = compute_admittances(
-            R=self.nc.passive_branch_data.R,
-            X=self.nc.passive_branch_data.X,
-            G=self.nc.passive_branch_data.G,
-            B=self.nc.passive_branch_data.B,
-            tap_module=m2,
-            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-            tap_angle=tau2,
-            Cf=self.nc.passive_branch_data.Cf,
-            Ct=self.nc.passive_branch_data.Ct,
-            Yshunt_bus=self.Yshunt_bus,
-            conn=self.nc.passive_branch_data.conn,
-            seq=1,
-            add_windings_phase=False
-        )
+        tau2 = self.nc.active_branch_data.tap_angle.copy()
+        if len(self.u_cbr_tau) > 0:
+            tau2[self.u_cbr_tau] = self.tau
+
+        # self.adm = compute_admittances_fast(
+        #     nbus=self.nc.bus_data.nbus,
+        #     R=self.nc.passive_branch_data.R,
+        #     X=self.nc.passive_branch_data.X,
+        #     G=self.nc.passive_branch_data.G,
+        #     B=self.nc.passive_branch_data.B,
+        #     tap_module=m2,
+        #     vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+        #     vtap_t=self.nc.passive_branch_data.virtual_tap_t,
+        #     tap_angle=tau2,
+        #     F=self.nc.passive_branch_data.F,
+        #     T=self.nc.passive_branch_data.T,
+        #     Yshunt_bus=self.Yshunt_bus,
+        # )
+        if len(self.cbr_m_tau) > 0:
+            self.adm.modify_taps_fast(idx=self.cbr_m_tau,
+                                      tap_module=m2[self.cbr_m_tau],
+                                      tap_angle=tau2[self.cbr_m_tau])
 
         Scalc_passive = compute_power(self.adm.Ybus, V)
 
@@ -1804,7 +1849,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 Pf_hvdc=self.Pf_hvdc,
 
                 # Admittances and Connections
-                Ys=self.Ys,
+                Ys=self.adm.ys,
                 Bc=self.nc.passive_branch_data.B,
 
                 yff_cbr=self.adm.yff,

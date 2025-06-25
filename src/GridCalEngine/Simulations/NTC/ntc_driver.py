@@ -62,7 +62,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             bus_a1_idx=self.options.sending_bus_idx,
             bus_a2_idx=self.options.receiving_bus_idx,
             transfer_method=self.options.transfer_method,
-            monitor_only_ntc_load_rule_branches=self.options.use_branch_rating_contribution,
+            monitor_only_ntc_load_rule_branches=self.options.monitor_only_ntc_load_rule_branches,
             alpha_threshold=self.options.branch_exchange_sensitivity,
             monitor_only_sensitive_branches=self.options.use_branch_exchange_sensitivity,
             ntc_load_rule=self.options.branch_rating_contribution,
@@ -112,7 +112,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         self.results.inter_space_hvdc = opf_vars.hvdc_vars.inter_space_hvdc
         self.results.inter_space_vsc = opf_vars.vsc_vars.inter_space_vsc
 
-        self.results.inter_area_flows = opf_vars.inter_area_flows
+        self.results.inter_area_flows = opf_vars.inter_area_flows[0]
+        self.results.structural_inter_area_flows = opf_vars.structural_ntc[0]
 
         self.results.converged = opf_vars.acceptable_solution
 

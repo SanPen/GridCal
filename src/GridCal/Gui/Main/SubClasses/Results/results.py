@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
-from PySide6 import QtWidgets
+from PySide6 import QtWidgets, QtGui
 from matplotlib import pyplot as plt
 from typing import Union
 from GridCal.Gui.table_view_header_wrap import HeaderViewWithWordWrap
@@ -56,9 +56,10 @@ class ResultsMain(SimulationsMain):
         # wrap headers
         self.ui.resultsTableView.setHorizontalHeader(HeaderViewWithWordWrap(self.ui.resultsTableView))
 
-    def results_tree_view_click(self, index):
+    def results_tree_view_click(self, index: QtGui.QStandardItem):
         """
-        Display the simulation results on the results table
+        Display the simulation results on the result's table
+        :param index: Clicked Tree index
         """
         tree_mdl = self.ui.results_treeView.model()
         item = tree_mdl.itemFromIndex(index)

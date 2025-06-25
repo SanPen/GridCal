@@ -25,11 +25,11 @@ from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.vsc_data import VscData
 from GridCalEngine.DataStructures.bus_data import BusData
-from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, StrVec, CxMat
+from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, StrVec, CxMat, Mat
 from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, set_var_bounds, join
 from GridCalEngine.enumerations import TapPhaseControl, HvdcControlType, AvailableTransferMode, ConverterControlType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
-from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha, compute_alpha_n1, compute_dP
 from GridCalEngine.IO.file_system import opf_file_path
 
 
@@ -922,7 +922,7 @@ class NtcVars:
         # structural NTC
         self.structural_ntc = np.zeros(nt, dtype=float)
 
-        self.inter_area_flows = 0
+        self.inter_area_flows = np.zeros(nt, dtype=float)
 
     def get_values(self, Sbase: float, model: LpModel) -> "NtcVars":
         """
@@ -1137,7 +1137,7 @@ def add_linear_branches_formulation(t_idx: int,
                                     alpha_threshold: float,
                                     structural_ntc: float,
                                     ntc_load_rule: float,
-                                    inf=1e20):
+                                    inf=1e20) -> LpExp:
     """
     Formulate the branches
     :param t_idx: time index
@@ -1149,12 +1149,11 @@ def add_linear_branches_formulation(t_idx: int,
     :param prob: OR problem
     :param monitor_only_ntc_load_rule_branches:
     :param monitor_only_sensitive_branches:
+    :param alpha: Array of branch sensitivity to the exchange
+    :param alpha_threshold: Threshold for sensitivity consideration
     :param structural_ntc
     :param ntc_load_rule
-    :param alpha_threshold
-    :param alpha
     :param inf: number considered infinite
-    :param add_flow_slacks: add slacks to the branch flows?
     :return objective function
     """
     f_obj = 0.0
@@ -1299,12 +1298,13 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                                                   hvdc_vars: HvdcNtcVars,
                                                   vsc_vars: VscNtcVars,
                                                   prob: LpModel,
-                                                  linear_multicontingencies: LinearMultiContingencies,
+                                                  linear_multi_contingencies: LinearMultiContingencies,
                                                   monitor_only_ntc_load_rule_branches: bool,
                                                   monitor_only_sensitive_branches: bool,
                                                   structural_ntc: float,
                                                   ntc_load_rule: float,
-                                                  alpha_threshold: float):
+                                                  alpha_threshold: float,
+                                                  alpha_n1: Mat):
     """
     Formulate the branches
     :param t_idx: time index
@@ -1315,16 +1315,19 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
     :param hvdc_vars: HvdcNtcVars
     :param vsc_vars: VscNtcVars
     :param prob: OR problem
-    :param linear_multicontingencies: LinearMultiContingencies
+    :param linear_multi_contingencies: LinearMultiContingencies
     :param monitor_only_ntc_load_rule_branches:
     :param monitor_only_sensitive_branches:
     :param structural_ntc
     :param ntc_load_rule
     :param alpha_threshold
+    :param dP: Vector of power increments to used for the power exchange
+    :param dT: Exchange amount (MW) usually a unitary increment is sufficient
+    :param alpha_n1
     :return objective function
     """
     f_obj = 0.0
-    for c, contingency in enumerate(linear_multicontingencies.multi_contingencies):
+    for c, contingency in enumerate(linear_multi_contingencies.multi_contingencies):
 
         contingency_flows, mask = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
                                                                        injections=bus_vars.Pinj[t_idx, :],
@@ -1338,33 +1341,37 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                 if isinstance(contingency_flow, LpExp):
 
                     # Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N-1 condition
-                    # if monitor_only_ntc_load_rule_branches:
-                    #     """
-                    #     Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER,
-                    #     y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural
-                    #     significa que la linea no puede limitar el intercambio
-                    #     Ejemplo:
-                    #         ntc_load_rule = 0.7
-                    #         rate = 1700
-                    #         alpha_n1 = 0.05
-                    #         structural_rate = 5200
-                    #         0.7 * 1700 --> 1190 mw para el intercambio
-                    #         1190 / 0.05 --> 23.800 MW en la frontera en N
-                    #         23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
-                    #        """
-                    #     monitor_by_load_rule_n1 = ntc_load_rule * branch_data_t.rates[m] / (alpha_n1[m, c] + 1e-20) <= structural_ntc
-                    # else:
-                    #     monitor_by_load_rule_n1 = True
-                    #
-                    # # Monitoring logic: Exclude branches with not enough sensibility to exchange in N-1 condition
-                    # if monitor_only_sensitive_branches:
-                    #     monitor_by_sensitivity_n1 = alpha_n1[m, c] > alpha_threshold
-                    # else:
-                    #     monitor_by_sensitivity_n1 = True
+                    if monitor_only_ntc_load_rule_branches:
+                        """
+                        Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER,
+                        y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural
+                        significa que la linea no puede limitar el intercambio
+                        Ejemplo:
+                            ntc_load_rule = 0.7
+                            rate = 1700
+                            alpha_n1 = 0.05
+                            structural_rate = 5200
+                            0.7 * 1700 --> 1190 mw para el intercambio
+                            1190 / 0.05 --> 23.800 MW en la frontera en N
+                            23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
+                           """
+                        monitor_by_load_rule_n1 = True
+                        for c_br in contingency.branch_indices:
+                            monitor_by_load_rule_n1 = (monitor_by_load_rule_n1 and
+                                                       (ntc_load_rule * branch_data_t.rates[m] / (
+                                                               alpha_n1[m, c_br] + 1e-20) <= structural_ntc))
 
-                    # TODO: Figure out how to compute Alpha N-1 to be able to uncomment the block above
-                    monitor_by_load_rule_n1 = True
-                    monitor_by_sensitivity_n1 = True
+                    else:
+                        monitor_by_load_rule_n1 = True
+
+                    # Monitoring logic: Exclude branches with not enough sensibility to exchange in N-1 condition
+                    if monitor_only_sensitive_branches:
+                        monitor_by_sensitivity_n1 = True
+                        for c_br in contingency.branch_indices:
+                            monitor_by_sensitivity_n1 = (monitor_by_sensitivity_n1 and
+                                                         (alpha_n1[m, c_br] > alpha_threshold))
+                    else:
+                        monitor_by_sensitivity_n1 = True
 
                     if monitor_by_load_rule_n1 and monitor_by_sensitivity_n1:
                         # declare slack variables
@@ -1919,15 +1926,23 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                             logger=logger)
 
         # compute the sensitivity to the exchange
-        alpha = compute_alpha(ptdf=ls.PTDF,
-                              lodf=ls.LODF,
-                              P0=Pbus.real,
-                              Pinstalled=nc.bus_data.installed_power,
-                              Pgen=nc.generator_data.get_injections_per_bus().real,
-                              Pload=nc.load_data.get_injections_per_bus().real,
-                              bus_a1_idx=bus_a1_idx,
-                              bus_a2_idx=bus_a2_idx,
-                              mode=mode_2_int[transfer_method])
+        dP = compute_dP(
+            P0=Pbus.real,
+            P_installed=nc.bus_data.installed_power,
+            Pgen=nc.generator_data.get_injections_per_bus().real,
+            Pload=nc.load_data.get_injections_per_bus().real,
+            bus_a1_idx=bus_a1_idx,
+            bus_a2_idx=bus_a2_idx,
+            mode=mode_2_int[transfer_method],
+            dT=1.0
+        )
+
+        alpha = compute_alpha(
+            ptdf=ls.PTDF,
+            dP=dP,
+            dT=1.0
+        )
+
         mip_vars.branch_vars.alpha[t_idx, :] = alpha
 
         # compute the structural NTC: this is the sum of ratings in the inter-area
@@ -1973,6 +1988,14 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                              ptdf_threshold=lodf_threshold,
                              lodf_threshold=lodf_threshold)
 
+                alpha_n1 = compute_alpha_n1(
+                    ptdf=ls.PTDF,
+                    lodf=ls.LODF,
+                    alpha=alpha,
+                    dP=dP,
+                    dT=1.0
+                )
+
                 # formulate the contingencies
                 f_obj += add_linear_branches_contingencies_formulation(
                     t_idx=t_idx,
@@ -1983,12 +2006,13 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                     hvdc_vars=mip_vars.hvdc_vars,
                     vsc_vars=mip_vars.vsc_vars,
                     prob=lp_model,
-                    linear_multicontingencies=mctg,
+                    linear_multi_contingencies=mctg,
                     monitor_only_sensitive_branches=monitor_only_sensitive_branches,
                     monitor_only_ntc_load_rule_branches=monitor_only_ntc_load_rule_branches,
                     structural_ntc=structural_ntc,
                     ntc_load_rule=ntc_load_rule,
                     alpha_threshold=alpha_threshold,
+                    alpha_n1=alpha_n1
                 )
 
             else:
@@ -2057,8 +2081,8 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     inter_area_vsc_sense = [x[2] for x in inter_info_vsc]
 
     # The summation of flow increments in the inter-area branches must be ΔP in A1.
-    vars_v.inter_area_flows = (np.sum(vars_v.branch_vars.flows[0, inter_area_branch_idx] * inter_area_branch_sense)
-                               + np.sum(vars_v.hvdc_vars.flows[0, inter_area_hvdc_idx] * inter_area_hvdc_sense)
-                               + np.sum(vars_v.vsc_vars.flows[0, inter_area_vsc_idx] * inter_area_vsc_sense))
+    vars_v.inter_area_flows[0] = (np.sum(vars_v.branch_vars.flows[0, inter_area_branch_idx] * inter_area_branch_sense)
+                                  + np.sum(vars_v.hvdc_vars.flows[0, inter_area_hvdc_idx] * inter_area_hvdc_sense)
+                                  + np.sum(vars_v.vsc_vars.flows[0, inter_area_vsc_idx] * inter_area_vsc_sense))
 
     return vars_v

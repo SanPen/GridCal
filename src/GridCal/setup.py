@@ -205,7 +205,7 @@ setup(
     long_description_content_type='text/markdown',  # Optional (see note above)
     url='https://github.com/SanPen/GridCal',  # Optional
     author='Santiago Peñate Vera et. Al.',  # Optional
-    author_email='santiago@gridcal.org',  # Optional
+    author_email='spenate@eroots.tech',  # Optional
     classifiers=[
         'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Programming Language :: Python :: 3.8',

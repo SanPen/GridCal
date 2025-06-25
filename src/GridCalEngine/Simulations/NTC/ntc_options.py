@@ -26,7 +26,7 @@ class OptimalNetTransferCapacityOptions(OptionsTemplate):
                  branch_exchange_sensitivity: float = 5.0 / 100.0,
                  use_branch_exchange_sensitivity: bool = True,
                  branch_rating_contribution: float = 70 / 100.0,
-                 use_branch_rating_contribution: bool = False,
+                 monitor_only_ntc_load_rule_branches: bool = False,
                  consider_contingencies: bool = False,
                  opf_options: OptimalPowerFlowOptions | None = None,
                  lin_options: LinearAnalysisOptions | None = None, ):
@@ -41,7 +41,7 @@ class OptimalNetTransferCapacityOptions(OptionsTemplate):
         :param branch_exchange_sensitivity:
         :param use_branch_exchange_sensitivity:
         :param branch_rating_contribution:
-        :param use_branch_rating_contribution:
+        :param monitor_only_ntc_load_rule_branches:
         :param consider_contingencies:
         :param opf_options: OptimalPowerFlowOptions
         :param lin_options: LinearAnalysisOptions
@@ -58,7 +58,7 @@ class OptimalNetTransferCapacityOptions(OptionsTemplate):
         self.branch_exchange_sensitivity: float = branch_exchange_sensitivity
         self.use_branch_exchange_sensitivity: bool = use_branch_exchange_sensitivity
         self.branch_rating_contribution: float = branch_rating_contribution
-        self.use_branch_rating_contribution: bool = use_branch_rating_contribution
+        self.monitor_only_ntc_load_rule_branches: bool = monitor_only_ntc_load_rule_branches
         self.consider_contingencies: bool = consider_contingencies
 
         if opf_options is None:
@@ -80,7 +80,7 @@ class OptimalNetTransferCapacityOptions(OptionsTemplate):
         self.register(key="branch_exchange_sensitivity", tpe=float)
         self.register(key="use_branch_exchange_sensitivity", tpe=bool)
         self.register(key="branch_rating_contribution", tpe=float)
-        self.register(key="use_branch_rating_contribution", tpe=bool)
+        self.register(key="monitor_only_ntc_load_rule_branches", tpe=bool)
         self.register(key="consider_contingencies", tpe=bool)
         self.register(key="opf_options", tpe=DeviceType.SimulationOptionsDevice)
         self.register(key="lin_options", tpe=DeviceType.SimulationOptionsDevice)

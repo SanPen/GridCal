@@ -630,4 +630,5 @@ def test_hvdc_all_methods() -> None:
 
 if __name__ == "__main__":
     # test_power_flow_12bus_acdc()
-    test_hvdc_all_methods()
+    # test_hvdc_all_methods()
+    test_voltage_control_with_ltc()

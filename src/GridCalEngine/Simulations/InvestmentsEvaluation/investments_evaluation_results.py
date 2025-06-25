@@ -38,7 +38,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                                         ],
 
             ResultTypes.SpecialPlots: [ResultTypes.InvestmentsParetoPlot,
-                                       ResultTypes.InvestmentsIterationsPlot],
+                                       ResultTypes.InvestmentsIterationsPlot,
+                                       ResultTypes.InvestmentsWhenToMakePlot],
         }
 
         ResultsTemplate.__init__(self,
@@ -366,6 +367,41 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                                 xlabel='',
                                 units=y_label)
 
+        elif result_type == ResultTypes.InvestmentsWhenToMakePlot:
 
+            # Create subplots
+            fig, ax = plt.subplots(1, 1, figsize=(16, 6), sharey=False)
+
+            X = self._x[self.sorting_indices, :].astype(int)
+
+            max_years = np.max(X)
+            mat = np.zeros((X.shape[1], max_years))
+            for i in range(X.shape[0]):  # evaluation index
+                for j in range(X.shape[1]):  # investment index
+                    year = X[i, j]
+                    if year > 0:
+                        mat[j, year - 1] += 1
+
+            ax.imshow(mat)
+            ax.set_title("When to make the investments", fontsize=14)
+            ax.set_xlabel("", fontsize=12)
+            ax.set_xticks(np.arange(max_years), np.arange(1, max_years + 1))
+            ax.set_yticks(np.arange(len(self.x_names)))
+            ax.set_yticklabels(self.x_names)
+            ax.tick_params(axis='x', labelsize=11)
+            ax.tick_params(axis='y', labelsize=11)
+            ax.set_xlabel("Year", fontsize=12)
+            fig.tight_layout()
+            plt.show()
+
+            return ResultsTable(data=X,
+                                index=index[self.sorting_indices],
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=self.f_names,
+                                cols_device_type=DeviceType.NoDevice.NoDevice,
+                                title=str(result_type.value),
+                                ylabel="",
+                                xlabel="",
+                                units="")
         else:
             raise Exception('Result type not understood:' + str(result_type))

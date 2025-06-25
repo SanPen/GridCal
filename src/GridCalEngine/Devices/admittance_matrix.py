@@ -82,7 +82,7 @@ class AdmittanceMatrix:
             "values_i": self.__values.imag.tolist(),
         }
 
-    def parse(self, data: Dict[str, Union[str, float]]) -> None:
+    def parse(self, data: Dict[str, Union[str, float, int]]) -> None:
         """
         Parse the tap data
         :param data: dictionary representation of the tap
