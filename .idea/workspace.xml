@@ -28,10 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved gui db object filtering">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/object_proxy_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/object_proxy_model.py" afterDir="false" />
-    </list>
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved gui db object filtering" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -1151,16 +1148,16 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.admittance_matrices" />
-      <item itemvalue="Python.test_admittance_matrix" />
       <item itemvalue="Python.paper_checks" />
+      <item itemvalue="Python.test_admittance_matrix" />
+      <item itemvalue="Python.test_gslv_conversion" />
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
-      <item itemvalue="Python.test_gslv_conversion" />
-      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.pytest for test_transformer_controls.test_v_control_true" />
-      <item itemvalue="Python tests.pytest in test_power_flow.py" />
       <item itemvalue="Python tests.pytest in test_power_flow_acdc_generalized.py" />
+      <item itemvalue="Python tests.pytest in test_power_flow.py" />
       <item itemvalue="Python tests.pytest in test_transformer_controls.py" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
