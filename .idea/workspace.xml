@@ -28,10 +28,15 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Starting shortcircuit">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Linearized Admittances">
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker_3ph.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_options.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_options.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/SC_Test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/SC_Test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/tensiones_trifasicas.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/tensiones_trifasicas.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -237,6 +242,7 @@
     "Python.Only_3ph.executor": "Debug",
     "Python.Panther_Cable.executor": "Run",
     "Python.ReducedImpedance IEEE 13-bus Test Feeder Case.executor": "Run",
+    "Python.SC_Test.executor": "Debug",
     "Python.Test_PF_645_646.executor": "Run",
     "Python.Test_PF_645_646_GridCal.executor": "Debug",
     "Python.Test_Ysh.executor": "Debug",
@@ -300,7 +306,7 @@
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "#398 on #343__3phase",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/GridCal/src/trunk/unbalanced_pf",
+    "last_opened_file_path": "C:/GridCal/src/GridCalEngine/Simulations/ShortCircuitStudies",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -318,11 +324,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\GridCal\src\GridCalEngine\Simulations\ShortCircuitStudies" />
       <recent name="C:\GridCal\src\trunk\unbalanced_pf" />
       <recent name="C:\GridCal\src\trunk\unbalanced_pf\Solutions" />
       <recent name="C:\GridCal\src\trunk\three_phase" />
       <recent name="C:\Users\alexb\OneDrive\eRoots\GridCal\src\trunk\three_phase" />
-      <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/Stochastic" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/GridCalEngine/IO/iidm/devices" />
@@ -2358,7 +2364,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="761" />
+    <option name="localTasksCounter" value="762" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2404,7 +2410,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Now get_ys and get_ysh always return 3x3 y matrices." />
     <MESSAGE value="Some Zigzag and Delta transformer admittance matrices solved." />
     <MESSAGE value="Save the phases that each line has." />
     <MESSAGE value="Found error when lines doesn't have 3 phases." />
@@ -2429,7 +2434,8 @@
     <MESSAGE value="IEEE 13-bus test case" />
     <MESSAGE value="IEEE 13-bus test case OK" />
     <MESSAGE value="Starting shortcircuit" />
-    <option name="LAST_COMMIT_MESSAGE" value="Starting shortcircuit" />
+    <MESSAGE value="Linearized Admittances" />
+    <option name="LAST_COMMIT_MESSAGE" value="Linearized Admittances" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2777,6 +2783,26 @@
           <url>file://$PROJECT_DIR$/src/trunk/unbalanced_pf/Matrices.py</url>
           <line>14</line>
           <option name="timeStamp" value="2661" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
+          <line>359</line>
+          <option name="timeStamp" value="2684" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
+          <line>345</line>
+          <option name="timeStamp" value="2685" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
+          <line>357</line>
+          <option name="timeStamp" value="2686" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
+          <line>351</line>
+          <option name="timeStamp" value="2687" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

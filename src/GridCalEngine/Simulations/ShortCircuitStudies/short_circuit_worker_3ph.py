@@ -14,7 +14,6 @@ from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import 
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import polar_to_rect
 from GridCalEngine.enumerations import FaultType
 from GridCalEngine.basic_structures import CxVec, Vec
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import compute_ybus, compute_Sbus_delta, compute_current_loads, compute_Sbus_star
 
 
 def short_circuit_post_process(
@@ -122,6 +121,7 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
     Run an unbalanced short circuit simulation for a single island
     :param nc:
     :param Vpf: Power flow voltage vector applicable to the island
+    :param Vnom: Buses nominal voltages (kV)
     :param Zf: Short circuit impedance vector applicable to the island
     :param bus_index: Index of the failed bus
     :param fault_type: FaultType
@@ -321,40 +321,3 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
     results.losses2 = losses2
 
     return results
-
-def short_circuit_abc(nc: NumericalCircuit,
-                      Vpf: CxVec,
-                      Zf: CxVec,
-                      bus_index: int,
-                      fault_type: FaultType):
-    """
-    Run a short circuit simulation in the phase domain
-    :param nc:
-    :param Vpf: Power flow voltage vector applicable to the island
-    :param Zf: Short circuit impedance vector applicable to the island
-    :param bus_index: Index of the failed bus
-    :param fault_type: FaultType
-    :return: short circuit results
-    """
-
-    Ybus, Yf, Yt, Yshunt_bus, mask, bus_lookup, branch_lookup = compute_ybus(nc)
-
-    Vpf_masked = Vpf[mask]
-
-    Sstar, Y_power_star_linear = compute_Sbus_star(nc=nc,
-                                                   V=Vpf_masked,
-                                                   mask=mask)
-
-    Sdelta, Y_power_delta_linear = compute_Sbus_delta(bus_idx=nc.load_data.bus_idx,
-                                                     Sdelta=nc.load_data.S3_delta,
-                                                     Ydelta=nc.load_data.Y3_delta,
-                                                     V=Vpf_masked,
-                                                     bus_lookup=bus_lookup)
-
-    I_star_delta, Y_current_linear = compute_current_loads(bus_idx=nc.load_data.bus_idx,
-                                                            bus_lookup=bus_lookup,
-                                                            V=Vpf_masked,
-                                                            Istar=nc.load_data.I3_star,
-                                                            Idelta=nc.load_data.I3_delta)
-
-    return None

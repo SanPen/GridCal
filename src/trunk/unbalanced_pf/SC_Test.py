@@ -4,6 +4,7 @@ import numpy as np
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 import pandas as pd
+from GridCalEngine.enumerations import FaultType, Method
 
 logger = gce.Logger()
 
@@ -390,7 +391,43 @@ def power_flow_3ph(grid, t_idx=None):
 
     return res
 
-res_3ph = power_flow_3ph(grid)
+"""
+Short Circuit
+"""
+def short_circuit_3ph(grid, t_idx=None):
+    nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx = t_idx)
+
+    V0 = nc.bus_data.Vbus
+    S0 = nc.get_power_injections_pu()
+    Qmax, Qmin = nc.get_reactive_power_limits()
+
+    pf_options = gce.PowerFlowOptions(tolerance=1e-10, max_iter=1000)
+
+    pf_problem = PfBasicFormulation3Ph(V0=V0, S0=S0, Qmin=Qmin * 100, Qmax=Qmax * 100, nc=nc, options=pf_options)
+
+    pf_res = newton_raphson_fx(problem=pf_problem, verbose=1, max_iter=1000)
+
+    sc_options = gce.ShortCircuitOptions(bus_index = 5,
+                                     fault_type= FaultType.ph3,
+                                     mid_line_fault = False,
+                                     branch_index = 0,
+                                     branch_fault_locations = 0.5,
+                                     fault_r = 0.1,
+                                     fault_x = 1e-20,
+                                     verbose = 0,
+                                     method = Method.phases)
+
+    sc_driver = gce.ShortCircuitDriver(grid=grid,
+                                       options = sc_options,
+                                       pf_options = pf_options,
+                                       pf_results = pf_res)
+    sc_driver.run()
+
+
+
+    return None
+
+res_3ph = short_circuit_3ph(grid)
 
 U = abs(res_3ph.V)
 angle = np.degrees(np.angle((res_3ph.V)))

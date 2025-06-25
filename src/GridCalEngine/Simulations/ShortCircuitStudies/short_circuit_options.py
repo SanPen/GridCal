@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from GridCalEngine.enumerations import FaultType
+from GridCalEngine.enumerations import FaultType, Method
 from GridCalEngine.Simulations.options_template import OptionsTemplate
 
 
@@ -19,11 +19,12 @@ class ShortCircuitOptions(OptionsTemplate):
                  branch_fault_locations: float = 0.5,
                  fault_r: float = 1e-20,
                  fault_x: float = 1e-20,
-                 verbose: int = 0):
+                 verbose: int = 0,
+                 method=Method.sequences):
         """
-
         :param bus_index: Index of the bus failed (used if mid_line_fault is False)
         :param fault_type: fault type among 3x, LG, LL and LLG possibilities
+        :param method: choose between the traditional sequence shortcircuit method or the new abc approach
         :param mid_line_fault: Is the fault occurring at the middle of a line?
         :param branch_index: Index of the failed branch in case of a line fault (used if mid_line_fault is True)
         :param branch_fault_locations: per unit location of the fault measured from the "from" bus
@@ -36,6 +37,8 @@ class ShortCircuitOptions(OptionsTemplate):
         self.bus_index = bus_index
 
         self.fault_type = fault_type
+
+        self.method = method
 
         self.mid_line_fault: bool = mid_line_fault
 
@@ -51,6 +54,7 @@ class ShortCircuitOptions(OptionsTemplate):
 
         self.register(key="bus_index", tpe=int)
         self.register(key="fault_type", tpe=FaultType)
+        self.register(key="method", tpe=Method)
         self.register(key="mid_line_fault", tpe=bool)
         self.register(key="branch_index", tpe=int)
         self.register(key="branch_fault_locations", tpe=float)
