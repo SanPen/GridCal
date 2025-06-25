@@ -353,7 +353,6 @@ class DataBaseTableMain(DiagramsMain):
             self.ui.device_type_magnitude_comboBox.clear()
             self.ui.device_type_magnitude_comboBox_2.clear()
             self.ui.associationsComboBox.clear()
-            self.ui.dataStructureTableView.setModel(None)
 
     def get_selected_table_objects(self) -> List[ALL_DEV_TYPES]:
         """
@@ -384,7 +383,7 @@ class DataBaseTableMain(DiagramsMain):
         If the object has buses, this one takes them
         :return:
         """
-        model = self.ui.dataStructureTableView.model()
+        model: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
         buses = set()
         selected_objects: List[ALL_DEV_TYPES] = list()
 
