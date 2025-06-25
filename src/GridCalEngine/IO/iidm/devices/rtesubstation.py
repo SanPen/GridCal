@@ -5,7 +5,7 @@
 from GridCalEngine.IO.iidm.devices.rte_object import RteObject
 
 
-class Substation(RteObject):
+class RteSubstation(RteObject):
     def __init__(self, id, country, tso, geographicalTags):
         super().__init__("Substation")
         self.id = id

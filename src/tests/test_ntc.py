@@ -1150,6 +1150,48 @@ def test_2_node_several_conditions_ntc():
 
     assert not res.converged  # you cannot hard fix the inter area angle difference and enforce movement by proportions
 
+def test_hvdc_lines_tests():
+    """
+    Testing test_santi_20250625.gridcal
+    :return:
+    """
+    np.set_printoptions(precision=4)
+    fname = os.path.join('data', 'grids', 'test_santi_20250625.gridcal')
+
+    grid = gce.open_file(fname)
+
+    info = grid.get_inter_aggregation_info(objects_from=[grid.areas[0]],
+                                           objects_to=[grid.areas[1]])
+
+    opf_options = gce.OptimalPowerFlowOptions()
+    lin_options = gce.LinearAnalysisOptions()
+
+    ntc_options = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=info.idx_bus_from,
+        receiving_bus_idx=info.idx_bus_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        loading_threshold_to_report=98.0,
+        skip_generation_limits=True,
+        transmission_reliability_margin=0.1,
+        branch_exchange_sensitivity=0.01,
+        use_branch_exchange_sensitivity=True,
+        branch_rating_contribution=1.0,
+        monitor_only_ntc_load_rule_branches=True,
+        consider_contingencies=True,
+        opf_options=opf_options,
+        lin_options=lin_options
+    )
+
+    drv = gce.OptimalNetTransferCapacityDriver(grid, ntc_options)
+
+    drv.run()
+
+    res = drv.results
+
+    assert np.isclose(res.Sf[7], 1000.0)
+    assert np.isclose(res.hvdc_Pf[0], 1000.0)
+    assert np.isclose(res.hvdc_Pf[1], 1000.0)
+
 
 if __name__ == '__main__':
     # test_issue_372_1()

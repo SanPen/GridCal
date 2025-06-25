@@ -25,7 +25,7 @@ from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.vsc_data import VscData
 from GridCalEngine.DataStructures.bus_data import BusData
-from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, StrVec, CxMat, Mat
+from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, StrVec, CxMat, Mat, ObjVec
 from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, set_var_bounds, join
 from GridCalEngine.enumerations import TapPhaseControl, HvdcControlType, AvailableTransferMode, ConverterControlType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
@@ -42,7 +42,7 @@ def formulate_monitorization_logic(monitor_only_sensitive_branches: bool,
                                    base_flows: Vec,
                                    structural_ntc: float,
                                    ntc_load_rule: float,
-                                   rates: Vec) -> Tuple[BoolVec, StrVec, Vec, Vec]:
+                                   rates: Vec) -> Tuple[BoolVec, ObjVec, Vec, Vec]:
     """
     Function to formulate branch monitor status due the given logic
     :param monitor_only_sensitive_branches: boolean to apply sensitivity threshold to the monitorization logic.
@@ -57,10 +57,7 @@ def formulate_monitorization_logic(monitor_only_sensitive_branches: bool,
     :param rates: array of branch rates
     return:
         - monitor: Array of final monitor status per branch after applying the logic
-        - monitor_loading: monitor status per branch set by user interface
-        - monitor_by_sensitivity: monitor status per branch due exchange sensibility
-        - monitor_by_unrealistic_ntc: monitor status per branch due unrealistic minimum ntc
-        - monitor_by_zero_exchange: monitor status per branch due zero exchange loading
+        - monitor_type: monitor type chosen depending on the rules
         - branch_ntc_load_rule: branch minimum ntc to be considered as limiting element
         - branch_zero_exchange_load: branch load for zero exchange situation.
     """
@@ -1050,6 +1047,9 @@ def add_linear_injections_formulation(t: Union[int, None],
     :param batt_data_t: BatteryData structure
     :param load_data_t: LoadData structure
     :param bus_data_t: BusData structure
+    :param branch_data_t:
+    :param active_branch_data_t:
+    :param hvdc_data_t:
     :param bus_a1_idx: bus indices within area "from"
     :param bus_a2_idx: bus indices within area "to"
     :param transfer_method: Exchange transfer method
@@ -1734,7 +1734,8 @@ def add_linear_node_balance(t_idx: int,
                             vd: IntVec,
                             bus_data: BusData,
                             bus_vars: BusNtcVars,
-                            prob: LpModel):
+                            prob: LpModel,
+                            logger: Logger):
     """
     Add the kirchhoff nodal equality
     :param t_idx: time step
@@ -1748,9 +1749,17 @@ def add_linear_node_balance(t_idx: int,
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
-        bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
-            cst=bus_vars.Pbalance[t_idx, k] == 0,
-            name=join("kirchhoff_", [t_idx, k], "_"))
+        if not isinstance(bus_vars.Pbalance[t_idx, k], float):
+            bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
+                cst=bus_vars.Pbalance[t_idx, k] == 0,
+                name=join("kirchhoff_", [t_idx, k], "_"))
+        else:
+            # it's a number
+            if bus_vars.Pbalance[t_idx, k] != 0.0:
+                logger.add_error(f"kirchhoff_ not satisfiable", value=bus_vars.Pbalance[t_idx, k])
+            else:
+                # it is zero already
+                pass
 
     # set this to the set value
     Va = np.angle(bus_data.Vbus)
@@ -1973,7 +1982,8 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                                 vd=indices.vd,
                                 bus_data=nc.bus_data,
                                 bus_vars=mip_vars.bus_vars,
-                                prob=lp_model)
+                                prob=lp_model,
+                                logger=logger)
 
         # formulate contingencies --------------------------------------------------------------------------------
 

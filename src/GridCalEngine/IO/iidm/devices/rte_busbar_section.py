@@ -5,9 +5,9 @@
 from GridCalEngine.IO.iidm.devices.rte_object import RteObject
 
 
-class Bus(RteObject):
-    def __init__(self, id):
-        super().__init__("Bus")
-        self.id = id
+class RteBusbarSection(RteObject):
+    def __init__(self, _id: str):
+        super().__init__("BusbarSection")
+        self.id = _id
 
-        self.register_property("id", "bus:id", str, description="Bus ID")
+        self.register_property("id", str, description="Busbar section ID")
