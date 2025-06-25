@@ -369,48 +369,55 @@ def short_circuit_abc(nc: NumericalCircuit,
                                                            V=Vpf_masked,
                                                            Istar=nc.load_data.I3_star,
                                                            Idelta=nc.load_data.I3_delta)
-    Yf = np.zeros(len(Vpf), dtype=complex)
+
+    Y_power_star_linear /= (nc.Sbase / 3)
+    Y_power_delta_linear /= (nc.Sbase / 3)
+    Y_current_linear /= (nc.Sbase / 3)
+
+    Yfault = np.zeros(len(Vpf), dtype=complex)
 
     if fault_type == FaultType.LG:
 
         if phases == PhasesShortCircuit.a:
-            Yf[3 * bus_index + 0] = 1 / (Zf[bus_index] + 1e-20)
+            Yfault[3 * bus_index + 0] = 1 / (Zf[bus_index] + 1e-20)
 
         if phases == PhasesShortCircuit.b:
-            Yf[3 * bus_index + 1] = 1 / (Zf[bus_index] + 1e-20)
+            Yfault[3 * bus_index + 1] = 1 / (Zf[bus_index] + 1e-20)
 
         if phases == PhasesShortCircuit.c:
-            Yf[3 * bus_index + 2] = 1 / (Zf[bus_index] + 1e-20)
+            Yfault[3 * bus_index + 2] = 1 / (Zf[bus_index] + 1e-20)
 
-        Yf_masked = Yf[mask]
+        Yf_masked = Yfault[mask]
 
     Ybus_gen_csc, Ybus_gen = compute_ybus_generator(nc=nc)
     Ybus_gen_masked = Ybus_gen[mask, :][:, mask]
     Ybus_gen_masked_csc = Ybus_gen_csc[mask, :][:, mask]
 
     Yloads = diags(Y_power_star_linear) + diags(Y_power_delta_linear) + diags(Y_current_linear)
-    Ylinear = Ybus - Yloads + diags(Yf_masked) + Ybus_gen_masked_csc
+    Ylinear = Ybus - 1.0 * Yloads + 1.0 * diags(Yf_masked) + 1.0 * Ybus_gen_masked_csc
+
+    Ybus_no_fault = Ybus - 1.0 * Yloads + 1.0 * Ybus_gen_masked_csc
+    I_check = Ybus_no_fault @ Vpf_masked
 
     Yloads_expanded = Y_power_star_linear + Y_power_delta_linear + Y_current_linear
     Yloads_expanded = expand_magnitudes(Yloads_expanded, bus_lookup)
-    S = (Spf / (nc.Sbase/3) ) - Vpf * np.conj(Yloads_expanded * Vpf)
+    S = (Spf / (nc.Sbase) ) - 1.0 * Vpf * np.conj(Yloads_expanded * Vpf)
     idx3 = np.array([0, 1, 2])
     gen_idx = nc.generator_data.bus_idx
     n_buses = len(nc.generator_data.bus_idx)
     Inorton = np.zeros(shape=len(Vpf_masked), dtype=complex)
     for i in range(n_buses):
-        U = Vpf[gen_idx[i] + idx3]
-        Y = Ybus_gen[np.ix_(gen_idx[i] + idx3, gen_idx[i] + idx3)]
-        I = np.conj( S[gen_idx[i] + idx3] / U )
-        E = U + np.linalg.inv(Y) @ I
-        Inorton_i = np.linalg.inv(Y) @ E
-        Inorton[np.ix_(gen_idx[i] + idx3)] = Inorton_i
+        I_gen = np.conj(S[gen_idx[i] + idx3] / Vpf[gen_idx[i] + idx3])
+
+        Y_gen = Ybus_gen[np.ix_(gen_idx[i] + idx3, gen_idx[i] + idx3)]
+        E_gen = Vpf[gen_idx[i] + idx3] + np.linalg.inv(Y_gen) @ I_gen
+
+        # Inorton[np.ix_(gen_idx[i] + idx3)] = np.linalg.inv(Y_gen) @ E_gen
+        Inorton[np.ix_(gen_idx[i] + idx3)] = Y_gen @ E_gen
 
     Usc = spsolve(Ylinear, Inorton)
     Usc_expanded = expand_magnitudes(Usc, bus_lookup)
     Usc_expanded_abs = abs(Usc_expanded)
-    print()
-
-
+    print(Usc_expanded_abs)
 
     return None

@@ -29,7 +29,7 @@ grid.add_bus(obj=bus_646)
 bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
 grid.add_bus(obj=bus_633)
 
-bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0, r_fault=10)
+bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0, r_fault=1.0)
 grid.add_bus(obj=bus_634)
 
 bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100*5)
@@ -210,7 +210,7 @@ load_632_distrib = gce.Load(P1=0.017/2,
                             P3=0.117/2,
                             Q3=0.068/2)
 load_632_distrib.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_632, api_obj=load_632_distrib)
+# grid.add_load(bus=bus_632, api_obj=load_632_distrib)
 
 load_671_distrib = gce.Load(P1=0.017/2,
                             Q1=0.010/2,
@@ -228,13 +228,13 @@ cap_675 = gce.Shunt(B1=0.2,
                     B2=0.2,
                     B3=0.2)
 cap_675.conn = ShuntConnectionType.GroundedStar
-grid.add_shunt(bus=bus_675, api_obj=cap_675)
+# grid.add_shunt(bus=bus_675, api_obj=cap_675)
 
 cap_611 = gce.Shunt(B1=0.0,
                     B2=0.0,
                     B3=0.1)
 cap_611.conn = ShuntConnectionType.GroundedStar
-grid.add_shunt(bus=bus_611, api_obj=cap_611)
+# grid.add_shunt(bus=bus_611, api_obj=cap_611)
 
 """
 Line Configurations
