@@ -646,8 +646,8 @@ class Method(Enum):
     """
     Short circuit type
     """
-    sequences = 'seq'
-    phases = 'abc'
+    sequences = 'sequences'
+    phases = 'phases'
 
     def __str__(self):
         return str(self.value)
@@ -663,6 +663,42 @@ class Method(Enum):
         """
         try:
             return Method[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+class Phases(Enum):
+    """
+    Short circuit type
+    """
+    abc = 'abc'
+    ab = 'ab'
+    bc = 'bc'
+    ca = 'ca'
+    a = 'a'
+    b = 'b'
+    c = 'c'
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+        :param s:
+        :return:
+        """
+        try:
+            return Phases[s]
         except KeyError:
             return s
 

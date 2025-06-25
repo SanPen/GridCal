@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from GridCalEngine import Method
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import CxVec
@@ -23,7 +22,7 @@ from GridCalEngine.Devices import Line, Bus
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_options import ShortCircuitOptions
-from GridCalEngine.enumerations import FaultType, SimulationTypes
+from GridCalEngine.enumerations import FaultType, SimulationTypes, Method, Phases
 from GridCalEngine.Devices.types import BRANCH_TYPES
 
 
@@ -143,7 +142,8 @@ class ShortCircuitDriver(DriverTemplate):
                              Zf: complex,
                              island_bus_index: int,
                              fault_type: FaultType,
-                             method: Method) -> ShortCircuitResults:
+                             method: Method,
+                             phases: Phases) -> ShortCircuitResults:
         """
         Run a short circuit simulation for a single island
         :param calculation_inputs:
@@ -179,7 +179,8 @@ class ShortCircuitDriver(DriverTemplate):
                                   Vpf=Vpf,
                                   Zf=Zf,
                                   bus_index=island_bus_index,
-                                  fault_type=fault_type)
+                                  fault_type=fault_type,
+                                  phases = phases)
 
             else:
                 raise Exception('Short-circuit calculation method is unknown!')
