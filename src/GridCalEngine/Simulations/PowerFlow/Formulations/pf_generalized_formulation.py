@@ -1293,7 +1293,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
                     k_vsc_pt.append(control1_branch_device)
                     k_vsc_qt.append(control1_branch_device)
-                    vsc_qt_set.append(control1_magnitude)
+                    vsc_qt_set.append(control2_magnitude)
                     vsc_pt_set.append(control1_magnitude)
 
             elif control1 == ConverterControlType.Pac and control2 == ConverterControlType.Pdc:

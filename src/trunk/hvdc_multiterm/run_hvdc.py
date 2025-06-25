@@ -77,8 +77,10 @@ def run_hvdc_multiterminal() -> None:
     # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'vsc_debug2.gridcal')
     # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'vsc_debug3.gridcal')
     # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'vsc_debug4.gridcal')
-    fname = os.path.join('src', 'trunk', 'hvdc_multiterm', '5bus_bipolar.gridcal')
+    # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', '5bus_bipolar.gridcal')
     # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', '5bus_bipolar_v2.gridcal')
+    fname = os.path.join('src', 'trunk', 'hvdc_multiterm', '5bus_bipolar_v3.gridcal')
+    # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', '5busACDC_Monopolar.gridcal')
 
     grid = gce.FileOpen(fname).open()
 
@@ -94,6 +96,7 @@ def run_hvdc_multiterminal() -> None:
     print(f"Iterations: {solution.iterations}")
     print(f"Vm: {np.abs(solution.V)}")
     print(f"Va: {np.angle(solution.V, deg=False)}")
+    print(f"VSC loss: {solution.losses_vsc}")
 
     return None
 
