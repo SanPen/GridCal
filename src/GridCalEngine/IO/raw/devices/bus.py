@@ -155,6 +155,8 @@ class RawBus(RawObject):
         else:
             logger.add_warning('Bus not implemented for version', str(version))
 
+        self.NAME = str(self.NAME)
+
     def get_raw_line(self, version: int):
         """
         Get raw file line(s)

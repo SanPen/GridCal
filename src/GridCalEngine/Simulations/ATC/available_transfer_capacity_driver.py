@@ -46,15 +46,19 @@ def get_proportional_deltas_sensed(P, idx, dP=1.0):
             nD -= P[i]  # store it as positive value
 
     # compute witch proportion to attend with positive and negative sense
-    dPu = nU / (nU + nD)  # positive proportion
-    dPd = nD / (nU + nD)  # negative proportion
+    if (nU + nD) != 0.0:
+        dPu = nU / (nU + nD)  # positive proportion
+        dPd = nD / (nU + nD)  # negative proportion
+    else:
+        dPu = 0.0
+        dPd = 0.0
 
     for i in idx:
 
-        if P[i] > 0:
+        if P[i] > 0 and nU != 0.0:
             deltaP[i] = dP * dPu * P[i] / nU
 
-        if P[i] < 0:
+        if P[i] < 0 and nD != 0.0:
             deltaP[i] = -dP * dPd * P[i] / nD  # P[i] is already negative
 
     return deltaP

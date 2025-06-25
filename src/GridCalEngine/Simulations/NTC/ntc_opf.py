@@ -225,8 +225,13 @@ def get_sensed_proportions(power: Vec,
     gen_pos = np.where(p_ref < 0, 0, p_ref)
     gen_neg = np.where(p_ref > 0, 0, p_ref)
 
-    prop_up = np.sum(gen_pos) / np.sum(np.abs(p_ref))
-    prop_dw = np.sum(gen_neg) / np.sum(np.abs(p_ref))
+    denom = np.sum(np.abs(p_ref))
+    if denom != 0.0:
+        prop_up = np.sum(gen_pos) / denom
+        prop_dw = np.sum(gen_neg) / denom
+    else:
+        prop_up = np.zeros(len(gen_pos))
+        prop_dw = np.zeros(len(gen_neg))
 
     # get proportion by production (ammount of power contributed by generator to his sensed area).
     if np.sum(np.abs(gen_pos)) != 0:
@@ -1088,6 +1093,7 @@ def add_linear_injections_formulation(t: Union[int, None],
         bus_a2_idx=bus_a2_idx,
         logger=logger
     )
+    # proportions = np.nan_to_num(proportions)
 
     # copy the computed proportions
     ntc_vars.bus_vars.proportions[t, :] = proportions
