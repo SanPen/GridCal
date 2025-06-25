@@ -139,7 +139,7 @@ def compute_Ibus(nc: NumericalCircuit) -> CxVec:
     return Ibus
 
 
-def compute_Sbus_star(nc: NumericalCircuit, V: CxVec) -> CxVec:
+def compute_Sbus_star(nc: NumericalCircuit, V: CxVec, mask) -> CxVec:
     """
     Compute the Ibus vector
     :param nc:
@@ -156,9 +156,9 @@ def compute_Sbus_star(nc: NumericalCircuit, V: CxVec) -> CxVec:
         f3 = 3 * f + idx3
         Sbus[f3] -= nc.load_data.S3_star[k3] * nc.load_data.active[k]
 
-    Y_power_star_linear = np.conj(Sbus) / abs(V)**2
+    Y_power_star_linear = np.conj(Sbus[mask]) / abs(V)**2
 
-    return Sbus
+    return Sbus, Y_power_star_linear
 
 def compute_current_loads(bus_idx: IntVec, bus_lookup: IntVec, V: CxVec, Istar: CxVec, Idelta: CxVec) -> CxVec:
 
@@ -420,12 +420,12 @@ def expandVoltage3ph(V0: CxVec) -> CxVec:
     for k in range(n):
         x3[3 * k + idx3] = Vm[k] * np.exp(1j * (Va[k] + angles))
 
-    # x3[0] = 1.0210 * np.exp(1j * (0*np.pi/180))
-    # x3[1] = 1.0420 * np.exp(1j * (-120*np.pi/180))
-    # x3[2] = 1.0174 * np.exp(1j * (120*np.pi/180))
-    x3[0] = (251.900822)/(416/np.sqrt(3)) * np.exp(1j * (-0.526991))
-    x3[1] = (251.442613)/(416/np.sqrt(3)) * np.exp(1j * (3.659445))
-    x3[2] = (251.952085)/(416/np.sqrt(3)) * np.exp(1j * (1.569572))
+    x3[0] = 1.0210 * np.exp(1j * (-2.49*np.pi/180))
+    x3[1] = 1.0420 * np.exp(1j * (-121.72*np.pi/180))
+    x3[2] = 1.0174 * np.exp(1j * (117.83*np.pi/180))
+    # x3[0] = (251.900822)/(416/np.sqrt(3)) * np.exp(1j * (-0.526991))
+    # x3[1] = (251.442613)/(416/np.sqrt(3)) * np.exp(1j * (3.659445))
+    # x3[2] = (251.952085)/(416/np.sqrt(3)) * np.exp(1j * (1.569572))
 
     return x3
 
@@ -465,7 +465,11 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         self.nc = nc
 
-        self.S0, self.Y_power_star_linear: [CxVec, CxVec] = compute_Sbus_star(nc, V0new) / (nc.Sbase / 3)
+        self.S0, self.Y_power_star_linear = compute_Sbus_star(nc, V0new, self.mask)
+        self.S0: CxVec
+        self.Y_power_star_linear: CxVec
+        self.S0 = self.S0 / (nc.Sbase / 3)
+        self.Y_power_star_linear = self.Y_power_star_linear / (nc.Sbase / 3)
         self.I0: CxVec = compute_Ibus(nc) / (nc.Sbase / 3)
 
 
@@ -575,7 +579,10 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                         bus_lookup=self.bus_lookup,
                                         V=self.V,
                                         Istar=self.nc.load_data.I3_star,
-                                        Idelta=self.nc.load_data.I3_delta) / (self.nc.Sbase / 3)
+                                        Idelta=self.nc.load_data.I3_delta)
+
+        self.I0 = self.I0 / (self.nc.Sbase / 3)
+        self.Y_current_linear = self.Y_current_linear / (self.nc.Sbase / 3)
 
         Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (self.nc.Sbase / 3)
         Scalc = compute_power(self.Ybus, V)
@@ -617,7 +624,10 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                         bus_lookup=self.bus_lookup,
                                         V=self.V,
                                         Istar=self.nc.load_data.I3_star,
-                                        Idelta=self.nc.load_data.I3_delta) / (self.nc.Sbase / 3)
+                                        Idelta=self.nc.load_data.I3_delta)
+
+        self.I0 = self.I0 / (self.nc.Sbase / 3)
+        self.Y_current_linear = self.Y_current_linear / (self.nc.Sbase / 3)
 
         Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (self.nc.Sbase / 3)
         Scalc = compute_power(self.Ybus, V)
@@ -655,7 +665,10 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                         bus_lookup=self.bus_lookup,
                                         V=self.V,
                                         Istar=self.nc.load_data.I3_star,
-                                        Idelta=self.nc.load_data.I3_delta) / (self.nc.Sbase / 3)
+                                        Idelta=self.nc.load_data.I3_delta)
+
+        self.I0 = self.I0 / (self.nc.Sbase / 3)
+        self.Y_current_linear = self.Y_current_linear / (self.nc.Sbase / 3)
 
         Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (self.nc.Sbase / 3)
         self.Scalc = compute_power(self.Ybus, self.V)
@@ -739,7 +752,10 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                         bus_lookup=self.bus_lookup,
                                         V=self.V,
                                         Istar=self.nc.load_data.I3_star,
-                                        Idelta=self.nc.load_data.I3_delta) / (self.nc.Sbase / 3)
+                                        Idelta=self.nc.load_data.I3_delta)
+
+        self.I0 = self.I0 / (self.nc.Sbase / 3)
+        self.Y_current_linear = self.Y_current_linear / (self.nc.Sbase / 3)
 
         Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (self.nc.Sbase / 3)
         self.Scalc = self.V * np.conj(self.Ybus @ self.V - self.I0)
