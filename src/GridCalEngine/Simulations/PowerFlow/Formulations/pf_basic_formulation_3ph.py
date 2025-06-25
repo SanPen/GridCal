@@ -44,6 +44,7 @@ def compute_ybus_generator(nc: NumericalCircuit) -> csc_matrix:
 
     Ybus_gen = lil_matrix((3 * n, 3 * n), dtype=complex)
     idx3 = np.array([0, 1, 2])
+    Yzeros = np.zeros((3*n,3*n), dtype=complex)
 
     for k in range(m):
         f = nc.generator_data.bus_idx[k]
@@ -60,8 +61,9 @@ def compute_ybus_generator(nc: NumericalCircuit) -> csc_matrix:
         Zabc = fortescue_012_to_abc(r0 + 1j * x0, r1 + 1j * x1, r2 + 1j * x2)
         Yabc = np.linalg.inv(Zabc)
         Ybus_gen[np.ix_(f3, f3)] = Yabc
+        Yzeros[np.ix_(f3, f3)] = Yabc
 
-    return Ybus_gen.tocsc()
+    return Ybus_gen.tocsc(), Yzeros
 
 
 def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matrix, CxVec, BoolVec, IntVec, IntVec]:
@@ -478,6 +480,29 @@ def expand_magnitudes(magnitude: CxVec, lookup: IntVec):
 
     return magnitude_expanded
 
+
+def expand_matrix(magnitude: np.ndarray, lookup: IntVec):
+    """
+    Expands a matrix by adding zero rows and columns based on the lookup indices.
+    If a lookup value is negative, the corresponding row and column in the matrix
+    will be replaced by zeros.
+
+    :param magnitude: 2D numpy array (matrix to expand)
+    :param lookup: List of indices for lookup
+    :return: Expanded matrix with zeros in the rows and columns where lookup values are negative
+    """
+    n_buses_total = len(lookup)
+
+    # Initialize the expanded matrix as a zero matrix of the same size as the lookup
+    magnitude_expanded = np.zeros((n_buses_total, n_buses_total), dtype=complex)
+
+    for i, value in enumerate(lookup):
+        if value >= 0:
+            # Assign the value from the original matrix to the expanded matrix
+            magnitude_expanded[i, i] = magnitude[value, value]
+        # Else, the row and column for that index will already be zeros by default.
+
+    return magnitude_expanded
 
 class PfBasicFormulation3Ph(PfFormulationTemplate):
 

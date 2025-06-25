@@ -143,7 +143,8 @@ class ShortCircuitDriver(DriverTemplate):
                              island_bus_index: int,
                              fault_type: FaultType,
                              method: MethodShortCircuit,
-                             phases: PhasesShortCircuit) -> ShortCircuitResults:
+                             phases: PhasesShortCircuit,
+                             Spf: CxVec) -> ShortCircuitResults:
         """
         Run a short circuit simulation for a single island
         :param calculation_inputs:
@@ -181,7 +182,8 @@ class ShortCircuitDriver(DriverTemplate):
                                   bus_index=island_bus_index,
                                   fault_type=fault_type,
                                   method = method,
-                                  phases = phases)
+                                  phases = phases,
+                                  Spf=Spf)
 
             else:
                 raise Exception('Short-circuit calculation method is unknown!')
@@ -293,7 +295,8 @@ class ShortCircuitDriver(DriverTemplate):
                                             island_bus_index=self.options.bus_index,
                                             fault_type=self.options.fault_type,
                                             method = self.options.method,
-                                            phases = self.options.phases)
+                                            phases = self.options.phases,
+                                            Spf = self.pf_results.Scalc)
 
             # merge results
             results.apply_from_island(res, calculation_inputs[0].bus_data.original_idx,
