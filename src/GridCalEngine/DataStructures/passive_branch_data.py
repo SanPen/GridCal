@@ -102,6 +102,11 @@ class PassiveBranchData(BranchParentData):
         data.virtual_tap_f = self.virtual_tap_f[elm_idx]
         data.virtual_tap_t = self.virtual_tap_t[elm_idx]
 
+        data.Yff3 = self.Yff3[elm_idx, :]
+        data.Yft3 = self.Yft3[elm_idx, :]
+        data.Ytt3 = self.Ytt3[elm_idx, :]
+        data.Ytf3 = self.Ytf3[elm_idx, :]
+
         data.phA = self.phA[elm_idx]
         data.phB = self.phB[elm_idx]
         data.phC = self.phC[elm_idx]
