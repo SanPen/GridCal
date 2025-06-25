@@ -139,10 +139,11 @@ def compute_Ibus(nc: NumericalCircuit) -> CxVec:
     return Ibus
 
 
-def compute_Sbus_star(nc: NumericalCircuit) -> CxVec:
+def compute_Sbus_star(nc: NumericalCircuit, V: CxVec) -> CxVec:
     """
     Compute the Ibus vector
     :param nc:
+    :param V:
     :return:
     """
     n = nc.bus_data.nbus
@@ -154,6 +155,8 @@ def compute_Sbus_star(nc: NumericalCircuit) -> CxVec:
         k3 = 3 * k + idx3
         f3 = 3 * f + idx3
         Sbus[f3] -= nc.load_data.S3_star[k3] * nc.load_data.active[k]
+
+    Y_power_star_linear = np.conj(Sbus) / abs(V)**2
 
     return Sbus
 
@@ -223,7 +226,9 @@ def compute_current_loads(bus_idx: IntVec, bus_lookup: IntVec, V: CxVec, Istar: 
             #raise ValueError('Incorrect current load definition')
             pass
 
-    return I
+    Y_current_linear = I / V
+
+    return I, Y_current_linear
 
 
 def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, bus_lookup: IntVec) -> CxVec:
@@ -301,7 +306,9 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, 
             else:
                 raise Exception('Incorrect load phasing, non-existing phases for this load')
 
-    return S
+    Y_power_delta_linear = np.conj(S) / abs(V)**2
+
+    return S, Y_power_delta_linear
 
 def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-6) -> CSC:
     """
@@ -458,15 +465,13 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         self.nc = nc
 
-        self.S0: CxVec = compute_Sbus_star(nc) / (nc.Sbase / 3)
+        self.S0, self.Y_power_star_linear: [CxVec, CxVec] = compute_Sbus_star(nc, V0new) / (nc.Sbase / 3)
         self.I0: CxVec = compute_Ibus(nc) / (nc.Sbase / 3)
 
 
         self.Qmin = expand3ph(Qmin)[self.mask] * 100e6
         self.Qmax = expand3ph(Qmax)[self.mask] * 100e6
 
-        #self.nc.bus_data.bus_types[0] = 3
-        #self.nc.bus_data.bus_types[5] = 2
 
         vd, pq, pv, pqv, p, no_slack = compile_types(
             Pbus=S0.real,
@@ -560,13 +565,13 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         # compute the function residual
         # Assumes the internal vars were updated already with self.x2var()
-        Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
+        Sdelta2star, Y_power_delta_linear = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
                                          Sdelta=self.nc.load_data.S3_delta,
                                          Ydelta=self.nc.load_data.Y3_delta,
                                          V=V,
                                          bus_lookup=self.bus_lookup)
 
-        self.I0 = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
+        self.I0, self.Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
                                         bus_lookup=self.bus_lookup,
                                         V=self.V,
                                         Istar=self.nc.load_data.I3_star,
@@ -602,13 +607,13 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         # compute the function residual
         # Assumes the internal vars were updated already with self.x2var()
-        Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
+        Sdelta2star, Y_power_delta_linear = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
                                          Sdelta=self.nc.load_data.S3_delta,
                                          Ydelta=self.nc.load_data.Y3_delta,
                                          V=V,
                                          bus_lookup=self.bus_lookup)
 
-        self.I0 = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
+        self.I0, self.Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
                                         bus_lookup=self.bus_lookup,
                                         V=self.V,
                                         Istar=self.nc.load_data.I3_star,
@@ -640,13 +645,13 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         # compute the function residual
         # Assumes the internal vars were updated already with self.x2var()
-        Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
+        Sdelta2star, Y_power_delta_linear = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
                                          Sdelta=self.nc.load_data.S3_delta,
                                          Ydelta=self.nc.load_data.Y3_delta,
                                          V=self.V,
                                          bus_lookup=self.bus_lookup)
 
-        self.I0 = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
+        self.I0, self.Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
                                         bus_lookup=self.bus_lookup,
                                         V=self.V,
                                         Istar=self.nc.load_data.I3_star,
@@ -724,13 +729,13 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         # NOTE: Assumes the internal vars were updated already with self.x2var()
 
-        Sdelta2star = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
+        Sdelta2star, Y_power_delta_linear = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
                                          Sdelta=self.nc.load_data.S3_delta,
                                          Ydelta=self.nc.load_data.Y3_delta,
                                          V=self.V,
                                          bus_lookup=self.bus_lookup)
 
-        self.I0 = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
+        self.I0, self.Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
                                         bus_lookup=self.bus_lookup,
                                         V=self.V,
                                         Istar=self.nc.load_data.I3_star,
