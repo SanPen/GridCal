@@ -7,7 +7,7 @@ import numba as nb
 import numpy as np
 from scipy.sparse import csc_matrix
 from typing import Tuple, Union
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, CscMat
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, CscMat, CxMat
 
 
 # @nb.njit(cache=True)
@@ -88,6 +88,21 @@ def compute_power(Ybus: csc_matrix, V: CxVec) -> CxVec:
     :return: Calculated power injections
     """
     return V * np.conj(Ybus @ V)
+
+
+def fortescue_012_to_abc(z0: complex, z1: complex, z2: complex) -> CxMat:
+    """
+    Convert 012 to abc
+    :param Z012: 012 impedance matrix
+    :return: abc impedance matrix
+    """
+    a = 1.0 * np.exp(1j * 2 * np.pi / 3)
+    Zabc = 1/3 * np.array([
+    [z0 + z1 + z2, z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2],
+    [z0 + a**2 * z1 + a * z2, z0 + z1 + z2, z0 + a * z1 + a**2 * z2],
+    [z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2, z0 + z1 + z2]
+])
+    return Zabc
 
 
 @nb.njit(cache=True, fastmath=True)
