@@ -1734,7 +1734,8 @@ def add_linear_node_balance(t_idx: int,
                             vd: IntVec,
                             bus_data: BusData,
                             bus_vars: BusNtcVars,
-                            prob: LpModel):
+                            prob: LpModel,
+                            logger: Logger):
     """
     Add the kirchhoff nodal equality
     :param t_idx: time step
@@ -1748,9 +1749,17 @@ def add_linear_node_balance(t_idx: int,
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
-        bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
-            cst=bus_vars.Pbalance[t_idx, k] == 0,
-            name=join("kirchhoff_", [t_idx, k], "_"))
+        if not isinstance(bus_vars.Pbalance[t_idx, k], float):
+            bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
+                cst=bus_vars.Pbalance[t_idx, k] == 0,
+                name=join("kirchhoff_", [t_idx, k], "_"))
+        else:
+            # it's a number
+            if bus_vars.Pbalance[t_idx, k] != 0.0:
+                logger.add_error(f"kirchhoff_ not satisfiable", value=bus_vars.Pbalance[t_idx, k])
+            else:
+                # it is zero already
+                pass
 
     # set this to the set value
     Va = np.angle(bus_data.Vbus)
@@ -1973,7 +1982,8 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                                 vd=indices.vd,
                                 bus_data=nc.bus_data,
                                 bus_vars=mip_vars.bus_vars,
-                                prob=lp_model)
+                                prob=lp_model,
+                                logger=logger)
 
         # formulate contingencies --------------------------------------------------------------------------------
 
