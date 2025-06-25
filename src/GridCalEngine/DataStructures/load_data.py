@@ -76,6 +76,17 @@ class LoadData:
         data.I = self.I[elm_idx]
         data.Y = self.Y[elm_idx]
 
+        elm_idx_3 = ((elm_idx * 3)[:, np.newaxis] + np.arange(3)).flatten()
+
+        data.S3_delta = self.S3_delta[elm_idx_3]
+        data.S3_star = self.S3_star[elm_idx_3]
+
+        data.I3_delta = self.I3_delta[elm_idx_3]
+        data.I3_star = self.I3_star[elm_idx_3]
+
+        data.Y3_delta = self.Y3_delta[elm_idx_3]
+        data.Y3_star = self.Y3_star[elm_idx_3]
+
         data.mttf = self.mttf[elm_idx]
         data.mttr = self.mttr[elm_idx]
 
