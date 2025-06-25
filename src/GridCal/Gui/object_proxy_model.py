@@ -35,7 +35,7 @@ class ObjectModelFilterProxy(QtCore.QSortFilterProxyModel):
         # indexes allowed after the last call to setExpression()
         self._allowed_rows: set[int] = set(range(len(self._mdl.objects)))  # start with “show all”
 
-        self._filtered_objects: List[ALL_DEV_TYPES] = list()
+        self._filtered_objects: List[ALL_DEV_TYPES] = self._mdl.objects
 
         super().setSourceModel(mdl)
 

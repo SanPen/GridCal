@@ -1153,6 +1153,7 @@ def test_2_node_several_conditions_ntc():
 def test_hvdc_lines_tests():
     """
     Testing test_santi_20250625.gridcal
+    >This is a simple test that checks that the flow is maximal between the two areas
     :return:
     """
     np.set_printoptions(precision=4)
@@ -1191,6 +1192,7 @@ def test_hvdc_lines_tests():
     assert np.isclose(res.Sf[7], 1000.0)
     assert np.isclose(res.hvdc_Pf[0], 1000.0)
     assert np.isclose(res.hvdc_Pf[1], 1000.0)
+    assert np.isclose(res.inter_area_flows, 3000.0)
 
 
 if __name__ == '__main__':

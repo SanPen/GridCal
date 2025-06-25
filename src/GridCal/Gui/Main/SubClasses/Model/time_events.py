@@ -53,8 +53,8 @@ class TimeEventsMain(DataBaseTableMain):
         self.ui.copy_profile_pushButton.clicked.connect(self.copy_profiles)
         self.ui.paste_profiles_pushButton.clicked.connect(self.paste_profiles)
 
-        # combobox chnage
-        self.ui.device_type_magnitude_comboBox.currentTextChanged.connect(self.display_profiles)
+        # combobox change
+        self.ui.device_type_magnitude_comboBox.currentTextChanged.connect(self.profile_device_type_changed)
 
     def profile_device_type_changed(self):
         """
