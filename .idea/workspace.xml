@@ -28,12 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Introducing phases in the short-circuit">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Line-to-ground short-circuit WORKING">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/SC_Test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/SC_Test.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -2361,7 +2360,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="765" />
+    <option name="localTasksCounter" value="766" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2407,7 +2406,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Found error when lines doesn't have 3 phases." />
     <MESSAGE value="Mask I" />
     <MESSAGE value="Computed Ybus with the applied Mask." />
     <MESSAGE value="Slice Indices" />
@@ -2432,7 +2430,8 @@
     <MESSAGE value="Linearized Admittances" />
     <MESSAGE value="Errors in the Linearized Admittances" />
     <MESSAGE value="Introducing phases in the short-circuit" />
-    <option name="LAST_COMMIT_MESSAGE" value="Introducing phases in the short-circuit" />
+    <MESSAGE value="Line-to-ground short-circuit WORKING" />
+    <option name="LAST_COMMIT_MESSAGE" value="Line-to-ground short-circuit WORKING" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2783,8 +2782,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
-          <line>408</line>
-          <option name="timeStamp" value="2720" />
+          <line>411</line>
+          <option name="timeStamp" value="2724" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

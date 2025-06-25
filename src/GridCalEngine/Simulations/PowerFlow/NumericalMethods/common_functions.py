@@ -98,10 +98,11 @@ def fortescue_012_to_abc(z0: complex, z1: complex, z2: complex) -> CxMat:
     """
     a = 1.0 * np.exp(1j * 2 * np.pi / 3)
     Zabc = 1/3 * np.array([
-    [z0 + z1 + z2, z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2],
-    [z0 + a**2 * z1 + a * z2, z0 + z1 + z2, z0 + a * z1 + a**2 * z2],
-    [z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2, z0 + z1 + z2]
-])
+        [z0 + z1 + z2, z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2],
+        [z0 + a**2 * z1 + a * z2, z0 + z1 + z2, z0 + a * z1 + a**2 * z2],
+        [z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2, z0 + z1 + z2]
+    ])
+
     return Zabc
 
 

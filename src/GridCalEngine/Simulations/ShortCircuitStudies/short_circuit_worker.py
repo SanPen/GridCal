@@ -389,11 +389,11 @@ def short_circuit_abc(nc: NumericalCircuit,
     Ybus_gen_masked_csc = Ybus_gen_csc[mask, :][:, mask]
 
     Yloads = diags(Y_power_star_linear) + diags(Y_power_delta_linear) + diags(Y_current_linear)
-    Ylinear = Ybus + Yloads + diags(Yf_masked) + Ybus_gen_masked_csc
+    Ylinear = Ybus - Yloads + diags(Yf_masked) + Ybus_gen_masked_csc
 
     Yloads_expanded = Y_power_star_linear + Y_power_delta_linear + Y_current_linear
     Yloads_expanded = expand_magnitudes(Yloads_expanded, bus_lookup)
-    S = Spf - Vpf * np.conj(Yloads_expanded * Vpf)
+    S = (Spf / (nc.Sbase/3) ) - Vpf * np.conj(Yloads_expanded * Vpf)
     idx3 = np.array([0, 1, 2])
     gen_idx = nc.generator_data.bus_idx
     n_buses = len(nc.generator_data.bus_idx)
@@ -408,7 +408,7 @@ def short_circuit_abc(nc: NumericalCircuit,
 
     Usc = spsolve(Ylinear, Inorton)
     Usc_expanded = expand_magnitudes(Usc, bus_lookup)
-    print(abs(Usc_expanded))
+    Usc_expanded_abs = abs(Usc_expanded)
     print()
 
 
