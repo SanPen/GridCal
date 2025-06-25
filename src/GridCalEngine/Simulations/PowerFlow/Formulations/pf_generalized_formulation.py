@@ -2336,7 +2336,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         If_vsc = self.Pfp_vsc / self.Vm[self.nc.vsc_data.F_dcp]
         It_vsc = St_vsc / self.Vm[self.nc.vsc_data.T_ac]
         loading_vsc = np.abs(St_vsc) / (self.nc.vsc_data.rates + 1e-20)
-        losses_vsc = Pf_vsc + St_vsc.real
+        losses_vsc = (self.Pt_vsc + self.Pfp_vsc + self.Pfn_vsc) * self.nc.Sbase
+        # losses_vsc = Pf_vsc + St_vsc.real
 
         # HVDC ---------------------------------------------------------------------------------------------------------
         Sf_hvdc = make_complex(self.Pf_hvdc, self.Qf_hvdc) * self.nc.Sbase
