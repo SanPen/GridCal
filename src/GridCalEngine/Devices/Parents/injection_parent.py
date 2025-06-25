@@ -56,6 +56,8 @@ class InjectionParent(PhysicalDevice):
         'facility',
         'technologies',
         'scalable',
+        'shift_key',
+        '_shift_key_prof',
         '_use_kw',
     )
 
@@ -121,6 +123,9 @@ class InjectionParent(PhysicalDevice):
 
         self.scalable: bool = True
 
+        self.shift_key: float = 1.0
+        self._shift_key_prof = Profile(default_value=self.shift_key, data_type=float)
+
         self._use_kw: bool = False
 
         self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus', editable=False)
@@ -149,8 +154,9 @@ class InjectionParent(PhysicalDevice):
         self.register(key='technologies', units='p.u.', tpe=SubObjectType.Associations,
                       definition='List of technologies', display=False)
 
-        self.register(key='scalable', units='', tpe=bool, definition='Is the injection scalable?', editable=False,
-                      display=False)
+        self.register(key='scalable', units='', tpe=bool, definition='Is the injection scalable?')
+
+        self.register(key='shift_key', units='', tpe=float, definition='Shift key for net transfer capacity')
 
         self.register(key='use_kw', units='', tpe=bool, definition='Consider the injections in kW and kVAr?')
 
@@ -226,6 +232,23 @@ class InjectionParent(PhysicalDevice):
             self._Cost_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a Cost_prof')
+
+    @property
+    def shift_key_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._shift_key_prof
+
+    @shift_key_prof.setter
+    def shift_key_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._shift_key_prof = val
+        elif isinstance(val, np.ndarray):
+            self._shift_key_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a shift_key_prof')
 
     @property
     def use_kw(self):

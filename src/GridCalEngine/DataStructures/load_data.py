@@ -38,6 +38,9 @@ class LoadData:
 
         self.cost: Vec = np.zeros(nelm, dtype=float)  # load shedding cost
 
+        self.shift_key: Vec = np.ones(nelm, dtype=float)
+        self.scalable: BoolVec = np.ones(nelm, dtype=bool)
+
         self.original_idx = np.zeros(nelm, dtype=int)
 
     def size(self) -> int:
@@ -81,6 +84,9 @@ class LoadData:
 
         data.cost = self.cost[elm_idx]
 
+        data.shift_key = self.shift_key[elm_idx]
+        data.scalable = self.scalable[elm_idx]
+
         data.original_idx = elm_idx
 
         return data
@@ -119,6 +125,8 @@ class LoadData:
         data.cost = self.cost.copy()
 
         data.original_idx = self.original_idx.copy()
+        data.shift_key = self.shift_key.copy()
+        data.scalable = self.scalable.copy()
 
         return data
 

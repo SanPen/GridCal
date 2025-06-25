@@ -72,6 +72,9 @@ class GeneratorData:
         self.discount_rate: Vec = np.zeros(nelm, dtype=float)
         self.is_candidate: BoolVec = np.zeros(nelm, dtype=bool)
 
+        self.shift_key: Vec = np.ones(nelm, dtype=float)
+        self.scalable: BoolVec = np.ones(nelm, dtype=bool)
+
         self.original_idx = np.zeros(nelm, dtype=int)
 
         self.name_to_idx: dict = dict()
@@ -145,6 +148,9 @@ class GeneratorData:
         data.capex = self.capex[elm_idx]
         data.discount_rate = self.discount_rate[elm_idx]
         data.is_candidate = self.is_candidate[elm_idx]
+
+        data.shift_key = self.shift_key[elm_idx]
+        data.scalable = self.scalable[elm_idx]
 
         data.original_idx = elm_idx
 
@@ -222,6 +228,9 @@ class GeneratorData:
         data.capex = self.capex.copy()
         data.discount_rate = self.discount_rate.copy()
         data.is_candidate = self.is_candidate.copy()
+
+        data.shift_key = self.shift_key.copy()
+        data.scalable = self.scalable.copy()
 
         data.original_idx = self.original_idx
 
