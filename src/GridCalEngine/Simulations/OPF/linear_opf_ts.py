@@ -1524,7 +1524,7 @@ def add_linear_node_balance(t_idx: int,
                             prob: LpModel,
                             logger: Logger):
     """
-    Add the kirchoff nodal equality
+    Add the Kirchhoff nodal equality
     :param t_idx: time step
     :param vd: List of slack node indices
     :param bus_data: BusData
@@ -1534,21 +1534,11 @@ def add_linear_node_balance(t_idx: int,
     :param prob: LpModel
     :param logger: Logger
     """
-    # B = Bbus.tocsc()
-    #
-    # P_esp = bus_vars.Pbalance[t_idx, :]
-    #
-    # # NOTE: all device "p" has already the expression of their shedding inside
-    #
-    # P_esp += generator_data.get_array_per_bus_obj(gen_vars.p[t_idx, :])
-    # P_esp += battery_data.get_array_per_bus_obj(batt_vars.p[t_idx, :])
-    # P_esp -= load_data.get_array_per_bus_obj(load_vars.p[t_idx, :])
+
+    # Note: At this point, Pbalance has all the devices' power summed up inside (including branches)
 
     if len(capacity_nodes_idx) > 0:
         bus_vars.Pbalance[t_idx, capacity_nodes_idx] += nodal_capacity_vars.P[t_idx, :]
-
-    # calculate the linear nodal injection
-    # bus_vars.Pinj[t_idx, :] = lpDot(B, bus_vars.theta[t_idx, :])
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
@@ -1565,8 +1555,9 @@ def add_linear_node_balance(t_idx: int,
                 name=join("kirchoff_", [t_idx, k], "_")
             )
 
+    Va = np.angle(bus_data.Vbus)
     for i in vd:
-        set_var_bounds(var=bus_vars.Va[t_idx, i], lb=0.0, ub=0.0)
+        set_var_bounds(var=bus_vars.Va[t_idx, i], lb=Va[i], ub=Va[i])
 
 
 def add_copper_plate_balance(t_idx: int,

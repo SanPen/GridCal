@@ -21,22 +21,24 @@ class ObjectModelFilterProxy(QtCore.QSortFilterProxyModel):
                  mdl: ObjectsModel,
                  parent: QtCore.QObject | None = None):
         """
-
-        :param mdl:
-        :param parent:
+        Constructor
+        :param mdl: ObjectsModel
+        :param parent: some parent
         """
         super().__init__(parent)
 
         self._mdl = mdl
 
-        # ← your engine, already knows how to parse + filter the objects
+        # filtering engine already initialized
         self._filter_engine = FilterObjects(self._mdl.objects)
 
         # indexes allowed after the last call to setExpression()
         self._allowed_rows: set[int] = set(range(len(self._mdl.objects)))  # start with “show all”
 
+        # list of filtered objects, by default it is the same as the model since we "show all"
         self._filtered_objects: List[ALL_DEV_TYPES] = self._mdl.objects
 
+        # set the source model
         super().setSourceModel(mdl)
 
     @property
@@ -91,19 +93,19 @@ class ObjectModelFilterProxy(QtCore.QSortFilterProxyModel):
         :return:
         """
 
-        nrows = self.rowCount()
-        ncols = self.columnCount()
-        data = np.empty((nrows, ncols), dtype=object)
+        n_rows = self.rowCount()
+        n_cols = self.columnCount()
+        data = np.empty((n_rows, n_cols), dtype=object)
 
-        for j in range(ncols):
+        for j in range(n_cols):
             for i in self._allowed_rows:
                 data[i, j] = self._mdl.data_raw(r=i, c=j)
 
         columns = [self.headerData(i, orientation=QtCore.Qt.Orientation.Horizontal,
-                                   role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(ncols)]
+                                   role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(n_cols)]
 
         index = [self.headerData(i, orientation=QtCore.Qt.Orientation.Vertical,
-                                 role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(nrows)]
+                                 role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(n_rows)]
 
         return index, columns, data
 

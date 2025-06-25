@@ -1318,12 +1318,10 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
     :param linear_multi_contingencies: LinearMultiContingencies
     :param monitor_only_ntc_load_rule_branches:
     :param monitor_only_sensitive_branches:
-    :param structural_ntc
-    :param ntc_load_rule
-    :param alpha_threshold
-    :param dP: Vector of power increments to used for the power exchange
-    :param dT: Exchange amount (MW) usually a unitary increment is sufficient
-    :param alpha_n1
+    :param structural_ntc:
+    :param ntc_load_rule:
+    :param alpha_threshold:
+    :param alpha_n1:
     :return objective function
     """
     f_obj = 0.0
@@ -1743,23 +1741,26 @@ def add_linear_node_balance(t_idx: int,
     :param bus_data: BusData
     :param bus_vars: BusVars
     :param prob: LpModel
+    :param logger: Logger
     """
 
-    # Note: At this point, Pcalc has all the devices' power summed up inside (including branches)
+    # Note: At this point, Pbalance has all the devices' power summed up inside (including branches)
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
-        if not isinstance(bus_vars.Pbalance[t_idx, k], float):
+
+        if isinstance(bus_vars.Pbalance[t_idx, k], (int, float)):
+            bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
+                cst=bus_vars.Va[t_idx, k] == 0,
+                name=join("island_bus_", [t_idx, k], "_")
+            )
+            logger.add_warning("bus isolated",
+                               device=bus_data.names[k] + f'@t={t_idx}')
+
+        else:
             bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
                 cst=bus_vars.Pbalance[t_idx, k] == 0,
                 name=join("kirchhoff_", [t_idx, k], "_"))
-        else:
-            # it's a number
-            if bus_vars.Pbalance[t_idx, k] != 0.0:
-                logger.add_error(f"kirchhoff_ not satisfiable", value=bus_vars.Pbalance[t_idx, k])
-            else:
-                # it is zero already
-                pass
 
     # set this to the set value
     Va = np.angle(bus_data.Vbus)
