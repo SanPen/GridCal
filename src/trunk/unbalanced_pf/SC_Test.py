@@ -429,12 +429,13 @@ def short_circuit_3ph(grid, t_idx=None):
 
 res_3ph = short_circuit_3ph(grid)
 
-U = abs(res_3ph.V)
-angle = np.degrees(np.angle((res_3ph.V)))
-print()
-print(np.round(U, 4))
-print()
-print(np.round(angle, 2))
+print('Done')
+# U = abs(res_3ph.V)
+# angle = np.degrees(np.angle((res_3ph.V)))
+# print()
+# print(np.round(U, 4))
+# print()
+# print(np.round(angle, 2))
 
-print(len(res_3ph.Scalc))
-print('\nSf =', np.round(res_3ph.St,4))
+# print(len(res_3ph.Scalc))
+# print('\nSf =', np.round(res_3ph.St,4))
