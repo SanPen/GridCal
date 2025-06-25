@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from GridCalEngine.enumerations import FaultType, Method, Phases
+from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
 from GridCalEngine.Simulations.options_template import OptionsTemplate
 
 
@@ -20,8 +20,8 @@ class ShortCircuitOptions(OptionsTemplate):
                  fault_r: float = 1e-20,
                  fault_x: float = 1e-20,
                  verbose: int = 0,
-                 method=Method.sequences,
-                 phases=Phases.abc):
+                 method=MethodShortCircuit.sequences,
+                 phases=PhasesShortCircuit.abc):
         """
         :param bus_index: Index of the bus failed (used if mid_line_fault is False)
         :param fault_type: fault type among 3x, LG, LL and LLG possibilities
@@ -57,8 +57,8 @@ class ShortCircuitOptions(OptionsTemplate):
 
         self.register(key="bus_index", tpe=int)
         self.register(key="fault_type", tpe=FaultType)
-        self.register(key="method", tpe=Method)
-        self.register(key="phases", tpe=Phases)
+        self.register(key="method", tpe=MethodShortCircuit)
+        self.register(key="phases", tpe=PhasesShortCircuit)
         self.register(key="mid_line_fault", tpe=bool)
         self.register(key="branch_index", tpe=int)
         self.register(key="branch_fault_locations", tpe=float)

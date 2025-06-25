@@ -22,7 +22,7 @@ from GridCalEngine.Devices import Line, Bus
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_options import ShortCircuitOptions
-from GridCalEngine.enumerations import FaultType, SimulationTypes, Method, Phases
+from GridCalEngine.enumerations import FaultType, SimulationTypes, MethodShortCircuit, PhasesShortCircuit
 from GridCalEngine.Devices.types import BRANCH_TYPES
 
 
@@ -142,8 +142,8 @@ class ShortCircuitDriver(DriverTemplate):
                              Zf: complex,
                              island_bus_index: int,
                              fault_type: FaultType,
-                             method: Method,
-                             phases: Phases) -> ShortCircuitResults:
+                             method: MethodShortCircuit,
+                             phases: PhasesShortCircuit) -> ShortCircuitResults:
         """
         Run a short circuit simulation for a single island
         :param calculation_inputs:
@@ -157,7 +157,7 @@ class ShortCircuitDriver(DriverTemplate):
         # compute Zbus
         # is dense, so no need to store it as sparse
         if adm.Ybus.shape[0] > 1:
-            if method == Method.sequences:
+            if method == MethodShortCircuit.sequences:
                 if fault_type == FaultType.ph3:
                     return short_circuit_ph3(nc=nc,
                                              Vpf=Vpf[nc.bus_data.original_idx],
@@ -174,12 +174,13 @@ class ShortCircuitDriver(DriverTemplate):
                 else:
                     raise Exception('Unknown fault type!')
 
-            elif method == Method.phases:
+            elif method == MethodShortCircuit.phases:
                 short_circuit_abc(nc=nc,
                                   Vpf=Vpf,
                                   Zf=Zf,
                                   bus_index=island_bus_index,
                                   fault_type=fault_type,
+                                  method = method,
                                   phases = phases)
 
             else:
@@ -291,7 +292,8 @@ class ShortCircuitDriver(DriverTemplate):
                                             Zf=Zf,
                                             island_bus_index=self.options.bus_index,
                                             fault_type=self.options.fault_type,
-                                            method = self.options.method)
+                                            method = self.options.method,
+                                            phases = self.options.phases)
 
             # merge results
             results.apply_from_island(res, calculation_inputs[0].bus_data.original_idx,

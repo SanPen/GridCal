@@ -12,7 +12,7 @@ from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit import short_ci
 from GridCalEngine.Topology.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import polar_to_rect
-from GridCalEngine.enumerations import FaultType
+from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
 from GridCalEngine.basic_structures import CxVec, Vec
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import compute_ybus, compute_Sbus_delta, compute_current_loads, compute_Sbus_star
 from scipy.sparse import diags
@@ -328,7 +328,8 @@ def short_circuit_abc(nc: NumericalCircuit,
                       Zf: CxVec,
                       bus_index: int,
                       fault_type: FaultType,
-                      phases: Phases):
+                      method: MethodShortCircuit,
+                      phases: PhasesShortCircuit):
     """
     Run a short circuit simulation in the phase domain
     :param nc:
@@ -358,9 +359,44 @@ def short_circuit_abc(nc: NumericalCircuit,
                                                            V=Vpf_masked,
                                                            Istar=nc.load_data.I3_star,
                                                            Idelta=nc.load_data.I3_delta)
+    Yf = np.zeros(len(Vpf), dtype=complex)
 
+    if fault_type == FaultType.LG:
 
+        if phases == PhasesShortCircuit.a:
+            Yf[3 * bus_index + 0] = 1 / (Zf[bus_index] + 1e-20)
 
-    Ylinear = Ybus + diags(Y_power_star_linear) + diags(Y_power_delta_linear) + diags(Y_current_linear)
+        if phases == PhasesShortCircuit.b:
+            Yf[3 * bus_index + 1] = 1 / (Zf[bus_index] + 1e-20)
+
+        if phases == PhasesShortCircuit.c:
+            Yf[3 * bus_index + 2] = 1 / (Zf[bus_index] + 1e-20)
+
+        Yf_masked = Yf[mask]
+
+    #Generators
+    n_gen = nc.generator_data.active.size
+    Ygen = np.zeros((3*n_gen, 3), dtype=complex)
+    a = 1 * np.exp(1j * 2 * np.pi / 3)
+    idx3 = np.array([0, 1, 2])
+    for i in range(n_gen):
+
+        z0 = nc.generator_data.r0[i] + 1j * nc.generator_data.x0[i]
+        z1 = nc.generator_data.r1[i] + 1j * nc.generator_data.x1[i]
+        z2 = nc.generator_data.r2[i] + 1j * nc.generator_data.x2[i]
+
+        Zi = 1/3 * np.array([
+            [z0 + z1 + z2, z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2],
+            [z0 + a**2 * z1 + a * z2, z0 + z1 + z2, z0 + a * z1 + a**2 * z2],
+            [z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2, z0 + z1 + z2]
+        ])
+        Yi = np.linalg.inv(Zi)
+
+        k3 = 3 * i + idx3
+        Ygen[k3, :] = Yi[:, :]
+
+    Ybus_gen =
+
+    Ylinear = Ybus + diags(Y_power_star_linear) + diags(Y_power_delta_linear) + diags(Y_current_linear) + diags(Yf_masked)
 
     return None

@@ -642,7 +642,7 @@ class FaultType(Enum):
         """
         return list(map(lambda c: c.value, cls))
 
-class Method(Enum):
+class MethodShortCircuit(Enum):
     """
     Short circuit type
     """
@@ -662,7 +662,7 @@ class Method(Enum):
         :return:
         """
         try:
-            return Method[s]
+            return MethodShortCircuit[s]
         except KeyError:
             return s
 
@@ -673,7 +673,7 @@ class Method(Enum):
         """
         return list(map(lambda c: c.value, cls))
 
-class Phases(Enum):
+class PhasesShortCircuit(Enum):
     """
     Short circuit type
     """
@@ -698,7 +698,7 @@ class Phases(Enum):
         :return:
         """
         try:
-            return Phases[s]
+            return PhasesShortCircuit[s]
         except KeyError:
             return s
 

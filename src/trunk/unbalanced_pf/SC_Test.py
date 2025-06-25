@@ -4,7 +4,7 @@ import numpy as np
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 import pandas as pd
-from GridCalEngine.enumerations import FaultType, Method
+from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
 
 logger = gce.Logger()
 
@@ -17,7 +17,7 @@ grid.fBase = 60
 bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=0)
 bus_632.is_slack = True
 grid.add_bus(obj=bus_632)
-gen = gce.Generator(vset = 1.0)
+gen = gce.Generator(vset = 1.0, r1=0.004, x1=0.5, r2=0.02, x2=0.5, r0=0.01, x0=0.08)
 grid.add_generator(bus = bus_632, api_obj = gen)
 
 bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100*5, ypos=0)
@@ -29,7 +29,7 @@ grid.add_bus(obj=bus_646)
 bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
 grid.add_bus(obj=bus_633)
 
-bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0)
+bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0, r_fault=0.1)
 grid.add_bus(obj=bus_634)
 
 bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100*5)
@@ -407,15 +407,14 @@ def short_circuit_3ph(grid, t_idx=None):
 
     pf_res = newton_raphson_fx(problem=pf_problem, verbose=1, max_iter=1000)
 
-    sc_options = gce.ShortCircuitOptions(bus_index = 5,
-                                     fault_type= FaultType.ph3,
+    sc_options = gce.ShortCircuitOptions(bus_index = 4,
+                                     fault_type= FaultType.LG,
                                      mid_line_fault = False,
                                      branch_index = 0,
                                      branch_fault_locations = 0.5,
-                                     fault_r = 0.1,
-                                     fault_x = 1e-20,
                                      verbose = 0,
-                                     method = Method.phases)
+                                     method = MethodShortCircuit.phases,
+                                     phases = PhasesShortCircuit.a)
 
     sc_driver = gce.ShortCircuitDriver(grid=grid,
                                        options = sc_options,
