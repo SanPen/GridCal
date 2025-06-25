@@ -13,56 +13,20 @@ def Q_from_PF(pf, p):
     Q = pf_sign * p * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
     return Q
 
-source = gce.Bus(name='SourceBus', xpos=390872.8, ypos=392887.5, Vnom=11)
-source.is_slack = True
-grid.add_bus(obj=source)
-gen = gce.Generator(vset = 1.05)
-grid.add_generator(bus = source, api_obj = gen)
-
-impedance = gce.Bus(name='ImpedanceBus', xpos=390872.8, ypos=392887.5, Vnom=11)
-grid.add_bus(obj=impedance)
-
-sequence_line_type = gce.SequenceLineType(X=2.117, X0=3806.17)
-grid.add_sequence_line(sequence_line_type)
-source_impedance = gce.Line(bus_from=source, bus_to=impedance)
-source_impedance.apply_template(sequence_line_type, grid.Sbase, grid.fBase, logger)
-grid.add_line(source_impedance)
-
 buses = pd.read_csv('European_LV_CSV/Buscoords.csv', skiprows=1)
 buses.columns = ['Bus', 'X', 'Y']
 bus_dict = dict()
-bus_dict[source.name] = source
 
+i = 0
 for _, row in buses.iterrows():
     bus = gce.Bus(name=str(row['Bus']), xpos=float(row['X']), ypos=float(row['Y']), Vnom=0.416)
+    if i == 0:
+        bus.is_slack = True
+        gen = gce.Generator()
+        grid.add_generator(bus=bus, api_obj=gen)
+        i+=1
     grid.add_bus(obj=bus)
     bus_dict[int(float(bus.name))] = bus
-
-transformer = pd.read_csv('European_LV_CSV/Transformer.csv', skiprows=1)
-transformer.columns = ['name', 'phases', 'bus_from', 'bus_to', 'HV', 'LV', 'rate', 'conn_HV', 'conn_LV', '%X', '%R']
-
-for _, row in transformer.iterrows():
-
-    transformer = gce.Transformer2W(name=row['name'],
-                                    bus_from=impedance,
-                                    bus_to= bus_dict[row['bus_to']],
-                                    HV=float(row['HV']),
-                                    LV=float(row['LV']),
-                                    rate=float(row['rate']),
-                                    r=float(row['%R'])*1.25,
-                                    x=float(row['%X'])*1.25
-                                    )
-    if row['conn_HV'] == ' Delta':
-        transformer.conn_f = WindingType.Delta
-    else:
-        transformer.conn_f = WindingType.GroundedStar
-
-    if row['conn_LV'] == ' Delta':
-        transformer.conn_t = WindingType.Delta
-    else:
-        transformer.conn_t = WindingType.GroundedStar
-    transformer.vector_group_number = 2
-    grid.add_transformer2w(transformer)
 
 lines = pd.read_csv('European_LV_CSV/Lines.csv', header=1)
 lines.columns = ['names', 'bus_from', 'bus_to', 'phases', 'length[m]', 'units', 'line_code']
@@ -95,7 +59,6 @@ for _, row in lines.iterrows():
 
 loads = pd.read_csv('European_LV_CSV/Loads.csv', header=2)
 loads_shape = pd.read_csv('European_LV_CSV/LoadShapes.csv', header=1)
-#loads_profiles = pd.read_csv('European_LV_CSV/Load Profiles/LoadShapes.csv', header=2)
 load_phase_dict = dict()
 shape_profile = {row['Name']:row['File'] for i,row in loads_shape.iterrows()}
 

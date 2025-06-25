@@ -74,9 +74,9 @@ plt.legend()
 plt.show()
 """
 
-plt.figure(figsize=(10, 4))
+plt.figure(figsize=(13, 7))
 plt.plot(time_a, Ua_simulation, label='Simulated')
-plt.plot(time_a, Ua_real, label='Real')
+plt.plot(time_a, Ua_real, label='Reference')
 plt.title('Bus34 - PhaseA')
 plt.xlabel('Time [min]')
 plt.ylabel('Voltage [pu]')
@@ -85,9 +85,9 @@ plt.tight_layout()
 plt.legend()
 plt.show()
 
-plt.figure(figsize=(10, 4))
+plt.figure(figsize=(13, 7))
 plt.plot(time_b, Ub_simulation, label='Simulated')
-plt.plot(time_b, Ub_real, label='Real')
+plt.plot(time_b, Ub_real, label='Reference')
 plt.title('Bus900 - PhaseB')
 plt.xlabel('Time [min]')
 plt.ylabel('Voltage [pu]')
@@ -96,9 +96,9 @@ plt.tight_layout()
 plt.legend()
 plt.show()
 
-plt.figure(figsize=(10, 4))
+plt.figure(figsize=(13, 7))
 plt.plot(time_c, Uc_simulation, label='Simulated')
-plt.plot(time_c, Uc_real, label='Real')
+plt.plot(time_c, Uc_real, label='Reference')
 plt.title('Bus614 - PhaseC')
 plt.xlabel('Time [min]')
 plt.ylabel('Voltage [pu]')
@@ -106,3 +106,13 @@ plt.grid(True)
 plt.tight_layout()
 plt.legend()
 plt.show()
+
+# Create a DataFrame with the data
+df = pd.DataFrame({
+    'Time [min]': time_a,
+    'Ua_reference [pu]': Ua_real,
+    'Ua_simulation [pu]': Ua_simulation
+})
+
+# Export to Excel
+df.to_excel('Ua_voltage_export.xlsx', index=False)

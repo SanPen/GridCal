@@ -4,7 +4,7 @@ import GridCalEngine.api as gce
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 
-def power_flow_3ph(grid, t_idx=None):
+def power_flow_3ph(grid, t_idx):
     nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx = t_idx)
 
     V0 = nc.bus_data.Vbus
@@ -15,18 +15,7 @@ def power_flow_3ph(grid, t_idx=None):
 
     problem = PfBasicFormulation3Ph(V0=V0, S0=S0, Qmin=Qmin*100, Qmax=Qmax*100, nc=nc, options=options)
 
-    #print('Ybus = \n', problem.Ybus.toarray())
-    #print('S0 = \n', problem.S0)
-    #print('I0 = \n', problem.I0)
-    #print('V0 = \n', problem.V)
-
-    res = newton_raphson_fx(problem=problem, verbose=1)
-
-    Ibus = problem.Ybus.dot(res.V)
-    #print('Ibus = \n', Ibus)
-
-    Sbuss = res.V * np.conj(Ibus)
-    #print('Sbuss = \n', Sbuss)
+    res = newton_raphson_fx(problem=problem, verbose=1, max_iter=100)
 
     return res
 
@@ -50,6 +39,8 @@ for i in range(grid.get_time_number()):
     df_U_a[f't={i}'] = U_reshaped[:, 0]
     df_U_b[f't={i}'] = U_reshaped[:, 1]
     df_U_c[f't={i}'] = U_reshaped[:, 2]
+
+    print(res_3ph.converged)
 
 # Export to Excel
 df_U_a.to_excel("Ua_results.xlsx", index=False)

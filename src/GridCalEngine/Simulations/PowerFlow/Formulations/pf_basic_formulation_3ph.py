@@ -416,10 +416,9 @@ def expandVoltage3ph(V0: CxVec) -> CxVec:
     # x3[0] = 1.0210 * np.exp(1j * (0*np.pi/180))
     # x3[1] = 1.0420 * np.exp(1j * (-120*np.pi/180))
     # x3[2] = 1.0174 * np.exp(1j * (120*np.pi/180))
-    x3[0] = 1.0210 * np.exp(1j * (-2.49*np.pi/180))
-    x3[1] = 1.0420 * np.exp(1j * (-121.72*np.pi/180))
-    x3[2] = 1.0174* np.exp(1j * (117.83*np.pi/180))
-
+    x3[0] = (251.900822)/(416/np.sqrt(3)) * np.exp(1j * (-0.526991))
+    x3[1] = (251.442613)/(416/np.sqrt(3)) * np.exp(1j * (3.659445))
+    x3[2] = (251.952085)/(416/np.sqrt(3)) * np.exp(1j * (1.569572))
 
     return x3
 
@@ -816,7 +815,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         )
 
         return NumericPowerFlowResults(V=V_expanded,
-                                       Scalc=Sbus * self.nc.Sbase,
+                                       Scalc=Sbus * (self.nc.Sbase / 3),
                                        m=np.ones(self.nc.nbr, dtype=float),
                                        tau=np.zeros(self.nc.nbr, dtype=float),
                                        Sf=Sf,
