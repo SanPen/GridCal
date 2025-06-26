@@ -1075,7 +1075,7 @@ class GridMapWidget(BaseDiagramWidget):
         # rescale substations (this is super-fast)
         data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
         for se_key, elm_graphics in data.items():
-            elm_graphics.set_api_object_color()
+            # elm_graphics.set_api_object_color()
             elm_graphics.set_size(r=se_width)
 
         self.diagram_scene.blockSignals(False)

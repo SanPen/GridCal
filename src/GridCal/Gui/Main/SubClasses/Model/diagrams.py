@@ -2578,7 +2578,7 @@ class DiagramsMain(CompiledArraysMain):
                 hex_color = bus.area.color if bus.area is not None else None
 
             elif self.object_select_window.selected_object == "zone":
-                hex_color = bus.country.color if bus.area is not None else None
+                hex_color = bus.zone.color if bus.zone is not None else None
 
             elif self.object_select_window.selected_object == "country":
                 hex_color = bus.country.color if bus.country is not None else None
@@ -2590,7 +2590,8 @@ class DiagramsMain(CompiledArraysMain):
                 hex_color = None
 
             if hex_color is not None:
-                graphic_obj.set_tile_color(QtGui.QBrush(QtGui.QColor(bus.area.color)))
+                graphic_obj.color = QtGui.QBrush(QtGui.QColor(hex_color))
+                graphic_obj.set_tile_color(graphic_obj.color)
                 any_op = True
 
         if not any_op:
@@ -2605,7 +2606,8 @@ class DiagramsMain(CompiledArraysMain):
 
         self.object_select_window = ListSelectWindow(title='Select association',
                                                      elements=["area", "zone", "country",
-                                                               "community", "region", "municipality"],
+                                                               "community", "region", "municipality",
+                                                               "substation"],
                                                      parent=self)
         self.object_select_window.setModal(True)
         self.object_select_window.exec()
@@ -2619,7 +2621,7 @@ class DiagramsMain(CompiledArraysMain):
                     hex_color = substation.area.color if substation.area is not None else None
 
                 elif self.object_select_window.selected_object == "zone":
-                    hex_color = substation.country.color if substation.area is not None else None
+                    hex_color = substation.zone.color if substation.zone is not None else None
 
                 elif self.object_select_window.selected_object == "country":
                     hex_color = substation.country.color if substation.country is not None else None
@@ -2632,13 +2634,19 @@ class DiagramsMain(CompiledArraysMain):
 
                 elif self.object_select_window.selected_object == "municipality":
                     hex_color = substation.municipality.color if substation.municipality is not None else None
+
+                elif self.object_select_window.selected_object == "substation":
+                    hex_color = substation.color
                 else:
                     hex_color = None
 
                 if hex_color is not None:
-                    graphic_obj.set_color(
-                        inner_color=QtGui.QColor(),
-                        border_color=QtGui.QColor(substation.country.color)
+                    color = QtGui.QColor(hex_color)
+                    graphic_obj.color = color
+                    graphic_obj.border_color = color
+                    graphic_obj.color_widget(
+                        inner_color=color,
+                        border_color=color
                     )
                     any_op = True
 

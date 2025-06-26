@@ -73,14 +73,9 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         self.line_container = None
         self.editor: GridMapWidget = editor  # reassign for the types to be clear
 
-        r2 = size / 2
+        r2 = size / 2.0
         x, y = editor.to_x_y(lat=lat, lon=lon)  # upper left corner
-        self.setRect(
-            x - r2,
-            y - r2,
-            self.size,
-            self.size
-        )
+        self.setRect(x - r2, y - r2, self.size, self.size)
 
         # Enable hover events for the item
         self.setAcceptHoverEvents(True)
@@ -94,16 +89,40 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         self.change_pen_width(0.05 * size)
 
         # Create a pen with reduced line width
-        self.color = QColor(self.api_object.color)
-        self.color.setAlpha(128)
-        self.hoover_color = QColor(self.api_object.color)
-        self.hoover_color.setAlpha(180)
-        self.border_color = QColor(self.api_object.color)  # No Alpha
+        self._color = QColor(self.api_object.color)
+        self._color.setAlpha(128)
+        self._hoover_color = QColor(self.api_object.color)
+        self._hoover_color.setAlpha(180)
+        self._border_color = QColor(self.api_object.color)  # No Alpha
 
         self.set_default_color()
 
         # list of voltage levels graphics
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
+
+    @property
+    def color(self) -> QColor:
+        return self._color
+
+    @color.setter
+    def color(self, val: QColor):
+        self._color = val
+
+    @property
+    def hover_color(self) -> QColor:
+        return self._hoover_color
+
+    @hover_color.setter
+    def hover_color(self, val: QColor):
+        self._hoover_color = val
+
+    @property
+    def border_color(self) -> QColor:
+        return self._border_color
+
+    @border_color.setter
+    def border_color(self, val: QColor):
+        self._border_color = val
 
     @property
     def api_object(self) -> Substation:
@@ -182,8 +201,8 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         self.color = QColor(self.api_object.color)
         self.color.setAlpha(128)
 
-        self.hoover_color = QColor(self.api_object.color)
-        self.hoover_color.setAlpha(180)
+        self.hover_color = QColor(self.api_object.color)
+        self.hover_color.setAlpha(180)
 
         self.border_color = QColor(self.api_object.color)  # No Alpha
 
@@ -315,17 +334,15 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         Event handler for when the mouse enters the item.
         """
         # self.editor.map.view.in_item = True
-        self.set_color(self.hoover_color, self.color)
+        self.color_widget(self.color, self.hover_color)
         self.hovered = True
 
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
         Event handler for when the mouse leaves the item.
         """
-        # self.editor.map.view.in_item = False
         self.hovered = False
-        self.set_default_color()
-        # QApplication.instance().restoreOverrideCursor()
+        self.color_widget(self.color, self.border_color)
 
     def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
         """
@@ -756,7 +773,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         pen.setWidthF(width)
         self.setPen(pen)
 
-    def set_color(self, inner_color: QColor = None, border_color: QColor = None) -> None:
+    def color_widget(self, inner_color: QColor = None, border_color: QColor = None) -> None:
         """
 
         :param inner_color:
@@ -778,7 +795,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         :return:
         """
         # Example: color assignment
-        self.set_color(self.color, self.border_color)
+        self.color_widget(self.color, self.border_color)
 
     def open_street_view(self):
         """
@@ -809,7 +826,6 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         #     associated_lines_graphics.append(segment.container)
 
         return self.voltage_level_graphics + associated_lines_graphics
-
 
     def get_associated_devices(self) -> List[ALL_DEV_TYPES]:
         """
