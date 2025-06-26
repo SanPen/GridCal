@@ -97,11 +97,17 @@ def fortescue_012_to_abc(z0: complex, z1: complex, z2: complex) -> CxMat:
     :return: abc impedance matrix
     """
     a = 1.0 * np.exp(1j * 2 * np.pi / 3)
-    Zabc = 1/3 * np.array([
-        [z0 + z1 + z2, z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2],
-        [z0 + a**2 * z1 + a * z2, z0 + z1 + z2, z0 + a * z1 + a**2 * z2],
-        [z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2, z0 + z1 + z2]
-    ])
+    # Zabc = 1/3 * np.array([
+    #     [z0 + z1 + z2, z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2],
+    #     [z0 + a**2 * z1 + a * z2, z0 + z1 + z2, z0 + a * z1 + a**2 * z2],
+    #     [z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2, z0 + z1 + z2]
+    # ])
+
+    fort1 = np.array([[1.0, 1.0, 1.0], [1.0, a**2, a], [1.0, a, a**2]])
+    fort2 = np.array([[1.0, 1.0, 1.0], [1.0, a, a**2], [1.0, a**2, a]]) / 3
+    Z012 = np.array([[z0, 0, 0], [0, z1, 0], [0, 0, z2]])
+
+    Zabc = fort1 @ Z012 @ fort2
 
     return Zabc
 

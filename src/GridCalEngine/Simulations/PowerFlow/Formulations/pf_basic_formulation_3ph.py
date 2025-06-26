@@ -50,12 +50,21 @@ def compute_ybus_generator(nc: NumericalCircuit) -> csc_matrix:
         f = nc.generator_data.bus_idx[k]
         f3 = 3 * f + idx3
 
-        r0 = nc.generator_data.r0[k]
-        x0 = nc.generator_data.x0[k]
-        r1 = nc.generator_data.r1[k]
-        x1 = nc.generator_data.x1[k]
-        r2 = nc.generator_data.r2[k]
-        x2 = nc.generator_data.x2[k]
+        # r0 = nc.generator_data.r0[k] * 2.0
+        # x0 = nc.generator_data.x0[k] * 2.0
+        # r1 = nc.generator_data.r1[k] * 2.0
+        # x1 = nc.generator_data.x1[k] * 2.0
+        # r2 = nc.generator_data.r2[k] * 2.0
+        # x2 = nc.generator_data.x2[k] * 2.0
+
+        r0 = nc.generator_data.r0[k] * 1.0
+        x0 = nc.generator_data.x0[k] * 1.0
+        r1 = nc.generator_data.r1[k] * 1.0
+        x1 = nc.generator_data.x1[k] * 1.0
+        r2 = nc.generator_data.r2[k] * 1.0
+        x2 = nc.generator_data.x2[k] * 1.0
+
+
 
         # Fortescue
         Zabc = fortescue_012_to_abc(r0 + 1j * x0, r1 + 1j * x1, r2 + 1j * x2)
