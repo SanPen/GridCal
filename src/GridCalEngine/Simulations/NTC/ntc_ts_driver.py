@@ -102,6 +102,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.dSbus[t_idx, :] = opf_vars.bus_vars.delta_p[0, :]
             self.results.bus_shadow_prices[t_idx, :] = opf_vars.bus_vars.shadow_prices[0, :]
             self.results.load_shedding[t_idx, :] = opf_vars.bus_vars.load_shedding[0, :]
+            self.results.nodal_balance[t_idx, :] = opf_vars.bus_vars.Pbalance[0, :]
 
             self.results.Sf[t_idx, :] = opf_vars.branch_vars.flows[0, :]
             self.results.St[t_idx, :] = -opf_vars.branch_vars.flows[0, :]

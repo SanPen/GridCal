@@ -1129,7 +1129,7 @@ def add_linear_injections_formulation(t: Union[int, None],
 
     # now, formulate the final injections for all buses
     for k in range(bus_data_t.nbus):
-        # we compute the injection power: P = Pset + proportion · ΔP
+        # we compute the injection power: P = Pset + (proportion · ΔP)
         ntc_vars.bus_vars.Pinj[t, k] += base_power[k] + ntc_vars.bus_vars.delta_p[t, k]
         ntc_vars.bus_vars.Pbalance[t, k] += ntc_vars.bus_vars.Pinj[t, k]
 

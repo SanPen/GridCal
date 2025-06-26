@@ -933,7 +933,7 @@ def compute_fast_decoupled_admittances(X: Vec,
 
 class LinearAdmittanceMatrices:
     """
-    Admittance matrices for linear methods (DC power flow, PTDF, ..)
+    Admittance matrices for linear methods (DC power flow, PTDF, ...)
     """
 
     def __init__(self, Bbus: sp.csc_matrix, Bf: sp.csc_matrix, Gbus: sp.csc_matrix, Gf: sp.csc_matrix):
