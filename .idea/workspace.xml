@@ -28,11 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added coloring of buses and substations, &#10;refactored the select buses by to be simpler">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved the substation colouring and hover behavior">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/substation_graphic_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/substation_graphic_item.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_results.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -2378,7 +2379,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="708" />
+    <option name="localTasksCounter" value="709" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2424,7 +2425,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Touched on some CGMES craziness..." />
     <MESSAGE value="Fixed VL border issue" />
     <MESSAGE value="Refactored unused code" />
     <MESSAGE value="added x, y to the connectivity node&#10;refactored code" />
@@ -2449,7 +2449,8 @@
     <MESSAGE value="Minor improvements in places that may divide by zero" />
     <MESSAGE value="Minor improvements" />
     <MESSAGE value="Added coloring of buses and substations, &#10;refactored the select buses by to be simpler" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added coloring of buses and substations, &#10;refactored the select buses by to be simpler" />
+    <MESSAGE value="Improved the substation colouring and hover behavior" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved the substation colouring and hover behavior" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2843,6 +2844,16 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/substation_graphic_item.py</url>
           <line>116</line>
           <option name="timeStamp" value="2644" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/substation_graphic_item.py</url>
+          <line>124</line>
+          <option name="timeStamp" value="2648" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/substation_graphic_item.py</url>
+          <line>108</line>
+          <option name="timeStamp" value="2650" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

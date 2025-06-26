@@ -101,7 +101,7 @@ class MapLibraryModel(QStandardItemModel):
 
         self.substation_name = "Substation"
 
-        self.add(name=self.substation_name, icon_name="bus_icon")
+        self.add(name=self.substation_name, icon_name="substation")
 
     def add(self, name: str, icon_name: str):
         """

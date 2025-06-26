@@ -88,6 +88,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.dSbus = np.zeros(n, dtype=complex)
         self.bus_shadow_prices = np.zeros(n, dtype=float)
         self.load_shedding = np.zeros(n, dtype=float)
+        self.nodal_balance = np.zeros(n, dtype=float)
 
         self.Sf = np.zeros(m, dtype=float)
         self.St = np.zeros(m, dtype=float)

@@ -971,6 +971,9 @@ class NtcVars:
         """
         return self.bus_vars.Vm * np.exp(1j * self.bus_vars.Va)
 
+    def check_kirchhoff(self, tol: float = 1e-10):
+        nodal_power = self.bus_vars.Pbalance
+
 
 def get_base_power(Sbase: float,
                    gen_data_t: GeneratorData,
@@ -2093,6 +2096,12 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     if vars_v.delta_sl_2[t_idx] > 0.0:
         logger.add_warning(msg="Inter area equality not fulfilled for area 2",
                            value=vars_v.delta_sl_2[t_idx])
+
+    for i in range(nb):
+        if abs(vars_v.bus_vars.Pbalance[t_idx, i]) > 1e-8:
+            logger.add_warning(msg="Inter area equality not fulfilled for area 2",
+                               device=f"Bus {i}",
+                               value=vars_v.bus_vars.Pbalance[t_idx, i])
 
     # add the model logger to the main logger
     logger += lp_model.logger

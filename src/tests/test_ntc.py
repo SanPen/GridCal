@@ -51,6 +51,7 @@ def test_ntc_ultra_simple() -> None:
     assert np.isclose(res.Sf[0].real, 100.0)
     assert res.dSbus.sum() == 0.0
     assert res.dSbus[0] == 50.0
+    assert abs(res.nodal_balance.sum()) < 1e-8
 
 
 def test_ntc_ieee_14() -> None:
@@ -92,6 +93,7 @@ def test_ntc_ieee_14() -> None:
     res = drv.results
 
     assert res.converged
+    assert abs(res.nodal_balance.sum()) < 1e-8
 
 
 def test_issue_372_1():
@@ -170,6 +172,7 @@ def test_issue_372_1():
     theta = np.angle(res.voltage)
 
     assert res.converged[0]
+    assert abs(res.nodal_balance.sum()) < 1e-8
 
     # ΔP in A1 optimized > 0 (because there are no base overloads)
     assert res.dSbus[a1].sum() > 0
@@ -279,6 +282,7 @@ def test_issue_372_2():
     a2 = np.where(bus_area_indices == 1)[0]
 
     assert res.converged[0]
+    assert abs(res.nodal_balance.sum()) < 1e-8
 
     # ΔP in A1 optimized > 0 (because there are no base overloads)
     assert res.dSbus[a1].sum() > 0
@@ -391,6 +395,7 @@ def test_issue_372_3():
     a2 = np.where(bus_area_indices == 1)[0]
 
     assert res.converged[0]
+    assert abs(res.nodal_balance.sum()) < 1e-8
 
     # ΔP in A1 optimized > 0 (because there are no base overloads)
     assert res.dSbus[a1].sum() > 0
@@ -515,6 +520,7 @@ def test_issue_372_4():
     a2 = np.where(bus_area_indices == 1)[0]
 
     assert res.converged[0]
+    assert abs(res.nodal_balance.sum()) < 1e-8
 
     # ΔP in A1 optimized > 0 (because there are no base overloads)
     assert res.dSbus[a1].sum() > 0
@@ -634,6 +640,7 @@ def test_issue_372_5():
     a2 = np.where(bus_area_indices == 1)[0]
 
     assert res.converged[0]
+    assert abs(res.nodal_balance.sum()) < 1e-8
 
     # ΔP in A1 optimized > 0 (because there are no base overloads)
     assert res.dSbus[a1].sum() > 0
@@ -742,6 +749,7 @@ def test_ntc_pmode_saturation() -> None:
     assert res.hvdc_Pf[0] > hvdc_power  # the actual power must be greater than what the angles suggest
 
     assert res.converged
+    assert abs(res.nodal_balance.sum()) < 1e-8
 
 
 def test_ntc_areas_connected_only_through_hvdc() -> None:
@@ -796,6 +804,7 @@ def test_ntc_areas_connected_only_through_hvdc() -> None:
     a2 = np.where(bus_area_indices == 1)[0]
 
     assert res.converged[0]
+    assert abs(res.nodal_balance.sum()) < 1e-8
 
     # ΔP in A1 optimized > 0 (because there are no base overloads)
     assert res.dSbus[a1].sum() > 0
@@ -859,7 +868,7 @@ def test_ntc_vsc():
     # ------------------------------------------------------------------------------------------------------------------
     # asserts
     # ------------------------------------------------------------------------------------------------------------------
-
+    assert abs(res.nodal_balance.sum()) < 1e-8
     assert np.isclose(res.inter_area_flows, 3000.0)  # 3000 is the summation of the inter-area branch rates
 
 
@@ -913,7 +922,7 @@ def test_ntc_vsc_contingencies():
     # ------------------------------------------------------------------------------------------------------------------
     # asserts
     # ------------------------------------------------------------------------------------------------------------------
-
+    assert abs(res.nodal_balance.sum()) < 1e-8
     assert np.isclose(res.inter_area_flows, 2000.0)  # 2000 is the summation of the inter-area branches (N-1) rates
 
 
@@ -996,7 +1005,7 @@ def test_2_node_several_conditions_ntc():
     drv.run()
 
     res = drv.results
-
+    assert abs(res.nodal_balance.sum()) < 1e-8
     assert np.isclose(res.inter_area_flows, 2000)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -1034,7 +1043,7 @@ def test_2_node_several_conditions_ntc():
     drv.run()
 
     res = drv.results
-
+    assert abs(res.nodal_balance.sum()) < 1e-8
     assert np.isclose(res.inter_area_flows, 2000)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -1070,7 +1079,7 @@ def test_2_node_several_conditions_ntc():
     drv.run()
 
     res = drv.results
-
+    assert abs(res.nodal_balance.sum()) < 1e-8
     assert np.isclose(res.inter_area_flows, 1000)  # half the transfer
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -1108,7 +1117,7 @@ def test_2_node_several_conditions_ntc():
     drv.run()
 
     res = drv.results
-
+    assert abs(res.nodal_balance.sum()) < 1e-8
     assert np.isclose(res.inter_area_flows, 1000)  # half the transfer
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -1147,7 +1156,7 @@ def test_2_node_several_conditions_ntc():
     drv.run()
 
     res = drv.results
-
+    assert abs(res.nodal_balance.sum()) < 1e-8
     assert not res.converged  # you cannot hard fix the inter area angle difference and enforce movement by proportions
 
 def test_hvdc_lines_tests():
@@ -1188,7 +1197,7 @@ def test_hvdc_lines_tests():
     drv.run()
 
     res = drv.results
-
+    assert abs(res.nodal_balance.sum()) < 1e-8
     assert np.isclose(res.Sf[7], 1000.0)
     assert np.isclose(res.hvdc_Pf[0], 1000.0)
     assert np.isclose(res.hvdc_Pf[1], 1000.0)
