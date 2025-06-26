@@ -28,15 +28,14 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Minor improvements in places that may divide by zero">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Minor improvements">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Substation/bus_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Substation/bus_graphics.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf_proper.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/highs_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/highs_cmd.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/highs_py.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/highs_py.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/object_select_window.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/object_select_window.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1160,8 +1159,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python.update_gui_file" />
+        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest in test_ntc.py" />
         <item itemvalue="Python tests.pytest for test_ntc.test_hvdc_lines_tests" />
       </list>
@@ -2376,7 +2375,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="706" />
+    <option name="localTasksCounter" value="707" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2422,7 +2421,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed most _api_object occurrences with the appropriate api_object" />
     <MESSAGE value="Fixed all _api_object typos&#10;Fixed the test_valid_circuit_idx test" />
     <MESSAGE value="Touched on some CGMES craziness..." />
     <MESSAGE value="Fixed VL border issue" />
@@ -2447,7 +2445,8 @@
     <MESSAGE value="Minimal estandarisation of the opf and ntc handling of disconnected buses" />
     <MESSAGE value="Added scalable and shift keys" />
     <MESSAGE value="Minor improvements in places that may divide by zero" />
-    <option name="LAST_COMMIT_MESSAGE" value="Minor improvements in places that may divide by zero" />
+    <MESSAGE value="Minor improvements" />
+    <option name="LAST_COMMIT_MESSAGE" value="Minor improvements" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

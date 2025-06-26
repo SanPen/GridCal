@@ -262,7 +262,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
     def set_tile_color(self, brush: QBrush) -> None:
         """
-        Set the color of the title
+        Set the color of the bus
         Args:
             brush:  Qt Color
         """

@@ -10548,21 +10548,6 @@ QProgressBar::chunk{
     <property name="title">
      <string>Diagram</string>
     </property>
-    <widget class="QMenu" name="menuBus_Branch_options">
-     <property name="font">
-      <font>
-       <pointsize>9</pointsize>
-      </font>
-     </property>
-     <property name="title">
-      <string>Select buses by</string>
-     </property>
-     <addaction name="separator"/>
-     <addaction name="actionSelect_buses_by_area"/>
-     <addaction name="actionSelect_buses_by_zone"/>
-     <addaction name="actionSelect_buses_by_country"/>
-     <addaction name="separator"/>
-    </widget>
     <addaction name="actionAdd_general_bus_branch_diagram"/>
     <addaction name="actionNew_bus_branch_diagram_from_selection"/>
     <addaction name="actionBigger_nodes"/>
@@ -10573,11 +10558,13 @@ QProgressBar::chunk{
     <addaction name="actionDisable_all_results_tags"/>
     <addaction name="actionEnable_all_results_tags"/>
     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
-    <addaction name="menuBus_Branch_options"/>
+    <addaction name="actionColor_buses_by"/>
+    <addaction name="actionSelect_buses_by"/>
     <addaction name="separator"/>
     <addaction name="actionAdd_map"/>
     <addaction name="actionConsolidate_diagram_coordinates"/>
     <addaction name="actionReset_coordinates"/>
+    <addaction name="actionColor_substations_by"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_in"/>
     <addaction name="actionZoom_out"/>
@@ -12003,48 +11990,6 @@ QProgressBar::chunk{
     <string>Ctrl+C, Ctrl+D</string>
    </property>
   </action>
-  <action name="actionSelect_buses_by_area">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Select buses by area</string>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-    </font>
-   </property>
-  </action>
-  <action name="actionSelect_buses_by_zone">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Select buses by zone</string>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-    </font>
-   </property>
-  </action>
-  <action name="actionSelect_buses_by_country">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/map.svg</normaloff>:/Icons/icons/map.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Select buses by country</string>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-    </font>
-   </property>
-  </action>
   <action name="actionScale">
    <property name="icon">
     <iconset resource="icons.qrc">
@@ -12276,6 +12221,59 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Reliability study&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the reliability calculation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionColor_buses_by">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Color buses by...</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="actionColor_substations_by">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Color substations by...</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionSelect_buses_by">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Select buses by...</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

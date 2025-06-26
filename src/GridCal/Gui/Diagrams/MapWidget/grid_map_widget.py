@@ -522,6 +522,21 @@ class GridMapWidget(BaseDiagramWidget):
         """
         return [s for s in self.map.view.selected_items() if isinstance(s, SubstationGraphicItem)]
 
+    def get_substations(self) -> List[Tuple[int, Substation, SubstationGraphicItem]]:
+        """
+        Get all the substations
+        :return: tuple(substation index, substation_api_object, substation_graphic_object)
+        """
+        lst: List[Tuple[int, Substation, Union[SubstationGraphicItem, None]]] = list()
+        substation_graphics_dict = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
+        substations_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.substations)}
+
+        for bus_idtag, graphic_object in substation_graphics_dict.items():
+            idx, substation = substations_dict[bus_idtag]
+            lst.append((idx, substation, graphic_object))
+
+        return lst
+
     def create_new_line_wizard(self):
         """
         Create a new line in the map with dialogues
