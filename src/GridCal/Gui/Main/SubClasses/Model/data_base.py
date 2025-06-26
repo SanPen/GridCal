@@ -383,24 +383,26 @@ class DataBaseTableMain(DiagramsMain):
         If the object has buses, this one takes them
         :return:
         """
-        model: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
+        proxy_model: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
         buses = set()
         selected_objects: List[ALL_DEV_TYPES] = list()
 
-        if model is not None:
+        if proxy_model is not None:
+
+            source_model = proxy_model.sourceModel()
 
             sel_idx = self.ui.dataStructureTableView.selectedIndexes()
-            objects = model.objects
+            objects = source_model.objects if hasattr(source_model, 'objects') else []
 
             if len(objects) > 0:
 
                 if len(sel_idx) > 0:
 
-                    unique = {idx.row() for idx in sel_idx}
+                    unique = {proxy_model.mapToSource(idx).row() for idx in sel_idx}
 
                     for idx in unique:
 
-                        sel_obj: ALL_DEV_TYPES = model.objects[idx]
+                        sel_obj: ALL_DEV_TYPES = source_model.objects[idx]
                         selected_objects.append(sel_obj)
 
                         if isinstance(sel_obj, dev.Bus):
