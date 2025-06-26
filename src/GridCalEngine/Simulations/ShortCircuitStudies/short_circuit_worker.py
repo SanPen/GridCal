@@ -22,6 +22,7 @@ from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph i
                                                                                        expand_magnitudes)
 from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
+import pandas as pd
 
 
 def short_circuit_post_process(
@@ -369,6 +370,11 @@ def short_circuit_abc(nc: NumericalCircuit,
                                                            V=Vpf_masked,
                                                            Istar=nc.load_data.I3_star,
                                                            Idelta=nc.load_data.I3_delta)
+
+    Y_power_star_linear /= (nc.Sbase / 3)
+    Y_power_delta_linear /= (nc.Sbase / 3)
+    Y_current_linear /= (nc.Sbase / 3)
+
     Yf = np.zeros(len(Vpf), dtype=complex)
 
     if fault_type == FaultType.LG:
@@ -385,7 +391,6 @@ def short_circuit_abc(nc: NumericalCircuit,
         Yf_masked = Yf[mask]
 
     Ybus_gen_csc, Ybus_gen = compute_ybus_generator(nc=nc)
-    Ybus_gen_masked = Ybus_gen[mask, :][:, mask]
     Ybus_gen_masked_csc = Ybus_gen_csc[mask, :][:, mask]
 
     Yloads = diags(Y_power_star_linear) + diags(Y_power_delta_linear) + diags(Y_current_linear)
@@ -401,16 +406,33 @@ def short_circuit_abc(nc: NumericalCircuit,
     for i in range(n_buses):
         U = Vpf[gen_idx[i] + idx3]
         Y = Ybus_gen[np.ix_(gen_idx[i] + idx3, gen_idx[i] + idx3)]
-        I = np.conj( S[gen_idx[i] + idx3] / U )
+        I = np.conj( S[np.ix_(gen_idx[i] + idx3)] / U )
         E = U + np.linalg.inv(Y) @ I
-        Inorton_i = np.linalg.inv(Y) @ E
+        Inorton_i = Y @ E
         Inorton[np.ix_(gen_idx[i] + idx3)] = Inorton_i
 
     Usc = spsolve(Ylinear, Inorton)
     Usc_expanded = expand_magnitudes(Usc, bus_lookup)
     Usc_expanded_abs = abs(Usc_expanded)
+
+    bus_numbers = [632, 645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
+
+    # Separar magnitudes y ángulos por fases
+    U_A = Usc_expanded_abs[0::3]
+    U_B = Usc_expanded_abs[1::3]
+    U_C = Usc_expanded_abs[2::3]
+
+    def format_column(mags):
+        return [f"{m:.4f}" for m in mags]
+
+    df = pd.DataFrame({
+        'Buses': bus_numbers,
+        'Ua': format_column(U_A),
+        'Ub': format_column(U_B),
+        'Uc': format_column(U_C),
+    })
+
+    print(df)
     print()
-
-
 
     return None

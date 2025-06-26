@@ -443,6 +443,6 @@ df = pd.DataFrame({
 })
 
 # Exportar a Excel
-df.to_excel("tensiones_trifasicas.xlsx", index=False)
+df.to_excel("short_circuit.xlsx", index=False)
 
 #print(grid.lines[2].ysh.values)
