@@ -271,7 +271,6 @@ def get_exchange_proportions(power: Vec,
     :param logger: logger instance
     :return: proportions, sense, p_max, p_min
     """
-    nelem = len(power)
     proportions_a1 = get_sensed_proportions(power=power, idx=bus_a1_idx, logger=logger)
     proportions_a2 = get_sensed_proportions(power=power, idx=bus_a2_idx, logger=logger)
     proportions = proportions_a1 - proportions_a2
@@ -917,8 +916,10 @@ class NtcVars:
         self.vsc_vars = VscNtcVars(nt=nt, n_elm=n_vsc)
 
         # power shift
-        self.delta_1 = np.zeros(nt, dtype=object)  # array of vars at the beginning
-        self.delta_2 = np.zeros(nt, dtype=object)  # array of vars at the beginning
+        self.delta_1 = np.zeros(nt, dtype=object)  # array of power increment in area 1
+        self.delta_2 = np.zeros(nt, dtype=object)  # array of power increment in area 2
+        self.delta_sl_1 = np.zeros(nt, dtype=object)  # array of power increment slack at area 1
+        self.delta_sl_2 = np.zeros(nt, dtype=object)  # array of power increment slack at area 2
         self.power_shift = np.zeros(nt, dtype=object)  # array of vars at the beginning
 
         # structural NTC
@@ -954,6 +955,8 @@ class NtcVars:
         for t in range(self.nt):
             data.delta_1[t] = model.get_value(self.delta_1[t])
             data.delta_2[t] = model.get_value(self.delta_2[t])
+            data.delta_sl_1[t] = model.get_value(self.delta_sl_1[t])
+            data.delta_sl_2[t] = model.get_value(self.delta_sl_2[t])
             data.power_shift[t] = model.get_value(self.power_shift[t])
 
         # format the arrays appropriately
@@ -1102,6 +1105,9 @@ def add_linear_injections_formulation(t: Union[int, None],
     ntc_vars.delta_1[t] = prob.add_var(lb=0, ub=prob.INFINITY, name=join("Delta_up_", [t]))
     ntc_vars.delta_2[t] = prob.add_var(lb=0, ub=prob.INFINITY, name=join("Delta_down_", [t]))
 
+    ntc_vars.delta_sl_1[t] = prob.add_var(lb=0, ub=prob.INFINITY, name=join("DeltaSL_up_", [t]))
+    ntc_vars.delta_sl_2[t] = prob.add_var(lb=0, ub=prob.INFINITY, name=join("DeltaSL_down_", [t]))
+
     for k in bus_a1_idx:
         if bus_data_t.active[k] and proportions[k] != 0:
             ntc_vars.bus_vars.delta_p[t, k] = ntc_vars.delta_1[t] * proportions[k]
@@ -1114,7 +1120,7 @@ def add_linear_injections_formulation(t: Union[int, None],
     # the increase in area 1 must be equal to the decrease in area 2, since
     # we have declared the deltas positive for the sending and receiving areas
     prob.add_cst(
-        cst=ntc_vars.delta_1[t] == ntc_vars.delta_2[t],
+        cst=ntc_vars.delta_1[t] - ntc_vars.delta_sl_1[t] == ntc_vars.delta_2[t] - ntc_vars.delta_sl_2[t],
         name=join(f'deltas_equality_', [t], "_")
     )
 
@@ -1125,7 +1131,8 @@ def add_linear_injections_formulation(t: Union[int, None],
         ntc_vars.bus_vars.Pbalance[t, k] += ntc_vars.bus_vars.Pinj[t, k]
 
     # minimize the power at area 2 (receiving area), maximize at area 1 (sending area)
-    f_obj += ntc_vars.delta_2[t] - ntc_vars.delta_1[t]
+    # minimize the slacks
+    f_obj += ntc_vars.delta_2[t] - ntc_vars.delta_1[t] + ntc_vars.delta_sl_1[t] + ntc_vars.delta_sl_2[t]
 
     return f_obj
 
@@ -2077,6 +2084,15 @@ def run_linear_ntc_opf(grid: MultiCircuit,
 
     # fill the power shift
     vars_v.power_shift = vars_v.bus_vars.delta_p[:, bus_a1_idx]
+
+    # register the slacks
+    if vars_v.delta_sl_1[t_idx] > 0.0:
+        logger.add_warning(msg="Inter area equality not fulfilled for area 1",
+                           value=vars_v.delta_sl_1[t_idx])
+
+    if vars_v.delta_sl_2[t_idx] > 0.0:
+        logger.add_warning(msg="Inter area equality not fulfilled for area 2",
+                           value=vars_v.delta_sl_2[t_idx])
 
     # add the model logger to the main logger
     logger += lp_model.logger

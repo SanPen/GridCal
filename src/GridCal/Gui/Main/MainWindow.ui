@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1198</width>
-    <height>698</height>
+    <height>738</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -10426,7 +10426,7 @@ QProgressBar::chunk{
      <x>0</x>
      <y>0</y>
      <width>1198</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="font">
@@ -10491,6 +10491,7 @@ QProgressBar::chunk{
     <addaction name="separator"/>
     <addaction name="actionShort_Circuit"/>
     <addaction name="actionVoltage_stability"/>
+    <addaction name="actionContingency_analysis"/>
     <addaction name="separator"/>
     <addaction name="actionOPF"/>
     <addaction name="actionOpf_to_Power_flow"/>
@@ -10507,11 +10508,6 @@ QProgressBar::chunk{
     <addaction name="actionAdd_selected_as_new_investment"/>
     <addaction name="actionReliability"/>
     <addaction name="actionBlackout_cascade"/>
-    <addaction name="separator"/>
-    <addaction name="actionContingency_analysis"/>
-    <addaction name="actionInitialize_contingencies"/>
-    <addaction name="actionAdd_selected_to_contingency"/>
-    <addaction name="actionAdd_selected_as_remedial_action"/>
     <addaction name="separator"/>
     <addaction name="actionInputs_analysis"/>
     <addaction name="actionStorage_location_suggestion"/>
@@ -10535,6 +10531,9 @@ QProgressBar::chunk{
     <addaction name="actionScale"/>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
+    <addaction name="actionInitialize_contingencies"/>
+    <addaction name="actionAdd_selected_to_contingency"/>
+    <addaction name="actionAdd_selected_as_remedial_action"/>
     <addaction name="actionFix_generators_active_based_on_the_power"/>
     <addaction name="actionFix_loads_active_based_on_the_power"/>
     <addaction name="actionDelete_inconsistencies"/>
@@ -10543,6 +10542,7 @@ QProgressBar::chunk{
     <addaction name="actionSetSelectedBusCountry"/>
     <addaction name="actionSetSelectedBusArea"/>
     <addaction name="actionSetSelectedBusZone"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuDiagrams">
     <property name="title">
@@ -12224,6 +12224,9 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add remedial action&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create a new remedial action from the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A, Ctrl+R</string>
    </property>
   </action>
   <action name="actionDetect_facilities">
