@@ -523,6 +523,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Fill controllable Branch Indices
         self.u_cbr_m = np.zeros(0, dtype=int)
         self.u_cbr_tau = np.zeros(0, dtype=int)
+        self.u_cbr_m_tau = np.zeros(0, dtype=int)
+
         self.k_cbr_pf = np.zeros(0, dtype=int)
         self.k_cbr_pt = np.zeros(0, dtype=int)
         self.k_cbr_qf = np.zeros(0, dtype=int)
@@ -531,7 +533,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.cbr_pt_set = np.zeros(0, dtype=float)
         self.cbr_qf_set = np.zeros(0, dtype=float)
         self.cbr_qt_set = np.zeros(0, dtype=float)
-        self.cbr_m_tau = np.zeros(0, dtype=float)
+
         self._set_branch_control_indices()
 
         # Fill VSC Indices
@@ -701,7 +703,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         self.u_cbr_m = np.array(u_cbr_m, dtype=int)
         self.u_cbr_tau = np.array(u_cbr_tau, dtype=int)
-        self.cbr_m_tau = np.array(list(set(u_cbr_m + u_cbr_tau)), dtype=int)
+        self.u_cbr_m_tau = np.unique(np.r_[u_cbr_m, u_cbr_tau])
 
         self.k_cbr_pf = np.array(k_cbr_pf, dtype=int)
         self.k_cbr_pt = np.array(k_cbr_pt, dtype=int)
@@ -1270,11 +1272,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         #     Yshunt_bus=self.Yshunt_bus
         # )
 
-        if len(self.cbr_m_tau) > 0:
+        if len(self.u_cbr_m_tau) > 0:
             adm_ = self.adm.copy()
-            adm_.modify_taps_fast(idx=self.cbr_m_tau,
-                                  tap_module=m2[self.cbr_m_tau],
-                                  tap_angle=tau2[self.cbr_m_tau])
+            adm_.modify_taps_fast(idx=self.u_cbr_m_tau,
+                                  tap_module=m2[self.u_cbr_m_tau],
+                                  tap_angle=tau2[self.u_cbr_m_tau])
         else:
             adm_ = self.adm  # there is no admittance change, hence we can just pick the existing adm
 
@@ -1648,10 +1650,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         #     T=self.nc.passive_branch_data.T,
         #     Yshunt_bus=self.Yshunt_bus,
         # )
-        if len(self.cbr_m_tau) > 0:
-            self.adm.modify_taps_fast(idx=self.cbr_m_tau,
-                                      tap_module=m2[self.cbr_m_tau],
-                                      tap_angle=tau2[self.cbr_m_tau])
+        if len(self.u_cbr_m_tau) > 0:
+            self.adm.modify_taps_fast(idx=self.u_cbr_m_tau,
+                                      tap_module=m2[self.u_cbr_m_tau],
+                                      tap_angle=tau2[self.u_cbr_m_tau])
 
         Scalc_passive = compute_power(self.adm.Ybus, V)
 

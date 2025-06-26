@@ -94,8 +94,7 @@ def _prepare_branch_maps(nbus: int, nbranch: int, F: IntVec, T: IntVec,
 
     # ------- build (row,col) → position map for Ybus ---------------
     # key = col*nbus + row  (fits in int64 for any realistic grid)
-    nnz_bus = Ybus_indices.size
-    pos_bus = {}
+    pos_bus = dict()
     for col in range(nbus):
         start = Ybus_indptr[col]
         end = Ybus_indptr[col + 1]
