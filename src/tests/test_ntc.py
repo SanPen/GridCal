@@ -1159,6 +1159,7 @@ def test_2_node_several_conditions_ntc():
     assert abs(res.nodal_balance.sum()) < 1e-8
     assert not res.converged  # you cannot hard fix the inter area angle difference and enforce movement by proportions
 
+
 def test_hvdc_lines_tests():
     """
     Testing test_santi_20250625.gridcal
@@ -1202,6 +1203,132 @@ def test_hvdc_lines_tests():
     assert np.isclose(res.hvdc_Pf[0], 1000.0)
     assert np.isclose(res.hvdc_Pf[1], 1000.0)
     assert np.isclose(res.inter_area_flows, 3000.0)
+
+
+def test_activs_2000():
+    """
+    Simulate a large size grid: ACTIVSg 2000 with contingencies
+    :return:
+    """
+    np.set_printoptions(precision=4)
+    fname = os.path.join('data', 'grids', 'ACTIVSg2000.gridcal')
+
+    grid = gce.open_file(fname)
+
+    info = grid.get_inter_aggregation_info(
+        objects_from=[grid.areas[6]],  # Coast
+        objects_to=[grid.areas[7]]  # East
+    )
+
+    opf_options = gce.OptimalPowerFlowOptions(
+        consider_contingencies=True,
+        contingency_groups_used=grid.contingency_groups
+    )
+    lin_options = gce.LinearAnalysisOptions()
+
+    ntc_options = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=info.idx_bus_from,
+        receiving_bus_idx=info.idx_bus_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        loading_threshold_to_report=98.0,
+        skip_generation_limits=True,
+        transmission_reliability_margin=0.1,
+        branch_exchange_sensitivity=0.01,
+        use_branch_exchange_sensitivity=True,
+        branch_rating_contribution=1.0,
+        monitor_only_ntc_load_rule_branches=True,
+        consider_contingencies=True,
+        opf_options=opf_options,
+        lin_options=lin_options
+    )
+
+    drv = gce.OptimalNetTransferCapacityDriver(grid, ntc_options)
+
+    drv.run()
+
+    res = drv.results
+    assert abs(res.nodal_balance.sum()) < 1e-6
+    assert res.converged
+
+
+def test_activs_2000_acdc():
+    """
+    Simulate a large size grid: ACTIVSg 2000 extended with 2 DC lines and 2 converters with contingencies
+    :return:
+    """
+    np.set_printoptions(precision=4)
+    fname = os.path.join('data', 'grids', 'ACTIVSg2000.gridcal')
+
+    grid = gce.open_file(fname)
+
+    # Create a double link from "WILLIS 2 0" to "LUFKIN 3 0"
+    coast = grid.areas[6]
+    east = grid.areas[7]
+    willis_2_0 = grid.buses[1557]
+    lufkun_3_0 = grid.buses[1843]
+    dc1 = gce.Bus("WILLIS DC", is_dc=True, Vnom=500.0, area=coast)
+    dc2 = gce.Bus("LUFKIN DC", is_dc=True, Vnom=500.0, area=east)
+    converter1 = gce.VSC(name="WILLIS converter", bus_from=willis_2_0, bus_to=dc1, rate=2000.0,
+                         control1=gce.ConverterControlType.Pac, control2=gce.ConverterControlType.Pdc)
+    converter2 = gce.VSC(name="LUFKIN converter", bus_from=lufkun_3_0, bus_to=dc2, rate=2000.0,
+                         control1=gce.ConverterControlType.Pac, control2=gce.ConverterControlType.Vm_dc,
+                         control2_val=1.0)
+    dc_line1 = gce.DcLine(name="WILLIS-LUFKIN1", bus_from=dc1, bus_to=dc2, rate=1000.0)
+    dc_line2 = gce.DcLine(name="WILLIS-LUFKIN2", bus_from=dc1, bus_to=dc2, rate=1000.0)
+
+    grid.add_bus(dc1)
+    grid.add_bus(dc2)
+    grid.add_vsc(converter1)
+    grid.add_vsc(converter2)
+    grid.add_dc_line(dc_line1)
+    grid.add_dc_line(dc_line2)
+
+    # create contingencies of the DC lines
+    dc1_con_group = gce.ContingencyGroup(name="WILLIS-LUFKIN1")
+    dc1_con = gce.Contingency(device=dc1, group=dc1_con_group)
+
+    dc2_con_group = gce.ContingencyGroup(name="WILLIS-LUFKIN2")
+    dc2_con = gce.Contingency(device=dc2, group=dc2_con_group)
+
+    grid.add_contingency_group(dc1_con_group)
+    grid.add_contingency_group(dc2_con_group)
+    grid.add_contingency(dc1_con)
+    grid.add_contingency(dc2_con)
+
+    info = grid.get_inter_aggregation_info(
+        objects_from=[grid.areas[6]],  # Coast
+        objects_to=[grid.areas[7]]  # East
+    )
+
+    opf_options = gce.OptimalPowerFlowOptions(
+        consider_contingencies=True,
+        contingency_groups_used=grid.contingency_groups
+    )
+    lin_options = gce.LinearAnalysisOptions()
+
+    ntc_options = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=info.idx_bus_from,
+        receiving_bus_idx=info.idx_bus_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        loading_threshold_to_report=98.0,
+        skip_generation_limits=True,
+        transmission_reliability_margin=0.1,
+        branch_exchange_sensitivity=0.01,
+        use_branch_exchange_sensitivity=True,
+        branch_rating_contribution=1.0,
+        monitor_only_ntc_load_rule_branches=True,
+        consider_contingencies=True,
+        opf_options=opf_options,
+        lin_options=lin_options
+    )
+
+    drv = gce.OptimalNetTransferCapacityDriver(grid, ntc_options)
+
+    drv.run()
+
+    res = drv.results
+    assert abs(res.nodal_balance.sum()) < 1e-6
+    assert res.converged
 
 
 if __name__ == '__main__':
