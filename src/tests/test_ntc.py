@@ -1266,8 +1266,10 @@ def test_activs_2000_acdc():
     east = grid.areas[7]
     willis_2_0 = grid.buses[1557]
     lufkun_3_0 = grid.buses[1843]
-    dc1 = gce.Bus("WILLIS DC", is_dc=True, Vnom=500.0, area=coast)
-    dc2 = gce.Bus("LUFKIN DC", is_dc=True, Vnom=500.0, area=east)
+    dc1 = gce.Bus("WILLIS DC", is_dc=True, Vnom=500.0, area=coast,
+                  latitude=willis_2_0.latitude, longitude=willis_2_0.longitude)
+    dc2 = gce.Bus("LUFKIN DC", is_dc=True, Vnom=500.0, area=east,
+                  latitude=lufkun_3_0.latitude, longitude=lufkun_3_0.longitude)
     converter1 = gce.VSC(name="WILLIS converter", bus_from=willis_2_0, bus_to=dc1, rate=2000.0,
                          control1=gce.ConverterControlType.Pac, control2=gce.ConverterControlType.Pdc)
     converter2 = gce.VSC(name="LUFKIN converter", bus_from=lufkun_3_0, bus_to=dc2, rate=2000.0,

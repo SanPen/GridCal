@@ -71,7 +71,7 @@ class CompOps(Enum):
 
 class FilterOps(Enum):
     """
-    Enumeration of filter oprations
+    Enumeration of filter operations
     """
     AND = "and"
     OR = "or"
@@ -105,7 +105,7 @@ class FilterOps(Enum):
 
 class FilterSubject(Enum):
     """
-    Enumeration of filter oprations
+    Enumeration of filter operations
     """
     COL = "col"
     IDX = "idx"
@@ -347,7 +347,7 @@ class MasterFilter:
         Returns if the stack has the right size: an odd number
         :return:
         """
-        return is_odd(self.size()) and self.size() > 1
+        return is_odd(self.size()) and self.size() > 0
 
 
 def parse_single(token: str) -> Union[Filter, None]:
@@ -369,7 +369,16 @@ def parse_single(token: str) -> Union[Filter, None]:
             element = elms[0].strip()
             element_args = list()
 
-        return Filter(element=FilterSubject(element),
+        try:
+            filter_subject = FilterSubject(element)
+        except ValueError as e:
+            try:
+                filter_subject = FilterSubject("idxobj")
+                element_args = [element]
+            except ValueError as e:
+                return None
+
+        return Filter(element=filter_subject,
                       element_args=element_args,
                       op=CompOps(elms[1].strip()),
                       value=elms[2].strip())

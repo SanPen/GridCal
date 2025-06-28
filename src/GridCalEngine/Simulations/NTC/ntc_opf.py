@@ -262,20 +262,22 @@ def get_sensed_proportions(power: Vec,
 def get_exchange_proportions(power: Vec,
                              bus_a1_idx: IntVec,
                              bus_a2_idx: IntVec,
-                             logger: Logger):
+                             logger: Logger,
+                             decimals: int):
     """
     Get generation proportions by transfer method with sign consideration.
     :param power: Vec. Power reference
     :param bus_a1_idx: bus indices within area 1
     :param bus_a2_idx: bus indices within area 2
     :param logger: logger instance
+    :param decimals: Number of decimals to round to
     :return: proportions, sense, p_max, p_min
     """
     proportions_a1 = get_sensed_proportions(power=power, idx=bus_a1_idx, logger=logger)
     proportions_a2 = get_sensed_proportions(power=power, idx=bus_a2_idx, logger=logger)
     proportions = proportions_a1 - proportions_a2
 
-    return proportions
+    return np.round(proportions, decimals)
 
 
 def pmode3_formulation(prob, t_idx, m, rate, P0, droop, theta_f, theta_t):
@@ -1097,9 +1099,9 @@ def add_linear_injections_formulation(t: Union[int, None],
         power=bus_pref_t,
         bus_a1_idx=bus_a1_idx,
         bus_a2_idx=bus_a2_idx,
-        logger=logger
+        logger=logger,
+        decimals=6
     )
-    # proportions = np.nan_to_num(proportions)
 
     # copy the computed proportions
     ntc_vars.bus_vars.proportions[t, :] = proportions
