@@ -1226,6 +1226,7 @@ def test_activs_2000():
     )
     lin_options = gce.LinearAnalysisOptions()
 
+    # ------------------------------------------------------------------------------------------------------------------
     ntc_options = gce.OptimalNetTransferCapacityOptions(
         sending_bus_idx=info.idx_bus_from,
         receiving_bus_idx=info.idx_bus_to,
@@ -1233,10 +1234,38 @@ def test_activs_2000():
         loading_threshold_to_report=98.0,
         skip_generation_limits=True,
         transmission_reliability_margin=0.1,
-        branch_exchange_sensitivity=0.01,
+        branch_exchange_sensitivity=0.05,
         use_branch_exchange_sensitivity=True,
         branch_rating_contribution=1.0,
-        monitor_only_ntc_load_rule_branches=True,
+        monitor_only_ntc_load_rule_branches=False,
+        consider_contingencies=False,
+        opf_options=opf_options,
+        lin_options=lin_options
+    )
+
+    drv = gce.OptimalNetTransferCapacityDriver(grid, ntc_options)
+
+    drv.run()
+
+    res = drv.results
+    ntc_no_contingencies = res.inter_area_flows
+    assert abs(res.nodal_balance.sum()) < 1e-6
+    assert res.converged
+    assert res.inter_area_flows < res.structural_inter_area_flows
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Run with contingencies
+    ntc_options = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=info.idx_bus_from,
+        receiving_bus_idx=info.idx_bus_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        loading_threshold_to_report=98.0,
+        skip_generation_limits=True,
+        transmission_reliability_margin=0.1,
+        branch_exchange_sensitivity=0.05,
+        use_branch_exchange_sensitivity=True,
+        branch_rating_contribution=1.0,
+        monitor_only_ntc_load_rule_branches=False,
         consider_contingencies=True,
         opf_options=opf_options,
         lin_options=lin_options
@@ -1249,7 +1278,8 @@ def test_activs_2000():
     res = drv.results
     assert abs(res.nodal_balance.sum()) < 1e-6
     assert res.converged
-
+    assert res.inter_area_flows < res.structural_inter_area_flows
+    assert res.inter_area_flows < ntc_no_contingencies
 
 def test_activs_2000_acdc():
     """
@@ -1315,10 +1345,10 @@ def test_activs_2000_acdc():
         loading_threshold_to_report=98.0,
         skip_generation_limits=True,
         transmission_reliability_margin=0.1,
-        branch_exchange_sensitivity=0.01,
+        branch_exchange_sensitivity=0.05,
         use_branch_exchange_sensitivity=True,
         branch_rating_contribution=1.0,
-        monitor_only_ntc_load_rule_branches=True,
+        monitor_only_ntc_load_rule_branches=False,
         consider_contingencies=True,
         opf_options=opf_options,
         lin_options=lin_options

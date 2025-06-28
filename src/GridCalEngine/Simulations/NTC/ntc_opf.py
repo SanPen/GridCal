@@ -953,6 +953,7 @@ class NtcVars:
         data.vsc_vars = self.vsc_vars.get_values(Sbase, model)
 
         data.acceptable_solution = self.acceptable_solution
+        data.structural_ntc = self.structural_ntc
 
         for t in range(self.nt):
             data.delta_1[t] = model.get_value(self.delta_1[t])
@@ -960,6 +961,7 @@ class NtcVars:
             data.delta_sl_1[t] = model.get_value(self.delta_sl_1[t])
             data.delta_sl_2[t] = model.get_value(self.delta_sl_2[t])
             data.power_shift[t] = model.get_value(self.power_shift[t])
+            # data.inter_area_flows[t] = model.get_value(self.inter_area_flows[t])  # is filled later
 
         # format the arrays appropriately
         # data.power_shift = data.power_shift.astype(float, copy=False)
@@ -2124,9 +2126,26 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     inter_area_vsc_idx = [x[0] for x in inter_info_vsc]
     inter_area_vsc_sense = [x[2] for x in inter_info_vsc]
 
+    for k in inter_area_branch_idx:
+        logger.add_info("Inter area branch", device=f"({k}) - {nc.passive_branch_data.names[k]}",
+                        value=vars_v.branch_vars.flows[t_idx, k])
+
+    for k in inter_area_hvdc_idx:
+        logger.add_info("Inter area HvdcLine", device=f"({k}) - {nc.hvdc_data.names[k]}",
+                        value=vars_v.hvdc_vars.flows[t_idx, k])
+
+    for k in inter_area_vsc_idx:
+        logger.add_info("Inter area Vsc", device=f"({k}) - {nc.vsc_data.names[k]}",
+                        value=vars_v.vsc_vars.flows[t_idx, k])
+
     # The summation of flow increments in the inter-area branches must be ΔP in A1.
-    vars_v.inter_area_flows[0] = (np.sum(vars_v.branch_vars.flows[0, inter_area_branch_idx] * inter_area_branch_sense)
-                                  + np.sum(vars_v.hvdc_vars.flows[0, inter_area_hvdc_idx] * inter_area_hvdc_sense)
-                                  + np.sum(vars_v.vsc_vars.flows[0, inter_area_vsc_idx] * inter_area_vsc_sense))
+    vars_v.inter_area_flows[t_idx] = (
+            np.sum(vars_v.branch_vars.flows[t_idx, inter_area_branch_idx] * inter_area_branch_sense)
+            + np.sum(vars_v.hvdc_vars.flows[t_idx, inter_area_hvdc_idx] * inter_area_hvdc_sense)
+            + np.sum(vars_v.vsc_vars.flows[t_idx, inter_area_vsc_idx] * inter_area_vsc_sense)
+    )
+
+    logger.add_info("Structural inter-area rate", value=vars_v.structural_ntc[t_idx])
+    logger.add_info("Inter-area NTC", value=vars_v.inter_area_flows[t_idx])
 
     return vars_v

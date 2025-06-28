@@ -28,10 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added further NTC tests for large grids">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved filtering">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Filtering/filtering.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Filtering/filtering.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/ACTIVSg2000.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/ACTIVSg2000.gridcal" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/tests/test_ntc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_ntc.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -184,7 +184,7 @@
     "Python tests.pytest for test_gslv_conversion.test_gslv_compatibility.executor": "Debug",
     "Python tests.pytest for test_line_circuit_idx_setter.test_valid_circuit_idx.executor": "Run",
     "Python tests.pytest for test_load_save_load.test_load_save_load2.executor": "Run",
-    "Python tests.pytest for test_ntc.test_activs_2000.executor": "Run",
+    "Python tests.pytest for test_ntc.test_activs_2000.executor": "Debug",
     "Python tests.pytest for test_ntc.test_activs_2000_acdc.executor": "Run",
     "Python tests.pytest for test_opf.test_opf_battery_shedding_copper_plate.executor": "Run",
     "Python tests.pytest for test_opf.test_opf_hvdc_controls.executor": "Run",
@@ -1100,7 +1100,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for src.tests.test_ntc.test_activs_2000_acdc" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for test_ntc.test_activs_2000" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1114,25 +1114,7 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;src.tests.test_ntc.test_activs_2000_acdc&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="pytest for test_ntc.test_activs_2000_acdc" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_keywords" value="&quot;&quot;" />
-      <option name="_new_parameters" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_ntc.test_activs_2000_acdc&quot;" />
+      <option name="_new_target" value="&quot;test_ntc.test_activs_2000&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
@@ -1154,6 +1136,24 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
+    <configuration name="pytest in tests" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Python.admittance_matrices" />
       <item itemvalue="Python.test_admittance_matrix" />
@@ -1163,17 +1163,17 @@
       <item itemvalue="Python.test_gslv_conversion" />
       <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python tests.pytest for src.tests.test_ntc.test_activs_2000_acdc" />
-      <item itemvalue="Python tests.pytest for test_ntc.test_activs_2000_acdc" />
+      <item itemvalue="Python tests.pytest for test_ntc.test_activs_2000" />
       <item itemvalue="Python tests.pytest in test_ntc.py" />
+      <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python tests.pytest in test_ntc.py" />
-        <item itemvalue="Python tests.pytest for src.tests.test_ntc.test_activs_2000_acdc" />
-        <item itemvalue="Python tests.pytest for test_ntc.test_activs_2000_acdc" />
+        <item itemvalue="Python tests.pytest for test_ntc.test_activs_2000" />
+        <item itemvalue="Python tests.pytest in tests" />
+        <item itemvalue="Python.update_gui_file" />
       </list>
     </recent_temporary>
   </component>
@@ -2386,7 +2386,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="713" />
+    <option name="localTasksCounter" value="714" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2432,7 +2432,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="deleted newton related tests" />
     <MESSAGE value="Minimal refactorings" />
     <MESSAGE value="Removed &quot;kconv&quot;" />
     <MESSAGE value="wip" />
@@ -2457,7 +2456,8 @@
     <MESSAGE value="Some minor changes" />
     <MESSAGE value="Small refactors" />
     <MESSAGE value="Added further NTC tests for large grids" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added further NTC tests for large grids" />
+    <MESSAGE value="Improved filtering" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved filtering" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2823,21 +2823,6 @@
           <option name="timeStamp" value="2621" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/substation_graphic_item.py</url>
-          <line>116</line>
-          <option name="timeStamp" value="2644" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/substation_graphic_item.py</url>
-          <line>124</line>
-          <option name="timeStamp" value="2648" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/substation_graphic_item.py</url>
-          <line>108</line>
-          <option name="timeStamp" value="2650" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/admittance_matrices.py</url>
           <line>104</line>
           <option name="timeStamp" value="2839" />
@@ -2871,6 +2856,11 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/Filtering/filtering.py</url>
           <line>372</line>
           <option name="timeStamp" value="2848" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
+          <line>1253</line>
+          <option name="timeStamp" value="2857" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
