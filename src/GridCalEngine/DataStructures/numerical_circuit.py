@@ -271,6 +271,101 @@ def build_branches_C_coo_3(bus_active: IntVec,
     return i[:ii], j[:ii], data[:ii], nelm
 
 
+@nb.njit(cache=True)
+def build_q_limits(nbus,
+                   gen_idx, q_min_gen, q_max_gen, active_gen,
+                   batt_idx, q_min_batt, q_max_batt, active_batt,
+                   sh_idx, q_min_sh, q_max_sh, active_sh,
+                   hvdc_f, hvdc_t, q_min_hvdc_f, q_max_hvdc_f, q_min_hvdc_t, q_max_hvdc_t, active_hvdc):
+
+    max_mask = np.zeros(nbus, dtype=int)
+    Qmax_bus = np.full(nbus, 1e-20)
+
+    min_mask = np.zeros(nbus, dtype=int)
+    Qmin_bus = np.full(nbus, 1e20)
+
+    for i, qmin, qmax, active in zip(gen_idx, q_min_gen, q_max_gen, active_gen):
+
+        if active:
+            if max_mask[i] == 0:
+                Qmax_bus[i] = qmax
+            else:
+                Qmax_bus[i] += qmax
+
+            if min_mask[i] == 0:
+                Qmin_bus[i] = qmin
+            else:
+                Qmin_bus[i] += qmin
+
+            max_mask[i] += 1
+            min_mask[i] += 1
+
+    for i, qmin, qmax, active in zip(batt_idx, q_min_batt, q_max_batt, active_batt):
+
+        if active:
+            if max_mask[i] == 0:
+                Qmax_bus[i] = qmax
+            else:
+                Qmax_bus[i] += qmax
+
+            if min_mask[i] == 0:
+                Qmin_bus[i] = qmin
+            else:
+                Qmin_bus[i] += qmin
+
+            max_mask[i] += 1
+            min_mask[i] += 1
+
+    for i, qmin, qmax, active in zip(sh_idx, q_min_sh, q_max_sh, active_sh):
+
+        if active:
+            if max_mask[i] == 0:
+                Qmax_bus[i] = qmax
+            else:
+                Qmax_bus[i] += qmax
+
+            if min_mask[i] == 0:
+                Qmin_bus[i] = qmin
+            else:
+                Qmin_bus[i] += qmin
+
+            max_mask[i] += 1
+            min_mask[i] += 1
+
+    for f, t, qmin_f, qmax_f, qmin_t, qmax_t, active in zip(hvdc_f, hvdc_t, q_min_hvdc_f, q_max_hvdc_f, q_min_hvdc_t, q_max_hvdc_t, active_hvdc):
+
+        if active:
+            if max_mask[f] == 0:
+                Qmax_bus[f] = qmax_f
+            else:
+                Qmax_bus[f] += qmax_f
+
+            if min_mask[f] == 0:
+                Qmin_bus[f] = qmin_f
+            else:
+                Qmin_bus[f] += qmin_f
+
+            max_mask[f] += 1
+            min_mask[f] += 1
+
+
+            if max_mask[t] == 0:
+                Qmax_bus[t] = qmax_t
+            else:
+                Qmax_bus[t] += qmax_t
+
+            if min_mask[t] == 0:
+                Qmin_bus[t] = qmin_t
+            else:
+                Qmin_bus[t] += qmin_t
+
+            max_mask[t] += 1
+            min_mask[t] += 1
+
+
+    return Qmax_bus, Qmin_bus
+
+
 def check_arr(arr: Vec | IntVec | BoolVec | CxVec,
               arr_expected: Vec | IntVec | BoolVec | CxVec,
               tol: float, name: str, test: str, logger: Logger) -> int:
@@ -949,31 +1044,58 @@ class NumericalCircuit:
         compute the reactive power limits in place
         :return: Qmax_bus, Qmin_bus in per unit
         """
+
+        Qmax_bus, Qmin_bus = build_q_limits(
+            nbus=self.bus_data.nbus,
+            gen_idx=self.generator_data.bus_idx,
+            q_min_gen=self.generator_data.qmin,
+            q_max_gen=self.generator_data.qmax,
+            active_gen=self.generator_data.active,
+
+            batt_idx=self.battery_data.bus_idx,
+            q_min_batt=self.battery_data.qmin,
+            q_max_batt=self.battery_data.qmax,
+            active_batt=self.battery_data.active,
+
+            sh_idx=self.shunt_data.bus_idx,
+            q_min_sh=self.shunt_data.qmin,
+            q_max_sh=self.shunt_data.qmax,
+            active_sh=self.shunt_data.active,
+
+            hvdc_f=self.hvdc_data.F,
+            hvdc_t=self.hvdc_data.T,
+            q_min_hvdc_f=self.hvdc_data.Qmin_f,
+            q_max_hvdc_f=self.hvdc_data.Qmax_f,
+            q_min_hvdc_t=self.hvdc_data.Qmin_t,
+            q_max_hvdc_t=self.hvdc_data.Qmax_t,
+            active_hvdc=self.hvdc_data.active
+        )
+
         # generators
-        Qmax_bus = self.generator_data.get_qmax_per_bus()
-        Qmin_bus = self.generator_data.get_qmin_per_bus()
-
-        if self.nbatt > 0:
-            # batteries
-            Qmax_bus += self.battery_data.get_qmax_per_bus()
-            Qmin_bus += self.battery_data.get_qmin_per_bus()
-
-        if self.nhvdc > 0:
-            # hvdc from
-            Qmax_bus += self.hvdc_data.get_qmax_from_per_bus()
-            Qmin_bus += self.hvdc_data.get_qmin_from_per_bus()
-
-            # hvdc to
-            Qmax_bus += self.hvdc_data.get_qmax_to_per_bus()
-            Qmin_bus += self.hvdc_data.get_qmin_to_per_bus()
-
-        if self.nshunt > 0:
-            Qmax_bus += self.shunt_data.get_qmax_per_bus()
-            Qmin_bus += self.shunt_data.get_qmin_per_bus()
-
-        # fix zero values
-        Qmax_bus[Qmax_bus == 0] = 1e20
-        Qmin_bus[Qmin_bus == 0] = -1e20
+        # Qmax_bus = self.generator_data.get_qmax_per_bus()
+        # Qmin_bus = self.generator_data.get_qmin_per_bus()
+        #
+        # if self.nbatt > 0:
+        #     # batteries
+        #     Qmax_bus += self.battery_data.get_qmax_per_bus()
+        #     Qmin_bus += self.battery_data.get_qmin_per_bus()
+        #
+        # if self.nhvdc > 0:
+        #     # hvdc from
+        #     Qmax_bus += self.hvdc_data.get_qmax_from_per_bus()
+        #     Qmin_bus += self.hvdc_data.get_qmin_from_per_bus()
+        #
+        #     # hvdc to
+        #     Qmax_bus += self.hvdc_data.get_qmax_to_per_bus()
+        #     Qmin_bus += self.hvdc_data.get_qmin_to_per_bus()
+        #
+        # if self.nshunt > 0:
+        #     Qmax_bus += self.shunt_data.get_qmax_per_bus()
+        #     Qmin_bus += self.shunt_data.get_qmin_per_bus()
+        #
+        # # fix zero values
+        # Qmax_bus[Qmax_bus == 0] = 1e20
+        # Qmin_bus[Qmin_bus == 0] = -1e20
 
         return Qmax_bus / self.Sbase, Qmin_bus / self.Sbase
 
