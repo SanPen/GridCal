@@ -272,12 +272,11 @@ def build_branches_C_coo_3(bus_active: IntVec,
 
 
 @nb.njit(cache=True)
-def build_q_limits(nbus,
+def build_q_limits(nbus: int, Sbase: float,
                    gen_idx, q_min_gen, q_max_gen, active_gen,
                    batt_idx, q_min_batt, q_max_batt, active_batt,
                    sh_idx, q_min_sh, q_max_sh, active_sh,
                    hvdc_f, hvdc_t, q_min_hvdc_f, q_max_hvdc_f, q_min_hvdc_t, q_max_hvdc_t, active_hvdc):
-
     max_mask = np.zeros(nbus, dtype=int)
     Qmax_bus = np.full(nbus, 1e-20)
 
@@ -288,14 +287,14 @@ def build_q_limits(nbus,
 
         if active:
             if max_mask[i] == 0:
-                Qmax_bus[i] = qmax
+                Qmax_bus[i] = qmax / Sbase
             else:
-                Qmax_bus[i] += qmax
+                Qmax_bus[i] += qmax / Sbase
 
             if min_mask[i] == 0:
-                Qmin_bus[i] = qmin
+                Qmin_bus[i] = qmin / Sbase
             else:
-                Qmin_bus[i] += qmin
+                Qmin_bus[i] += qmin / Sbase
 
             max_mask[i] += 1
             min_mask[i] += 1
@@ -304,14 +303,14 @@ def build_q_limits(nbus,
 
         if active:
             if max_mask[i] == 0:
-                Qmax_bus[i] = qmax
+                Qmax_bus[i] = qmax / Sbase
             else:
-                Qmax_bus[i] += qmax
+                Qmax_bus[i] += qmax / Sbase
 
             if min_mask[i] == 0:
-                Qmin_bus[i] = qmin
+                Qmin_bus[i] = qmin / Sbase
             else:
-                Qmin_bus[i] += qmin
+                Qmin_bus[i] += qmin / Sbase
 
             max_mask[i] += 1
             min_mask[i] += 1
@@ -320,48 +319,47 @@ def build_q_limits(nbus,
 
         if active:
             if max_mask[i] == 0:
-                Qmax_bus[i] = qmax
+                Qmax_bus[i] = qmax / Sbase
             else:
-                Qmax_bus[i] += qmax
+                Qmax_bus[i] += qmax / Sbase
 
             if min_mask[i] == 0:
-                Qmin_bus[i] = qmin
+                Qmin_bus[i] = qmin / Sbase
             else:
-                Qmin_bus[i] += qmin
+                Qmin_bus[i] += qmin / Sbase
 
             max_mask[i] += 1
             min_mask[i] += 1
 
-    for f, t, qmin_f, qmax_f, qmin_t, qmax_t, active in zip(hvdc_f, hvdc_t, q_min_hvdc_f, q_max_hvdc_f, q_min_hvdc_t, q_max_hvdc_t, active_hvdc):
+    for f, t, qmin_f, qmax_f, qmin_t, qmax_t, active in zip(hvdc_f, hvdc_t, q_min_hvdc_f, q_max_hvdc_f,
+                                                            q_min_hvdc_t, q_max_hvdc_t, active_hvdc):
 
         if active:
             if max_mask[f] == 0:
-                Qmax_bus[f] = qmax_f
+                Qmax_bus[f] = qmax_f / Sbase
             else:
-                Qmax_bus[f] += qmax_f
+                Qmax_bus[f] += qmax_f / Sbase
 
             if min_mask[f] == 0:
-                Qmin_bus[f] = qmin_f
+                Qmin_bus[f] = qmin_f / Sbase
             else:
-                Qmin_bus[f] += qmin_f
+                Qmin_bus[f] += qmin_f / Sbase
 
             max_mask[f] += 1
             min_mask[f] += 1
 
-
             if max_mask[t] == 0:
-                Qmax_bus[t] = qmax_t
+                Qmax_bus[t] = qmax_t / Sbase
             else:
-                Qmax_bus[t] += qmax_t
+                Qmax_bus[t] += qmax_t / Sbase
 
             if min_mask[t] == 0:
-                Qmin_bus[t] = qmin_t
+                Qmin_bus[t] = qmin_t / Sbase
             else:
-                Qmin_bus[t] += qmin_t
+                Qmin_bus[t] += qmin_t / Sbase
 
             max_mask[t] += 1
             min_mask[t] += 1
-
 
     return Qmax_bus, Qmin_bus
 
@@ -1047,6 +1045,7 @@ class NumericalCircuit:
 
         Qmax_bus, Qmin_bus = build_q_limits(
             nbus=self.bus_data.nbus,
+            Sbase=self.Sbase,
             gen_idx=self.generator_data.bus_idx,
             q_min_gen=self.generator_data.qmin,
             q_max_gen=self.generator_data.qmax,
@@ -1097,7 +1096,9 @@ class NumericalCircuit:
         # Qmax_bus[Qmax_bus == 0] = 1e20
         # Qmin_bus[Qmin_bus == 0] = -1e20
 
-        return Qmax_bus / self.Sbase, Qmin_bus / self.Sbase
+        # return Qmax_bus / self.Sbase, Qmin_bus / self.Sbase
+
+        return Qmax_bus, Qmin_bus
 
     def get_structure(self, structure_type: str) -> pd.DataFrame:
         """
