@@ -28,11 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="5.3.54">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/numerical_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/numerical_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_power_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_power_flow.py" afterDir="false" />
-    </list>
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed bug when computing reactive power limits&#10;Added reactive power limit test (not passing for the slack)" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -2381,7 +2377,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="715" />
+    <option name="localTasksCounter" value="717" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2427,7 +2423,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Removed &quot;kconv&quot;" />
     <MESSAGE value="wip" />
     <MESSAGE value="implemented fast admittance in the generalized formulation" />
     <MESSAGE value="Implemented csc comparison" />
@@ -2452,7 +2447,8 @@
     <MESSAGE value="Added further NTC tests for large grids" />
     <MESSAGE value="Improved filtering" />
     <MESSAGE value="5.3.54" />
-    <option name="LAST_COMMIT_MESSAGE" value="5.3.54" />
+    <MESSAGE value="Fixed bug when computing reactive power limits&#10;Added reactive power limit test (not passing for the slack)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug when computing reactive power limits&#10;Added reactive power limit test (not passing for the slack)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2864,7 +2860,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_power_flow.py</url>
-          <line>648</line>
+          <line>646</line>
           <option name="timeStamp" value="2862" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">

@@ -273,19 +273,44 @@ def build_branches_C_coo_3(bus_active: IntVec,
 
 @nb.njit(cache=True)
 def build_q_limits(nbus: int, Sbase: float,
-                   gen_idx, q_min_gen, q_max_gen, active_gen,
-                   batt_idx, q_min_batt, q_max_batt, active_batt,
-                   sh_idx, q_min_sh, q_max_sh, active_sh,
+                   gen_idx, q_min_gen, q_max_gen, active_gen, controllable_gen,
+                   batt_idx, q_min_batt, q_max_batt, active_batt,controllable_batt,
+                   sh_idx, q_min_sh, q_max_sh, active_sh, controllable_sh,
                    hvdc_f, hvdc_t, q_min_hvdc_f, q_max_hvdc_f, q_min_hvdc_t, q_max_hvdc_t, active_hvdc):
-    max_mask = np.zeros(nbus, dtype=int)
+    """
+
+    :param nbus:
+    :param Sbase:
+    :param gen_idx:
+    :param q_min_gen:
+    :param q_max_gen:
+    :param active_gen:
+    :param batt_idx:
+    :param q_min_batt:
+    :param q_max_batt:
+    :param active_batt:
+    :param sh_idx:
+    :param q_min_sh:
+    :param q_max_sh:
+    :param active_sh:
+    :param hvdc_f:
+    :param hvdc_t:
+    :param q_min_hvdc_f:
+    :param q_max_hvdc_f:
+    :param q_min_hvdc_t:
+    :param q_max_hvdc_t:
+    :param active_hvdc:
+    :return:
+    """
+    max_mask = np.zeros(nbus, dtype=nb.int32)
     Qmax_bus = np.full(nbus, 1e-20)
 
-    min_mask = np.zeros(nbus, dtype=int)
+    min_mask = np.zeros(nbus, dtype=nb.int32)
     Qmin_bus = np.full(nbus, 1e20)
 
-    for i, qmin, qmax, active in zip(gen_idx, q_min_gen, q_max_gen, active_gen):
+    for i, qmin, qmax, active, controllable in zip(gen_idx, q_min_gen, q_max_gen, active_gen, controllable_gen):
 
-        if active:
+        if active and controllable:
             if max_mask[i] == 0:
                 Qmax_bus[i] = qmax / Sbase
             else:
@@ -299,9 +324,9 @@ def build_q_limits(nbus: int, Sbase: float,
             max_mask[i] += 1
             min_mask[i] += 1
 
-    for i, qmin, qmax, active in zip(batt_idx, q_min_batt, q_max_batt, active_batt):
+    for i, qmin, qmax, active, controllable in zip(batt_idx, q_min_batt, q_max_batt, active_batt, controllable_batt):
 
-        if active:
+        if active and controllable:
             if max_mask[i] == 0:
                 Qmax_bus[i] = qmax / Sbase
             else:
@@ -315,9 +340,9 @@ def build_q_limits(nbus: int, Sbase: float,
             max_mask[i] += 1
             min_mask[i] += 1
 
-    for i, qmin, qmax, active in zip(sh_idx, q_min_sh, q_max_sh, active_sh):
+    for i, qmin, qmax, active, controllable in zip(sh_idx, q_min_sh, q_max_sh, active_sh, controllable_sh):
 
-        if active:
+        if active and controllable:
             if max_mask[i] == 0:
                 Qmax_bus[i] = qmax / Sbase
             else:
@@ -1050,16 +1075,19 @@ class NumericalCircuit:
             q_min_gen=self.generator_data.qmin,
             q_max_gen=self.generator_data.qmax,
             active_gen=self.generator_data.active,
+            controllable_gen=self.generator_data.controllable,
 
             batt_idx=self.battery_data.bus_idx,
             q_min_batt=self.battery_data.qmin,
             q_max_batt=self.battery_data.qmax,
             active_batt=self.battery_data.active,
+            controllable_batt=self.battery_data.controllable,
 
             sh_idx=self.shunt_data.bus_idx,
             q_min_sh=self.shunt_data.qmin,
             q_max_sh=self.shunt_data.qmax,
             active_sh=self.shunt_data.active,
+            controllable_sh=self.shunt_data.controllable,
 
             hvdc_f=self.hvdc_data.F,
             hvdc_t=self.hvdc_data.T,
