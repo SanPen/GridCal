@@ -1961,12 +1961,42 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                              f"{self.nc.vsc_data.control1[i]}")
 
                         print(It_i, Imax)
+
                                              
                         # Potentially add new conditionals, mainly for the 2nd iteration once saturated
                         # If letting the P naturally go to zero is not enough, no longer control Vm
                         # Control Q and then it will naturally get to a point that does not surpass Imax
 
-                    print(It_i, Imax)
+                    elif (It_i > Imax * 1.1 
+                        and self.nc.vsc_data.control1[i] == ConverterControlType.Imax 
+                        and self.nc.vsc_data.control2[i] == ConverterControlType.Imax):
+                        """
+                        We give some margin to the current because it may not exactly converge to Imax
+                        in just one iteration. 10% buffer seems enough.
+                        
+                        We establish reactive power priority over active power
+                        So if we are already controlling Imax, set the P to zero
+                        As a last resort, set Q to zero
+                        """
+
+                        if self.nc.vsc_data.control1[i] == ConverterControlType.Pdc:
+                            self.nc.vsc_data.control1_val[i] = 0.0
+                        elif self.nc.vsc_data.control2[i] == ConverterControlType.Pdc:
+                            self.nc.vsc_data.control2_val[i] = 0.0
+                        elif self.nc.vsc_data.control1[i] == ConverterControlType.Pac:
+                            self.nc.vsc_data.control1_val[i] = 0.0
+                        elif self.nc.vsc_data.control2[i] == ConverterControlType.Pac:
+                            self.nc.vsc_data.control2_val[i] = 0.0
+                        elif self.nc.vsc_data.control1[i] == ConverterControlType.Qac:
+                            self.nc.vsc_data.control1_val[i] = 0.0
+                        elif self.nc.vsc_data.control2[i] == ConverterControlType.Qac:
+                            self.nc.vsc_data.control2_val[i] = 0.0
+                        else:
+                            raise ValueError(f"Unfound control type when switching to current limiting: "
+                                             f"{self.nc.vsc_data.control1[i]}")
+
+                    print(f"VSC {i} control 1: {self.nc.vsc_data.control1[i]}")
+                    print(f"VSC {i} control 2: {self.nc.vsc_data.control2[i]}")
 
             if branch_ctrl_change:
 
