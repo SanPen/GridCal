@@ -64,8 +64,6 @@ def compute_ybus_generator(nc: NumericalCircuit) -> csc_matrix:
         r2 = nc.generator_data.r2[k] * 1.0
         x2 = nc.generator_data.x2[k] * 1.0
 
-
-
         # Fortescue
         Zabc = fortescue_012_to_abc(r0 + 1j * x0, r1 + 1j * x1, r2 + 1j * x2)
         Yabc = np.linalg.inv(Zabc)
