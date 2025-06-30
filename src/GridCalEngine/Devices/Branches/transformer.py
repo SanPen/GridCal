@@ -30,6 +30,9 @@ class Transformer2W(ControllableBranchParent):
         'conn',
         'template',
         'possible_transformer_types',
+        '_conn_f',
+        '_conn_t',
+        '_vector_group_number'
     )
 
     def __init__(self,

@@ -24,6 +24,35 @@ class Load(LoadParent):
         '_B_prof',
         '_Ir_prof',
         '_Ii_prof',
+
+        'G1',
+        'B1',
+        'Ir1',
+        'Ii1',
+        '_G1_prof',
+        '_B1_prof',
+        '_Ir1_prof',
+        '_Ii1_prof',
+
+        'G2',
+        'B2',
+        'Ir2',
+        'Ii2',
+        '_G2_prof',
+        '_B2_prof',
+        '_Ir2_prof',
+        '_Ii2_prof',
+
+        'G3',
+        'B3',
+        'Ir3',
+        'Ii3',
+        '_G3_prof',
+        '_B3_prof',
+        '_Ir3_prof',
+        '_Ii3_prof',
+
+
         '_n_customers',
         '_n_customers_prof',
     )
@@ -476,7 +505,6 @@ class Load(LoadParent):
             self._n_customers_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into n_customers_prof')
-
 
     def plot_profiles(self, time=None, show_fig=True):
         """

@@ -25,6 +25,21 @@ class LoadParent(InjectionParent):
         '_P_prof',
         'Q',
         '_Q_prof',
+
+        'P1',
+        '_P1_prof',
+        'Q1',
+        '_Q1_prof',
+
+        'P2',
+        '_P2_prof',
+        'Q2',
+        '_Q2_prof',
+
+        'P3',
+        '_P3_prof',
+        'Q3',
+        '_Q3_prof',
     )
 
     def __init__(self,

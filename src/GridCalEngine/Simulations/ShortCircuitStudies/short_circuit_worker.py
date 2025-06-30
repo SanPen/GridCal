@@ -433,6 +433,6 @@ def short_circuit_abc(nc: NumericalCircuit,
     })
 
     print(df)
-.    print()
+    print()
 
     return None

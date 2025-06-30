@@ -387,13 +387,6 @@ class OverheadLineType(EditableDevice):
     def y_phases_abc(self) -> CxMat | None:
         return self._y_phases_abc
 
-    @y_phases_abc.setter
-    def y_phases_abc(self, val):
-        if isinstance(val, np.ndarray):
-            self._y_phases_abc = val
-        else:
-            raise Exception("y_phases_abc is not a numpy array")
-
     @property
     def y_seq(self) -> CxMat | None:
         return self._y_seq
@@ -447,7 +440,7 @@ class OverheadLineType(EditableDevice):
             return adm
 
         elif rows < 3 and columns < 3:
-            phases = self.y_phases_abc
+            phases = self.z_phases_abc
             phases = phases[phases > 3*(circuit_idx - 1)]
             phases = phases[phases <= 3 * circuit_idx]
             phases = phases - 3 * (circuit_idx - 1) - 1
@@ -573,14 +566,30 @@ class OverheadLineType(EditableDevice):
 
         ok = True
         ok = ok and self.z_abc is not None
-        ok = ok and self.z_seq is not None
-        ok = ok and self.z_abcn is not None
+        # ok = ok and self.z_seq is not None
+        # ok = ok and self.z_abcn is not None
         ok = ok and self.z_phases_abc is not None
-        ok = ok and self.z_phases_abcn is not None
+        # ok = ok and self.z_phases_abcn is not None
         ok = ok and self.y_abc is not None
-        ok = ok and self.y_seq is not None
-        ok = ok and self.y_abcn is not None
+        # ok = ok and self.y_seq is not None
+        # ok = ok and self.y_abcn is not None
         ok = ok and self.y_phases_abc is not None
+        # ok = ok and self.y_phases_abcn is not None
+
+        return ok
+
+    def has_sequence_data(self) -> bool:
+        """
+        Boolean that tells if the template has already been computed or not
+        :return: if computed or not
+        """
+
+        ok = True
+        ok = ok and self.z_seq is not None
+        ok = ok and self.y_seq is not None
+        ok = ok and self.z_abcn is not None
+        ok = ok and self.y_abcn is not None
+        ok = ok and self.z_phases_abcn is not None
         ok = ok and self.y_phases_abcn is not None
 
         return ok
@@ -1329,3 +1338,30 @@ def calc_y_matrix(wires_in_tower: ListOfWires, f: float = 50):
         y_seq = None
 
     return y_abcn, phases_abcn, y_abc, phases_abc, y_seq
+
+
+def create_known_abc_overhead_template(name: str, z_abc: CxMat, ysh_abc: CxMat, phases: IntVec,
+                                   Vnom: float = 1.0,
+                                   earth_resistivity: float = 100,
+                                   frequency: float = 50):
+    """
+
+    :param name:
+    :param z_abc:
+    :param ysh_abc:
+    :param phases:
+    :param Vnom:
+    :param earth_resistivity:
+    :param frequency:
+    :return:
+    """
+    template = OverheadLineType(name=name,
+                                Vnom=Vnom,
+                                earth_resistivity=earth_resistivity,
+                                frequency=frequency)
+
+    template._y_phases_abc = phases
+    template._z_phases_abc = phases
+    template._z_abc = z_abc
+    template._y_abc = ysh_abc
+    return template

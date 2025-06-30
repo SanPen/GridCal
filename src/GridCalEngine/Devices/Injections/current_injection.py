@@ -20,6 +20,22 @@ class CurrentInjection(InjectionParent):
         'Ii',
         '_Ir_prof',
         '_Ii_prof',
+
+        'Ir1',
+        'Ii1',
+        '_Ir1_prof',
+        '_Ii1_prof',
+
+        'Ir2',
+        'Ii2',
+        '_Ir2_prof',
+        '_Ii2_prof',
+
+        'Ir3',
+        'Ii3',
+        '_Ir3_prof',
+        '_Ii3_prof',
+
     )
 
     def __init__(self, name='CurrentInjection', idtag=None, code='', Ir=0.0, Ii=0.0, Cost=1200.0,

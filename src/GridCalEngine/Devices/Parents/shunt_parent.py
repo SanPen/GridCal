@@ -24,6 +24,22 @@ class ShuntParent(InjectionParent):
         '_G_prof',
         'B',
         '_B_prof',
+
+        'G1',
+        '_G1_prof',
+        'B1',
+        '_B1_prof',
+
+        'G2',
+        '_G2_prof',
+        'B2',
+        '_B2_prof',
+
+        'G3',
+        '_G3_prof',
+        'B3',
+        '_B3_prof',
+
         'G0',
         '_G0_prof',
         'B0',

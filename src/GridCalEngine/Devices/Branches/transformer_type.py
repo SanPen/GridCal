@@ -21,6 +21,9 @@ class TransformerType(EditableDevice):
         'GR_hv1',
         'GX_hv1',
         '_tap_changer',
+        'conn_hv',
+        'conn_lv',
+        'vector_group_number'
     )
 
     def __init__(self,
