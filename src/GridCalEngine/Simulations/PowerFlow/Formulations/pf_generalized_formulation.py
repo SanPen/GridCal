@@ -703,7 +703,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         self.u_cbr_m = np.array(u_cbr_m, dtype=int)
         self.u_cbr_tau = np.array(u_cbr_tau, dtype=int)
-        self.u_cbr_m_tau = np.unique(np.r_[u_cbr_m, u_cbr_tau])
+        self.u_cbr_m_tau = np.unique(np.r_[u_cbr_m, u_cbr_tau]).astype(int)
 
         self.k_cbr_pf = np.array(k_cbr_pf, dtype=int)
         self.k_cbr_pt = np.array(k_cbr_pt, dtype=int)

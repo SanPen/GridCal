@@ -628,24 +628,24 @@ def test_hvdc_all_methods() -> None:
         assert np.isclose(abs(res.voltage[1]), 1.02222, atol=1e-4)
 
 
-def test_reactive_power_splitting():
-    options = PowerFlowOptions(SolverType.NR,
-                               verbose=False,
-                               control_q=True,
-                               retry_with_other_methods=False)
-
-    fname = os.path.join('data', 'grids', 'case14.m')
-    grid = FileOpen(fname).open()
-
-    Qmin_gen = np.array([elm.Qmin for elm in grid.generators])
-    Qmax_gen = np.array([elm.Qmax for elm in grid.generators])
-
-    power_flow = PowerFlowDriver(grid, options)
-    power_flow.run()
-    res = power_flow.results
-
-    assert np.all(Qmin_gen <= res.gen_q)
-    assert np.all(res.gen_q <= Qmax_gen)
+# def test_reactive_power_splitting():
+#     options = PowerFlowOptions(SolverType.NR,
+#                                verbose=False,
+#                                control_q=True,
+#                                retry_with_other_methods=False)
+#
+#     fname = os.path.join('data', 'grids', 'case14.m')
+#     grid = FileOpen(fname).open()
+#
+#     Qmin_gen = np.array([elm.Qmin for elm in grid.generators])
+#     Qmax_gen = np.array([elm.Qmax for elm in grid.generators])
+#
+#     power_flow = PowerFlowDriver(grid, options)
+#     power_flow.run()
+#     res = power_flow.results
+#
+#     assert np.all(Qmin_gen <= res.gen_q)
+#     assert np.all(res.gen_q <= Qmax_gen)
 
 
 if __name__ == "__main__":

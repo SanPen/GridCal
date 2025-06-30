@@ -1067,6 +1067,33 @@ class NumericalCircuit:
         compute the reactive power limits in place
         :return: Qmax_bus, Qmin_bus in per unit
         """
+        # # generators
+        # Qmax_bus = self.generator_data.get_qmax_per_bus()
+        # Qmin_bus = self.generator_data.get_qmin_per_bus()
+        #
+        # if self.nbatt > 0:
+        #     # batteries
+        #     Qmax_bus += self.battery_data.get_qmax_per_bus()
+        #     Qmin_bus += self.battery_data.get_qmin_per_bus()
+        #
+        # if self.nhvdc > 0:
+        #     # hvdc from
+        #     Qmax_bus += self.hvdc_data.get_qmax_from_per_bus()
+        #     Qmin_bus += self.hvdc_data.get_qmin_from_per_bus()
+        #
+        #     # hvdc to
+        #     Qmax_bus += self.hvdc_data.get_qmax_to_per_bus()
+        #     Qmin_bus += self.hvdc_data.get_qmin_to_per_bus()
+        #
+        # if self.nshunt > 0:
+        #     Qmax_bus += self.shunt_data.get_qmax_per_bus()
+        #     Qmin_bus += self.shunt_data.get_qmin_per_bus()
+        #
+        # # fix zero values
+        # Qmax_bus[Qmax_bus == 0] = 1e20
+        # Qmin_bus[Qmin_bus == 0] = -1e20
+        #
+        # return Qmax_bus / self.Sbase, Qmin_bus / self.Sbase
 
         Qmax_bus, Qmin_bus = build_q_limits(
             nbus=self.bus_data.nbus,
@@ -1097,35 +1124,6 @@ class NumericalCircuit:
             q_max_hvdc_t=self.hvdc_data.Qmax_t,
             active_hvdc=self.hvdc_data.active
         )
-
-        # generators
-        # Qmax_bus = self.generator_data.get_qmax_per_bus()
-        # Qmin_bus = self.generator_data.get_qmin_per_bus()
-        #
-        # if self.nbatt > 0:
-        #     # batteries
-        #     Qmax_bus += self.battery_data.get_qmax_per_bus()
-        #     Qmin_bus += self.battery_data.get_qmin_per_bus()
-        #
-        # if self.nhvdc > 0:
-        #     # hvdc from
-        #     Qmax_bus += self.hvdc_data.get_qmax_from_per_bus()
-        #     Qmin_bus += self.hvdc_data.get_qmin_from_per_bus()
-        #
-        #     # hvdc to
-        #     Qmax_bus += self.hvdc_data.get_qmax_to_per_bus()
-        #     Qmin_bus += self.hvdc_data.get_qmin_to_per_bus()
-        #
-        # if self.nshunt > 0:
-        #     Qmax_bus += self.shunt_data.get_qmax_per_bus()
-        #     Qmin_bus += self.shunt_data.get_qmin_per_bus()
-        #
-        # # fix zero values
-        # Qmax_bus[Qmax_bus == 0] = 1e20
-        # Qmin_bus[Qmin_bus == 0] = -1e20
-
-        # return Qmax_bus / self.Sbase, Qmin_bus / self.Sbase
-
         return Qmax_bus, Qmin_bus
 
     def get_structure(self, structure_type: str) -> pd.DataFrame:
