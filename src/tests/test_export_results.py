@@ -43,5 +43,7 @@ def test_export_results():
     if not os.path.exists("output"):
         os.makedirs("output")
 
-    gce.export_drivers(drivers_list=[pf_driver, opf_ts_driver],
-                       file_name=os.path.join("output", "IEEE39_1W_results.zip"))
+    export_fame = os.path.join("output", "IEEE39_1W_results.zip")
+    gce.export_drivers(drivers_list=[pf_driver, opf_ts_driver], file_name=export_fame)
+
+    os.remove(export_fame)

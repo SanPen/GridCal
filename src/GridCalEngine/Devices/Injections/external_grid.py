@@ -12,6 +12,14 @@ from GridCalEngine.Devices.profile import Profile
 
 
 class ExternalGrid(LoadParent):
+    __slots__ = (
+        'mode',
+        'substituted_device_id',
+        'Vm',
+        'Va',
+        '_Vm_prof',
+        '_Va_prof',
+    )
 
     def __init__(self, name='External grid', idtag=None, code='', active=True, substituted_device_id: str = '',
                  Vm=1.0, Va=0.0, P=0.0, Q=0.0,

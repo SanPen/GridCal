@@ -33,7 +33,7 @@ Contact
    `form <https://forms.gle/MpjJAntAwZiLwE6B6>`__.
 -  Submit bugs or requests in the
    `Issues <https://github.com/SanPen/GridCal/issues>`__ section.
--  Simply email `santiago@gridcal.org <santiago@gridcal.org>`__
+
 
 Contents
 =========

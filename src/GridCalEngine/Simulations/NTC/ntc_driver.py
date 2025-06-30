@@ -5,7 +5,7 @@
 
 from typing import List
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf_ts
+from GridCalEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
 from GridCalEngine.Simulations.NTC.ntc_results import OptimalNetTransferCapacityResults
@@ -50,19 +50,19 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
         self.report_text('Formulating NTC OPF...')
 
-        opf_vars = run_linear_ntc_opf_ts(
+        opf_vars = run_linear_ntc_opf(
             grid=self.grid,
-            time_indices=None,
+            t=None,
             solver_type=self.options.opf_options.mip_solver,
             zonal_grouping=self.options.opf_options.zonal_grouping,
             skip_generation_limits=self.options.skip_generation_limits,
             consider_contingencies=self.options.consider_contingencies,
-            contingency_groups_used=self.options.opf_options.contingency_groups_used,
+            contingency_groups_used=self.grid.contingency_groups,
             lodf_threshold=self.options.lin_options.lodf_threshold,
             bus_a1_idx=self.options.sending_bus_idx,
             bus_a2_idx=self.options.receiving_bus_idx,
             transfer_method=self.options.transfer_method,
-            monitor_only_ntc_load_rule_branches=self.options.use_branch_rating_contribution,
+            monitor_only_ntc_load_rule_branches=self.options.monitor_only_ntc_load_rule_branches,
             alpha_threshold=self.options.branch_exchange_sensitivity,
             monitor_only_sensitive_branches=self.options.use_branch_exchange_sensitivity,
             ntc_load_rule=self.options.branch_rating_contribution,
@@ -77,16 +77,18 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         # pack the results
         self.results = OptimalNetTransferCapacityResults(
             bus_names=self.grid.get_bus_names(),
-            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            branch_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
             hvdc_names=self.grid.get_hvdc_names(),
+            vsc_names=self.grid.get_vsc_names(),
             contingency_group_names=self.grid.get_contingency_group_names()
         )
 
         self.results.voltage = opf_vars.get_voltages()[0, :]
-        self.results.Sbus = opf_vars.bus_vars.Pcalc[0, :]
+        self.results.Sbus = opf_vars.bus_vars.Pinj[0, :]
         self.results.dSbus = opf_vars.bus_vars.delta_p[0, :]
         self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices[0, :]
         self.results.load_shedding = opf_vars.bus_vars.load_shedding[0, :]
+        self.results.nodal_balance = opf_vars.bus_vars.Pbalance[0, :]
 
         self.results.Sf = opf_vars.branch_vars.flows[0, :]
         self.results.St = -opf_vars.branch_vars.flows[0, :]
@@ -102,10 +104,17 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         self.results.hvdc_Pf = opf_vars.hvdc_vars.flows[0, :]
         self.results.hvdc_loading = opf_vars.hvdc_vars.loading[0, :]
 
+        self.results.vsc_Pf = opf_vars.vsc_vars.flows[0, :]
+        self.results.vsc_loading = opf_vars.vsc_vars.loading[0, :]
+
         self.results.sending_bus_idx = self.options.sending_bus_idx
         self.results.receiving_bus_idx = self.options.receiving_bus_idx
         self.results.inter_space_branches = opf_vars.branch_vars.inter_space_branches
         self.results.inter_space_hvdc = opf_vars.hvdc_vars.inter_space_hvdc
+        self.results.inter_space_vsc = opf_vars.vsc_vars.inter_space_vsc
+
+        self.results.inter_area_flows = opf_vars.inter_area_flows[0]
+        self.results.structural_inter_area_flows = opf_vars.structural_ntc[0]
 
         self.results.converged = opf_vars.acceptable_solution
 

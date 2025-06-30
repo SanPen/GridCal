@@ -15,6 +15,12 @@ class CurrentInjection(InjectionParent):
     """
     CurrentInjection
     """
+    __slots__ = (
+        'Ir',
+        'Ii',
+        '_Ir_prof',
+        '_Ii_prof',
+    )
 
     def __init__(self, name='CurrentInjection', idtag=None, code='', Ir=0.0, Ii=0.0, Cost=1200.0,
                  Ir1=0.0, Ir2=0.0, Ir3=0.0, Ii1=0.0, Ii2=0.0, Ii3=0.0,

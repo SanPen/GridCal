@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
-from PySide6 import QtWidgets
+from PySide6 import QtWidgets, QtGui
 from matplotlib import pyplot as plt
 from typing import Union
 from GridCal.Gui.table_view_header_wrap import HeaderViewWithWordWrap
@@ -56,9 +56,10 @@ class ResultsMain(SimulationsMain):
         # wrap headers
         self.ui.resultsTableView.setHorizontalHeader(HeaderViewWithWordWrap(self.ui.resultsTableView))
 
-    def results_tree_view_click(self, index):
+    def results_tree_view_click(self, index: QtGui.QStandardItem):
         """
-        Display the simulation results on the results table
+        Display the simulation results on the result's table
+        :param index: Clicked Tree index
         """
         tree_mdl = self.ui.results_treeView.model()
         item = tree_mdl.itemFromIndex(index)
@@ -301,15 +302,32 @@ class ResultsMain(SimulationsMain):
 
     def copy_opf_to_profiles(self):
         """
-        Copy the results from the OPF time series to the profiles
+        Copy the results from the OPF snapshot and time series to the database
         """
-        _, results = self.session.optimal_power_flow_ts
 
+        # copy the snapshot if that exits
+        _, results = self.session.optimal_power_flow
+        if results is not None:
+
+            ok = yes_no_question('Are you sure that you want to overwrite '
+                                 'the generation, batteries and load snapshot values '
+                                 'with the OPF results?',
+                                 title="Overwrite profiles with OPF results")
+
+            if ok:
+                self.circuit.set_opf_snapshot_results(results)
+                self.show_info_toast("P snapshot set from the OPF results")
+
+        else:
+            self.show_warning_toast('The OPF time series has no results :(')
+
+        # copy the time series if that exists --------------------------------------------------------------------------
+        _, results = self.session.optimal_power_flow_ts
         if results is not None:
 
             ok = yes_no_question('Are you sure that you want to overwrite '
                                  'the generation, batteries and load profiles '
-                                 'with the OPF results?',
+                                 'with the OPF time series results?',
                                  title="Overwrite profiles with OPF results")
 
             if ok:

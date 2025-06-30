@@ -2,4 +2,4 @@ sphinx
 pandas
 pytablewriter
 sphinx_rtd_theme
-GridCalEngine >= 5.0.0
+GridCalEngine >= 5.3.41

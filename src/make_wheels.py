@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
         _author = 'Santiago Peñate Vera et. Al.'
 
-        _author_email = 'santiago@gridcal.org'
+        _author_email = 'spenate@eroots.tech'
 
         _home_page = 'https://github.com/SanPen/GridCal'
 

@@ -56,7 +56,7 @@ package_data = {'GridCalEngine': ['LICENSE.txt', 'setup.py'], }
 
 dependencies = ['setuptools>=41.0.1',
                 'wheel>=0.37.2',
-                "numpy<=2.0.0",
+                "numpy>=2.2.0",
                 "autograd>=1.7.0",
                 "scipy>=1.0.0",
                 "networkx>=2.1",
@@ -71,7 +71,7 @@ dependencies = ['setuptools>=41.0.1',
                 "geopy>=1.16",
                 "pytest>=7.2",
                 "h5py>=3.12.0",
-                "numba>=0.60",  # to compile routines natively
+                "numba>=0.61",  # to compile routines natively
                 'pyproj',
                 'pyarrow>=15',
                 "windpowerlib>=0.2.2",
@@ -98,7 +98,7 @@ setup(
     long_description_content_type='text/markdown',  # Optional (see note above)
     url='https://github.com/SanPen/GridCal',  # Optional
     author='Santiago Peñate Vera et. Al.',  # Optional
-    author_email='santiago@gridcal.org',  # Optional
+    author_email='spenate@eroots.tech',  # Optional
     classifiers=[
         'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Programming Language :: Python :: 3.8',

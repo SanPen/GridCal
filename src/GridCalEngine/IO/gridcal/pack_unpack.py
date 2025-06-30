@@ -361,11 +361,12 @@ def get_profile_from_dict(profile: Profile,
             default_value = collection.get(data['default'], default_value)
             map_data = {int(key): collection.get(val, default_value) for key, val in sp_data['map'].items()}
 
-        if profile.dtype == DeviceType.BusDevice:  # manual correction for buses profile incorrect value
+        if isinstance(profile.dtype, DeviceType):  # manual correction for buses profile incorrect value
             if default_value == "None":
                 default_value = profile.default_value
 
-        profile.create_sparse(default_value=default_value, size=data['size'], map_data=map_data)
+        profile.create_sparse(default_value=default_value,
+                              size=data['size'], map_data=map_data)
     else:
 
         if collection is None:
@@ -634,7 +635,7 @@ class CreatedOnTheFly:
         :return:
         """
         con_group = dev.ContingencyGroup(name=elm.name)
-        conn = dev.Contingency(device_idtag=elm.idtag, prop=ContingencyOperationTypes.Active, group=con_group)
+        conn = dev.Contingency(device=elm, prop=ContingencyOperationTypes.Active, group=con_group)
 
         self.contingency_groups.append(con_group)
         self.contingencies.append(conn)
@@ -874,41 +875,41 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                         if property_name in ['is_controlled', 'Bmin', 'Bmax', 'Vset']:
                             skip = True
 
-                    if template_elm.device_type == DeviceType.VscDevice:
-                        if property_name == 'control_mode':
-                            if "Pdc" in property_value:
-                                elm.tap_phase_control_mode = TapPhaseControl.Pf
-                                skip = True
-                            if "Qac" in property_value:
-                                elm.tap_phase_module_mode = TapModuleControl.Qf
-                                skip = True
-                            if "Vac" in property_value:
-                                elm.tap_module_control_mode = TapModuleControl.Vm
-                                elm.regulation_bus = elm.bus_to
-                                skip = True
-                            if "Vdc" in property_value:
-                                elm.tap_module_control_mode = TapModuleControl.Vm
-                                elm.regulation_bus = elm.bus_from
-                                skip = True
-
-                            if "fixed" in property_value:
-                                elm.tap_module_control_mode = TapModuleControl.fixed
-                                elm.tap_phase_control_mode = TapPhaseControl.fixed
-                                skip = True
-
-                        elif property_name == 'Vac_set':
-                            if property_value > 0.0:
-                                elm.vset = property_value
-                            skip = True
-
-                        elif property_name == 'Vdc_set':
-                            if property_value > 0.0:
-                                elm.vset = property_value
-                            skip = True
-
-                        elif property_name == 'Qac_set':
-                            elm.Qset = property_value
-                            skip = True
+                    # if template_elm.device_type == DeviceType.VscDevice:
+                    #     if property_name == 'control_mode':
+                    #         if "Pdc" in property_value:
+                    #             elm.tap_phase_control_mode = TapPhaseControl.Pf
+                    #             skip = True
+                    #         if "Qac" in property_value:
+                    #             elm.tap_phase_module_mode = TapModuleControl.Qf
+                    #             skip = True
+                    #         if "Vac" in property_value:
+                    #             elm.tap_module_control_mode = TapModuleControl.Vm
+                    #             elm.regulation_bus = elm.bus_to
+                    #             skip = True
+                    #         if "Vdc" in property_value:
+                    #             elm.tap_module_control_mode = TapModuleControl.Vm
+                    #             elm.regulation_bus = elm.bus_from
+                    #             skip = True
+                    #
+                    #         if "fixed" in property_value:
+                    #             elm.tap_module_control_mode = TapModuleControl.fixed
+                    #             elm.tap_phase_control_mode = TapPhaseControl.fixed
+                    #             skip = True
+                    #
+                    #     elif property_name == 'Vac_set':
+                    #         if property_value > 0.0:
+                    #             elm.vset = property_value
+                    #         skip = True
+                    #
+                    #     elif property_name == 'Vdc_set':
+                    #         if property_value > 0.0:
+                    #             elm.vset = property_value
+                    #         skip = True
+                    #
+                    #     elif property_name == 'Qac_set':
+                    #         elm.Qset = property_value
+                    #         skip = True
 
                     if template_elm.device_type == DeviceType.Transformer2WDevice:
                         if property_name == 'control_mode':
@@ -1008,7 +1009,9 @@ def search_and_apply_json_profile(json_entry: Dict[str, Dict[str, Union[str, Uni
             # the profile was not found, so we fill it with the default stuff
             profile.fill(property_value)
         else:
-            get_profile_from_dict(profile=profile, data=json_profile, collection=collection)
+            get_profile_from_dict(profile=profile,
+                                  data=json_profile,
+                                  collection=collection)
 
 
 def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
@@ -1061,6 +1064,19 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                     oh_templates = elements_dict_by_type.get(DeviceType.SequenceLineDevice, dict())
                                     ug_templates = elements_dict_by_type.get(DeviceType.UnderGroundLineDevice, dict())
                                     collection = {**seq_templates, **oh_templates, **ug_templates}
+
+                                elif gc_prop.tpe == DeviceType.BusOrBranch:
+                                    bus_dic = elements_dict_by_type.get(DeviceType.BusDevice, None)
+                                    lines_dict = elements_dict_by_type.get(DeviceType.LineDevice, None)
+
+                                    if bus_dic is not None and lines_dict is not None:
+                                        collection = bus_dic | lines_dict
+                                    elif bus_dic is not None and lines_dict is None:
+                                        collection = bus_dic
+                                    elif bus_dic is None and lines_dict is not None:
+                                        collection = bus_dic
+                                    else:
+                                        collection = None
                                 else:
                                     # this is a hyperlink to another object
                                     # we must look for the reference in elements_dict
@@ -1186,16 +1202,33 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
                                 try:
                                     val = gc_prop.tpe(property_value)
-                                    elm.set_snapshot_value(gc_prop.name, val)
-                                    search_and_apply_json_profile(json_entry=json_entry,
-                                                                  gc_prop=gc_prop,
-                                                                  elm=elm,
-                                                                  property_value=val)
 
-                                except ValueError:
-                                    logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
+                                    try:
+                                        elm.set_snapshot_value(gc_prop.name, val)
+
+                                    except ValueError as e:
+                                        logger.add_error(f'Cannot set the snapshot',
+                                                         device=elm.name,
+                                                         value=property_value,
+                                                         comment=str(e))
+
+                                    try:
+                                        search_and_apply_json_profile(json_entry=json_entry,
+                                                                      gc_prop=gc_prop,
+                                                                      elm=elm,
+                                                                      property_value=val)
+
+                                    except ValueError as e:
+                                        logger.add_error(f'Cannot set the profile',
+                                                         device=elm.name,
+                                                         value=property_value,
+                                                         comment=str(e))
+
+                                except ValueError as e:
+                                    logger.add_error(f'Cannot cast the value to the snapshot',
                                                      device=elm.name,
-                                                     value=property_value)
+                                                     value=property_value,
+                                                     comment=str(e))
 
                             else:
                                 raise Exception(f'Unsupported property type: {gc_prop.tpe}')
@@ -1517,6 +1550,10 @@ def parse_gridcal_data(data: GRIDCAL_FILE_TYPE,
 
     if text_func is not None:
         text_func("Done!")
+
+    # search contingencies, investments and remedial actions pointed devices
+    # and remove those that point nowhere
+    circuit.refine_pointer_objects(logger=logger)
 
     if circuit.has_time_series:
         circuit.ensure_profiles_exist()

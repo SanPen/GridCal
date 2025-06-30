@@ -66,9 +66,9 @@ class TimeSeriesResultsAnalysis:
             Vmax[i] = bus.Vmax
             Vmin[i] = bus.Vmin
 
-        F, T = self.grid.get_branch_number_wo_hvdc_FT()
+        F, T = self.grid.get_branch_FT(add_vsc=False, add_hvdc=False, add_switch=True)
 
-        rates = self.grid.get_branch_rates_prof_wo_hvdc()
+        rates = self.grid.get_branch_rates_prof()
 
         for t in range(nt):
             bus_voltage = np.abs(self.res.voltage[t])

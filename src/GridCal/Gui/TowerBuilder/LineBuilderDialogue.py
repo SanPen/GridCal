@@ -36,6 +36,11 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         # create the tower driver
         self.tower_driver = TowerModel(edit_callback=self.compute, tower=tower)
 
+        self.ui.name_lineEdit.setText(self.tower_driver.tower.name)
+        self.ui.rho_doubleSpinBox.setValue(self.tower_driver.tower.earth_resistivity)
+        self.ui.frequency_doubleSpinBox.setValue(self.tower_driver.tower.frequency)
+        self.ui.voltage_doubleSpinBox.setValue(self.tower_driver.tower.Vnom)
+
         if wires_catalogue is not None:
             for wire in wires_catalogue:
                 self.wires_table.add(wire)
@@ -49,10 +54,6 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.ui.matrixViewComboBox.addItem("Shunt admittance (no neutral) [μS/km]")
         self.ui.matrixViewComboBox.addItem("Shunt admittance (sequence) [μS/km]")
 
-        self.ui.name_lineEdit.setText(self.tower_driver.tower.name)
-        self.ui.rho_doubleSpinBox.setValue(self.tower_driver.tower.earth_resistivity)
-        self.ui.frequency_doubleSpinBox.setValue(self.tower_driver.tower.frequency)
-        self.ui.voltage_doubleSpinBox.setValue(self.tower_driver.tower.Vnom)
 
         # set models
         self.ui.wires_tableView.setModel(self.wires_table)

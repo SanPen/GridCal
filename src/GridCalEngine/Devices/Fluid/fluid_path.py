@@ -16,6 +16,14 @@ if TYPE_CHECKING:
 
 
 class FluidPath(PhysicalDevice):
+    __slots__ = (
+        'source',
+        'target',
+        'min_flow',
+        'max_flow',
+        'color',
+        '_locations',
+    )
 
     def __init__(self,
                  name: str = '',
@@ -58,7 +66,8 @@ class FluidPath(PhysicalDevice):
         self.register(key='min_flow', units="m3/s", tpe=float, definition="Minimum flow")
         self.register(key='max_flow', units="m3/s", tpe=float, definition="Maximum flow")
         self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='Locations', editable=False)
-        self.register(key='color', units='', tpe=str, definition='Color to paint the device in the map diagram')
+        self.register(key='color', units='', tpe=str, definition='Color to paint the device in the map diagram',
+                      is_color=True)
 
     def copy(self):
         """

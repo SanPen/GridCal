@@ -15,6 +15,18 @@ class Load(LoadParent):
     """
     Load
     """
+    __slots__ = (
+        'G',
+        'B',
+        'Ir',
+        'Ii',
+        '_G_prof',
+        '_B_prof',
+        '_Ir_prof',
+        '_Ii_prof',
+        '_n_customers',
+        '_n_customers_prof',
+    )
 
     def __init__(self, name='Load', idtag=None, code='',
                  G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, Cost=1200.0,
@@ -116,6 +128,9 @@ class Load(LoadParent):
         self._Ii2_prof = Profile(default_value=self.Ii2, data_type=float)
         self._Ii3_prof = Profile(default_value=self.Ii3, data_type=float)
 
+        self._n_customers: int = 1
+        self._n_customers_prof = Profile(default_value=self._n_customers, data_type=int)
+
         self.register(key='Ir', units='MW', tpe=float,
                       definition='Active power of the current component at V=1.0 p.u.', profile_name='Ir_prof')
         self.register(key='Ir1', units='MW', tpe=float,
@@ -148,6 +163,8 @@ class Load(LoadParent):
                       definition='Reactive power of the phase 2 impedance component at V=1.0 p.u.', profile_name='B2_prof')
         self.register(key='B3', units='MVAr', tpe=float,
                       definition='Reactive power of the phase 3 impedance component at V=1.0 p.u.', profile_name='B3_prof')
+        self.register(key='n_customers', units='unit', tpe=int,
+                      definition='Number of customers represented by this load', profile_name='n_customers_prof')
 
     @property
     def Ir_prof(self) -> Profile:
@@ -420,6 +437,46 @@ class Load(LoadParent):
             self._B3_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a B3_prof')
+
+    @property
+    def n_customers(self) -> int:
+        """
+        Return the number of customers
+        """
+        return self._n_customers
+
+    @n_customers.setter
+    def n_customers(self, val: int):
+        """
+        Set the number of customers
+        :param val: value greater than 0
+        """
+        try:
+            val2 = int(val)
+            if val2 > 0:
+                self._n_customers = val2
+            else:
+                print("There must be at least one customer right?")
+        except ValueError as e:
+            print(e)
+
+    @property
+    def n_customers_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._n_customers_prof
+
+    @n_customers_prof.setter
+    def n_customers_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._n_customers_prof = val
+        elif isinstance(val, np.ndarray):
+            self._n_customers_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into n_customers_prof')
+
 
     def plot_profiles(self, time=None, show_fig=True):
         """

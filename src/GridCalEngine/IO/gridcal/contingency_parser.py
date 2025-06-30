@@ -29,9 +29,9 @@ def parse_contingencies(data):
         for elem in jentry['elements']:
             cnt = Contingency(
                 idtag=elem['key'] if 'name' in elem.keys() else None,
-                device_idtag=elem['device_idtag'] if 'device_idtag' in elem.keys() else '',
-                name=str(elem['name']) if 'key' in elem.keys() else '',
-                code=str(elem['code']) if 'code' in elem.keys() else '',
+                device=elem.get('device_idtag', None),
+                name=str(elem.get('name', "")),
+                code=str(elem.get('code', "")),
                 prop=ContingencyOperationTypes(str(elem['property'])) if 'property' in elem.keys() else ContingencyOperationTypes.Active,
                 value=str(elem['value']) if 'value' in elem.keys() else 0,
                 group=group

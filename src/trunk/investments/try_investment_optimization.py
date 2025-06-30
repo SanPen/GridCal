@@ -1,11 +1,6 @@
 import os
-import sys
-import time
 import random
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import to_rgba
 from GridCalEngine import *
 from GridCalEngine.IO.file_handler import FileOpen
 import GridCalEngine.Devices as dev
@@ -46,7 +41,7 @@ def add_investments_to_grid(grid):
     for i, line in enumerate(lines_list):
         grid.add_line(line)
         inv_group = dev.InvestmentsGroup(name='Ig' + str(i))
-        investment = dev.Investment(device_idtag=line.idtag, name='Investment' + str(i), CAPEX=1,
+        investment = dev.Investment(device=line, name='Investment' + str(i), CAPEX=1,
                                     group=inv_group)
         grid.add_investment(investment)
         grid.add_investments_group(inv_group)
@@ -85,7 +80,7 @@ def add_random_lines_investments(grid, num_lines):
                         r=0.02, x=0.2, b=0.02, rate=10, cost=2)
 
         inv_group = dev.InvestmentsGroup(name=f'Ig_rand_{i}')
-        investment = dev.Investment(device_idtag=line.idtag, name=f'Investment_rand_{i}', CAPEX=i % 3 + 1,
+        investment = dev.Investment(device=line, name=f'Investment_rand_{i}', CAPEX=i % 3 + 1,
                                     group=inv_group)
 
         # Add the line and investments to the grid
@@ -100,7 +95,7 @@ def obtain_random_points(grid, num_random_combinations, pf_options):
     list_length = len(grid.investments_groups)
     combinations_list = [[random.choice([0, 1]) for _ in range(list_length)] for _ in range(num_random_combinations)]
 
-    investments_by_group = grid.get_investmenst_by_groups_index_dict()
+    investments_by_group = grid.get_investment_by_groups_index_dict()
 
     results = []
 

@@ -51,11 +51,11 @@ def test_linear_contingency():
                                   verbose=0,
                                   control_q=False)
 
-    linear_analysis = LinearAnalysisDriver(grid=main_circuit)
-    linear_analysis.run()
+    nc = compile_numerical_circuit_at(main_circuit)
+    lin = LinearAnalysis(nc=nc)
     linear_multi_contingency = LinearMultiContingencies(grid=main_circuit,
                                                         contingency_groups_used=main_circuit.get_contingency_groups())
-    linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
+    linear_multi_contingency.compute(lin=lin)
 
     options = ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=ContingencyMethod.PTDF)
     cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, options=options,

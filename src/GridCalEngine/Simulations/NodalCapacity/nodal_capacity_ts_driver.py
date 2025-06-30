@@ -61,27 +61,20 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         # OPF results
         self.results: NodalCapacityTimeSeriesResults = NodalCapacityTimeSeriesResults(
             bus_names=self.grid.get_bus_names(),
-            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            branch_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
             load_names=self.grid.get_load_names(),
             generator_names=self.grid.get_generator_names(),
             battery_names=self.grid.get_battery_names(),
+            shunt_like_names=self.grid.get_shunt_like_devices_names(),
             hvdc_names=self.grid.get_hvdc_names(),
+            vsc_names=self.grid.get_vsc_names(),
             fuel_names=self.grid.get_fuel_names(),
             emission_names=self.grid.get_emission_names(),
             technology_names=self.grid.get_technology_names(),
             fluid_node_names=self.grid.get_fluid_node_names(),
             fluid_path_names=self.grid.get_fluid_path_names(),
             fluid_injection_names=self.grid.get_fluid_injection_names(),
-            n=self.grid.get_bus_number(),
-            m=self.grid.get_branch_number_wo_hvdc(),
             nt=nt,
-            ngen=self.grid.get_generators_number(),
-            nbat=self.grid.get_batteries_number(),
-            nload=self.grid.get_loads_number(),
-            nhvdc=self.grid.get_hvdc_number(),
-            n_fluid_node=self.grid.get_fluid_nodes_number(),
-            n_fluid_path=self.grid.get_fluid_paths_number(),
-            n_fluid_injection=self.grid.get_fluid_injection_number(),
             time_array=time_array,
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             clustering_results=clustering_results,
@@ -142,7 +135,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                      zonal_grouping=self.opf_options.zonal_grouping,
                                      skip_generation_limits=self.opf_options.skip_generation_limits,
                                      consider_contingencies=self.opf_options.consider_contingencies,
-                                     contingency_groups_used=self.opf_options.contingency_groups_used,
+                                     contingency_groups_used=self.grid.contingency_groups,
                                      unit_commitment=self.opf_options.unit_commitment,
                                      ramp_constraints=self.opf_options.unit_commitment,
                                      all_generators_fixed=False,
@@ -160,8 +153,8 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                      verbose=self.opf_options.verbose,
                                      robust=self.opf_options.robust)
 
-        self.results.Sbus = opf_vars.bus_vars.Pcalc + 1j * np.zeros_like(opf_vars.bus_vars.Pcalc)
-        self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
+        self.results.Sbus = opf_vars.bus_vars.Pinj + 1j * np.zeros_like(opf_vars.bus_vars.Pinj)
+        self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.Va)
         self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices
         self.results.nodal_capacity = opf_vars.nodal_capacity_vars.P
 

@@ -14,6 +14,22 @@ from GridCalEngine.Devices.profile import Profile
 
 
 class SeriesReactance(BranchParent):
+    __slots__ = (
+        'tolerance',
+        'r_fault',
+        'x_fault',
+        'fault_pos',
+        'R',
+        'X',
+        'R0',
+        'X0',
+        'R2',
+        'X2',
+        'temp_base',
+        'temp_oper',
+        '_temp_oper_prof',
+        'alpha',
+    )
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, cn_from: ConnectivityNode = None,
                  cn_to: ConnectivityNode = None, name='SeriesReactance', idtag=None, code='',

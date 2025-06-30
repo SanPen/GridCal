@@ -236,6 +236,10 @@ class PfBasicFormulation(PfFormulationTemplate):
 
         nbus = self.adm.Ybus.shape[0]
 
+        if self.options.verbose >= 2:
+            print("Ybus:")
+            print(self.adm.Ybus.toarray())
+
         # Create J in CSC order
         J = create_J_vc_csc(nbus, self.adm.Ybus.data, self.adm.Ybus.indptr, self.adm.Ybus.indices,
                             self.V, self.idx_dVa, self.idx_dVm, self.idx_dP, self.idx_dQ)
@@ -287,8 +291,8 @@ class PfBasicFormulation(PfFormulationTemplate):
 
         return NumericPowerFlowResults(V=self.V,
                                        Scalc=Sbus * self.nc.Sbase,
-                                       m=np.ones(self.nc.nbr, dtype=float),
-                                       tau=np.zeros(self.nc.nbr, dtype=float),
+                                       m=self.nc.active_branch_data.tap_module,
+                                       tau=self.nc.active_branch_data.tap_angle,
                                        Sf=Sf,
                                        St=St,
                                        If=If,

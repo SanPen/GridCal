@@ -40,7 +40,7 @@ class PowerFlowDriver(DriverTemplate):
         :param grid: MultiCircuit instance
         :param options: PowerFlowOptions instance (optional)
         :param opf_results: OptimalPowerFlowResults instance (optional)
-        :param engine: EngineType (i.e. EngineType.GridCal) (optional)
+        :param engine: EngineType (i.e., EngineType.GridCal) (optional)
         """
 
         DriverTemplate.__init__(self, grid=grid, engine=engine)
@@ -51,14 +51,16 @@ class PowerFlowDriver(DriverTemplate):
         self.opf_results: Union[OptimalPowerFlowResults, None] = opf_results
 
         self.results = PowerFlowResults(n=self.grid.get_bus_number(),
-                                        m=self.grid.get_branch_number_wo_hvdc(),
+                                        m=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
                                         n_hvdc=self.grid.get_hvdc_number(),
                                         n_vsc=self.grid.get_vsc_number(),
                                         n_gen=self.grid.get_generation_like_number(),
                                         n_batt=self.grid.get_batteries_number(),
                                         n_sh=self.grid.get_shunt_like_device_number(),
                                         bus_names=self.grid.get_bus_names(),
-                                        branch_names=self.grid.get_branch_names_wo_hvdc(),
+                                        branch_names=self.grid.get_branch_names(add_hvdc=False,
+                                                                                add_vsc=False,
+                                                                                add_switch=True),
                                         hvdc_names=self.grid.get_hvdc_names(),
                                         vsc_names=self.grid.get_vsc_names(),
                                         gen_names=self.grid.get_generation_like_names(),
@@ -95,7 +97,7 @@ class PowerFlowDriver(DriverTemplate):
                                         expected_value=bus.Vmin)
 
         loading = np.abs(self.results.loading)
-        branches = self.grid.get_branches_wo_hvdc()
+        branches = self.grid.get_branches(add_vsc=False, add_hvdc=False, add_switch=True)
         for i, branch in enumerate(branches):
             if loading[i] > 1.0:
                 self.logger.add_warning("Overload",
@@ -151,7 +153,7 @@ class PowerFlowDriver(DriverTemplate):
             res = newton_pa_pf(circuit=self.grid, pf_opt=self.options, time_series=False)
 
             self.results = PowerFlowResults(n=self.grid.get_bus_number(),
-                                            m=self.grid.get_branch_number_wo_hvdc(),
+                                            m=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
                                             n_hvdc=self.grid.get_hvdc_number(),
                                             n_vsc=self.grid.get_vsc_number(),
                                             n_gen=self.grid.get_generators_number(),
@@ -172,9 +174,12 @@ class PowerFlowDriver(DriverTemplate):
 
         elif self.engine == EngineType.GSLV:
 
-            res = gslv_pf(circuit=self.grid, pf_opt=self.options, time_series=False)
+            res = gslv_pf(circuit=self.grid,
+                          pf_opt=self.options,
+                          time_series=False,
+                          logger=self.logger)
 
-            self.results = translate_gslv_pf_results(self.grid, res)
+            self.results = translate_gslv_pf_results(self.grid, res=res, logger=self.logger)
             self.results.area_names = [a.name for a in self.grid.areas]
             self.convergence_reports = self.results.convergence_reports
 
@@ -183,7 +188,7 @@ class PowerFlowDriver(DriverTemplate):
             res = bentayga_pf(self.grid, self.options, time_series=False)
 
             self.results = PowerFlowResults(n=self.grid.get_bus_number(),
-                                            m=self.grid.get_branch_number_wo_hvdc(),
+                                            m=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
                                             n_hvdc=self.grid.get_hvdc_number(),
                                             n_vsc=self.grid.get_vsc_number(),
                                             n_gen=self.grid.get_generators_number(),

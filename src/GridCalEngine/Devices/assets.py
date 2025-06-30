@@ -8,7 +8,7 @@ import pandas as pd
 from typing import List, Dict, Tuple, Union, Any, Set, Generator
 import datetime as dateslib
 
-from GridCalEngine.basic_structures import IntVec, StrVec
+from GridCalEngine.basic_structures import IntVec, StrVec, Vec
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.Devices.Parents.editable_device import GCPROP_TYPES
@@ -37,6 +37,73 @@ class Assets:
     """
     Class to store the assets
     """
+
+    __slots__ = (
+        '_time_profile',
+        '_snapshot_time',
+        '_lines',
+        '_dc_lines',
+        '_transformers2w',
+        '_hvdc_lines',
+        '_vsc_devices',
+        '_upfc_devices',
+        '_switch_devices',
+        '_transformers3w',
+        '_windings',
+        '_series_reactances',
+        '_buses',
+        '_connectivity_nodes',
+        '_bus_bars',
+        '_voltage_levels',
+        '_loads',
+        '_generators',
+        '_external_grids',
+        '_shunts',
+        '_batteries',
+        '_static_generators',
+        '_current_injections',
+        '_controllable_shunts',
+        '_pi_measurements',
+        '_qi_measurements',
+        '_vm_measurements',
+        '_pf_measurements',
+        '_qf_measurements',
+        '_if_measurements',
+        '_overhead_line_types',
+        '_wire_types',
+        '_underground_cable_types',
+        '_sequence_line_types',
+        '_transformer_types',
+        '_branch_groups',
+        '_substations',
+        '_areas',
+        '_zones',
+        '_countries',
+        '_communities',
+        '_regions',
+        '_municipalities',
+        '_contingencies',
+        '_contingency_groups',
+        '_remedial_actions',
+        '_remedial_action_groups',
+        '_investments',
+        '_investments_groups',
+        '_technologies',
+        '_modelling_authorities',
+        '_fuels',
+        '_emission_gases',
+        '_facilities',
+        '_fluid_nodes',
+        '_fluid_paths',
+        '_turbines',
+        '_pumps',
+        '_p2xs',
+        '_diagrams',
+        'template_objects_dict',
+        'profile_magnitudes',
+        'device_type_name_dict',
+        'device_associations',
+    )
 
     def __init__(self):
 
@@ -401,6 +468,13 @@ class Assets:
         """
         self._time_profile = pd.to_datetime(arr, unit='s')
 
+    def get_time_deltas_in_hours(self) -> Vec:
+        """
+        Get the time increments in hours
+        :return: array of time deltas where the first delta is 1
+        """
+        return np.r_[1.0, np.diff(self.get_unix_time() / 3600)]
+
     def get_time_profile_as_list(self):
         """
         Get the profiles dictionary
@@ -593,7 +667,7 @@ class Assets:
         :param logger: Logger to record events
         """
         if obj.should_this_be_a_transformer(branch_connection_voltage_tolerance=0.1, logger=logger):
-            tr = obj.get_equivalent_transformer()
+            tr = obj.get_equivalent_transformer(index=self.time_profile)
             self.add_transformer2w(tr)
         else:
             if self.time_profile is not None:
@@ -786,6 +860,20 @@ class Assets:
         except ValueError:
             pass
 
+    def get_hvdc_dict(self) -> Dict[str, dev.HvdcLine]:
+        """
+        Get dictionary of HVDC lines
+        :return: idtag -> HvdcLine
+        """
+        return {elm.idtag: elm for elm in self.hvdc_lines}
+
+    def get_hvdc_index_dict(self) -> Dict[str, int]:
+        """
+        Get dictionary of HVDC lines
+        :return: idtag -> HvdcLine
+        """
+        return {elm.idtag: i for i, elm in enumerate(self.hvdc_lines)}
+
     # ------------------------------------------------------------------------------------------------------------------
     # VSC
     # ------------------------------------------------------------------------------------------------------------------
@@ -852,6 +940,20 @@ class Assets:
             self.delete_groupings_with_object(obj=obj)
         except ValueError:
             pass
+
+    def get_vsc_dict(self) -> Dict[str, dev.VSC]:
+        """
+        Get dictionary of VSC converters
+        :return: idtag -> VSC
+        """
+        return {elm.idtag: elm for elm in self.vsc_devices}
+
+    def get_vsc_index_dict(self) -> Dict[str, int]:
+        """
+        Get index dictionary of VSC lines
+        :return: idtag -> i
+        """
+        return {elm.idtag: i for i, elm in enumerate(self.vsc_devices)}
 
     # ------------------------------------------------------------------------------------------------------------------
     # UPFC
@@ -1250,7 +1352,7 @@ class Assets:
         """
 
         # delete associated Branches in reverse order
-        for branch_list in self.get_branch_lists():
+        for branch_list in self.get_branch_lists(add_vsc=True, add_hvdc=True, add_switch=True):
             for i in range(len(branch_list) - 1, -1, -1):
                 if branch_list[i].bus_from == obj:
                     if delete_associated:
@@ -3840,7 +3942,7 @@ class Assets:
 
         return res
 
-    def get_investmenst_by_groups_index_dict(self) -> Dict[int, List[dev.Investment]]:
+    def get_investment_by_groups_index_dict(self) -> Dict[int, List[dev.Investment]]:
         """
         Get a dictionary of investments goups and their
         :return: Dict[investment group index] = list of investments
@@ -3857,6 +3959,24 @@ class Assets:
                 inv_list.append(inv)
 
         return res
+
+    def get_capex_by_investment_group(self) -> Vec:
+        """
+        Get array of CAPEX costs per investment group
+        :return:
+        """
+
+        # we initialize with the capex of the group, then we add the capex of the individual investments
+        capex = np.array([elm.CAPEX for elm in self.investments_groups])
+
+        # pre-compute the capex of each investment group
+        d = self.get_investment_by_groups_index_dict()
+
+        for i, investments in d.items():
+            for investment in investments:
+                capex[i] += investment.CAPEX
+
+        return capex
 
     # ------------------------------------------------------------------------------------------------------------------
     # Technology
@@ -4594,7 +4714,7 @@ class Assets:
         elif obj.device_type == DeviceType.BranchDevice:
 
             if obj.should_this_be_a_transformer():
-                self.add_transformer2w(obj.get_equivalent_transformer())
+                self.add_transformer2w(obj.get_equivalent_transformer(index=self.time_profile))
             else:
                 self.add_line(obj.get_equivalent_line())
         else:
@@ -4608,7 +4728,7 @@ class Assets:
 
             **obj** (:ref:`Branch<branch>`): :ref:`Branch<branch>` object
         """
-        for branch_list in self.get_branch_lists():
+        for branch_list in self.get_branch_lists(add_vsc=True, add_hvdc=True, add_switch=True):
             try:
                 branch_list.remove(obj)
                 self.delete_groupings_with_object(obj=obj)
@@ -4625,7 +4745,7 @@ class Assets:
         :param add_switch: Include the list of Switch?
         :return: list of branch devices lists
         """
-        lst = [
+        lst: List[List[BRANCH_TYPES]] = [
             self._lines,
             self._dc_lines,
             self._transformers2w,
@@ -4645,8 +4765,8 @@ class Assets:
 
         return lst
 
-    def get_branches(self, add_vsc: bool = True, add_hvdc: bool = True,
-                     add_switch: bool = False) -> List[BRANCH_TYPES]:
+    def get_branches(self, add_vsc: bool = False, add_hvdc: bool = False,
+                     add_switch: bool = True) -> List[BRANCH_TYPES]:
         """
         Return all the branch objects
         :param add_vsc: Include the list of VSC?
@@ -4674,9 +4794,9 @@ class Assets:
             for elm in lst:
                 yield elm
 
-    def get_branch_number(self, add_vsc: bool = True,
-                          add_hvdc: bool = True,
-                          add_switch: bool = False) -> int:
+    def get_branch_number(self, add_vsc: bool = False,
+                          add_hvdc: bool = False,
+                          add_switch: bool = True) -> int:
         """
         return the number of Branches (of all types)
         :param add_vsc: Include the list of VSC?
@@ -4739,11 +4859,25 @@ class Assets:
         :param add_vsc: Include the list of VSC?
         :param add_hvdc: Include the list of HvdcLine?
         :param add_switch: Include the list of Switch?
-        :return:
+        :return: Branch object to index
         """
         return {b: i for i, b in enumerate(self.get_branches_iter(add_vsc=add_vsc,
                                                                   add_hvdc=add_hvdc,
                                                                   add_switch=add_switch))}
+
+    def get_branches_index_dict2(self, add_vsc: bool = True,
+                                 add_hvdc: bool = True,
+                                 add_switch: bool = False) -> Dict[str, int]:
+        """
+        Get the branch to index dictionary
+        :param add_vsc: Include the list of VSC?
+        :param add_hvdc: Include the list of HvdcLine?
+        :param add_switch: Include the list of Switch?
+        :return: Branch idtag to index
+        """
+        return {b.idtag: i for i, b in enumerate(self.get_branches_iter(add_vsc=add_vsc,
+                                                                        add_hvdc=add_hvdc,
+                                                                        add_switch=add_switch))}
 
     def get_branches_dict(self, add_vsc: bool = True,
                           add_hvdc: bool = True,
@@ -4778,98 +4912,6 @@ class Assets:
             F[i] = bus_dict[elm.bus_from]
             T[i] = bus_dict[elm.bus_to]
         return F, T
-
-    def get_branches_wo_hvdc(self) -> list[BRANCH_TYPES]:
-        """
-        Return all the real branch objects.
-        :return: lines + transformers 2w
-        """
-        return self.get_branches(add_vsc=True, add_hvdc=False, add_switch=False)
-
-    def get_branches_wo_vsc_hvdc(self) -> list[BRANCH_TYPES]:
-        """
-        Return all the real branch objects.
-        :return: lines + transformers 2w
-        """
-        return self.get_branches(add_vsc=False, add_hvdc=False, add_switch=False)
-
-    def get_branch_names_wo_hvdc(self) -> StrVec:
-        """
-        Get all branch names without HVDC devices
-        :return: StrVec
-        """
-        return self.get_branch_names(add_vsc=True, add_hvdc=False, add_switch=False)
-
-    def get_branch_names_wo_hvdc_w_switch(self) -> StrVec:
-        """
-        Get all branch names without HVDC devices
-        :return: StrVec
-        """
-        return self.get_branch_names(add_vsc=True, add_hvdc=False, add_switch=True)
-
-    def get_branch_names_wo_vsc_hvdc(self) -> StrVec:
-        """
-        Get all branch names without VSC nor HVDC devices
-        :return: StrVec
-        """
-        return self.get_branch_names(add_vsc=False, add_hvdc=False, add_switch=False)
-
-    def get_branch_number_wo_hvdc(self) -> int:
-        """
-        return the number of Branches (of all types)
-        :return: number
-        """
-        return self.get_branch_number(add_vsc=True, add_hvdc=False, add_switch=False)
-
-    def get_branch_number_wo_vsc_hvdc(self) -> int:
-        """
-        return the number of Branches (of all types)
-        :return: number
-        """
-        return self.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=False)
-
-    def get_branch_number_wo_hvdc_w_switch(self) -> int:
-        """
-        return the number of Branches (with no HVDC)
-        :return: number
-        """
-        return self.get_branch_number(add_vsc=True, add_hvdc=False, add_switch=True)
-
-    def get_branches_wo_hvdc_iter(self) -> Generator[BRANCH_TYPES, None, None]:
-        """
-        Iterator all the real branch objects.
-        :return: lines + transformers 2w + hvdc
-        """
-        return self.get_branches_iter(add_vsc=True, add_hvdc=False, add_switch=False)
-
-    def get_branches_wo_vsc_hvdc_iter(self) -> Generator[BRANCH_TYPES, None, None]:
-        """
-        Iterator all the real branch objects.
-        :return: lines + transformers 2w + hvdc + vsc
-        """
-        return self.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=False)
-
-    def get_branches_wo_hvdc_index_dict(self) -> Dict[BRANCH_TYPES, int]:
-        """
-        Get the branch to index dictionary
-        :return:
-        """
-        return self.get_branches_index_dict(add_vsc=True, add_hvdc=False, add_switch=False)
-
-    def get_branches_wo_hvdc_dict(self) -> Dict[str, int]:
-        """
-        Get dictionary of branches (excluding HVDC)
-        the key is the idtag, the value is the branch position
-        :return: Dict[str, int]
-        """
-        return self.get_branches_dict(add_vsc=True, add_hvdc=False, add_switch=False)
-
-    def get_branch_number_wo_hvdc_FT(self) -> Tuple[IntVec, IntVec]:
-        """
-        get the from and to arrays of indices
-        :return: IntVec, IntVec
-        """
-        return self.get_branch_FT(add_vsc=True, add_hvdc=False, add_switch=False)
 
     def delete_groupings_with_object(self, obj: BRANCH_TYPES, delete_groups: bool = True):
         """
@@ -5299,6 +5341,9 @@ class Assets:
         elif device_type == DeviceType.FluidP2XDevice:
             return self._p2xs
 
+        elif device_type == DeviceType.FluidInjectionDevice:
+            return self.get_fluid_injections()
+
         elif device_type == DeviceType.PMeasurementDevice:
             return self.get_p_measurements()
 
@@ -5321,7 +5366,7 @@ class Assets:
             return self.get_load_like_devices()
 
         elif device_type == DeviceType.BranchDevice:
-            return self.get_branches_wo_hvdc()
+            return self.get_branches(add_hvdc=False, add_vsc=False, add_switch=True)
 
         elif device_type == DeviceType.ShuntLikeDevice:
             return self.get_shunt_like_devices()
@@ -5964,22 +6009,36 @@ class Assets:
             for elm in elements:
                 yield elm
 
-    def get_all_elements_dict(self, logger=Logger()) -> Tuple[Dict[str, ALL_DEV_TYPES], bool]:
+    def get_all_elements_dict(self,
+                              use_secondary_key: bool = False,
+                              use_rdfid: bool = False,
+                              logger=Logger()) -> Tuple[Dict[str, ALL_DEV_TYPES], bool]:
         """
         Get a dictionary of all elements
+        :param use_secondary_key: if true the code i˘s used as key
+        :param use_rdfid: if true the rdfid is used as key
         :param: logger: Logger
         :return: Dict[idtag] -> object, ok
         """
         data = dict()
         ok = True
         for key, tpe in self.device_type_name_dict.items():
+
             elements = self.get_elements_by_type(device_type=tpe)
 
             for elm in elements:
 
                 e = data.get(elm.idtag, None)
+
                 if e is None:
-                    data[elm.idtag] = elm
+
+                    if use_secondary_key:
+                        data[elm.code] = elm
+                    elif use_rdfid:
+                        data[elm.rdfid] = elm
+                    else:
+                        data[elm.idtag] = elm
+
                 else:
                     logger.add_error(
                         msg="Duplicated idtag!",
@@ -6018,17 +6077,22 @@ class Assets:
 
         return data
 
-    def get_elements_dict_by_type(self, element_type: DeviceType,
-                                  use_secondary_key=False) -> Dict[str, ALL_DEV_TYPES]:
+    def get_elements_dict_by_type(self,
+                                  element_type: DeviceType,
+                                  use_secondary_key: bool = False,
+                                  use_rdfid: bool = False) -> Dict[str, ALL_DEV_TYPES]:
         """
         Get dictionary of elements
         :param element_type: element type (Bus, Line, etc...)
         :param use_secondary_key: use the code as dictionary key? otherwise the idtag is used
+        :param use_rdfid: if true the rdfid is used as key
         :return: Dict[str, dev.EditableDevice]
         """
 
         if use_secondary_key:
             return {elm.code: elm for elm in self.get_elements_by_type(element_type)}
+        elif use_rdfid:
+            return {elm.rdfid: elm for elm in self.get_elements_by_type(element_type)}
         else:
             return {elm.idtag: elm for elm in self.get_elements_by_type(element_type)}
 
@@ -6360,3 +6424,27 @@ class Assets:
         """
         for elm in self.get_all_elements_iter():
             elm.replace_objects(old_object=old_object, new_obj=new_obj, logger=logger)
+
+    def refine_pointer_objects(self, logger: Logger):
+        """
+        Find the device types of pointer objects
+        :param logger:
+        :return:
+        """
+        d, ok = self.get_all_elements_dict(logger=logger)
+        objects_to_remove = list()
+
+        for lst in [self.investments, self.remedial_actions, self.contingencies]:
+            for elm in lst:
+                pointed = d.get(elm.device_idtag, None)
+                if pointed is None:
+                    logger.add_error("Reference not found, element deleted",
+                                     device_class=elm.device_type.value,
+                                     value=elm.device_idtag)
+                    objects_to_remove.append(elm)
+                else:
+                    elm.set_device(pointed)
+
+        # Delete the elements that don't point to the right element
+        for elm in objects_to_remove:
+            self.delete_element(obj=elm)

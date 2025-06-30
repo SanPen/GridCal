@@ -18,6 +18,20 @@ class GeneratorParent(InjectionParent):
     Template for objects that behave like generators
     """
 
+    __slots__ = (
+        'control_bus',
+        '_control_bus_prof',
+        'control_cn',
+        '_P',
+        '_P_prof',
+        'Pmax',
+        '_Pmax_prof',
+        'Pmin',
+        '_Pmin_prof',
+        'srap_enabled',
+        '_srap_enabled_prof',
+    )
+
     def __init__(self,
                  name: str,
                  idtag: Union[str, None],
@@ -79,7 +93,7 @@ class GeneratorParent(InjectionParent):
 
         self.control_cn = control_cn
 
-        self.P = float(P)
+        self._P = float(P)
         self._P_prof = Profile(default_value=self.P, data_type=float)
 
         # Maximum dispatched power in MW
@@ -92,8 +106,6 @@ class GeneratorParent(InjectionParent):
 
         self.srap_enabled = bool(srap_enabled)
         self._srap_enabled_prof = Profile(default_value=self.srap_enabled, data_type=bool)
-
-
 
         self.register(key='control_bus', units='', tpe=DeviceType.BusDevice, definition='Control bus',
                       editable=True, profile_name="control_bus_prof")
@@ -108,6 +120,25 @@ class GeneratorParent(InjectionParent):
         self.register(key='srap_enabled', units='', tpe=bool,
                       definition='Is the unit available for SRAP participation?',
                       editable=True, profile_name="srap_enabled_prof")
+
+    @property
+    def P(self) -> float:
+        """
+        Get the active power value
+        :return: float
+        """
+        return self._P
+
+    @P.setter
+    def P(self, val: float):
+        """
+        Set active power value
+        :param val: some float
+        """
+        try:
+            self._P = float(val)
+        except ValueError:
+            print("The value you're trying to set into P is not a float :(")
 
     @property
     def control_bus_prof(self) -> Profile:

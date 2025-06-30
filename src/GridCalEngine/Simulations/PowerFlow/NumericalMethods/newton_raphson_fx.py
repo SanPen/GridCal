@@ -53,13 +53,13 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
     error_evolution[iteration] = problem.error
 
     if verbose > 0:
-        print(time.time() - start)
-        print(f'It {iteration}, error {problem.error}, converged {problem.converged}, x {x}, dx not computed yet')
+        print('-' * 200)
+        print(f'Iter: {iteration}')
+        print('-' * 200)
+        print("x:\n", problem.get_x_df(x))
 
     if problem.converged:
-        print(time.time() - start)
         return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
-
 
     else:
 
@@ -93,10 +93,6 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
 
                 # compute update step: J x Δx = Δg
                 dx, ok = spsolve_csc(J, -f)
-                print('dx = \n', dx)
-                print('ok = \n', ok)
-                print('J = \n', J)
-                print('f = \n', f)
 
             except RuntimeError:
                 logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")
@@ -107,11 +103,6 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                 logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")
                 print("(newton_raphson_fx.py) Singular Jacobian")
                 return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
-
-            if verbose > 1:
-                print("J:\n", problem.get_jacobian_df(J))
-                print("F:\n", problem.get_f_df(f))
-                print("dx:\n", problem.get_x_df(dx))
 
             # line search
             mu = trust0
@@ -130,14 +121,15 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
             error0 = error
             error_evolution[iteration] = error
 
-            if verbose > 0:
-                if verbose == 1:
-                    print(f'It {iteration}, error {error}, converged {converged}')
-                    print(time.time() - start)
-                else:
-                    print(f'error {error}, \n converged {converged}')
+            if verbose > 1:
+                print("J:\n", problem.get_jacobian_df(J))
+                print("f:\n", problem.get_f_df(f))
+                print("dx:\n", problem.get_x_df(dx))
+                print("x:\n", problem.get_x_df(x))
+                print(f'error {error}, \n converged {converged}')
 
-            idx = np.where((f > 1) | (f < -1))[0]
+            elif verbose == 1:
+                print(f'It {iteration}, error {error}, converged {converged}')
 
-    print(time.time() - start)
+
     return problem.get_solution(elapsed=time.time() - start, iterations=iteration)

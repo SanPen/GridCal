@@ -9,7 +9,7 @@ import cmath
 import copy
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union, Set
+from typing import List, Dict, Tuple, Union, Set, TYPE_CHECKING
 from uuid import getnode as get_mac, uuid4
 import networkx as nx
 from matplotlib import pyplot as plt
@@ -23,8 +23,11 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, AREA_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.Topology.topology_processor import TopologyProcessorInfo, process_grid_topology_at
 from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType
+
+if TYPE_CHECKING:
+    from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 
 
 def get_system_user() -> str:
@@ -146,6 +149,16 @@ class MultiCircuit(Assets):
         grid = MultiCircuit(name="My grid")
 
     """
+    __slots__ = (
+        'name',
+        'idtag',
+        'comments',
+        'model_version',
+        'user_name',
+        'Sbase',
+        'fBase',
+        'logger',
+    )
 
     def __init__(self,
                  name: str = '',
@@ -264,8 +277,9 @@ class MultiCircuit(Assets):
         Get branch active matrix
         :return: array with branch active status
         """
-        active = np.empty((self.get_time_number(), self.get_branch_number_wo_hvdc()), dtype=int)
-        for i, b in enumerate(self.get_branches_wo_hvdc()):
+        active = np.empty((self.get_time_number(),
+                           self.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True)), dtype=int)
+        for i, b in enumerate(self.get_branches(add_hvdc=False, add_vsc=False, add_switch=True)):
             active[:, i] = b.active_prof.toarray()
         return active
 
@@ -362,7 +376,7 @@ class MultiCircuit(Assets):
             bus_dictionary[bus.idtag] = i
 
         tuples = list()
-        for branch_list in self.get_branch_lists():
+        for branch_list in self.get_branch_lists(add_vsc=True, add_hvdc=True, add_switch=True):
             for branch in branch_list:
                 f = bus_dictionary[branch.bus_from.idtag]
                 t = bus_dictionary[branch.bus_to.idtag]
@@ -400,7 +414,7 @@ class MultiCircuit(Assets):
         bus_dictionary = self.get_elements_dict_by_type(element_type=DeviceType.BusDevice,
                                                         use_secondary_key=False)
 
-        for branch_list in self.get_branch_lists():
+        for branch_list in self.get_branch_lists(add_vsc=True, add_hvdc=True, add_switch=True):
             for direction, branch in zip(current_flow_direction, branch_list):
                 f = bus_dictionary[branch.bus_from.idtag]
                 t = bus_dictionary[branch.bus_to.idtag]
@@ -679,7 +693,7 @@ class MultiCircuit(Assets):
             df_bus, df_branch = power_flow_results.export_all()
 
             df_bus.index = self.get_bus_names()
-            df_branch.index = self.get_branch_names_wo_hvdc()
+            df_branch.index = self.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True)
 
             with pd.ExcelWriter(file_name) as writer:  # pylint: disable=abstract-class-instantiated
                 df_bus.to_excel(writer, 'Bus results')
@@ -793,7 +807,7 @@ class MultiCircuit(Assets):
         bus_dict = {bus: i for i, bus in enumerate(self.buses)}
 
         k = 0
-        for branch_list in self.get_branch_lists():
+        for branch_list in self.get_branch_lists(add_vsc=True, add_hvdc=True, add_switch=True):
             for br in branch_list:
                 i = bus_dict[br.bus_from]  # store the row indices
                 j = bus_dict[br.bus_to]  # store the row indices
@@ -1101,7 +1115,7 @@ class MultiCircuit(Assets):
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
         """
         lst: List[Tuple[int, object, float]] = list()
-        for k, branch in enumerate(self.get_branches_wo_hvdc()):
+        for k, branch in enumerate(self.get_branches(add_hvdc=False, add_vsc=False, add_switch=True)):
             if branch.bus_from.area in a1 and branch.bus_to.area in a2:
                 lst.append((k, branch, 1.0))
             elif branch.bus_from.area in a2 and branch.bus_to.area in a1:
@@ -1112,13 +1126,13 @@ class MultiCircuit(Assets):
 
     def get_inter_buses_branches(self, a1: Set[dev.Bus], a2: Set[dev.Bus]) -> List[Tuple[int, object, float]]:
         """
-        Get the inter-buese Branches. HVDC Branches are not considered
+        Get the inter-buses Branches. HVDC Branches are not considered
         :param a1: Group of Buses 1
         :param a2: Group of Buses 1
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
         """
         lst: List[Tuple[int, object, float]] = list()
-        for k, branch in enumerate(self.get_branches_wo_hvdc()):
+        for k, branch in enumerate(self.get_branches(add_hvdc=False, add_vsc=False, add_switch=True)):
             if branch.bus_from in a1 and branch.bus_to in a2:
                 lst.append((k, branch, 1.0))
             elif branch.bus_from in a2 and branch.bus_to in a1:
@@ -1157,6 +1171,39 @@ class MultiCircuit(Assets):
                 lst.append((k, branch, -1.0))
         return lst
 
+
+    def get_inter_areas_vsc_branches(self, a1: List[dev.Area], a2: List[dev.Area]) -> List[Tuple[int, object, float]]:
+        """
+        Get the inter-area VSC
+        :param a1: Area from
+        :param a2: Area to
+        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        """
+        lst: List[Tuple[int, object, float]] = list()
+        for k, branch in enumerate(self.vsc_devices):
+            if branch.bus_from.area in a1 and branch.bus_to.area in a2:
+                lst.append((k, branch, 1.0))
+            elif branch.bus_from.area in a2 and branch.bus_to.area in a1:
+                lst.append((k, branch, -1.0))
+            else:
+                pass
+        return lst
+
+    def get_inter_buses_vsc_branches(self, a1: Set[dev.Bus], a2: Set[dev.Bus]) -> List[Tuple[int, object, float]]:
+        """
+        Get the inter-area VSC
+        :param a1: Group of Buses 1
+        :param a2: Group of Buses 1
+        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        """
+        lst: List[Tuple[int, object, float]] = list()
+        for k, branch in enumerate(self.vsc_devices):
+            if branch.bus_from in a1 and branch.bus_to in a2:
+                lst.append((k, branch, 1.0))
+            elif branch.bus_from in a2 and branch.bus_to in a1:
+                lst.append((k, branch, -1.0))
+        return lst
+
     def get_inter_zone_branches(self, z1: dev.Zone, z2: dev.Zone) -> List[Tuple[int, object, float]]:
         """
         Get the inter-area Branches
@@ -1165,7 +1212,7 @@ class MultiCircuit(Assets):
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
         """
         lst: List[Tuple[int, object, float]] = list()
-        for k, branch in enumerate(self.get_branches()):
+        for k, branch in enumerate(self.get_branches(add_vsc=False, add_hvdc=False, add_switch=True)):
             if branch.bus_from.zone == z1 and branch.bus_to.zone == z2:
                 lst.append((k, branch, 1.0))
             elif branch.bus_from.zone == z2 and branch.bus_to.zone == z1:
@@ -1214,7 +1261,7 @@ class MultiCircuit(Assets):
         area_names = [a.name for a in self.get_areas()]
         bus_area_indices = np.array([area_dict.get(b.area, 0) for b in self.get_buses()])
 
-        branches = self.get_branches_wo_hvdc()
+        branches = self.get_branches(add_vsc=False, add_hvdc=False, add_switch=True)
         F = np.zeros(len(branches), dtype=int)
         T = np.zeros(len(branches), dtype=int)
         for k, elm in enumerate(branches):
@@ -1289,7 +1336,7 @@ class MultiCircuit(Assets):
         Sbase_old = self.Sbase
 
         # get all the Branches with impedance
-        elms = self.get_branches_wo_hvdc()
+        elms = self.get_branches(add_vsc=False, add_hvdc=False, add_switch=True)
 
         # change the base at each element
         for elm in elms:
@@ -1693,50 +1740,52 @@ class MultiCircuit(Assets):
 
         return ratio
 
-    def get_branch_rates_prof_wo_hvdc(self) -> Mat:
+    def get_branch_rates_prof(self, add_hvdc=False, add_vsc=False, add_switch=True) -> Mat:
         """
         Get the complex bus power Injections
         :return: (ntime, nbr) [MVA]
         """
-        val = np.zeros((self.get_time_number(), self.get_branch_number_wo_hvdc()))
+        val = np.zeros((self.get_time_number(),
+                        self.get_branch_number(add_hvdc=add_hvdc, add_vsc=add_vsc, add_switch=add_switch)))
 
-        for i, branch in enumerate(self.get_branches_wo_hvdc()):
+        for i, branch in enumerate(self.get_branches(add_hvdc=add_hvdc, add_vsc=add_vsc, add_switch=add_switch)):
             val[:, i] = branch.rate_prof.toarray()
 
         return val
 
-    def get_branch_rates_wo_hvdc(self) -> Vec:
+    def get_branch_rates(self, add_hvdc=False, add_vsc=False, add_switch=True) -> Vec:
         """
         Get the complex bus power Injections
         :return: (nbr) [MVA]
         """
-        val = np.zeros(self.get_branch_number_wo_hvdc())
+        val = np.zeros(self.get_branch_number(add_hvdc=add_hvdc, add_vsc=add_vsc, add_switch=add_switch))
 
-        for i, branch in enumerate(self.get_branches_wo_hvdc()):
+        for i, branch in enumerate(self.get_branches(add_hvdc=add_hvdc, add_vsc=add_vsc, add_switch=add_switch)):
             val[i] = branch.rate
 
         return val
 
-    def get_branch_contingency_rates_prof_wo_hvdc(self) -> Mat:
+    def get_branch_contingency_rates_prof(self, add_hvdc=False, add_vsc=False, add_switch=True) -> Mat:
         """
         Get the complex bus power Injections
         :return: (ntime, nbr) [MVA]
         """
-        val = np.zeros((self.get_time_number(), self.get_branch_number_wo_hvdc()))
+        val = np.zeros((self.get_time_number(),
+                        self.get_branch_number(add_hvdc=add_hvdc, add_vsc=add_vsc, add_switch=add_switch)))
 
-        for i, branch in enumerate(self.get_branches_wo_hvdc()):
+        for i, branch in enumerate(self.get_branches(add_hvdc=add_hvdc, add_vsc=add_vsc, add_switch=add_switch)):
             val[:, i] = branch.rate_prof.toarray() * branch.contingency_factor_prof.toarray()
 
         return val
 
-    def get_branch_contingency_rates_wo_hvdc(self) -> Vec:
+    def get_branch_contingency_rates(self, add_hvdc=False, add_vsc=False, add_switch=True) -> Vec:
         """
         Get the complex bus power Injections
         :return: (nbr) [MVA]
         """
-        val = np.zeros(self.get_branch_number_wo_hvdc())
+        val = np.zeros(self.get_branch_number(add_hvdc=add_hvdc, add_vsc=add_vsc, add_switch=add_switch))
 
-        for i, branch in enumerate(self.get_branches_wo_hvdc()):
+        for i, branch in enumerate(self.get_branches(add_hvdc=add_hvdc, add_vsc=add_vsc, add_switch=add_switch)):
             val[i] = branch.rate_prof.toarray() * branch.contingency_factor.toarray()
 
         return val
@@ -1828,7 +1877,6 @@ class MultiCircuit(Assets):
                 gen_tech_proportions_matrix[tech_idx, gen_idx] = assoc.value
 
         return gen_tech_proportions_matrix.tocsc()
-
 
     def set_investments_status(self,
                                investments_list: List[dev.Investment],
@@ -2044,11 +2092,11 @@ class MultiCircuit(Assets):
             nt = self.get_time_number()
 
         if (self.snapshot_time.second != base_grid.snapshot_time.second or
-            self.snapshot_time.minute != base_grid.snapshot_time.minute or
-            self.snapshot_time.hour != base_grid.snapshot_time.hour or
-            self.snapshot_time.day != base_grid.snapshot_time.day or 
-            self.snapshot_time.month != base_grid.snapshot_time.month or
-            self.snapshot_time.year != base_grid.snapshot_time.year):
+                self.snapshot_time.minute != base_grid.snapshot_time.minute or
+                self.snapshot_time.hour != base_grid.snapshot_time.hour or
+                self.snapshot_time.day != base_grid.snapshot_time.day or
+                self.snapshot_time.month != base_grid.snapshot_time.month or
+                self.snapshot_time.year != base_grid.snapshot_time.year):
             logger.add_error(msg="Different snapshot times",
                              device_class="snapshot time",
                              value=str(base_grid.get_snapshot_time_unix),
@@ -2183,7 +2231,7 @@ class MultiCircuit(Assets):
         :param logger: Logger
         """
         elements_to_delete = list()
-        for lst in self.get_branch_lists():
+        for lst in self.get_branch_lists(add_vsc=True, add_hvdc=True, add_switch=True):
             for elm in lst:
                 if elm.bus_from is not None:
                     if elm.bus_from not in bus_set:
@@ -2485,24 +2533,6 @@ class MultiCircuit(Assets):
         for b in bidx:
             self.delete_bus(b)
 
-    def process_topology_at(self,
-                            t_idx: Union[int, None] = None,
-                            logger: Union[Logger, None] = None,
-                            debug: int = 0) -> TopologyProcessorInfo:
-        """
-        Topology processor finding the Buses that calculate a certain node-breaker topology
-        This function fill the bus pointers into the grid object, and adds any new bus required for simulation
-        :param t_idx: Time index, None for the Snapshot
-        :param logger: Logger object
-        :param debug: Debug level
-        :return: TopologyProcessorInfo
-        """
-
-        return process_grid_topology_at(grid=self,
-                                        t_idx=t_idx,
-                                        logger=logger,
-                                        debug=debug)
-
     def split_line(self,
                    original_line: Union[dev.Line],
                    position: float,
@@ -2593,14 +2623,15 @@ class MultiCircuit(Assets):
         # add new stuff as new investment
         inv_group = dev.InvestmentsGroup(name=original_line.name + ' split', category='Line split')
         self.add_investments_group(inv_group)
-        self.add_investment(dev.Investment(name=mid_bus.name, device_idtag=mid_bus.idtag, group=inv_group))
-        self.add_investment(dev.Investment(name=br1.name, device_idtag=br1.idtag, group=inv_group))
-        self.add_investment(dev.Investment(name=br2.name, device_idtag=br2.idtag, group=inv_group))
+        self.add_investment(dev.Investment(name=mid_bus.name, device=mid_bus, group=inv_group))
+        self.add_investment(dev.Investment(name=br1.name, device=br1, group=inv_group))
+        self.add_investment(dev.Investment(name=br2.name, device=br2, group=inv_group))
 
         # include the deactivation of the original line
         self.add_investment(dev.Investment(name=original_line.name,
-                                           device_idtag=original_line.idtag,
-                                           status=False, group=inv_group))
+                                           device=original_line,
+                                           status=False,
+                                           group=inv_group))
 
         return mid_sub, mid_vl, mid_bus, br1, br2
 
@@ -2751,24 +2782,17 @@ class MultiCircuit(Assets):
         # add new stuff as new investment
         inv_group = dev.InvestmentsGroup(name=original_line.name + ' in/out', category='Line in/out')
         self.add_investments_group(inv_group)
-        self.add_investment(
-            dev.Investment(name=B1.name, device_idtag=B1.idtag, status=True, group=inv_group))
-        self.add_investment(
-            dev.Investment(name=B2.name, device_idtag=B2.idtag, status=True, group=inv_group))
-        self.add_investment(
-            dev.Investment(name=B3.name, device_idtag=B3.idtag, status=True, group=inv_group))
-        self.add_investment(
-            dev.Investment(name=br1.name, device_idtag=br1.idtag, status=True, group=inv_group))
-        self.add_investment(
-            dev.Investment(name=br2.name, device_idtag=br2.idtag, status=True, group=inv_group))
-        self.add_investment(
-            dev.Investment(name=br3.name, device_idtag=br3.idtag, status=True, group=inv_group))
-        self.add_investment(
-            dev.Investment(name=br4.name, device_idtag=br4.idtag, status=True, group=inv_group))
+        self.add_investment(dev.Investment(name=B1.name, device=B1, status=True, group=inv_group))
+        self.add_investment(dev.Investment(name=B2.name, device=B2, status=True, group=inv_group))
+        self.add_investment(dev.Investment(name=B3.name, device=B3, status=True, group=inv_group))
+        self.add_investment(dev.Investment(name=br1.name, device=br1, status=True, group=inv_group))
+        self.add_investment(dev.Investment(name=br2.name, device=br2, status=True, group=inv_group))
+        self.add_investment(dev.Investment(name=br3.name, device=br3, status=True, group=inv_group))
+        self.add_investment(dev.Investment(name=br4.name, device=br4, status=True, group=inv_group))
 
         # include the deactivation of the original line
         self.add_investment(dev.Investment(name=original_line.name,
-                                           device_idtag=original_line.idtag,
+                                           device=original_line,
                                            status=False, group=inv_group))
 
         return mid_sub, mid_vl, B1, B2, B3, br1, br2, br3, br4
@@ -2784,10 +2808,10 @@ class MultiCircuit(Assets):
         self.wire_types += data.wire_types
         self.sequence_line_types += data.sequence_line_types
 
-    def set_opf_ts_results(self, results):
+    def set_opf_ts_results(self, results: OptimalPowerFlowTimeSeriesResults):
         """
-
-        :param results:
+        Assign OptimalPowerFlowTimeSeriesResults to the objects
+        :param results: OptimalPowerFlowTimeSeriesResults
         :return:
         """
         for i, elm in enumerate(self.get_generators()):
@@ -2798,3 +2822,18 @@ class MultiCircuit(Assets):
 
         for i, elm in enumerate(self.get_loads()):
             elm.P_prof.set(results.load_power[:, i])
+
+    def set_opf_snapshot_results(self, results: OptimalPowerFlowResults):
+        """
+        Assign OptimalPowerFlowResults to the objects
+        :param results:OptimalPowerFlowResults
+        :return:
+        """
+        for i, elm in enumerate(self.get_generators()):
+            elm.P = results.generator_power[i]
+
+        for i, elm in enumerate(self.get_batteries()):
+            elm.P = results.battery_power[i]
+
+        # for i, elm in enumerate(self.get_loads()):
+        #     elm.P = results.load_power[i]

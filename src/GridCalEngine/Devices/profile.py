@@ -86,6 +86,15 @@ class Profile:
     Profile
     """
 
+    __slots__ = (
+        '_is_sparse',
+        '_sparse_array',
+        '_dense_array',
+        '_sparsity_threshold',
+        '_dtype',
+        '_initialized',
+    )
+
     def __init__(self,
                  default_value,
                  data_type: PROFILE_TYPES,
@@ -227,7 +236,16 @@ class Profile:
         :param map_data: map with the data
         """
         self._is_sparse = True
-        self._sparse_array = SparseArray(data_type=self.dtype)
+
+        try:
+            # try casting the default value, if failing use a proper one
+            if default_value is not None:
+                a = self.dtype(default_value)
+            self._sparse_array = SparseArray(data_type=self.dtype, default_value=default_value)
+        except ValueError:
+            self._sparse_array = SparseArray(data_type=self.dtype, default_value=self._sparse_array.default_value)
+
+
         if map_data is None:
             self._sparse_array.create(size=size, default_value=default_value)
         else:
@@ -286,7 +304,7 @@ class Profile:
 
                 if check_type(dtype=self.dtype, value=base):
                     self._is_sparse = True
-                    self._sparse_array = SparseArray(data_type=self.dtype)
+                    self._sparse_array = SparseArray(data_type=self.dtype, default_value=base)
 
                     if most_common_count > 1:
                         if isinstance(arr, np.ndarray):
@@ -358,8 +376,7 @@ class Profile:
             if self._dense_array is None:
                 # WTF, initialize sparse
                 self._is_sparse = True
-                self._sparse_array = SparseArray(data_type=self.dtype)
-                self._sparse_array.default_value = self.default_value
+                self._sparse_array = SparseArray(data_type=self.dtype, default_value = self.default_value)
                 print("Initializing sparse when querying, this signals a mis initialization")
                 return self.default_value
             else:
@@ -451,7 +468,7 @@ class Profile:
         self.default_value = value
         self._is_sparse = True
         if self._sparse_array is None:
-            self._sparse_array = SparseArray(data_type=self.dtype)
+            self._sparse_array = SparseArray(data_type=self.dtype, default_value=value)
         self._sparse_array.fill(value)
         self._dense_array = None
 
@@ -532,3 +549,25 @@ class Profile:
             if not self._is_sparse:
                 if self._dense_array is not None:
                     np.nan_to_num(self._dense_array, nan=default_value)  # this is supposed to happen in-place
+
+
+    def copy(self):
+        """
+        Deep copy
+        :return:
+        """
+        new_prof = Profile(
+            default_value=self.default_value,
+            data_type=self.dtype,
+            arr=None,
+            sparsity_threshold=self._sparsity_threshold,
+            is_sparse=self.is_sparse
+        )
+
+        if self._sparse_array is not None:
+            new_prof._sparse_array = self._sparse_array.copy()
+
+        if self._dense_array is not None:
+            new_prof._dense_array = self._dense_array.copy()
+
+        return new_prof

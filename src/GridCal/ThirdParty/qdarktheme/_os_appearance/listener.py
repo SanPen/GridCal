@@ -21,8 +21,7 @@
 # SOFTWARE.
 from __future__ import annotations
 
-import darkdetect
-
+import GridCal.ThirdParty.darkdetect as darkdetect
 from GridCal.ThirdParty.qdarktheme import _os_appearance
 from GridCal.ThirdParty.qdarktheme.qtpy.QtCore import QCoreApplication, QEvent, QObject, QThread, Signal
 

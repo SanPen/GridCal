@@ -15,6 +15,21 @@ from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 
 class DcLine(BranchParent):
+    __slots__ = (
+        'measurements',
+        '_length',
+        'tolerance',
+        'r_fault',
+        'fault_pos',
+        'R',
+        'temp_base',
+        'temp_oper',
+        '_temp_oper_prof',
+        'alpha',
+        'template',
+        '_locations',
+    )
+
     def __init__(self,
                  bus_from: Union[Bus, None] = None,
                  bus_to: Union[Bus, None] = None,

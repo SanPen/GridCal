@@ -4740,6 +4740,8 @@ ConnectivityNode
     internal             bool                       False                 is internal of a busbar?                                           False               
     bus                  Bus                        False                 The CN is just a bus by other means. This is the important thing.  False               
     voltage_level        Voltage level              False                 Voltage level of this connectivity node (optional)                 False               
+    x                    float                px    False                 x position in pixels.                                              False               
+    y                    float                px    False                 y position in pixels.                                              False               
     ===================  ===================  ====  =========  =========  =================================================================  ===========  =======
 
 
@@ -5248,20 +5250,19 @@ Investment
 
 .. table::
 
-    ============  =================  ====  =========  =========  ========================================================================  ===========  =======
-        name         class_type      unit  mandatory  max_chars                                descriptions                                has_profile  comment
-    ============  =================  ====  =========  =========  ========================================================================  ===========  =======
-    idtag         str                      False                 Unique ID                                                                 False               
-    name          str                      False                 Name of the device.                                                       False               
-    code          str                      False                 Secondary ID                                                              False               
-    action        enum ActionType          False                 Object action to perform. Only used for model merging.                    False               
-    comment       str                      False                 User comment                                                              False               
-    device_idtag  str                      False                 Unique ID                                                                 False               
-    CAPEX         float              M€    False                 Capital expenditures. This is the initial investment.                     False               
-    OPEX          float              M€    False                 Operation expenditures. Maintenance costs among other recurrent costs.    False               
-    status        bool                     False                 If true the investment activates when applied, otherwise is deactivated.  False               
-    group         Investments Group        False                 Investment group                                                          False               
-    ============  =================  ====  =========  =========  ========================================================================  ===========  =======
+    ============  =================  ====  =========  =========  ===========================================================================================================  ===========  =======
+        name         class_type      unit  mandatory  max_chars                                                 descriptions                                                  has_profile  comment
+    ============  =================  ====  =========  =========  ===========================================================================================================  ===========  =======
+    idtag         str                      False                 Unique ID                                                                                                    False               
+    name          str                      False                 Name of the device.                                                                                          False               
+    code          str                      False                 Secondary ID                                                                                                 False               
+    action        enum ActionType          False                 Object action to perform. Only used for model merging.                                                       False               
+    comment       str                      False                 User comment                                                                                                 False               
+    device_idtag  str                      False                 Unique ID                                                                                                    False               
+    CAPEX         float              M€    False                 Capital expenditures. This is the investment value, it overrides the CAPEX value of the device if it exits.  False               
+    status        bool                     False                 If true the investment activates when applied, otherwise is deactivated.                                     False               
+    group         Investments Group        False                 Investment group                                                                                             False               
+    ============  =================  ====  =========  =========  ===========================================================================================================  ===========  =======
 
 
 InvestmentsGroup
@@ -5269,16 +5270,17 @@ InvestmentsGroup
 
 .. table::
 
-    ========  ===============  ====  =========  =========  ======================================================  ===========  =======
-      name      class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
-    ========  ===============  ====  =========  =========  ======================================================  ===========  =======
-    idtag     str                    False                 Unique ID                                               False               
-    name      str                    False                 Name of the device.                                     False               
-    code      str                    False                 Secondary ID                                            False               
-    action    enum ActionType        False                 Object action to perform. Only used for model merging.  False               
-    comment   str                    False                 User comment                                            False               
-    category  str                    False                 Some tag to category the contingency group              False               
-    ========  ===============  ====  =========  =========  ======================================================  ===========  =======
+    =============  ===============  ====  =========  =========  ======================================================  ===========  =======
+        name         class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    =============  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag          str                    False                 Unique ID                                               False               
+    name           str                    False                 Name of the device.                                     False               
+    code           str                    False                 Secondary ID                                            False               
+    action         enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment        str                    False                 User comment                                            False               
+    category       str                    False                 Some tag to category the investment group               False               
+    discount_rate  float            %     False                 Investment group discount rate                          False               
+    =============  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 Line
@@ -5374,6 +5376,7 @@ Load
     Ii                   float                MVAr   False                 Reactive power of the current component at V=1.0 p.u.    True                
     G                    float                MW     False                 Active power of the impedance component at V=1.0 p.u.    True                
     B                    float                MVAr   False                 Reactive power of the impedance component at V=1.0 p.u.  True                
+    n_customers          int                  unit   False                 Number of customers represented by this load             True                
     ===================  ===================  =====  =========  =========  =======================================================  ===========  =======
 
 

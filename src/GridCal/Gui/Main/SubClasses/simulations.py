@@ -190,7 +190,9 @@ class SimulationsMain(TimeEventsMain):
         self.investment_evaluation_objfunc_dict = OrderedDict()
         lst = list()
         for method in [InvestmentsEvaluationObjectives.PowerFlow,
-                       InvestmentsEvaluationObjectives.TimeSeriesPowerFlow]:
+                       InvestmentsEvaluationObjectives.TimeSeriesPowerFlow,
+                       InvestmentsEvaluationObjectives.GenerationAdequacy,
+                       InvestmentsEvaluationObjectives.SimpleDispatch]:
             self.investment_evaluation_objfunc_dict[method.value] = method
             lst.append(method.value)
         self.ui.investment_evaluation_objfunc_ComboBox.setModel(gf.get_list_model(lst))
@@ -216,7 +218,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionLinearAnalysis.triggered.connect(self.linear_pf_dispatcher)
         self.ui.actionContingency_analysis.triggered.connect(self.contingencies_dispatcher)
         self.ui.actionOTDF_time_series.triggered.connect(self.run_contingency_analysis_ts)
-        self.ui.actionATC.triggered.connect(self.optimal_ntc_dispatcher)
+        self.ui.actionATC.triggered.connect(self.atc_dispatcher)
         self.ui.actionATC_Time_Series.triggered.connect(self.run_available_transfer_capacity_ts)
         self.ui.actionPTDF_time_series.triggered.connect(self.run_linear_analysis_ts)
         self.ui.actionClustering.triggered.connect(self.run_clustering)
@@ -224,6 +226,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionFind_node_groups.triggered.connect(self.run_find_node_groups)
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
+        self.ui.actionReliability.triggered.connect(self.reliability_dispatcher)
 
         self.ui.actionUse_clustering.triggered.connect(self.activate_clustering)
         self.ui.actionNodal_capacity.triggered.connect(self.run_nodal_capacity)
@@ -234,7 +237,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.available_results_to_color_comboBox.currentTextChanged.connect(self.changed_study)
 
         # button
-        self.ui.find_automatic_precission_Button.clicked.connect(self.automatic_pf_precission)
+        self.ui.find_automatic_precission_Button.clicked.connect(self.automatic_pf_precision)
 
     def get_simulations(self) -> List[DRIVER_OBJECTS]:
         """
@@ -310,7 +313,7 @@ class SimulationsMain(TimeEventsMain):
             self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
             self.ui.solver_comboBox.setCurrentIndex(0)
 
-            mip_solvers = get_newton_mip_solvers_list()
+            mip_solvers = get_available_mip_solvers()
             self.ui.mip_solver_comboBox.setModel(gf.get_list_model(mip_solvers))
 
         elif eng == EngineType.NewtonPA:
@@ -561,29 +564,22 @@ class SimulationsMain(TimeEventsMain):
         :return:
         """
         model = QtGui.QStandardItemModel()
-        model.setHorizontalHeaderLabels([
-            "Combination", "capex", "opex", "losses", "overload_score", "voltage_score"
-        ])
+        model.setHorizontalHeaderLabels(["Combination"] + list(drv.problem.get_objectives_names()))
 
         results = drv.results
         for i in range(results.max_eval):
-            idx = np.where(results._combinations[i, :] != 0)[0]
+            idx = np.where(results.x[i, :] != 0)[0]
             if len(idx):
-                row_items = [
-                    QtGui.QStandardItem(f"Combination {i}"),
-                    QtGui.QStandardItem(f"{results._capex[i]:.2f}"),
-                    QtGui.QStandardItem(f"{results._opex[i]:.2f}"),
-                    QtGui.QStandardItem(f"{results._losses[i]:.2f}"),
-                    QtGui.QStandardItem(f"{results._overload_score[i]:.2f}"),
-                    QtGui.QStandardItem(f"{results._voltage_score[i]:.2f}"),
+                row_items = [QtGui.QStandardItem(f"Combination {i}")] + [
+                    QtGui.QStandardItem(f"{fi:.2f}") for fi in drv.results.f[i, :]
                 ]
                 model.appendRow(row_items)
 
                 # Add names as child nodes under this combination
                 names_parent_item = row_items[0]  # Use the first column (Combination) as parent
                 for k in idx:
-                    name_item = QtGui.QStandardItem(results.investment_groups_names[k])
-                    names_parent_item.appendRow([name_item] + [QtGui.QStandardItem("") for _ in range(5)])
+                    name_item = QtGui.QStandardItem(results.x_names[k])
+                    names_parent_item.appendRow([name_item])
 
         return model
 
@@ -675,6 +671,7 @@ class SimulationsMain(TimeEventsMain):
             SimulationTypes.NodalCapacityTimeSeries_run.value: ':/Icons/icons/nodal_capacity.svg',
             SimulationTypes.OPF_NTC_run.value: ':/Icons/icons/ntc_opf.svg',
             SimulationTypes.OPF_NTC_TS_run.value: ':/Icons/icons/ntc_opf_ts.svg',
+            SimulationTypes.Reliability_run.value: ':/Icons/icons/reliability.svg',
         }
 
         self.ui.results_treeView.setModel(gf.get_tree_model(d, 'Results', icons=icons))
@@ -690,15 +687,23 @@ class SimulationsMain(TimeEventsMain):
         Get the lists that help defining the inter area objects
         :return: InterAggregationInfo
         """
-        dev_tpe_from = self.exchange_places_dict[self.ui.fromComboBox.currentText()]
-        devs_from = self.circuit.get_elements_by_type(dev_tpe_from)
-        from_idx = gf.get_checked_indices(self.ui.fromListView.model())
-        objects_from = [devs_from[i] for i in from_idx]
+        if self.ui.fromListView.model() is not None:
+            dev_tpe_from = self.exchange_places_dict[self.ui.fromComboBox.currentText()]
+            devs_from = self.circuit.get_elements_by_type(dev_tpe_from)
+            from_idx = gf.get_checked_indices(self.ui.fromListView.model())
+            objects_from = [devs_from[i] for i in from_idx]
+        else:
+            objects_from = []
+            self.show_error_toast("No from areas!")
 
-        dev_tpe_to = self.exchange_places_dict[self.ui.toComboBox.currentText()]
-        devs_to = self.circuit.get_elements_by_type(dev_tpe_to)
-        to_idx = gf.get_checked_indices(self.ui.toListView.model())
-        objects_to = [devs_to[i] for i in to_idx]
+        if self.ui.toListView.model() is not None:
+            dev_tpe_to = self.exchange_places_dict[self.ui.toComboBox.currentText()]
+            devs_to = self.circuit.get_elements_by_type(dev_tpe_to)
+            to_idx = gf.get_checked_indices(self.ui.toListView.model())
+            objects_to = [devs_to[i] for i in to_idx]
+        else:
+            objects_to = []
+            self.show_error_toast("No to areas!")
 
         info: dev.InterAggregationInfo = self.circuit.get_inter_aggregation_info(objects_from=objects_from,
                                                                                  objects_to=objects_to)
@@ -853,16 +858,16 @@ class SimulationsMain(TimeEventsMain):
             else:
                 self.run_opf()
 
-    def optimal_ntc_dispatcher(self):
+    def atc_dispatcher(self):
         """
         Dispatch the NTC action
         :return:
         """
         if self.server_driver.is_running():
             if self.ts_flag():
-                instruction = RemoteInstruction(operation=SimulationTypes.OPF_NTC_TS_run)
+                instruction = RemoteInstruction(operation=SimulationTypes.NetTransferCapacityTS_run)
             else:
-                instruction = RemoteInstruction(operation=SimulationTypes.OPF_NTC_run)
+                instruction = RemoteInstruction(operation=SimulationTypes.NetTransferCapacity_run)
 
             self.run_remote(instruction=instruction)
         else:
@@ -925,6 +930,18 @@ class SimulationsMain(TimeEventsMain):
                 self.run_contingency_analysis_ts()
             else:
                 self.run_contingency_analysis()
+
+    def reliability_dispatcher(self):
+        """
+        Dispatch the reliability action
+        :return:
+        """
+        if self.server_driver.is_running():
+            instruction = RemoteInstruction(operation=SimulationTypes.Reliability_run)
+            self.run_remote(instruction=instruction)
+
+        else:
+            self.run_reliability()
 
     def run_power_flow(self):
         """
@@ -1946,7 +1963,7 @@ class SimulationsMain(TimeEventsMain):
         """
         # get the power flow options from the GUI
         solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
-        mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
+        mip_solver = self.mip_solvers_dict.get(self.ui.mip_solver_comboBox.currentText(), MIPSolvers.HIGHS.value)
         time_grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
         zonal_grouping = self.opf_zonal_groups[self.ui.opfZonalGroupByComboBox.currentText()]
         pf_options = self.get_selected_power_flow_options()
@@ -2079,44 +2096,46 @@ class SimulationsMain(TimeEventsMain):
         """
         if self.circuit.valid_for_simulation():
 
-            if not self.session.is_this_running(SimulationTypes.OPFTimeSeries_run):
+            if self.circuit.has_time_series:
+                if not self.session.is_this_running(SimulationTypes.OPFTimeSeries_run):
 
-                if self.circuit.time_profile is not None:
+                    if self.circuit.time_profile is not None:
 
-                    self.add_simulation(SimulationTypes.OPFTimeSeries_run)
+                        self.add_simulation(SimulationTypes.OPFTimeSeries_run)
 
-                    self.LOCK()
+                        self.LOCK()
 
-                    # Compile the grid
-                    self.ui.progress_label.setText('Compiling the grid...')
-                    QtGui.QGuiApplication.processEvents()
+                        # Compile the grid
+                        self.ui.progress_label.setText('Compiling the grid...')
+                        QtGui.QGuiApplication.processEvents()
 
-                    # get the power flow options from the GUI
-                    options = self.get_opf_options()
+                        # get the power flow options from the GUI
+                        options = self.get_opf_options()
 
-                    if options is not None:
-                        # create the OPF time series instance
-                        # if non_sequential:
-                        drv = sim.OptimalPowerFlowTimeSeriesDriver(grid=self.circuit,
-                                                                   options=options,
-                                                                   time_indices=self.get_time_indices(),
-                                                                   clustering_results=self.get_clustering_results())
+                        if options is not None:
+                            # create the OPF time series instance
+                            # if non_sequential:
+                            drv = sim.OptimalPowerFlowTimeSeriesDriver(grid=self.circuit,
+                                                                       options=options,
+                                                                       time_indices=self.get_time_indices(),
+                                                                       clustering_results=self.get_clustering_results())
 
-                        drv.engine = self.get_preferred_engine()
+                            drv.engine = self.get_preferred_engine()
 
-                        self.session.run(drv,
-                                         post_func=self.post_opf_time_series,
-                                         prog_func=self.ui.progressBar.setValue,
-                                         text_func=self.ui.progress_label.setText)
+                            self.session.run(drv,
+                                             post_func=self.post_opf_time_series,
+                                             prog_func=self.ui.progressBar.setValue,
+                                             text_func=self.ui.progress_label.setText)
+
+                    else:
+                        self.show_warning_toast('There are no time series...')
 
                 else:
-                    self.show_warning_toast('There are no time series...')
-
+                    self.show_warning_toast('Another OPF time series is running already...')
             else:
-                self.show_warning_toast('Another OPF time series is running already...')
-
+                self.show_error_toast("The grid doesn't have time series :/")
         else:
-            pass
+            self.show_warning_toast('Nothing to simulate...')
 
     def post_opf_time_series(self):
         """
@@ -2195,6 +2214,10 @@ class SimulationsMain(TimeEventsMain):
         idx_to = info.idx_bus_to
         idx_br = info.idx_branches
 
+        # HVDC
+        idx_hvdc_br = info.idx_hvdc
+        sense_hvdc_br = info.sense_hvdc
+
         if len(idx_from) == 0:
             error_msg('The "from" aggregation has no buses!')
             return None
@@ -2203,7 +2226,7 @@ class SimulationsMain(TimeEventsMain):
             error_msg('The area "to" has no buses!')
             return None
 
-        if len(idx_br) == 0:
+        if (len(idx_br) + len(idx_hvdc_br)) == 0:
             error_msg('There are no inter-area Branches!')
             return None
 
@@ -2217,7 +2240,7 @@ class SimulationsMain(TimeEventsMain):
             branch_exchange_sensitivity=self.ui.ntcAlphaSpinBox.value() / 100.0,
             use_branch_exchange_sensitivity=self.ui.ntcSelectBasedOnExchangeSensitivityCheckBox.isChecked(),
             branch_rating_contribution=self.ui.ntcLoadRuleSpinBox.value() / 100.0,
-            use_branch_rating_contribution=self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked(),
+            monitor_only_ntc_load_rule_branches=self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked(),
             consider_contingencies=self.ui.consider_ntc_contingencies_checkBox.isChecked(),
             opf_options=self.get_opf_options(),
             lin_options=self.get_linear_options()
@@ -2262,12 +2285,20 @@ class SimulationsMain(TimeEventsMain):
         """
         Actions to run after the OPF simulation
         """
-        _, results = self.session.optimal_net_transfer_capacity
+        drv, results = self.session.optimal_net_transfer_capacity
 
         if results is not None:
             self.remove_simulation(SimulationTypes.OPF_NTC_run)
             self.update_available_results()
             self.colour_diagrams()
+
+            if results.converged:
+                if drv.logger.error_count() == 0:
+                    self.show_info_toast("Optimal result")
+                else:
+                    self.show_warning_toast("Optimal result with errors :/")
+            else:
+                self.show_warning_toast("Not optimal result :/")
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -2566,22 +2597,68 @@ class SimulationsMain(TimeEventsMain):
                                                                plugin_fcn_ptr=fn_ptr
                                                                )
 
-                    opf_time_series_results = self.get_opf_ts_results(
-                        use_opf=self.ui.actionOpf_to_Power_flow.isChecked()
+                    if obj_fn_tpe == InvestmentsEvaluationObjectives.PowerFlow:
+                        problem = sim.PowerFlowInvestmentProblem(
+                            grid=self.circuit,
+                            pf_options=self.get_selected_power_flow_options()
+                        )
+
+                    elif obj_fn_tpe == InvestmentsEvaluationObjectives.TimeSeriesPowerFlow:
+                        problem = sim.TimeSeriesPowerFlowInvestmentProblem(
+                            grid=self.circuit,
+                            pf_options=self.get_selected_power_flow_options(),
+                            time_indices=self.get_time_indices(),
+                            clustering_results=self.get_clustering_results(),
+                            opf_time_series_results=self.get_opf_ts_results(
+                                use_opf=self.ui.actionOpf_to_Power_flow.isChecked()
+                            ),
+                            engine=self.get_preferred_engine()
+                        )
+
+                    elif obj_fn_tpe == InvestmentsEvaluationObjectives.GenerationAdequacy:
+
+                        if self.circuit.has_time_series:
+                            problem = sim.AdequacyInvestmentProblem(
+                                grid=self.circuit,
+                                n_monte_carlo_sim=self.ui.max_iterations_reliability_spinBox.value(),
+                                use_monte_carlo=True,
+                                save_file=False,
+                                time_indices=self.get_time_indices()
+                            )
+                        else:
+                            self.show_warning_toast('Adequacy studies need time data...')
+                            return
+
+                    elif obj_fn_tpe == InvestmentsEvaluationObjectives.SimpleDispatch:
+
+                        if self.circuit.has_time_series:
+                            problem = sim.AdequacyInvestmentProblem(
+                                grid=self.circuit,
+                                n_monte_carlo_sim=self.ui.max_iterations_reliability_spinBox.value(),
+                                use_monte_carlo=False,
+                                save_file=False,
+                                time_indices=self.get_time_indices()
+                            )
+                        else:
+                            self.show_warning_toast('Adequacy studies need time data...')
+                            return
+
+                    else:
+                        self.show_error_toast("Objective not supported yet :/")
+                        return
+
+                    drv = sim.InvestmentsEvaluationDriver(
+                        grid=self.circuit,
+                        options=options,
+                        problem=problem
                     )
 
-                    drv = sim.InvestmentsEvaluationDriver(grid=self.circuit,
-                                                          options=options,
-                                                          time_indices=self.get_time_indices(),
-                                                          opf_time_series_results=opf_time_series_results,
-                                                          clustering_results=self.get_clustering_results(),
-                                                          engine=self.get_preferred_engine()
-                                                          )
-
-                    self.session.run(drv,
-                                     post_func=self.post_run_investments_evaluation,
-                                     prog_func=self.ui.progressBar.setValue,
-                                     text_func=self.ui.progress_label.setText)
+                    self.session.run(
+                        drv,
+                        post_func=self.post_run_investments_evaluation,
+                        prog_func=self.ui.progressBar.setValue,
+                        text_func=self.ui.progress_label.setText
+                    )
                     self.add_simulation(SimulationTypes.InvestmentsEvaluation_run)
                     self.LOCK()
 
@@ -2712,40 +2789,6 @@ class SimulationsMain(TimeEventsMain):
             for diagram_widget in self.diagram_widgets_list:
                 diagram_widget.delete_diagram_elements(elements=deleted_devices)
 
-    def run_topology_processor(self):
-        """
-        Run the topology processor on the grid completely
-        """
-
-        if not self.session.is_this_running(SimulationTypes.TopologyProcessor_run):
-
-            self.LOCK()
-
-            self.add_simulation(SimulationTypes.TopologyProcessor_run)
-
-            self.ui.progress_label.setText('Running topology processing...')
-            QtGui.QGuiApplication.processEvents()
-
-            drv = sim.TopologyProcessorDriver(self.circuit)
-
-            self.session.run(drv,
-                             post_func=self.post_topology_processor,
-                             prog_func=self.ui.progressBar.setValue,
-                             text_func=self.ui.progress_label.setText)
-
-        else:
-            self.show_warning_toast('Another simulation of the same type is running...')
-
-    def post_topology_processor(self):
-        """
-        Actions after the topology processor is done
-        """
-
-        self.remove_simulation(SimulationTypes.TopologyProcessor_run)
-
-        if not self.session.is_anything_running():
-            self.UNLOCK()
-
     def activate_clustering(self):
         """
         When activating the use of clustering, also activate time series
@@ -2871,7 +2914,66 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
-    def automatic_pf_precission(self):
+    def run_reliability(self):
+        """
+        Run reliability study
+        :return:
+        """
+        if self.circuit.valid_for_simulation():
+
+            if self.circuit.get_time_number() > 0:
+
+                if not self.session.is_this_running(SimulationTypes.Reliability_run):
+
+                    self.add_simulation(SimulationTypes.Reliability_run)
+
+                    self.LOCK()
+
+                    # Compile the grid
+                    self.ui.progress_label.setText('Compiling the grid...')
+                    QtGui.QGuiApplication.processEvents()
+
+                    pf_options = self.get_selected_power_flow_options()
+
+                    drv = sim.ReliabilityStudyDriver(grid=self.circuit,
+                                                     pf_options=pf_options,
+                                                     time_indices=self.get_time_indices(),
+                                                     n_sim=self.ui.max_iterations_reliability_spinBox.value())
+
+                    self.session.run(drv,
+                                     post_func=self.post_reliability,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
+
+                else:
+                    self.show_warning_toast('Another reliability study is running already...')
+            else:
+                self.show_warning_toast('Reliability studies need time data...')
+        else:
+            pass
+
+    def post_reliability(self):
+        """
+
+        :return:
+        """
+        _, results = self.session.reliability_analysis
+
+        if results is not None:
+
+            # delete from the current simulations
+            self.remove_simulation(SimulationTypes.Reliability_run)
+
+            if results is not None:
+                self.update_available_results()
+                self.colour_diagrams()
+        else:
+            pass
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()
+
+    def automatic_pf_precision(self):
         """
         Find the automatic tolerance
         :return:

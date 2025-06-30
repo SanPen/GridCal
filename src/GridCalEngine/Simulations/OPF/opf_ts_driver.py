@@ -11,7 +11,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import SolverType, TimeGrouping, EngineType, SimulationTypes
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
-from GridCalEngine.Simulations.OPF.simple_dispatch_ts import run_simple_dispatch_ts
+from GridCalEngine.Simulations.OPF.simple_dispatch_ts import run_greedy_dispatch_ts
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
 from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -54,32 +54,25 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         # OPF results
         self.results: OptimalPowerFlowTimeSeriesResults = OptimalPowerFlowTimeSeriesResults(
             bus_names=self.grid.get_bus_names(),
-            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            branch_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
             load_names=self.grid.get_load_names(),
             generator_names=self.grid.get_generator_names(),
             battery_names=self.grid.get_battery_names(),
             shunt_like_names=self.grid.get_shunt_like_devices_names(),
             hvdc_names=self.grid.get_hvdc_names(),
+            vsc_names=self.grid.get_vsc_names(),
             fuel_names=self.grid.get_fuel_names(),
             emission_names=self.grid.get_emission_names(),
             technology_names=self.grid.get_technology_names(),
             fluid_node_names=self.grid.get_fluid_node_names(),
             fluid_path_names=self.grid.get_fluid_path_names(),
             fluid_injection_names=self.grid.get_fluid_injection_names(),
-            n=self.grid.get_bus_number(),
-            m=self.grid.get_branch_number_wo_hvdc(),
             nt=nt,
-            ngen=self.grid.get_generators_number(),
-            nbat=self.grid.get_batteries_number(),
-            nload=self.grid.get_loads_number(),
-            nhvdc=self.grid.get_hvdc_number(),
-            n_fluid_node=self.grid.get_fluid_nodes_number(),
-            n_fluid_path=self.grid.get_fluid_paths_number(),
-            n_fluid_injection=self.grid.get_fluid_injection_number(),
             time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [
                 datetime.datetime.now()],
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
-            clustering_results=clustering_results)
+            clustering_results=clustering_results
+        )
 
         self.all_solved = True
 
@@ -118,7 +111,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          zonal_grouping=self.options.zonal_grouping,
                                          skip_generation_limits=self.options.skip_generation_limits,
                                          consider_contingencies=self.options.consider_contingencies,
-                                         contingency_groups_used=self.options.contingency_groups_used,
+                                         contingency_groups_used=self.grid.contingency_groups,
                                          unit_commitment=self.options.unit_commitment,
                                          ramp_constraints=self.options.unit_commitment,
                                          generation_expansion_planning=self.options.generation_expansion_planning,
@@ -133,7 +126,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          verbose=self.options.verbose,
                                          robust=self.options.robust)
 
-            self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
+            self.results.voltage = opf_vars.bus_vars.Vm * np.exp(1j * opf_vars.bus_vars.Va)
             self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices
 
             self.results.load_power = opf_vars.load_vars.p
@@ -163,6 +156,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             self.results.hvdc_Pf = opf_vars.hvdc_vars.flows
             self.results.hvdc_loading = opf_vars.hvdc_vars.loading
+
+            self.results.vsc_Pf = opf_vars.vsc_vars.flows
+            self.results.vsc_loading = opf_vars.vsc_vars.loading
 
             self.results.fluid_node_current_level = opf_vars.fluid_node_vars.current_level
             self.results.fluid_node_flow_in = opf_vars.fluid_node_vars.flow_in
@@ -240,13 +236,20 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         elif self.options.solver == SolverType.SIMPLE_OPF:
 
             # AC optimal power flow
-            Pl, Pg = run_simple_dispatch_ts(grid=self.grid,
-                                            time_indices=self.time_indices,
-                                            text_prog=self.report_text,
-                                            prog_func=self.report_progress,
-                                            logger=self.logger)
+            load_profile, gen_dispatch, batt_dispatch, battery_energy, load_shedding = run_greedy_dispatch_ts(
+                grid=self.grid,
+                time_indices=self.time_indices,
+                text_prog=self.report_text,
+                prog_func=self.report_progress,
+                logger=self.logger
+            )
 
-            self.results.generator_power[self.time_indices, :] = Pg  # already in MW
+            self.results.generator_power[self.time_indices, :] = gen_dispatch  # already in MW
+            self.results.battery_power[self.time_indices, :] = batt_dispatch
+            self.results.battery_energy[self.time_indices, :] = battery_energy
+
+            self.results.load_shedding[self.time_indices, :] = load_shedding
+            self.results.load_power[self.time_indices, :] = load_profile
 
         else:
             self.logger.add_error('Solver not supported in this mode', str(self.options.solver))
@@ -312,8 +315,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          verbose=self.options.verbose,
                                          robust=self.options.robust)
 
-            self.results.voltage[time_indices, :] = (np.ones((opf_vars.nt, opf_vars.nbus))
-                                                     * np.exp(1j * opf_vars.bus_vars.theta))
+            self.results.voltage[time_indices, :] = opf_vars.bus_vars.Vm * np.exp(1j * opf_vars.bus_vars.Va)
             self.results.bus_shadow_prices[time_indices, :] = opf_vars.bus_vars.shadow_prices
 
             self.results.load_power[time_indices, :] = opf_vars.load_vars.p
@@ -342,6 +344,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             self.results.hvdc_Pf[time_indices, :] = opf_vars.hvdc_vars.flows
             self.results.hvdc_loading[time_indices, :] = opf_vars.hvdc_vars.loading
+
+            self.results.vsc_Pf[time_indices, :] = opf_vars.vsc_vars.flows
+            self.results.vsc_loading[time_indices, :] = opf_vars.vsc_vars.loading
 
             self.results.fluid_node_current_level[time_indices, :] = opf_vars.fluid_node_vars.current_level
             self.results.fluid_node_flow_in[time_indices, :] = opf_vars.fluid_node_vars.flow_in

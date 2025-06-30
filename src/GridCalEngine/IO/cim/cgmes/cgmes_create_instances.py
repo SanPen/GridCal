@@ -398,16 +398,18 @@ def create_cgmes_tap_changer_control(
     tcc.targetDeadband = 0.5
     tcc.targetValueUnitMultiplier = UnitMultiplier.k
     tcc.enabled = tcc_enabled
-    voltage = get_voltage_terminal(tcc.Terminal, logger)
-    tcc.targetValue = mc_trafo.vset * voltage
+    voltage: float | None = get_voltage_terminal(tcc.Terminal, logger)
 
-    # TODO consider other control types
-    # if mc_trafo.tap_module_control_mode ...:
-    #     tcc.targetValue = mc_trafo.Pset
-    # tcc.RegulatingCondEq not required .?
-    # control_cn.Vnom ?
+    if voltage is not None:
+        tcc.targetValue = mc_trafo.vset * voltage
 
-    cgmes_model.add(tcc)
+        # TODO consider other control types
+        # if mc_trafo.tap_module_control_mode ...:
+        #     tcc.targetValue = mc_trafo.Pset
+        # tcc.RegulatingCondEq not required .?
+        # control_cn.Vnom ?
+
+        cgmes_model.add(tcc)
 
     return tcc
 
@@ -433,24 +435,26 @@ def create_cgmes_current_limit(terminal,
     curr_lim.shortName = f'CL-1'
     curr_lim.description = f'Ratings for element {terminal.ConductingEquipment.name} - Limit'
 
-    voltage = get_voltage_terminal(terminal, logger)
-    sqrt_3 = 1.73205080756888
-    current_rate = rate_mw * 1e3 / (voltage * sqrt_3)
-    current_rate = np.round(current_rate, 4)
+    voltage: float | None = get_voltage_terminal(terminal, logger)
 
-    curr_lim.value = current_rate  # Current rate in Amps
+    if voltage is not None:
+        sqrt_3 = 1.73205080756888
+        current_rate = rate_mw * 1e3 / (voltage * sqrt_3)
+        current_rate = np.round(current_rate, 4)
 
-    op_lim_set_1 = create_operational_limit_set(terminal, cgmes_model, logger)
-    if op_lim_set_1 is not None:
-        curr_lim.OperationalLimitSet = op_lim_set_1
-    else:
-        logger.add_error(msg='No operational limit created',
-                         device=op_lim_set_1,
-                         comment="create_cgmes_current_limit")
+        curr_lim.value = current_rate  # Current rate in Amps
 
-    curr_lim.OperationalLimitType = op_limit_type
+        op_lim_set_1 = create_operational_limit_set(terminal, cgmes_model, logger)
+        if op_lim_set_1 is not None:
+            curr_lim.OperationalLimitSet = op_lim_set_1
+        else:
+            logger.add_error(msg='No operational limit created',
+                             device=op_lim_set_1,
+                             comment="create_cgmes_current_limit")
 
-    cgmes_model.add(curr_lim)
+        curr_lim.OperationalLimitType = op_limit_type
+
+        cgmes_model.add(curr_lim)
     return
 
 

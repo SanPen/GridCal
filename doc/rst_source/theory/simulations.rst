@@ -33,6 +33,7 @@ Optimal power flow
     opf/opf_ac_ts
     opf/acopf
     opf/hydro
+    net_transfer_capacity
 
 
 Short Circuit

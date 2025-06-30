@@ -15,6 +15,23 @@ from GridCalEngine.Devices.Parents.editable_device import DeviceType
 
 
 class UPFC(BranchParent):
+    __slots__ = (
+        'R',
+        'X',
+        'Rsh',
+        'Xsh',
+        'R0',
+        'X0',
+        'Rsh0',
+        'Xsh0',
+        'R2',
+        'X2',
+        'Rsh2',
+        'Xsh2',
+        'Vsh',
+        'Pfset',
+        'Qfset',
+    )
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None,
                  cn_from: ConnectivityNode = None,

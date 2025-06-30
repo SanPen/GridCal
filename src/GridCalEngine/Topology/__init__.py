@@ -3,5 +3,4 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-from GridCalEngine.Topology.topology_processor import process_grid_topology_at
 from GridCalEngine.Topology.detect_substations import detect_substations

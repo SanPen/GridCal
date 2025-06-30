@@ -1,16 +1,73 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at https://mozilla.org/MPL/2.0/.  
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-
+from typing import Tuple
+import numba as nb
 import numpy as np
-
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Simulations.driver_template import DriverTemplate
+from GridCalEngine.basic_structures import IntMat, Vec, Mat
+
+"""
+Common reliability indicators:
+
+
+(System Average Interruption Frequency Index)
+SAIFI = total number of customer interruptions / total number of customers
+
+(System Average Interruption Duration Index)
+SAIDI = Total number of customer hours of interruption / Total number of customers
+
+(Customer Average Interruption Duration Index)
+CAIDI = Total number of customer hours of interruption / total number of customer interruptions 
+
+(Average System Availability Index)
+ASAI = (8760 - SAIDI) / 8760
+
+"""
+
+
+def get_transition_probabilities(lbda: Vec, mu: Vec) -> Tuple[Vec, Vec]:
+    """
+    Probability of the component being unavailable
+    See: Power distribution system reliability p.67
+    :param lbda: failure rate ( 1 / mttf)
+    :param mu: repair rate (1 / mttr)
+    :return: availability probability, unavailability probability
+    """
+    lbda2 = lbda * lbda
+    mu2 = mu * mu
+    p_unavailability = lbda2 / (lbda2 + 2.0 * lbda * mu + 2.0 * mu2)
+    p_availability = 1.0 - p_unavailability
+
+    return p_availability, p_unavailability
+
+
+def compute_transition_probabilities(mttf: Vec, mttr: Vec,
+                                     forced_mttf: None | float, forced_mttr: None | float) -> Tuple[Vec, Vec]:
+    """
+    Compute the transition probabilities
+    :param mttf: Vector of mean-time-to-failures
+    :param mttr: Vector of mean-time-to-recoveries
+    :param forced_mttf: forced mttf value (used if not None)
+    :param forced_mttr: forced mttr value (used if not None)
+    :return: Probability of being up, Probability of being down
+    """
+    # compute the transition probabilities
+    if forced_mttf is None:
+        lbda = 1.0 / mttf
+    else:
+        lbda = 1.0 / np.full(len(mttf), forced_mttf)
+
+    if forced_mttr is None:
+        mu = 1.0 / mttr
+    else:
+        mu = 1.0 / np.full(len(mttr), forced_mttr)
+
+    p_up, p_dwn = get_transition_probabilities(lbda=lbda, mu=mu)
+
+    return p_up, p_dwn
 
 
 def get_failure_time(mttf):
@@ -154,51 +211,3 @@ def run_events(nc: NumericalCircuit, events_list: list):
 
         # compile the grid information
         calculation_islands = nc.split_into_islands()
-
-
-class ReliabilityStudy(DriverTemplate):
-
-    def __init__(self, circuit: MultiCircuit, pf_options: PowerFlowOptions):
-        """
-        ContinuationPowerFlowDriver constructor
-        @param circuit: NumericalCircuit instance
-        @param pf_options: power flow options instance
-        """
-        DriverTemplate.__init__(self, grid=circuit)
-
-        # voltage stability options
-        self.pf_options = pf_options
-
-        self.results = list()
-
-        self.__cancel__ = False
-
-    def progress_callback(self, lmbda: float):
-        """
-        Send progress report
-        :param lmbda: lambda value
-        :return: None
-        """
-        self.report_text('Running voltage collapse lambda:' + "{0:.2f}".format(lmbda) + '...')
-
-    def run(self):
-        """
-        run the voltage collapse simulation
-        @return:
-        """
-        self.tic()
-
-        # compile the numerical circuit
-        numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=None, logger=self.logger)
-
-        evt = get_reliability_scenario(numerical_circuit,
-                                       horizon=1)
-
-        run_events(nc=numerical_circuit, events_list=evt)
-
-        self.toc()
-
-    def cancel(self):
-        self.__cancel__ = True
-
-

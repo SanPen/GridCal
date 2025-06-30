@@ -9,6 +9,7 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice, Device
 
 
 class Fuel(EditableDevice):
+    __slots__ = ('cost', '_cost_prof', 'color')
 
     def __init__(self, name='',
                  code='',
@@ -37,7 +38,7 @@ class Fuel(EditableDevice):
 
         self.register(key='cost', units='e/t', tpe=float, definition='Cost of fuel (e / ton)',
                       profile_name='cost_prof')
-        self.register(key='color', units='', tpe=str, definition='Color to paint')
+        self.register(key='color', units='', tpe=str, definition='Color to paint', is_color=True)
 
     @property
     def cost_prof(self) -> Profile:

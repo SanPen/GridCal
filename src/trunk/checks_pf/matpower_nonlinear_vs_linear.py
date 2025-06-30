@@ -44,13 +44,16 @@ def run_grid(fname):
         info = {
             "name": name,
             "n_buses": grid.get_bus_number(),
-            "n_branches": grid.get_branch_number(),
+            "n_branches": grid.get_branch_number(add_vsc=False,
+                                                 add_hvdc=False,
+                                                 add_switch=True),
             "P imbalance (%)": grid.get_imbalance() * 100.0,
             "Flat start": flat_start,
             "converged": res_nonlinear.converged,
             "error (p.u.)": res_nonlinear.error,
             "iterations": res_nonlinear.iterations,
             "time (s)": res_nonlinear.elapsed,
+            "linear time (s)": res_linear.elapsed,
             "DC flow error average (%)": flows_error * 100,
         }
 
@@ -58,13 +61,16 @@ def run_grid(fname):
         info = {
             "name": name,
             "n_buses": grid.get_bus_number(),
-            "n_branches": grid.get_branch_number(),
+            "n_branches": grid.get_branch_number(add_vsc=False,
+                                                 add_hvdc=False,
+                                                 add_switch=True),
             "P imbalance (%)": 0.0,
             "Flat start": True,
             "converged": True,
             "error (p.u.)": 0,
             "iterations": 0,
             "time (s)": 0,
+            "linear time (s)": 0,
             "DC flow error average (%)": 0.0,
         }
 
@@ -87,4 +93,4 @@ with mp.Pool(mp.cpu_count()) as p:
     data = p.map(run_grid, files_list)
 
 df = pd.DataFrame(data).sort_values(by='n_buses', ascending=False)
-df.to_excel("All matpower grids.xlsx", index=False)
+df.to_excel("All matpower grids lin vs nonlin.xlsx", index=False)

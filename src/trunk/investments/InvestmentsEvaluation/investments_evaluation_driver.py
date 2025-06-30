@@ -47,7 +47,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.__eval_index = 0
 
         # dictionary of investment groups
-        self.investments_by_group: Dict[int, List[Investment]] = self.grid.get_investmenst_by_groups_index_dict()
+        self.investments_by_group: Dict[int, List[Investment]] = self.grid.get_investment_by_groups_index_dict()
 
         # dimensions
         self.dim = len(self.grid.investments_groups)
@@ -136,7 +136,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                                          status=True,
                                          all_elements_dict=self.get_all_elements_dict)
 
-        branches = self.grid.get_branches_wo_hvdc()
+        branches = self.grid.get_branches(add_hvdc=False, add_vsc=False, add_switch=True)
         buses = self.grid.get_buses()
 
         # do something

@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
+import pandas as pd
 from typing import Union, List
 
 from GridCalEngine.basic_structures import Logger
@@ -40,6 +41,33 @@ def accept_line_connection(V1: float, V2: float, branch_connection_voltage_toler
 
 
 class Line(BranchParent):
+    __slots__ = (
+        '_length',
+        'tolerance',
+        'r_fault',
+        'x_fault',
+        'fault_pos',
+        '_R',
+        '_X',
+        '_B',
+        '_R0',
+        '_X0',
+        '_B0',
+        '_R2',
+        '_X2',
+        '_B2',
+        'temp_base',
+        'temp_oper',
+        '_temp_oper_prof',
+        'alpha',
+        '_circuit_idx',
+        'template',
+        'possible_tower_types',
+        'possible_underground_line_types',
+        'possible_sequence_line_types',
+        '_locations',
+    )
+
 
     def __init__(self,
                  bus_from: Bus = None,
@@ -455,6 +483,12 @@ class Line(BranchParent):
         """
 
         if isinstance(obj, OverheadLineType):
+            if not obj.is_computed():
+                obj.compute()
+                if not obj.is_computed():
+                    return
+            else:
+                pass
 
             template_vn = obj.Vnom
             vn = self.get_max_bus_nominal_voltage()
@@ -553,7 +587,7 @@ class Line(BranchParent):
 
         return errors
 
-    def get_equivalent_transformer(self) -> Transformer2W:
+    def get_equivalent_transformer(self, index:  pd.DatetimeIndex | None = None) -> Transformer2W:
         """
         Convert this line into a transformer
         This is necessary if the buses' voltage differ too much
@@ -563,6 +597,7 @@ class Line(BranchParent):
         V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
         elm = Transformer2W(bus_from=self.bus_from,
                             bus_to=self.bus_to,
+                            idtag=self.idtag,
                             name=self.name,
                             code=self.code,
                             active=self.active,
@@ -572,9 +607,16 @@ class Line(BranchParent):
                             r=self.R,
                             x=self.X,
                             b=self.B)
-        elm.active_prof = self.active_prof
-        elm.rate_prof = self.rate_prof
-        elm.temperature_prof = self.temp_oper_prof
+
+        if index is not None:
+            elm.ensure_profiles_exist(index=index)
+            elm.active_prof = self.active_prof
+            elm.rate_prof = self.rate_prof
+            elm.contingency_factor_prof = self.contingency_factor_prof
+            elm.protection_rating_factor_prof = self.protection_rating_factor_prof
+            elm.temp_oper_prof = self.temp_oper_prof
+            elm.Cost_prof = self.Cost_prof
+
         return elm
 
     def fill_design_properties(self, r_ohm: float, x_ohm: float, c_nf: float, length: float,

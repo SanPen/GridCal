@@ -20,6 +20,13 @@ class LoadParent(InjectionParent):
     Template for objects that behave like loads
     """
 
+    __slots__ = (
+        'P',
+        '_P_prof',
+        'Q',
+        '_Q_prof',
+    )
+
     def __init__(self,
                  name: str,
                  idtag: Union[str, None],

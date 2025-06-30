@@ -227,6 +227,28 @@ def __solve_island_complete_support(nc: NumericalCircuit,
                                      verbose=options.verbose,
                                      logger=logger)
 
+            elif solver_type == SolverType.DC:
+
+                indices = nc.get_simulation_indices(Sbus=S0)
+                lin_adm = nc.get_linear_admittance_matrices(indices=indices)
+
+                solution = pflw.acdc_lin_pf(
+                    nc=nc,
+                    Bbus=lin_adm.Bbus,
+                    Bf=lin_adm.Bf,
+                    Gbus=lin_adm.Gbus,
+                    Gf=lin_adm.Gf,
+                    ac=indices.ac,
+                    dc=indices.dc,
+                    vd=indices.vd,
+                    pv=indices.pv,
+                    S0=S0,
+                    I0=I0,
+                    Y0=Y0,
+                    V0=V0,
+                    tau=nc.active_branch_data.tap_angle
+                )
+
             else:
                 # for any other method, raise exception
                 raise Exception(solver_type.value + ' Not supported in power flow mode')

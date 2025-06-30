@@ -338,6 +338,7 @@ def get_load_data(data: LoadData,
             data.original_idx[ii] = ii
             data.mttf[ii] = elm.mttf
             data.mttr[ii] = elm.mttr
+            data.scalable[ii] = elm.scalable
 
             if time_series:
                 if opf_results is not None:
@@ -380,6 +381,7 @@ def get_load_data(data: LoadData,
 
                 data.active[ii] = elm.active_prof[t_idx]
                 data.cost[ii] = elm.Cost_prof[t_idx]
+                data.shift_key[ii] = elm.shift_key_prof[t_idx]
 
             else:
                 if opf_results is not None:
@@ -429,6 +431,7 @@ def get_load_data(data: LoadData,
                 data.Y[ii] = complex(elm.G, elm.B)
                 data.active[ii] = elm.active
                 data.cost[ii] = elm.Cost
+                data.shift_key[ii] = elm.shift_key
 
             if elm.use_kw:
                 # pass kW to MW
@@ -457,11 +460,13 @@ def get_load_data(data: LoadData,
             data.names[ii] = elm.name
             data.idtag[ii] = elm.idtag
             data.original_idx[ii] = ii
+            data.scalable[ii] = elm.scalable
 
             if time_series:
                 data.S[ii] -= complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
                 data.active[ii] = elm.active_prof[t_idx]
                 data.cost[ii] = elm.Cost_prof[t_idx]
+                data.shift_key[ii] = elm.shift_key_prof[t_idx]
 
                 if fill_three_phase:
                     if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
@@ -497,6 +502,7 @@ def get_load_data(data: LoadData,
 
                 data.active[ii] = elm.active
                 data.cost[ii] = elm.Cost
+                data.shift_key[ii] = elm.shift_key
 
             if elm.use_kw:
                 # pass kW to MW
@@ -522,6 +528,7 @@ def get_load_data(data: LoadData,
             data.bus_idx[ii] = i
             data.names[ii] = elm.name
             data.idtag[ii] = elm.idtag
+            data.scalable[ii] = elm.scalable
             data.original_idx[ii] = ii
 
             # change stuff depending on the modes
@@ -570,6 +577,7 @@ def get_load_data(data: LoadData,
                         raise Exception(f"Unhandled connection type {elm.conn}")
 
                 data.active[ii] = elm.active_prof[t_idx]
+                data.shift_key[ii] = elm.shift_key_prof[t_idx]
 
             else:
                 data.S[ii] += complex(elm.P, elm.Q)
@@ -589,6 +597,7 @@ def get_load_data(data: LoadData,
                         raise Exception(f"Unhandled connection type {elm.conn}")
 
                 data.active[ii] = elm.active
+                data.shift_key[ii] = elm.shift_key
 
             if elm.use_kw:
                 # pass kW to MW
@@ -617,6 +626,7 @@ def get_load_data(data: LoadData,
             data.original_idx[ii] = ii
             data.mttf[ii] = elm.mttf
             data.mttr[ii] = elm.mttr
+            data.scalable[ii] = elm.scalable
 
             if time_series:
                 data.I[ii] += complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
@@ -640,6 +650,7 @@ def get_load_data(data: LoadData,
 
                 data.active[ii] = elm.active_prof[t_idx]
                 data.cost[ii] = elm.Cost_prof[t_idx]
+                data.shift_key[ii] = elm.shift_key_prof[t_idx]
 
             else:
                 data.I[ii] += complex(elm.Ir, elm.Ii)
@@ -663,6 +674,7 @@ def get_load_data(data: LoadData,
 
                 data.active[ii] = elm.active
                 data.cost[ii] = elm.Cost
+                data.shift_key[ii] = elm.shift_key
 
             if elm.use_kw:
                 # pass kW to MW
@@ -971,6 +983,7 @@ def fill_generator_parent(
     data.capex[k] = elm.capex
 
     data.snom[k] = elm.Snom
+    data.scalable[k] = elm.scalable
 
     if time_series:
         data.p[k] = elm.P_prof[t_idx]
@@ -990,6 +1003,7 @@ def fill_generator_parent(
         data.cost_0[k] = elm.Cost0_prof[t_idx]
         data.cost_1[k] = elm.Cost_prof[t_idx]
         data.cost_2[k] = elm.Cost2_prof[t_idx]
+        data.shift_key[k] = elm.shift_key_prof[t_idx]
 
         if elm.active_prof[t_idx]:
 
@@ -1036,6 +1050,7 @@ def fill_generator_parent(
         data.cost_0[k] = elm.Cost0
         data.cost_1[k] = elm.Cost
         data.cost_2[k] = elm.Cost2
+        data.shift_key[k] = elm.shift_key
 
         if elm.active:
 

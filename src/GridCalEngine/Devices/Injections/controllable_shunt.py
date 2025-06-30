@@ -16,6 +16,25 @@ class ControllableShunt(ShuntParent):
     """
     Controllable Shunt
     """
+    __slots__ = (
+        'is_controlled',
+        'is_nonlinear',
+        'Bmin',
+        'Bmax',
+        'Gmin',
+        'Gmax',
+        'g_per_step',
+        'b_per_step',
+        '_active_steps',
+        '_g_steps',
+        '_b_steps',
+        '_step',
+        '_step_prof',
+        'control_bus',
+        '_control_bus_prof',
+        'Vset',
+        '_Vset_prof',
+    )
 
     def __init__(self,
                  name='Controllable Shunt',

@@ -238,8 +238,6 @@ class LineEditor(QDialog):
                 self.line.set_length(val=length)
                 self.line.set_circuit_idx(val=int(self.circuit_idx.value()), obj=self.selected_template)
                 template = self.selected_template
-                if isinstance(template, OverheadLineType):
-                    template.compute()
                 self.line.apply_template(obj=template, Sbase=self.Sbase, freq=self.frequency)
                 self.line.enable_auto_updates()
                 self.accept()

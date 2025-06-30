@@ -19,6 +19,17 @@ class ShuntParent(InjectionParent):
     Template for objects that behave like shunts
     """
 
+    __slots__ = (
+        'G',
+        '_G_prof',
+        'B',
+        '_B_prof',
+        'G0',
+        '_G0_prof',
+        'B0',
+        '_B0_prof',
+    )
+
     def __init__(self,
                  name: str,
                  idtag: Union[str, None],

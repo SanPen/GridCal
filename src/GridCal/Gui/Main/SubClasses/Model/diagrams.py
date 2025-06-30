@@ -14,6 +14,7 @@ from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
 import GridCalEngine.Devices.Diagrams.palettes as palettes
+from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCalEngine import ContingencyOperationTypes
 from GridCalEngine.IO.file_system import tiles_path
 from GridCal.Gui.general_dialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
@@ -38,7 +39,7 @@ from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 from GridCal.Gui.Diagrams.diagrams_model import DiagramsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
-from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
+from GridCal.Gui.Main.object_select_window import ObjectSelectWindow, ListSelectWindow
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.cartodb import CartoDbTiles
 
 ALL_EDITORS = Union[SchematicWidget, GridMapWidget, BaseDiagramWidget]
@@ -228,12 +229,19 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionDelete_selected.triggered.connect(self.delete_selected_diagram_widgets)
         self.ui.actionTry_to_fix_buses_location.triggered.connect(self.try_to_fix_buses_location)
         self.ui.actionSet_schematic_positions_from_GPS_coordinates.triggered.connect(self.set_xy_from_lat_lon)
+
         self.ui.actionSetSelectedBusCountry.triggered.connect(lambda: self.set_selected_bus_property('country'))
         self.ui.actionSetSelectedBusArea.triggered.connect(lambda: self.set_selected_bus_property('area'))
         self.ui.actionSetSelectedBusZone.triggered.connect(lambda: self.set_selected_bus_property('zone'))
-        self.ui.actionSelect_buses_by_area.triggered.connect(lambda: self.select_buses_by_property('area'))
-        self.ui.actionSelect_buses_by_zone.triggered.connect(lambda: self.select_buses_by_property('zone'))
-        self.ui.actionSelect_buses_by_country.triggered.connect(lambda: self.select_buses_by_property('country'))
+
+        # self.ui.actionSelect_buses_by_area.triggered.connect(lambda: self.select_buses_by_property('area'))
+        # self.ui.actionSelect_buses_by_zone.triggered.connect(lambda: self.select_buses_by_property('zone'))
+        # self.ui.actionSelect_buses_by_country.triggered.connect(lambda: self.select_buses_by_property('country'))
+        self.ui.actionSelect_buses_by.triggered.connect(self.select_buses_by)
+
+        self.ui.actionColor_buses_by.triggered.connect(self.color_buses_by)
+        self.ui.actionColor_substations_by.triggered.connect(self.color_substations_by)
+
         self.ui.actionAdd_selected_to_contingency.triggered.connect(self.add_selected_to_contingency)
         self.ui.actionAdd_selected_as_remedial_action.triggered.connect(self.add_selected_to_remedial_action)
         self.ui.actionAdd_selected_as_new_investment.triggered.connect(self.add_selected_to_investment)
@@ -388,7 +396,7 @@ class DiagramsMain(CompiledArraysMain):
         else:
             return list()
 
-    def get_current_buses(self) -> List[Tuple[int, dev.Bus, BusGraphicItem]]:
+    def get_current_diagram_buses(self) -> List[Tuple[int, dev.Bus, BusGraphicItem]]:
         """
         Get the selected buses
         :return: list of (bus position, bus object, bus_graphics object)
@@ -396,6 +404,17 @@ class DiagramsMain(CompiledArraysMain):
         diagram_widget = self.get_selected_diagram_widget()
         if isinstance(diagram_widget, SchematicWidget):
             return diagram_widget.get_buses()
+        else:
+            return list()
+
+    def get_current_diagram_substations(self) -> List[Tuple[int, dev.Substation, SubstationGraphicItem]]:
+        """
+        Get the selected buses
+        :return: list of (bus position, bus object, bus_graphics object)
+        """
+        diagram_widget = self.get_selected_diagram_widget()
+        if isinstance(diagram_widget, GridMapWidget):
+            return diagram_widget.get_substations()
         else:
             return list()
 
@@ -715,13 +734,22 @@ class DiagramsMain(CompiledArraysMain):
                                              bus_active=bus_active,
                                              loadings=results.loading,
                                              types=results.bus_types,
+
                                              Sf=results.Sf,
                                              St=results.St,
                                              br_active=br_active,
+
                                              hvdc_Pf=results.hvdc_Pf,
                                              hvdc_Pt=-results.hvdc_Pf,
                                              hvdc_loading=results.hvdc_loading,
                                              hvdc_active=hvdc_active,
+
+                                             vsc_Pf=results.vsc_Pf,
+                                             vsc_Pt=-results.vsc_Pf,
+                                             vsc_Qt=np.zeros_like(results.vsc_Pf),
+                                             vsc_loading=results.vsc_loading,
+                                             vsc_active=vsc_active,
+
                                              fluid_node_p2x_flow=results.fluid_node_p2x_flow,
                                              fluid_node_current_level=results.fluid_node_current_level,
                                              fluid_node_spillage=results.fluid_node_spillage,
@@ -818,13 +846,21 @@ class DiagramsMain(CompiledArraysMain):
                                              bus_active=bus_active,
                                              loadings=results.loading,
                                              types=results.bus_types,
+
                                              Sf=results.Sf,
                                              St=results.St,
                                              br_active=br_active,
+
                                              hvdc_Pf=results.hvdc_Pf,
                                              hvdc_Pt=-results.hvdc_Pf,
                                              hvdc_loading=results.hvdc_loading,
                                              hvdc_active=hvdc_active,
+
+                                             vsc_Pf=results.vsc_Pf,
+                                             vsc_Pt=-results.vsc_Pf,
+                                             vsc_loading=results.vsc_loading,
+                                             vsc_active=vsc_active,
+
                                              use_flow_based_width=use_flow_based_width,
                                              min_branch_width=min_branch_width,
                                              max_branch_width=max_branch_width,
@@ -2329,7 +2365,7 @@ class DiagramsMain(CompiledArraysMain):
 
                     for i in self.contingency_checks_diag.selected_indices:
                         elm = selected[i]
-                        con = dev.Contingency(device_idtag=elm.idtag,
+                        con = dev.Contingency(device=elm,
                                               code=elm.code,
                                               name="Contingency " + elm.name,
                                               prop=ContingencyOperationTypes.Active,
@@ -2368,7 +2404,7 @@ class DiagramsMain(CompiledArraysMain):
 
                     for i in self.ra_checks_diag.selected_indices:
                         elm = selected[i]
-                        ra = dev.RemedialAction(device_idtag=elm.idtag,
+                        ra = dev.RemedialAction(device=elm,
                                                 code=elm.code,
                                                 name="RA " + elm.name,
                                                 prop=ContingencyOperationTypes.Active,
@@ -2412,11 +2448,10 @@ class DiagramsMain(CompiledArraysMain):
                     # add the selection as investments to the group
                     for i in self.investment_checks_diag.selected_indices:
                         elm = selected[i]
-                        con = dev.Investment(device_idtag=elm.idtag,
+                        con = dev.Investment(device=elm,
                                              code=elm.code,
                                              name=elm.type_name + ": " + elm.name,
                                              CAPEX=0.0,
-                                             OPEX=0.0,
                                              group=group)
                         self.circuit.add_investment(con)
             else:
@@ -2436,7 +2471,7 @@ class DiagramsMain(CompiledArraysMain):
 
             if self.object_select_window.selected_object is not None:
 
-                for k, bus, graphic_obj in self.get_current_buses():
+                for k, bus, graphic_obj in self.get_current_diagram_buses():
                     if bus.area == self.object_select_window.selected_object:
                         graphic_obj.setSelected(True)
 
@@ -2448,7 +2483,7 @@ class DiagramsMain(CompiledArraysMain):
             self.object_select_window.exec()
 
             if self.object_select_window.selected_object is not None:
-                for k, bus, graphic_obj in self.get_current_buses():
+                for k, bus, graphic_obj in self.get_current_diagram_buses():
                     if bus.country == self.object_select_window.selected_object:
                         graphic_obj.setSelected(True)
 
@@ -2460,12 +2495,26 @@ class DiagramsMain(CompiledArraysMain):
             self.object_select_window.exec()
 
             if self.object_select_window.selected_object is not None:
-                for k, bus, graphic_obj in self.get_current_buses():
+                for k, bus, graphic_obj in self.get_current_diagram_buses():
                     if bus.zone == self.object_select_window.selected_object:
                         graphic_obj.setSelected(True)
         else:
             error_msg('Unrecognized option' + str(prop))
             return
+
+    def select_buses_by(self):
+        """
+        Select buses by...
+        launched a dialogue to select the category, and then another to select the element
+        """
+        self.object_select_window = ListSelectWindow(title='Area',
+                                                     elements=["area", "zone", "country"],
+                                                     parent=self)
+        self.object_select_window.setModal(True)
+        self.object_select_window.exec()
+
+        if self.object_select_window.selected_object is not None:
+            self.select_buses_by_property(self.object_select_window.selected_object)
 
     def set_selected_bus_property(self, prop):
         """
@@ -2512,6 +2561,100 @@ class DiagramsMain(CompiledArraysMain):
             error_msg('Unrecognized option' + str(prop))
             return
 
+    def color_buses_by(self):
+        """
+        Launch the bus coloring
+        """
+        self.object_select_window = ListSelectWindow(title='Select association',
+                                                     elements=["area", "zone", "country", "substation"],
+                                                     parent=self)
+        self.object_select_window.setModal(True)
+        self.object_select_window.exec()
+        any_op = False
+
+        for k, bus, graphic_obj in self.get_current_diagram_buses():
+
+            if self.object_select_window.selected_object == "area":
+                hex_color = bus.area.color if bus.area is not None else None
+
+            elif self.object_select_window.selected_object == "zone":
+                hex_color = bus.zone.color if bus.zone is not None else None
+
+            elif self.object_select_window.selected_object == "country":
+                hex_color = bus.country.color if bus.country is not None else None
+
+            elif self.object_select_window.selected_object == "substation":
+                hex_color = bus.substation.color if bus.substation is not None else None
+
+            else:
+                hex_color = None
+
+            if hex_color is not None:
+                graphic_obj.color = QtGui.QBrush(QtGui.QColor(hex_color))
+                graphic_obj.set_tile_color(graphic_obj.color)
+                any_op = True
+
+        if not any_op:
+            self.show_warning_toast(
+                f"Nothing coloured, check the buses {self.object_select_window.selected_object} property."
+            )
+
+    def color_substations_by(self):
+        """
+        Launch substation coloring
+        """
+
+        self.object_select_window = ListSelectWindow(title='Select association',
+                                                     elements=["area", "zone", "country",
+                                                               "community", "region", "municipality",
+                                                               "substation"],
+                                                     parent=self)
+        self.object_select_window.setModal(True)
+        self.object_select_window.exec()
+
+        if self.object_select_window.selected_object is not None:
+            any_op = False
+
+            for k, substation, graphic_obj in self.get_current_diagram_substations():
+
+                if self.object_select_window.selected_object == "area":
+                    hex_color = substation.area.color if substation.area is not None else None
+
+                elif self.object_select_window.selected_object == "zone":
+                    hex_color = substation.zone.color if substation.zone is not None else None
+
+                elif self.object_select_window.selected_object == "country":
+                    hex_color = substation.country.color if substation.country is not None else None
+
+                elif self.object_select_window.selected_object == "community":
+                    hex_color = substation.community.color if substation.community is not None else None
+
+                elif self.object_select_window.selected_object == "region":
+                    hex_color = substation.region.color if substation.region is not None else None
+
+                elif self.object_select_window.selected_object == "municipality":
+                    hex_color = substation.municipality.color if substation.municipality is not None else None
+
+                elif self.object_select_window.selected_object == "substation":
+                    hex_color = substation.color
+                else:
+                    hex_color = None
+
+                if hex_color is not None:
+                    color = QtGui.QColor(hex_color)
+                    graphic_obj.color = color
+                    graphic_obj.border_color = color
+                    graphic_obj.color_widget(
+                        inner_color=color,
+                        border_color=color
+                    )
+                    any_op = True
+
+            if not any_op:
+                self.show_warning_toast(
+                    f"Nothing coloured, check the substations {self.object_select_window.selected_object} property."
+                )
+
     def default_voltage_change(self):
         """
         When the default voltage changes, update all the diagrams
@@ -2538,8 +2681,6 @@ class DiagramsMain(CompiledArraysMain):
 
             elif isinstance(diagram_widget, GridMapWidget):
                 pass
-
-
 
     def search_diagram(self):
         """

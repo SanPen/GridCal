@@ -17,6 +17,12 @@ class MeasurementTemplate(EditableDevice):
     Measurement class
     """
 
+    __slots__ = (
+        'value',
+        'sigma',
+        'api_object',
+    )
+
     def __init__(self, value: float,
                  uncertainty: float,
                  api_obj: MEASURABLE_OBJECT,

@@ -33,7 +33,7 @@ class ShortCircuitDriver(DriverTemplate):
     def __init__(self, grid: MultiCircuit,
                  options: ShortCircuitOptions | None,
                  pf_options: PowerFlowOptions | None,
-                 pf_results: PowerFlowResults | NumericPowerFlowResults | None ,
+                 pf_results: PowerFlowResults | None,
                  opf_results: OptimalPowerFlowResults | None = None):
         """
         ShortCircuitDriver class constructor
@@ -43,6 +43,7 @@ class ShortCircuitDriver(DriverTemplate):
         :param pf_results: PowerFlowResults
         :param opf_results: OptimalPowerFlowResults
         """
+        assert isinstance(pf_results, PowerFlowResults)
         DriverTemplate.__init__(self, grid=grid)
 
         self.pf_results: PowerFlowResults | None = pf_results
@@ -54,20 +55,20 @@ class ShortCircuitDriver(DriverTemplate):
 
         # declare an empty results object
         n = grid.get_bus_number()
-        self.results: ShortCircuitResults = ShortCircuitResults(n=n,
-                                                                m=grid.get_branch_number_wo_hvdc(),
-                                                                n_hvdc=grid.get_hvdc_number(),
-                                                                bus_names=grid.get_bus_names(),
-                                                                branch_names=grid.get_branch_names_wo_hvdc(),
-                                                                hvdc_names=grid.get_hvdc_names(),
-                                                                bus_types=np.ones(n),
-                                                                area_names=grid.get_area_names())
+        self.results: ShortCircuitResults = ShortCircuitResults(
+            n=n,
+            m=grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
+            n_hvdc=grid.get_hvdc_number(),
+            bus_names=grid.get_bus_names(),
+            branch_names=grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
+            hvdc_names=grid.get_hvdc_names(),
+            bus_types=np.ones(n),
+            area_names=grid.get_area_names()
+        )
 
         self.logger = Logger()
 
         self.__cancel__ = False
-
-
 
     def get_steps(self):
         """
@@ -228,7 +229,7 @@ class ShortCircuitDriver(DriverTemplate):
             sc_bus_index = list()
 
             # modify the grid by inserting a mid-line short circuit bus
-            branch = self.grid.get_branches_wo_hvdc()[self.options.branch_index]
+            branch = self.grid.get_branches(add_hvdc=False, add_vsc=False, add_switch=True)[self.options.branch_index]
             br1, br2, middle_bus = self.split_branch(branch=branch,
                                                      fault_position=self.options.branch_fault_locations,
                                                      r_fault=self.options.branch_fault_r,
@@ -244,12 +245,13 @@ class ShortCircuitDriver(DriverTemplate):
 
         # Compile the grid
         nc = compile_numerical_circuit_at(circuit=grid,
-                                                         t_idx=None,
-                                                         apply_temperature=self.pf_options.apply_temperature_correction,
-                                                         branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                                         opf_results=self.opf_results,
-                                                         logger=self.logger,
-                                                        fill_three_phase=True)
+                                          t_idx=None,
+                                          apply_temperature=self.pf_options.apply_temperature_correction,
+                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                          opf_results=self.opf_results,
+                                          logger=self.logger,
+                                          fill_three_phase=True
+                                          )
 
         calculation_inputs = nc.split_into_islands(
             ignore_single_node_islands=self.pf_options.ignore_single_node_islands
@@ -285,18 +287,20 @@ class ShortCircuitDriver(DriverTemplate):
                                                     fault_type=self.options.fault_type)
 
                     # merge results
-                    results.apply_from_island(res, island.bus_data.original_idx, island.passive_branch_data.original_idx)
+                    results.apply_from_island(res, island.bus_data.original_idx,
+                                              island.passive_branch_data.original_idx)
 
         else:  # single island
 
             res = self.single_short_circuit(nc=calculation_inputs[0],
-                                            Vpf=self.pf_results.V,
+                                            Vpf=self.pf_results.voltage,
                                             Zf=Zf,
                                             island_bus_index=self.options.bus_index,
                                             fault_type=self.options.fault_type,
-                                            method = self.options.method,
-                                            phases = self.options.phases,
-                                            Spf = self.pf_results.Scalc)
+                                            method=self.options.method,
+                                            phases=self.options.phases,
+                                            Spf=self.pf_results.Scalc
+                                            )
 
             # merge results
             results.apply_from_island(res, calculation_inputs[0].bus_data.original_idx,
@@ -313,8 +317,5 @@ class ShortCircuitDriver(DriverTemplate):
             results.voltage2 = nc.propagate_bus_result(results.voltage2)
 
         self.results = results
-        self.grid.short_circuit_results = results
         self._is_running = False
         self.toc()
-
-

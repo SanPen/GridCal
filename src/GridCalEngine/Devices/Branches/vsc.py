@@ -20,6 +20,24 @@ if TYPE_CHECKING:
 
 
 class VSC(BranchParent):
+    __slots__ = (
+        'kdp',
+        'alpha1',
+        'alpha2',
+        'alpha3',
+        '_control1',
+        '_control1_prof',
+        '_control2',
+        '_control2_prof',
+        '_control1_dev',
+        '_control1_dev_prof',
+        '_control2_dev',
+        '_control2_dev_prof',
+        '_control1_val',
+        '_control1_val_prof',
+        '_control2_val',
+        '_control2_val_prof',
+    )
 
     def __init__(self,
                  bus_from: Bus | None = None,

@@ -3498,7 +3498,10 @@ class SchematicWidget(BaseDiagramWidget):
         # VSC lines
         if vsc_Pf is not None:
 
-            vsc_sending_power_norm = np.abs(vsc_Pt + 1j * vsc_Qt) / (max_flow + 1e-20)
+            if vsc_Qt is None:
+                vsc_sending_power_norm = np.abs(vsc_Pt) / (max_flow + 1e-20)
+            else:
+                vsc_sending_power_norm = np.abs(vsc_Pt + 1j * vsc_Qt) / (max_flow + 1e-20)
 
             if self.circuit.get_vsc_number() == len(vsc_Pf):
                 for i, elm in enumerate(self.circuit.vsc_devices):
@@ -3549,15 +3552,25 @@ class SchematicWidget(BaseDiagramWidget):
 
                             tooltip += '\nPower (from):\t' + "{:10.4f}".format(vsc_Pf[i]) + ' [MW]'
 
-                            if vsc_losses is not None:
-                                tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Pt[i]) + ' [MW]'
-                                tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Qt[i]) + ' [Mvar]'
-                                tooltip += '\nLosses: \t\t' + "{:10.4f}".format(vsc_losses[i]) + ' [MW]'
-                                graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
-                                                                     St=vsc_Pt[i] + 1j * vsc_Qt[i])
+                            if vsc_Qt is None:
+                                if vsc_losses is not None:
+                                    tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Pt[i]) + ' [MW]'
+                                    tooltip += '\nLosses: \t\t' + "{:10.4f}".format(vsc_losses[i]) + ' [MW]'
+                                    graphic_object.set_arrows_with_power(Sf=vsc_Pf[i],
+                                                                         St=vsc_Pt[i])
+                                else:
+                                    graphic_object.set_arrows_with_power(Sf=vsc_Pf[i],
+                                                                         St=-vsc_Pf[i])
                             else:
-                                graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
-                                                                     St=-vsc_Pf[i] + 1j * vsc_Qt[i])
+                                if vsc_losses is not None:
+                                    tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Pt[i]) + ' [MW]'
+                                    tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Qt[i]) + ' [Mvar]'
+                                    tooltip += '\nLosses: \t\t' + "{:10.4f}".format(vsc_losses[i]) + ' [MW]'
+                                    graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
+                                                                         St=vsc_Pt[i] + 1j * vsc_Qt[i])
+                                else:
+                                    graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
+                                                                         St=-vsc_Pf[i] + 1j * vsc_Qt[i])
 
                             graphic_object.setToolTipText(tooltip)
                             graphic_object.set_colour(color, w, style)
@@ -3787,7 +3800,7 @@ class SchematicWidget(BaseDiagramWidget):
                         bus_dict[bus.idtag] = graphic_object
 
         # third pass: we must also add all those branches connecting the selected buses
-        for lst in self.circuit.get_branch_lists():
+        for lst in self.circuit.get_branch_lists(add_vsc=True, add_hvdc=True, add_switch=True):
             for api_object in lst:
                 if api_object.bus_from.idtag in bus_dict or api_object.bus_to.idtag in bus_dict:
                     diagram.set_point(device=api_object,
@@ -4315,6 +4328,30 @@ class SchematicWidget(BaseDiagramWidget):
             # detect the bus and its combinations
             if idx_bus_list[0][1] == line_graphics.api_object.bus_from:
                 idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
+
+    def set_vsc_control_dev(self, graphic: VscGraphicItem, control_idx: int):
+        """
+        Set the VSC control1_dev or control1_dev with the selected bus
+        :param graphic: VscGraphicItem
+        :param control_idx: 1 or 2 to set control1_dev or control1_dev
+        """
+
+        idx_bus_list = self.get_selected_buses()
+
+        if len(idx_bus_list) == 1:
+
+            # detect the bus and its combinations
+            idx, sel_bus, sel_bus_graphic_item = idx_bus_list[0]
+
+            if control_idx == 1:
+                graphic.api_object.control1_dev = sel_bus
+            elif control_idx == 2:
+                graphic.api_object.control2_dev = sel_bus
+            else:
+                print("control_idx must be either 1 or 2")
+        else:
+            error_msg(f"You need to select exactly one bus to be set as the VSC control device {control_idx}",
+                      "Set VSC control device 1")
 
     def get_picture_width(self) -> int:
         return self.editor_graphics_view.width()

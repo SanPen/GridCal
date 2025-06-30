@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 from typing import Union, List, TYPE_CHECKING, Callable
-import darkdetect
+import GridCal.ThirdParty.darkdetect as darkdetect
 from PySide6.QtCore import Qt, QPointF, QLineF
 from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsItem, QGraphicsPolygonItem, QGraphicsItemGroup,
                                QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsTextItem)
@@ -186,6 +186,20 @@ class GenericDiagramWidget:
         This function is meant to be overloaded.
         :return:
         """
+        return list()
+
+
+    def get_associated_devices(self):
+
+        """
+        Get a list of all graphical elements associated with this widget.
+        In the case of a BusGraphicsItem, it will be all the shunt connections
+        plus the LineGraphicItems connecting to it, etc.
+        This function is meant to be overloaded.
+        :return:
+
+        """
+
         return list()
 
 

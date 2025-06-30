@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
 from typing import List, Any, Tuple
-from GridCalEngine.basic_structures import BoolVec, Mat
+from GridCalEngine.basic_structures import BoolVec, Mat, IntVec
 from GridCalEngine.Utils.Filtering.filtering import (MasterFilter, Filter, FilterOps, FilterSubject,
                                                      parse_expression)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
@@ -94,34 +94,38 @@ class FilterObjects:
 
         :param objects:
         """
-        self.objects = objects
+        self._objects = objects
 
-        self.master_filter = MasterFilter()
+        self._filtered_indices = np.arange(len(self._objects))
 
-    def parse(self, expression: str):
+    @property
+    def filtered_indices(self):
+        return self._filtered_indices
+
+    @property
+    def filtered_objects(self):
+        return [self._objects[i] for i in self._filtered_indices]
+
+    def filter(self, expression: str)-> None:
         """
         Parses the query expression
         :param expression:
         :return:
         """
-        self.master_filter = parse_expression(expression=expression)
+        master_filter: MasterFilter = parse_expression(expression=expression)
 
-    def apply(self) -> List[ALL_DEV_TYPES]:
-        """
+        if len(master_filter.stack) > 0:
 
-        :return:
-        """
-        if len(self.master_filter.stack):
-            idx_mask = compute_objects_masks(objects=self.objects, flt=self.master_filter.stack[0])
+            if master_filter.is_correct_size():
 
-            if self.master_filter.correct_size():
+                idx_mask = compute_objects_masks(objects=self._objects, flt=master_filter.stack[0])
 
-                for st_idx in range(1, self.master_filter.size(), 2):
+                for st_idx in range(1, master_filter.size(), 2):
 
-                    oper: FilterOps = self.master_filter.stack[st_idx]
-                    flt = self.master_filter.stack[st_idx + 1]
+                    oper: FilterOps = master_filter.stack[st_idx]
+                    flt = master_filter.stack[st_idx + 1]
 
-                    idx_mask2 = compute_objects_masks(objects=self.objects, flt=flt)
+                    idx_mask2 = compute_objects_masks(objects=self._objects, flt=flt)
 
                     if oper == FilterOps.OR:
                         idx_mask += idx_mask2
@@ -130,16 +134,25 @@ class FilterObjects:
                         idx_mask *= idx_mask2
 
                     else:
-                        raise Exception("Unsupported master filter opration")
+                        raise TypeError("Unsupported master filter operation")
+
+                # get the indices
+                self._filtered_indices = np.where(idx_mask)[0]
 
             else:
-                raise Exception("Unsupported number of filters. Use and or concatenation")
-
-            # get the indices
-            ii = np.where(idx_mask)[0]
-
-            # return the sliced list
-            return [self.objects[i] for i in ii]
+                raise ValueError("Unsupported number of filters. Use and or concatenation")
 
         else:
-            return self.objects
+
+            # try searching by name
+            to_search = expression.strip().lower()
+            if to_search != "":
+                ls = list()
+                for i, obj in enumerate(self._objects):
+                    if expression in obj.name.lower():
+                        ls.append(i)
+
+                self._filtered_indices = np.array(ls, dtype=int)
+            else:
+                self._filtered_indices = np.zeros(0, dtype=int)
+

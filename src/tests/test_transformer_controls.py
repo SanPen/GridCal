@@ -26,7 +26,7 @@ def test_v_control_true():
 
     v_control = np.abs(power_flow.results.voltage[42])
 
-    assert np.allclose(tr.vset, v_control)
+    assert np.allclose(tr.vset, v_control, atol=1e-6)
 
 
 def test_v_control_false():

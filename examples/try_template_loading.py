@@ -29,7 +29,7 @@ def process_dummy_grid():
     my_tr = main_circuit.transformers2w[0]
 
     inv_group = dev.InvestmentsGroup(name='Ig0')
-    investment1 = dev.Investment(name='Investment 1x', group=inv_group, device_idtag=my_tr.idtag)
+    investment1 = dev.Investment(name='Investment 1x', group=inv_group, device=my_tr)
     main_circuit.add_investment(investment1)
     main_circuit.add_investments_group(inv_group)
     gce.save_file(main_circuit, 'C:/Users/J/Downloads/temp_tr1_invested.gridcal')

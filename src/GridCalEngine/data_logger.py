@@ -6,7 +6,7 @@ from typing import List
 from enum import Enum
 import datetime
 import pandas as pd
-
+from GridCalEngine.basic_structures import LogEntry, LogSeverity, Logger
 
 class DataLogSeverity(Enum):
     """
@@ -31,6 +31,18 @@ class DataLogSeverity(Enum):
         except KeyError:
             return s
 
+    def to_normal(self) -> LogSeverity:
+
+        if self == DataLogSeverity.Error:
+            return LogSeverity.Error
+        elif self == DataLogSeverity.Warning:
+            return LogSeverity.Warning
+        elif self == DataLogSeverity.Information:
+            return LogSeverity.Information
+        elif self == DataLogSeverity.Divergence:
+            return LogSeverity.Divergence
+        else:
+            return LogSeverity.Information
 
 class DataLogEntry:
     """
@@ -68,6 +80,18 @@ class DataLogEntry:
                                                              self.expected_value,
                                                              self.comment)
 
+    def to_normal_entry(self) -> LogEntry:
+
+        return LogEntry(time=self.time,
+                 msg=self.msg,
+                 severity=self.severity.to_normal(),
+                 device=self.device,
+                 value=self.value,
+                 expected_value=self.expected_value,
+                 device_class=self.device_class,
+                 device_property=self.property_name,
+                 object_value=None,
+                 expected_object_value=None)
 
 class DataLogger:
     """
@@ -281,6 +305,16 @@ class DataLogger:
         :param sheet_name: sheet name
         """
         self.to_df().to_excel(fname, sheet_name=sheet_name)
+
+    def get_logger(self) -> Logger:
+        """
+        Convert logger entries
+        :return: List of LogEntry
+        """
+        logger = Logger()
+        for e in self.entries:
+            logger.entries.append(e.to_normal_entry())
+        return logger
 
     def __str__(self) -> str:
         """

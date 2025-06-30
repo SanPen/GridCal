@@ -25,8 +25,8 @@ import atexit
 import os
 import platform
 
-import darkdetect
-
+# import darkdetect
+import GridCal.ThirdParty.qdarktheme as qdarktheme
 from GridCal.ThirdParty.qdarktheme._style_loader import load_palette, load_stylesheet
 
 _listener = None
@@ -195,5 +195,5 @@ def setup_theme(
 
     callback()
 
-    if theme == "auto" and darkdetect.theme() is not None:
+    if theme == "auto" and qdarktheme.theme() is not None:
         _sync_theme_with_system(app, callback)

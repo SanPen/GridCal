@@ -17,6 +17,23 @@ from GridCalEngine.Devices.profile import Profile
 
 
 class Substation(GenericAreaGroup):
+    __slots__ = (
+        '_area',
+        '_zone',
+        '_country',
+        '_community',
+        '_region',
+        '_municipality',
+        'address',
+        'irradiation',
+        '_irradiation_prof',
+        'temperature',
+        '_temperature_prof',
+        'wind_speed',
+        '_wind_speed_prof',
+        'terrain_roughness',
+        'modelling_authority',
+    )
 
     def __init__(self,
                  name='Substation',
@@ -63,7 +80,7 @@ class Substation(GenericAreaGroup):
                                   device_type=DeviceType.SubstationDevice,
                                   latitude=latitude,
                                   longitude=longitude,
-                                  color=color,)
+                                  color=color, )
 
         self._area: Union[Area, None] = area
         self._zone: Union[Zone, None] = zone
@@ -85,7 +102,6 @@ class Substation(GenericAreaGroup):
         self.terrain_roughness: float = float(terrain_roughness)
 
         self.modelling_authority: Union[ModellingAuthority, None] = None
-
 
         self.register(key="area", units="", tpe=DeviceType.AreaDevice,
                       definition="Substation area, altenativelly this can be obtained from the zone")

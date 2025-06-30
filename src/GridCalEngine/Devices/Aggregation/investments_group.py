@@ -11,13 +11,19 @@ class InvestmentsGroup(EditableDevice):
     """
     Investments group
     """
+    __slots__ = (
+        'category',
+        'discount_rate',
+        'CAPEX',
+    )
 
     def __init__(self,
                  idtag: Union[str, None] = None,
                  name: str = "InvestmentGroup",
                  category: str = '',
                  comment: str = "",
-                 discount_rate=5):
+                 discount_rate: float = 5.0,
+                 CAPEX: float =0):
         """
         Contingency group
         :param idtag: Unique identifier
@@ -25,6 +31,7 @@ class InvestmentsGroup(EditableDevice):
         :param category: tag to category the group
         :param comment: comment
         :param discount_rate: discount rate (%)
+        :param CAPEX: Capital Expenditure of the group (added to the individual investments' capex)
         """
 
         EditableDevice.__init__(self,
@@ -39,5 +46,9 @@ class InvestmentsGroup(EditableDevice):
 
         self.discount_rate = discount_rate
 
+        self.CAPEX = CAPEX
+
         self.register(key='category', units='', tpe=str, definition='Some tag to category the investment group')
         self.register(key='discount_rate', units='%', tpe=float, definition='Investment group discount rate')
+        self.register(key='CAPEX', units='€', tpe=float,
+                      definition="Capital Expenditure of the group (added to the individual investments' capex)")

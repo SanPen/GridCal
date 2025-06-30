@@ -72,19 +72,39 @@ class VscGraphicItem(LineGraphicTemplateItem):
                            checkeable=True,
                            checked_value=self.draw_labels)
 
-            rabf = menu.addAction('Change bus')
-            move_bus_icon = QIcon()
-            move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
-            rabf.setIcon(move_bus_icon)
-            rabf.triggered.connect(self.change_bus)
+            # rabf = menu.addAction('Change bus')
+            # move_bus_icon = QIcon()
+            # move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
+            # rabf.setIcon(move_bus_icon)
+            # rabf.triggered.connect(self.change_bus)
+
+            add_menu_entry(menu=menu,
+                           text="Change bus",
+                           function_ptr=self.change_bus,
+                           icon_path=":/Icons/icons/move_bus.svg")
+
+            add_menu_entry(menu=menu,
+                           text="Set Control dev 1",
+                           function_ptr=self.set_control_dev_1,
+                           icon_path=":/Icons/icons/move_bus.svg")
+
+            add_menu_entry(menu=menu,
+                           text="Set Control dev 2",
+                           function_ptr=self.set_control_dev_2,
+                           icon_path=":/Icons/icons/move_bus.svg")
 
             menu.addSeparator()
 
-            ra2 = menu.addAction('Delete')
-            del_icon = QIcon()
-            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-            ra2.setIcon(del_icon)
-            ra2.triggered.connect(self.delete)
+            # ra2 = menu.addAction('Delete')
+            # del_icon = QIcon()
+            # del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+            # ra2.setIcon(del_icon)
+            # ra2.triggered.connect(self.delete)
+
+            add_menu_entry(menu=menu,
+                           text="Delete",
+                           function_ptr=self.delete,
+                           icon_path=":/Icons/icons/delete3.svg")
 
             menu.addSeparator()
 
@@ -146,3 +166,17 @@ class VscGraphicItem(LineGraphicTemplateItem):
         """
         self.api_object.regulation_bus = self.api_object.bus_to
         self.api_object.tap_module_control_mode = TapModuleControl.Vm
+
+    def set_control_dev_1(self):
+        """
+
+        :return:
+        """
+        self.editor.set_vsc_control_dev(graphic=self, control_idx=1)
+
+    def set_control_dev_2(self):
+        """
+
+        :return:
+        """
+        self.editor.set_vsc_control_dev(graphic=self, control_idx=2)

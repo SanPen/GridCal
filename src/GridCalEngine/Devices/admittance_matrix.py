@@ -122,7 +122,7 @@ class AdmittanceMatrix:
             "phase_c": self._phC,
         }
 
-    def parse(self, data: Dict[str, Union[str, float]]) -> None:
+    def parse(self, data: Dict[str, Union[str, float, int]]) -> None:
         """
         Parse the tap data
         :param data: dictionary representation of the tap

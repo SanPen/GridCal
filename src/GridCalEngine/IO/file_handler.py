@@ -417,6 +417,10 @@ class FileOpen:
                         self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit,
                                                         map_dc_to_hvdc_line=self.options.try_to_map_dc_to_hvdc_line,
                                                         logger=self.cgmes_logger)
+
+                        if self.cgmes_logger.has_logs():
+                            self.logger += self.cgmes_logger.get_logger()
+
                     else:
                         # try CIM
                         parser = CIMImport(text_func=text_func, progress_func=progress_func)

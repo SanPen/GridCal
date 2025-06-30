@@ -23,7 +23,7 @@ from PySide6 import QtGui, QtWidgets, QtCore
 # Engine imports
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Simulations as sim
-from GridCalEngine.enumerations import EngineType, DeviceType
+from GridCalEngine.enumerations import EngineType, DeviceType, SimulationTypes
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 
@@ -129,7 +129,7 @@ class BaseMainGui(QMainWindow):
         self.lock_ui = False
         self.ui.progress_frame.setVisible(self.lock_ui)
 
-        self.stuff_running_now: List[str] = list()
+        self.stuff_running_now: List[SimulationTypes] = list()
 
         self.session: SimulationSession = SimulationSession(name='GUI session')
 

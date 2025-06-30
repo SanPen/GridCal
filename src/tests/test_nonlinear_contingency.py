@@ -21,7 +21,7 @@ def test_non_linear_factors() -> None:
     # generate the contingency
     con_group = ContingencyGroup()
     con = Contingency(idtag='',
-                      device_idtag=main_circuit.lines[line_idx_test].idtag,
+                      device=main_circuit.lines[line_idx_test],
                       group=con_group)
     main_circuit.add_contingency_group(con_group)
     main_circuit.add_contingency(con)

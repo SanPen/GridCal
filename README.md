@@ -1165,16 +1165,14 @@ for i, br in enumerate(branches):
   main_circuit.add_contingency_group(group)
 
   # add the branch contingency to the groups, only groups are failed at once
-  con = gce.Contingency(device_idtag=br.idtag, name=br.name, group=group)
+  con = gce.Contingency(device=br, name=br.name, group=group)
   main_circuit.add_contingency(con)
 
 # add a special contingency
 group = gce.ContingencyGroup(name="Special contingency")
 main_circuit.add_contingency_group(group)
-main_circuit.add_contingency(gce.Contingency(device_idtag=branches[3].idtag,
-                                             name=branches[3].name, group=group))
-main_circuit.add_contingency(gce.Contingency(device_idtag=branches[5].idtag,
-                                             name=branches[5].name, group=group))
+main_circuit.add_contingency(gce.Contingency(device=branches[3], name=branches[3].name, group=group))
+main_circuit.add_contingency(gce.Contingency(device=branches[5], name=branches[5].name, group=group))
 
 pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
 
@@ -1220,6 +1218,29 @@ Contingency flows:
 ```
 
 This simulation can also be done for time series.
+
+### Contingency analysis time series
+
+To perform the contingency analysis of a time series, it's easier to directly usi the API:
+
+```python
+import os
+import GridCalEngine as gce
+
+folder = os.path.join('Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+main_circuit = gce.open_file(fname)
+
+results = gce.contingencies_ts(circuit=main_circuit,
+                               detailed_massive_report=False,
+                               contingency_deadband=0.0,
+                               contingency_method=gce.ContingencyMethod.PowerFlow)
+```
+
+Note that the grid must have the declared contingencies saved already.
+Also note that the results are statistics, and you will not get a cube because 
+for large grids that demands terabytes of RAM memory.
+
 
 ### State estimation
 
@@ -1417,7 +1438,6 @@ All contributions must come with testing.
 - Join the [Discord GridCal channel](https://discord.com/invite/dzxctaNbvu) for a friendly chat, or quick question.
 - Submit questions or comments to our [form](https://forms.gle/MpjJAntAwZiLwE6B6).
 - Submit bugs or requests in the [Issues](https://github.com/SanPen/GridCal/issues) section.
-- Simply email [santiago@gridcal.org](santiago@gridcal.org)
 
 ## License
 

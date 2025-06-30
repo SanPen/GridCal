@@ -11,6 +11,11 @@ from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 
 
 class BusBar(PhysicalDevice):
+    __slots__ = (
+        'voltage_level',
+        '_cn',
+    )
+
 
     def __init__(self,
                  name='BusBar',

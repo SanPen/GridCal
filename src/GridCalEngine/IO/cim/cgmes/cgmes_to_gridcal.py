@@ -189,11 +189,17 @@ def get_gcdev_dc_device_to_terminal_dict(
                             comment="get_gcdev_dc_device_to_terminal_dict")
             continue
         else:  # DCTerminals for DCLineSegments
-            lst = dc_device_to_terminal_dict.get(dc_term.DCConductingEquipment.uuid, None)
-            if lst is None:
-                dc_device_to_terminal_dict[dc_term.DCConductingEquipment.uuid] = [dc_term]
+            if dc_term.DCConductingEquipment is not None:
+                lst = dc_device_to_terminal_dict.get(dc_term.DCConductingEquipment.uuid, None)
+                if lst is None:
+                    dc_device_to_terminal_dict[dc_term.DCConductingEquipment.uuid] = [dc_term]
+                else:
+                    lst.append(dc_term)
             else:
-                lst.append(dc_term)
+                logger.add_error(msg='No DCConductingEquipment',
+                                device=dc_term.rdfid,
+                                device_class=dc_term.tpe,
+                                device_property="DCConductingEquipment")
 
     ground_tp_list = list()
     ground_node_list = list()
@@ -203,38 +209,45 @@ def get_gcdev_dc_device_to_terminal_dict(
 
         dc_term_n = None  # DCTerminal inside the same DCNode
         dc_node = conv_dc_term.DCNode
-        dc_tp = conv_dc_term.DCTopologicalNode
-        if isinstance(dc_node.DCTerminals[0], dc_terminal_type):
-            dc_term_n = dc_node.DCTerminals[0]
-        elif isinstance(dc_node.DCTerminals[1], dc_terminal_type):
-            dc_term_n = dc_node.DCTerminals[1]
-        else:
-            logger.add_error(
-                msg='No DCTerminal in DCNode Terminals [0:1]',
-                device=conv_dc_term.rdfid,
-                device_class=conv_dc_term.tpe,
-                device_property="DCNode",
-                value=conv_dc_term.DCNode,
-                comment="get_gcdev_dc_device_to_terminal_dict"
-            )
 
-        if isinstance(dc_term_n.DCConductingEquipment, dc_ground_type):
-            logger.add_info(msg='DCGround ACDC converter DC terminals are not imported',
-                            device=conv_dc_term.rdfid,
-                            device_class=conv_dc_term.tpe,
-                            device_property="DCGround",
-                            value=conv_dc_term.DCConductingEquipment,
-                            comment="get_gcdev_dc_device_to_terminal_dict")
-            ground_tp_list.append(dc_tp)
-            ground_node_list.append(dc_node)
-            continue
-        else:  # DCTerminals for ACDCConverter DC side
-            dc_cond_eq = conv_dc_term.DCConductingEquipment  # the VSC
-            lst = dc_device_to_terminal_dict.get(dc_cond_eq.uuid, None)
-            if lst is None:
-                dc_device_to_terminal_dict[dc_cond_eq.uuid] = [dc_term_n]
+        if dc_node is not None:
+            dc_tp = conv_dc_term.DCTopologicalNode
+            if isinstance(dc_node.DCTerminals[0], dc_terminal_type):
+                dc_term_n = dc_node.DCTerminals[0]
+            elif isinstance(dc_node.DCTerminals[1], dc_terminal_type):
+                dc_term_n = dc_node.DCTerminals[1]
             else:
-                lst.append(dc_term_n)
+                logger.add_error(
+                    msg='No DCTerminal in DCNode Terminals [0:1]',
+                    device=conv_dc_term.rdfid,
+                    device_class=conv_dc_term.tpe,
+                    device_property="DCNode",
+                    value=conv_dc_term.DCNode,
+                    comment="get_gcdev_dc_device_to_terminal_dict"
+                )
+
+            if isinstance(dc_term_n.DCConductingEquipment, dc_ground_type):
+                logger.add_info(msg='DCGround ACDC converter DC terminals are not imported',
+                                device=conv_dc_term.rdfid,
+                                device_class=conv_dc_term.tpe,
+                                device_property="DCGround",
+                                value=conv_dc_term.DCConductingEquipment,
+                                comment="get_gcdev_dc_device_to_terminal_dict")
+                ground_tp_list.append(dc_tp)
+                ground_node_list.append(dc_node)
+                continue
+            else:  # DCTerminals for ACDCConverter DC side
+                dc_cond_eq = conv_dc_term.DCConductingEquipment  # the VSC
+                lst = dc_device_to_terminal_dict.get(dc_cond_eq.uuid, None)
+                if lst is None:
+                    dc_device_to_terminal_dict[dc_cond_eq.uuid] = [dc_term_n]
+                else:
+                    lst.append(dc_term_n)
+        else:
+            logger.add_error("DCNode is None",
+                             device_class=conv_dc_term.tpe,
+                             device=conv_dc_term.rdfid,
+                             device_property="DCNode")
 
     return dc_device_to_terminal_dict, ground_tp_list, ground_node_list
 
@@ -279,7 +292,7 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                     gc_model: MultiCircuit,
                     v_dict: Dict[str, Tuple[float, float]],
                     cn_look_up: CnLookup,
-                    logger: DataLogger) -> Dict[str, gcdev.Bus]:
+                    logger: DataLogger) -> Tuple[Dict[str, gcdev.Bus], bool]:
     """
     Convert the TopologicalNodes to Buses (CalculationNodes)
 
@@ -289,7 +302,7 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
     :param cn_look_up: CnLookup
     :param logger: DataLogger
     :return: dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
-             Dict[str, gcdev.Bus]
+             Dict[str, gcdev.Bus], fatal error?
     """
 
     slack_id = get_slack_id(cgmes_model.cgmes_assets.SynchronousMachine_list)
@@ -310,16 +323,25 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                              device_class=tp_node.tpe,
                              device_property="nominalVoltage")
         elif nominal_voltage is None:
-            logger.add_error(msg='Nominal voltage is None. :(',
+            logger.add_error(msg='Nominal voltage is None. Maybe boundary was not attached for import :(',
                              device=tp_node.rdfid,
                              device_class=tp_node.tpe,
                              device_property="nominalVoltage")
-            raise Exception("Nominal voltage is missing for Bus (Maybe boundary was not attached for import) !")
+            # raise Exception("Nominal voltage is missing for Bus (Maybe boundary was not attached for import) !")
+            return calc_node_dict, True
 
 
         if voltage is not None and nominal_voltage is not None:
-            vm = voltage[0] / nominal_voltage
-            va = np.deg2rad(voltage[1])
+            if nominal_voltage != 0.0:
+                vm = voltage[0] / nominal_voltage
+                va = np.deg2rad(voltage[1])
+            else:
+                logger.add_error("Nominal voltage is exactly zero",
+                                 device=tp_node.rdfid,
+                                 device_class=tp_node.tpe,
+                                 device_property="nominalVoltage")
+                vm = 1.0
+                va = 0.0
         else:
             vm = 1.0
             va = 0.0
@@ -331,10 +353,17 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
         volt_lev, substat, country, area, zone = None, None, None, None, None
         longitude, latitude = 0.0, 0.0
         if tp_node.ConnectivityNodeContainer:
-            volt_lev: gcdev.VoltageLevel | None = find_object_by_idtag(
-                object_list=gc_model.voltage_levels,
-                target_idtag=tp_node.ConnectivityNodeContainer.uuid
-            )
+
+            if isinstance(tp_node.ConnectivityNodeContainer, str):
+                volt_lev: gcdev.VoltageLevel | None = find_object_by_idtag(
+                    object_list=gc_model.voltage_levels,
+                    target_idtag=tp_node.ConnectivityNodeContainer
+                )
+            else:
+                volt_lev: gcdev.VoltageLevel | None = find_object_by_idtag(
+                    object_list=gc_model.voltage_levels,
+                    target_idtag=tp_node.ConnectivityNodeContainer.uuid
+                )
             if volt_lev is None:
                 line_tpe = cgmes_model.cgmes_assets.class_dict.get("Line")
                 if not isinstance(tp_node.ConnectivityNodeContainer, line_tpe):
@@ -392,7 +421,7 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
         cn_look_up.add_bus(bus=gcdev_elm)
         calc_node_dict[gcdev_elm.idtag] = gcdev_elm
 
-    return calc_node_dict
+    return calc_node_dict, False
 
 
 def get_gcdev_dc_buses(cgmes_model: CgmesCircuit,
@@ -1613,112 +1642,119 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
             if isinstance(tap_changer, cgmes_model.get_class_type("PhaseTapChanger")):
                 tap_changer.stepVoltageIncrement = tap_changer.voltageStepIncrement
 
-            trafo_id = tap_changer.TransformerEnd.PowerTransformer.uuid
+            if tap_changer.TransformerEnd is not None:
+                trafo_id = tap_changer.TransformerEnd.PowerTransformer.uuid
 
-            gcdev_trafo = find_object_by_idtag(
-                object_list=gcdev_model.transformers2w + gcdev_model.transformers3w,
-                target_idtag=trafo_id
-            )
-
-            if isinstance(gcdev_trafo, gcdev.Transformer2W):
-
-                gcdev_trafo.tap_module_control_mode = tap_module_control_mode
-                gcdev_trafo.tap_phase_control_mode = tap_phase_control_mode
-
-                # gcdev_trafo.regulation_bus = reg_bus
-                # gcdev_trafo.regulation_cn = reg_cn
-
-                gcdev_trafo.tap_changer.init_from_cgmes(
-                    low=tap_changer.lowStep,
-                    high=tap_changer.highStep,
-                    normal=tap_changer.normalStep,
-                    neutral=tap_changer.neutralStep,
-                    stepVoltageIncrement=tap_changer.stepVoltageIncrement,
-                    step=int(tap_changer.step),
-                    asymmetry_angle=asymmetry_angle,
-                    tc_type=tc_type
+                gcdev_trafo = find_object_by_idtag(
+                    object_list=gcdev_model.transformers2w + gcdev_model.transformers3w,
+                    target_idtag=trafo_id
                 )
 
-                if gcdev_trafo.tap_changer.tc_type == TapChangerTypes.NoRegulation:
-                    gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
-                    # print(f"Tap module: {gcdev_trafo.tap_module} <--- before recalc")
-                    # SET tap_module asif it was VoltageRegulation
-                    gcdev_trafo.tap_changer.tc_type = TapChangerTypes.VoltageRegulation
-                    gcdev_trafo.tap_changer.recalc()
-                    gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
-                    # print(f"Tap module: {gcdev_trafo.tap_module} <--- after recalc")
-                    # Set it back to NoRegulation
-                    gcdev_trafo.tap_changer.tc_type = TapChangerTypes.NoRegulation
-                    # # SET tap_module from dV
-                    # print(f"Tap module: {1 - gcdev_trafo.tap_changer.dV} <-- from dV")
-                    # gcdev_trafo.tap_module = 1 - gcdev_trafo.tap_changer.dV
-                    # gcdev_trafo.tap_phase = 0
+                if isinstance(gcdev_trafo, gcdev.Transformer2W):
 
-                elif gcdev_trafo.tap_changer.tc_type == TapChangerTypes.VoltageRegulation:
-                    # SET tap_module from its own TapChanger object
-                    gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
-                    logger.add_info(msg="CGMES import: tap module calculated",
-                                    device=gcdev_trafo.device_type,
-                                    value=gcdev_trafo.tap_module)
-                    # print("Tap module calculated:", gcdev_trafo.tap_module)
+                    gcdev_trafo.tap_module_control_mode = tap_module_control_mode
+                    gcdev_trafo.tap_phase_control_mode = tap_phase_control_mode
 
-                elif gcdev_trafo.tap_changer.tc_type == TapChangerTypes.Symmetrical:
-                    gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
-                    logger.add_info(msg="CGMES import: tap module calculated",
-                                    device=gcdev_trafo.device_type,
-                                    value=gcdev_trafo.tap_module)
-                    # print("Tap phase calculated:", gcdev_trafo.tap_phase)
+                    # gcdev_trafo.regulation_bus = reg_bus
+                    # gcdev_trafo.regulation_cn = reg_cn
 
-                elif gcdev_trafo.tap_changer.tc_type == TapChangerTypes.Asymmetrical:
-                    # SET tap_module from its own TapChanger object
-                    gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
-                    logger.add_info(msg="CGMES import: tap module calculated",
-                                    device=gcdev_trafo.device_type,
-                                    value=gcdev_trafo.tap_module)
-                    # print("Tap module calculated:", gcdev_trafo.tap_module)
-                    gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
-                    logger.add_info(msg="CGMES import: tap module calculated",
-                                    device=gcdev_trafo.device_type,
-                                    value=gcdev_trafo.tap_module)
-                    # print("Tap phase calculated:", gcdev_trafo.tap_phase)
+                    gcdev_trafo.tap_changer.init_from_cgmes(
+                        low=tap_changer.lowStep,
+                        high=tap_changer.highStep,
+                        normal=tap_changer.normalStep,
+                        neutral=tap_changer.neutralStep,
+                        stepVoltageIncrement=tap_changer.stepVoltageIncrement,
+                        step=int(tap_changer.step),
+                        asymmetry_angle=asymmetry_angle,
+                        tc_type=tc_type
+                    )
+
+                    if gcdev_trafo.tap_changer.tc_type == TapChangerTypes.NoRegulation:
+                        gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
+                        # print(f"Tap module: {gcdev_trafo.tap_module} <--- before recalc")
+                        # SET tap_module asif it was VoltageRegulation
+                        gcdev_trafo.tap_changer.tc_type = TapChangerTypes.VoltageRegulation
+                        gcdev_trafo.tap_changer.recalc()
+                        gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
+                        # print(f"Tap module: {gcdev_trafo.tap_module} <--- after recalc")
+                        # Set it back to NoRegulation
+                        gcdev_trafo.tap_changer.tc_type = TapChangerTypes.NoRegulation
+                        # # SET tap_module from dV
+                        # print(f"Tap module: {1 - gcdev_trafo.tap_changer.dV} <-- from dV")
+                        # gcdev_trafo.tap_module = 1 - gcdev_trafo.tap_changer.dV
+                        # gcdev_trafo.tap_phase = 0
+
+                    elif gcdev_trafo.tap_changer.tc_type == TapChangerTypes.VoltageRegulation:
+                        # SET tap_module from its own TapChanger object
+                        gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
+                        logger.add_info(msg="CGMES import: tap module calculated",
+                                        device=gcdev_trafo.device_type,
+                                        value=gcdev_trafo.tap_module)
+                        # print("Tap module calculated:", gcdev_trafo.tap_module)
+
+                    elif gcdev_trafo.tap_changer.tc_type == TapChangerTypes.Symmetrical:
+                        gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
+                        logger.add_info(msg="CGMES import: tap module calculated",
+                                        device=gcdev_trafo.device_type,
+                                        value=gcdev_trafo.tap_module)
+                        # print("Tap phase calculated:", gcdev_trafo.tap_phase)
+
+                    elif gcdev_trafo.tap_changer.tc_type == TapChangerTypes.Asymmetrical:
+                        # SET tap_module from its own TapChanger object
+                        gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
+                        logger.add_info(msg="CGMES import: tap module calculated",
+                                        device=gcdev_trafo.device_type,
+                                        value=gcdev_trafo.tap_module)
+                        # print("Tap module calculated:", gcdev_trafo.tap_module)
+                        gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
+                        logger.add_info(msg="CGMES import: tap module calculated",
+                                        device=gcdev_trafo.device_type,
+                                        value=gcdev_trafo.tap_module)
+                        # print("Tap phase calculated:", gcdev_trafo.tap_phase)
+
+                    else:
+                        logger.add_error(msg="CGMES import: TapChanger has no Type",
+                                         device=gcdev_trafo.device_type,
+                                         value=gcdev_trafo.tap_changer.tc_type)
+
+                elif isinstance(gcdev_trafo, gcdev.Transformer3W):
+                    winding_id = tap_changer.TransformerEnd.uuid
+                    # get the winding with the TapChanger
+                    winding_w_tc = find_object_by_idtag(
+                        object_list=[gcdev_trafo.winding1,
+                                     gcdev_trafo.winding2,
+                                     gcdev_trafo.winding3],
+                        target_idtag=winding_id
+                    )
+
+                    winding_w_tc.tap_changer.init_from_cgmes(
+                        low=tap_changer.lowStep,
+                        high=tap_changer.highStep,
+                        normal=tap_changer.normalStep,
+                        neutral=tap_changer.neutralStep,
+                        stepVoltageIncrement=tap_changer.stepVoltageIncrement,
+                        step=int(tap_changer.step),
+                        # asymmetry_angle=90,
+                        tc_type=tc_type
+                    )
+
+                    # SET tap_module and tap_phase from its own TapChanger object
+                    winding_w_tc.tap_module = winding_w_tc.tap_changer.get_tap_module()
+                    gcdev_trafo.tap_phase = winding_w_tc.tap_changer.get_tap_phase()
 
                 else:
-                    logger.add_error(msg="CGMES import: TapChanger has no Type",
-                                     device=gcdev_trafo.device_type,
-                                     value=gcdev_trafo.tap_changer.tc_type)
-
-            elif isinstance(gcdev_trafo, gcdev.Transformer3W):
-                winding_id = tap_changer.TransformerEnd.uuid
-                # get the winding with the TapChanger
-                winding_w_tc = find_object_by_idtag(
-                    object_list=[gcdev_trafo.winding1,
-                                 gcdev_trafo.winding2,
-                                 gcdev_trafo.winding3],
-                    target_idtag=winding_id
-                )
-
-                winding_w_tc.tap_changer.init_from_cgmes(
-                    low=tap_changer.lowStep,
-                    high=tap_changer.highStep,
-                    normal=tap_changer.normalStep,
-                    neutral=tap_changer.neutralStep,
-                    stepVoltageIncrement=tap_changer.stepVoltageIncrement,
-                    step=int(tap_changer.step),
-                    # asymmetry_angle=90,
-                    tc_type=tc_type
-                )
-
-                # SET tap_module and tap_phase from its own TapChanger object
-                winding_w_tc.tap_module = winding_w_tc.tap_changer.get_tap_module()
-                gcdev_trafo.tap_phase = winding_w_tc.tap_changer.get_tap_phase()
+                    logger.add_error(msg='Transformer not found for TapChanger',
+                                     device=tap_changer.rdfid,
+                                     device_class=tap_changer.tpe,
+                                     device_property="transformer for powertransformerend",
+                                     value=None,
+                                     expected_value=trafo_id)
 
             else:
-                logger.add_error(msg='Transformer not found for TapChanger',
-                                 device=tap_changer.rdfid,
+                logger.add_error("tap_changer.TransformerEnd is None",
                                  device_class=tap_changer.tpe,
-                                 device_property="transformer for powertransformerend",
-                                 value=None,
-                                 expected_value=trafo_id)
+                                 device=tap_changer.rdfid,
+                                 device_property="TransformerEnd")
 
 
 def get_gcdev_shunts(cgmes_model: CgmesCircuit,
@@ -1956,11 +1992,31 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
     ds_type = cgmes_model.get_class_type("Disconnector")
     lbs_type = cgmes_model.get_class_type("LoadBreakSwitch")
     for e in cgmes_model.cgmes_assets.CurrentLimit_list:
-        if not isinstance(e.OperationalLimitSet, str):
-            conducting_equipment = e.OperationalLimitSet.Terminal.ConductingEquipment
-            if isinstance(conducting_equipment, (sw_type, br_type, ds_type, lbs_type)):
-                branch_id = conducting_equipment.uuid
-                rates_dict[branch_id] = e.value
+
+        if e.OperationalLimitSet is not None:
+
+            if not isinstance(e.OperationalLimitSet, str):
+
+                if hasattr(e.OperationalLimitSet.Terminal, "ConductingEquipment"):
+                    conducting_equipment = e.OperationalLimitSet.Terminal.ConductingEquipment
+                    if isinstance(conducting_equipment, (sw_type, br_type, ds_type, lbs_type)):
+                        branch_id = conducting_equipment.uuid
+                        rates_dict[branch_id] = e.value
+                else:
+                    logger.add_error("No ConductingEquipment",
+                                     device_class=e.OperationalLimitSet.Terminal.tpe,
+                                     device_property="ConductingEquipment",
+                                     device=e.OperationalLimitSet.Terminal.rdfid,)
+            else:
+                logger.add_error("OperationalLimitSet reference not found",
+                                 device_class=e.tpe,
+                                 device_property="OperationalLimitSet",
+                                 device=e.OperationalLimitSet, )
+        else:
+            logger.add_error("No OperationalLimitSet",
+                             device_class=e.tpe,
+                             device_property="OperationalLimitSet",
+                             device=e.rdfid, )
 
     # convert switch
     for device_list in [cgmes_model.cgmes_assets.Switch_list,
@@ -2339,11 +2395,14 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     device_to_terminal_dict = get_gcdev_device_to_terminal_dict(cgmes_model=cgmes_model,
                                                                 logger=logger)
 
-    calc_node_dict: Dict[str, gcdev.Bus] = get_gcdev_buses(cgmes_model=cgmes_model,
-                                                           gc_model=gc_model,
-                                                           v_dict=sv_volt_dict,
-                                                           cn_look_up=cn_look_up,
-                                                           logger=logger)
+    calc_node_dict, fatal_error = get_gcdev_buses(cgmes_model=cgmes_model,
+                                                   gc_model=gc_model,
+                                                   v_dict=sv_volt_dict,
+                                                   cn_look_up=cn_look_up,
+                                                   logger=logger)
+
+    if fatal_error:
+        return gc_model
 
     cn_dict = get_gcdev_connectivity_nodes(cgmes_model=cgmes_model,
                                            gcdev_model=gc_model,

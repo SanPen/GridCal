@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1182</width>
-    <height>785</height>
+    <width>1198</width>
+    <height>738</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -1521,7 +1521,7 @@
                           </size>
                          </property>
                          <property name="toolTip">
-                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Subjects:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;col, idx, val, colobj, idxobj&lt;/p&gt;&lt;p&gt;colobj and idxobj allow accessing the objects that may be represented at the index or the columns. With these you can access their internal properties for filtering.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Operators:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&amp;gt;, &amp;lt;, &amp;gt;=, &amp;lt;=, !=, =, like, notlike, starts, ends&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Examples:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Filter all object names that are similar to 'alba' and their Vnom property &amp;gt; 200&lt;/p&gt;&lt;p&gt;-&amp;gt; idx&lt;span style=&quot; font-style:italic;&quot;&gt;obj.name like alba and idxobj.Vnom &amp;gt; 200&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type anything to search on the name property. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;For more advanced searches you can compose a filter expression:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Subjects:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;col, idx, val, colobj, idxobj&lt;/p&gt;&lt;p&gt;colobj and idxobj allow accessing the objects that may be represented at the index or the columns. With these you can access their internal properties for filtering.&lt;/p&gt;&lt;p&gt;If none is specified idxobj is taken&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Operators:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&amp;gt;, &amp;lt;, &amp;gt;=, &amp;lt;=, !=, =, like, notlike, starts, ends&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Examples:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Filter all object names that are similar to 'alba' and their Vnom property &amp;gt; 200&lt;/p&gt;&lt;p&gt;-&amp;gt; idx&lt;span style=&quot; font-style:italic;&quot;&gt;obj.name like alba and idxobj.Vnom &amp;gt; 200&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Equivalently:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;-&amp;gt; name like alba and Vnom &amp;gt; 200&lt;/span&gt;&lt;/p&gt;&lt;p&gt;[Enter] to search &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                         </widget>
                        </item>
@@ -8374,237 +8374,6 @@
                <property name="topMargin">
                 <number>0</number>
                </property>
-               <item row="3" column="2">
-                <widget class="QComboBox" name="stochastic_pf_method_comboBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0" colspan="2">
-                <widget class="QLabel" name="label_55">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Method</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="0">
-                <widget class="QLabel" name="label_78">
-                 <property name="minimumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="pixmap">
-                  <pixmap resource="icons.qrc">:/Icons/icons/blackout.svg</pixmap>
-                 </property>
-                 <property name="scaledContents">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="1" colspan="2">
-                <widget class="QLabel" name="label_79">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>85</red>
-                       <green>87</green>
-                       <blue>83</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>85</red>
-                       <green>87</green>
-                       <blue>83</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <pointsize>16</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Cascading</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0" colspan="2">
-                <widget class="QLabel" name="label_12">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Voltage variance</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="0" colspan="2">
-                <widget class="QLabel" name="label_13">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Samples</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1" colspan="2">
-                <widget class="QLabel" name="label_47">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>85</red>
-                       <green>87</green>
-                       <blue>83</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>85</red>
-                       <green>87</green>
-                       <blue>83</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <pointsize>16</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Stochastic power flow</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0" colspan="3">
-                <widget class="Line" name="line_4">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Shadow::Plain</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>4</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Orientation::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="0" colspan="3">
-                <widget class="QLabel" name="label_138">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
                <item row="9" column="0" colspan="3">
                 <widget class="Line" name="line_10">
                  <property name="palette">
@@ -8662,6 +8431,9 @@
                    <pointsize>9</pointsize>
                   </font>
                  </property>
+                 <property name="toolTip">
+                  <string>Maximum number of samples</string>
+                 </property>
                  <property name="minimum">
                   <number>10</number>
                  </property>
@@ -8673,25 +8445,15 @@
                  </property>
                 </widget>
                </item>
-               <item row="12" column="1">
-                <spacer name="verticalSpacer_8">
-                 <property name="orientation">
-                  <enum>Qt::Orientation::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
                <item row="5" column="2">
                 <widget class="QSpinBox" name="tolerance_stochastic_spinBox">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
                   </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Monte Carlo variance until stop</string>
                  </property>
                  <property name="prefix">
                   <string>1e-</string>
@@ -8706,6 +8468,327 @@
                   <number>4</number>
                  </property>
                 </widget>
+               </item>
+               <item row="10" column="2">
+                <widget class="QSpinBox" name="cascading_islands_spinBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Number of islands produced until the analysis stops</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>999999</number>
+                 </property>
+                 <property name="value">
+                  <number>2</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
+                <widget class="QLabel" name="label_78">
+                 <property name="minimumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="icons.qrc">:/Icons/icons/blackout.svg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" colspan="2">
+                <widget class="QLabel" name="label_47">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>16</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Stochastic power flow</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="16" column="0" colspan="2">
+                <widget class="QLabel" name="label_157">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Samples</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="1" colspan="2">
+                <widget class="QLabel" name="label_79">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>16</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Cascading</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="0" colspan="3">
+                <widget class="QLabel" name="label_156">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="16" column="2">
+                <widget class="QSpinBox" name="max_iterations_reliability_spinBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Maximum number of Monte Carlo samples</string>
+                 </property>
+                 <property name="minimum">
+                  <number>10</number>
+                 </property>
+                 <property name="maximum">
+                  <number>99999999</number>
+                 </property>
+                 <property name="value">
+                  <number>1000</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0" colspan="2">
+                <widget class="QLabel" name="label_55">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Method</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="0">
+                <widget class="QLabel" name="label_99">
+                 <property name="minimumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="icons.qrc">:/Icons/icons/reliability.svg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0" colspan="3">
+                <widget class="QLabel" name="label_138">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="14" column="0" colspan="3">
+                <widget class="Line" name="line_6">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Shadow::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="10" column="0" colspan="2">
+                <widget class="QLabel" name="label_28">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Aditional islands until stop</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="2">
+                <widget class="QComboBox" name="stochastic_pf_method_comboBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Stochastic power flow method</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="17" column="1">
+                <spacer name="verticalSpacer_8">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
                </item>
                <item row="0" column="0">
                 <widget class="QLabel" name="label_75">
@@ -8732,33 +8815,153 @@
                  </property>
                 </widget>
                </item>
-               <item row="10" column="0" colspan="2">
-                <widget class="QLabel" name="label_28">
+               <item row="1" column="0" colspan="3">
+                <widget class="Line" name="line_4">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Shadow::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0" colspan="2">
+                <widget class="QLabel" name="label_12">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
                   </font>
                  </property>
                  <property name="text">
-                  <string>Aditional islands until stop</string>
+                  <string>Voltage variance</string>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="2">
-                <widget class="QSpinBox" name="cascading_islands_spinBox">
+               <item row="6" column="0" colspan="2">
+                <widget class="QLabel" name="label_13">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
                   </font>
                  </property>
-                 <property name="minimum">
-                  <number>1</number>
+                 <property name="text">
+                  <string>Samples</string>
                  </property>
-                 <property name="maximum">
-                  <number>999999</number>
+                </widget>
+               </item>
+               <item row="13" column="1" colspan="2">
+                <widget class="QLabel" name="label_100">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
                  </property>
-                 <property name="value">
-                  <number>2</number>
+                 <property name="font">
+                  <font>
+                   <pointsize>16</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Reliability</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="15" column="0" colspan="2">
+                <widget class="QLabel" name="label_158">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Method</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="15" column="2">
+                <widget class="QComboBox" name="reliability_method_comboBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Reliability evaluation method</string>
                  </property>
                 </widget>
                </item>
@@ -10222,8 +10425,8 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1182</width>
-     <height>20</height>
+     <width>1198</width>
+     <height>21</height>
     </rect>
    </property>
    <property name="font">
@@ -10288,6 +10491,7 @@ QProgressBar::chunk{
     <addaction name="separator"/>
     <addaction name="actionShort_Circuit"/>
     <addaction name="actionVoltage_stability"/>
+    <addaction name="actionContingency_analysis"/>
     <addaction name="separator"/>
     <addaction name="actionOPF"/>
     <addaction name="actionOpf_to_Power_flow"/>
@@ -10302,12 +10506,8 @@ QProgressBar::chunk{
     <addaction name="actionPower_flow_Stochastic"/>
     <addaction name="actionInvestments_evaluation"/>
     <addaction name="actionAdd_selected_as_new_investment"/>
+    <addaction name="actionReliability"/>
     <addaction name="actionBlackout_cascade"/>
-    <addaction name="separator"/>
-    <addaction name="actionContingency_analysis"/>
-    <addaction name="actionInitialize_contingencies"/>
-    <addaction name="actionAdd_selected_to_contingency"/>
-    <addaction name="actionAdd_selected_as_remedial_action"/>
     <addaction name="separator"/>
     <addaction name="actionInputs_analysis"/>
     <addaction name="actionStorage_location_suggestion"/>
@@ -10331,6 +10531,9 @@ QProgressBar::chunk{
     <addaction name="actionScale"/>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
+    <addaction name="actionInitialize_contingencies"/>
+    <addaction name="actionAdd_selected_to_contingency"/>
+    <addaction name="actionAdd_selected_as_remedial_action"/>
     <addaction name="actionFix_generators_active_based_on_the_power"/>
     <addaction name="actionFix_loads_active_based_on_the_power"/>
     <addaction name="actionDelete_inconsistencies"/>
@@ -10339,26 +10542,12 @@ QProgressBar::chunk{
     <addaction name="actionSetSelectedBusCountry"/>
     <addaction name="actionSetSelectedBusArea"/>
     <addaction name="actionSetSelectedBusZone"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuDiagrams">
     <property name="title">
      <string>Diagram</string>
     </property>
-    <widget class="QMenu" name="menuBus_Branch_options">
-     <property name="font">
-      <font>
-       <pointsize>9</pointsize>
-      </font>
-     </property>
-     <property name="title">
-      <string>Select buses by</string>
-     </property>
-     <addaction name="separator"/>
-     <addaction name="actionSelect_buses_by_area"/>
-     <addaction name="actionSelect_buses_by_zone"/>
-     <addaction name="actionSelect_buses_by_country"/>
-     <addaction name="separator"/>
-    </widget>
     <addaction name="actionAdd_general_bus_branch_diagram"/>
     <addaction name="actionNew_bus_branch_diagram_from_selection"/>
     <addaction name="actionBigger_nodes"/>
@@ -10369,11 +10558,13 @@ QProgressBar::chunk{
     <addaction name="actionDisable_all_results_tags"/>
     <addaction name="actionEnable_all_results_tags"/>
     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
-    <addaction name="menuBus_Branch_options"/>
+    <addaction name="actionColor_buses_by"/>
+    <addaction name="actionSelect_buses_by"/>
     <addaction name="separator"/>
     <addaction name="actionAdd_map"/>
     <addaction name="actionConsolidate_diagram_coordinates"/>
     <addaction name="actionReset_coordinates"/>
+    <addaction name="actionColor_substations_by"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_in"/>
     <addaction name="actionZoom_out"/>
@@ -10447,6 +10638,7 @@ QProgressBar::chunk{
    <addaction name="separator"/>
    <addaction name="actionInvestments_evaluation"/>
    <addaction name="actionPower_flow_Stochastic"/>
+   <addaction name="actionReliability"/>
    <addaction name="actionClustering"/>
    <addaction name="actionUse_clustering"/>
    <addaction name="actionEdit_simulation_time_limits"/>
@@ -10937,7 +11129,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/ptdf.svg</normaloff>:/Icons/icons/ptdf.svg</iconset>
    </property>
    <property name="text">
-    <string>Linear Analysis</string>
+    <string>Linear analysis</string>
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Linear analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform linear analysis with distribution factors (PTDF, LODF)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -11008,7 +11200,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/dcopf2ts.svg</normaloff>:/Icons/icons/dcopf2ts.svg</iconset>
    </property>
    <property name="text">
-    <string>Copy OPF generation to profiles (destructive)</string>
+    <string>Copy OPF generation to database (destructive)</string>
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Copy OPF data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Destructive copy of the OPF generation results to the input profiles&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -11798,48 +11990,6 @@ QProgressBar::chunk{
     <string>Ctrl+C, Ctrl+D</string>
    </property>
   </action>
-  <action name="actionSelect_buses_by_area">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Select buses by area</string>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-    </font>
-   </property>
-  </action>
-  <action name="actionSelect_buses_by_zone">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Select buses by zone</string>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-    </font>
-   </property>
-  </action>
-  <action name="actionSelect_buses_by_country">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/map.svg</normaloff>:/Icons/icons/map.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Select buses by country</string>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-    </font>
-   </property>
-  </action>
   <action name="actionScale">
    <property name="icon">
     <iconset resource="icons.qrc">
@@ -12020,6 +12170,9 @@ QProgressBar::chunk{
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add remedial action&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create a new remedial action from the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+A, Ctrl+R</string>
+   </property>
   </action>
   <action name="actionDetect_facilities">
    <property name="icon">
@@ -12056,6 +12209,74 @@ QProgressBar::chunk{
     <font>
      <pointsize>10</pointsize>
     </font>
+   </property>
+  </action>
+  <action name="actionReliability">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/reliability.svg</normaloff>:/Icons/icons/reliability.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Reliability analysis</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Reliability study&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the reliability calculation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionColor_buses_by">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Color buses by...</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="actionColor_substations_by">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Color substations by...</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionSelect_buses_by">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Select buses by...</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
  </widget>

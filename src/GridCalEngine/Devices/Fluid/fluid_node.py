@@ -14,6 +14,22 @@ from GridCalEngine.Devices.profile import Profile
 
 
 class FluidNode(PhysicalDevice):
+    __slots__ = (
+        'min_level',
+        'max_level',
+        'max_soc',
+        'min_soc',
+        'initial_level',
+        'spillage_cost',
+        'inflow',
+        '_bus',
+        'build_status',
+        'color',
+        '_inflow_prof',
+        '_spillage_cost_prof',
+        '_max_soc_prof',
+        '_min_soc_prof',
+    )
 
     def __init__(self,
                  name: str = '',
@@ -97,7 +113,8 @@ class FluidNode(PhysicalDevice):
                       definition='Flow of fluid coming from the rain',
                       profile_name='inflow_prof')
 
-        self.register(key='color', units='', tpe=str, definition='Color to paint the device in the map diagram')
+        self.register(key='color', units='', tpe=str, definition='Color to paint the device in the map diagram',
+                      is_color=True)
 
     @property
     def spillage_cost_prof(self) -> Profile:

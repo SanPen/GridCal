@@ -75,8 +75,6 @@ dependencies = ['setuptools>=41.0.1',
                 'wheel>=0.37.2',
                 "PySide6>=6.8.0",  # 5.14 breaks the UI generation for development, 6.7.0 breaks all
                 "pytest>=7.2",
-                "darkdetect",
-                "pyqtdarktheme",
                 "websockets",
                 "opencv-python>=4.10.0.84",
                 "packaging",
@@ -207,7 +205,7 @@ setup(
     long_description_content_type='text/markdown',  # Optional (see note above)
     url='https://github.com/SanPen/GridCal',  # Optional
     author='Santiago Peñate Vera et. Al.',  # Optional
-    author_email='santiago@gridcal.org',  # Optional
+    author_email='spenate@eroots.tech',  # Optional
     classifiers=[
         'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Programming Language :: Python :: 3.8',

@@ -209,7 +209,7 @@ def test_get_rate_ac_line_segment_returns_constant():
     assert get_rate_ac_line_segment() == 1e-20
 
 
-def test_get_voltage_terminal_topologicalnode_nomivalvoltage_set_retuns_value():
+def test_get_voltage_terminal_topologicalnode_nomivalvoltage_set_retuns_value()-> float | None:
     t = Terminal()
     t.TopologicalNode = TopologicalNode()
     t.TopologicalNode.BaseVoltage = BaseVoltage()
@@ -217,7 +217,7 @@ def test_get_voltage_terminal_topologicalnode_nomivalvoltage_set_retuns_value():
     assert get_voltage_terminal(t, None) == 10
 
 
-def test_get_voltage_terminal_no_topologicalnode_retuns_None():
+def test_get_voltage_terminal_no_topologicalnode_retuns_None() -> float | None:
     t = Terminal()
     t.TopologicalNode = None
     assert get_voltage_terminal(t, None) is None

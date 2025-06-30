@@ -9,6 +9,7 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice, Device
 
 
 class Technology(EditableDevice):
+    __slots__ = ('name2', 'name3', 'name4', 'color')
 
     def __init__(self, name: str = '',
                  code: str = '',
@@ -36,4 +37,4 @@ class Technology(EditableDevice):
         self.register(key='name2', units='', tpe=str, definition='Name 2 of the technology')
         self.register(key='name3', units='', tpe=str, definition='Name 3 of the technology')
         self.register(key='name4', units='', tpe=str, definition='Name 4 of the technology')
-        self.register(key='color', units='', tpe=str, definition='Color to paint')
+        self.register(key='color', units='', tpe=str, definition='Color to paint', is_color=True)
