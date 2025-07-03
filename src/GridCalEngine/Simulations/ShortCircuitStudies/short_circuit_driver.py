@@ -250,7 +250,7 @@ class ShortCircuitDriver(DriverTemplate):
                                           branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
                                           opf_results=self.opf_results,
                                           logger=self.logger,
-                                          fill_three_phase=True
+                                          fill_three_phase=False
                                           )
 
         calculation_inputs = nc.split_into_islands(

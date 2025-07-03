@@ -68,16 +68,16 @@ def expand(n, arr: Vec, idx: IntVec, default: float) -> Vec:
 
 
 @nb.njit(cache=True, fastmath=True)
-def compute_zip_power(S0: CxVec, I0: CxVec, Y0: CxVec, V: CxVec) -> CxVec:
+def compute_zip_power(S0: CxVec, I0: CxVec, Y0: CxVec, Vm: CxVec) -> CxVec:
     """
     Compute the equivalent power injection
     :param S0: Base power (P + jQ)
     :param I0: Base current (Ir + jIi)
     :param Y0: Base admittance (G + jB)
-    :param Vm: voltage module
+    :param Vm: voltage module, for the 3ph power flow the complete voltage phasor is used (Vm + Va)
     :return: complex power injection
     """
-    return S0 + np.conj(I0 + Y0 * V) * V
+    return S0 + np.conj(I0 + Y0 * Vm) * Vm
 
 
 def compute_power(Ybus: csc_matrix, V: CxVec) -> CxVec:
