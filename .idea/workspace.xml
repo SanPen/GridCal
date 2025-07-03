@@ -28,7 +28,18 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed bug when computing reactive power limits&#10;Added reactive power limit test (not passing for the slack)" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Line-to-ground short-circuit WORKING">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/data_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/data_base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_3_phase_pf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_3_phase_pf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_3_phase_sc.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_3ph_admittance_matrix.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_3ph_admittance_matrix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/power_flow_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/power_flow_3ph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -88,17 +99,10 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
-  <component name="GithubProjectSettings">
-    <option name="branchProtectionPatterns">
-      <list>
-        <option value="master" />
-      </list>
-    </option>
-  </component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/SanPen/GridCal.git&quot;,
-    &quot;accountId&quot;: &quot;cb83a36c-6a26-4d28-9aa3-3af0083cd55d&quot;
+    &quot;accountId&quot;: &quot;1acef425-303f-45a5-9f13-1a5d8e86b985&quot;
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
@@ -129,7 +133,7 @@
   &quot;associatedIndex&quot;: 8
 }</component>
   <component name="ProjectId" id="1bGvT9JqoJhBes9WGdphyWxAfMi" />
-  <component name="ProjectLevelVcsManager">
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="false" id="Update" />
     <ConfirmationsSetting value="2" id="Add" />
   </component>
@@ -137,151 +141,156 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
-    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
-    &quot;Python tests.Nosetests for test_power_flow.test_zip.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for test_topology_processor.test_topology_rts.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for tests.test_ac_opf.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for tests.test_hydro.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_topology_processor.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in deep_copy_test.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in test_topology_processor.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests in tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for src.tests.test_admittance_matrix.test_fast_admittance_update.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for src.tests.test_basic.test_gridcal_basic_pi.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_line_circuit_idx_setter.test_valid_circuit_idx.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_load_save_load.test_load_save_load_xlsx.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for src.tests.test_ntc.test_activs_2000_acdc.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_power_flow.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_power_flow.test_voltage_control_with_ltc.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for src.tests.test_power_flow_acdc_generalized.test_ieee_grids.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_power_flow_acdc_generalized.test_voltage_control_with_ltc.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_profiles.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_tower_composition.test_acha.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_transformer_controls.test_v_control_true.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for src.tests.test_transformer_type.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_transformer_type.test_transformer_type.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_ac_opf.test_superconductors_handling.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_admittance_matrix.test_fast_admittance.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_basic.test_gridcal_basic_pi.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_grid_diff.test_add_stuff_roundtrip.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_gslv_conversion.test_gslv_compatibility.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_line_circuit_idx_setter.test_valid_circuit_idx.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_load_save_load.test_load_save_load2.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_ntc.test_activs_2000.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_ntc.test_activs_2000_acdc.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_opf.test_opf_battery_shedding_copper_plate.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_opf.test_opf_hvdc_controls.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_opf.test_opf_load_not_shedding_because_of_line.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_opf.test_opf_load_shedding.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_opf.test_opf_load_shedding_because_of_line.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_opf.test_opf_load_shedding_copper_plate.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_power_flow.test_reactive_power_splitting.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_ptdf.test_ptdf_generation_contingencies.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_tower_composition.test_acha.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_tower_composition.test_rating.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_tower_composition.test_ratings_with_neutral.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_tower_composition.test_tower_composition.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_transformer_controls.test_v_control_true.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_transformer_type.test_psse_conversion3.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_transformer_type.test_transformer_type.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_ac_opf.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_admittance_matrix.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_basic.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_contingency.py.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest in test_contongencies_filters.py.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest in test_grid_diff.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_gslv_conversion.py.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest in test_nonlinear_contingency.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_ntc.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_opf.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_power_flow.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_power_flow_acdc_generalized.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_ptdf.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_tower_composition.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_transformer_controls.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_transformer_type.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
-    &quot;Python.GridCalMain.executor&quot;: &quot;Run&quot;,
-    &quot;Python.LineBuilderDialogue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.admittance_matrices.executor&quot;: &quot;Run&quot;,
-    &quot;Python.block_editor.executor&quot;: &quot;Run&quot;,
-    &quot;Python.block_editor2.executor&quot;: &quot;Run&quot;,
-    &quot;Python.blocks_example.executor&quot;: &quot;Run&quot;,
-    &quot;Python.blocks_example2.executor&quot;: &quot;Run&quot;,
-    &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
-    &quot;Python.circuit_to_optimods.executor&quot;: &quot;Run&quot;,
-    &quot;Python.demo_code.executor&quot;: &quot;Run&quot;,
-    &quot;Python.demo_code2.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.demo_code3.executor&quot;: &quot;Run&quot;,
-    &quot;Python.examples.executor&quot;: &quot;Run&quot;,
-    &quot;Python.grid_merge.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ieee9.executor&quot;: &quot;Run&quot;,
-    &quot;Python.load_designer.executor&quot;: &quot;Run&quot;,
-    &quot;Python.make.executor&quot;: &quot;Run&quot;,
-    &quot;Python.make_wheels.executor&quot;: &quot;Run&quot;,
-    &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
-    &quot;Python.numba_example.executor&quot;: &quot;Run&quot;,
-    &quot;Python.overhead_line_calcs.executor&quot;: &quot;Run&quot;,
-    &quot;Python.paper_checks.executor&quot;: &quot;Run&quot;,
-    &quot;Python.post_example.executor&quot;: &quot;Run&quot;,
-    &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.python_console.executor&quot;: &quot;Run&quot;,
-    &quot;Python.raw_imp_exp_test.executor&quot;: &quot;Run&quot;,
-    &quot;Python.readme_checks.executor&quot;: &quot;Run&quot;,
-    &quot;Python.readme_example.executor&quot;: &quot;Run&quot;,
-    &quot;Python.reliability_study_run.executor&quot;: &quot;Run&quot;,
-    &quot;Python.rms_model_editor.executor&quot;: &quot;Run&quot;,
-    &quot;Python.rms_model_editor_dialogue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.run.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.run_child_1.executor&quot;: &quot;Run&quot;,
-    &quot;Python.run_master.executor&quot;: &quot;Run&quot;,
-    &quot;Python.run_server_farm.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.scripting_simbolic_framework_0.executor&quot;: &quot;Run&quot;,
-    &quot;Python.server_example.executor&quot;: &quot;Run&quot;,
-    &quot;Python.short_circuit_driver.executor&quot;: &quot;Run&quot;,
-    &quot;Python.stack_plot_pos_neg.executor&quot;: &quot;Run&quot;,
-    &quot;Python.symbolic_examples.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_admittance_matrix.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_gslv_conversion.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.test_power_flow.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_raw_cgmes_cross_roundtrip.executor&quot;: &quot;Run&quot;,
-    &quot;Python.toast_widget.executor&quot;: &quot;Run&quot;,
-    &quot;Python.update_gui_file (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.update_gui_file (2).executor&quot;: &quot;Run&quot;,
-    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
-    &quot;Python.upload_to_pypi.executor&quot;: &quot;Run&quot;,
-    &quot;Python.y_bus_composition.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.y_bus_composition_2.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;devel&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal_debug&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
-    &quot;two.files.diff.last.used.file&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Git.Branch.Popup.ShowAllRemotes": "true",
+    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
+    "Python tests.Nosetests for test_power_flow.test_zip.executor": "Debug",
+    "Python tests.Nosetests for test_topology_processor.test_topology_rts.executor": "Debug",
+    "Python tests.Nosetests for tests.test_ac_opf.executor": "Run",
+    "Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor": "Debug",
+    "Python tests.Nosetests for tests.test_hydro.executor": "Run",
+    "Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor": "Run",
+    "Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor": "Run",
+    "Python tests.Nosetests for tests.test_topology_processor.executor": "Run",
+    "Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor": "Run",
+    "Python tests.Nosetests in admittance_matrix_test.py.executor": "Run",
+    "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
+    "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
+    "Python tests.Nosetests in tests.executor": "Run",
+    "Python tests.Python tests for test_3ph_admittance_matrix.test_3x3_abc.executor": "Debug",
+    "Python tests.Python tests in test_3_phase_pf.py.executor": "Run",
+    "Python tests.Python tests in test_3ph_admittance_matrix.py.executor": "Run",
+    "Python tests.Python tests in tests.executor": "Run",
+    "Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor": "Debug",
+    "Python tests.pytest for src.tests.test_admittance_matrix.test_fast_admittance_update.executor": "Debug",
+    "Python tests.pytest for src.tests.test_basic.test_gridcal_basic_pi.executor": "Debug",
+    "Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true.executor": "Run",
+    "Python tests.pytest for src.tests.test_line_circuit_idx_setter.test_valid_circuit_idx.executor": "Run",
+    "Python tests.pytest for src.tests.test_load_save_load.test_load_save_load_xlsx.executor": "Debug",
+    "Python tests.pytest for src.tests.test_ntc.test_activs_2000_acdc.executor": "Run",
+    "Python tests.pytest for src.tests.test_power_flow.executor": "Run",
+    "Python tests.pytest for src.tests.test_power_flow.test_voltage_control_with_ltc.executor": "Debug",
+    "Python tests.pytest for src.tests.test_power_flow_acdc_generalized.test_ieee_grids.executor": "Run",
+    "Python tests.pytest for src.tests.test_power_flow_acdc_generalized.test_voltage_control_with_ltc.executor": "Run",
+    "Python tests.pytest for src.tests.test_profiles.executor": "Run",
+    "Python tests.pytest for src.tests.test_tower_composition.test_acha.executor": "Run",
+    "Python tests.pytest for src.tests.test_transformer_controls.test_v_control_true.executor": "Debug",
+    "Python tests.pytest for src.tests.test_transformer_type.executor": "Run",
+    "Python tests.pytest for src.tests.test_transformer_type.test_transformer_type.executor": "Debug",
+    "Python tests.pytest for test_ac_opf.test_superconductors_handling.executor": "Run",
+    "Python tests.pytest for test_admittance_matrix.test_fast_admittance.executor": "Run",
+    "Python tests.pytest for test_basic.test_gridcal_basic_pi.executor": "Debug",
+    "Python tests.pytest for test_grid_diff.test_add_stuff_roundtrip.executor": "Run",
+    "Python tests.pytest for test_gslv_conversion.test_gslv_compatibility.executor": "Debug",
+    "Python tests.pytest for test_line_circuit_idx_setter.test_valid_circuit_idx.executor": "Run",
+    "Python tests.pytest for test_load_save_load.test_load_save_load2.executor": "Run",
+    "Python tests.pytest for test_ntc.test_activs_2000.executor": "Debug",
+    "Python tests.pytest for test_ntc.test_activs_2000_acdc.executor": "Run",
+    "Python tests.pytest for test_opf.test_opf_battery_shedding_copper_plate.executor": "Run",
+    "Python tests.pytest for test_opf.test_opf_hvdc_controls.executor": "Run",
+    "Python tests.pytest for test_opf.test_opf_load_not_shedding_because_of_line.executor": "Debug",
+    "Python tests.pytest for test_opf.test_opf_load_shedding.executor": "Debug",
+    "Python tests.pytest for test_opf.test_opf_load_shedding_because_of_line.executor": "Run",
+    "Python tests.pytest for test_opf.test_opf_load_shedding_copper_plate.executor": "Debug",
+    "Python tests.pytest for test_power_flow.test_reactive_power_splitting.executor": "Debug",
+    "Python tests.pytest for test_ptdf.test_ptdf_generation_contingencies.executor": "Debug",
+    "Python tests.pytest for test_tower_composition.test_acha.executor": "Run",
+    "Python tests.pytest for test_tower_composition.test_rating.executor": "Debug",
+    "Python tests.pytest for test_tower_composition.test_ratings_with_neutral.executor": "Debug",
+    "Python tests.pytest for test_tower_composition.test_tower_composition.executor": "Run",
+    "Python tests.pytest for test_transformer_controls.test_v_control_true.executor": "Debug",
+    "Python tests.pytest for test_transformer_type.test_psse_conversion3.executor": "Debug",
+    "Python tests.pytest for test_transformer_type.test_transformer_type.executor": "Run",
+    "Python tests.pytest in test_ac_opf.py.executor": "Run",
+    "Python tests.pytest in test_admittance_matrix.py.executor": "Run",
+    "Python tests.pytest in test_basic.py.executor": "Run",
+    "Python tests.pytest in test_contingency.py.executor": "Debug",
+    "Python tests.pytest in test_contongencies_filters.py.executor": "Debug",
+    "Python tests.pytest in test_grid_diff.py.executor": "Run",
+    "Python tests.pytest in test_gslv_conversion.py.executor": "Debug",
+    "Python tests.pytest in test_nonlinear_contingency.py.executor": "Run",
+    "Python tests.pytest in test_ntc.py.executor": "Run",
+    "Python tests.pytest in test_opf.py.executor": "Run",
+    "Python tests.pytest in test_power_flow.py.executor": "Run",
+    "Python tests.pytest in test_power_flow_acdc_generalized.py.executor": "Run",
+    "Python tests.pytest in test_ptdf.py.executor": "Run",
+    "Python tests.pytest in test_tower_composition.py.executor": "Run",
+    "Python tests.pytest in test_transformer_controls.py.executor": "Run",
+    "Python tests.pytest in test_transformer_type.py.executor": "Run",
+    "Python tests.pytest in tests.executor": "Run",
+    "Python.AnalysisDialogue.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Run",
+    "Python.GridCalMain.executor": "Run",
+    "Python.IEEE 13-bus Test Feeder Case.executor": "Run",
+    "Python.LineBuilderDialogue.executor": "Run",
+    "Python.admittance_matrices.executor": "Run",
+    "Python.block_editor.executor": "Run",
+    "Python.block_editor2.executor": "Run",
+    "Python.blocks_example.executor": "Run",
+    "Python.blocks_example2.executor": "Run",
+    "Python.cgmes_rdfs_graph.executor": "Run",
+    "Python.circuit_to_optimods.executor": "Run",
+    "Python.demo_code.executor": "Run",
+    "Python.demo_code2.executor": "Debug",
+    "Python.demo_code3.executor": "Run",
+    "Python.examples.executor": "Run",
+    "Python.grid_merge.executor": "Run",
+    "Python.ieee9.executor": "Run",
+    "Python.load_designer.executor": "Run",
+    "Python.make.executor": "Run",
+    "Python.make_wheels.executor": "Run",
+    "Python.new_circuit_objects.executor": "Run",
+    "Python.numba_example.executor": "Run",
+    "Python.overhead_line_calcs.executor": "Run",
+    "Python.paper_checks.executor": "Run",
+    "Python.post_example.executor": "Run",
+    "Python.power_flow_3ph.executor": "Run",
+    "Python.pymoo_example.executor": "Debug",
+    "Python.python_console.executor": "Run",
+    "Python.raw_imp_exp_test.executor": "Run",
+    "Python.readme_checks.executor": "Run",
+    "Python.readme_example.executor": "Run",
+    "Python.reliability_study_run.executor": "Run",
+    "Python.rms_model_editor.executor": "Run",
+    "Python.rms_model_editor_dialogue.executor": "Run",
+    "Python.run.executor": "Debug",
+    "Python.run_child_1.executor": "Run",
+    "Python.run_master.executor": "Run",
+    "Python.run_server_farm.executor": "Debug",
+    "Python.scripting_simbolic_framework_0.executor": "Run",
+    "Python.server_example.executor": "Run",
+    "Python.short_circuit_driver.executor": "Run",
+    "Python.stack_plot_pos_neg.executor": "Run",
+    "Python.symbolic_examples.executor": "Run",
+    "Python.test_admittance_matrix.executor": "Run",
+    "Python.test_gslv_conversion.executor": "Debug",
+    "Python.test_power_flow.executor": "Run",
+    "Python.test_raw_cgmes_cross_roundtrip.executor": "Run",
+    "Python.toast_widget.executor": "Run",
+    "Python.update_gui_file (1).executor": "Run",
+    "Python.update_gui_file (2).executor": "Run",
+    "Python.update_gui_file.executor": "Run",
+    "Python.upload_to_pypi.executor": "Run",
+    "Python.y_bus_composition.executor": "Debug",
+    "Python.y_bus_composition_2.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "#398 on #343__3phase",
+    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal_debug",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "preferences.keymap",
+    "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -303,7 +312,7 @@
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Substation" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.power_flow_3ph">
+  <component name="RunManager">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -777,29 +786,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="convert_to_gridcal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/three_phase/ingelectus_cases" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/three_phase/ingelectus_cases/convert_to_gridcal.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="paper_checks" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -1087,6 +1073,21 @@
       <option name="docutils_open_in_browser" value="false" />
       <method v="2" />
     </configuration>
+    <configuration name="Python tests for test_3ph_admittance_matrix.test_3x3_abc" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_3ph_admittance_matrix.test_3x3_abc&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -1167,26 +1168,26 @@
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
       <item itemvalue="Python.test_gslv_conversion" />
-      <item itemvalue="Python.convert_to_gridcal" />
       <item itemvalue="Python.power_flow_3ph" />
       <item itemvalue="Python.round_trip" />
       <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python tests.Python tests for test_3ph_admittance_matrix.test_3x3_abc" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Python tests for test_3ph_admittance_matrix.test_3x3_abc" />
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.round_trip" />
         <item itemvalue="Python.power_flow_3ph" />
-        <item itemvalue="Python.convert_to_gridcal" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-53e2683a6804-9cdd278e9d02-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-251.26094.141" />
+        <option value="bundled-python-sdk-a5bc9544c897-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.23654.177" />
       </set>
     </attachedChunks>
   </component>
@@ -2753,11 +2754,6 @@
           <option name="timeStamp" value="2522" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_tower_composition.py</url>
-          <line>121</line>
-          <option name="timeStamp" value="2580" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/remote.py</url>
           <line>234</line>
           <option name="timeStamp" value="2595" />
@@ -2887,6 +2883,21 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/DataStructures/generator_data.py</url>
           <line>318</line>
           <option name="timeStamp" value="2864" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
+          <line>511</line>
+          <option name="timeStamp" value="2870" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
+          <line>499</line>
+          <option name="timeStamp" value="2871" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
+          <line>475</line>
+          <option name="timeStamp" value="2872" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

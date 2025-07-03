@@ -819,7 +819,7 @@ class DataBaseTableMain(DiagramsMain):
 
                 obj = dev.OverheadLineType()
                 obj.frequency = self.circuit.fBase
-                obj.tower_name = f'Tower {len(self.circuit.overhead_line_types) + 1}'
+                obj.name = f'Tower {len(self.circuit.overhead_line_types) + 1}'
                 self.circuit.add_overhead_line(obj)
 
             elif elm_type == DeviceType.UnderGroundLineDevice.value:

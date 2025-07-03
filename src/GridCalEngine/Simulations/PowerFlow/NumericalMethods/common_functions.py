@@ -241,7 +241,7 @@ def expand_magnitudes(magnitude: CxVec, lookup: IntVec):
 
     return magnitude_expanded
 
-def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVec,
+def threephase_power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVec,
                                       pv: IntVec, vd: IntVec, Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
                                       branch_rates: Vec, Sbase: float, bus_lookup: IntVec, branch_lookup: IntVec):
     """
@@ -299,6 +299,57 @@ def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVe
     Sbus_expanded = expand_magnitudes(Sbus, bus_lookup)
 
     return Sf_expanded, St_expanded, If_expanded, It_expanded, Vbranch, loading, losses, Sbus_expanded, V_expanded
+
+def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVec,
+                                      pv: IntVec, vd: IntVec, Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
+                                      branch_rates: Vec, Sbase: float):
+    """
+
+    :param Sbus:
+    :param V:
+    :param F:
+    :param T:
+    :param pv:
+    :param vd:
+    :param Ybus:
+    :param Yf:
+    :param Yt:
+    :param Yshunt_bus:
+    :param branch_rates:
+    :param Sbase:
+    :return:
+    """
+
+    # power at the slack nodes
+    Sbus[vd] = V[vd] * np.conj(Ybus[vd, :] @ V)
+
+    # Reactive power at the pv nodes
+    P_pv = Sbus[pv].real
+    Q_pv = (V[pv] * np.conj(Ybus[pv, :] @ V)).imag
+    Sbus[pv] = P_pv + 1j * Q_pv  # keep the original P injection and set the calculated reactive power for PV nodes
+
+    # Add the shunt power V^2 x Y^*
+    Vm = np.abs(V)
+    Sbus += Vm * Vm * np.conj(Yshunt_bus)
+
+    # Branches current, loading, etc
+    Vf = V[F]
+    Vt = V[T]
+    If = Yf @ V
+    It = Yt @ V
+    Sf = Vf * np.conj(If) * Sbase
+    St = Vt * np.conj(It) * Sbase
+
+    # Branch losses in MVA
+    losses = (Sf + St)
+
+    # branch voltage increment
+    Vbranch = Vf - Vt
+
+    # Branch loading in p.u.
+    loading = Sf / (branch_rates + 1e-9)
+
+    return Sf, St, If, It, Vbranch, loading, losses, Sbus
 
 
 def power_flow_post_process_linear(Sbus: CxVec, V: CxVec,

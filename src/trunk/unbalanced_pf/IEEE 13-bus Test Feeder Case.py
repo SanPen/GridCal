@@ -238,60 +238,66 @@ grid.add_shunt(bus=bus_611, api_obj=cap_611)
 """
 Line Configurations
 """
-config_601 = gce.OverheadLineType(name='Config. 601',
-                                  Vnom=4.16,
-                                  frequency=60)
-config_601.z_abc = z_601
-config_601.y_abc = y_601
-config_601.y_phases_abc = np.array([1,2,3])
+config_601 = gce.create_known_abc_overhead_template(name='Config. 601',
+                                                    z_abc=z_601,
+                                                    ysh_abc=y_601,
+                                                    phases=np.array([1, 2, 3]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
 grid.add_overhead_line(config_601)
 
-config_602 = gce.OverheadLineType(name='Config. 602',
-                                  Vnom=4.16,
-                                  frequency=60)
-config_602.z_abc = z_602
-config_602.y_abc = y_602
-config_602.y_phases_abc = np.array([1,2,3])
+config_602 = gce.create_known_abc_overhead_template(name='Config. 602',
+                                                    z_abc=z_602,
+                                                    ysh_abc=y_602,
+                                                    phases=np.array([1, 2, 3]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
+
 grid.add_overhead_line(config_602)
 
-config_603 = gce.OverheadLineType(name='Config. 603',
-                                  Vnom=4.16,
-                                  frequency=60)
-config_603.z_abc = z_603
-config_603.y_abc = y_603
-config_603.y_phases_abc = np.array([2,3])
+config_603 = gce.create_known_abc_overhead_template(name='Config. 603',
+                                                    z_abc=z_603,
+                                                    ysh_abc=y_603,
+                                                    phases=np.array([2, 3]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
+
 grid.add_overhead_line(config_603)
 
-config_604 = gce.OverheadLineType(name='Config. 604',
-                                  Vnom=4.16,
-                                  frequency=60)
-config_604.z_abc = z_604
-config_604.y_abc = y_604
-config_604.y_phases_abc = np.array([1,3])
+config_604 = gce.create_known_abc_overhead_template(name='Config. 604',
+                                                    z_abc=z_604,
+                                                    ysh_abc=y_604,
+                                                    phases=np.array([1, 3]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
+
 grid.add_overhead_line(config_604)
 
-config_605 = gce.OverheadLineType(name='Config. 605',
-                                  Vnom=4.16,
-                                  frequency=60)
-config_605.z_abc = z_605
-config_605.y_abc = y_605
-config_605.y_phases_abc = np.array([3])
+config_605 = gce.create_known_abc_overhead_template(name='Config. 605',
+                                                    z_abc=z_605,
+                                                    ysh_abc=y_605,
+                                                    phases=np.array([3]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
+
 grid.add_overhead_line(config_605)
 
-config_606 = gce.OverheadLineType(name='Config. 606',
-                                  Vnom=4.16,
-                                  frequency=60)
-config_606.z_abc = z_606
-config_606.y_abc = y_606
-config_606.y_phases_abc = np.array([1,2,3])
+config_606 = gce.create_known_abc_overhead_template(name='Config. 606',
+                                                    z_abc=z_606,
+                                                    ysh_abc=y_606,
+                                                    phases=np.array([1, 2, 3]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
+
 grid.add_overhead_line(config_606)
 
-config_607 = gce.OverheadLineType(name='Config. 607',
-                                  Vnom=4.16,
-                                  frequency=60)
-config_607.z_abc = z_607
-config_607.y_abc = y_607
-config_607.y_phases_abc = np.array([1])
+config_607 = gce.create_known_abc_overhead_template(name='Config. 607',
+                                                    z_abc=z_607,
+                                                    ysh_abc=y_607,
+                                                    phases=np.array([1]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
+
 grid.add_overhead_line(config_607)
 
 """

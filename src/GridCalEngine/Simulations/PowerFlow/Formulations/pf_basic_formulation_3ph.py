@@ -10,7 +10,8 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.Derivatives.ac_jacobian import create_J_vc_csc
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_fx_error,
-                                                                                   power_flow_post_process_nonlinear)
+                                                                                   power_flow_post_process_nonlinear,
+                                                                                   threephase_power_flow_post_process_nonlinear)
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import (control_q_inside_method,
                                                                                     compute_slack_distribution)
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -883,7 +884,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         :return: NumericPowerFlowResults
         """
         # Compute the Branches power and the slack buses power
-        Sf, St, If, It, Vbranch, loading, losses, Sbus, V_expanded = power_flow_post_process_nonlinear(
+        Sf, St, If, It, Vbranch, loading, losses, Sbus, V_expanded = threephase_power_flow_post_process_nonlinear(
             Sbus=self.Scalc,
             V=self.V,
             F=expand_indices_3ph(self.nc.passive_branch_data.F),

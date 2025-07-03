@@ -1,14 +1,8 @@
 import GridCalEngine.api as gce
-from GridCalEngine import WindingType, ShuntConnectionType, AdmittanceMatrix
+from GridCalEngine import WindingType, ShuntConnectionType
 import numpy as np
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
-import pandas as pd
-
-"""
-    Power Flow
-    """
-
 
 def power_flow_3ph(grid, t_idx=None):
     nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx=t_idx)
@@ -29,7 +23,7 @@ def power_flow_3ph(grid, t_idx=None):
 
 def test_ieee_13_bus_feeder():
     """
-
+    This test builds the IEEE 13-Bus Test Feeder and compares the obtained results with the reference values.
     :return:
     """
     logger = gce.Logger()
@@ -400,64 +394,13 @@ def test_ieee_13_bus_feeder():
     line_671_680.apply_template(config_601, grid.Sbase, grid.fBase, logger)
     grid.add_line(obj=line_671_680)
 
-    """
-    Save Grid
-    """
-    gce.save_file(grid=grid, filename='IEEE 13-bus.gridcal')
-
     res_3ph = power_flow_3ph(grid)
 
-    U = abs(res_3ph.V)
-    angle = np.degrees(np.angle((res_3ph.V)))
-    print()
-    print(np.round(U, 4))
-    # print(U)
-    print()
-    print(np.round(angle, 2))
+    U_obtained = abs(res_3ph.V)
+    angle_obtained = np.degrees(np.angle((res_3ph.V)))
 
-    print(len(res_3ph.St))
-    print('\nSf =', np.round(res_3ph.St / 3, 4))
+    U_reference = np.array([1.021, 1.042, 1.0174, 0.0, 1.0328, 1.0154, 0.0, 1.0311, 1.0134, 1.018, 1.0401, 1.0148, 0.994, 1.0218, 0.996, 0.99, 1.0529, 0.9777, 0.9881, 0.0, 0.9757, 0.0, 0.0, 0.9737, 0.9835, 1.0553, 0.9758, 0.99, 1.0529, 0.9777, 0.9825, 0.0, 0.0])
+    angle_reference = np.array([-2.49, -121.72, 117.83, 0.0, -121.9, 117.86, 0.0, -121.98, 117.9, -2.55, -121.77, 117.83, -3.23, -122.22, 117.35, -5.3, -122.34, 116.03, -5.32, 0.0, 115.93, 0.0, 0.0, 115.78, -5.55, -122.52, 116.04, -5.3, -122.34, 116.03, -5.25, 0.0, 0.0])
 
-    # print('U671 =', U[15:18])
-    # dU_632_671 = U[0:3] - U[15:18]
-    # print(dU_632_671)
-    #
-    # bus_numbers = [645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
-    #
-    # k=0
-    # for i in range(len(bus_numbers)):
-    #     bus = bus_numbers[i]
-    #     print(f'\nSbus {bus} =\n', np.round(res_3ph.Sf[k:k+3],4))
-    #     k+=3
-
-    bus_numbers = [632, 645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
-
-    # Asegurar que U y angle son arrays NumPy
-    U = np.array(U)
-    angle = np.array(angle)
-
-    # Separar magnitudes y ángulos por fases
-    U_A = U[0::3]
-    U_B = U[1::3]
-    U_C = U[2::3]
-
-    angle_A = angle[0::3]
-    angle_B = angle[1::3]
-    angle_C = angle[2::3]
-
-    # Crear columnas "MAG at ANGLE"
-    def format_column(mags, angles):
-        return [f"{m:.4f} at {a:.2f}" for m, a in zip(mags, angles)]
-
-    # Crear DataFrame con columna Buses
-    df = pd.DataFrame({
-        'Buses': bus_numbers,
-        'A–N': format_column(U_A, angle_A),
-        'B–N': format_column(U_B, angle_B),
-        'C–N': format_column(U_C, angle_C),
-    })
-
-    # Exportar a Excel
-    df.to_excel("short_circuit.xlsx", index=False)
-
-    # print(grid.lines[2].ysh.values)
+    assert np.allclose(U_obtained, U_reference, atol=1e-4)
+    assert np.allclose(angle_obtained, angle_reference, atol=1e-2)
