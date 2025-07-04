@@ -781,6 +781,7 @@ def convert_load(k: int, elm: dev.Load, bus_dict: Dict[str, "pg.Bus"], n_time: i
 
     load = pg.Load(
         nt=n_time,
+        bus=bus_dict[elm.bus.idtag],
         name=elm.name,
         idtag=elm.idtag,
         code=str(elm.code),
@@ -798,8 +799,6 @@ def convert_load(k: int, elm: dev.Load, bus_dict: Dict[str, "pg.Bus"], n_time: i
         opex=elm.opex,
         build_status=build_status_dict[elm.build_status],
     )
-
-    load.bus = bus_dict[elm.bus.idtag]
 
     fill_profile(gslv_profile=load.active,
                  gc_profile=elm.active_prof,
@@ -985,6 +984,7 @@ def convert_shunt(elm: dev.Shunt, bus_dict: Dict[str, "pg.Bus"], n_time: int,
     """
     sh = pg.Shunt(
         nt=n_time,
+        bus=bus_dict[elm.bus.idtag],
         name=elm.name,
         idtag=elm.idtag,
         code=str(elm.code),
@@ -992,8 +992,6 @@ def convert_shunt(elm: dev.Shunt, bus_dict: Dict[str, "pg.Bus"], n_time: int,
         B=elm.B,
         build_status=build_status_dict[elm.build_status],
     )
-
-    sh.bus = bus_dict[elm.bus.idtag]
 
     fill_profile(gslv_profile=sh.active,
                  gc_profile=elm.active_prof,
@@ -1064,6 +1062,7 @@ def convert_generator(k: int, elm: dev.Generator, bus_dict: Dict[str, "pg.Bus"],
     """
     gen = pg.Generator(
         nt=n_time,
+        bus=bus_dict[elm.bus.idtag],
         name=elm.name,
         idtag=elm.idtag,
         active=elm.active,
@@ -1080,8 +1079,6 @@ def convert_generator(k: int, elm: dev.Generator, bus_dict: Dict[str, "pg.Bus"],
         q_points=elm.q_curve.get_data().tolist(),
         use_reactive_power_curve=elm.use_reactive_power_curve
     )
-
-    gen.bus = bus_dict[elm.bus.idtag]
 
     fill_profile(gslv_profile=gen.active,
                  gc_profile=elm.active_prof,
@@ -1186,6 +1183,7 @@ def convert_battery(k: int, elm: dev.Battery, bus_dict: Dict[str, "pg.Bus"], n_t
     """
     gen = pg.Battery(
         nt=n_time,
+        bus=bus_dict[elm.bus.idtag],
         name=elm.name,
         idtag=elm.idtag,
         P=elm.P,
@@ -1203,8 +1201,6 @@ def convert_battery(k: int, elm: dev.Battery, bus_dict: Dict[str, "pg.Bus"], n_t
         discharge_efficiency=elm.discharge_efficiency,
         is_controlled=elm.is_controlled,
     )
-
-    gen.bus = bus_dict[elm.bus.idtag]
 
     fill_profile(gslv_profile=gen.active,
                  gc_profile=elm.active_prof,
@@ -1322,7 +1318,6 @@ def convert_line(elm: dev.Line,
         x=elm.X,
         b=elm.B,
         monitor_loading=elm.monitor_loading,
-        contingency_enabled=elm.contingency_enabled,
     )
 
     lne.group = branch_groups_dict.get(elm.group, None)
@@ -1453,7 +1448,6 @@ def convert_transformer(elm: dev.Transformer2W,
                            contingency_factor=elm.contingency_factor,
                            protection_rating_factor=elm.protection_rating_factor,
 
-                           contingency_enabled=elm.contingency_enabled,
                            monitor_loading=elm.monitor_loading,
 
                            )
@@ -1678,7 +1672,6 @@ def convert_vsc(elm: dev.VSC, bus_dict: Dict[str, "pg.Bus"], n_time: int,
         overload_cost=elm.Cost,
         contingency_factor=elm.contingency_factor,
         protection_rating_factor=elm.protection_rating_factor,
-        contingency_enabled=elm.contingency_enabled,
         monitor_loading=elm.monitor_loading,
         capex=elm.capex,
         opex=elm.opex,
@@ -1767,7 +1760,6 @@ def convert_dc_line(elm: dev.DcLine, bus_dict: Dict[str, "pg.Bus"], n_time: int,
         active=elm.active,
         r=float(elm.R),
         monitor_loading=elm.monitor_loading,
-        contingency_enabled=elm.contingency_enabled,
     )
 
     fill_profile(gslv_profile=lne.active,
@@ -1846,7 +1838,6 @@ def convert_hvdc_line(elm: dev.HvdcLine, bus_dict: Dict[str, "pg.Bus"], n_time: 
         rate=elm.rate,
         contingency_factor=elm.contingency_factor,
         # monitor_loading=elm.monitor_loading,
-        # contingency_enabled=elm.contingency_enabled,
         pset=elm.Pset,
         Vset_f=elm.Vset_f,
         Vset_t=elm.Vset_t,
@@ -2605,8 +2596,8 @@ def compare_branch_parent_data(gslv_branch_data: pg.BranchParentData,
     errors += CheckArr(gslv_branch_data.mttf, gc_branch_data.mttf, tol, parent_name, 'mttf')
     errors += CheckArr(gslv_branch_data.mttr, gc_branch_data.mttr, tol, parent_name, 'mttr')
 
-    errors += CheckArrEq(gslv_branch_data.contingency_enabled, gc_branch_data.contingency_enabled,
-                         parent_name, 'contingency_enabled')
+    # errors += CheckArrEq(gslv_branch_data.contingency_enabled, gc_branch_data.contingency_enabled,
+    #                      parent_name, 'contingency_enabled')
     errors += CheckArrEq(gslv_branch_data.monitor_loading, gc_branch_data.monitor_loading,
                          parent_name, 'monitor_loading')
 
@@ -2730,7 +2721,7 @@ def compare_nc(nc_gslv: "pg.NumericalCircuit", nc_gc: NumericalCircuit, tol: flo
     gslv_inj = nc_gslv.get_power_injections()
     gslv_types = nc_gslv.get_simulation_indices(gslv_inj.real)
     gslv_conn = nc_gslv.get_connectivity_matrices()
-    gslv_adm = nc_gslv.get_admittance_matrices(gslv_conn)
+    gslv_adm = nc_gslv.get_admittance_matrices()
 
     gc_inj = nc_gc.get_power_injections()
     gc_types = nc_gc.get_simulation_indices(gc_inj)
