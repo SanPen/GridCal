@@ -14,7 +14,7 @@ def power_flow_3ph(grid, t_idx=None):
     options = gce.PowerFlowOptions(tolerance=1e-10, max_iter=1000)
 
     problem = PfBasicFormulation3Ph(V0=V0, S0=S0, Qmin=Qmin * 100.0, Qmax=Qmax * 100.0,
-                                    nc=nc, options=options)
+                                    nc=nc, options=options, logger=gce.Logger())
 
     res = newton_raphson_fx(problem=problem, verbose=1, max_iter=1000)
 

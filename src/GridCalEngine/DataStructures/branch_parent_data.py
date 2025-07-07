@@ -293,3 +293,7 @@ class BranchParentData:
 
     def __len__(self) -> int:
         return self.nelm
+
+    def get_3ph_names(self):
+        names3: StrVec = np.empty(self.nelm * 3, dtype=object)
+        return names3

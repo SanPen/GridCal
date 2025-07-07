@@ -747,7 +747,8 @@ class SimulationsMain(TimeEventsMain):
             trust_radius=self.ui.muSpinBox.value(),
             use_stored_guess=self.ui.use_voltage_guess_checkBox.isChecked(),
             initialize_angles=self.ui.initialize_pf_angles_checkBox.isChecked(),
-            generate_report=self.ui.addPowerFlowReportCheckBox.isChecked()
+            generate_report=self.ui.addPowerFlowReportCheckBox.isChecked(),
+            three_phase_unbalanced=self.ui.pf_three_phase_checkBox.isChecked()
         )
 
         return ops

@@ -230,6 +230,7 @@ class ConfigurationMain(ResultsMain):
             "power_flow": {
                 "solver": self.ui.solver_comboBox,
                 "retry": self.ui.helm_retry_checkBox,
+                "three_phase": self.ui.pf_three_phase_checkBox,
                 "distributed_slack": self.ui.distributed_slack_checkBox,
                 "ignore_single_node_islands": self.ui.ignore_single_node_islands_checkBox,
                 "use_voltage_guess": self.ui.use_voltage_guess_checkBox,

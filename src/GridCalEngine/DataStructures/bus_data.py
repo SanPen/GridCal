@@ -219,3 +219,7 @@ class BusData:
 
     def __len__(self) -> int:
         return self.nbus
+
+    def get_3ph_names(self):
+        names3: StrVec = np.empty(self.nbus * 3, dtype=object)
+        return names3

@@ -32,7 +32,8 @@ class PowerFlowOptions(OptionsTemplate):
                  backtracking_parameter: float = 0.05,
                  use_stored_guess: bool = False,
                  initialize_angles: bool = False,
-                 generate_report: bool = False):
+                 generate_report: bool = False,
+                 three_phase_unbalanced: bool = False):
         """
         Power flow options class
         :param solver_type: Solver type
@@ -93,6 +94,8 @@ class PowerFlowOptions(OptionsTemplate):
 
         self.generate_report = generate_report
 
+        self.three_phase_unbalanced = three_phase_unbalanced
+
         self.register(key="solver_type", tpe=SolverType)
         self.register(key="retry_with_other_methods", tpe=bool)
         self.register(key="tolerance", tpe=float)
@@ -113,3 +116,4 @@ class PowerFlowOptions(OptionsTemplate):
         self.register(key="use_stored_guess", tpe=bool)
         self.register(key="initialize_angles", tpe=bool)
         self.register(key="generate_report", tpe=bool)
+        self.register(key="three_phase_unbalanced", tpe=bool)
