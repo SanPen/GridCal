@@ -4,22 +4,26 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
-from typing import Tuple, Union
+from typing import Union
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc, PowerFlowResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.Reliability.reliability2 import compute_transition_probabilities
-from GridCalEngine.basic_structures import IntVec, Logger
+from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_input import StochasticPowerFlowInput
+from GridCalEngine.basic_structures import Logger
 
 
-class ReliabilityIterable:
+class AiIterable:
     """
-    RealTimeStateEnumeration
+    AI-ready power flow stochastic iterable
     """
 
     def __init__(self, grid: MultiCircuit,
                  forced_mttf: Union[None, float] = None,
                  forced_mttr: Union[None, float] = None,
+                 pf_options=PowerFlowOptions(),
+                 modify_injections: bool = True,
+                 modify_branches_state: bool = True,
                  logger: Logger = Logger()):
         """
 
@@ -29,16 +33,13 @@ class ReliabilityIterable:
         """
         self.grid = grid
 
-        # number of time steps
-        self.nt = grid.get_time_number()
-
-        # time index
-        self.t_idx = 0
-
         self.logger = logger
 
         # declare the power flow options
-        self.pf_options = PowerFlowOptions()
+        self.pf_options = pf_options
+
+        self.modify_injections = modify_injections
+        self.modify_branches_state = modify_branches_state
 
         # compile the time step
         nc = compile_numerical_circuit_at(self.grid, t_idx=None, logger=logger)
@@ -54,33 +55,45 @@ class ReliabilityIterable:
                                                                          forced_mttf=forced_mttf,
                                                                          forced_mttr=forced_mttr)
 
-    def __iter__(self) -> "ReliabilityIterable":
-        return self
+        if not grid.has_time_series:
+            raise ValueError("The grid must have time series declared!")
 
-    def __next__(self) -> Tuple[IntVec, PowerFlowResults]:
-
-        if self.nt == 0:  # no time steps, no fun
-            print('No time steps :/')
-            raise StopIteration
+        self.mc_input = StochasticPowerFlowInput(self.grid)
 
         # compile the time step
-        nc = compile_numerical_circuit_at(self.grid, t_idx=self.t_idx, logger=self.logger)
+        self.nc = compile_numerical_circuit_at(self.grid, t_idx=None, logger=self.logger)
+        self.base_branch_active = self.nc.passive_branch_data.active.copy()
 
-        # determine the Markov states
-        p = np.random.random(nc.nbr)
-        br_active = (p > self.p_dwn_branches).astype(int)
+    def __iter__(self) -> "AiIterable":
+        return self
 
-        # apply the transitioning states
-        nc.passive_branch_data.active = br_active
+    def __next__(self) -> PowerFlowResults:
 
-        pf_res = multi_island_pf_nc(nc=nc, options=self.pf_options)
+        if self.modify_branches_state:
+            # determine the Markov states
+            p = np.random.random(self.nc.nbr)
+            br_active = (p > self.p_dwn_branches).astype(int)
 
-        # determine the next state
-        if self.t_idx < (self.nt - 1):
-            # advance to the next step
-            self.t_idx += 1
+            # apply the transitioning states
+            self.nc.passive_branch_data.active = br_active
+
+        if self.modify_injections:
+            # sample monte-carlo injections
+            x = np.random.random(self.nc.nbus)
+            Sbus = self.mc_input.get_at(x=x) / self.nc.Sbase
+
+            pf_res = multi_island_pf_nc(nc=self.nc, options=self.pf_options, Sbus_input=Sbus)
+
         else:
-            # raise StopIteration
-            self.t_idx = 0  # restart
+            # just run without injections variation, and pick the ones from the numerical circuit
+            pf_res = multi_island_pf_nc(nc=self.nc, options=self.pf_options)
 
-        return br_active, pf_res
+        return pf_res
+
+    def reset(self):
+        """
+        Reset the iterable
+        """
+        self.nc = compile_numerical_circuit_at(self.grid, t_idx=None, logger=self.logger)
+        self.base_branch_active = self.nc.passive_branch_data.active.copy()
+

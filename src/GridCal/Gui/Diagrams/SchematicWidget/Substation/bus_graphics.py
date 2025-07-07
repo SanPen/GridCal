@@ -902,19 +902,39 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if self.draw_labels:
-            vm = format_str.format(Vm)
-            vm_kv = format_str.format(Vm * self._api_object.Vnom)
-            va = format_str.format(Va)
+
             msg = f"Bus {i}"
             if tpe is not None:
                 msg += f" [{tpe}]"
             msg += "<br>"
-            msg += f"v={vm}&lt;{va}º pu<br>"
-            msg += f"V={vm_kv} KV<br>"
+
+            if isinstance(Vm, float) and isinstance(Va, float):
+                vm = format_str.format(Vm)
+                vm_kv = format_str.format(Vm * self._api_object.Vnom)
+                va = format_str.format(Va)
+                msg += f"V={vm_kv} KV<br>  {vm}&lt;{va}º p.u.<br>"
+                # msg += f"V={vm_kv} KV<br>"
+
+            elif isinstance(Vm, np.ndarray) and isinstance(Va, np.ndarray):
+                for Vm_i, Va_i, ph in zip(Vm, Va, ["a", "b", "c"]):
+                    if not (Vm_i == 0.0 and Va_i == 0.0):
+                        vm = format_str.format(Vm_i)
+                        vm_kv = format_str.format(Vm_i * self._api_object.Vnom)
+                        va = format_str.format(Va_i)
+                        msg += f"V{ph}={vm_kv} KV / {vm}&lt;{va}º p.u.<br>"
+
             if P is not None:
-                p = format_str.format(P)
-                q = format_str.format(Q)
-                msg += f"P={p} MW<br>Q={q} MVAr"
+                if isinstance(P, float) and isinstance(Q, float):
+                    p = format_str.format(P)
+                    q = format_str.format(Q)
+                    msg += f"P={p} MW<br>Q={q} MVAr"
+                elif isinstance(P, np.ndarray) and isinstance(Q, np.ndarray):
+                    for P_i, Q_i, ph in zip(P, Q, ["a", "b", "c"]):
+                        if not (P_i == 0.0 and Q_i == 0.0):
+                            p = format_str.format(P_i)
+                            q = format_str.format(Q_i)
+                            msg += f"P{ph}={p} MW<br>Q{ph}={q} MVAr<br>"
+
         else:
             msg = ""
 

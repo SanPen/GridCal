@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from typing import Tuple, List, Callable
+import numba as nb
 import numpy as np
 from scipy.sparse import diags, lil_matrix, csc_matrix
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
@@ -19,9 +20,10 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
                                                                                    compute_fx, polar_to_rect,
                                                                                    fortescue_012_to_abc)
 from GridCalEngine.Topology.simulation_indices import compile_types
-from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec, Logger
 from GridCalEngine.Utils.Sparse.csc2 import (CSC, scipy_to_mat)
 from GridCalEngine.Utils.NumericalMethods.common import make_lookup
+
 
 def lookup_from_mask(mask):
     lookup = [-1] * len(mask)  # start with all -1
@@ -32,6 +34,7 @@ def lookup_from_mask(mask):
             counter += 1
 
     return lookup
+
 
 def compute_ybus_generator(nc: NumericalCircuit) -> csc_matrix:
     """
@@ -45,7 +48,7 @@ def compute_ybus_generator(nc: NumericalCircuit) -> csc_matrix:
 
     Ybus_gen = lil_matrix((3 * n, 3 * n), dtype=complex)
     idx3 = np.array([0, 1, 2])
-    Yzeros = np.zeros((3*n,3*n), dtype=complex)
+    Yzeros = np.zeros((3 * n, 3 * n), dtype=complex)
 
     for k in range(m):
         f = nc.generator_data.bus_idx[k]
@@ -131,12 +134,12 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
     zero_mask = (R == 0)
     Cfcopy = Cf.copy()
     Ctcopy = Ct.copy()
-    
+
     Cfcopy[zero_mask, :] = 0
     Ctcopy[zero_mask, :] = 0
 
     Ctot = Cfcopy + Ctcopy
-    col_sums = np.array(Ctot.sum(axis=0))[0,:]
+    col_sums = np.array(Ctot.sum(axis=0))[0, :]
     binary_bus_mask = (col_sums > 0).astype(bool)
 
     Ysh_bus = np.zeros(n * 3, dtype=complex)
@@ -144,7 +147,7 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
         f = nc.shunt_data.bus_idx[k]
         k3 = 3 * k + idx3
         f3 = 3 * f + idx3
-        Ysh_bus[f3] += nc.shunt_data.Y3_star[k3] / (nc.Sbase / 3)  * nc.shunt_data.active[k]
+        Ysh_bus[f3] += nc.shunt_data.Y3_star[k3] / (nc.Sbase / 3) * nc.shunt_data.active[k]
 
     for k in range(nc.load_data.nelm):
         f = nc.load_data.bus_idx[k]
@@ -160,8 +163,9 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
 
     bus_idx_lookup = lookup_from_mask(binary_bus_mask)
     branch_lookup = lookup_from_mask(R)
-    
+
     return Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Ysh_bus, binary_bus_mask, bus_idx_lookup, branch_lookup
+
 
 def compute_Ibus(nc: NumericalCircuit) -> CxVec:
     """
@@ -199,15 +203,16 @@ def compute_Sbus_star(nc: NumericalCircuit, V: CxVec, mask) -> CxVec:
         f3 = 3 * f + idx3
         Sbus[f3] -= nc.load_data.S3_star[k3] * nc.load_data.active[k]
 
-    Y_power_star_linear = np.conj(Sbus[mask]) / abs(V)**2
+    Y_power_star_linear = np.conj(Sbus[mask]) / abs(V) ** 2
 
     return Sbus, Y_power_star_linear
 
-def compute_current_loads(bus_idx: IntVec, bus_lookup: IntVec, V: CxVec, Istar: CxVec, Idelta: CxVec) -> CxVec:
 
+@nb.njit(cache=True)
+def compute_current_loads(bus_idx: IntVec, bus_lookup: IntVec, V: CxVec, Istar: CxVec, Idelta: CxVec) -> CxVec:
     n = len(V)
     nelm = len(bus_idx)
-    I = np.zeros(n, dtype=complex)
+    I = np.zeros(n, dtype=nb.complex128)
 
     zero_load = 0.0 + 0.0j
 
@@ -266,7 +271,7 @@ def compute_current_loads(bus_idx: IntVec, bus_lookup: IntVec, V: CxVec, Istar: 
             I[c2] += -np.conj(Istar[ca]) * 1 * np.exp(1j * voltage_angle)
 
         else:
-            #raise ValueError('Incorrect current load definition')
+            # raise ValueError('Incorrect current load definition')
             pass
 
     Y_current_linear = I / V
@@ -274,6 +279,7 @@ def compute_current_loads(bus_idx: IntVec, bus_lookup: IntVec, V: CxVec, Istar: 
     return I, Y_current_linear
 
 
+@nb.njit(cache=True)
 def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, bus_lookup: IntVec) -> CxVec:
     """
     :param bus_idx:
@@ -284,7 +290,7 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, 
     """
     n = len(V)
     nelm = len(bus_idx)
-    S = np.zeros(n, dtype=complex)
+    S = np.zeros(n, dtype=nb.complex128)
     for k in range(nelm):
         f = bus_idx[k]
 
@@ -349,9 +355,10 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, 
             else:
                 raise Exception('Incorrect load phasing, non-existing phases for this load')
 
-    Y_power_delta_linear = np.conj(S) / abs(V)**2
+    Y_power_delta_linear = np.conj(S) / np.pow(np.abs(V), 2)
 
     return S, Y_power_delta_linear
+
 
 def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-6) -> CSC:
     """
@@ -383,6 +390,7 @@ def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-6) -> CSC:
     return scipy_to_mat(jac.tocsc())
 
 
+@nb.njit(cache=True)
 def expand3ph(x: np.ndarray):
     """
     Expands a numpy array to 3-pase copying the same values
@@ -398,25 +406,41 @@ def expand3ph(x: np.ndarray):
     return x3
 
 
+@nb.njit(cache=True)
+def expand3phIndices(x: np.ndarray):
+    """
+    Expands a numpy array to 3-pase copying the same values
+    :param x:
+    :return:
+    """
+    n = len(x)
+    idx3 = np.array([0, 1, 2])
+    x3 = np.zeros(3 * n, dtype=x.dtype)
+
+    for k in range(n):
+        x3[3 * k + idx3] = 3 * x[k] + idx3
+    return x3
+
+
 def slice_indices(pq: IntVec, bus_lookup: IntVec) -> IntVec:
-        """
-        Slice the indices based on the bus_lookup
-        :param pq: original bus indices
-        :param bus_lookup: mapping between original and sliced bus indices
-        :return:
-        """
+    """
+    Slice the indices based on the bus_lookup
+    :param pq: original bus indices
+    :param bus_lookup: mapping between original and sliced bus indices
+    :return:
+    """
 
-        max_nnz = len(pq)
-        vec = np.zeros(max_nnz, dtype=int)
+    max_nnz = len(pq)
+    vec = np.zeros(max_nnz, dtype=int)
 
-        counter = 0
-        for pq_idx in pq:
-            val = bus_lookup[pq_idx]
-            if val > -1:
-                vec[counter] = val
-                counter += 1
+    counter = 0
+    for pq_idx in pq:
+        val = bus_lookup[pq_idx]
+        if val > -1:
+            vec[counter] = val
+            counter += 1
 
-        return vec[:counter]
+    return vec[:counter]
 
 
 def expand_indices_3ph(x: np.ndarray) -> np.ndarray:
@@ -446,6 +470,7 @@ def expand_slice_indices_3ph(x: np.ndarray, bus_lookup: IntVec):
     x3_final = slice_indices(x3, bus_lookup)
     return np.sort(x3_final)
 
+
 def expandVoltage3ph(V0: CxVec) -> CxVec:
     """
     Expands a numpy array to 3-pase copying the same values
@@ -463,14 +488,15 @@ def expandVoltage3ph(V0: CxVec) -> CxVec:
     for k in range(n):
         x3[3 * k + idx3] = Vm[k] * np.exp(1j * (Va[k] + angles))
 
-    x3[0] = 1.0210 * np.exp(1j * (-2.49*np.pi/180))
-    x3[1] = 1.0420 * np.exp(1j * (-121.72*np.pi/180))
-    x3[2] = 1.0174 * np.exp(1j * (117.83*np.pi/180))
+    x3[0] = 1.0210 * np.exp(1j * (-2.49 * np.pi / 180))
+    x3[1] = 1.0420 * np.exp(1j * (-121.72 * np.pi / 180))
+    x3[2] = 1.0174 * np.exp(1j * (117.83 * np.pi / 180))
     # x3[0] = (251.900822)/(416/np.sqrt(3)) * np.exp(1j * (-0.526991))
     # x3[1] = (251.442613)/(416/np.sqrt(3)) * np.exp(1j * (3.659445))
     # x3[2] = (251.952085)/(416/np.sqrt(3)) * np.exp(1j * (1.569572))
 
     return x3
+
 
 def expand_magnitudes(magnitude: CxVec, lookup: IntVec):
     """
@@ -512,10 +538,11 @@ def expand_matrix(magnitude: np.ndarray, lookup: IntVec):
 
     return magnitude_expanded
 
+
 class PfBasicFormulation3Ph(PfFormulationTemplate):
 
     def __init__(self, V0: CxVec, S0: CxVec, Qmin: Vec, Qmax: Vec,
-                 nc: NumericalCircuit, options: PowerFlowOptions):
+                 nc: NumericalCircuit, options: PowerFlowOptions, logger: Logger):
         """
         PfBasicFormulation3Ph
         :param V0: Array of nodal initial solution (N, not 3N)
@@ -528,7 +555,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         V0new = expandVoltage3ph(V0)[self.mask]
 
         PfFormulationTemplate.__init__(self, V0=V0new.astype(complex), options=options)
-
+        self.logger = logger
         self.nc = nc
 
         self.S0, self.Y_power_star_linear = compute_Sbus_star(nc, V0new, self.mask)
@@ -538,10 +565,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self.Y_power_star_linear = self.Y_power_star_linear / (nc.Sbase / 3)
         self.I0: CxVec = compute_Ibus(nc) / (nc.Sbase / 3)
 
-
         self.Qmin = expand3ph(Qmin)[self.mask] * 100e6
         self.Qmax = expand3ph(Qmax)[self.mask] * 100e6
-
 
         vd, pq, pv, pqv, p, no_slack = compile_types(
             Pbus=S0.real,
@@ -622,7 +647,6 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         a = len(self.idx_dVa)
         b = a + len(self.idx_dVm)
 
-
         # copy the sliceable vectors
         Va = self.Va.copy()
         Vm = self.Vm.copy()
@@ -636,21 +660,22 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         # compute the function residual
         # Assumes the internal vars were updated already with self.x2var()
         Sdelta2star, Y_power_delta_linear = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
-                                         Sdelta=self.nc.load_data.S3_delta,
-                                         Ydelta=self.nc.load_data.Y3_delta,
-                                         V=V,
-                                         bus_lookup=self.bus_lookup)
+                                                               Sdelta=self.nc.load_data.S3_delta,
+                                                               Ydelta=self.nc.load_data.Y3_delta,
+                                                               V=V,
+                                                               bus_lookup=self.bus_lookup)
 
         self.I0, self.Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
-                                        bus_lookup=self.bus_lookup,
-                                        V=self.V,
-                                        Istar=self.nc.load_data.I3_star,
-                                        Idelta=self.nc.load_data.I3_delta)
+                                                               bus_lookup=self.bus_lookup,
+                                                               V=self.V,
+                                                               Istar=self.nc.load_data.I3_star,
+                                                               Idelta=self.nc.load_data.I3_delta)
 
         self.I0 = self.I0 / (self.nc.Sbase / 3)
         self.Y_current_linear = self.Y_current_linear / (self.nc.Sbase / 3)
 
-        Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (self.nc.Sbase / 3)
+        Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (
+                self.nc.Sbase / 3)
         Scalc = compute_power(self.Ybus, V)
         dS = Scalc - Sbus  # compute the mismatch
         _f = np.r_[
@@ -681,21 +706,22 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         # compute the function residual
         # Assumes the internal vars were updated already with self.x2var()
         Sdelta2star, Y_power_delta_linear = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
-                                         Sdelta=self.nc.load_data.S3_delta,
-                                         Ydelta=self.nc.load_data.Y3_delta,
-                                         V=V,
-                                         bus_lookup=self.bus_lookup)
+                                                               Sdelta=self.nc.load_data.S3_delta,
+                                                               Ydelta=self.nc.load_data.Y3_delta,
+                                                               V=V,
+                                                               bus_lookup=self.bus_lookup)
 
         self.I0, self.Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
-                                        bus_lookup=self.bus_lookup,
-                                        V=self.V,
-                                        Istar=self.nc.load_data.I3_star,
-                                        Idelta=self.nc.load_data.I3_delta)
+                                                               bus_lookup=self.bus_lookup,
+                                                               V=self.V,
+                                                               Istar=self.nc.load_data.I3_star,
+                                                               Idelta=self.nc.load_data.I3_delta)
 
         self.I0 = self.I0 / (self.nc.Sbase / 3)
         self.Y_current_linear = self.Y_current_linear / (self.nc.Sbase / 3)
 
-        Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (self.nc.Sbase / 3)
+        Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (
+                self.nc.Sbase / 3)
         Scalc = compute_power(self.Ybus, V)
         dS = Scalc - Sbus  # compute the mismatch
         _f = np.r_[
@@ -722,21 +748,22 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         # compute the function residual
         # Assumes the internal vars were updated already with self.x2var()
         Sdelta2star, Y_power_delta_linear = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
-                                         Sdelta=self.nc.load_data.S3_delta,
-                                         Ydelta=self.nc.load_data.Y3_delta,
-                                         V=self.V,
-                                         bus_lookup=self.bus_lookup)
+                                                               Sdelta=self.nc.load_data.S3_delta,
+                                                               Ydelta=self.nc.load_data.Y3_delta,
+                                                               V=self.V,
+                                                               bus_lookup=self.bus_lookup)
 
         self.I0, self.Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
-                                        bus_lookup=self.bus_lookup,
-                                        V=self.V,
-                                        Istar=self.nc.load_data.I3_star,
-                                        Idelta=self.nc.load_data.I3_delta)
+                                                               bus_lookup=self.bus_lookup,
+                                                               V=self.V,
+                                                               Istar=self.nc.load_data.I3_star,
+                                                               Idelta=self.nc.load_data.I3_delta)
 
         self.I0 = self.I0 / (self.nc.Sbase / 3)
         self.Y_current_linear = self.Y_current_linear / (self.nc.Sbase / 3)
 
-        Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (self.nc.Sbase / 3)
+        Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (
+                self.nc.Sbase / 3)
         self.Scalc = compute_power(self.Ybus, self.V)
         dS = self.Scalc - Sbus  # compute the mismatch
         self._f = np.r_[
@@ -745,7 +772,6 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         ]
         # self._f = compute_fx(self.Scalc, Sbus, self.idx_dP, self.idx_dQ)
         Sbus_expanded = expand_magnitudes(Sbus, self.bus_lookup)
-        print('\nSbus =\n', Sbus_expanded)
         # compute the error
         self._error = compute_fx_error(self._f)
 
@@ -809,21 +835,22 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         # NOTE: Assumes the internal vars were updated already with self.x2var()
 
         Sdelta2star, Y_power_delta_linear = compute_Sbus_delta(bus_idx=self.nc.load_data.bus_idx,
-                                         Sdelta=self.nc.load_data.S3_delta,
-                                         Ydelta=self.nc.load_data.Y3_delta,
-                                         V=self.V,
-                                         bus_lookup=self.bus_lookup)
+                                                               Sdelta=self.nc.load_data.S3_delta,
+                                                               Ydelta=self.nc.load_data.Y3_delta,
+                                                               V=self.V,
+                                                               bus_lookup=self.bus_lookup)
 
         self.I0, self.Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
-                                        bus_lookup=self.bus_lookup,
-                                        V=self.V,
-                                        Istar=self.nc.load_data.I3_star,
-                                        Idelta=self.nc.load_data.I3_delta)
+                                                               bus_lookup=self.bus_lookup,
+                                                               V=self.V,
+                                                               Istar=self.nc.load_data.I3_star,
+                                                               Idelta=self.nc.load_data.I3_delta)
 
         self.I0 = self.I0 / (self.nc.Sbase / 3)
         self.Y_current_linear = self.Y_current_linear / (self.nc.Sbase / 3)
 
-        Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (self.nc.Sbase / 3)
+        Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (
+                self.nc.Sbase / 3)
         self.Scalc = self.V * np.conj(self.Ybus @ self.V - self.I0)
 
         self._f = compute_fx(self.Scalc, Sbus, self.idx_dP, self.idx_dQ)
@@ -839,7 +866,6 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         if self.Ybus.format != 'csc':
             self.Ybus = self.Ybus.tocsc()
 
-            
         if autodiff:
             J = calc_autodiff_jacobian(func=self.compute_f,
                                        x=self.var2x(),
@@ -901,27 +927,29 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
             branch_lookup=self.branch_lookup
         )
 
-        return NumericPowerFlowResults(V=V_expanded,
-                                       Scalc=Sbus * (self.nc.Sbase / 3),
-                                       m=np.ones(self.nc.nbr, dtype=float),
-                                       tau=np.zeros(self.nc.nbr, dtype=float),
-                                       Sf=Sf,
-                                       St=St,
-                                       If=If,
-                                       It=It,
-                                       loading=loading,
-                                       losses=losses,
-                                       Pf_vsc=np.zeros(self.nc.nvsc, dtype=float),
-                                       St_vsc=np.zeros(self.nc.nvsc, dtype=complex),
-                                       If_vsc=np.zeros(self.nc.nvsc, dtype=float),
-                                       It_vsc=np.zeros(self.nc.nvsc, dtype=complex),
-                                       losses_vsc=np.zeros(self.nc.nvsc, dtype=float),
-                                       loading_vsc=np.zeros(self.nc.nvsc, dtype=float),
-                                       Sf_hvdc=np.zeros(self.nc.nhvdc, dtype=complex),
-                                       St_hvdc=np.zeros(self.nc.nhvdc, dtype=complex),
-                                       losses_hvdc=np.zeros(self.nc.nhvdc, dtype=complex),
-                                       loading_hvdc=np.zeros(self.nc.nhvdc, dtype=complex),
-                                       norm_f=self.error,
-                                       converged=self.converged,
-                                       iterations=iterations,
-                                       elapsed=elapsed)
+        return NumericPowerFlowResults(
+            V=V_expanded,
+            Scalc=Sbus * (self.nc.Sbase / 3),
+            m=np.ones(3 * self.nc.nbr, dtype=float),
+            tau=np.zeros(3 * self.nc.nbr, dtype=float),
+            Sf=Sf,
+            St=St,
+            If=If,
+            It=It,
+            loading=loading,
+            losses=losses,
+            Pf_vsc=np.zeros(self.nc.nvsc, dtype=float),
+            St_vsc=np.zeros(3 * self.nc.nvsc, dtype=complex),
+            If_vsc=np.zeros(self.nc.nvsc, dtype=float),
+            It_vsc=np.zeros(3 * self.nc.nvsc, dtype=complex),
+            losses_vsc=np.zeros(self.nc.nvsc, dtype=float),
+            loading_vsc=np.zeros(self.nc.nvsc, dtype=float),
+            Sf_hvdc=np.zeros(3 * self.nc.nhvdc, dtype=complex),
+            St_hvdc=np.zeros(3 * self.nc.nhvdc, dtype=complex),
+            losses_hvdc=np.zeros(self.nc.nhvdc, dtype=complex),
+            loading_hvdc=np.zeros(self.nc.nhvdc, dtype=complex),
+            norm_f=self.error,
+            converged=self.converged,
+            iterations=iterations,
+            elapsed=elapsed
+        )
