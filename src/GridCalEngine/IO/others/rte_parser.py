@@ -14,17 +14,6 @@ from GridCalEngine.IO.gridcal.zip_interface import get_xml_from_zip, get_xml_con
 from GridCalEngine.Devices import Bus, Generator, Load, Transformer2W, Line, Substation, VoltageLevel
 import re
 
-
-voltage_levels = {
-    '7': 400,
-    '6': 225,
-    '5': 150,
-    '4': 90,
-    '3': 63,
-    '2': 42,
-    '1': 20
-}
-
 def read_cgmes_files(cim_files: Union[List[str], str], logger: DataLogger) -> Dict[str, List[str]]:
     """
     Reads a list of .zip or xml into a dictionary of file name -> list of text lines
