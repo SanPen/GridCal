@@ -11,6 +11,19 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as dev
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.zip_interface import get_xml_from_zip, get_xml_content
+from GridCalEngine.Devices import Bus, Generator, Load, Transformer2W, Line, Substation, VoltageLevel
+import re
+
+
+voltage_levels = {
+    '7': 400,
+    '6': 225,
+    '5': 150,
+    '4': 90,
+    '3': 63,
+    '2': 42,
+    '1': 20
+}
 
 def read_cgmes_files(cim_files: Union[List[str], str], logger: DataLogger) -> Dict[str, List[str]]:
     """
@@ -72,6 +85,55 @@ def parse_xml_text(text_lines: List[str]) -> Dict:
     root = ET.fromstring(xml_string)
     return parse_xml_to_dict(root)
 
+def find_id(child: ET.Element):
+    """
+    Try to find the ID of an element
+    :param child: XML element
+    :return: RDFID
+    """
+    obj_id = ''
+    for attr, value in child.attrib.items():
+        if 'about' in attr.lower() or 'resource' in attr.lower():
+            if ':' in value:
+                obj_id = value.split(':')[-1]
+            else:
+                obj_id = value
+        elif 'id' in attr.lower():
+            obj_id = value
+        elif attr.strip().lower() == 'nom':
+            obj_id = value
+        elif attr.strip().lower() == 'num':
+            obj_id = value
+            break
+        elif attr.strip().lower() == 'cote':
+            obj_id = value
+            break
+
+    return obj_id.replace('_', '').replace('#', '')
+
+def find_class_name(child: ET.Element):
+    """
+    Try to find the CIM class name
+    :param child: XML element
+    :return: class name
+    """
+    if '}' in child.tag:
+        class_name = child.tag.split('}')[-1]
+    else:
+        class_name = child.tag
+
+    if '.' in class_name:
+        class_name = class_name.split('.')[-1]
+
+    return class_name
+
+def fix_child_result_datatype(child_result: Dict):
+    for key, val in child_result.items():
+        if val == "true":
+            child_result[key] = True
+        elif val == "false":
+            child_result[key] = False
+    return child_result
 
 def parse_xml_to_dict(xml_element: ET.Element):
     """
@@ -82,55 +144,74 @@ def parse_xml_to_dict(xml_element: ET.Element):
     result = dict()
 
     for child in xml_element:
-        # key = child.tag
-
         obj_id = find_id(child)
         class_name = find_class_name(child)
 
         if len(child) > 0:
-            child_result = parse_xml_to_dict(child)
-            child_result = fix_child_result_datatype(child_result)
-            objects_list = result.get(class_name, None)
+            if class_name == 'reseau':
+                grid_data= dict(child.attrib)
+                grid_data.update(parse_xml_to_dict(child))
+                return grid_data
 
-            if objects_list is None:
-                result[class_name] = {obj_id: child_result}
-            else:
-                objects_list[obj_id] = child_result
-        else:
-            if class_name not in result:
-                if child.text is None:
-                    result[class_name] = obj_id  # it is a resource id
+            # 🔧 Light handling for 'postes'
+            if class_name == 'postes':
+                child_result = parse_xml_to_dict(child)
+                if '' in child_result:
+                    result[class_name] = child_result['']
                 else:
-                    result[class_name] = child.text
-            else:
-                if child.text is None:
-                    t_set = set()
-                    if isinstance(result[class_name], list):
-                        t_set.update(result[class_name])
-                    else:
-                        t_set.add(result[class_name])
-                    t_set.update([obj_id])  # it is a resource id
-                    if len(t_set) > 1:
-                        result[class_name] = list(t_set)
-                    else:
-                        result[class_name] = list(t_set)[0]
+                    result[class_name] = child_result
+                continue
+
+            # 🔧 Light handling for 'donneesQuadripoles'
+            if class_name == 'donneesQuadripoles':
+                child_result = parse_xml_to_dict(child)
+                if '' in child_result:
+                    result[class_name] = child_result['']
                 else:
-                    t_set = {child.text}
-                    if isinstance(result[class_name], list):
-                        t_set.update(result[class_name])
-                    else:
-                        t_set.add(result[class_name])
-                    if len(t_set) > 1:
-                        result[class_name] = list(t_set)
-                    else:
-                        result[class_name] = list(t_set)[0]
+                    result[class_name] = child_result
+                continue
+
+            # 🔧 Flatten variables into quadripole
+            if class_name == 'quadripole':
+                quad_data = dict(child.attrib)
+                child_result = parse_xml_to_dict(child)
+                quad_data.update(child_result)
+                result[obj_id] = quad_data
+                continue
+
+            if class_name == 'seuils':
+                seuil_data = dict(child.attrib)
+                cote = seuil_data.get('cote', '')
+                child_result = parse_xml_to_dict(child)
+                seuil_data.update(child_result)
+                if class_name not in result:
+                    result[class_name] = dict()
+                result[class_name][cote] = seuil_data
+                continue
+
+        else: # leaf nodes
+            if class_name == 'variables':
+                result = child.attrib
+                continue
+
+            if class_name == 'seuil':
+                obj_id = str(len(result))
+                result[obj_id] = child.attrib
+                continue
+
+            if class_name == 'poste':
+                result[obj_id] = child.attrib
+                continue
 
     return result
 
-def rte2gridcal(file_name: str, logger: Logger) -> MultiCircuit:
+
+
+
+def rte2gridcal(file_name: str, logger: Logger) -> (MultiCircuit, bool):
     """
     Read the RTE internal grid format
-    :param file_name: json file name
+    :param file_name: xml file name
     :param logger: Logger
     :return: MultiCircuit
     """
@@ -138,130 +219,106 @@ def rte2gridcal(file_name: str, logger: Logger) -> MultiCircuit:
     circuit = MultiCircuit()
     is_valid = True
 
-    with open(file_name) as json_file:
-        data = json.load(json_file)
+    lines = None
+    buses = None
+    file_cgmes_data = {}
 
-    # elements dictionaries
-    xfrm_dict = {entry['IdEnRed']: entry for entry in data['Transformadores']}
+    # import the cim files' content into a dictionary
+    data = read_cgmes_files(cim_files=file_name, logger=Logger)
+    # Parse the files
+    i = 0
+    for file_name, file_data in data.items():
+        name, file_extension = os.path.splitext(file_name)
+        # self.emit_text('Parsing xml structure of ' + name)
+        file_cgmes_data = parse_xml_text(file_data)
 
-    # nodes_dict = {entry['id']: entry for entry in data['Nudos']}
-    nodes_dict = dict()
-    buses_dict = dict()
-    for entry in data['Nudos']:
-        nodes_dict[entry['id']] = entry
-        bus = dev.Bus(name=str(entry['id']))
-        buses_dict[entry['id']] = bus
-        if entry['id'] > 0:  # omit the node 0 because it is the "earth node"...
+        buses = file_cgmes_data.get('postes', None)
+        lines = file_cgmes_data.get('donneesQuadripoles', None)
+
+    if "nom" not in file_cgmes_data.keys():
+        is_valid = False
+        return circuit, is_valid
+
+    circuit.name = file_cgmes_data['nom']
+    circuit.comments = "Grid from RTE model"
+
+
+    bus_dict = dict()
+    vl_dict = dict()
+    substation_dict = dict()
+    # reverse_map = dict()
+    if buses is not None:
+        for bus_id, bus_data in buses.items():
+            matches = re.findall(r'[^\d\s]+', bus_data['nom'])
+            substation_name = matches[0]
+            voltage_level_name = substation_name + '_' + bus_data['unom']
+            bus_name = bus_data['nom']
+            if substation_name not in substation_dict.keys():
+                substation_dict[substation_name] = Substation(name=substation_name)
+                circuit.add_substation(substation_dict[substation_name])
+
+            if voltage_level_name not in vl_dict:
+                vl_dict[voltage_level_name] = VoltageLevel(name=voltage_level_name, substation=substation_dict[substation_name], Vnom=float(bus_data['unom']))
+                circuit.add_voltage_level(vl_dict[voltage_level_name])
+
+            bus = Bus(name=bus_name, voltage_level=vl_dict[voltage_level_name], Vnom=float(bus_data['unom']))
+            bus_dict[bus_id] = bus
             circuit.add_bus(bus)
 
-    gen_dict = {entry['IdEnRed']: entry for entry in data['Generadores']}
+            # if substation_name not in reverse_map:
+            #     reverse_map[substation_name] = dict()
+            # if voltage_level_name not in reverse_map[substation_name]:
+            #     reverse_map[substation_name][voltage_level_name] = dict()
+            # if bus_name not in reverse_map[substation_name][voltage_level_name]:
+            #     if reverse_map[substation_name][voltage_level_name] is None:
+            #         reverse_map[substation_name][voltage_level_name] = dict()
+            #         reverse_map[substation_name][voltage_level_name][bus_name] = bus
+            #     else:
+            #         reverse_map[substation_name][voltage_level_name][bus_name] = bus
 
-    load_dict = {entry['IdEnRed']: entry for entry in data['Consumos']}
+    if lines is not None:
+        for line_id, line_data in lines.items():
+            # split_text = re.split(r'(?<=\d)\s+', line_data['nom'], maxsplit=1)
+            # substation_from = re.findall(r'[^\d\s]+', split_text[0])[0]
+            # substation_to = re.findall(r'[^\d\s]+', split_text[1])[0]
+            #
+            # vl_id = re.findall(r'\d+', line_data['nom'])[0] # the first digit in the name  tells us which vl
+            # vl = voltage_levels[vl_id]
+            # vl_from_name = substation_from + '_' + str(vl)
+            # vl_to_name = substation_to + '_' + str(vl)
+            name = line_data['nom']
 
-    sw_dict = {entry['IdEnRed']: entry for entry in data['Interruptores']}
 
-    # main grid
-    vector_red = data['Red']
 
-    """
-    {'id': 0, 
-    'Tipo': 1, 
-    'E': 0, 
-    'EFase': 0, 
-    'Tomas': 0, 
-    'R1': 1e-05, 
-    'X1': 1e-05, 
-    'R0': 1e-05, 
-    'X0': 1e-05, 
-    'RN': 1e-05, 
-    'XN': 1e-05, 
-    'P': 0, 
-    'Q': 0, 
-    'Nudo1': 2410, 
-    'Nudo2': 2403, 
-    'Carga_Max': -1, 
-    'ClassID': 1090, 
-    'ClassMEMBER': 98076366, 
-    'Conf': 'abc', 
-    'LineaMT': '2030:98075347', 
-    'Unom': 15.0}
-    """
+            bus_id_from = line_data['postor']
+            bus_id_to = line_data['postex']
 
-    for entry in vector_red:
+            bus_f = bus_dict[bus_id_from]
+            bus_t = bus_dict[bus_id_to]
 
-        # pick the general attributes
-        identifier = entry['id']
-        tpe = entry['Tipo']
-        n1_id = entry['Nudo1']
-        n2_id = entry['Nudo2']
+            is_trafo = True if bus_f.voltage_level.substation == bus_t.voltage_level.substation else False
 
-        # get the Bus objects associated to the bus indices
-        bus1 = buses_dict.get(n1_id, None)
-        bus2 = buses_dict.get(n2_id, None)
+            r = line_data['resistance']
+            x = line_data['reactance']
+            rating = line_data['imap']
 
-        if tpe == 0:  # Fuente de  Tensión(elemento  Ptheta)
-
-            # pick the bus that is not the earth bus...
-            if n1_id == 0:
-                bus = bus2
+            if is_trafo:
+                tr = Transformer2W(bus_from=bus_f,
+                                   bus_to=bus_t,
+                                   name=name,
+                                   r=float(r),
+                                   x=float(x),
+                                   rate=float(rating))
+                circuit.add_transformer2w(tr)
             else:
-                bus = bus1
+                br = Line(bus_from=bus_f,
+                          bus_to=bus_t,
+                          name=name,
+                          r=float(r),
+                          x=float(x),
+                          rate=float(rating))
 
-            bus.is_slack = True
-            elm = dev.Generator(name='Slack')
-            circuit.add_generator(bus, elm)
-
-        elif tpe == 1:  # Elemento impedancia(lineas)
-
-            V = entry['Unom']
-            Zbase = V * V / circuit.Sbase
-
-            if identifier in load_dict.keys():
-                # load!!!
-                print('Load found in lines: WTF?')
-            else:
-                # line!!!
-                r = entry['R1'] / Zbase
-                x = entry['X1'] / Zbase
-
-                elm = dev.Line(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x)
-                circuit.add_line(elm)
-
-        elif tpe == 2:  # Elemento PQ
-
-            # pick the bus that is not the earth bus...
-            if n1_id == 0:
-                bus = bus2
-            else:
-                bus = bus1
-
-            p = entry['P']  # power in MW
-            q = entry['Q']
-            elm = dev.Load(name=str(identifier), P=p*1e-3, Q=q * 1e-3)
-            circuit.add_load(bus, elm)
-
-        elif tpe == 3:  # Elemento  PV
-            pass
-
-        elif tpe == 4:  # Reg  de  tensión
-
-            V = entry['Unom']
-            Zbase = V * V / circuit.Sbase
-
-            r = entry['R1'] / Zbase
-            x = entry['X1'] / Zbase
-            elm = dev.Transformer2W(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x)
-            circuit.add_transformer2w(elm)
-
-        elif tpe == 5:  # Transformador
-
-            V = entry['Unom']
-            Zbase = V * V / circuit.Sbase
-
-            r = entry['R1'] / Zbase
-            x = entry['X1'] / Zbase
-            elm = dev.Transformer2W(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x)
-            circuit.add_transformer2w(elm)
+                circuit.add_line(br)
 
     # return the circuit
     return circuit, is_valid
