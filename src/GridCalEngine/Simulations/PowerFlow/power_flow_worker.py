@@ -1240,6 +1240,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
         # do the reactive power partition and store the values
         # __split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag, results=results)
 
+        results.three_phase = True
         return results
 
     else:

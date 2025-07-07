@@ -69,7 +69,7 @@ from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 from GridCal.Gui.general_dialogues import InputNumberDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
-from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
+from GridCal.Gui.messages import error_msg, warning_msg, yes_no_question
 
 if TYPE_CHECKING:
     from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -3277,7 +3277,8 @@ class SchematicWidget(BaseDiagramWidget):
                        max_branch_width=5,
                        min_bus_width=20,
                        max_bus_width=20,
-                       cmap: palettes.Colormaps = None):
+                       cmap: palettes.Colormaps = None,
+                       is_three_phase: bool = False):
         """
         Color objects based on the results passed
         :param Sbus: Buses power (MVA)
@@ -3300,7 +3301,7 @@ class SchematicWidget(BaseDiagramWidget):
         :param vsc_losses: VSC branch losses [MW]
         :param vsc_loading: VSC Branch loading [%]
         :param vsc_active: VSC Branch status
-        :param loading_label: String saling whatever the loading label means
+        :param loading_label: String saying whatever the loading label means
         :param ma: branch phase shift angle (rad)
         :param theta: branch tap module (p.u.)
         :param fluid_node_p2x_flow: P2X flow rate (m3)
@@ -3316,6 +3317,7 @@ class SchematicWidget(BaseDiagramWidget):
         :param min_bus_width: Minimum bus width [px]
         :param max_bus_width: Maximum bus width [px]
         :param cmap: Color map [palettes.Colormaps]
+        :param is_three_phase: the results are three-phase
         """
 
         # color nodes
@@ -3342,35 +3344,27 @@ class SchematicWidget(BaseDiagramWidget):
 
         bus_types = ['', 'PQ', 'PV', 'Slack', 'PQV', 'P']
         max_flow = 1
+        ph = np.array([0, 1, 2])
 
-        if nbus == len(vnorm):
+        if (nbus == len(vnorm) and not is_three_phase) or (3 * nbus == len(vnorm) and is_three_phase):
             for i, bus in enumerate(self.circuit.buses):
 
                 # try to find the diagram object of the DB object
-                graphic_object = self.graphics_manager.query(bus)
+                graphic_object: BusGraphicItem = self.graphics_manager.query(bus)
 
-                if graphic_object:
+                if graphic_object and bus_active[i]:
 
-                    if bus_active[i]:
-                        a = 255
-                        if cmap == palettes.Colormaps.Green2Red:
-                            b, g, r = palettes.green_to_red_bgr(vnorm[i])
+                    if is_three_phase:
+                        i3 = 3 * i + ph
+                        graphic_object.set_values(i=i,
+                                                  Vm=vabs[i3],
+                                                  Va=vang[i3],
+                                                  P=Sbus[i3].real if Sbus is not None else None,
+                                                  Q=Sbus[i3].imag if Sbus is not None else None,
+                                                  tpe=bus_types[int(types[i])] if types is not None else None)
 
-                        elif cmap == palettes.Colormaps.Heatmap:
-                            b, g, r = palettes.heatmap_palette_bgr(vnorm[i])
-
-                        elif cmap == palettes.Colormaps.TSO:
-                            b, g, r = palettes.tso_substation_palette_bgr(vnorm[i])
-
-                        else:
-                            r, g, b, a = voltage_cmap(vnorm[i])
-                            r *= 255
-                            g *= 255
-                            b *= 255
-                            a *= 255
-
-                        graphic_object.set_tile_color(QColor(r, g, b, a))
-
+                        v_to_colour = max(vnorm[i3])
+                    else:
                         graphic_object.set_values(i=i,
                                                   Vm=vabs[i],
                                                   Va=vang[i],
@@ -3378,15 +3372,33 @@ class SchematicWidget(BaseDiagramWidget):
                                                   Q=Sbus[i].imag if Sbus is not None else None,
                                                   tpe=bus_types[int(types[i])] if types is not None else None)
 
-                        if use_flow_based_width:
-                            graphic_object.change_size(w=graphic_object.w)
+                        v_to_colour = vnorm[i]
+
+                    a = 255
+                    if cmap == palettes.Colormaps.Green2Red:
+                        b, g, r = palettes.green_to_red_bgr(v_to_colour)
+
+                    elif cmap == palettes.Colormaps.Heatmap:
+                        b, g, r = palettes.heatmap_palette_bgr(v_to_colour)
+
+                    elif cmap == palettes.Colormaps.TSO:
+                        b, g, r = palettes.tso_substation_palette_bgr(v_to_colour)
 
                     else:
-                        graphic_object.set_tile_color(QColor(115, 115, 115, 255))  # gray
+                        r, g, b, a = voltage_cmap(v_to_colour)
+                        r *= 255
+                        g *= 255
+                        b *= 255
+                        a *= 255
+
+                    graphic_object.set_tile_color(QColor(r, g, b, a))
+
+                    if use_flow_based_width:
+                        graphic_object.change_size(w=graphic_object.w)
 
                 else:
-                    # No graphic object found
-                    pass
+                    graphic_object.set_tile_color(QColor(115, 115, 115, 255))  # gray
+
         else:
             error_msg("Bus results length differs from the number of Bus results. \n"
                       "Did you change the number of devices? If so, re-run the simulation.")

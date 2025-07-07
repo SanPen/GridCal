@@ -255,6 +255,8 @@ class PowerFlowResults(ResultsTemplate):
         self.plot_bars_limit: int = 100
         self.convergence_reports: List[ConvergenceReport] = list()
 
+        self.three_phase: bool = False
+
         self.register(name='bus_names', tpe=StrVec)
         self.register(name='branch_names', tpe=StrVec)
         self.register(name='hvdc_names', tpe=StrVec)
@@ -301,7 +303,7 @@ class PowerFlowResults(ResultsTemplate):
         self.register(name='battery_q', tpe=Vec)
         self.register(name='shunt_q', tpe=Vec)
 
-        # self.register(name='island_number', tpe=int)
+        self.register(name='three_phase', tpe=bool)
 
     def apply_new_rates(self, nc: NumericalCircuit):
         """

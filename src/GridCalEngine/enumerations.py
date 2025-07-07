@@ -1924,6 +1924,13 @@ class ContingencyOperationTypes(Enum):
     def __repr__(self):
         return str(self)
 
+    # def __call__(self, value, names=None, *, module=None, qualname=None, type=None, start=1, boundary=None):
+    #     if value == 'status':
+    #         return ContingencyOperationTypes.Active
+    #
+    #     return super.__call__(value, names=names,
+    #                           module=module, qualname=qualname, type=type, start=start, boundary=boundary)
+
     @staticmethod
     def argparse(s):
         """
@@ -1931,6 +1938,9 @@ class ContingencyOperationTypes(Enum):
         :param s:
         :return:
         """
+        if s == 'status':
+            return ContingencyOperationTypes.Active
+
         try:
             return ContingencyOperationTypes[s]
         except KeyError:
