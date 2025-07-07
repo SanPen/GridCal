@@ -22,6 +22,8 @@ class AiIterable:
                  forced_mttf: Union[None, float] = None,
                  forced_mttr: Union[None, float] = None,
                  pf_options=PowerFlowOptions(),
+                 modify_injections: bool = True,
+                 modify_branches_state: bool = True,
                  logger: Logger = Logger()):
         """
 
@@ -35,6 +37,9 @@ class AiIterable:
 
         # declare the power flow options
         self.pf_options = pf_options
+
+        self.modify_injections = modify_injections
+        self.modify_branches_state = modify_branches_state
 
         # compile the time step
         nc = compile_numerical_circuit_at(self.grid, t_idx=None, logger=logger)
@@ -55,27 +60,40 @@ class AiIterable:
 
         self.mc_input = StochasticPowerFlowInput(self.grid)
 
+        # compile the time step
+        self.nc = compile_numerical_circuit_at(self.grid, t_idx=None, logger=self.logger)
+        self.base_branch_active = self.nc.passive_branch_data.active.copy()
+
     def __iter__(self) -> "AiIterable":
         return self
 
     def __next__(self) -> PowerFlowResults:
 
+        if self.modify_branches_state:
+            # determine the Markov states
+            p = np.random.random(self.nc.nbr)
+            br_active = (p > self.p_dwn_branches).astype(int)
 
-        # compile the time step
-        nc = compile_numerical_circuit_at(self.grid, t_idx=None, logger=self.logger)
+            # apply the transitioning states
+            self.nc.passive_branch_data.active = br_active
 
-        # determine the Markov states
-        p = np.random.random(nc.nbr)
-        br_active = (p > self.p_dwn_branches).astype(int)
+        if self.modify_injections:
+            # sample monte-carlo injections
+            x = np.random.random(self.nc.nbus)
+            Sbus = self.mc_input.get_at(x=x) / self.nc.Sbase
 
-        # apply the transitioning states
-        nc.passive_branch_data.active = br_active
+            pf_res = multi_island_pf_nc(nc=self.nc, options=self.pf_options, Sbus_input=Sbus)
 
-        # sample monte-carlo injections
-        x = np.random.random(nc.nbus)
-        Sbus = self.mc_input.get_at(x=x) / nc.Sbase
-
-        pf_res = multi_island_pf_nc(nc=nc, options=self.pf_options, Sbus_input=Sbus)
+        else:
+            # just run without injections variation, and pick the ones from the numerical circuit
+            pf_res = multi_island_pf_nc(nc=self.nc, options=self.pf_options)
 
         return pf_res
+
+    def reset(self):
+        """
+        Reset the iterable
+        """
+        self.nc = compile_numerical_circuit_at(self.grid, t_idx=None, logger=self.logger)
+        self.base_branch_active = self.nc.passive_branch_data.active.copy()
 
