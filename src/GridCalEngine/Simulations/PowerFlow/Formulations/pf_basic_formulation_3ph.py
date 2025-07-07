@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from typing import Tuple, List, Callable
+import numba as nb
 import numpy as np
 from scipy.sparse import diags, lil_matrix, csc_matrix
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
@@ -207,10 +208,11 @@ def compute_Sbus_star(nc: NumericalCircuit, V: CxVec, mask) -> CxVec:
     return Sbus, Y_power_star_linear
 
 
+@nb.njit(cache=True)
 def compute_current_loads(bus_idx: IntVec, bus_lookup: IntVec, V: CxVec, Istar: CxVec, Idelta: CxVec) -> CxVec:
     n = len(V)
     nelm = len(bus_idx)
-    I = np.zeros(n, dtype=complex)
+    I = np.zeros(n, dtype=nb.complex128)
 
     zero_load = 0.0 + 0.0j
 
@@ -277,6 +279,7 @@ def compute_current_loads(bus_idx: IntVec, bus_lookup: IntVec, V: CxVec, Istar: 
     return I, Y_current_linear
 
 
+@nb.njit(cache=True)
 def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, bus_lookup: IntVec) -> CxVec:
     """
     :param bus_idx:
@@ -287,7 +290,7 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, 
     """
     n = len(V)
     nelm = len(bus_idx)
-    S = np.zeros(n, dtype=complex)
+    S = np.zeros(n, dtype=nb.complex128)
     for k in range(nelm):
         f = bus_idx[k]
 
@@ -352,7 +355,7 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, 
             else:
                 raise Exception('Incorrect load phasing, non-existing phases for this load')
 
-    Y_power_delta_linear = np.conj(S) / abs(V) ** 2
+    Y_power_delta_linear = np.conj(S) / np.pow(np.abs(V), 2)
 
     return S, Y_power_delta_linear
 
@@ -387,6 +390,7 @@ def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-6) -> CSC:
     return scipy_to_mat(jac.tocsc())
 
 
+@nb.njit(cache=True)
 def expand3ph(x: np.ndarray):
     """
     Expands a numpy array to 3-pase copying the same values
@@ -399,6 +403,22 @@ def expand3ph(x: np.ndarray):
 
     for k in range(n):
         x3[3 * k + idx3] = x[k]
+    return x3
+
+
+@nb.njit(cache=True)
+def expand3phIndices(x: np.ndarray):
+    """
+    Expands a numpy array to 3-pase copying the same values
+    :param x:
+    :return:
+    """
+    n = len(x)
+    idx3 = np.array([0, 1, 2])
+    x3 = np.zeros(3 * n, dtype=x.dtype)
+
+    for k in range(n):
+        x3[3 * k + idx3] = 3 * x[k] + idx3
     return x3
 
 
