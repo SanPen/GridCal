@@ -3264,7 +3264,7 @@ class SchematicWidget(BaseDiagramWidget):
                        vsc_loading: Vec = None,
                        vsc_active: IntVec = None,
                        ma: Vec = None,
-                       theta: Vec = None,
+                       tau: Vec = None,
                        fluid_node_p2x_flow: Vec = None,
                        fluid_node_current_level: Vec = None,
                        fluid_node_spillage: Vec = None,
@@ -3303,7 +3303,7 @@ class SchematicWidget(BaseDiagramWidget):
         :param vsc_active: VSC Branch status
         :param loading_label: String saying whatever the loading label means
         :param ma: branch phase shift angle (rad)
-        :param theta: branch tap module (p.u.)
+        :param tau: branch tap module (p.u.)
         :param fluid_node_p2x_flow: P2X flow rate (m3)
         :param fluid_node_current_level: Current level (m3)
         :param fluid_node_spillage: Spillage (m3)
@@ -3328,6 +3328,7 @@ class SchematicWidget(BaseDiagramWidget):
         vang = np.angle(voltages, deg=True)
         vnorm = (vabs - vmin) / vrng
         nbus = self.circuit.get_bus_number()
+        nbr = self.circuit.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=True)
 
         voltage_cmap = viz.get_voltage_color_map()
         loading_cmap = viz.get_loading_color_map()
@@ -3421,7 +3422,8 @@ class SchematicWidget(BaseDiagramWidget):
                 else:
                     Sfnorm = Sfabs
 
-                if self.circuit.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=True) == len(Sf):
+                if (nbr == len(Sf) and not is_three_phase) or (is_three_phase and 3 * nbr == len(Sf)):
+
                     for i, branch in enumerate(self.circuit.get_branches_iter(add_vsc=False,
                                                                               add_hvdc=False,
                                                                               add_switch=True)):
@@ -3433,10 +3435,56 @@ class SchematicWidget(BaseDiagramWidget):
 
                             if br_active[i]:
 
+                                if is_three_phase:
+                                    l_color_val = max(lnorm[3 * i + ph])
+                                    tooltip = str(i) + ': ' + branch.name
+
+                                    for ph_idx, pname in enumerate(['a', 'b', 'c']):
+                                        k = 3 * i + ph_idx
+
+                                        tooltip += f'\n{loading_label} {pname}: {lnorm[k] * 100:10.4f} [%]'
+
+                                        tooltip += f'\nPf {pname}:\t{Sf[k]:10.4f} [MVA]'
+
+                                        if St is not None:
+                                            tooltip += f'\nPt {pname}:\t{St[k]:10.4f} [MVA]'
+
+                                        if losses is not None:
+                                            tooltip += f'\nLoss {pname}:\t{losses[k]:10.4f} [MVA]'
+
+                                        if branch.device_type == DeviceType.Transformer2WDevice:
+                                            if ma is not None:
+                                                tooltip += f'\nPf {pname}:\t{ma[k]:10.4f}'
+
+                                            if tau is not None:
+                                                tooltip += f'\nPf {pname}:\t{tau[k]:10.4f} [rad]'
+
+                                        # line break
+                                        tooltip += "\n"
+
+                                else:
+                                    l_color_val = lnorm[i]
+                                    tooltip = str(i) + ': ' + branch.name
+                                    tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
+
+                                    tooltip += '\nPower (from):\t' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
+
+                                    if St is not None:
+                                        tooltip += '\nPower (to):\t' + "{:10.4f}".format(St[i]) + ' [MVA]'
+
+                                    if losses is not None:
+                                        tooltip += '\nLosses:\t\t' + "{:10.4f}".format(losses[i]) + ' [MVA]'
+
+                                    if branch.device_type == DeviceType.Transformer2WDevice:
+                                        if ma is not None:
+                                            tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
+
+                                        if tau is not None:
+                                            tooltip += '\ntap angle:\t' + "{:10.4f}".format(tau[i]) + ' rad'
+
                                 if use_flow_based_width:
-                                    w = int(
-                                        np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width))
-                                    )
+                                    w = int((np.floor(min_branch_width
+                                                      + Sfnorm[i] * (max_branch_width - min_branch_width))))
                                 else:
                                     w = graphic_object.pen_width
 
@@ -3444,41 +3492,23 @@ class SchematicWidget(BaseDiagramWidget):
 
                                 a = 255
                                 if cmap == palettes.Colormaps.Green2Red:
-                                    b, g, r = palettes.green_to_red_bgr(lnorm[i])
+                                    b, g, r = palettes.green_to_red_bgr(l_color_val)
 
                                 elif cmap == palettes.Colormaps.Heatmap:
-                                    b, g, r = palettes.heatmap_palette_bgr(lnorm[i])
+                                    b, g, r = palettes.heatmap_palette_bgr(l_color_val)
 
                                 elif cmap == palettes.Colormaps.TSO:
                                     b, g, r = palettes.tso_line_palette_bgr(branch.get_max_bus_nominal_voltage(),
-                                                                            lnorm[i])
+                                                                            l_color_val)
 
                                 else:
-                                    r, g, b, a = loading_cmap(lnorm[i])
+                                    r, g, b, a = loading_cmap(l_color_val)
                                     r *= 255
                                     g *= 255
                                     b *= 255
                                     a *= 255
 
                                 color = QColor(r, g, b, a)
-
-                                tooltip = str(i) + ': ' + branch.name
-                                tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
-
-                                tooltip += '\nPower (from):\t' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
-
-                                if St is not None:
-                                    tooltip += '\nPower (to):\t' + "{:10.4f}".format(St[i]) + ' [MVA]'
-
-                                if losses is not None:
-                                    tooltip += '\nLosses:\t\t' + "{:10.4f}".format(losses[i]) + ' [MVA]'
-
-                                if branch.device_type == DeviceType.Transformer2WDevice:
-                                    if ma is not None:
-                                        tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
-
-                                    if theta is not None:
-                                        tooltip += '\ntap angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
 
                                 graphic_object.setToolTipText(tooltip)
                                 graphic_object.set_colour(color, w, style)

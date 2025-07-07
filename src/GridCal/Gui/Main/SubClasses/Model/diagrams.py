@@ -518,7 +518,7 @@ class DiagramsMain(CompiledArraysMain):
             vsc_loading=results.loading_vsc,
             vsc_active=vsc_active,
             ma=results.tap_module,
-            theta=results.tap_angle,
+            tau=results.tap_angle,
             use_flow_based_width=use_flow_based_width,
             min_branch_width=min_branch_width,
             max_branch_width=max_branch_width,
