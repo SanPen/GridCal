@@ -7,6 +7,7 @@ import numpy as np
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec, BoolVec, StrVec
 from GridCalEngine.enumerations import BusMode
 
+
 class BusData:
     """
     BusData
@@ -49,7 +50,6 @@ class BusData:
         self.b_fixed = np.zeros(nbus, dtype=float)  # same concept, but susceptance from shunts
 
         self.original_idx: IntVec = np.zeros(nbus, dtype=int)
-
 
     def slice(self, elm_idx: IntVec) -> "BusData":
         """
@@ -222,4 +222,8 @@ class BusData:
 
     def get_3ph_names(self):
         names3: StrVec = np.empty(self.nbus * 3, dtype=object)
+        for i in range(self.nbus):
+            names3[3 * i + 0] = self.names[i] + "_A"
+            names3[3 * i + 1] = self.names[i] + "_B"
+            names3[3 * i + 2] = self.names[i] + "_C"
         return names3

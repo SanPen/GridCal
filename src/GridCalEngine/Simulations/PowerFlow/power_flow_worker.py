@@ -14,7 +14,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation import PfBasicFormulation
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph, expand3ph
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.powell_fx import powell_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquadt_fx import levenberg_marquardt_fx
@@ -29,6 +29,21 @@ from GridCalEngine.basic_structures import CxVec, Vec
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Compilers.circuit_to_data import VALID_OPF_RESULTS
+
+
+def expand3phIndices(x: np.ndarray):
+    """
+    Expands a numpy array to 3-pase copying the same values
+    :param x:
+    :return:
+    """
+    n = len(x)
+    idx3 = np.array([0, 1, 2])
+    x3 = np.zeros(3 * n, dtype=x.dtype)
+
+    for k in range(n):
+        x3[3 * k + idx3] = 3 * x[k] + idx3
+    return x3
 
 
 def __split_reactive_power_into_devices(nc: NumericalCircuit, Qbus: Vec, results: PowerFlowResults) -> None:
@@ -1182,9 +1197,9 @@ def __multi_island_pf_nc_limited_support_3phase(nc: NumericalCircuit,
             results.apply_from_island_3phase(
                 results=solution,
                 b_idx=island.bus_data.original_idx,
-                b_idx3=expand3ph(island.bus_data.original_idx),
+                b_idx3=expand3phIndices(island.bus_data.original_idx),
                 br_idx=island.passive_branch_data.original_idx,
-                br_idx3=expand3ph(island.passive_branch_data.original_idx),
+                br_idx3=expand3phIndices(island.passive_branch_data.original_idx),
                 hvdc_idx=island.hvdc_data.original_idx,
                 vsc_idx=island.vsc_data.original_idx
             )
