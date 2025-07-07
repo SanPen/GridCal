@@ -907,7 +907,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     :param options: PowerFlowOptions instance
     :param logger: logger
     :param V_guess: voltage guess
-    :param Sbus_input: Use this power injections if provided
+    :param Sbus_input: Use this power injections if provided (in p.u.)
     :return: PowerFlowResults instance
     """
     if logger is None:

@@ -4,13 +4,13 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
-from typing import Tuple, Union
+from typing import Union
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc, PowerFlowResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.Reliability.reliability2 import compute_transition_probabilities
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_input import StochasticPowerFlowInput
-from GridCalEngine.basic_structures import IntVec, Logger
+from GridCalEngine.basic_structures import Logger
 
 
 class AiIterable:
@@ -73,7 +73,7 @@ class AiIterable:
 
         # sample monte-carlo injections
         x = np.random.random(nc.nbus)
-        Sbus = self.mc_input.get_at(x=x)
+        Sbus = self.mc_input.get_at(x=x) / nc.Sbase
 
         pf_res = multi_island_pf_nc(nc=nc, options=self.pf_options, Sbus_input=Sbus)
 
