@@ -1,0 +1,249 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+import math
+
+import numpy as np
+from matplotlib import pyplot as plt
+#from pygments.lexers.dsls import VGLLexer
+
+#from GridCalEngine.Utils.Symbolic.events import EventParam
+from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin, EventParam
+from GridCalEngine.Utils.Symbolic.block import Block
+from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
+import GridCalEngine.api as gce
+
+grid = gce.MultiCircuit()
+bus1 = gce.Bus(name="Bus1", Vnom=10)
+bus2 = gce.Bus(name="Bus2", Vnom=10)
+
+grid.add_bus(bus1)
+grid.add_bus(bus2)
+
+line = gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2,
+                r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
+grid.add_line(line)
+
+gen = gce.Generator(name="Gen1", P=10, vset=1.0)
+grid.add_generator(bus=bus1, api_obj=gen)
+
+load = gce.Load(name="Load1", P=10, Q=10)
+grid.add_load(bus=bus2, api_obj=load)
+
+
+res = gce.power_flow(grid)
+
+# res.voltage  # voltage in p.u.
+# res.Sf / grid.Sbase  # from power of the branches
+# res.St / grid.Sbase  # to power of the branches
+
+print(res.get_bus_df())
+print(res.get_branch_df())
+print(f"Converged: {res.converged}")
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Line
+# ----------------------------------------------------------------------------------------------------------------------
+g = Const(5)
+b = Const(-12)
+bsh = Const(0.03)
+Qline_from = Var("Qline_from")
+Qline_to = Var("Qline_to")
+Pline_from = Var("Pline_from")
+Pline_to = Var("Pline_to")
+Vline_from = Var("Vline_from")
+Vline_to = Var("Vline_to")
+dline_from = Var("dline_from")
+dline_to = Var("dline_to")
+
+
+
+delta = Var("delta")
+omega = Var("omega")
+psid = Var("psid")
+psiq = Var("psiq")
+i_d = Var("i_d")
+i_q = Var("i_q")
+v_d = Var("v_d")
+v_q = Var("v_q")
+t_e = Var("t_e")
+p_g = Var("P_e")
+Q_g = Var("Q_e")
+Vg = Var("Vg")
+dg = Var("dg")
+tm = Var("tm")
+et = Var("et")
+
+line_block = Block(
+    algebraic_eqs=[
+        Pline_from - ((Vline_from ** 2 * g) - g * Vline_from * Vline_to * cos(dline_from - dline_to) + b * Vline_from * Vline_to * cos(dline_from - dline_to + np.pi/2)),
+        Qline_from - (Vline_from ** 2 * (-bsh/2 - b) - g * Vline_from * Vline_to * sin(dline_from - dline_to) + b * Vline_from * Vline_to * sin(dline_from - dline_to + np.pi/2)),
+        Pline_to - ((Vline_to ** 2 * g) - g * Vline_to * Vline_from * cos(dline_to - dline_from) + b * Vline_to * Vline_from * cos(dline_to - dline_from + np.pi/2)),
+        Qline_to - (Vline_to ** 2 * (-bsh/2 - b) - g * Vline_to * Vline_from * sin(dline_to - dline_from) + b * Vline_to * Vline_from * sin(dline_to - dline_from + np.pi/2)),
+    ],
+    algebraic_vars=[dline_from, Vline_from, dline_to, Vline_to],
+    parameters=[g, b, bsh],
+    events=[]
+)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Load
+# ----------------------------------------------------------------------------------------------------------------------
+coeff_alfa = Const(1.8)
+Pl0 = EventParam(0.1, 2, 50, 'Pl0')
+Ql0 = EventParam(0.1, 2, 50, 'Ql0')
+coeff_beta = Const(8.0)
+
+Ql = Var("Ql")
+Pl = Var("Pl")
+
+load_block = Block(
+    algebraic_eqs=[
+        Pl - Pl0,
+        Ql - Ql0
+    ],
+    algebraic_vars=[Ql, Pl],
+    parameters=[],
+    events=[Pl0, Ql0]
+)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Generator
+# ----------------------------------------------------------------------------------------------------------------------
+# Generator
+pi = Const(math.pi)
+fn =  Const(50)
+# tm = Const(0.1)
+M = Const(1.0)
+D = EventParam(100, 100, 50, 'D')
+#D = Const(100)
+ra = Const(0.3)
+xd = Const(0.86138701)
+vf = Const(1.081099313)
+
+Kp = Const(1.0)
+Ki = Const(10.0)
+Kw = Const(10.0)
+
+
+
+generator_block = Block(
+    state_eqs=[
+        # delta - (2 * pi * fn) * (omega - 1),
+        # omega - (-tm / M + t_e / M - D / M * (omega - 1))
+        (2 * pi * fn) * (omega - 1),  # dδ/dt
+        (tm - t_e - D * (omega - 1)) / M,  # dω/dt
+        -Kp * et - Ki * et - Kw * (omega - 1)  # det/dt
+    ],
+    state_vars=[delta, omega, et],
+    algebraic_eqs=[
+        et - (tm - t_e),
+        psid - (-ra * i_q + v_q),
+        psiq - (-ra * i_d + v_d),
+        i_d - (psid + xd * i_d - vf),
+        i_q - (psiq + xd * i_q),
+        v_d - (Vg * sin(delta - dg)),
+        v_q - (Vg * cos(delta - dg)),
+        t_e - (psid * i_q - psiq * i_d),
+        (v_d * i_d + v_q * i_q) - p_g,
+        (v_q * i_d - v_d * i_q) - Q_g
+    ],
+    algebraic_vars=[tm, psid, psiq, i_d, i_q, v_d, v_q, t_e, p_g, Q_g],
+    parameters=[fn, M, ra, xd, vf, Kp, Ki, Kw],
+    events=[D]
+)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+
+bus1_block = Block(
+    algebraic_eqs=[
+        p_g - Pline_from,
+        Q_g - Qline_from,
+        Vg - Vline_from,
+        dg - dline_from
+    ],
+    algebraic_vars=[Pline_from, Qline_from, Vg, dg],
+    events=[]
+)
+
+bus2_block = Block(
+    algebraic_eqs=[
+        Pl + Pline_to,
+        Ql + Qline_to,
+    ],
+    algebraic_vars=[Pline_to, Qline_to],
+    events=[]
+)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# System
+# ----------------------------------------------------------------------------------------------------------------------
+
+sys = Block(
+    children=[line_block, load_block, generator_block, bus1_block, bus2_block],
+    in_vars=[],
+    out_vars=[]
+)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Solver
+# ----------------------------------------------------------------------------------------------------------------------
+slv = BlockSolver(sys)
+
+mapping = {
+
+    dline_from: 15 * (np.pi / 180),
+    dline_to: 10 * (np.pi / 180),
+    Vline_from: 1.0,
+    Vline_to: 0.95,
+    Vg: 1.0,
+    dg: 15 * (np.pi / 180),
+
+    Pline_from: 0.1,
+    Qline_from: 0.2,
+    Pline_to: -0.1,
+    Qline_to: -0.2,
+
+
+    Pl: 0.1,  # P2
+    Ql: 0.2,  # Q2
+
+
+    delta: 0.5,
+    omega: 1.001,
+    psid: 3.825,  # d-axis flux linkage (pu)
+    psiq: 0.0277,  # q-axis flux linkage (pu)
+    i_d: 0.1,  # d-axis stator current (pu)
+    i_q: 0.2,  # q-axis stator current (pu)
+    v_d: -0.2588,  # d-axis voltage (pu)
+    v_q:  0.9659,  # q-axis voltage (pu)
+    t_e: 0.1,  # electromagnetic torque (pu)
+    p_g: 0.1673,
+    Q_g: 0.1484
+}
+
+x0 = slv.build_init_vector(mapping)
+events = slv.build_init_events_vector(mapping)
+vars_in_order = slv.sort_vars(mapping)
+
+t, y = slv.simulate(
+    t0=0,
+    t_end=0.1,
+    h=0.001,
+    x0=x0,
+    events=events,
+    method="implicit_euler"
+)
+
+fig = plt.figure(figsize=(12, 8))
+# plt.plot(t, y)
+plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)")
+plt.plot(t, y[:, slv.get_var_idx(delta)], label="δ (rad)")
+# plt.plot(t, y[:, slv.get_var_idx(t_e)], label="t_e (pu)")
+plt.plot(t, y[:, slv.get_var_idx(Vline_from)], label="Vline_from (Vlf)")
+plt.plot(t, y[:, slv.get_var_idx(Vline_to)], label="Vline_to (Vlt)")
+plt.legend()
+plt.show()

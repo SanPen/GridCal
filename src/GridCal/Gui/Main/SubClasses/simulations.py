@@ -944,6 +944,18 @@ class SimulationsMain(TimeEventsMain):
         else:
             self.run_reliability()
 
+    def rms_dispatcher(self):
+        """
+        Dispatch the reliability action
+        :return:
+        """
+        if self.server_driver.is_running():
+            instruction = RemoteInstruction(operation=SimulationTypes.RmsDynamic_run)
+            self.run_remote(instruction=instruction)
+
+        else:
+            self.run_rms()
+
     def run_power_flow(self):
         """
         Run a power flow simulation
@@ -2964,6 +2976,62 @@ class SimulationsMain(TimeEventsMain):
 
             # delete from the current simulations
             self.remove_simulation(SimulationTypes.Reliability_run)
+
+            if results is not None:
+                self.update_available_results()
+                self.colour_diagrams()
+        else:
+            pass
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()
+
+    def run_rms(self):
+        """
+        Run reliability study
+        :return:
+        """
+        if self.circuit.valid_for_simulation():
+
+            if self.circuit.get_time_number() > 0:
+
+                if not self.session.is_this_running(SimulationTypes.RmsDynamic_run):
+
+                    self.add_simulation(SimulationTypes.RmsDynamic_run)
+
+                    self.LOCK()
+
+                    # Compile the grid
+                    self.ui.progress_label.setText('Compiling the grid...')
+                    QtGui.QGuiApplication.processEvents()
+
+                    options = sim.RmsOptions()
+
+                    drv = sim.RmsSimulationDriver(grid=self.circuit, options=options)
+
+                    self.session.run(drv,
+                                     post_func=self.post_reliability,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
+
+                else:
+                    self.show_warning_toast('Another reliability study is running already...')
+            else:
+                self.show_warning_toast('Reliability studies need time data...')
+        else:
+            pass
+
+    def post_rms(self):
+        """
+
+        :return:
+        """
+        _, results = self.session.rms_dynamic_simulation
+
+        if results is not None:
+
+            # delete from the current simulations
+            self.remove_simulation(SimulationTypes.RmsDynamic_run)
 
             if results is not None:
                 self.update_available_results()

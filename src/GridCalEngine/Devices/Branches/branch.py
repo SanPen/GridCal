@@ -83,7 +83,7 @@ class Branch(BranchParent):
                  temp_oper=20,
                  alpha=0.00330,
                  bus_to_regulated=False,
-                 template=None,):
+                 template=None):
         """
         This class exists for legacy reasons, use the Line or Transformer2w classes instead! *
         The **Branch** class represents the connections between nodes (i.e.

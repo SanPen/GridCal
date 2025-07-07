@@ -14,6 +14,7 @@ from GridCalEngine.enumerations import BuildStatus, DeviceType, SubObjectType, S
 from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Aggregation.facility import Facility
+from GridCalEngine.Devices.Dynamic.dynamic_model_host import DynamicModelHost
 
 if TYPE_CHECKING:
     from GridCalEngine.Devices import Technology
@@ -59,7 +60,8 @@ class InjectionParent(PhysicalDevice):
         'shift_key',
         '_shift_key_prof',
         '_use_kw',
-        '_conn'
+        '_conn',
+        '_rms_model'
     )
 
     def __init__(self,
@@ -131,6 +133,8 @@ class InjectionParent(PhysicalDevice):
 
         self._conn: ShuntConnectionType = ShuntConnectionType.Star
 
+        self._rms_model: DynamicModelHost = DynamicModelHost()
+
         self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus', editable=False)
 
         self.register(key='cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
@@ -165,6 +169,9 @@ class InjectionParent(PhysicalDevice):
 
         self.register(key='conn', units='', tpe=ShuntConnectionType,
                       definition='Connection type for 3-phase studies')
+
+        self.register(key='rms_model', units='', tpe=SubObjectType.DynamicModelHostType,
+                      definition='RMS dynamic model', display=False)
 
     @property
     def bus(self) -> Bus:
@@ -293,6 +300,15 @@ class InjectionParent(PhysicalDevice):
     def conn(self, val: ShuntConnectionType):
         if isinstance(val, ShuntConnectionType):
             self._conn = val
+
+    @property
+    def rms_model(self) -> DynamicModelHost:
+        return self._rms_model
+
+    @rms_model.setter
+    def rms_model(self, value: DynamicModelHost):
+        if isinstance(value, DynamicModelHost):
+            self._rms_model = value
 
     def get_S(self) -> complex:
         """

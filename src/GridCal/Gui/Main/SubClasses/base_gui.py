@@ -49,6 +49,7 @@ from GridCal.Session.session import SimulationSession, GcThread
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
+from GridCal.Gui.RmsModelEditor.rms_model_editor_dialogue import RmsModelEditorGUI
 from GridCal.Gui.Diagrams.generic_graphics import IS_DARK
 from GridCal.Gui.python_console import PythonConsole
 from GridCal.Gui.toast_widget import ToastManager
@@ -176,6 +177,7 @@ class BaseMainGui(QMainWindow):
         self.coordinates_window: Union[CoordinatesInputGUI, None] = None
         self.about_msg_window: Union[AboutDialogueGuiGUI, None] = None
         self.tower_builder_window: Union[TowerBuilderGUI, None] = None
+        self.rms_model_Editor_window: Union[RmsModelEditorGUI, None] = None
         self.investment_checks_diag: Union[CheckListDialogue, None] = None
         self.contingency_checks_diag: Union[CheckListDialogue, None] = None
         self.ra_checks_diag: Union[CheckListDialogue, None] = None

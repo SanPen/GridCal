@@ -10640,6 +10640,7 @@ QProgressBar::chunk{
    <addaction name="actionShort_Circuit"/>
    <addaction name="actionVoltage_stability"/>
    <addaction name="actionContingency_analysis"/>
+   <addaction name="actionRun_Dynamic_RMS_Simulation"/>
    <addaction name="separator"/>
    <addaction name="actionOptimal_Net_Transfer_Capacity"/>
    <addaction name="actionNodal_capacity"/>
@@ -12284,6 +12285,18 @@ QProgressBar::chunk{
     <font>
      <pointsize>10</pointsize>
     </font>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionRun_Dynamic_RMS_Simulation">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/dyn.svg</normaloff>:/Icons/icons/dyn.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Run Dynamic RMS Simulation</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

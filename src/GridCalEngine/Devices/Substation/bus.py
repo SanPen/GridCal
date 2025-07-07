@@ -8,12 +8,13 @@ from typing import Tuple, Union
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCalEngine.enumerations import BusMode, DeviceType
+from GridCalEngine.enumerations import BusMode, DeviceType, SubObjectType
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Aggregation import Area, Zone, Country
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.Dynamic.dynamic_model_host import DynamicModelHost
 
 
 class Bus(PhysicalDevice):
@@ -55,6 +56,7 @@ class Bus(PhysicalDevice):
         'ph_c',
         'ph_n',
         'is_grounded',
+        '_rms_model',
     )
 
     def __init__(self, name="Bus",
@@ -210,6 +212,8 @@ class Bus(PhysicalDevice):
         self.ph_n: bool = True
         self.is_grounded: bool = True
 
+        self._rms_model: DynamicModelHost = DynamicModelHost()
+
         self.register(key='active', units='', tpe=bool, definition='Is the bus active? used to disable the bus.',
                       profile_name='active_prof')
         self.register(key='is_slack', units='', tpe=bool, definition='Force the bus to be of slack type.',
@@ -262,6 +266,17 @@ class Bus(PhysicalDevice):
         self.register(key='ph_c', units='', tpe=bool, definition='Has phase C?')
         self.register(key='ph_n', units='', tpe=bool, definition='Has phase N?')
         self.register(key='is_grounded', units='', tpe=bool, definition='Is this bus neutral grounded?.')
+        self.register(key='rms_model', units='', tpe=SubObjectType.DynamicModelHostType,
+                      definition='RMS dynamic model', display=False)
+
+    @property
+    def rms_model(self) -> DynamicModelHost:
+        return self._rms_model
+
+    @rms_model.setter
+    def rms_model(self, value: DynamicModelHost):
+        if isinstance(value, DynamicModelHost):
+            self._rms_model = value
 
     @property
     def active_prof(self) -> Profile:

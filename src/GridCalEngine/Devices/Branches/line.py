@@ -345,8 +345,10 @@ class Line(BranchParent):
 
     def set_circuit_idx(self, val: int, obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType]):
         """
-        Set the circuit_idx with additional behavior based on the is_user_action flag. Ensure that the template exists and is valid.
-        :param value: The value to set
+        Set the circuit_idx with additional behavior based on the is_user_action flag.
+        Ensure that the template exists and is valid.
+        :param val: The value to set
+        :param obj:
         """
         # If the user is setting the circuit index, ensure that the template exists and is valid
         if obj is None:

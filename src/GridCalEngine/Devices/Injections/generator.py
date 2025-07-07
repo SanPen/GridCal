@@ -210,23 +210,6 @@ class Generator(GeneratorParent):
         self.emissions: Associations = Associations(device_type=DeviceType.EmissionGasDevice)
         self.fuels: Associations = Associations(device_type=DeviceType.FuelDevice)
 
-        # Dynamic vars
-        # self.Ra = Ra
-        # self.Xa = Xa
-        # self.Xd = Xd
-        # self.Xq = Xq
-        # self.Xdp = Xdp
-        # self.Xqp = Xqp
-        # self.Xdpp = Xdpp
-        # self.Xqpp = Xqpp
-        # self.Td0p = Td0p
-        # self.Tq0p = Tq0p
-        # self.Td0pp = Td0pp
-        # self.Tq0pp = Tq0pp
-        # self.H = H
-        # self.speed_volt = speed_volt
-        # self.base_mva = base_mva  # machine base MVA
-
         # system base power MVA
         self.Sbase = float(Sbase)
 

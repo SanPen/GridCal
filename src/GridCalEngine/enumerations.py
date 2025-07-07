@@ -1007,6 +1007,8 @@ class DeviceType(Enum):
 
     BusOrBranch = "BusOrBranch"
 
+    RmsModelTemplateDevice = "RMS template"
+
     def __str__(self) -> str:
         return str(self.value)
 
@@ -1047,6 +1049,7 @@ class SubObjectType(Enum):
     Associations = "AssociationsList"
     ListOfWires = 'ListOfWires'
     AdmittanceMatrix = "Admittance Matrix"
+    DynamicModelHostType = "DynamicModuleHost"
 
     def __str__(self) -> str:
         return str(self.value)
@@ -1172,6 +1175,7 @@ class StudyResultsType(Enum):
     NetTransferCapacity = 'NetTransferCapacity'
     NetTransferCapacityTimeSeries = 'NetTransferCapacityTimeSeries'
     StochasticPowerFlow = 'StochasticPowerFlow'
+    RmsSimulation = "RmsSimulation"
 
     def __str__(self):
         return self.value
@@ -1757,6 +1761,7 @@ class SimulationTypes(Enum):
     TopologyProcessor_run = 'Topology Processor'
     NodalCapacityTimeSeries_run = 'Nodal capacity time series'
     Reliability_run = "Reliability"
+    RmsDynamic_run = "RMS Dynamic"
 
     NoSim = "No simulation"
 
@@ -2009,6 +2014,37 @@ class CascadeType(Enum):
         """
         try:
             return CascadeType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class DynamicIntegrationMethod(Enum):
+    Trapezoid = "Trapezoid",
+    BackEuler = "BackEuler"
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return DynamicIntegrationMethod[s]
         except KeyError:
             return s
 
