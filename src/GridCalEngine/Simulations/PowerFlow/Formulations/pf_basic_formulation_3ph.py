@@ -772,7 +772,6 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         ]
         # self._f = compute_fx(self.Scalc, Sbus, self.idx_dP, self.idx_dQ)
         Sbus_expanded = expand_magnitudes(Sbus, self.bus_lookup)
-        print('\nSbus =\n', Sbus_expanded)
         # compute the error
         self._error = compute_fx_error(self._f)
 
