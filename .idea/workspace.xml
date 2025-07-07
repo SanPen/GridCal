@@ -28,11 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Passing test_3ph_admittance_matrix.py">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_driver.py" afterDir="false" />
-    </list>
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added LP model" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -72,7 +68,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="#343_3phase" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -92,10 +88,17 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
+  <component name="GithubProjectSettings">
+    <option name="branchProtectionPatterns">
+      <list>
+        <option value="master" />
+      </list>
+    </option>
+  </component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/SanPen/GridCal.git&quot;,
-    &quot;accountId&quot;: &quot;1acef425-303f-45a5-9f13-1a5d8e86b985&quot;
+    &quot;accountId&quot;: &quot;cb83a36c-6a26-4d28-9aa3-3af0083cd55d&quot;
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
@@ -126,7 +129,7 @@
   &quot;associatedIndex&quot;: 8
 }</component>
   <component name="ProjectId" id="1bGvT9JqoJhBes9WGdphyWxAfMi" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+  <component name="ProjectLevelVcsManager">
     <OptionsSetting value="false" id="Update" />
     <ConfirmationsSetting value="2" id="Add" />
   </component>
@@ -152,14 +155,6 @@
     "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
     "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
     "Python tests.Nosetests in tests.executor": "Run",
-    "Python tests.Python tests for test_3ph_admittance_matrix.test_3x3_abc.executor": "Debug",
-    "Python tests.Python tests for test_power_flow.test_qf_control_with_ltc.executor": "Debug",
-    "Python tests.Python tests for test_power_flow.test_qt_control_with_ltc.executor": "Debug",
-    "Python tests.Python tests for test_power_flow.test_reactive_power_splitting.executor": "Debug",
-    "Python tests.Python tests in test_3_phase_pf.py.executor": "Run",
-    "Python tests.Python tests in test_3ph_admittance_matrix.py.executor": "Run",
-    "Python tests.Python tests in test_power_flow.py.executor": "Debug",
-    "Python tests.Python tests in test_short_circuit.py.executor": "Debug",
     "Python tests.Python tests in tests.executor": "Run",
     "Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor": "Debug",
     "Python tests.pytest for src.tests.test_admittance_matrix.test_fast_admittance_update.executor": "Debug",
@@ -194,6 +189,7 @@
     "Python tests.pytest for test_opf.test_opf_load_shedding_copper_plate.executor": "Debug",
     "Python tests.pytest for test_power_flow.test_reactive_power_splitting.executor": "Debug",
     "Python tests.pytest for test_ptdf.test_ptdf_generation_contingencies.executor": "Debug",
+    "Python tests.pytest for test_symbolic.test_general_power_rule.executor": "Debug",
     "Python tests.pytest for test_tower_composition.test_acha.executor": "Run",
     "Python tests.pytest for test_tower_composition.test_rating.executor": "Debug",
     "Python tests.pytest for test_tower_composition.test_ratings_with_neutral.executor": "Debug",
@@ -214,14 +210,15 @@
     "Python tests.pytest in test_power_flow.py.executor": "Run",
     "Python tests.pytest in test_power_flow_acdc_generalized.py.executor": "Run",
     "Python tests.pytest in test_ptdf.py.executor": "Run",
+    "Python tests.pytest in test_symbolic.py.executor": "Run",
+    "Python tests.pytest in test_symbolic_lp.py.executor": "Debug",
     "Python tests.pytest in test_tower_composition.py.executor": "Run",
     "Python tests.pytest in test_transformer_controls.py.executor": "Run",
     "Python tests.pytest in test_transformer_type.py.executor": "Run",
     "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Debug",
     "Python.GridCalMain.executor": "Run",
-    "Python.IEEE 13-bus Test Feeder Case.executor": "Run",
     "Python.LineBuilderDialogue.executor": "Run",
     "Python.admittance_matrices.executor": "Run",
     "Python.block_editor.executor": "Run",
@@ -237,6 +234,7 @@
     "Python.grid_merge.executor": "Run",
     "Python.ieee9.executor": "Run",
     "Python.load_designer.executor": "Run",
+    "Python.lp_model.executor": "Run",
     "Python.make.executor": "Run",
     "Python.make_wheels.executor": "Run",
     "Python.new_circuit_objects.executor": "Run",
@@ -244,7 +242,6 @@
     "Python.overhead_line_calcs.executor": "Run",
     "Python.paper_checks.executor": "Run",
     "Python.post_example.executor": "Run",
-    "Python.power_flow_3ph.executor": "Run",
     "Python.pymoo_example.executor": "Debug",
     "Python.python_console.executor": "Run",
     "Python.raw_imp_exp_test.executor": "Run",
@@ -277,14 +274,14 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "#398 on #343__3phase",
+    "git-widget-placeholder": "340__Dynamics__refactor__and__simplification",
     "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal_debug",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "preferences.keymap",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
     "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
     "vue.rearranger.settings.migration": "true"
   }
@@ -310,7 +307,7 @@
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Substation" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Python tests for test_power_flow.test_qf_control_with_ltc">
+  <component name="RunManager" selected="Python tests.pytest for test_symbolic.test_general_power_rule">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -761,6 +758,29 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="lp_model" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic/lp_model.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="paper_checks" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -777,6 +797,29 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/acdc_pf/paper_checks.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="scripting_simbolic_framework_0" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/dynamics" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/dynamics/scripting_simbolic_framework_0.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -1002,66 +1045,6 @@
       <option name="docutils_open_in_browser" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for test_3ph_admittance_matrix.test_3x3_abc" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_3ph_admittance_matrix.test_3x3_abc&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Python tests for test_power_flow.test_qf_control_with_ltc" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_power_flow.test_qf_control_with_ltc&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Python tests for test_power_flow.test_qt_control_with_ltc" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_power_flow.test_qt_control_with_ltc&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Python tests for test_power_flow.test_reactive_power_splitting" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_power_flow.test_reactive_power_splitting&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -1117,7 +1100,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest in tests" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for test_symbolic.test_general_power_rule" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1131,7 +1114,43 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests&quot;" />
+      <option name="_new_target" value="&quot;test_symbolic.test_general_power_rule&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="pytest in test_symbolic_lp.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_symbolic_lp.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="pytest in test_symbolic.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_symbolic.py&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
@@ -1142,26 +1161,26 @@
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
       <item itemvalue="Python.test_gslv_conversion" />
-      <item itemvalue="Python tests.Python tests for test_3ph_admittance_matrix.test_3x3_abc" />
-      <item itemvalue="Python tests.Python tests for test_power_flow.test_qf_control_with_ltc" />
-      <item itemvalue="Python tests.Python tests for test_power_flow.test_qt_control_with_ltc" />
-      <item itemvalue="Python tests.Python tests for test_power_flow.test_reactive_power_splitting" />
-      <item itemvalue="Python tests.pytest in tests" />
+      <item itemvalue="Python.lp_model" />
+      <item itemvalue="Python.scripting_simbolic_framework_0" />
+      <item itemvalue="Python tests.pytest for test_symbolic.test_general_power_rule" />
+      <item itemvalue="Python tests.pytest in test_symbolic.py" />
+      <item itemvalue="Python tests.pytest in test_symbolic_lp.py" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Python tests for test_power_flow.test_qf_control_with_ltc" />
-        <item itemvalue="Python tests.Python tests for test_power_flow.test_qt_control_with_ltc" />
-        <item itemvalue="Python tests.Python tests for test_power_flow.test_reactive_power_splitting" />
-        <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python tests.Python tests for test_3ph_admittance_matrix.test_3x3_abc" />
+        <item itemvalue="Python tests.pytest for test_symbolic.test_general_power_rule" />
+        <item itemvalue="Python tests.pytest in test_symbolic.py" />
+        <item itemvalue="Python.lp_model" />
+        <item itemvalue="Python tests.pytest in test_symbolic_lp.py" />
+        <item itemvalue="Python.scripting_simbolic_framework_0" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-a5bc9544c897-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.23654.177" />
+        <option value="bundled-python-sdk-598b0484d0b5-e2d783800521-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-251.26927.74" />
       </set>
     </attachedChunks>
   </component>
@@ -2367,7 +2386,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="718" />
+    <option name="localTasksCounter" value="719" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2413,7 +2432,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="implemented fast admittance in the generalized formulation" />
     <MESSAGE value="Implemented csc comparison" />
     <MESSAGE value="Implemented fast admittance matrix update" />
     <MESSAGE value="Fixed fast update, removed prints from nr_fx" />
@@ -2437,198 +2455,199 @@
     <MESSAGE value="Improved filtering" />
     <MESSAGE value="5.3.54" />
     <MESSAGE value="Fixed bug when computing reactive power limits&#10;Added reactive power limit test (not passing for the slack)" />
-    <MESSAGE value="Passing test_3ph_admittance_matrix.py" />
-    <option name="LAST_COMMIT_MESSAGE" value="Passing test_3ph_admittance_matrix.py" />
+    <MESSAGE value="modified the gslv interface" />
+    <MESSAGE value="Added LP model" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added LP model" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/research/power_flow/asd/josep/v3_pv.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/research/power_flow/asd/josep/v3_pv.py</url>
           <line>163</line>
           <option name="timeStamp" value="189" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/OPF/ac_opf_ts.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/OPF/ac_opf_ts.py</url>
           <line>403</line>
           <option name="timeStamp" value="328" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/tests/test_transformer_regulator.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/tests/test_transformer_regulator.py</url>
           <line>185</line>
           <option name="timeStamp" value="352" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="conv == DeviceType" language="Python" />
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/IO/excel_interface.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/IO/excel_interface.py</url>
           <line>276</line>
           <option name="timeStamp" value="402" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/helm_power_flow.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/helm_power_flow.py</url>
           <line>185</line>
           <option name="timeStamp" value="407" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
           <line>1166</line>
           <option name="timeStamp" value="418" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
           <line>1192</line>
           <option name="timeStamp" value="419" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
           <line>1189</line>
           <option name="timeStamp" value="420" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Sparse/sparse_utils.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Sparse/sparse_utils.py</url>
           <line>453</line>
           <option name="timeStamp" value="486" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/IO/h5_interface.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/IO/h5_interface.py</url>
           <line>101</line>
           <option name="timeStamp" value="625" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Core/DataStructures/generator_data.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Core/DataStructures/generator_data.py</url>
           <line>173</line>
           <option name="timeStamp" value="740" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/IO/power_world_parser.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/IO/power_world_parser.py</url>
           <line>237</line>
           <option name="timeStamp" value="808" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/StateEstimation/state_estimation.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/StateEstimation/state_estimation.py</url>
           <line>285</line>
           <option name="timeStamp" value="851" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/ThirdParty/pulp/solver_interfaces/cplex.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/ThirdParty/pulp/solver_interfaces/cplex.py</url>
           <line>127</line>
           <option name="timeStamp" value="922" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
           <line>551</line>
           <option name="timeStamp" value="995" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
           <line>543</line>
           <option name="timeStamp" value="996" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Core/admittance_matrices.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Core/admittance_matrices.py</url>
           <line>296</line>
           <option name="timeStamp" value="1032" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="nnz == 10" language="Python" />
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/ac_jacobian.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/ac_jacobian.py</url>
           <line>140</line>
           <option name="timeStamp" value="1045" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py</url>
           <line>165</line>
           <option name="timeStamp" value="1048" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="k == 7" language="Python" />
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py</url>
           <line>159</line>
           <option name="timeStamp" value="1050" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="k == 7" language="Python" />
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py</url>
           <line>145</line>
           <option name="timeStamp" value="1051" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/newton_raphson.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/newton_raphson.py</url>
           <line>121</line>
           <option name="timeStamp" value="1056" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py</url>
           <line>503</line>
           <option name="timeStamp" value="1115" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/IO/cim/cim_parser.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/IO/cim/cim_parser.py</url>
           <line>848</line>
           <option name="timeStamp" value="1116" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
           <line>200</line>
           <option name="timeStamp" value="1133" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
           <line>545</line>
           <option name="timeStamp" value="1135" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
           <line>543</line>
           <option name="timeStamp" value="1136" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
           <line>531</line>
           <option name="timeStamp" value="1137" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_3.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_3.py</url>
           <line>22</line>
           <option name="timeStamp" value="1144" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/research/experimental_readers/arrillagas_book_grids_to_gridcal.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/research/experimental_readers/arrillagas_book_grids_to_gridcal.py</url>
           <line>58</line>
           <option name="timeStamp" value="1145" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py</url>
           <line>238</line>
           <option name="timeStamp" value="1160" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py</url>
           <line>240</line>
           <option name="timeStamp" value="1161" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit.py</url>
           <line>98</line>
           <option name="timeStamp" value="1177" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
           <line>270</line>
           <option name="timeStamp" value="1178" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
           <line>108</line>
           <option name="timeStamp" value="1179" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/trunk/qt_related/se_editor.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/trunk/qt_related/se_editor.py</url>
           <line>78</line>
           <option name="timeStamp" value="1829" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Gui/Main/update_gui_file.py</url>
+          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Gui/Main/update_gui_file.py</url>
           <line>23</line>
           <option name="timeStamp" value="2078" />
         </line-breakpoint>
@@ -2678,9 +2697,14 @@
           <option name="timeStamp" value="2428" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/driver_handler.py</url>
-          <line>146</line>
-          <option name="timeStamp" value="2465" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/powell_fx.py</url>
+          <line>96</line>
+          <option name="timeStamp" value="2446" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/powell_fx.py</url>
+          <line>157</line>
+          <option name="timeStamp" value="2448" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_ts_results.py</url>
@@ -2704,18 +2728,23 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridMerge/grid_diff.py</url>
-          <line>130</line>
+          <line>125</line>
           <option name="timeStamp" value="2517" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridMerge/grid_diff.py</url>
-          <line>121</line>
+          <line>119</line>
           <option name="timeStamp" value="2518" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridMerge/grid_diff.py</url>
-          <line>133</line>
+          <line>128</line>
           <option name="timeStamp" value="2522" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_tower_composition.py</url>
+          <line>121</line>
+          <option name="timeStamp" value="2580" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/remote.py</url>
@@ -2728,132 +2757,251 @@
           <option name="timeStamp" value="2596" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py</url>
-          <line>451</line>
-          <option name="timeStamp" value="2598" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_ts_driver.py</url>
-          <line>242</line>
-          <option name="timeStamp" value="2599" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_gslv.py</url>
-          <line>2370</line>
+          <url>file://$PROJECT_DIR$/src/tests/test_power_flow_acdc_generalized.py</url>
+          <line>131</line>
           <option name="timeStamp" value="2600" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_driver.py</url>
-          <line>181</line>
+          <url>file://$PROJECT_DIR$/src/tests/test_power_flow_acdc_generalized.py</url>
+          <line>62</line>
           <option name="timeStamp" value="2601" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_gslv.py</url>
-          <line>2453</line>
-          <option name="timeStamp" value="2602" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_admittance_matrix.py</url>
-          <line>245</line>
+          <url>file://$PROJECT_DIR$/src/tests/test_power_flow_acdc_generalized.py</url>
+          <line>232</line>
           <option name="timeStamp" value="2604" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_admittance_matrix.py</url>
-          <line>241</line>
+          <url>file://$PROJECT_DIR$/src/tests/test_power_flow_acdc_generalized.py</url>
+          <line>245</line>
           <option name="timeStamp" value="2606" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <condition expression="not v_ok" language="Python" />
-          <url>file://$PROJECT_DIR$/src/tests/test_power_flow_acdc_generalized.py</url>
-          <line>118</line>
-          <option name="timeStamp" value="2615" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingency_analysis_driver.py</url>
+          <line>170</line>
+          <option name="timeStamp" value="2656" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/admittance_matrices.py</url>
-          <line>104</line>
-          <option name="timeStamp" value="2839" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingency_analysis_driver.py</url>
+          <line>186</line>
+          <option name="timeStamp" value="2659" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/data_base.py</url>
-          <line>1172</line>
-          <option name="timeStamp" value="2840" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingency_analysis_driver.py</url>
+          <line>189</line>
+          <option name="timeStamp" value="2660" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/Filtering/filtering.py</url>
-          <line>131</line>
-          <option name="timeStamp" value="2844" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py</url>
+          <line>2404</line>
+          <option name="timeStamp" value="2661" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/Filtering/filtering.py</url>
-          <line>375</line>
-          <option name="timeStamp" value="2845" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_ts_driver.py</url>
+          <line>101</line>
+          <option name="timeStamp" value="2662" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/Filtering/filtering.py</url>
-          <line>380</line>
-          <option name="timeStamp" value="2846" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
+          <line>938</line>
+          <option name="timeStamp" value="2663" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/Filtering/filtering.py</url>
-          <line>378</line>
-          <option name="timeStamp" value="2847" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
+          <line>929</line>
+          <option name="timeStamp" value="2664" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/Filtering/filtering.py</url>
-          <line>372</line>
-          <option name="timeStamp" value="2848" />
+          <url>file://$PROJECT_DIR$/src/tests/test_opf.py</url>
+          <line>394</line>
+          <option name="timeStamp" value="2679" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_opf.py</url>
+          <line>431</line>
+          <option name="timeStamp" value="2680" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_opf.py</url>
+          <line>392</line>
+          <option name="timeStamp" value="2690" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/table_models.py</url>
+          <line>271</line>
+          <option name="timeStamp" value="2697" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/table_models.py</url>
+          <line>277</line>
+          <option name="timeStamp" value="2698" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
+          <line>315</line>
+          <option name="timeStamp" value="2699" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
+          <line>838</line>
+          <option name="timeStamp" value="2700" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/ntc/pmode3_eqs.py</url>
+          <line>53</line>
+          <option name="timeStamp" value="2712" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
-          <line>1253</line>
-          <option name="timeStamp" value="2857" />
+          <line>745</line>
+          <option name="timeStamp" value="2714" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/DataStructures/generator_data.py</url>
-          <line>325</line>
-          <option name="timeStamp" value="2863" />
+          <url>file://$PROJECT_DIR$/doc/make.py</url>
+          <line>5</line>
+          <option name="timeStamp" value="2715" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/DataStructures/generator_data.py</url>
-          <line>318</line>
-          <option name="timeStamp" value="2864" />
+          <url>file://$PROJECT_DIR$/src/trunk/simple_dispatch/simple_dispatch_demo.py</url>
+          <line>40</line>
+          <option name="timeStamp" value="2716" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
-          <line>511</line>
-          <option name="timeStamp" value="2870" />
+          <url>file://$PROJECT_DIR$/src/trunk/pf/example_new_england.py</url>
+          <line>36</line>
+          <option name="timeStamp" value="2719" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
-          <line>499</line>
-          <option name="timeStamp" value="2871" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
+          <line>918</line>
+          <option name="timeStamp" value="2722" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
-          <line>475</line>
-          <option name="timeStamp" value="2872" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/simple_dispatch_ts.py</url>
+          <line>420</line>
+          <option name="timeStamp" value="2736" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/admittance_matrices.py</url>
-          <line>676</line>
-          <option name="timeStamp" value="2875" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/Adequacy/adequacy_driver.py</url>
+          <line>208</line>
+          <option name="timeStamp" value="2742" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/admittance_matrices.py</url>
-          <line>679</line>
-          <option name="timeStamp" value="2877" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/simple_dispatch_ts.py</url>
+          <line>403</line>
+          <option name="timeStamp" value="2743" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>1276</line>
-          <option name="timeStamp" value="2878" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/gui_functions.py</url>
+          <line>608</line>
+          <option name="timeStamp" value="2762" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/gui_functions.py</url>
+          <line>593</line>
+          <option name="timeStamp" value="2763" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/gui_functions.py</url>
+          <line>595</line>
+          <option name="timeStamp" value="2764" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/gui_functions.py</url>
+          <line>599</line>
+          <option name="timeStamp" value="2765" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/gui_functions.py</url>
+          <line>601</line>
+          <option name="timeStamp" value="2766" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/contingencies/run_contingencies_ts.py</url>
+          <line>12</line>
+          <option name="timeStamp" value="2767" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py</url>
+          <line>3493</line>
+          <option name="timeStamp" value="2768" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py</url>
+          <line>282</line>
+          <option name="timeStamp" value="2777" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/linearized_power_flow.py</url>
+          <line>236</line>
+          <option name="timeStamp" value="2778" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
+          <line>253</line>
+          <option name="timeStamp" value="2781" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py</url>
+          <line>241</line>
+          <option name="timeStamp" value="2787" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <condition expression="len(contingency_indices.hvdc_contingency_indices) &gt; 0" language="Python" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py</url>
+          <line>864</line>
+          <option name="timeStamp" value="2789" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/dynamics/scripting_simbolic_framework_0.py</url>
+          <line>47</line>
+          <option name="timeStamp" value="2918" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_grid_diff.py</url>
+          <line>38</line>
+          <option name="timeStamp" value="2919" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic/lp_model.py</url>
+          <line>189</line>
+          <option name="timeStamp" value="2927" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_symbolic_lp.py</url>
+          <line>102</line>
+          <option name="timeStamp" value="2928" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic/symbolic.py</url>
+          <line>192</line>
+          <option name="timeStamp" value="2929" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic/symbolic.py</url>
+          <line>208</line>
+          <option name="timeStamp" value="2932" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic/symbolic.py</url>
+          <line>347</line>
+          <option name="timeStamp" value="2933" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_symbolic.py</url>
+          <line>166</line>
+          <option name="timeStamp" value="2934" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
-      <configuration name="tests">
-        <watch expression="self._error" />
-        <watch expression="self.done_signal" />
+      <configuration name="PythonConfigurationType">
+        <watch expression="vars_v.hvdc_vars" />
+        <watch expression="gen_mask" />
+        <watch expression="elm.Pmax_prof.toarray()" />
+        <watch expression="t" />
+        <watch expression="lole" />
+        <watch expression="np.sum(load_not_supplied)" />
       </configuration>
     </watches-manager>
   </component>
