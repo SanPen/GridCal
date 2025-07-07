@@ -2432,15 +2432,15 @@ def translate_gslv_pf_results(grid: MultiCircuit, res: "pg.PowerFlowResults", lo
     results.area_names = [a.name for a in grid.areas]
     # results.bus_types = convert_bus_types(res.bus_types[0])  # this is a list of lists
 
-    # for rep in res.stats[0]:
-    #     report = ConvergenceReport()
-    #     for i in range(len(rep.converged)):
-    #         report.add(method=rep.solver[i].name,
-    #                    converged=rep.converged[i],
-    #                    error=rep.norm_f[i],
-    #                    elapsed=rep.elapsed[i],
-    #                    iterations=rep.iterations[i])
-    #         results.convergence_reports.append(report)
+    for rep in res.reports[0]:
+        report = ConvergenceReport()
+        for i in range(len(rep.converged)):
+            report.add(method=str(rep.methods[i].name),
+                       converged=rep.converged[i],
+                       error=rep.error[i],
+                       elapsed=rep.elapsed[i],
+                       iterations=rep.iterations[i])
+            results.convergence_reports.append(report)
 
     return results
 
