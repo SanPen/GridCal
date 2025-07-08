@@ -28,7 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improvement in Profile.set to handle &quot;anything&quot;" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed bug introduced by renaming">
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/substation_wizards.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -164,6 +168,7 @@
     "Python tests.pytest for src.tests.test_line_circuit_idx_setter.test_valid_circuit_idx.executor": "Run",
     "Python tests.pytest for src.tests.test_load_save_load.test_load_save_load_xlsx.executor": "Debug",
     "Python tests.pytest for src.tests.test_ntc.test_activs_2000_acdc.executor": "Run",
+    "Python tests.pytest for src.tests.test_opf.executor": "Run",
     "Python tests.pytest for src.tests.test_power_flow.executor": "Run",
     "Python tests.pytest for src.tests.test_power_flow.test_voltage_control_with_ltc.executor": "Debug",
     "Python tests.pytest for src.tests.test_power_flow_acdc_generalized.test_ieee_grids.executor": "Run",
@@ -303,14 +308,14 @@
       <recent name="$PROJECT_DIR$/src/trunk/server" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Topology" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic/examples" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/Diagrams" />
       <recent name="$PROJECT_DIR$/src/trunk/line_parameters" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids/RAW" />
-      <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Substation" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python tests.pytest in tests">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -783,29 +788,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="casting_contingency_values" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/misc" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/misc/casting_contingency_values.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="paper_checks" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -1138,6 +1120,24 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
+    <configuration name="pytest for src.tests.test_opf" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;src.tests.test_opf&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
     <configuration name="pytest in tests" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -1163,19 +1163,19 @@
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
       <item itemvalue="Python.test_gslv_conversion" />
-      <item itemvalue="Python.casting_contingency_values" />
       <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python tests.pytest for src.tests.test_opf" />
       <item itemvalue="Python tests.pytest for src.tests.test_ac_opf.test_ieee14_controlQ_controllableshunts" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.pytest in tests" />
+        <item itemvalue="Python tests.pytest for src.tests.test_opf" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.pytest for src.tests.test_ac_opf.test_ieee14_controlQ_controllableshunts" />
         <item itemvalue="Python.update_gui_file" />
-        <item itemvalue="Python.casting_contingency_values" />
       </list>
     </recent_temporary>
   </component>
@@ -2388,7 +2388,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="725" />
+    <option name="localTasksCounter" value="726" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2434,7 +2434,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="block system doing something" />
     <MESSAGE value="Minor refactors" />
     <MESSAGE value="Added implicit integration" />
     <MESSAGE value="Further unified the API" />
@@ -2459,7 +2458,8 @@
     <MESSAGE value="started merging the dynamics" />
     <MESSAGE value="Fixed profiles display&#10;Improved profile array parsing" />
     <MESSAGE value="Improvement in Profile.set to handle &quot;anything&quot;" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improvement in Profile.set to handle &quot;anything&quot;" />
+    <MESSAGE value="Fixed bug introduced by renaming" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug introduced by renaming" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
