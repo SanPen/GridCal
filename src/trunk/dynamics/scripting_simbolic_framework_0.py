@@ -9,7 +9,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from GridCalEngine.Utils.Symbolic.events import Events, Event
-#from pygments.lexers.dsls import VGLLexer
+# from pygments.lexers.dsls import VGLLexer
 from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
 from GridCalEngine.Utils.Symbolic.block import Block
 from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
@@ -31,7 +31,6 @@ grid.add_generator(bus=bus1, api_obj=gen)
 
 load = gce.Load(name="Load1", P=10, Q=10)
 grid.add_load(bus=bus2, api_obj=load)
-
 
 res = gce.power_flow(grid)
 
@@ -59,14 +58,16 @@ g = Const(5)
 b = Const(-12)
 bsh = Const(0.03)
 
-
-
 line_block = Block(
     algebraic_eqs=[
-        Pline_from - ((Vline_from ** 2 * g) - g * Vline_from * Vline_to * cos(dline_from - dline_to) + b * Vline_from * Vline_to * cos(dline_from - dline_to + np.pi/2)),
-        Qline_from - (Vline_from ** 2 * (-bsh/2 - b) - g * Vline_from * Vline_to * sin(dline_from - dline_to) + b * Vline_from * Vline_to * sin(dline_from - dline_to + np.pi/2)),
-        Pline_to - ((Vline_to ** 2 * g) - g * Vline_to * Vline_from * cos(dline_to - dline_from) + b * Vline_to * Vline_from * cos(dline_to - dline_from + np.pi/2)),
-        Qline_to - (Vline_to ** 2 * (-bsh/2 - b) - g * Vline_to * Vline_from * sin(dline_to - dline_from) + b * Vline_to * Vline_from * sin(dline_to - dline_from + np.pi/2)),
+        Pline_from - ((Vline_from ** 2 * g) - g * Vline_from * Vline_to * cos(
+            dline_from - dline_to) + b * Vline_from * Vline_to * cos(dline_from - dline_to + np.pi / 2)),
+        Qline_from - (Vline_from ** 2 * (-bsh / 2 - b) - g * Vline_from * Vline_to * sin(
+            dline_from - dline_to) + b * Vline_from * Vline_to * sin(dline_from - dline_to + np.pi / 2)),
+        Pline_to - ((Vline_to ** 2 * g) - g * Vline_to * Vline_from * cos(
+            dline_to - dline_from) + b * Vline_to * Vline_from * cos(dline_to - dline_from + np.pi / 2)),
+        Qline_to - (Vline_to ** 2 * (-bsh / 2 - b) - g * Vline_to * Vline_from * sin(
+            dline_to - dline_from) + b * Vline_to * Vline_from * sin(dline_to - dline_from + np.pi / 2)),
     ],
     algebraic_vars=[dline_from, Vline_from, dline_to, Vline_to],
     parameters=[]
@@ -113,9 +114,8 @@ dg = Var("dg")
 tm = Var("tm")
 et = Var("et")
 
-
 pi = Const(math.pi)
-fn =  Const(50)
+fn = Const(50)
 # tm = Const(0.1)
 M = Const(1.0)
 D = Const(100)
@@ -126,7 +126,6 @@ vf = Const(1.081099313)
 Kp = Const(1.0)
 Ki = Const(10.0)
 Kw = Const(10.0)
-
 
 generator_block = Block(
     state_eqs=[
@@ -189,22 +188,35 @@ sys = Block(
 # ----------------------------------------------------------------------------------------------------------------------
 slv = BlockSolver(sys)
 
-
 params_mapping = {
     Pl0: 0.1
 }
 vars_mapping = {
 
-    dline_from: 15 * (np.pi / 180),
-    dline_to: 10 * (np.pi / 180),
+    # start from PF values
+    # dline_from: 15 * (np.pi / 180),
+    # dline_to: 10 * (np.pi / 180),
+    # Vline_from: 1.0,
+    # Vline_to: 0.95,
+    # Vg: 1.0,
+    # dg: 15 * (np.pi / 180),
+    # Pline_from: 0.1,
+    # Qline_from: 0.2,
+    # Pline_to: -0.1,
+    # Qline_to: -0.2,
+
+    # Flat start
+    dline_from: 0.0,
+    dline_to: 0.0,
     Vline_from: 1.0,
-    Vline_to: 0.95,
+    Vline_to: 1.0,
     Vg: 1.0,
-    dg: 15 * (np.pi / 180),
-    Pline_from: 0.1,
-    Qline_from: 0.2,
-    Pline_to: -0.1,
-    Qline_to: -0.2,
+    dg: 0.0,
+    Pline_from: 0.0,
+    Qline_from: 0.0,
+    Pline_to: 0.0,
+    Qline_to: 0.0,
+
     Pl: 0.1,  # P2
     Ql: 0.2,  # Q2
     delta: 0.5,
@@ -214,7 +226,7 @@ vars_mapping = {
     i_d: 0.1,  # d-axis stator current (pu)
     i_q: 0.2,  # q-axis stator current (pu)
     v_d: -0.2588,  # d-axis voltage (pu)
-    v_q:  0.9659,  # q-axis voltage (pu)
+    v_q: 0.9659,  # q-axis voltage (pu)
     t_e: 0.1,  # electromagnetic torque (pu)
     p_g: 0.1673,
     Q_g: 0.1484
@@ -231,8 +243,23 @@ my_events = Events([event1, event2])
 
 params0 = slv.build_init_params_vector(params_mapping)
 # x0 = slv.build_init_vars_vector(vars_mapping)
-x0 = slv.initialize(x0=slv.build_init_vars_vector(vars_mapping),
-                    params0=params0)
+
+
+# x0 = slv.initialize_with_newton(x0=slv.build_init_vars_vector(vars_mapping),
+#                                 params0=params0)
+
+x0 = slv.initialize_with_pseudo_transient_gamma(
+    x0=slv.build_init_vars_vector(vars_mapping),
+    # x0=np.zeros(len(slv._state_vars) + len(slv._algebraic_vars)),
+    params0=params0
+)
+
+
+# x0, params0 = slv.initialise_homotopy(
+#     z0=slv.build_init_vars_vector(vars_mapping),  # flat start
+#     params=params0,
+#     ramps=[(Pl, 0.0), (Ql, 0.0)],  # tuple of var, value to vary with the homotopy
+# )
 
 vars_in_order = slv.sort_vars(vars_mapping)
 
@@ -242,7 +269,7 @@ t, y = slv.simulate(
     h=0.001,
     x0=x0,
     params0=params0,
-    events_list = my_events,
+    events_list=my_events,
     method="implicit_euler"
 )
 

@@ -323,16 +323,16 @@ class BlockSolver:
         J22 = self._j22_fn(z, params)  # ∂g/∂y
         return pack_4_by_4_scipy(J11, J12, J21, J22)  # → sparse 2×2 block Jacobian
 
-    def initialize(self, x0: np.ndarray, params0: np.ndarray,
-                   tol=1e-6, max_it=20, use_preconditioner: bool = True):
+    def initialize_with_newton(self, x0: np.ndarray, params0: np.ndarray,
+                               tol=1e-6, max_it=20, use_preconditioner: bool = True):
         """
-
-        :param x0:
-        :param params0:
-        :param tol:
-        :param max_it:
-        :param use_preconditioner:
-        :return:
+        DAE system initialization using a Newton-Krylov method
+        :param x0: base solution (rough)
+        :param params0: base parameters array
+        :param tol: Tolerance
+        :param max_it: maximum newton iterations
+        :param use_preconditioner: Use a GMRES preconditioner?
+        :return: new, hopefully better initial point
         """
         x_vec = x0.copy()
 
@@ -365,6 +365,215 @@ class BlockSolver:
             raise RuntimeError("Initialisation did not converge")
 
         return x_vec
+
+    def resid_gamma(self, z, z_prev, dt, n_s, params0):
+        """Pseudo-transient residual  R(z) = 0  (index-1 semi-explicit DAE)."""
+        f_s = np.array(self._rhs_state_fn(z, params0))  # f(x,y)
+        f_a = np.array(self._rhs_algeb_fn(z, params0))  # g(x,y)
+        return np.r_[(z[:n_s] - z_prev[:n_s]) / dt - f_s,  # BE for states
+        f_a]
+
+    def jacob_gamma(self, z, dt, I_s, params0):
+        """Block Jacobian of the Ψtc residual."""
+        J11 = self._j11_fn(z, params0)  # ∂f_state/∂x
+        J12 = self._j12_fn(z, params0)  # ∂f_state/∂y
+        J21 = self._j21_fn(z, params0)  # ∂g/∂x
+        J22 = self._j22_fn(z, params0)  # ∂g/∂y
+
+        # Assemble:  [ I/dt -J11   -J12 ]
+        #            [   J21        J22 ]
+        top_left = I_s / dt - J11
+        top_right = -J12
+        bottom = sp.hstack([J21, J22], format='csc')
+        return sp.vstack([sp.hstack([top_left, top_right], format='csc'),
+                          bottom], format='csc')
+
+    def initialize_with_pseudo_transient_gamma(self, x0: np.ndarray, params0: np.ndarray,
+                                               dt0=1.0, beta=0.5,
+                                               tol=1e-6, max_it=20):
+        """
+        DAE system initialization using a Pseudo-transient (Ψtc) continuation method
+        :param x0: base solution (rough)
+        :param params0: base parameters array
+        :param dt0: starting pseudo-time step (s)
+        :param beta: step-length reduction factor (< 1)
+        :param tol: Tolerance
+        :param max_it: maximum newton iterations
+        :return: new, hopefully better initial point
+        """
+        x_vec = x0.copy()
+
+        z_vec = x0.copy()  # internal ordering
+        n_s = self._n_state
+        I_s = sp.eye(n_s, format='csc')  # identity for ∂x/∂x
+
+        dt = dt0
+        step = 0
+        while True:
+            # Newton on    R(z) = 0   with current Δτ
+            z_prev = z_vec.copy()
+            for it in range(max_it):
+                R = self.resid_gamma(z_vec, z_prev, dt, n_s, params0)
+
+                if np.linalg.norm(R, np.inf) < tol:
+                    break
+
+                J = self.jacob_gamma(z_vec, dt, I_s, params0)
+
+                # ILU-preconditioned GMRES  (robust & memory-friendly)
+                try:
+                    M = LinearOperator(J.shape, spilu(J, drop_tol=1e-5,
+                                                      fill_factor=10).solve)
+                except RuntimeError:
+                    M = None  # fallback – still works thanks to I/dt term
+
+                dz, info = gmres(J, -R, M=M, atol=1e-9, restart=200)
+                if info != 0:
+                    raise RuntimeError(f"GMRES failed at Ψtc step {step}, "
+                                       f"Newton iter {it} (info={info})")
+                z_vec += dz
+
+            # Check global convergence
+            res_norm = np.linalg.norm(self._rhs_state_fn(z_vec, params0), np.inf)
+            res_norm = max(res_norm,
+                           np.linalg.norm(self._rhs_algeb_fn(z_vec, params0), np.inf))
+
+            if res_norm < tol:
+                print(f"Ψtc converged in {step + 1} steps, residual {res_norm:.2e}")
+                break
+
+            # Reduce pseudo-time-step and continue
+            dt *= beta
+            step += 1
+            if dt < 1e-9:
+                raise RuntimeError("Ψtc failed: Δτ became too small "
+                                   "(model may be ill-posed)")
+
+        return z_vec
+
+    def _apply_lambda(self,
+                      params: np.ndarray,
+                      ramps_descr: list[tuple[int, float, float, Const]],
+                      lam: float) -> None:
+        """
+        Update the parameter vector *in-place* for a given λ ∈ [0,1].
+
+        Some Const implementations expose a writable .value, others make it
+        read-only.  We therefore update the associated Const object only if
+        it provides a usable mutator; otherwise we rely on the explicit
+        'params' array that is already passed to every RHS / Jacobian call.
+        """
+        for idx, start, end, const_ref in ramps_descr:
+            val = start + lam * (end - start)
+            params[idx] = val
+
+    def _psi_tc(self,
+                z_init: np.ndarray,
+                params: np.ndarray,
+                dt0: float,
+                beta: float,
+                psi_tol: float,
+                newton_tol: float,
+                newton_max: int) -> np.ndarray:
+        """
+        Pseudo-transient continuation inner solver (index-1 semi-explicit DAE).
+        Returns a *consistent* z vector for the **current** parameter set.
+        """
+        n_s = self._n_state
+        I_s = sp.eye(n_s, format="csc") if n_s else None
+        z = z_init.copy()
+        dt = dt0
+
+        while True:
+            z_prev = z.copy()
+            # ------------ Newton on Ψtc residual -----------------------------
+            for _ in range(newton_max):
+                f_a = np.array(self._rhs_algeb_fn(z, params))
+                if n_s:
+                    f_s = np.array(self._rhs_state_fn(z, params))
+                    R = np.r_[(z[:n_s] - z_prev[:n_s]) / dt - f_s, f_a]
+                else:
+                    R = f_a
+
+                if np.linalg.norm(R, np.inf) < newton_tol:
+                    break
+
+                J22 = self._j22_fn(z, params)
+                J12 = self._j12_fn(z, params)
+                J21 = self._j21_fn(z, params)
+
+                if n_s:
+                    J11 = self._j11_fn(z, params)
+                    JL = I_s / dt - J11
+                    JR = -J12
+                    top = sp.hstack([JL, JR], format="csc")
+                    bot = sp.hstack([J21, J22], format="csc")
+                    J = sp.vstack([top, bot], format="csc")
+                else:
+                    J = J22
+
+                try:
+                    M = LinearOperator(J.shape,
+                                       spilu(J, drop_tol=1e-5, fill_factor=10).solve)
+                except RuntimeError:
+                    M = None
+
+                dz, info = gmres(J, -R, M=M, atol=1e-9, restart=200)
+                if info != 0:
+                    raise RuntimeError("GMRES failed during Ψtc")
+                z += dz
+
+            # ------------ stop when original residual is small ---------------
+            res = np.linalg.norm(self._rhs_algeb_fn(z, params), np.inf)
+            if n_s:
+                res = max(res, np.linalg.norm(self._rhs_state_fn(z, params), np.inf))
+            if res < psi_tol:
+                return z
+
+            dt *= beta
+            if dt < 1e-9:
+                raise RuntimeError("Ψtc stalled ⇒ no equilibrium?")
+
+    def initialise_homotopy(self,
+                            z0,
+                            params,
+                            ramps: list[tuple[Const | Var, float]] | None = None,
+                            lam_steps: int = 21,
+                            psi_dt0: float = 5.0,
+                            psi_beta: float = 0.4,
+                            psi_tol: float = 1e-10,
+                            newton_tol: float = 1e-12,
+                            newton_max: int = 10) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Robust, guess-free initialiser:
+          • cold start  →  Ψtc  →  homotopy λ∈[0,1]
+        Returns (x0, param_vector).
+        """
+
+        # 1 ── cold start
+        z = z0.copy()
+
+        # 2 ── ramp description
+        if ramps is None:  # ramp all Consts 0 → nominal
+            ramps = [(p, 0.0) for p in self._parameters]
+
+        # params = np.zeros(self._n_params)
+        # for p in self._parameters:
+        #     params[self.uid2idx_params[p.uid]] = p.value  # :contentReference[oaicite:2]{index=2}
+
+        ramps_descr = []
+        # for const_obj, start_val in ramps:
+        #     idx = self.uid2idx_params[const_obj.uid]
+        #     ramps_descr.append((idx, start_val, const_obj.value, const_obj))
+
+        # 3 ── homotopy outer loop
+        for lam in np.linspace(0.0, 1.0, lam_steps):
+            self._apply_lambda(params, ramps_descr, lam)
+            z = self._psi_tc(z, params, psi_dt0, psi_beta,
+                             psi_tol, newton_tol, newton_max)
+
+        print("Homotopy initialisation succeeded ✔")
+        return z, params
 
     def get_dummy_x0(self):
         return np.zeros(self._n_state)
