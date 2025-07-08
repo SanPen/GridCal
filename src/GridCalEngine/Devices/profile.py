@@ -326,8 +326,18 @@ class Profile:
                     self._is_sparse = False
                     self._dense_array = arr
                 else:
-                    print("Cannot set dense array because the type check failed")
-                    return False
+                    try:
+                        # try casting
+                        arr_mod = arr.astype(self.dtype)
+                        self._is_sparse = False
+                        self._dense_array = arr_mod
+                        return True
+                    except ValueError:
+                        print("Cannot set dense array because the type cast failed")
+                        return False
+                    except:
+                        print("Cannot set dense array because the type check crashed")
+                        return False
         else:
             self._is_sparse = False
             self._dense_array = arr

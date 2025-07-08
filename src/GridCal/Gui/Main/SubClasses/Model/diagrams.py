@@ -175,11 +175,6 @@ class DiagramsMain(CompiledArraysMain):
                 tile_servers=["https://tile.openstreetmap.org"],
                 max_zoom=21
             ),
-            # OimTiles(
-            #     name='Open infra Map',
-            #     tiles_dir=os.path.join(tiles_path(), 'osm'),
-            #     tile_servers=["https://openinframap.org/tiles"]
-            # )
         ]
         tile_names = [tile.tile_set_name for tile in self.tile_sources]
         self.tile_index_dict = {tile.tile_set_name: i for i, tile in enumerate(self.tile_sources)}
@@ -211,10 +206,8 @@ class DiagramsMain(CompiledArraysMain):
         self.available_results_steps_dict = None
 
         # list of styles
-        plt_styles = plt.style.available
-        self.ui.plt_style_comboBox.setModel(gf.get_list_model(plt_styles))
-
-        if 'fivethirtyeight' in plt_styles:
+        self.ui.plt_style_comboBox.setModel(gf.get_list_model(plt.style.available))
+        if 'fivethirtyeight' in plt.style.available:
             self.ui.plt_style_comboBox.setCurrentText('fivethirtyeight')
 
         # configure matplotlib for pandas time series
@@ -234,17 +227,14 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionSetSelectedBusArea.triggered.connect(lambda: self.set_selected_bus_property('area'))
         self.ui.actionSetSelectedBusZone.triggered.connect(lambda: self.set_selected_bus_property('zone'))
 
-        # self.ui.actionSelect_buses_by_area.triggered.connect(lambda: self.select_buses_by_property('area'))
-        # self.ui.actionSelect_buses_by_zone.triggered.connect(lambda: self.select_buses_by_property('zone'))
-        # self.ui.actionSelect_buses_by_country.triggered.connect(lambda: self.select_buses_by_property('country'))
         self.ui.actionSelect_buses_by.triggered.connect(self.select_buses_by)
-
         self.ui.actionColor_buses_by.triggered.connect(self.color_buses_by)
         self.ui.actionColor_substations_by.triggered.connect(self.color_substations_by)
 
         self.ui.actionAdd_selected_to_contingency.triggered.connect(self.add_selected_to_contingency)
         self.ui.actionAdd_selected_as_remedial_action.triggered.connect(self.add_selected_to_remedial_action)
         self.ui.actionAdd_selected_as_new_investment.triggered.connect(self.add_selected_to_investment)
+
         self.ui.actionZoom_in.triggered.connect(self.zoom_in)
         self.ui.actionZoom_out.triggered.connect(self.zoom_out)
         self.ui.actionAdd_general_bus_branch_diagram.triggered.connect(self.add_complete_bus_branch_diagram)

@@ -342,6 +342,7 @@ class DataBaseTableMain(DiagramsMain):
             ts_mdl = gf.get_list_model(self.circuit.profile_magnitudes[elm_type][0])
             self.ui.device_type_magnitude_comboBox.setModel(ts_mdl)
             self.ui.device_type_magnitude_comboBox_2.setModel(ts_mdl)
+            # the TS display will be triggered by the on-change event of the combobox
 
             # update the associations view
             assoc_mdl = gf.get_list_model(self.circuit.device_associations[elm_type])

@@ -322,7 +322,13 @@ class ProfilesModel(WrappableTableModel):
         :return:
         """
 
-        elements = self.elements if cols is None else [self.elements[i] for i in cols]
+        if cols is None:
+            elements = self.elements
+        else:
+            if len(cols) > 0:
+                elements = [self.elements[i] for i in cols]
+            else:
+                elements = self.elements
 
         n = len(elements)
 
@@ -351,6 +357,7 @@ class ProfilesModel(WrappableTableModel):
             cb.clear()
             cb.setText(data)
 
+            print('Copied!')
         else:
             # there are no elements
             pass
