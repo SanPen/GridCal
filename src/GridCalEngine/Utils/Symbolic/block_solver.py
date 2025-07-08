@@ -150,7 +150,8 @@ class BlockSolver:
             self._parameters.extend(b.parameters)
 
         self._n_state = len(self._state_vars)
-        self._n_vars = len(self._state_vars) + len(self._algebraic_vars)
+        self._n_alg = len(self._algebraic_vars)
+        self._n_vars = self._n_state + self._n_alg
         self._n_params = len(self._parameters)
 
         # generate the in-code names for each variable
@@ -352,9 +353,9 @@ class BlockSolver:
                 Jreg = J + eps * sp.eye(J.shape[0], format='csc')
                 ilu = spilu(Jreg, drop_tol=1e-6, fill_factor=10)
                 M = LinearOperator(J.shape, ilu.solve)  # M ≈ J⁻¹
-                dx, info = gmres(J, -F, M=M, atol=1e-9, restart=200)
+                dx, info = gmres(A=J, b=-F, M=M, atol=1e-9, restart=200)
             else:
-                dx, info = gmres(J, -F, atol=1e-9, restart=500)
+                dx, info = gmres(A=J, b=-F, atol=1e-9, restart=500)
 
             if info != 0:
                 raise RuntimeError(f"GMRES failed (info = {info}) at Newton iter {k}")
