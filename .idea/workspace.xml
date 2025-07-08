@@ -28,12 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="started merging the dynamics">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed profiles display&#10;Improved profile array parsing">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/data_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/data_base.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/time_events.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/time_events.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/profiles_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/profiles_model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/profile.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/profile.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -2395,7 +2391,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="723" />
+    <option name="localTasksCounter" value="724" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2441,7 +2437,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved gui db object filtering" />
     <MESSAGE value="Further improved the time series &amp; associations linking to the objects table" />
     <MESSAGE value="block system doing something" />
     <MESSAGE value="Minor refactors" />
@@ -2466,7 +2461,8 @@
     <MESSAGE value="Removed unused code" />
     <MESSAGE value="added xlrd to requirements.txt" />
     <MESSAGE value="started merging the dynamics" />
-    <option name="LAST_COMMIT_MESSAGE" value="started merging the dynamics" />
+    <MESSAGE value="Fixed profiles display&#10;Improved profile array parsing" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed profiles display&#10;Improved profile array parsing" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -3040,11 +3036,6 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/profiles_model.py</url>
           <line>362</line>
           <option name="timeStamp" value="2970" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/profile.py</url>
-          <line>335</line>
-          <option name="timeStamp" value="2971" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

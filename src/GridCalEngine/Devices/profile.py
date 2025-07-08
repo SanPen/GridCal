@@ -274,16 +274,35 @@ class Profile:
         else:
             return 0.0
 
-    def set(self, arr: NumericVec) -> bool:
+    def set(self, arr0: NumericVec) -> bool:
         """
         Set array value
-        :param arr:
+        :param arr0: numpy array to set
         :return:
         """
+
+        if not isinstance(arr0, np.ndarray):
+            print("You can only set numpy arrays")
+
+        if arr0.ndim != 1:
+            print("You can only set 1D numpy arrays")
+
+        if not check_type(dtype=self.dtype, value=arr0[0]):
+            try:
+                # try casting
+                arr = arr0.astype(self.dtype)
+            except ValueError:
+                print("Cannot set dense array because the type cast failed")
+                return False
+            except:
+                print("Cannot set dense array because the type check crashed")
+                return False
+        else:
+            arr = arr0
+
         if self.size() > 0:
             if len(arr) != self.size():
                 raise ValueError("The array must have the same size as the profile")
-
 
         if len(arr) > 0:
 
@@ -302,42 +321,25 @@ class Profile:
                 if isinstance(base, np.bool_):
                     base = bool(base)
 
-                if check_type(dtype=self.dtype, value=base):
-                    self._is_sparse = True
-                    self._sparse_array = SparseArray(data_type=self.dtype, default_value=base)
+                self._is_sparse = True
+                self._sparse_array = SparseArray(data_type=self.dtype, default_value=base)
 
-                    if most_common_count > 1:
-                        if isinstance(arr, np.ndarray):
-                            data, indptr = compress_array_numba(arr, base)
-                            data_map = {i: x for i, x in zip(indptr, data)}  # this is to use a native python dict
-                        else:
-                            raise Exception('Unknown profile type' + str(type(arr)))
+                if most_common_count > 1:
+                    if isinstance(arr, np.ndarray):
+                        data, indptr = compress_array_numba(arr, base)
+                        data_map = {i: x for i, x in zip(indptr, data)}  # this is to use a native python dict
                     else:
-                        data_map = dict()
+                        raise Exception('Unknown profile type' + str(type(arr)))
+                else:
+                    data_map = dict()
 
-                    self._sparse_array.create(size=len(arr),
-                                              default_value=base,
-                                              data=data_map)
-                else:
-                    print("Cannot set sparse array because the type check failed")
-                    return False
+                self._sparse_array.create(size=len(arr),
+                                          default_value=base,
+                                          data=data_map)
             else:
-                if check_type(dtype=self.dtype, value=arr[0]):
-                    self._is_sparse = False
-                    self._dense_array = arr
-                else:
-                    try:
-                        # try casting
-                        arr_mod = arr.astype(self.dtype)
-                        self._is_sparse = False
-                        self._dense_array = arr_mod
-                        return True
-                    except ValueError:
-                        print("Cannot set dense array because the type cast failed")
-                        return False
-                    except:
-                        print("Cannot set dense array because the type check crashed")
-                        return False
+                self._is_sparse = False
+                self._dense_array = arr
+
         else:
             self._is_sparse = False
             self._dense_array = arr
