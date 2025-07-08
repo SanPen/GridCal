@@ -28,10 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed profiles display&#10;Improved profile array parsing">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/profile.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/profile.py" afterDir="false" />
-    </list>
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improvement in Profile.set to handle &quot;anything&quot;" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -221,7 +218,7 @@
     "Python tests.pytest in test_transformer_type.py.executor": "Run",
     "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Debug",
+    "Python.ExecuteGridCal.executor": "Run",
     "Python.GridCalMain.executor": "Run",
     "Python.IEEE 13-bus Test Feeder Case worker.executor": "Run",
     "Python.LineBuilderDialogue.executor": "Run",
@@ -2391,7 +2388,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="724" />
+    <option name="localTasksCounter" value="725" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2437,7 +2434,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Further improved the time series &amp; associations linking to the objects table" />
     <MESSAGE value="block system doing something" />
     <MESSAGE value="Minor refactors" />
     <MESSAGE value="Added implicit integration" />
@@ -2462,7 +2458,8 @@
     <MESSAGE value="added xlrd to requirements.txt" />
     <MESSAGE value="started merging the dynamics" />
     <MESSAGE value="Fixed profiles display&#10;Improved profile array parsing" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed profiles display&#10;Improved profile array parsing" />
+    <MESSAGE value="Improvement in Profile.set to handle &quot;anything&quot;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improvement in Profile.set to handle &quot;anything&quot;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

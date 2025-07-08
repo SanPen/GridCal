@@ -274,23 +274,23 @@ class Profile:
         else:
             return 0.0
 
-    def set(self, arr0: NumericVec) -> bool:
+    def set(self, arr: NumericVec) -> bool:
         """
         Set array value
-        :param arr0: numpy array to set
+        :param arr: numpy array to set
         :return:
         """
 
-        if not isinstance(arr0, np.ndarray):
+        if not isinstance(arr, np.ndarray):
             print("You can only set numpy arrays")
 
-        if arr0.ndim != 1:
+        if arr.ndim != 1:
             print("You can only set 1D numpy arrays")
 
-        if not check_type(dtype=self.dtype, value=arr0[0]):
+        if not check_type(dtype=self.dtype, value=arr[0]):
             try:
                 # try casting
-                arr = arr0.astype(self.dtype)
+                arr_mod = arr.astype(self.dtype)
             except ValueError:
                 print("Cannot set dense array because the type cast failed")
                 return False
@@ -298,22 +298,22 @@ class Profile:
                 print("Cannot set dense array because the type check crashed")
                 return False
         else:
-            arr = arr0
+            arr_mod = arr
 
         if self.size() > 0:
-            if len(arr) != self.size():
+            if len(arr_mod) != self.size():
                 raise ValueError("The array must have the same size as the profile")
 
-        if len(arr) > 0:
+        if len(arr_mod) > 0:
 
             # Count occurrences of each element in the array
-            counts = Counter(arr)
+            counts = Counter(arr_mod)
 
             # Find the most frequent element
             most_common_element, most_common_count = counts.most_common(1)[0]
 
             # compute the sparsity factor
-            sparsity_factor = most_common_count / len(arr)
+            sparsity_factor = most_common_count / len(arr_mod)
 
             # if the sparsity is sufficient...
             if sparsity_factor >= self._sparsity_threshold:
@@ -325,24 +325,24 @@ class Profile:
                 self._sparse_array = SparseArray(data_type=self.dtype, default_value=base)
 
                 if most_common_count > 1:
-                    if isinstance(arr, np.ndarray):
-                        data, indptr = compress_array_numba(arr, base)
+                    if isinstance(arr_mod, np.ndarray):
+                        data, indptr = compress_array_numba(arr_mod, base)
                         data_map = {i: x for i, x in zip(indptr, data)}  # this is to use a native python dict
                     else:
-                        raise Exception('Unknown profile type' + str(type(arr)))
+                        raise Exception('Unknown profile type' + str(type(arr_mod)))
                 else:
                     data_map = dict()
 
-                self._sparse_array.create(size=len(arr),
+                self._sparse_array.create(size=len(arr_mod),
                                           default_value=base,
                                           data=data_map)
             else:
                 self._is_sparse = False
-                self._dense_array = arr
+                self._dense_array = arr_mod
 
         else:
             self._is_sparse = False
-            self._dense_array = arr
+            self._dense_array = arr_mod
 
         self._initialized = True
         return True
