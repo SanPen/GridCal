@@ -8,8 +8,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Tuple, Sequence, List
 
-#from GridCalEngine.Utils.Symbolic.events import EventParam
-from GridCalEngine.Utils.Symbolic.symbolic import Var, Const, Expr, EventParam
+from GridCalEngine.Utils.Symbolic.symbolic import Var, Const, Expr
 
 
 def _new_uid() -> int:
@@ -31,10 +30,7 @@ class Block:
     algebraic_eqs: List[Expr] = field(default_factory=list)
 
     # parameters
-    parameters: List[Const] = field(default_factory=list)
-
-    # events
-    events: List[EventParam] = field(default_factory=list)
+    parameters: List[Var | Const] = field(default_factory=list)
 
     name: str = ""
 

@@ -747,26 +747,26 @@ def _all_vars(expressions: Sequence[Expr]) -> List[Var]:
     return list(res)
 
 
-def _emit(expr: Expr, uid_map_vars: Dict[int, str], uid_map_events: Dict[int, str]) -> str:
+def _emit(expr: Expr, uid_map_vars: Dict[int, str], uid_map_params: Dict[int, str]) -> str:
     """
     Emit a pure-Python (Numba-friendly) expression string
     :param expr: Expr (expression)
-    :param uid_map_vars:
-    :param uid_map_events:
+    :param uid_map:
     :return:
     """
     if isinstance(expr, Const):
         return repr(expr.value)
-    if isinstance(expr, EventParam):
-        return uid_map_events[expr.uid]
     if isinstance(expr, Var):
-        return uid_map_vars[expr.uid]  # positional variable
+        if expr.uid in uid_map_vars.keys():
+            return uid_map_vars[expr.uid]  # positional variable
+        else:
+            return uid_map_params[expr.uid]
     if isinstance(expr, UnOp):
-        return f"-({_emit(expr.operand, uid_map_vars, uid_map_events)})"
+        return f"-({_emit(expr.operand, uid_map_vars, uid_map_params)})"
     if isinstance(expr, BinOp):
-        return f"({_emit(expr.left, uid_map_vars, uid_map_events)} {expr.op} {_emit(expr.right, uid_map_vars, uid_map_events)})"
+        return f"({_emit(expr.left, uid_map_vars, uid_map_params)} {expr.op} {_emit(expr.right, uid_map_vars, uid_map_params)})"
     if isinstance(expr, Func):
-        return f"math.{expr.name}({_emit(expr.arg, uid_map_vars, uid_map_events)})"
+        return f"math.{expr.name}({_emit(expr.arg, uid_map_vars, uid_map_params)})"
     raise TypeError(type(expr))
 
 
@@ -815,12 +815,12 @@ def _compile(expressions: Sequence[Expr],
             for i, v in enumerate(params):
                 uid2sym[v.uid] = f"param[{i + n_sorting_vars}]"
 
-    uid_map_events = dict()
+    uid_map_params = dict()
 
     # Build source
     src = f"def _f(args, params):\n"
     src += f"    out = np.zeros({len(expressions)})\n"
-    src += "\n".join([f"    out[{i}] = {_emit(e, uid2sym, uid_map_events)}" for i, e in enumerate(expressions)]) + "\n"
+    src += "\n".join([f"    out[{i}] = {_emit(e, uid2sym, uid_map_params)}" for i, e in enumerate(expressions)]) + "\n"
     src += f"    return out"
     ns: Dict[str, Any] = {"math": math}
     exec(src, ns)

@@ -5,108 +5,57 @@
 
 from __future__ import annotations
 
-import uuid
-from dataclasses import dataclass, field
-from typing import Any, Dict, Union
-from GridCalEngine.enumerations import ContingencyOperationTypes, DeviceType
-from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice
-from GridCalEngine.Utils.Symbolic.symbolic import Expr, Const, _to_expr, BinOp, UnOp, _dict_to_expr, _expr_to_dict
-from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
-from GridCalEngine.Devices.Parents.pointer_device_parent import PointerDeviceParent
-from GridCalEngine.enumerations import ContingencyOperationTypes, DeviceType
+import pdb
+from typing import List, Any, Dict
+
+import numpy as np
+
+from GridCalEngine.Utils.Symbolic.symbolic import Const
+
 
 class Event:
-    uid: str
-
-class ConstEvent(Event):
     def __init__(self,
-                 constant: Const | None = None,
-                 idtag: Union[str, None] = None,
-                 name="event",
-                 code='',
-                 prop: ContingencyOperationTypes = ContingencyOperationTypes.Active,
-                 value=0.0,
-                 group: Union[None, ContingencyGroup] = None,
-                 comment: str = ""):
-        """
-        Contingency
-        :param device: Some device to point at
-        :param idtag: String. Element unique identifier
-        :param name: String. Contingency name
-        :param code: String. Contingency code name
-        :param prop: String. Property to modify when contingency is triggered out
-        :param value: Float. Property value to apply when contingency happens
-        :param group: ContingencyGroup. Contingency group
-        """
-
-
-        # Contingency type
-        self._prop: ContingencyOperationTypes = prop
+                 prop: Any | None = None,
+                 time_step: int = 0.0,
+                 value: float = 0.0):
+        self._prop = prop
+        self._time_step = time_step
         self._value = value
-        self._group: ContingencyGroup = group
-
-        self.register(key='prop', units='', tpe=ContingencyOperationTypes,
-                      definition=f'Object property to change')
-        self.register(key='value', units='', tpe=float, definition='Property value')
-        self.register(key='group', units='', tpe=DeviceType.ContingencyGroupDevice, definition='Contingency group')
 
     @property
-    def name(self) -> str:
-        return self._name
-
-    @name.setter
-    def name(self, val: str):
-        self._name = val
-
-    @property
-    def prop(self) -> ContingencyOperationTypes:
-        """
-        Property to modify when contingency is triggered out
-        :return: ContingencyOperationsTypes
-        """
+    def prop(self):
         return self._prop
 
-    @prop.setter
-    def prop(self, val: ContingencyOperationTypes):
-        if isinstance(val, ContingencyOperationTypes):
-            self._prop = val
-        else:
-            print(f"Not allowed property {val}")
-
     @property
-    def value(self) -> float:
-        """
-        Property value to apply when contingency happens
-        :return:
-        """
+    def value(self):
         return self._value
 
-    @value.setter
-    def value(self, val: float):
-        self._value = val
+    @property
+    def time_step(self):
+        return self._time_step
+
+
+
+class Events:
+    def __init__(self, events: List[Event]):
+        self._events = events
+        self._n_events = len(events)
+
+    def sort_by_time_step(self):
+        self._events.sort(key=lambda e: e.time_step)
+
+    def build_triplets_list(self):
+        rows = np.ndarray(self._n_events)
+        cols = np.ndarray(self._n_events, dtype=object)
+        values = np.ndarray(self._n_events)
+        for i, event in enumerate(self._events):
+            rows[i] = event.time_step
+            cols[i] = event.prop
+            values[i] = event.value
+
+        return rows, cols, values
+
 
     @property
-    def group(self) -> ContingencyGroup:
-        """
-        Contingency group
-        :return:
-        """
-        return self._group
-
-    @group.setter
-    def group(self, val: ContingencyGroup):
-        self._group = val
-
-    @property
-    def category(self):
-        """
-
-        :return:
-        """
-        return self.group.category
-
-    @category.setter
-    def category(self, val):
-        # self.group.category = val
-        pass
+    def events(self):
+        return self._events
