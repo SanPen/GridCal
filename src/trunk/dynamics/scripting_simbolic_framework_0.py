@@ -86,8 +86,8 @@ coeff_beta = Const(8.0)
 
 load_block = Block(
     algebraic_eqs=[
-        Pl - (Pl0),
-        Ql - (Ql0)
+        Pl - Pl0,
+        Ql - Ql0
     ],
     algebraic_vars=[Ql, Pl],
     parameters=[Pl0]
@@ -229,8 +229,11 @@ event2 = Event(Pl0, 50, 2.0)
 
 my_events = Events([event1, event2])
 
-x0 = slv.build_init_vars_vector(vars_mapping)
 params0 = slv.build_init_params_vector(params_mapping)
+# x0 = slv.build_init_vars_vector(vars_mapping)
+x0 = slv.initialize(x0=slv.build_init_vars_vector(vars_mapping),
+                    params0=params0)
+
 vars_in_order = slv.sort_vars(vars_mapping)
 
 t, y = slv.simulate(

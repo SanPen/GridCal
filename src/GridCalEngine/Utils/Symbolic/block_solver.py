@@ -6,17 +6,17 @@
 
 from __future__ import annotations
 
-import pdb
 from typing import Tuple
 import numpy as np
 import numba as nb
 import math
 import scipy.sparse as sp
 from scipy.sparse.linalg import spsolve
-from scipy.sparse import csr_matrix, coo_matrix
+from scipy.sparse import csr_matrix
+from scipy.sparse.linalg import gmres, spilu, LinearOperator
 from typing import Dict, List, Literal, Any, Callable, Sequence
 
-from GridCalEngine.Utils.Symbolic.events import Events, Event
+from GridCalEngine.Utils.Symbolic.events import Events
 from GridCalEngine.Utils.Symbolic.symbolic import Var, Expr, Const, _emit
 from GridCalEngine.Utils.Symbolic.block import Block
 from GridCalEngine.Utils.Sparse.csc import pack_4_by_4_scipy
@@ -39,7 +39,8 @@ def _compile_equations(eqs: Sequence[Expr],
     """
     Compile the array of expressions to a function that returns an array of values for those expressions
     :param eqs: Iterable of expressions (Expr)
-    :param uid2sym: dictionary relating the uid of a var with its array name (i.e. var[0])
+    :param uid2sym_vars: dictionary relating the uid of a var with its array name (i.e. var[0])
+    :param uid2sym_params:
     :param add_doc_string: add the docstring?
     :return: Function pointer that returns an array
     """
@@ -60,12 +61,13 @@ def _compile_equations(eqs: Sequence[Expr],
 def _get_jacobian(eqs: List[Expr],
                   variables: List[Var],
                   uid2sym_vars: Dict[int, str],
-                  uid2sym_params: Dict[int, str],):
+                  uid2sym_params: Dict[int, str], ):
     """
     JIT‑compile a sparse Jacobian evaluator for *equations* w.r.t *variables*.
     :param eqs: Array of equations
     :param variables: Array of variables to differentiate against
-    :param uid2sym: dictionary relating the uid of a var with its array name (i.e. var[0])
+    :param uid2sym_vars: dictionary relating the uid of a var with its array name (i.e. var[0])
+    :param uid2sym_params:
     :return:
             jac_fn : callable(values: np.ndarray) -> scipy.sparse.csc_matrix
                 Fast evaluator in which *values* is a 1‑D NumPy vector of length
@@ -92,7 +94,8 @@ def _get_jacobian(eqs: List[Expr],
             if isinstance(d_expression, Const) and d_expression.value == 0:
                 continue  # structural zero
 
-            function_ptr = _compile_equations(eqs=[d_expression], uid2sym_vars=uid2sym_vars, uid2sym_params=uid2sym_params)
+            function_ptr = _compile_equations(eqs=[d_expression], uid2sym_vars=uid2sym_vars,
+                                              uid2sym_params=uid2sym_params)
 
             fn = fn_cache.setdefault(d_expression.uid, function_ptr)
 
@@ -113,8 +116,8 @@ def _get_jacobian(eqs: List[Expr],
 
     def jac_fn(values: np.ndarray, params) -> sp.csc_matrix:  # noqa: D401 – simple
         assert len(values) >= len(variables)
-        for k, fn in enumerate(fns_sorted):
-            data[k] = fn(values, params)
+        for k, fn_ in enumerate(fns_sorted):
+            data[k] = fn_(values, params)
         return sp.csc_matrix((data, indices, indptr), shape=(len(eqs), len(variables)))
 
     return jac_fn
@@ -137,7 +140,7 @@ class BlockSolver:
         self._algebraic_eqs: List[Expr] = list()
         self._state_vars: List[Var] = list()
         self._state_eqs: List[Expr] = list()
-        self._parameters: List[Const] = list()
+        self._parameters: List[Var] = list()
 
         for b in self.block_system.get_all_blocks():
             self._algebraic_vars.extend(b.algebraic_vars)
@@ -184,13 +187,19 @@ class BlockSolver:
                  |           |           |    |            |    |            |
         """
         print("Compiling...", end="")
-        self._rhs_state_fn = _compile_equations(eqs=self._state_eqs, uid2sym_vars=uid2sym_vars,uid2sym_params=uid2sym_params)
-        self._rhs_algeb_fn = _compile_equations(eqs=self._algebraic_eqs, uid2sym_vars=uid2sym_vars,uid2sym_params=uid2sym_params)
+        self._rhs_state_fn = _compile_equations(eqs=self._state_eqs, uid2sym_vars=uid2sym_vars,
+                                                uid2sym_params=uid2sym_params)
+        self._rhs_algeb_fn = _compile_equations(eqs=self._algebraic_eqs, uid2sym_vars=uid2sym_vars,
+                                                uid2sym_params=uid2sym_params)
 
-        self._j11_fn = _get_jacobian(eqs=self._state_eqs, variables=self._state_vars, uid2sym_vars=uid2sym_vars,uid2sym_params=uid2sym_params)
-        self._j12_fn = _get_jacobian(eqs=self._state_eqs, variables=self._algebraic_vars, uid2sym_vars=uid2sym_vars,uid2sym_params=uid2sym_params)
-        self._j21_fn = _get_jacobian(eqs=self._algebraic_eqs, variables=self._state_vars, uid2sym_vars=uid2sym_vars,uid2sym_params=uid2sym_params)
-        self._j22_fn = _get_jacobian(eqs=self._algebraic_eqs, variables=self._algebraic_vars, uid2sym_vars=uid2sym_vars,uid2sym_params=uid2sym_params)
+        self._j11_fn = _get_jacobian(eqs=self._state_eqs, variables=self._state_vars, uid2sym_vars=uid2sym_vars,
+                                     uid2sym_params=uid2sym_params)
+        self._j12_fn = _get_jacobian(eqs=self._state_eqs, variables=self._algebraic_vars, uid2sym_vars=uid2sym_vars,
+                                     uid2sym_params=uid2sym_params)
+        self._j21_fn = _get_jacobian(eqs=self._algebraic_eqs, variables=self._state_vars, uid2sym_vars=uid2sym_vars,
+                                     uid2sym_params=uid2sym_params)
+        self._j22_fn = _get_jacobian(eqs=self._algebraic_eqs, variables=self._algebraic_vars, uid2sym_vars=uid2sym_vars,
+                                     uid2sym_params=uid2sym_params)
 
         print("done!")
 
@@ -242,16 +251,16 @@ class BlockSolver:
 
         return x
 
-    def rhs_fixed(self, x: np.ndarray) -> np.ndarray:
+    def rhs_fixed(self, x: np.ndarray, params: np.ndarray) -> np.ndarray:
         """
         Return 𝑑x/dt given the current *state* vector.
         :param x: get the right-hand-side give a state vector
         :return [f_state_update, f_algeb]
         """
-        f_algeb = np.array(self._rhs_algeb_fn(x))
+        f_algeb = np.array(self._rhs_algeb_fn(x, params))
 
         if self._n_state > 0:
-            f_state = np.array(self._rhs_state_fn(x))
+            f_state = np.array(self._rhs_state_fn(x, params))
             return np.r_[f_state, f_algeb]
         else:
             return f_algeb
@@ -301,6 +310,62 @@ class BlockSolver:
         J = pack_4_by_4_scipy(j11, j12, j21, j22)
         return J
 
+    def residual_init(self, z: np.ndarray, params: np.ndarray):
+        # concatenate state & algebraic residuals
+        f_s = np.array(self._rhs_state_fn(z, params))  # f_state(x)        == 0 at t=0
+        f_a = np.array(self._rhs_algeb_fn(z, params))  # g_algeb(x, y)     == 0
+        return np.r_[f_s, f_a]
+
+    def jacobian_init(self, z: np.ndarray, params: np.ndarray):
+        J11 = self._j11_fn(z, params)  # ∂f_state/∂x
+        J12 = self._j12_fn(z, params)  # ∂f_state/∂y
+        J21 = self._j21_fn(z, params)  # ∂g/∂x
+        J22 = self._j22_fn(z, params)  # ∂g/∂y
+        return pack_4_by_4_scipy(J11, J12, J21, J22)  # → sparse 2×2 block Jacobian
+
+    def initialize(self, x0: np.ndarray, params0: np.ndarray,
+                   tol=1e-6, max_it=20, use_preconditioner: bool = True):
+        """
+
+        :param x0:
+        :param params0:
+        :param tol:
+        :param max_it:
+        :param use_preconditioner:
+        :return:
+        """
+        x_vec = x0.copy()
+
+        for k in range(max_it):
+            F = self.residual_init(x_vec, params=params0)
+            if np.linalg.norm(F, np.inf) < tol:
+                print(f"Converged in {k} iterations :", x_vec)
+                break
+
+            J = self.jacobian_init(x_vec, params=params0)
+
+            # --------- iterative GMRES  ------------------------------------------
+            # Build an ILU(0) factorisation as a right-preconditioner
+
+            if use_preconditioner:
+                eps = 1e-8 * sp.linalg.norm(J, np.inf)
+                Jreg = J + eps * sp.eye(J.shape[0], format='csc')
+                ilu = spilu(Jreg, drop_tol=1e-6, fill_factor=10)
+                M = LinearOperator(J.shape, ilu.solve)  # M ≈ J⁻¹
+                dx, info = gmres(J, -F, M=M, atol=1e-9, restart=200)
+            else:
+                dx, info = gmres(J, -F, atol=1e-9, restart=500)
+
+            if info != 0:
+                raise RuntimeError(f"GMRES failed (info = {info}) at Newton iter {k}")
+
+            x_vec += dx
+
+        else:
+            raise RuntimeError("Initialisation did not converge")
+
+        return x_vec
+
     def get_dummy_x0(self):
         return np.zeros(self._n_state)
 
@@ -309,7 +374,6 @@ class BlockSolver:
         Return (algebraic_eqs, state_eqs) as *originally declared* (no substitution).
         """
         return self._algebraic_eqs, self._state_eqs
-
 
     def build_params_matrix(self, n_steps: int, params0: np.ndarray, events_list: Events) -> csr_matrix:
         events_matrix = np.zeros((n_steps, len(params0)))
@@ -361,9 +425,9 @@ class BlockSolver:
         """
         params_matrix = self.build_params_matrix(int(np.ceil((t_end - t0) / h)), params0, events_list)
         if method == "euler":
-            return self._simulate_fixed(t0, t_end, h, x0, stepper="euler")
+            return self._simulate_fixed(t0, t_end, h, x0, params0, stepper="euler")
         if method == "rk4":
-            return self._simulate_fixed(t0, t_end, h, x0, stepper="rk4")
+            return self._simulate_fixed(t0, t_end, h, x0, params0, stepper="rk4")
         if method == "implicit_euler":
             return self._simulate_implicit_euler(
                 t0, t_end, h, x0, params0, params_matrix,
@@ -371,7 +435,7 @@ class BlockSolver:
             )
         raise ValueError(f"Unknown method '{method}'")
 
-    def _simulate_fixed(self, t0, t_end, h, x0, stepper="euler"):
+    def _simulate_fixed(self, t0, t_end, h, x0, params, stepper="euler"):
         """
         Fixed‑step helpers (Euler, RK‑4)
         :param t0:
@@ -391,20 +455,21 @@ class BlockSolver:
             tn = t[i]
             xn = y[i]
             if stepper == "euler":
-                k1 = self.rhs_fixed(xn)
+                k1 = self.rhs_fixed(xn, params)
                 y[i + 1] = xn + h * k1
             elif stepper == "rk4":
-                k1 = self.rhs_fixed(xn)
-                k2 = self.rhs_fixed(xn + 0.5 * h * k1)
-                k3 = self.rhs_fixed(xn + 0.5 * h * k2)
-                k4 = self.rhs_fixed(xn + h * k3)
+                k1 = self.rhs_fixed(xn, params)
+                k2 = self.rhs_fixed(xn + 0.5 * h * k1, params)
+                k3 = self.rhs_fixed(xn + 0.5 * h * k2, params)
+                k4 = self.rhs_fixed(xn + h * k3, params)
                 y[i + 1] = xn + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
             else:
                 raise RuntimeError("unknown stepper")
             t[i + 1] = tn + h
         return t, y
 
-    def _simulate_implicit_euler(self, t0, t_end, h, x0, params0: np.ndarray, diff_params_matrix, tol=1e-8, max_iter=1000):
+    def _simulate_implicit_euler(self, t0, t_end, h, x0, params0: np.ndarray, diff_params_matrix, tol=1e-8,
+                                 max_iter=1000):
         """
         :param t0:
         :param t_end:
@@ -435,7 +500,7 @@ class BlockSolver:
 
                 if converged:
                     break
-                Jf = self.jacobian_implicit(x_new,params_current, h)  # sparse matrix
+                Jf = self.jacobian_implicit(x_new, params_current, h)  # sparse matrix
                 delta = sp.linalg.spsolve(Jf, -rhs)
                 x_new += delta
                 n_iter += 1
