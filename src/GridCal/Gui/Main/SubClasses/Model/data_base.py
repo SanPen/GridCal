@@ -21,6 +21,7 @@ from GridCal.Gui.profiles_model import ProfilesModel
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Topology.detect_substations import detect_substations, detect_facilities
+from GridCalEngine.Topology.grid_reduction import ward_reduction
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -722,7 +723,7 @@ class DataBaseTableMain(DiagramsMain):
         if len(selected_buses):
 
             ok = yes_no_question(
-                text="This will delete_with_dialogue all buses and their connected elements that were not selected."
+                text="This will delete all buses and their connected elements that were not selected."
                      "This cannot be undone and it is dangerous if you don't know"
                      "what you are doing. \nAre you sure?",
                 title="Crop model to buses selection?")
@@ -736,7 +737,45 @@ class DataBaseTableMain(DiagramsMain):
                 for bus in to_be_deleted:
                     self.circuit.delete_bus(obj=bus, delete_associated=True)
 
+                self.view_objects_data()  # re-paint the table
+
                 self.show_info_toast(f"{len(to_be_deleted)} buses removed from the model")
+
+    def perform_ward_reduction(self):
+        """
+        Crop model to buses selection
+        :return:
+        """
+        selected_buses, selected_objects = self.get_selected_table_buses()
+
+        if len(selected_buses):
+
+            # get the previous power flow
+            _, pf_res = self.session.power_flow
+
+            if pf_res is None:
+                self.show_error_toast("Run a power flow first!")
+                return
+
+            ok = yes_no_question(
+                text="This will delete the selected buses and reintroduce their influence"
+                     "using the Ward equivalent. This cannot be undone and it is dangerous if you don't know"
+                     "what you are doing \nAre you sure?",
+                title="Ward reduction?")
+
+            if ok:
+                reduction_bus_indices = np.array([self.circuit.buses.index(b) for b in selected_buses], dtype=int)
+
+                ward_reduction(
+                    grid=self.circuit,
+                    reduction_bus_indices=reduction_bus_indices,
+                    pf_res=pf_res,
+                    pf_ts_res=None,
+                    add_power_loads=True
+                )
+
+                self.view_objects_data()  # re-paint the table
+                self.show_info_toast("Ward reduction done!")
 
     def add_objects(self):
         """
@@ -1332,6 +1371,11 @@ class DataBaseTableMain(DiagramsMain):
                           text="Crop model to buses selection",
                           icon_path=":/Icons/icons/schematic.svg",
                           function_ptr=self.crop_model_to_buses_selection)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Ward reduction",
+                          icon_path=":/Icons/icons/schematic.svg",
+                          function_ptr=self.perform_ward_reduction)
 
         gf.add_menu_entry(menu=context_menu,
                           text="Copy table",
