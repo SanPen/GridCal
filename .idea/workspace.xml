@@ -28,9 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="fixed #388">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="small grid reduction improvement">
+      <change afterPath="$PROJECT_DIR$/src/tests/test_clustering.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/__init__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -267,6 +268,7 @@
     "Python.stack_plot_pos_neg.executor": "Run",
     "Python.symbolic_examples.executor": "Run",
     "Python.test_admittance_matrix.executor": "Run",
+    "Python.test_clustering.executor": "Debug",
     "Python.test_gslv_conversion.executor": "Debug",
     "Python.test_power_flow.executor": "Run",
     "Python.test_raw_cgmes_cross_roundtrip.executor": "Run",
@@ -288,12 +290,13 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "settings.editor.selected.configurable": "reference.idesettings.debugger.python",
     "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="PyDebuggerOptionsProvider">
+    <option name="myAttachToSubprocess" value="false" />
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
     <option name="myPyQtBackend" value="pyside6" />
@@ -314,7 +317,7 @@
       <recent name="$PROJECT_DIR$/src/tests/data/grids/RAW" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.test_clustering">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -833,6 +836,30 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="test_clustering" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.11 (GridCal) (2)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/tests/test_clustering.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="test_gslv_conversion" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -1162,6 +1189,7 @@
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
       <item itemvalue="Python.test_gslv_conversion" />
+      <item itemvalue="Python.test_clustering" />
       <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.pytest for src.tests.test_opf" />
@@ -2387,7 +2415,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="731" />
+    <option name="localTasksCounter" value="732" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2433,7 +2461,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Worked the scripting_simbolic_framework_0.py" />
     <MESSAGE value="some changes (broken)" />
     <MESSAGE value="broken, but kind of working" />
     <MESSAGE value="Some minor changes" />
@@ -2458,7 +2485,8 @@
     <MESSAGE value="fixed #404" />
     <MESSAGE value="fixed #405" />
     <MESSAGE value="fixed #388" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed #388" />
+    <MESSAGE value="small grid reduction improvement" />
+    <option name="LAST_COMMIT_MESSAGE" value="small grid reduction improvement" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2798,11 +2826,6 @@
           <option name="timeStamp" value="2661" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_ts_driver.py</url>
-          <line>101</line>
-          <option name="timeStamp" value="2662" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
           <line>940</line>
           <option name="timeStamp" value="2663" />
@@ -3042,6 +3065,21 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py</url>
           <line>328</line>
           <option name="timeStamp" value="2983" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_clustering.py</url>
+          <line>33</line>
+          <option name="timeStamp" value="2987" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_clustering.py</url>
+          <line>31</line>
+          <option name="timeStamp" value="2988" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_clustering.py</url>
+          <line>30</line>
+          <option name="timeStamp" value="2989" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

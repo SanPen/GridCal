@@ -115,12 +115,14 @@ if PROPERLY_LOADED_API:
     def power_flow_ts(grid: MultiCircuit,
                       options: PowerFlowOptions | None = None,
                       time_indices: Union[IntVec, None] = None,
+                      clustering_results: Union[ClusteringResults, None] = None,
                       engine=EngineType.GridCal) -> PowerFlowResults:
         """
         Run power flow on the time series
         :param grid: MultiCircuit instance
         :param options: PowerFlowOptions instance (optional)
         :param time_indices: Array of time indices to simulate, if None all are used (optional)
+        :param clustering_results: ClusteringResults (optional)
         :param engine: Engine to run with (optional, default GridCal)
         :return: PowerFlowResults instance
         """
@@ -134,6 +136,7 @@ if PROPERLY_LOADED_API:
         driver = PowerFlowTimeSeriesDriver(grid=grid,
                                            options=options,
                                            time_indices=ti,
+                                           clustering_results=clustering_results,
                                            engine=engine)
         # run
         driver.run()
