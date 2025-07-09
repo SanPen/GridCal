@@ -335,11 +335,11 @@ class BlockSolver:
         :param use_preconditioner: Use a GMRES preconditioner?
         :return: new, hopefully better initial point
         """
-        x_vec = x0.copy()
+        x_vec = x0.copy() # initial guess vector
 
         for k in range(max_it):
-            F = self.residual_init(x_vec, params=params0)
-            if np.linalg.norm(F, np.inf) < tol:
+            F = self.residual_init(x_vec, params=params0) # F is a numpy array containing the f and g functions residuals
+            if np.linalg.norm(F, np.inf) < tol: # use infinit norm: The maximum absolute value of the components of the vector
                 print(f"Converged in {k} iterations :", x_vec)
                 break
 
@@ -428,7 +428,7 @@ class BlockSolver:
                 except RuntimeError:
                     M = None  # fallback – still works thanks to I/dt term
 
-                dz, info = gmres(J, -R, M=M, atol=1e-9, restart=200)
+                dz, info = gmres(A=J, b = -R, M=M, atol=1e-9, restart=200)
                 if info != 0:
                     raise RuntimeError(f"GMRES failed at Ψtc step {step}, "
                                        f"Newton iter {it} (info={info})")
@@ -574,6 +574,134 @@ class BlockSolver:
                              psi_tol, newton_tol, newton_max)
 
         print("Homotopy initialisation succeeded ✔")
+        return z, params
+
+    def _psi_tc(self,
+                z_init: np.ndarray,
+                params: np.ndarray,
+                dt0: float,
+                beta: float,
+                psi_tol: float,
+                newton_tol: float,
+                newton_max: int) -> np.ndarray:
+        """
+        Pseudo-transient continuation inner solver (index-1 semi-explicit DAE).
+        Returns a *consistent* z vector for the **current** parameter set.
+        """
+        n_s = self._n_state
+        I_s = sp.eye(n_s, format="csc") if n_s else None
+        z = z_init.copy()
+        dt = dt0
+
+        while True:
+            z_prev = z.copy()
+            # ------------ Newton on Ψtc residual -----------------------------
+            for _ in range(newton_max):
+                f_a = np.array(self._rhs_algeb_fn(z, params))
+                if n_s:
+                    f_s = np.array(self._rhs_state_fn(z, params))
+                    R = np.r_[(z[:n_s] - z_prev[:n_s]) / dt - f_s, f_a]
+                else:
+                    R = f_a
+
+                if np.linalg.norm(R, np.inf) < newton_tol:
+                    break
+
+                J22 = self._j22_fn(z, params)
+                J12 = self._j12_fn(z, params)
+                J21 = self._j21_fn(z, params)
+
+                if n_s:
+                    J11 = self._j11_fn(z, params)
+                    JL = I_s / dt - J11
+                    JR = -J12
+                    top = sp.hstack([JL, JR], format="csc")
+                    bot = sp.hstack([J21, J22], format="csc")
+                    J = sp.vstack([top, bot], format="csc")
+                else:
+                    J = J22
+
+                try:
+                    M = LinearOperator(J.shape,
+                                       spilu(J, drop_tol=1e-5, fill_factor=10).solve)
+                except RuntimeError:
+                    M = None
+
+                dz, info = gmres(J, -R, M=M, atol=1e-9, restart=200)
+                if info != 0:
+                    raise RuntimeError("GMRES failed during Ψtc")
+                z += dz
+
+            # ------------ stop when original residual is small ---------------
+            res = np.linalg.norm(self._rhs_algeb_fn(z, params), np.inf)
+            if n_s:
+                res = max(res, np.linalg.norm(self._rhs_state_fn(z, params), np.inf))
+            if res < psi_tol:
+                return z
+
+            dt *= beta
+            if dt < 1e-9:
+                raise RuntimeError("Ψtc stalled ⇒ no equilibrium?")
+
+    def initialise_homotopy_adaptive_lambda(self,
+                            z0,
+                            params,
+                            ramps: list[tuple[Const | Var, float]] | None = None,
+                            psi_dt0: float = 5.0,
+                            psi_beta: float = 0.4,
+                            psi_tol: float = 1e-10,
+                            newton_tol: float = 1e-12,
+                            newton_max: int = 10,
+                            delta_lam_init: float = 0.05,
+                            min_step: float = 1e-4,
+                            max_step: float = 0.2) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Homotopy with adaptive lambda stepping.
+        """
+        z = z0.copy()
+
+        if ramps is None:
+            ramps = [(p, 0.0) for p in self._parameters]
+
+        ramps_descr = []
+        for const_obj, start_val in ramps:
+            idx = self.uid2idx_params[const_obj.uid]
+            ramps_descr.append((idx, start_val, const_obj.value, const_obj))
+
+        lam = 0.0
+        lam_eps = 1e-6
+        delta_lam = delta_lam_init
+
+        while lam < 1.0 - lam_eps:
+            try:
+                self._apply_lambda(params, ramps_descr, lam)
+                z = self._psi_tc(z, params, psi_dt0, psi_beta,
+                                 psi_tol, newton_tol, newton_max)
+
+                lam_new = min(lam + delta_lam, 1.0)
+                self._apply_lambda(params, ramps_descr, lam_new)
+                z_new = self._psi_tc(z, params, psi_dt0, psi_beta,
+                                     psi_tol, newton_tol, newton_max)
+
+                # Step succeeded, accept and increase step size
+                lam = lam_new
+                z = z_new
+                delta_lam = min(delta_lam * 1.5, max_step)
+                print(f"Adaptive λ stepping: λ={lam:.4f}, step={delta_lam:.4f}")
+
+            except RuntimeError as e:
+                # Step failed, reduce step size and retry
+                delta_lam *= 0.5
+                print(f"Step failed at λ={lam:.4f}, reducing step to {delta_lam:.4f}")
+                if delta_lam < min_step:
+                    raise RuntimeError(f"Adaptive homotopy failed at λ={lam:.4f}") from e
+
+        # Ensure final λ=1
+        self._apply_lambda(params, ramps_descr, 1.0)
+        z = self._psi_tc(z, params, psi_dt0, psi_beta,
+                         psi_tol, newton_tol, newton_max)
+
+        print("Homotopy initialisation (adaptive lambda) succeeded ✔")
         return z, params
 
     def get_dummy_x0(self):

@@ -28,10 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed bug introduced by renaming">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="serialization of blocks in disk (needed to change property of Const and Var to keep same uid for variables, maby it can be solved in a better way)">
+      <change afterPath="$PROJECT_DIR$/src/tests/test_blocks.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic/block.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic/block.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic/symbolic.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic/symbolic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic/block_solver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic/block_solver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/dynamics/scripting_simbolic_framework_0.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/dynamics/scripting_simbolic_framework_0.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -200,6 +200,7 @@
     "Python tests.pytest in test_ac_opf.py.executor": "Run",
     "Python tests.pytest in test_admittance_matrix.py.executor": "Run",
     "Python tests.pytest in test_basic.py.executor": "Run",
+    "Python tests.pytest in test_blocks.py.executor": "Run",
     "Python tests.pytest in test_contingency.py.executor": "Debug",
     "Python tests.pytest in test_contongencies_filters.py.executor": "Debug",
     "Python tests.pytest in test_grid_diff.py.executor": "Run",
@@ -264,7 +265,7 @@
     "Python.symbolic_examples.executor": "Run",
     "Python.test_admittance_matrix.executor": "Run",
     "Python.test_gslv_conversion.executor": "Debug",
-    "Python.test_power_flow.executor": "Run",
+    "Python.test_power_flow.executor": "Debug",
     "Python.test_raw_cgmes_cross_roundtrip.executor": "Run",
     "Python.toast_widget.executor": "Run",
     "Python.update_gui_file (1).executor": "Run",
@@ -2383,7 +2384,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="726" />
+    <option name="localTasksCounter" value="727" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2429,7 +2430,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Minor refactors" />
     <MESSAGE value="Added implicit integration" />
     <MESSAGE value="Further unified the API" />
     <MESSAGE value="Made the BlockSystem recursive&#10;Started GUI integration" />
@@ -2454,7 +2454,8 @@
     <MESSAGE value="Fixed profiles display&#10;Improved profile array parsing" />
     <MESSAGE value="Improvement in Profile.set to handle &quot;anything&quot;" />
     <MESSAGE value="Fixed bug introduced by renaming" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug introduced by renaming" />
+    <MESSAGE value="serialization of blocks in disk (needed to change property of Const and Var to keep same uid for variables, maby it can be solved in a better way)" />
+    <option name="LAST_COMMIT_MESSAGE" value="serialization of blocks in disk (needed to change property of Const and Var to keep same uid for variables, maby it can be solved in a better way)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

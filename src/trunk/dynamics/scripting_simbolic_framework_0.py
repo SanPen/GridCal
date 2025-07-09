@@ -262,6 +262,12 @@ x0 = slv.initialize_with_pseudo_transient_gamma(
 #     ramps=[(Pl, 0.0), (Ql, 0.0)],  # tuple of var, value to vary with the homotopy
 # )
 
+# x0, params0 = slv.initialise_homotopy_adaptive_lambda(
+#     z0=slv.build_init_vars_vector(vars_mapping),  # flat start
+#     params=params0,
+#     ramps=[(Pl, 0.0), (Ql, 0.0)],
+# )
+
 vars_in_order = slv.sort_vars(vars_mapping)
 
 t, y = slv.simulate(
