@@ -32,7 +32,6 @@ from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, make_d
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget, make_diagram_from_buses
 
 
-
 class DataBaseTableMain(DiagramsMain):
     """
     Diagrams Main
@@ -280,7 +279,7 @@ class DataBaseTableMain(DiagramsMain):
         """
         Copy the current displayed objects table to the clipboard
         """
-        mdl = self.get_current_objects_model_view()
+        mdl: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
         if mdl is not None:
             mdl.copy_to_clipboard()
             self.show_info_toast('Copied!')
@@ -355,29 +354,6 @@ class DataBaseTableMain(DiagramsMain):
             self.ui.device_type_magnitude_comboBox.clear()
             self.ui.device_type_magnitude_comboBox_2.clear()
             self.ui.associationsComboBox.clear()
-
-    def get_selected_table_objects(self) -> List[ALL_DEV_TYPES]:
-        """
-        Get the list of selected objects
-        :return: List[ALL_DEV_TYPES]
-        """
-        model = self.get_current_objects_model_view()
-
-        if model is not None:
-            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
-            if len(sel_idx) > 0:
-
-                # get the unique rows
-                unique = set()
-                for idx in sel_idx:
-                    unique.add(idx.row())
-
-                return [model.objects[i] for i in unique]
-            else:
-                info_msg('Select some cells')
-                return list()
-        else:
-            return list()
 
     def get_selected_table_buses(self) -> Tuple[Set[dev.Bus], List[ALL_DEV_TYPES]]:
         """
@@ -468,10 +444,7 @@ class DataBaseTableMain(DiagramsMain):
         Get the substations matching the table selection
         :return:  set of substations, list of selected objects originating the substation set
         """
-        substations = set()
-        selected_objects: List[ALL_DEV_TYPES] = list()
-
-        model = self.ui.dataStructureTableView.model()
+        selected_objects = self.get_selected_table_objects()
 
         elm2se: Dict[ALL_DEV_TYPES, List[dev.Substation]] = dict()
 
@@ -494,27 +467,12 @@ class DataBaseTableMain(DiagramsMain):
             if bus.substation is not None:
                 elm2se[bus] = [bus.substation]
 
-        if model is not None:
-
-            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
-            objects = model.objects
-
-            if len(objects) > 0:
-
-                if len(sel_idx) > 0:
-
-                    unique = {idx.row() for idx in sel_idx}
-
-                    for idx in unique:
-
-                        sel_obj: ALL_DEV_TYPES = model.objects[idx]
-                        selected_objects.append(sel_obj)
-
-                        se_list = elm2se.get(sel_obj, None)
-
-                        if se_list is not None:
-                            for se in se_list:
-                                substations.add(se)
+        substations = set()
+        for sel_obj in selected_objects:
+            se_list = elm2se.get(sel_obj, None)
+            if se_list is not None:
+                for se in se_list:
+                    substations.add(se)
 
         return substations, selected_objects
 
@@ -924,33 +882,38 @@ class DataBaseTableMain(DiagramsMain):
         """
         Edit catalogue element
         """
-        model = self.get_current_objects_model_view()
-        sel_item = self.ui.dataStructuresTreeView.selectedIndexes()[0]
-        elm_type = sel_item.data(role=QtCore.Qt.ItemDataRole.DisplayRole)
+        model: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
 
         if model is not None:
 
-            # get the selected index
-            idx = self.ui.dataStructureTableView.currentIndex().row()
+            if len(self.ui.dataStructuresTreeView.selectedIndexes()) > 0:
 
-            if idx > -1:
-                if elm_type == DeviceType.OverheadLineTypeDevice.value:
+                sel_item = self.ui.dataStructuresTreeView.selectedIndexes()[0]
+                elm_type = sel_item.data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
-                    # launch editor
-                    self.tower_builder_window = TowerBuilderGUI(
-                        tower=self.circuit.overhead_line_types[idx],
-                        wires_catalogue=self.circuit.wire_types
-                    )
-                    self.tower_builder_window.setModal(True)
-                    self.tower_builder_window.resize(int(1.81 * 700.0), 700)
-                    self.tower_builder_window.exec()
+                # get the selected index
+                idx = self.ui.dataStructureTableView.currentIndex().row()
 
+                if idx > -1:
+                    if elm_type == DeviceType.OverheadLineTypeDevice.value:
+
+                        # launch editor
+                        self.tower_builder_window = TowerBuilderGUI(
+                            tower=self.circuit.overhead_line_types[idx],
+                            wires_catalogue=self.circuit.wire_types
+                        )
+                        self.tower_builder_window.setModal(True)
+                        self.tower_builder_window.resize(int(1.81 * 700.0), 700)
+                        self.tower_builder_window.exec()
+
+                    else:
+
+                        warning_msg('No editor available.\n'
+                                    'The values can be changed from the table or '
+                                    'via context menus in the graphical interface.',
+                                    'Edit')
                 else:
-
-                    warning_msg('No editor available.\n'
-                                'The values can be changed from the table or '
-                                'via context menus in the graphical interface.',
-                                'Edit')
+                    info_msg('Choose an element from the table')
             else:
                 info_msg('Choose an element from the table')
         else:
@@ -962,7 +925,7 @@ class DataBaseTableMain(DiagramsMain):
         :return: Nothing
         """
         idx = self.ui.dataStructureTableView.currentIndex()
-        mdl = self.get_current_objects_model_view()
+        mdl: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
         col = idx.column()
         if mdl is not None:
             if col > -1:
@@ -979,7 +942,7 @@ class DataBaseTableMain(DiagramsMain):
         Highlight and select the buses of the selected objects
         """
 
-        model = self.get_current_objects_model_view()
+        model: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
 
         if model is not None:
 
@@ -1041,13 +1004,6 @@ class DataBaseTableMain(DiagramsMain):
         else:
             return t_idx
 
-    def get_current_objects_model_view(self) -> ObjectModelFilterProxy | None:
-        """
-        Get the current ObjectModelFilterProxy from the GUI
-        :return: ObjectModelFilterProxy
-        """
-        return self.ui.dataStructureTableView.model()
-
     def highlight_based_on_property(self):
         """
         Highlight and select the buses of the selected objects
@@ -1055,11 +1011,11 @@ class DataBaseTableMain(DiagramsMain):
         indices = self.ui.dataStructureTableView.selectedIndexes()
 
         if len(indices):
-            model = self.get_current_objects_model_view()
-            t_idx = self.get_objects_time_index()
+            model: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
 
             if model is not None:
                 objects = model.objects
+                t_idx = self.get_objects_time_index()
 
                 if len(objects) > 0:
                     col_indices = list({index.column() for index in indices})
@@ -1142,7 +1098,7 @@ class DataBaseTableMain(DiagramsMain):
         indices = self.ui.dataStructureTableView.selectedIndexes()
 
         if len(indices):
-            model = self.get_current_objects_model_view()
+            model: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
 
             if model is not None:
                 logger = bs.Logger()

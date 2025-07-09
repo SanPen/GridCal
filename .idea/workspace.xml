@@ -28,10 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed bug introduced by renaming">
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/substation_wizards.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added ward reduction">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/data_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/data_base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/object_proxy_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/object_proxy_model.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -223,7 +224,7 @@
     "Python tests.pytest in test_transformer_type.py.executor": "Run",
     "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Debug",
     "Python.GridCalMain.executor": "Run",
     "Python.IEEE 13-bus Test Feeder Case worker.executor": "Run",
     "Python.LineBuilderDialogue.executor": "Run",
@@ -315,7 +316,7 @@
       <recent name="$PROJECT_DIR$/src/tests/data/grids/RAW" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in tests">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -1171,10 +1172,10 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python tests.pytest for src.tests.test_opf" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest for src.tests.test_ac_opf.test_ieee14_controlQ_controllableshunts" />
+        <item itemvalue="Python tests.pytest for src.tests.test_opf" />
         <item itemvalue="Python.update_gui_file" />
       </list>
     </recent_temporary>
@@ -2388,7 +2389,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="726" />
+    <option name="localTasksCounter" value="728" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2434,8 +2435,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Minor refactors" />
-    <MESSAGE value="Added implicit integration" />
     <MESSAGE value="Further unified the API" />
     <MESSAGE value="Made the BlockSystem recursive&#10;Started GUI integration" />
     <MESSAGE value="Integration in process" />
@@ -2459,7 +2458,9 @@
     <MESSAGE value="Fixed profiles display&#10;Improved profile array parsing" />
     <MESSAGE value="Improvement in Profile.set to handle &quot;anything&quot;" />
     <MESSAGE value="Fixed bug introduced by renaming" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug introduced by renaming" />
+    <MESSAGE value="minor changes" />
+    <MESSAGE value="Added ward reduction" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added ward reduction" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -3033,6 +3034,46 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/profiles_model.py</url>
           <line>362</line>
           <option name="timeStamp" value="2970" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/data_base.py</url>
+          <line>897</line>
+          <option name="timeStamp" value="2976" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py</url>
+          <line>1715</line>
+          <option name="timeStamp" value="2977" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py</url>
+          <line>1717</line>
+          <option name="timeStamp" value="2978" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py</url>
+          <line>1772</line>
+          <option name="timeStamp" value="2980" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py</url>
+          <line>323</line>
+          <option name="timeStamp" value="2981" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py</url>
+          <line>326</line>
+          <option name="timeStamp" value="2982" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py</url>
+          <line>328</line>
+          <option name="timeStamp" value="2983" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/object_proxy_model.py</url>
+          <line>76</line>
+          <option name="timeStamp" value="2984" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
