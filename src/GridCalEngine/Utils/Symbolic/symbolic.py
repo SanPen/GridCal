@@ -224,12 +224,10 @@ class Expr:
 
 @dataclass(frozen=True)
 class Const(Expr):
-    """
-    Constant expression (i.e a number)
-    """
     value: NUMBER
     name: str = 'name'
-    uid: int = field(default_factory=_new_uid, init=False)
+    uid: int = field(default_factory=_new_uid)
+
 
     def eval(self, **bindings: NUMBER) -> NUMBER:
         return self.value
@@ -251,68 +249,13 @@ class Const(Expr):
         return str(self.value)
 
 
-@dataclass
-class EventParam(Expr):
-    value: float
-    new_value: float
-    time_step: int
-    name: str
-    uid: int = field(default_factory=_new_uid, init=False)
-
-    def __post_init__(self):
-        # "Freeze" name and uid after initialization by setting private flags
-        object.__setattr__(self, "_frozen_name", self.name)
-        object.__setattr__(self, "_frozen_uid", self.uid)
-
-    def __setattr__(self, key, value):
-        if hasattr(self, "_frozen_name") and key == "name":
-            raise AttributeError("Cannot modify 'name' after initialization.")
-        if hasattr(self, "_frozen_uid") and key == "uid":
-            raise AttributeError("Cannot modify 'uid' after initialization.")
-        super().__setattr__(key, value)
-
-    def check_value(self, t):
-        if t == self.time_step:
-            return self.new_value
-        else:
-            return None
-
-    def eval(self, **bindings: NUMBER) -> NUMBER:
-        try:
-            return bindings[self.name]
-        except KeyError as exc:
-            raise ValueError(f"No value for variable '{self.name}'.") from exc
-
-    def eval_uid(self, uid_bindings: Dict[str, NUMBER]) -> NUMBER:
-        return self.value
-
-    def _diff1(self, var: Var | str):
-        return Const(0)
-
-    def subs(self, mapping: Dict[Any, Expr]) -> Expr:
-        if self in mapping:
-            return mapping[self]
-        if self.name in mapping:
-            return mapping[self.name]
-        return self
-
-    def __str__(self) -> str:
-        return str(self.value)
-
-    def __repr__(self) -> str:
-        return self.name
-
-    # def __eq__(self, other: "Var"):
-    #     return self.uid == other.uid
-
-
 @dataclass(frozen=True)
 class Var(Expr):
     """
     Any variable
     """
     name: str
-    uid: int = field(default_factory=_new_uid, init=False)
+    uid: int = field(default_factory=_new_uid)
 
     def eval(self, **bindings: NUMBER) -> NUMBER:
         try:

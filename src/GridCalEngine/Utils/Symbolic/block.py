@@ -16,6 +16,28 @@ def _new_uid() -> int:
     return uuid.uuid4().int
 
 
+def _serialize_expr_list(exprs: list[Expr]) -> list[dict]:
+    return [expr.to_dict() for expr in exprs]
+
+def _serialize_var_list(vars_: list[Var | Const]) -> list[dict]:
+    return [v.to_dict() for v in vars_]
+
+def _deserialize_expr_list(expr_dicts: list[dict]) -> list[Expr]:
+    return [Expr.from_dict(d) for d in expr_dicts]
+
+def _deserialize_var_list(var_dicts: list[dict]) -> list[Var | Const]:
+    result = []
+    for d in var_dicts:
+        if d["type"] == "Var":
+            result.append(Var(name=d["name"], uid=d["uid"]))
+        elif d["type"] == "Const":
+            result.append(Const(value=d["value"], uid=d["uid"]))
+        else:
+            raise ValueError(f"Unknown variable type {d['type']}")
+    return result
+
+
+
 @dataclass(frozen=True)
 class Block:
     """
@@ -70,12 +92,39 @@ class Block:
         """
         return self.algebraic_vars + self.state_vars
 
-    def to_dict(self):
-        return dict()
+    def to_dict(self) -> dict:
+        return {
+            "uid": self.uid,
+            "state_vars": _serialize_var_list(self.state_vars),
+            "state_eqs": _serialize_expr_list(self.state_eqs),
+            "algebraic_vars": _serialize_var_list(self.algebraic_vars),
+            "algebraic_eqs": _serialize_expr_list(self.algebraic_eqs),
+            "parameters": _serialize_var_list(self.parameters),
+            "name": self.name,
+            "children": [child.to_dict() for child in self.children],
+            "in_vars": _serialize_var_list(self.in_vars),
+            "out_vars": _serialize_var_list(self.out_vars),
+        }
 
-    def parse(self, data):
-        pass
+    @staticmethod
+    def parse(data: dict) -> "Block":
+        return Block(
+            uid=data["uid"],
+            state_vars=_deserialize_var_list(data["state_vars"]),
+            state_eqs=_deserialize_expr_list(data["state_eqs"]),
+            algebraic_vars=_deserialize_var_list(data["algebraic_vars"]),
+            algebraic_eqs=_deserialize_expr_list(data["algebraic_eqs"]),
+            parameters=_deserialize_var_list(data["parameters"]),
+            name=data.get("name", ""),
+            children=[Block.parse(child) for child in data.get("children", [])],
+            in_vars=_deserialize_var_list(data.get("in_vars", [])),
+            out_vars=_deserialize_var_list(data.get("out_vars", [])),
+        )
 
+    def __eq__(self, other):
+        if not isinstance(other, Block):
+            return False
+        return self.to_dict() == other.to_dict()
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Pre defined blocks
