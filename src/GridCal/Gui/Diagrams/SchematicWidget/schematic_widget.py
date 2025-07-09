@@ -3353,52 +3353,55 @@ class SchematicWidget(BaseDiagramWidget):
                 # try to find the diagram object of the DB object
                 graphic_object: BusGraphicItem = self.graphics_manager.query(bus)
 
-                if graphic_object and bus_active[i]:
+                if graphic_object is not None:
+                    if bus_active[i]:
 
-                    if is_three_phase:
-                        i3 = 3 * i + ph
-                        graphic_object.set_values(i=i,
-                                                  Vm=vabs[i3],
-                                                  Va=vang[i3],
-                                                  P=Sbus[i3].real if Sbus is not None else None,
-                                                  Q=Sbus[i3].imag if Sbus is not None else None,
-                                                  tpe=bus_types[int(types[i])] if types is not None else None)
+                        if is_three_phase:
+                            i3 = 3 * i + ph
+                            graphic_object.set_values(i=i,
+                                                      Vm=vabs[i3],
+                                                      Va=vang[i3],
+                                                      P=Sbus[i3].real if Sbus is not None else None,
+                                                      Q=Sbus[i3].imag if Sbus is not None else None,
+                                                      tpe=bus_types[int(types[i])] if types is not None else None)
 
-                        v_to_colour = max(vnorm[i3])
+                            v_to_colour = max(vnorm[i3])
+                        else:
+                            graphic_object.set_values(i=i,
+                                                      Vm=vabs[i],
+                                                      Va=vang[i],
+                                                      P=Sbus[i].real if Sbus is not None else None,
+                                                      Q=Sbus[i].imag if Sbus is not None else None,
+                                                      tpe=bus_types[int(types[i])] if types is not None else None)
+
+                            v_to_colour = vnorm[i]
+
+                        a = 255
+                        if cmap == palettes.Colormaps.Green2Red:
+                            b, g, r = palettes.green_to_red_bgr(v_to_colour)
+
+                        elif cmap == palettes.Colormaps.Heatmap:
+                            b, g, r = palettes.heatmap_palette_bgr(v_to_colour)
+
+                        elif cmap == palettes.Colormaps.TSO:
+                            b, g, r = palettes.tso_substation_palette_bgr(v_to_colour)
+
+                        else:
+                            r, g, b, a = voltage_cmap(v_to_colour)
+                            r *= 255
+                            g *= 255
+                            b *= 255
+                            a *= 255
+
+                        graphic_object.set_tile_color(QColor(r, g, b, a))
+
+                        if use_flow_based_width:
+                            graphic_object.change_size(w=graphic_object.w)
+
                     else:
-                        graphic_object.set_values(i=i,
-                                                  Vm=vabs[i],
-                                                  Va=vang[i],
-                                                  P=Sbus[i].real if Sbus is not None else None,
-                                                  Q=Sbus[i].imag if Sbus is not None else None,
-                                                  tpe=bus_types[int(types[i])] if types is not None else None)
-
-                        v_to_colour = vnorm[i]
-
-                    a = 255
-                    if cmap == palettes.Colormaps.Green2Red:
-                        b, g, r = palettes.green_to_red_bgr(v_to_colour)
-
-                    elif cmap == palettes.Colormaps.Heatmap:
-                        b, g, r = palettes.heatmap_palette_bgr(v_to_colour)
-
-                    elif cmap == palettes.Colormaps.TSO:
-                        b, g, r = palettes.tso_substation_palette_bgr(v_to_colour)
-
-                    else:
-                        r, g, b, a = voltage_cmap(v_to_colour)
-                        r *= 255
-                        g *= 255
-                        b *= 255
-                        a *= 255
-
-                    graphic_object.set_tile_color(QColor(r, g, b, a))
-
-                    if use_flow_based_width:
-                        graphic_object.change_size(w=graphic_object.w)
-
+                        graphic_object.set_tile_color(QColor(115, 115, 115, 255))  # gray
                 else:
-                    graphic_object.set_tile_color(QColor(115, 115, 115, 255))  # gray
+                    pass  # the graphic is None
 
         else:
             error_msg("Bus results length differs from the number of Bus results. \n"
@@ -3431,7 +3434,7 @@ class SchematicWidget(BaseDiagramWidget):
                         # try to find the diagram object of the DB object
                         graphic_object: BRANCH_GRAPHICS = self.graphics_manager.query(branch)
 
-                        if graphic_object:
+                        if graphic_object is not None:
 
                             if br_active[i]:
 
@@ -3551,7 +3554,7 @@ class SchematicWidget(BaseDiagramWidget):
                     # try to find the diagram object of the DB object
                     graphic_object = self.graphics_manager.query(elm)
 
-                    if graphic_object:
+                    if graphic_object is not None:
 
                         if vsc_active[i]:
 
@@ -3639,7 +3642,7 @@ class SchematicWidget(BaseDiagramWidget):
                     # try to find the diagram object of the DB object
                     graphic_object = self.graphics_manager.query(elm)
 
-                    if graphic_object:
+                    if graphic_object is not None:
 
                         if hvdc_active[i]:
 
@@ -3712,7 +3715,7 @@ class SchematicWidget(BaseDiagramWidget):
                     # try to find the diagram object of the DB object
                     graphic_object = self.graphics_manager.query(elm)
 
-                    if graphic_object:
+                    if graphic_object is not None:
                         graphic_object.set_api_object_color()
                         graphic_object.set_arrows_with_fluid_flow(flow=fluid_path_flow[i])
 
@@ -3725,7 +3728,7 @@ class SchematicWidget(BaseDiagramWidget):
                     # try to find the diagram object of the DB object
                     graphic_object = self.graphics_manager.query(elm)
 
-                    if graphic_object:
+                    if graphic_object is not None:
                         graphic_object.set_api_object_color()
                         graphic_object.set_fluid_values(
                             i=i,

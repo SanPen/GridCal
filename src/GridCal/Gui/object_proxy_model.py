@@ -27,7 +27,7 @@ class ObjectModelFilterProxy(QtCore.QSortFilterProxyModel):
         """
         super().__init__(parent)
 
-        self._mdl = mdl
+        self._mdl: ObjectsModel = mdl
 
         # filtering engine already initialized
         self._filter_engine = FilterObjects(self._mdl.objects)
@@ -66,11 +66,12 @@ class ObjectModelFilterProxy(QtCore.QSortFilterProxyModel):
         else:
             try:
                 self._filter_engine.filter(expr)  # updates .filtered_indices
-                self._allowed_rows = set(self._filter_engine.filtered_indices)
+                self._allowed_rows = list(set(self._filter_engine.filtered_indices))
+                self._allowed_rows.sort()
             except Exception as e:
                 # invalid expression → fall back to “show none” (or handle as you prefer)
                 error_txt = f"Filter expression error: {e}"
-                self._allowed_rows = set()
+                self._allowed_rows = list()
                 has_error = True
 
         self._filtered_objects = [self._mdl.objects[i] for i in self._allowed_rows]
@@ -154,3 +155,12 @@ class ObjectModelFilterProxy(QtCore.QSortFilterProxyModel):
             cb.clear()
             cb.setText(txt)
 
+    def set_time_index(self, time_index: int | None):
+        """
+        Set the time index of the table
+        :param time_index: None or integer value
+        """
+        self._mdl.time_index_ = time_index
+        role = 0
+        index = QtCore.QModelIndex()
+        self.dataChanged.emit(index, index, [role])

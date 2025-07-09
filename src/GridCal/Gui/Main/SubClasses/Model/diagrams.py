@@ -15,6 +15,7 @@ from pandas.plotting import register_matplotlib_converters
 
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
+
 from GridCalEngine import ContingencyOperationTypes
 from GridCalEngine.IO.file_system import tiles_path
 from GridCal.Gui.general_dialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
@@ -41,6 +42,7 @@ from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow, ListSelectWindow
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.cartodb import CartoDbTiles
+from GridCal.Gui.object_proxy_model import ObjectModelFilterProxy
 
 ALL_EDITORS = Union[SchematicWidget, GridMapWidget, BaseDiagramWidget]
 ALL_EDITORS_NONE = Union[None, SchematicWidget, GridMapWidget]
@@ -296,9 +298,39 @@ class DiagramsMain(CompiledArraysMain):
         # Set context menu policy to CustomContextMenu
         self.ui.diagramsListView.setContextMenuPolicy(QtGui.Qt.ContextMenuPolicy.CustomContextMenu)
 
+    def get_current_objects_model_view(self) -> ObjectModelFilterProxy | None:
+        """
+        Get the current ObjectModelFilterProxy from the GUI
+        :return: ObjectModelFilterProxy
+        """
+        return self.ui.dataStructureTableView.model()
+
+    def get_selected_table_objects(self) -> List[ALL_DEV_TYPES]:
+        """
+        Get the list of selected objects
+        :return: List[ALL_DEV_TYPES]
+        """
+        model: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
+
+        if model is not None:
+            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
+            if len(sel_idx) > 0:
+
+                # get the unique rows
+                unique = set()
+                for idx in sel_idx:
+                    unique.add(idx.row())
+
+                return [model.objects[i] for i in unique]
+            else:
+                info_msg('Select some cells')
+                return list()
+        else:
+            return list()
+
     def get_default_voltage(self) -> float:
         """
-        Get the defualt marked voltage
+        Get the default marked voltage
         :return:
         """
         return self.ui.defaultBusVoltageSpinBox.value()
@@ -1506,7 +1538,7 @@ class DiagramsMain(CompiledArraysMain):
 
     def set_diagrams_list_view(self) -> None:
         """
-        Create the diagrams list view
+        Create the diagrams' list view
         """
         mdl = DiagramsModel(self.diagram_widgets_list)
         self.ui.diagramsListView.setModel(mdl)
@@ -1679,100 +1711,90 @@ class DiagramsMain(CompiledArraysMain):
         Add a bus vicinity diagram
         :return:
         """
-        model = self.ui.dataStructureTableView.model()
+        sel = self.get_selected_table_objects()
 
-        if model is not None:
+        if len(sel) > 0:
 
-            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
-            objects = model.objects
+            sel_obj = sel[0]
 
-            if len(objects) > 0:
+            if isinstance(sel_obj, dev.Bus):
+                root_bus = sel_obj
 
-                if len(sel_idx) > 0:
+            elif isinstance(sel_obj, dev.Generator):
+                root_bus = sel_obj.bus
 
-                    unique = {idx.row() for idx in sel_idx}
-                    sel_obj = [objects[idx] for idx in unique][0]
-                    root_bus = None
-                    if isinstance(sel_obj, dev.Bus):
-                        root_bus = sel_obj
+            elif isinstance(sel_obj, dev.Battery):
+                root_bus = sel_obj.bus
 
-                    elif isinstance(sel_obj, dev.Generator):
-                        root_bus = sel_obj.bus
+            elif isinstance(sel_obj, dev.Load):
+                root_bus = sel_obj.bus
 
-                    elif isinstance(sel_obj, dev.Battery):
-                        root_bus = sel_obj.bus
+            elif isinstance(sel_obj, dev.Shunt):
+                root_bus = sel_obj.bus
 
-                    elif isinstance(sel_obj, dev.Load):
-                        root_bus = sel_obj.bus
+            elif isinstance(sel_obj, dev.Line):
+                root_bus = sel_obj.bus_from
 
-                    elif isinstance(sel_obj, dev.Shunt):
-                        root_bus = sel_obj.bus
+            elif isinstance(sel_obj, dev.Transformer2W):
+                root_bus = sel_obj.bus_from
 
-                    elif isinstance(sel_obj, dev.Line):
-                        root_bus = sel_obj.bus_from
+            elif isinstance(sel_obj, dev.DcLine):
+                root_bus = sel_obj.bus_from
 
-                    elif isinstance(sel_obj, dev.Transformer2W):
-                        root_bus = sel_obj.bus_from
+            elif isinstance(sel_obj, dev.HvdcLine):
+                root_bus = sel_obj.bus_from
 
-                    elif isinstance(sel_obj, dev.DcLine):
-                        root_bus = sel_obj.bus_from
+            elif isinstance(sel_obj, dev.VSC):
+                root_bus = sel_obj.bus_from
 
-                    elif isinstance(sel_obj, dev.HvdcLine):
-                        root_bus = sel_obj.bus_from
+            elif isinstance(sel_obj, dev.UPFC):
+                root_bus = sel_obj.bus_from
 
-                    elif isinstance(sel_obj, dev.VSC):
-                        root_bus = sel_obj.bus_from
+            elif isinstance(sel_obj, dev.Switch):
+                root_bus = sel_obj.bus_from
 
-                    elif isinstance(sel_obj, dev.UPFC):
-                        root_bus = sel_obj.bus_from
+            elif isinstance(sel_obj, dev.VoltageLevel):
+                root_bus = None
+                buses = self.circuit.get_voltage_level_buses(vl=sel_obj)
+                if len(buses) > 0:
+                    root_bus = buses[0]
 
-                    elif isinstance(sel_obj, dev.Switch):
-                        root_bus = sel_obj.bus_from
+            elif isinstance(sel_obj, dev.Substation):
+                root_bus = None
+                buses = self.circuit.get_substation_buses(substation=sel_obj)
+                if len(buses) > 0:
+                    root_bus = buses[0]
 
-                    elif isinstance(sel_obj, dev.VoltageLevel):
-                        root_bus = None
-                        buses = self.circuit.get_voltage_level_buses(vl=sel_obj)
-                        if len(buses) > 0:
-                            root_bus = buses[0]
-
-                    elif isinstance(sel_obj, dev.Substation):
-                        root_bus = None
-                        buses = self.circuit.get_substation_buses(substation=sel_obj)
-                        if len(buses) > 0:
-                            root_bus = buses[0]
-
-                    else:
-                        root_bus = None
-
-                    if root_bus is not None:
-
-                        dlg = InputNumberDialogue(min_value=1, max_value=99,
-                                                  default_value=1, is_int=True,
-                                                  title='Vicinity diagram',
-                                                  text='Select the expansion level')
-
-                        if dlg.exec():
-                            diagram = make_vicinity_diagram(circuit=self.circuit,
-                                                            root_bus=root_bus,
-                                                            max_level=dlg.value)
-
-                            diagram_widget = SchematicWidget(gui=self,
-                                                             circuit=self.circuit,
-                                                             diagram=diagram,
-                                                             default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                                             time_index=self.get_diagram_slider_index())
-
-                            self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
-                                                                diagram=diagram)
-                            self.set_diagrams_list_view()
-
-                            self.show_info_toast(f"{diagram.name} added")
-                    else:
-                        self.show_error_toast(f"Could not find any bus")
-                else:
-                    self.show_error_toast(f"No elements selected")
             else:
-                self.show_error_toast(f"No object selected")
+                root_bus = None
+
+            if root_bus is not None:
+
+                dlg = InputNumberDialogue(min_value=1, max_value=99,
+                                          default_value=1, is_int=True,
+                                          title='Vicinity diagram',
+                                          text='Select the expansion level')
+
+                if dlg.exec():
+                    diagram = make_vicinity_diagram(circuit=self.circuit,
+                                                    root_bus=root_bus,
+                                                    max_level=dlg.value)
+
+                    diagram_widget = SchematicWidget(gui=self,
+                                                     circuit=self.circuit,
+                                                     diagram=diagram,
+                                                     default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                                     time_index=self.get_diagram_slider_index())
+
+                    self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
+                                                        diagram=diagram)
+                    self.set_diagrams_list_view()
+
+                    self.show_info_toast(f"{diagram.name} added")
+            else:
+                self.show_error_toast(f"Could not find any bus")
+        else:
+            self.show_warning_toast(f"Select a bus")
 
     def new_bus_branch_diagram_from_bus(self, root_bus: dev.Bus):
         """
@@ -2116,8 +2138,8 @@ class DiagramsMain(CompiledArraysMain):
         idx2 = idx if idx > -1 else None
 
         # modify the time index in the current DB objects model
-        mdl = self.ui.dataStructureTableView.model()
-        if isinstance(mdl, ObjectsModel):
+        mdl: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
+        if isinstance(mdl, ObjectModelFilterProxy):
             mdl.set_time_index(time_index=idx2)
 
     def objects_diagram_time_slider_texts(self):
