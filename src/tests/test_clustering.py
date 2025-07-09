@@ -29,7 +29,7 @@ def test_clustering():
     for t in clustering_res.time_indices:
         v1 = pf_ts_1.voltage[t, :]
         v2 = pf_ts_2.voltage[t, :]
-        assert np.isclose(v1, v2)
+        assert np.isclose(v1, v2).all()
 
     print()
 

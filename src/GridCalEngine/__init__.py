@@ -141,6 +141,9 @@ if PROPERLY_LOADED_API:
         # run
         driver.run()
 
+        if clustering_results is not None:
+            driver.results.expand_clustered_results()
+
         return driver.results
 
 
