@@ -1538,7 +1538,7 @@ class DiagramsMain(CompiledArraysMain):
 
     def set_diagrams_list_view(self) -> None:
         """
-        Create the diagrams list view
+        Create the diagrams' list view
         """
         mdl = DiagramsModel(self.diagram_widgets_list)
         self.ui.diagramsListView.setModel(mdl)
