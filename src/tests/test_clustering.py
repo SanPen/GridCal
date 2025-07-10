@@ -7,9 +7,28 @@ import os
 import numpy as np
 
 import GridCalEngine.api as gce
+from GridCalEngine.Simulations.Clustering.clustering import kmeans_sampling
 
 
 def test_clustering():
+    """
+    This test was originated by
+    https://github.com/SanPen/GridCal/issues/403
+    :return:
+    """
+    # //tests/data/grids/IEEE39_1W.gridcal
+    fname = os.path.join('data', 'grids', 'IEEE39_1W.gridcal')
+    print('Reading...')
+    grid = gce.FileOpen(fname).open()
+
+    (time_indices, sampled_probabilities, original_sample_idx) = kmeans_sampling(x_input=grid.get_Pbus_prof(),
+                                                                                 n_points=20)
+
+    for cluster_idx, time_index in enumerate(time_indices):
+        assert original_sample_idx[time_index] == cluster_idx
+
+
+def test_clustering_ts():
     """
     This test was originated by
     https://github.com/SanPen/GridCal/issues/403
@@ -24,16 +43,28 @@ def test_clustering():
     pf_ts_1 = gce.power_flow_ts(grid, options=options)
 
     clustering_res = gce.clustering(circuit=grid, n_points=20)
-    pf_ts_2 = gce.power_flow_ts(grid, options=options, clustering_results=clustering_res)
+    pf_ts_2 = gce.power_flow_ts(grid,
+                                options=options,
+                                clustering_results=clustering_res,
+                                auto_expand=False)
 
+    # test the we simulated the steps that we wanted to simulate
+    for it, t in enumerate(clustering_res.time_indices):
+        v1 = pf_ts_1.voltage[t, :]
+        v2 = pf_ts_2.voltage[it, :]  # this has size n_clusters=20
+        assert np.isclose(v1, v2).all()
+
+    # expand, and re try
+    # now for the expanded results, the clustered indices must match the original
+    pf_ts_2.expand_clustered_results()
     for t in clustering_res.time_indices:
         v1 = pf_ts_1.voltage[t, :]
-        v2 = pf_ts_2.voltage[t, :]
+        v2 = pf_ts_2.voltage[t, :]  # this has size n_time
         assert np.isclose(v1, v2).all()
 
     print()
 
 
-
 if __name__ == '__main__':
-    test_clustering()
+    # test_clustering()
+    test_clustering_ts()

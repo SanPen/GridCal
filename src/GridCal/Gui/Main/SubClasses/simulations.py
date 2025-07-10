@@ -1561,10 +1561,12 @@ class SimulationsMain(TimeEventsMain):
                                                                    use_clustering=use_clustering,
                                                                    cluster_number=cluster_number)
 
-                    drv = sim.AvailableTransferCapacityTimeSeriesDriver(grid=self.circuit,
-                                                                        options=options,
-                                                                        time_indices=self.get_time_indices(),
-                                                                        clustering_results=self.get_clustering_results())
+                    drv = sim.AvailableTransferCapacityTimeSeriesDriver(
+                        grid=self.circuit,
+                        options=options,
+                        time_indices=self.get_time_indices(),
+                        clustering_results=self.get_clustering_results()
+                    )
 
                     self.session.run(drv,
                                      post_func=self.post_available_transfer_capacity_ts,
@@ -2116,10 +2118,12 @@ class SimulationsMain(TimeEventsMain):
                         if options is not None:
                             # create the OPF time series instance
                             # if non_sequential:
-                            drv = sim.OptimalPowerFlowTimeSeriesDriver(grid=self.circuit,
-                                                                       options=options,
-                                                                       time_indices=self.get_time_indices(),
-                                                                       clustering_results=self.get_clustering_results())
+                            drv = sim.OptimalPowerFlowTimeSeriesDriver(
+                                grid=self.circuit,
+                                options=options,
+                                time_indices=self.get_time_indices(),
+                                clustering_results=self.get_clustering_results()
+                            )
 
                             drv.engine = self.get_preferred_engine()
 
@@ -2325,10 +2329,12 @@ class SimulationsMain(TimeEventsMain):
                     QtGui.QGuiApplication.processEvents()
 
                     # set optimal net transfer capacity driver instance
-                    drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(grid=self.circuit,
-                                                                         options=options,
-                                                                         time_indices=self.get_time_indices(),
-                                                                         clustering_results=self.get_clustering_results())
+                    drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(
+                        grid=self.circuit,
+                        options=options,
+                        time_indices=self.get_time_indices(),
+                        clustering_results=self.get_clustering_results()
+                    )
 
                     self.LOCK()
                     self.session.run(drv,
