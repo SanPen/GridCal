@@ -28,12 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed some bugs found by a user in discord">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed clustering consistency by not sorting the clusters">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Clustering/clustering.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Clustering/clustering.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Clustering/clustering_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Clustering/clustering_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_clustering.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_clustering.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -312,7 +308,7 @@
       <recent name="$PROJECT_DIR$/src/tests/data/grids/RAW" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in test_clustering.py">
+  <component name="RunManager" selected="Python tests.pytest in tests">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -1154,9 +1150,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest in test_clustering.py" />
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest for src.tests.test_ac_opf.test_ieee14_controlQ_controllableshunts" />
         <item itemvalue="Python tests.pytest for src.tests.test_opf" />
       </list>
@@ -2371,7 +2367,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="734" />
+    <option name="localTasksCounter" value="735" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2417,7 +2413,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Some minor changes" />
     <MESSAGE value="Small refactors" />
     <MESSAGE value="Added further NTC tests for large grids" />
     <MESSAGE value="Improved filtering" />
@@ -2442,7 +2437,8 @@
     <MESSAGE value="small grid reduction improvement" />
     <MESSAGE value="added clustering test" />
     <MESSAGE value="Fixed some bugs found by a user in discord" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed some bugs found by a user in discord" />
+    <MESSAGE value="Fixed clustering consistency by not sorting the clusters" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed clustering consistency by not sorting the clusters" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -3041,11 +3037,6 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/Clustering/clustering_driver.py</url>
           <line>45</line>
           <option name="timeStamp" value="2993" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/Clustering/clustering.py</url>
-          <line>54</line>
-          <option name="timeStamp" value="3007" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

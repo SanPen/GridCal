@@ -46,12 +46,19 @@ def kmeans_sampling(x_input: Mat, n_points: int = 10) -> Tuple[IntVec, Vec, IntV
         rep_idx = idx[np.argmin(dists)]  # single best representative
         cluster_representative_indices[c] = rep_idx
 
-    # sort results and assign probability
-    # NOTE: if we sort, we break the consistency with original_points_cluster_indices
+    # 1. Sort the representatives …
+    sorting_idx = np.argsort(cluster_representative_indices)
 
-    # sorting_idx = np.argsort(cluster_representative_indices)  # sorting indices
-    # cluster_representative_indices = cluster_representative_indices[sorting_idx]
-    # cluster_probability = cluster_probability[sorting_idx]
+    cluster_representative_indices = cluster_representative_indices[sorting_idx]
+    cluster_probability = cluster_probability[sorting_idx]
+
+    # 2. … build a mapping “old label  ➜  new (sorted) label” …
+    #    sorting_idx[new_label] == old_label   ⇒   inverse permutation:
+    label_map = np.empty_like(sorting_idx)  # same length, same dtype
+    label_map[sorting_idx] = np.arange(n_points)  # old_label → new_label
+
+    # 3. … and remap every sample’s label.
+    original_points_cluster_indices = label_map[original_points_cluster_indices]
 
     return cluster_representative_indices, cluster_probability, original_points_cluster_indices
 
