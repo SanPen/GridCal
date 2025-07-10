@@ -547,12 +547,6 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         self._editor.set_active_status_to_profile(self.api_object)
 
-    # def delete_all_connections(self, delete_from_db: bool) -> None:
-    #     """
-    #     Delete all bus connections
-    #     """
-    #     self._terminal.remove_all_connections(delete_from_db=delete_from_db)
-
     def delete(self) -> None:
         """
         Remove this element
@@ -608,6 +602,9 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             for host in self._terminal.hosting_connections:
                 if host.api_object is not None:
                     host.set_enable(val=self.api_object.active)
+
+            if not self.api_object.active:
+                self.clear_label()
 
             self.update_color()
 
@@ -944,12 +941,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         self.setToolTip(msg)
 
-    def clear_label(self,  i: int):
-        if self.draw_labels:
-            msg = f"Bus {i}<br>"
-        else:
-            msg = ""
-
+    def clear_label(self):
+        msg = ""
         title = self._api_object.name if self._api_object is not None else ""
         self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
                            f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
