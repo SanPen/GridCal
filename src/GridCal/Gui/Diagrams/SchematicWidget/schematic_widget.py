@@ -3400,6 +3400,7 @@ class SchematicWidget(BaseDiagramWidget):
 
                     else:
                         graphic_object.set_tile_color(QColor(115, 115, 115, 255))  # gray
+                        graphic_object.clear_label(i=i)
                 else:
                     pass  # the graphic is None
 

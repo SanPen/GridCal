@@ -685,6 +685,11 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         # Set pen for everyone
         self.set_pen(QPen(self.color, self.width, self.style))
 
+        self.arrow_p_from.setVisible(val)
+        self.arrow_q_from.setVisible(val)
+        self.arrow_p_to.setVisible(val)
+        self.arrow_q_to.setVisible(val)
+
     def plot_profiles(self):
         """
         Plot the time series profiles
@@ -816,7 +821,7 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         self._editor.set_active_status_to_profile(self.api_object)
 
-    def set_arrows_with_power(self, Sf: complex, St: complex) -> None:
+    def set_arrows_with_power(self, Sf: complex | None, St: complex | None) -> None:
         """
         Set the arrow directions
         :param Sf: Complex power from
@@ -835,6 +840,12 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
             self.arrow_q_from.set_value(Qf, True, Qf < 0, name="Qf", units="MVAr", draw_label=self.draw_labels)
             self.arrow_p_to.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
             self.arrow_q_to.set_value(Qt_, True, Qt_ > 0, name="Qt", units="MVAr", draw_label=self.draw_labels)
+        else:
+            if St is None:
+                self.arrow_p_from.setVisible(False)
+                self.arrow_q_from.setVisible(False)
+                self.arrow_p_to.setVisible(False)
+                self.arrow_q_to.setVisible(False)
 
     def set_arrows_with_hvdc_power(self, Pf: float, Pt: float) -> None:
         """

@@ -395,7 +395,7 @@ class ResultsTemplate:
 
     def expand_clustered_results(self):
         """
-        Expand all arrays to their
+        Expand all arrays using the clustering info
         """
 
         if self.using_clusters:

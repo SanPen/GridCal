@@ -944,6 +944,18 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         self.setToolTip(msg)
 
+    def clear_label(self,  i: int):
+        if self.draw_labels:
+            msg = f"Bus {i}<br>"
+        else:
+            msg = ""
+
+        title = self._api_object.name if self._api_object is not None else ""
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
+                           f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
+
+        self.setToolTip(msg)
+
     def open_street_view(self):
         """
         Call open street maps
