@@ -397,14 +397,15 @@ class ResultsTemplate:
         """
         Expand all arrays to their
         """
+
         if self.using_clusters:
 
             self.time_array = self.clustering_results.time_array
 
-            for arr_name, arr_prop in self.data_variables.items():
-
-                # get the array
-                value = getattr(self, arr_name)
+            # NOTE: You might be tempted to change this loop to use the registered properties.
+            #       Don't do it, there may be unregistered properties that will fail if this doesn't
+            #       traverse all te actual properties of the class... this may be a future topic
+            for prop, value in self.__dict__.items():
 
                 if isinstance(value, np.ndarray):
 
@@ -414,19 +415,20 @@ class ResultsTemplate:
 
                             if len(value) > 0:
                                 arr = value[self.original_sample_idx]  # expand
-                                setattr(self, arr_name, arr)  # overwrite the array
+                                setattr(self, prop, arr)  # overwrite the array
 
                         elif value.ndim == 2:
 
                             if value.shape[0] > 0:
                                 arr = value[self.original_sample_idx, :]  # expand
-                                setattr(self, arr_name, arr)  # overwrite the array
+                                setattr(self, prop, arr)  # overwrite the array
                         else:
                             pass
                             # print(prop, value.ndim, value.dtype)
                     else:
                         pass
                         # print(prop, value.ndim, value.dtype)
+
 
     def parse_saved_data(self, grid: MultiCircuit,
                          data_dict: Dict[str, pd.DataFrame],

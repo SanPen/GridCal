@@ -62,3 +62,23 @@ def test_clustering_ts():
         v2 = pf_ts_2.voltage[t, :]  # this has size n_time
         assert np.isclose(v1, v2).all()
 
+
+def test_clustering_report():
+    """
+    This test was originated by
+    https://github.com/SanPen/GridCal/issues/407
+    :return:
+    """
+    # //tests/data/grids/IEEE39_1W.gridcal
+    fname = os.path.join('data', 'grids', 'IEEE39_1W.gridcal')
+    print('Reading...')
+    grid = gce.FileOpen(fname).open()
+
+    options = gce.PowerFlowOptions(generate_report=True)
+    clustering_res = gce.clustering(circuit=grid, n_points=20)
+    pf_ts_2 = gce.power_flow_ts(grid,
+                                options=options,
+                                clustering_results=clustering_res,
+                                auto_expand=True)
+
+    table = pf_ts_2.mdl(result_type=gce.ResultTypes.SimulationError)
