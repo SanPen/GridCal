@@ -66,7 +66,7 @@ class ResultsTemplate:
 
         self.available_results: Dict[ResultTypes, List[ResultTypes]] = available_results
 
-        self.data_variables: Dict[str, ResultsProperty] = dict()
+        self._data_variables: Dict[str, ResultsProperty] = dict()
 
         self._time_array: Union[DateVec, None] = time_array
 
@@ -92,6 +92,10 @@ class ResultsTemplate:
         self.area_names: StrVec | None = None
 
         self.__show_plot = True
+
+    @property
+    def data_variables(self):
+        return self._data_variables
 
     @property
     def time_array(self) -> DateVec:
@@ -136,9 +140,9 @@ class ResultsTemplate:
 
         assert (hasattr(self, name))  # the property must exist, this avoids bugs when registering
 
-        self.data_variables[name] = ResultsProperty(name=name,
-                                                    tpe=tpe,
-                                                    old_names=list() if old_names is None else old_names)
+        self._data_variables[name] = ResultsProperty(name=name,
+                                                     tpe=tpe,
+                                                     old_names=list() if old_names is None else old_names)
 
     def consolidate_after_loading(self):
         """
@@ -154,7 +158,7 @@ class ResultsTemplate:
         data = dict()
 
         # traverse the registered results
-        for arr_name, arr_prop in self.data_variables.items():
+        for arr_name, arr_prop in self._data_variables.items():
 
             # get the array
             arr: np.ndarray = getattr(self, arr_name)
@@ -192,7 +196,7 @@ class ResultsTemplate:
         :return:
         """
 
-        for arr_name, arr_prop in self.data_variables.items():
+        for arr_name, arr_prop in self._data_variables.items():
 
             arr_data = data.get(arr_name, None)
 
@@ -397,7 +401,10 @@ class ResultsTemplate:
 
             self.time_array = self.clustering_results.time_array
 
-            for prop, value in self.__dict__.items():
+            for arr_name, arr_prop in self.data_variables.items():
+
+                # get the array
+                value = getattr(self, arr_name)
 
                 if isinstance(value, np.ndarray):
 
@@ -407,13 +414,13 @@ class ResultsTemplate:
 
                             if len(value) > 0:
                                 arr = value[self.original_sample_idx]  # expand
-                                setattr(self, prop, arr)  # overwrite the array
+                                setattr(self, arr_name, arr)  # overwrite the array
 
                         elif value.ndim == 2:
 
                             if value.shape[0] > 0:
                                 arr = value[self.original_sample_idx, :]  # expand
-                                setattr(self, prop, arr)  # overwrite the array
+                                setattr(self, arr_name, arr)  # overwrite the array
                         else:
                             pass
                             # print(prop, value.ndim, value.dtype)
@@ -439,7 +446,7 @@ class ResultsTemplate:
             arr_name = arr_name.replace('__complex__', '')
 
             # try to get the property of the saved file
-            res_prop: ResultsProperty = self.data_variables.get(arr_name, None)
+            res_prop: ResultsProperty = self._data_variables.get(arr_name, None)
 
             if df is not None and res_prop is not None:
 

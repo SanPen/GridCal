@@ -116,6 +116,7 @@ if PROPERLY_LOADED_API:
                       options: PowerFlowOptions | None = None,
                       time_indices: Union[IntVec, None] = None,
                       clustering_results: Union[ClusteringResults, None] = None,
+                      auto_expand: bool = True,
                       engine=EngineType.GridCal) -> PowerFlowResults:
         """
         Run power flow on the time series
@@ -123,6 +124,7 @@ if PROPERLY_LOADED_API:
         :param options: PowerFlowOptions instance (optional)
         :param time_indices: Array of time indices to simulate, if None all are used (optional)
         :param clustering_results: ClusteringResults (optional)
+        :param auto_expand: If true the clustering results are expanded if clustering_results is provided
         :param engine: Engine to run with (optional, default GridCal)
         :return: PowerFlowResults instance
         """
@@ -141,7 +143,7 @@ if PROPERLY_LOADED_API:
         # run
         driver.run()
 
-        if clustering_results is not None:
+        if auto_expand and clustering_results is not None:
             driver.results.expand_clustered_results()
 
         return driver.results
