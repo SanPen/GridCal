@@ -16,7 +16,6 @@ from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Aggregation.branch_group import BranchGroup
 from GridCalEngine.Devices.profile import Profile
-from GridCalEngine.Devices.admittance_matrix import AdmittanceMatrix
 
 if TYPE_CHECKING:
     from GridCalEngine.Devices.types import CONNECTION_TYPE
@@ -61,8 +60,6 @@ class BranchParent(PhysicalDevice):
         'capex',
         'opex',
         'build_status',
-        '_ys',
-        '_ysh',
         '_rate',
         '_rate_prof',
         '_contingency_factor',
@@ -153,8 +150,6 @@ class BranchParent(PhysicalDevice):
 
         self.build_status = build_status
 
-        self._ys = AdmittanceMatrix()
-        self._ysh = AdmittanceMatrix()
 
         # line rating in MVA
         if not isinstance(rate, Union[float, int]):
@@ -218,11 +213,7 @@ class BranchParent(PhysicalDevice):
         self.register('opex', units="e/MWh", tpe=float, definition="Cost of operation. Used in expansion planning.")
         self.register('group', units="", tpe=DeviceType.BranchGroupDevice,
                       definition="Group where this branch belongs")
-        self.register('ys', units="p.u.", tpe=SubObjectType.AdmittanceMatrix,
-                      definition='Series admittance matrix of the branch', editable=False, display=False)
 
-        self.register('ysh', units="p.u.", tpe=SubObjectType.AdmittanceMatrix,
-                      definition='Shunt admittance matrix of the branch', editable=False, display=False)
         self.register(key='color', units='', tpe=str, definition='Color to paint the element in the map diagram',
                       is_color=True)
 
@@ -434,27 +425,6 @@ class BranchParent(PhysicalDevice):
         else:
             raise ValueError(f'{val} is not a float')
 
-    @property
-    def ys(self) -> AdmittanceMatrix:
-        return self._ys
-
-    @ys.setter
-    def ys(self, val: AdmittanceMatrix):
-        if isinstance(val, AdmittanceMatrix):
-            self._ys = val
-        else:
-            raise ValueError(f'{val} is not a AdmittanceMatrix')
-
-    @property
-    def ysh(self) -> AdmittanceMatrix:
-        return self._ysh
-
-    @ysh.setter
-    def ysh(self, val: AdmittanceMatrix):
-        if isinstance(val, AdmittanceMatrix):
-            self._ysh = val
-        else:
-            raise ValueError(f'{val} is not a AdmittanceMatrix')
 
     def get_max_bus_nominal_voltage(self):
         """

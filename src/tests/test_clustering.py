@@ -62,9 +62,3 @@ def test_clustering_ts():
         v2 = pf_ts_2.voltage[t, :]  # this has size n_time
         assert np.isclose(v1, v2).all()
 
-    print()
-
-
-if __name__ == '__main__':
-    # test_clustering()
-    test_clustering_ts()

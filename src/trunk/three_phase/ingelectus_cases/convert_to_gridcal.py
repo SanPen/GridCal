@@ -33,8 +33,8 @@ for key, val in loads_json.items():
         name=val.get("name", "")
     )
 
-    load.P1, load.P2, load.P3 = np.array(val['p']) * 1e-6
-    load.Q1, load.Q2, load.Q3 = np.array(val['q']) * 1e-6
+    load.Pa, load.Pb, load.Pc = np.array(val['p']) * 1e-6
+    load.Qa, load.Qb, load.Qc = np.array(val['q']) * 1e-6
 
     load_dict[key] = load
 

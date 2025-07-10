@@ -113,17 +113,14 @@ def test_ac_lines(cgmes_model, calc_node_dict, cn_dict, device_to_terminal_dict,
 
     assert generated_ac_line.B == expected_b
     assert generated_ac_line.B0 == expected_b0
-    assert generated_ac_line.B2 == expected_b2
     assert generated_ac_line.Cost == expected_cost
     assert generated_ac_line.R == expected_r
     assert generated_ac_line.R0 == expected_r0
-    assert generated_ac_line.R2 == expected_r2
     assert generated_ac_line.R_corrected == expected_r_corrected
     assert generated_ac_line.Vf == expected_vf
     assert generated_ac_line.Vt == expected_vt
     assert generated_ac_line.X == expected_x
     assert generated_ac_line.X0 == expected_x0
-    assert generated_ac_line.X2 == expected_x2
     assert generated_ac_line.rate == expected_rate
     assert generated_ac_line.temp_base == expected_temp_base
     assert generated_ac_line.temp_oper == expected_temp_oper

@@ -74,20 +74,20 @@ for _, row in loads.iterrows():
     scale = scale_df['mult'].values
 
     if row['phases'] == 'A':
-        load.P1 = float(row['kW']) / 1000
-        load.Q1 = Q_from_PF(0.95, load.P1)
-        load.P1_prof = load.P1 * scale
-        load.Q1_prof = load.Q1 * scale
+        load.Pa = float(row['kW']) / 1000
+        load.Qa = Q_from_PF(0.95, load.Pa)
+        load.Pa_prof = load.Pa * scale
+        load.Qa_prof = load.Qa * scale
     elif row['phases'] == 'B':
-        load.P2 = float(row['kW']) / 1000
-        load.Q2 = Q_from_PF(0.95, load.P2)
-        load.P2_prof = load.P2 * scale
-        load.Q2_prof = load.Q2 * scale
+        load.Pb = float(row['kW']) / 1000
+        load.Qb = Q_from_PF(0.95, load.Pb)
+        load.Pb_prof = load.Pb * scale
+        load.Qb_prof = load.Qb * scale
     else:
-        load.P3 = float(row['kW']) / 1000
-        load.Q3 = Q_from_PF(0.95, load.P3)
-        load.P3_prof = load.P3 * scale
-        load.Q3_prof = load.Q3 * scale
+        load.Pc = float(row['kW']) / 1000
+        load.Qc = Q_from_PF(0.95, load.Pc)
+        load.Pc_prof = load.Pc * scale
+        load.Qc_prof = load.Qc * scale
 
     grid.add_load(bus=bus, api_obj=load)
 

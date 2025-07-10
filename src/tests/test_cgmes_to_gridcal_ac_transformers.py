@@ -46,7 +46,7 @@ def calc_node_dict_object() -> Dict[str, gcdev.Bus]:
     return d
 
 
-def cn_dict_object() -> Dict[str, gcdev.ConnectivityNode]:
+def cn_dict_object() -> Dict[str, List[gcdev.ConnectivityNode]]:
     d = dict()
     d["cn1"] = [cn_test]
     return d
@@ -82,10 +82,15 @@ def test_ac_transformers_one_power_transformer_end_log_error():
     power_transformer_end = PowerTransformerEnd()
     power_transformer_end.endNumber = 1
     cgmes.cgmes_assets.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end]
-    get_gcdev_ac_transformers(cgmes, multi_circuit, None, None, get_gcdev_device_to_terminal_dict(cgmes_model=cgmes,
-                                                                                                  logger=logger),
-                              logger,
-                              0)
+    get_gcdev_ac_transformers(
+        cgmes,
+        multi_circuit,
+        None,
+        None,
+        get_gcdev_device_to_terminal_dict(cgmes_model=cgmes, logger=logger),
+        logger,
+        0
+    )
     assert len(logger.entries) > 0
     assert any(d.msg == 'Transformers with 1 windings not supported yet' for d in logger)
 
@@ -160,11 +165,9 @@ def test_ac_transformers2w():
     generated_transtormer2w = multi_circuit.transformers2w[0]
     assert generated_transtormer2w.B == 80.0
     assert generated_transtormer2w.B0 == 80.0
-    assert generated_transtormer2w.B2 == 1e-20
     assert generated_transtormer2w.Cost == 100.0
     assert generated_transtormer2w.G == 80.0
     assert generated_transtormer2w.G0 == 80.0
-    assert generated_transtormer2w.G2 == 1e-20
     assert generated_transtormer2w.HV == 2
     assert generated_transtormer2w.I0 == 0
     assert generated_transtormer2w.LV == 2
@@ -173,7 +176,6 @@ def test_ac_transformers2w():
     assert generated_transtormer2w.Pset == 0
     assert generated_transtormer2w.R == 5.0
     assert generated_transtormer2w.R0 == 5.0
-    assert generated_transtormer2w.R2 == 1e-20
     assert generated_transtormer2w.R_corrected == 5.0
     assert generated_transtormer2w.Sn == 1
     assert generated_transtormer2w.Vf == 10
@@ -181,7 +183,6 @@ def test_ac_transformers2w():
     assert generated_transtormer2w.Vt == 10
     assert generated_transtormer2w.X == 5.0
     assert generated_transtormer2w.X0 == 5.0
-    assert generated_transtormer2w.X2 == 1e-20
     assert generated_transtormer2w.alpha == 0.0033
     assert generated_transtormer2w.rate == 9999.0
     assert generated_transtormer2w.tap_module == 1.0

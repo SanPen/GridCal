@@ -182,7 +182,7 @@ class SeriesReactance(BranchParent):
 
     def change_base(self, Sbase_old, Sbase_new):
         """
-        Change the inpedance base
+        Change the impedance base
         :param Sbase_old: old base (MVA)
         :param Sbase_new: new base (MVA)
         """
@@ -193,8 +193,8 @@ class SeriesReactance(BranchParent):
 
     def get_weight(self) -> float:
         """
-        Get a weight of this line for graph porpuses
-        the weight is the impedance moudule (sqrt(r^2 + x^2))
+        Get a weight of this line for graph purposes
+        the weight is the impedance module (sqrt(r^2 + x^2))
         :return: weight value
         """
         return np.sqrt(self.R * self.R + self.X * self.X)
@@ -219,7 +219,7 @@ class SeriesReactance(BranchParent):
         Fill R, X, B from not-in-per-unit parameters
         :param r_ohm: Resistance per km in OHM
         :param x_ohm: Reactance per km in OHM
-        :param length: lenght in kn
+        :param length: length in kn
         :param Imax: Maximum current in kA
         :param Sbase: Base power in MVA (take always 100 MVA)
         """
