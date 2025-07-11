@@ -8,7 +8,7 @@ from typing import Tuple, Union
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCalEngine.enumerations import BusMode, DeviceType
+from GridCalEngine.enumerations import BusMode, DeviceType, BusGraphicType
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Aggregation import Area, Zone, Country
 from GridCalEngine.Devices.Substation.substation import Substation
@@ -55,6 +55,7 @@ class Bus(PhysicalDevice):
         'ph_c',
         'ph_n',
         'is_grounded',
+        'graphic_type'
     )
 
     def __init__(self, name="Bus",
@@ -83,7 +84,8 @@ class Bus(PhysicalDevice):
                  longitude=0.0,
                  latitude=0.0,
                  Vm0=1,
-                 Va0=0):
+                 Va0=0,
+                 graphic_type: BusGraphicType = BusGraphicType.BusBar):
         """
         The Bus object is the container of all the possible devices that can be attached to
         a bus bar or Substation. Such objects can be loads, voltage controlled generators,
@@ -115,6 +117,7 @@ class Bus(PhysicalDevice):
         :param latitude: latitude (deg)
         :param Vm0: initial solution for the voltage module (p.u.)
         :param Va0: initial solution for the voltage angle (rad)
+        :param graphic_type: BusGraphicType to represent the bus in the schematic
         """
 
         PhysicalDevice.__init__(self,
@@ -169,6 +172,8 @@ class Bus(PhysicalDevice):
 
         self._voltage_level: VoltageLevel = voltage_level
 
+        self.graphic_type: BusGraphicType = graphic_type
+
         if voltage_level is not None:
 
             if voltage_level.Vnom != Vnom:
@@ -219,6 +224,7 @@ class Bus(PhysicalDevice):
                       definition='Is this bus part of a composite transformer, '
                                  'such as  a 3-winding transformer or a fluid node?.',
                       profile_name='', old_names=['is_tr_bus', 'is_internal'])
+        self.register(key='graphic_type', units='', tpe=BusGraphicType, definition='Graphic to use in the schematic.')
         self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the bus.', profile_name='')
         self.register(key='Vm0', units='p.u.', tpe=float, definition='Voltage module guess.', profile_name='')
         self.register(key='Va0', units='rad.', tpe=float, definition='Voltage angle guess.', profile_name='')
