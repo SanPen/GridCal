@@ -53,7 +53,7 @@ def test_busbar_makes_a_bus():
 
     assert grid.get_bus_number() == 1
 
-    assert grid.buses[0] == bb3.cn.bus
+    assert grid.buses[0] == bb3.bus.bus
 
 
 def test_busbar_makes_a_bus2():
@@ -64,15 +64,15 @@ def test_busbar_makes_a_bus2():
 
     cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0"))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3", cn=cn0))
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3", bus=cn0))
 
     assert grid.get_connectivity_nodes_number() == 1
 
     assert grid.get_bus_number() == 1
 
-    assert grid.connectivity_nodes[0] == bb3.cn
+    assert grid.connectivity_nodes[0] == bb3.bus
 
-    assert grid.buses[0] == bb3.cn.bus
+    assert grid.buses[0] == bb3.bus.bus
 
 
 def test_topology_4_nodes_A():
@@ -91,13 +91,13 @@ def test_topology_4_nodes_A():
     bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.bus, active=False))
 
     l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.bus, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.bus)
 
 
     """
@@ -133,13 +133,13 @@ def test_topology_4_nodes_B():
     bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.bus, active=True))
 
     l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.bus, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.bus)
 
     """
     After processing,
@@ -173,13 +173,13 @@ def test_topology_4_nodes_C():
     bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.bus, active=True))
 
     l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.bus, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.bus)
 
     """
     After processing,
@@ -214,13 +214,13 @@ def test_topology_4_nodes_D():
     bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.bus, active=False))
 
     l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.bus, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.bus)
 
     """
     After processing,
@@ -257,13 +257,13 @@ def test_topology_4_nodes_E():
     bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.bus, active=True))
 
     l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.bus, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.bus)
 
     """
     After processing,
@@ -300,13 +300,13 @@ def test_topology_4_nodes_F():
     bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.bus, active=True))
 
     l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.bus, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.bus)
 
     """
     After processing,
@@ -343,13 +343,13 @@ def test_topology_4_nodes_G():
     bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.bus, active=False))
 
     l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.bus, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.bus)
 
     """
     After processing,
@@ -386,13 +386,13 @@ def test_topology_4_nodes_H():
     bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.bus, active=False))
 
     l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.bus, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.bus)
 
     """
     After processing,
@@ -428,13 +428,13 @@ def test_topology_4_nodes_A2():
     bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))  # isolated
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, cn_from=cn0, cn_to=cn1, active=True))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.cn, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.bus, active=False))
 
     l1 = grid.add_line(dev.Line(name="L1", bus_from=b0, bus_to=b2, cn_from=cn0, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, cn_from=cn1, cn_to=bb3.bus, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)  # isolated
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.bus)  # isolated
 
     """
     In this test we are connecting to buses and CN,
@@ -474,13 +474,13 @@ def test_topology_4_nodes_B2():
     bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))  # isolated
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, cn_from=cn0, cn_to=cn1, active=True))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.cn, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.bus, active=True))
 
     l1 = grid.add_line(dev.Line(name="L1", bus_from=b0, bus_to=b2, cn_from=cn0, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, cn_from=cn1, cn_to=bb3.bus, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)  # isolated
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.bus)  # isolated
 
     """
     In this test we are connecting to buses and CN,
@@ -520,13 +520,13 @@ def test_topology_4_nodes_C2():
     bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, cn_from=cn0, cn_to=cn1, active=False))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.cn, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.bus, active=True))
 
     l1 = grid.add_line(dev.Line(name="L1", bus_from=b0, bus_to=b2, cn_from=cn0, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, cn_from=cn1, cn_to=bb3.bus, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.bus)
 
     """
     In this test we are connecting to buses and CN,
@@ -566,13 +566,13 @@ def test_topology_4_nodes_D2():
     bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, cn_from=cn0, cn_to=cn1, active=False))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.cn, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.bus, active=False))
 
     l1 = grid.add_line(dev.Line(name="L1", bus_from=b0, bus_to=b2, cn_from=cn0, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, cn_from=cn1, cn_to=bb3.bus, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.bus)
 
     """
     In this test we are connecting to buses and CN,

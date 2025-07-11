@@ -260,7 +260,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             y = 0.0
         self.setPos(QPointF(x, y))
 
-    def set_tile_color(self, brush: QBrush) -> None:
+    def set_tile_color(self, brush: QBrush | QColor) -> None:
         """
         Set the color of the bus
         Args:

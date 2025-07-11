@@ -7,7 +7,6 @@ import numpy as np
 from typing import Union
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.profile import Profile
@@ -31,10 +30,18 @@ class SeriesReactance(BranchParent):
         'alpha',
     )
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, cn_from: ConnectivityNode = None,
-                 cn_to: ConnectivityNode = None, name='SeriesReactance', idtag=None, code='',
-                 r=1e-20, x=1e-20, rate=1.0, active=True, tolerance=0, cost=100.0,
-                 mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
+    def __init__(self,
+                 bus_from: Bus = None,
+                 bus_to: Bus = None,
+                 name='SeriesReactance',
+                 idtag=None, code='',
+                 r=1e-20, x=1e-20, rate=1.0,
+                 active=True,
+                 tolerance=0,
+                 cost=100.0,
+                 mttf=0, mttr=0,
+                 r_fault=0.0, x_fault=0.0,
+                 fault_pos=0.5,
                  temp_base=20, temp_oper=20, alpha=0.00330,
                  contingency_factor=1.0, protection_rating_factor: float = 1.4,
                  contingency_enabled=True, monitor_loading=True,
@@ -80,8 +87,6 @@ class SeriesReactance(BranchParent):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=cn_from,
-                              cn_to=cn_to,
                               active=active,
                               reducible=False,
                               rate=rate,

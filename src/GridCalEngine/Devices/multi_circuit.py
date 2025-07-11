@@ -2219,15 +2219,12 @@ class MultiCircuit(Assets):
         return logger
 
     def clean_branches(self,
-                       nt: int,
                        bus_set: Set[dev.Bus],
-                       cn_set: Set[dev.ConnectivityNode],
                        logger: Logger) -> None:
         """
         Clean the branch references
         :param nt: number of time steps
         :param bus_set: Set of Buses
-        :param cn_set: Set of connectivity nodes
         :param logger: Logger
         """
         elements_to_delete = list()
@@ -2249,27 +2246,10 @@ class MultiCircuit(Assets):
                                         device_class=elm.device_type.value,
                                         device_property="bus_to")
 
-                if elm.cn_from is not None:
-                    if elm.cn_from not in cn_set:
-                        elm.cn_from = None
-                        logger.add_info("Cn from set to None",
-                                        device=elm.idtag,
-                                        device_class=elm.device_type.value,
-                                        device_property="cn_from")
 
-                if elm.cn_to is not None:
-                    if elm.cn_to not in cn_set:
-                        elm.cn_to = None
-                        logger.add_info("Cn to set to None",
-                                        device=elm.idtag,
-                                        device_class=elm.device_type.value,
-                                        device_property="cn_to")
 
                 # if the element is topologically isolated, delete_with_dialogue it
-                if (elm.bus_from is None
-                        and elm.bus_to is None
-                        and elm.cn_from is None
-                        and elm.cn_to is None):
+                if (elm.bus_from is None and elm.bus_to is None):
                     elements_to_delete.append(elm)
 
         for elm in elements_to_delete:
@@ -2279,15 +2259,12 @@ class MultiCircuit(Assets):
                             device_class=elm.device_type.value)
 
     def clean_injections(self,
-                         nt: int,
                          bus_set: Set[dev.Bus],
-                         cn_set: Set[dev.ConnectivityNode],
                          logger: Logger) -> None:
         """
-        Clean the branch refferences
+        Clean the branch references
         :param nt: number of time steps
         :param bus_set: Set of Buses
-        :param cn_set: Set of connectivity nodes
         :param logger: Logger
         """
         elements_to_delete = list()
@@ -2301,16 +2278,8 @@ class MultiCircuit(Assets):
                                         device_class=elm.device_type.value,
                                         device_property="bus")
 
-                if elm.cn is not None:
-                    if elm.cn not in cn_set:
-                        elm.cn = None
-                        logger.add_info("Cn set to None",
-                                        device=elm.idtag,
-                                        device_class=elm.device_type.value,
-                                        device_property="cn")
-
                 # if the element is topologically isolated, delete_with_dialogue it
-                if elm.bus is None and elm.cn is None:
+                if elm.bus is None:
                     elements_to_delete.append(elm)
 
         for elm in elements_to_delete:
@@ -2445,12 +2414,11 @@ class MultiCircuit(Assets):
         """
         logger = Logger()
         bus_set = set(self.buses)
-        cn_set = set(self._connectivity_nodes)
         all_dev, dict_ok = self.get_all_elements_dict()
         nt = self.get_time_number()
 
-        self.clean_branches(nt=nt, bus_set=bus_set, cn_set=cn_set, logger=logger)
-        self.clean_injections(nt=nt, bus_set=bus_set, cn_set=cn_set, logger=logger)
+        self.clean_branches(bus_set=bus_set, logger=logger)
+        self.clean_injections( bus_set=bus_set,  logger=logger)
         self.clean_contingencies(all_dev=all_dev, logger=logger)
         self.clean_investments(all_dev=all_dev, logger=logger)
         self.clean_technologies()
@@ -2467,10 +2435,10 @@ class MultiCircuit(Assets):
         for bus in self.buses:
             bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
             self.add_bus_bar(bus_bar)
-            bus_to_busbar_cn[bus.idtag] = bus_bar.cn
-            bus_bar.cn.code = bus.code  # for soft checking later
-            if bus_bar.cn.bus:
-                bus_bar.cn.bus.code = bus.code  # for soft checking later
+            bus_to_busbar_cn[bus.idtag] = bus_bar.bus
+            bus_bar.bus.code = bus.code  # for soft checking later
+            if bus_bar.bus.bus:
+                bus_bar.bus.bus.code = bus.code  # for soft checking later
 
         # add the cn's at the branches
         for lst in [self.get_branches(), self.get_switches()]:
@@ -2496,10 +2464,10 @@ class MultiCircuit(Assets):
         for bus in self.buses:
             bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
             self.add_bus_bar(bus_bar)
-            bus_to_busbar_cn[bus.idtag] = bus_bar.cn
-            bus_bar.cn.code = bus.code  # for soft checking later
-            if bus_bar.cn.bus:
-                bus_bar.cn.bus.code = bus.code  # for soft checking later
+            bus_to_busbar_cn[bus.idtag] = bus_bar.bus
+            bus_bar.bus.code = bus.code  # for soft checking later
+            if bus_bar.bus.bus:
+                bus_bar.bus.bus.code = bus.code  # for soft checking later
 
         # branches
         for elm in self.get_branches():

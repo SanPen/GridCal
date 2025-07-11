@@ -27,7 +27,6 @@ from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, F
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.busbar import BusBar
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
@@ -448,9 +447,9 @@ class SchematicWidget(BaseDiagramWidget):
                 self.circuit.add_fluid_node(obj)
 
             elif obj_type == self.library_model.get_connectivity_node_mime_data():
-                obj = ConnectivityNode(name=f"CN {len(self.circuit.get_connectivity_nodes())}")
+                obj = Bus(name=f'Bus {self.circuit.get_bus_number()}', Vnom=self.default_bus_voltage)
                 graphic_object = self.create_connectivity_node_graphics(node=obj, x=x0, y=y0, h=40, w=40)
-                self.circuit.add_connectivity_node(obj)
+                self.circuit.add_bus(obj)
 
             elif obj_type == self.library_model.get_bus_bar_mime_data():
                 obj = BusBar(name=f"Bus bar {self.circuit.get_bus_bars_number()}")
@@ -569,7 +568,7 @@ class SchematicWidget(BaseDiagramWidget):
                                               draw_labels=draw_labels)
         return graphic_object
 
-    def create_connectivity_node_graphics(self, node: ConnectivityNode,
+    def create_connectivity_node_graphics(self, node: Bus,
                                           x: float, y: float, h: int, w: int,
                                           draw_labels: bool = True) -> CnGraphicItem:
         """
@@ -733,7 +732,7 @@ class SchematicWidget(BaseDiagramWidget):
 
                         # create the bus children
                         graphic_object.create_children_widgets(
-                            injections_by_tpe=inj_dev_by_cn.get(graphic_object._api_object.cn, dict())
+                            injections_by_tpe=inj_dev_by_cn.get(graphic_object._api_object.bus, dict())
                         )
 
                         graphic_object.change_size(w=location.w)
@@ -999,17 +998,17 @@ class SchematicWidget(BaseDiagramWidget):
                     lst.append((idx, bus, graphic_object))
         return lst
 
-    def get_selected_cn(self) -> List[Tuple[int, ConnectivityNode, CnGraphicItem]]:
+    def get_selected_cn(self) -> List[Tuple[int, Bus, CnGraphicItem]]:
         """
         Get the selected buses
         :return:
         """
-        lst: List[Tuple[int, ConnectivityNode, Union[CnGraphicItem, None]]] = list()
+        lst: List[Tuple[int, Bus, Union[CnGraphicItem, None]]] = list()
         cn_graphic_dict = self.graphics_manager.get_device_type_dict(DeviceType.ConnectivityNodeDevice)
 
-        cn_dict: Dict[str: Tuple[int, ConnectivityNode]] = {b.idtag: (i, b)
-                                                            for i, b in
-                                                            enumerate(self.circuit.get_connectivity_nodes())}
+        cn_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b)
+                                               for i, b in
+                                               enumerate(self.circuit.get_connectivity_nodes())}
 
         for idtag, graphic_object in cn_graphic_dict.items():
             if isinstance(graphic_object, CnGraphicItem):
@@ -1084,25 +1083,17 @@ class SchematicWidget(BaseDiagramWidget):
                     from_port: BarTerminalItem,
                     to_port: BarTerminalItem,
                     bus_from: Union[None, Bus] = None,
-                    bus_to: Union[None, Bus] = None,
-                    cn_from: Union[None, ConnectivityNode] = None,
-                    cn_to: Union[None, ConnectivityNode] = None):
+                    bus_to: Union[None, Bus] = None):
         """
 
         :param from_port:
         :param to_port:
         :param bus_from:
         :param bus_to:
-        :param cn_from:
-        :param cn_to:
         :return:
         """
         name = 'Line ' + str(len(self.circuit.lines) + 1)
-        obj = Line(bus_from=bus_from,
-                   bus_to=bus_to,
-                   cn_from=cn_from,
-                   cn_to=cn_to,
-                   name=name)
+        obj = Line(bus_from=bus_from, bus_to=bus_to, name=name)
 
         graphic_object = LineGraphicItem(from_port=from_port,
                                          to_port=to_port,
@@ -1456,27 +1447,27 @@ class SchematicWidget(BaseDiagramWidget):
                         elif self.started_branch.connected_between_bus_and_cn():
 
                             self.create_line(bus_from=self.started_branch.get_bus_from(),
-                                             cn_to=self.started_branch.get_cn_to(),
+                                             bus_to=self.started_branch.get_cn_to(),
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
                         elif self.started_branch.connected_between_cn_and_bus():
 
                             self.create_line(bus_to=self.started_branch.get_bus_to(),
-                                             cn_from=self.started_branch.get_cn_from(),
+                                             bus_from=self.started_branch.get_cn_from(),
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
                         elif self.started_branch.connected_between_cn():
 
-                            self.create_line(cn_from=self.started_branch.get_cn_from(),
-                                             cn_to=self.started_branch.get_cn_to(),
+                            self.create_line(bus_from=self.started_branch.get_cn_from(),
+                                             bus_to=self.started_branch.get_cn_to(),
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
                         elif self.started_branch.connected_between_busbar_and_bus():
 
-                            self.create_line(cn_from=self.started_branch.get_busbar_from().cn,
+                            self.create_line(bus_from=self.started_branch.get_busbar_from().bus,
                                              bus_to=self.started_branch.get_bus_to(),
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
@@ -1484,28 +1475,28 @@ class SchematicWidget(BaseDiagramWidget):
                         elif self.started_branch.connected_between_bus_and_busbar():
 
                             self.create_line(bus_from=self.started_branch.get_bus_from(),
-                                             cn_to=self.started_branch.get_busbar_to().cn,
+                                             bus_to=self.started_branch.get_busbar_to().bus,
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
                         elif self.started_branch.connected_between_busbar_and_cn():
 
-                            self.create_line(cn_from=self.started_branch.get_busbar_from().cn,
-                                             cn_to=self.started_branch.get_cn_to(),
+                            self.create_line(bus_from=self.started_branch.get_busbar_from().bus,
+                                             bus_to=self.started_branch.get_cn_to(),
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
                         elif self.started_branch.connected_between_cn_and_busbar():
 
-                            self.create_line(cn_from=self.started_branch.get_cn_from(),
-                                             cn_to=self.started_branch.get_busbar_to().cn,
+                            self.create_line(bus_from=self.started_branch.get_cn_from(),
+                                             bus_to=self.started_branch.get_busbar_to().bus,
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
                         elif self.started_branch.connected_between_busbar():
 
-                            self.create_line(cn_from=self.started_branch.get_busbar_from().cn,
-                                             cn_to=self.started_branch.get_busbar_to().cn,
+                            self.create_line(bus_from=self.started_branch.get_busbar_from().bus,
+                                             bus_to=self.started_branch.get_busbar_to().bus,
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
@@ -2006,7 +1997,7 @@ class SchematicWidget(BaseDiagramWidget):
         return graphic_object
 
     def add_api_cn(self,
-                   cn: ConnectivityNode,
+                   cn: Bus,
                    injections_by_tpe: Dict[DeviceType, List[ALL_DEV_TYPES]],
                    x0: Union[int, None] = None,
                    y0: Union[int, None] = None) -> CnGraphicItem:
@@ -2040,18 +2031,17 @@ class SchematicWidget(BaseDiagramWidget):
 
     def find_port(self,
                   port: OPTIONAL_PORT = None,
-                  bus: Union[None, Bus] = None,
-                  cn: Union[None, ConnectivityNode] = None) -> OPTIONAL_PORT:
+                  bus: Union[None, Bus] = None) -> OPTIONAL_PORT:
         """
         Try to find the connection graphics from the API connection
-        :param port: Conection port (optional)
+        :param port: Connection port (optional)
         :param bus: Api Bus (optional)
         :param cn: API connectivity node (optional)
         :return: OPTIONAL_PORT
         """
         if port is None:
 
-            if bus is not None and cn is None:  # bus provided, no cn provided
+            if bus is not None:  # bus provided, no cn provided
 
                 # Bus provided, search its graphics
                 bus_graphic0 = self.graphics_manager.query(bus)
@@ -2063,36 +2053,6 @@ class SchematicWidget(BaseDiagramWidget):
                 else:
                     # the from bu is found, return its terminal
                     return bus_graphic0.get_terminal()
-
-            elif bus is None and cn is not None:  # bus Not provided, cn provided
-
-                cn_graphic0 = self.graphics_manager.query(cn)
-
-                if cn_graphic0 is None:
-                    # could not find any graphics :(
-                    return None
-                else:
-                    # found the CN graphics
-                    return cn_graphic0.get_terminal()
-
-            elif bus is not None and cn is not None:  # bus provided, cn provided -> preffer the cn
-
-                cn_graphic0 = self.graphics_manager.query(cn)
-
-                if cn_graphic0 is None:
-                    # Bus provided, search its graphics
-                    bus_graphic0 = self.graphics_manager.query(bus)
-
-                    if bus_graphic0 is None:
-                        # No bus found, search for the CN
-                        return None
-
-                    else:
-                        # the from bu is found, return its terminal
-                        return bus_graphic0.get_terminal()
-                else:
-                    # found the CN graphics
-                    return cn_graphic0.get_terminal()
 
             else:
                 # nothing was provided...
@@ -2818,21 +2778,13 @@ class SchematicWidget(BaseDiagramWidget):
                 graphic_obj = self.add_api_fluid_node(node=elm,
                                                       injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
 
-            elif isinstance(elm, ConnectivityNode):
-
-                if injections_by_cn is None:
-                    injections_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
-
-                graphic_obj = self.add_api_cn(cn=elm,
-                                              injections_by_tpe=injections_by_cn.get(elm, dict()))
-
             elif isinstance(elm, BusBar):
 
-                if injections_by_cn is None:
-                    injections_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
+                if injections_by_bus is None:
+                    injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
 
                 graphic_obj = self.add_api_busbar(bus=elm,
-                                                  injections_by_tpe=injections_by_cn.get(elm.cn, dict()))
+                                                  injections_by_tpe=injections_by_bus.get(elm.bus, dict()))
 
             elif isinstance(elm, Line):
                 graphic_obj = self.add_api_line(elm)
@@ -2874,7 +2826,6 @@ class SchematicWidget(BaseDiagramWidget):
 
     def add_elements_to_schematic(self,
                                   buses: List[Bus],
-                                  connectivity_nodes: List[ConnectivityNode],
                                   busbars: List[BusBar],
                                   lines: List[Line],
                                   dc_lines: List[DcLine],
@@ -2887,8 +2838,6 @@ class SchematicWidget(BaseDiagramWidget):
                                   fluid_nodes: List[FluidNode],
                                   fluid_paths: List[FluidPath],
                                   injections_by_bus: Dict[Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]],
-                                  injections_by_cn: Dict[
-                                      ConnectivityNode, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]],
                                   injections_by_fluid_node: Dict[FluidNode, Dict[DeviceType, List[FLUID_TYPES]]],
                                   explode_factor=1.0,
                                   prog_func: Union[Callable, None] = None,
@@ -2896,7 +2845,6 @@ class SchematicWidget(BaseDiagramWidget):
         """
         Add a elements to the schematic scene
         :param buses: list of Bus objects
-        :param connectivity_nodes: list of connectivity nodes
         :param busbars: List of usbars
         :param lines: list of Line objects
         :param dc_lines: list of DcLine objects
@@ -2910,7 +2858,6 @@ class SchematicWidget(BaseDiagramWidget):
         :param fluid_paths: List of FluidPath devices
         :param injections_by_bus:
         :param injections_by_fluid_node:
-        :param injections_by_cn:
         :param explode_factor: factor of "explosion": Separation of the nodes factor
         :param prog_func: progress report function
         :param text_func: Text report function
@@ -2944,25 +2891,9 @@ class SchematicWidget(BaseDiagramWidget):
                 prog_func((i + 1) / nn * 100.0)
 
             graphic_obj = self.add_api_busbar(bus=bus,
-                                              injections_by_tpe=injections_by_cn.get(bus.cn, dict()))
+                                              injections_by_tpe=injections_by_bus.get(bus.bus, dict()))
 
             self.add_to_scene(graphic_obj)
-
-        # --------------------------------------------------------------------------------------------------------------
-
-        if text_func is not None:
-            text_func('Creating schematic connectivity nodes')
-
-        nn = len(connectivity_nodes)
-        for i, cn in enumerate(connectivity_nodes):
-
-            if prog_func is not None:
-                prog_func((i + 1) / nn * 100.0)
-
-            if not cn.internal:
-                graphic_obj = self.add_api_cn(cn=cn,
-                                              injections_by_tpe=injections_by_cn.get(cn, dict()))
-                self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
 
@@ -3553,7 +3484,7 @@ class SchematicWidget(BaseDiagramWidget):
                 for i, elm in enumerate(self.circuit.vsc_devices):
 
                     # try to find the diagram object of the DB object
-                    graphic_object = self.graphics_manager.query(elm)
+                    graphic_object: VscGraphicItem = self.graphics_manager.query(elm)
 
                     if graphic_object is not None:
 
@@ -3641,7 +3572,7 @@ class SchematicWidget(BaseDiagramWidget):
                 for i, elm in enumerate(self.circuit.hvdc_lines):
 
                     # try to find the diagram object of the DB object
-                    graphic_object = self.graphics_manager.query(elm)
+                    graphic_object: HvdcGraphicItem = self.graphics_manager.query(elm)
 
                     if graphic_object is not None:
 
@@ -3714,7 +3645,7 @@ class SchematicWidget(BaseDiagramWidget):
                 for i, elm in enumerate(self.circuit.fluid_paths):
 
                     # try to find the diagram object of the DB object
-                    graphic_object = self.graphics_manager.query(elm)
+                    graphic_object: FluidPathGraphicItem = self.graphics_manager.query(elm)
 
                     if graphic_object is not None:
                         graphic_object.set_api_object_color()
@@ -3727,7 +3658,7 @@ class SchematicWidget(BaseDiagramWidget):
                 for i, elm in enumerate(self.circuit.fluid_nodes):
 
                     # try to find the diagram object of the DB object
-                    graphic_object = self.graphics_manager.query(elm)
+                    graphic_object: FluidNodeGraphicItem = self.graphics_manager.query(elm)
 
                     if graphic_object is not None:
                         graphic_object.set_api_object_color()
@@ -4466,7 +4397,6 @@ class SchematicWidget(BaseDiagramWidget):
 
 def generate_schematic_diagram(buses: List[Bus],
                                busbars: List[BusBar],
-                               connectivity_nodes: List[ConnectivityNode],
                                lines: List[Line],
                                dc_lines: List[DcLine],
                                transformers2w: List[Transformer2W],
@@ -4487,7 +4417,6 @@ def generate_schematic_diagram(buses: List[Bus],
     Add a elements to the schematic scene
     :param buses: list of Bus objects
     :param busbars: List of Bus bars
-    :param connectivity_nodes: List of ConnectivityNode objects
     :param lines: list of Line objects
     :param dc_lines: list of DcLine objects
     :param transformers2w: list of Transformer Objects
@@ -4550,7 +4479,6 @@ def generate_schematic_diagram(buses: List[Bus],
     # --------------------------------------------------------------------------------------------------------------
 
     add_devices_list(cls="busbars", dev_lst=busbars)
-    add_devices_list(cls="connecivity_nodes", dev_lst=connectivity_nodes)
     add_devices_list(cls="fluid_nodes", dev_lst=fluid_nodes)
     add_devices_list(cls="transformers3w", dev_lst=transformers3w)
 
@@ -4572,7 +4500,6 @@ def generate_schematic_diagram(buses: List[Bus],
 
 def get_devices_to_expand(circuit: MultiCircuit, buses: List[Bus], max_level: int = 1) -> Tuple[List[Bus],
 List[BusBar],
-List[ConnectivityNode],
 List[Line],
 List[DcLine],
 List[Transformer2W],
@@ -4607,7 +4534,6 @@ List[FluidPath]]:
 
     buses = set()
     busbars = set()
-    cns = set()
     fluid_nodes = set()
     selected_branches = set()
 
@@ -4686,7 +4612,7 @@ List[FluidPath]]:
         else:
             raise Exception(f'Unrecognized branch type {obj.device_type.value}')
 
-    return (list(buses), list(busbars), list(cns), lines, dc_lines, transformers2w, transformers3w,
+    return (list(buses), list(busbars), lines, dc_lines, transformers2w, transformers3w,
             windings, hvdc_lines, vsc_converters, upfc_devices, series_reactances, switches,
             list(fluid_nodes), fluid_paths)
 
@@ -4708,7 +4634,7 @@ def make_vicinity_diagram(circuit: MultiCircuit,
     :return:
     """
 
-    (buses, busbars, cns,
+    (buses, busbars,
      lines, dc_lines, transformers2w,
      transformers3w, windings, hvdc_lines,
      vsc_converters, upfc_devices,
@@ -4719,7 +4645,6 @@ def make_vicinity_diagram(circuit: MultiCircuit,
     diagram = generate_schematic_diagram(
         buses=list(buses),
         busbars=busbars,
-        connectivity_nodes=cns,
         lines=lines,
         dc_lines=dc_lines,
         transformers2w=transformers2w,
@@ -4756,7 +4681,7 @@ def make_diagram_from_buses(circuit: MultiCircuit,
     :return:
     """
 
-    (buses, busbars, cns,
+    (buses, busbars,
      lines, dc_lines, transformers2w,
      transformers3w, windings, hvdc_lines,
      vsc_converters, upfc_devices,
@@ -4766,7 +4691,6 @@ def make_diagram_from_buses(circuit: MultiCircuit,
     # Draw schematic subset
     diagram = generate_schematic_diagram(buses=list(buses),
                                          busbars=busbars,
-                                         connectivity_nodes=cns,
                                          lines=lines,
                                          dc_lines=dc_lines,
                                          transformers2w=transformers2w,

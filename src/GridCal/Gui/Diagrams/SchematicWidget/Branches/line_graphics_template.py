@@ -19,7 +19,6 @@ from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_node_graphics import Fluid
 from GridCal.Gui.messages import yes_no_question
 
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.Devices.Substation.busbar import BusBar
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
@@ -1016,14 +1015,14 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         return self.get_to_graphic_object().api_object
 
-    def get_cn_from(self) -> ConnectivityNode:
+    def get_cn_from(self) -> Bus:
         """
 
         :return:
         """
         return self.get_from_graphic_object().api_object
 
-    def get_cn_to(self) -> ConnectivityNode:
+    def get_cn_to(self) -> Bus:
         """
 
         :return:

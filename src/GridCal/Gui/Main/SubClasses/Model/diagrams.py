@@ -30,7 +30,6 @@ from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
 import GridCal.Gui.gui_functions as gf
-from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,
                                                                    BusGraphicItem,
                                                                    generate_schematic_diagram,
@@ -1591,7 +1590,6 @@ class DiagramsMain(CompiledArraysMain):
                 # set pointer to the circuit
                 diagram = generate_schematic_diagram(buses=self.circuit.get_buses(),
                                                      busbars=self.circuit.get_bus_bars(),
-                                                     connectivity_nodes=self.circuit.get_connectivity_nodes(),
                                                      lines=self.circuit.get_lines(),
                                                      dc_lines=self.circuit.get_dc_lines(),
                                                      transformers2w=self.circuit.get_transformers2w(),
@@ -1632,7 +1630,6 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = generate_schematic_diagram(buses=self.circuit.get_buses(),
                                              busbars=self.circuit.get_bus_bars(),
-                                             connectivity_nodes=self.circuit.get_connectivity_nodes(),
                                              lines=self.circuit.get_lines(),
                                              dc_lines=self.circuit.get_dc_lines(),
                                              transformers2w=self.circuit.get_transformers2w(),
@@ -2110,8 +2107,8 @@ class DiagramsMain(CompiledArraysMain):
         for diagram in self.diagram_widgets_list:
             if isinstance(diagram, SchematicWidget):
                 diagram.set_time_index(time_index=idx2)
-
-                # TODO: consider other diagrams
+            if isinstance(diagram, GridMapWidget):
+                diagram.set_time_index(time_index=idx2)
 
     def update_diagram_time_slider_texts(self):
         """

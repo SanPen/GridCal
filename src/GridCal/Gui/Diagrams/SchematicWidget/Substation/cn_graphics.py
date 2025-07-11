@@ -31,7 +31,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Injections.controllable_shunt_graphics
 
 from GridCalEngine.enumerations import DeviceType, FaultType
 from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
+from GridCalEngine.Devices.Substation.bus import Bus
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -52,7 +52,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                  parent=None,
                  index=0,
                  editor: SchematicWidget = None,
-                 node: ConnectivityNode = None,
+                 node: Bus = None,
                  h: int = 40,
                  w: int = 40,
                  x: float = 0,
@@ -110,7 +110,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.setRect(0.0, 0.0, self.w, self.h)
 
     @property
-    def api_object(self) -> ConnectivityNode:
+    def api_object(self) -> Bus:
         return self._api_object
 
     @property
@@ -258,7 +258,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         dc_icon.addPixmap(QPixmap(":/Icons/icons/dc.svg"))
         dc.setIcon(dc_icon)
         dc.setCheckable(True)
-        dc.setChecked(self.api_object.dc)
+        dc.setChecked(self.api_object.is_dc)
         dc.triggered.connect(self.enable_disable_dc)
 
         pl = menu.addAction('Plot profiles')
@@ -379,10 +379,10 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Activates or deactivates the cn as a DC connectivity node
         """
-        if self._api_object.dc:
-            self._api_object.dc = False
+        if self._api_object.is_dc:
+            self._api_object.is_dc = False
         else:
-            self._api_object.dc = True
+            self._api_object.is_dc = True
 
     def plot_profiles(self) -> None:
         """

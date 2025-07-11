@@ -9,7 +9,6 @@ from typing import Tuple
 
 from GridCalEngine.basic_structures import Logger, Mat
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapPhaseControl,
                                         TapModuleControl, TapChangerTypes, WindingType)
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
@@ -40,8 +39,6 @@ class Transformer2W(ControllableBranchParent):
                  name='Branch',
                  idtag: str | None = None,
                  code: str = '',
-                 cn_from: ConnectivityNode | None = None,
-                 cn_to: ConnectivityNode | None = None,
                  HV: float | None = None,
                  LV: float | None = None,
                  nominal_power: float = 0.001,
@@ -156,8 +153,6 @@ class Transformer2W(ControllableBranchParent):
                                           code=code,
                                           bus_from=bus_from,
                                           bus_to=bus_to,
-                                          cn_from=cn_from,
-                                          cn_to=cn_to,
                                           active=active,
                                           reducible=reducible,
                                           rate=rate,
@@ -180,7 +175,6 @@ class Transformer2W(ControllableBranchParent):
                                           Qset=Qset,
                                           regulation_branch=None,
                                           regulation_bus=None,
-                                          regulation_cn=None,
                                           temp_base=temp_base,
                                           temp_oper=temp_oper,
                                           alpha=alpha,
