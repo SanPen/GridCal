@@ -92,6 +92,40 @@ load_block = Block(
     algebraic_vars=[Ql, Pl],
     parameters=[Pl0]
 )
+#
+# # ----------------------------------------------------------------------------------------------------------------------
+# # Slack
+# # ----------------------------------------------------------------------------------------------------------------------
+#
+# # Constants (parameters for the slack generator)
+# fn = Const(50)           # nominal frequency (Hz)
+# ra = Const(0.3)          # armature resistance
+# xd = Const(0.86138701)   # d-axis reactance
+#
+# # Slack parameters
+# theta_0 = Const(0.0) # Reference angle set point
+# p_min = Const(-999.0) # Minimum active power
+# p_max = Const(-999.0) # Maximum active power
+#
+# # Variables (algebraic)
+# delta = Var("delta")     # voltage angle (set to theta_0)
+# omega = Var("omega")     # frequency (set to 1.0)
+# p_g = Var("p_g")         # active power output
+# Q_g = Var("Q_g")         # reactive power output (free)
+#
+# # Slack algebraic equations
+# algebraic_eqs = [
+#     delta - theta_0,          # Fix voltage angle to reference
+#     omega - 1.0,              # Fixed frequency at nominal
+#     p_g - p_g,                # p_g free within limits
+# ]
+#
+# # Power limits (enforced externally or in solver)
+# power_limits = {
+#     'p_min': p_min,
+#     'p_max': p_max,
+# }
+#
 
 
 
@@ -190,7 +224,8 @@ sys = Block(
 slv = BlockSolver(sys)
 
 params_mapping = {
-    Pl0: 0.1
+    Pl0: 0.1,
+    #Ql0: 0.1
 }
 vars_mapping = {
 
@@ -237,10 +272,10 @@ vars_mapping = {
 # Events
 # ---------------------------------------------------------------------------------------
 
-event1 = Event(Pl0, 30, 1.5)
-event2 = Event(Pl0, 50, 2.0)
+event1 = Event(Pl0, 5000, 0.3)
+#event2 = Event(Ql0, 5000, 0.3)
 
-my_events = Events([event1, event2])
+my_events = Events([event1])
 
 params0 = slv.build_init_params_vector(params_mapping)
 # x0 = slv.build_init_vars_vector(vars_mapping)
@@ -272,7 +307,7 @@ vars_in_order = slv.sort_vars(vars_mapping)
 
 t, y = slv.simulate(
     t0=0,
-    t_end=0.1,
+    t_end=10.0,
     h=0.001,
     x0=x0,
     params0=params0,
@@ -280,12 +315,48 @@ t, y = slv.simulate(
     method="implicit_euler"
 )
 
-fig = plt.figure(figsize=(12, 8))
-# plt.plot(t, y)
+# save to csv
+slv.save_simulation_to_csv('simulation_results.csv', t, y)
+
+fig = plt.figure(figsize=(14, 10))
+
+#Generator state variables
 plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)")
 plt.plot(t, y[:, slv.get_var_idx(delta)], label="δ (rad)")
-# plt.plot(t, y[:, slv.get_var_idx(t_e)], label="t_e (pu)")
-plt.plot(t, y[:, slv.get_var_idx(Vline_from)], label="Vline_from (Vlf)")
-plt.plot(t, y[:, slv.get_var_idx(Vline_to)], label="Vline_to (Vlt)")
-plt.legend()
+plt.plot(t, y[:, slv.get_var_idx(et)], label="et (pu)")
+
+#Generator algebraic variables
+plt.plot(t, y[:, slv.get_var_idx(tm)], label="Tm (pu)")
+plt.plot(t, y[:, slv.get_var_idx(psid)], label="Ψd (pu)")
+plt.plot(t, y[:, slv.get_var_idx(psiq)], label="Ψq (pu)")
+plt.plot(t, y[:, slv.get_var_idx(i_d)], label="Id (pu)")
+plt.plot(t, y[:, slv.get_var_idx(i_q)], label="Iq (pu)")
+plt.plot(t, y[:, slv.get_var_idx(v_d)], label="Vd (pu)")
+plt.plot(t, y[:, slv.get_var_idx(v_q)], label="Vq (pu)")
+plt.plot(t, y[:, slv.get_var_idx(t_e)], label="Te (pu)")
+plt.plot(t, y[:, slv.get_var_idx(p_g)], label="Pg (pu)")
+plt.plot(t, y[:, slv.get_var_idx(Q_g)], label="Qg (pu)")
+plt.plot(t, y[:, slv.get_var_idx(Vg)], label="Vg (pu)")
+plt.plot(t, y[:, slv.get_var_idx(dg)], label="θg (rad)")
+
+#Line variables
+plt.plot(t, y[:, slv.get_var_idx(Pline_from)], label="Pline_from (pu)")
+plt.plot(t, y[:, slv.get_var_idx(Qline_from)], label="Qline_from (pu)")
+plt.plot(t, y[:, slv.get_var_idx(Pline_to)], label="Pline_to (pu)")
+plt.plot(t, y[:, slv.get_var_idx(Qline_to)], label="Qline_to (pu)")
+plt.plot(t, y[:, slv.get_var_idx(Vline_from)], label="Vline_from (pu)")
+plt.plot(t, y[:, slv.get_var_idx(Vline_to)], label="Vline_to (pu)")
+plt.plot(t, y[:, slv.get_var_idx(dline_from)], label="δline_from (rad)")
+plt.plot(t, y[:, slv.get_var_idx(dline_to)], label="δline_to (rad)")
+
+# Load variables
+plt.plot(t, y[:, slv.get_var_idx(Pl)], label="Pl (pu)")
+plt.plot(t, y[:, slv.get_var_idx(Ql)], label="Ql (pu)")
+
+plt.legend(loc='upper right', ncol=2)
+plt.xlabel("Time (s)")
+plt.ylabel("Values (pu)")
+plt.title("Time Series of All System Variables")
+plt.grid(True)
+plt.tight_layout()
 plt.show()

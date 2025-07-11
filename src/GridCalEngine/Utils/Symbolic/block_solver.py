@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 from typing import Tuple
+import pandas as pd
 import numpy as np
 import numba as nb
 import math
@@ -853,3 +854,34 @@ class BlockSolver:
                 break
 
         return t, y
+
+    def save_simulation_to_csv(self, filename, t, y):
+        """
+        Save the simulation results to a CSV file.
+
+        Parameters:
+        ----------
+        filename : str
+            The path and name of the CSV file to save.
+        t : np.ndarray
+            Time vector.
+        y : np.ndarray
+            Simulation results array (rows: time steps, columns: variable values).
+
+        Returns:
+        -------
+        None
+        """
+        # Combine state and algebraic variables
+        all_vars = self._state_vars + self._algebraic_vars
+        var_names = [str(var)+'_Gridcal' for var in all_vars]
+
+        # Create DataFrame with time and variable data
+        df = pd.DataFrame(data=y, columns=var_names)
+        df.insert(0, 'Time [s]', t)
+
+        # Save to CSV
+        df.to_csv(filename, index=False)
+        print(f"Simulation results saved to: {filename}")
+
+
