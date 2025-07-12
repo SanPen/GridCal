@@ -398,7 +398,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :param event: QGraphicsSceneMouseEvent
         """
 
-        if self._api_object.device_type == DeviceType.ConnectivityNodeDevice:
+        if self._api_object.device_type == DeviceType.BusDevice:
             self._editor.set_editor_model(api_object=self._api_object)
 
     def mouseDoubleClickEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
@@ -471,7 +471,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: LoadGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_load(cn=self._api_object)
+            api_obj = self._editor.circuit.add_load(bus=self._api_object)
 
         _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)
@@ -484,7 +484,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: ShuntGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_shunt(cn=self._api_object)
+            api_obj = self._editor.circuit.add_shunt(bus=self._api_object)
 
         _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)
@@ -497,7 +497,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: GeneratorGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_generator(cn=self._api_object)
+            api_obj = self._editor.circuit.add_generator(bus=self._api_object)
 
         _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)
@@ -510,7 +510,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: StaticGeneratorGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_static_generator(cn=self._api_object)
+            api_obj = self._editor.circuit.add_static_generator(bus=self._api_object)
 
         _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)
@@ -524,7 +524,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: BatteryGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_battery(cn=self._api_object)
+            api_obj = self._editor.circuit.add_battery(bus=self._api_object)
 
         _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)
@@ -538,7 +538,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: ExternalGridGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_external_grid(cn=self._api_object)
+            api_obj = self._editor.circuit.add_external_grid(bus=self._api_object)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)
@@ -552,7 +552,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: CurrentInjectionGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_current_injection(cn=self._api_object)
+            api_obj = self._editor.circuit.add_current_injection(bus=self._api_object)
 
         _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)
@@ -566,7 +566,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: ControllableShuntGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_controllable_shunt(cn=self._api_object)
+            api_obj = self._editor.circuit.add_controllable_shunt(bus=self._api_object)
 
         _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)

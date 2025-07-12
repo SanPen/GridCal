@@ -804,7 +804,7 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
                                  cn_look_up: CnLookup,
                                  logger: DataLogger) -> Dict[str, gcdev.Bus]:
     """
-    Convert the ConnectivityNodes to GridCal ConnectivitiyNodes
+    Convert the ConnectivityNodes to GridCal Buses
 
     :param calc_node_dict: dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
              Dict[str, gcdev.Bus]
@@ -820,34 +820,30 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
     used_buses = set()
     for cgmes_elm in cgmes_model.cgmes_assets.ConnectivityNode_list:
 
-        bus = calc_node_dict.get(cgmes_elm.TopologicalNode.uuid, None)
-        vnom, vl = 10, None
-        if bus is None:
-            logger.add_error(msg='No Bus found',
-                             device=cgmes_elm.rdfid,
-                             device_class=cgmes_elm.tpe)
-            default_bus = None
-        else:
-            if bus not in used_buses:
-                default_bus = bus
-                used_buses.add(bus)
-            else:
-                default_bus = bus
-                # for the new TP processor, a CN always has to have a TP(/Bus)
-            vnom = bus.Vnom
-            vl = bus.voltage_level
+        bus: gcdev.Bus = calc_node_dict.get(cgmes_elm.TopologicalNode.uuid, None)
+        # vnom, vl = 10, None
+        # if bus is None:
+        #     logger.add_error(msg='No Bus found',
+        #                      device=cgmes_elm.rdfid,
+        #                      device_class=cgmes_elm.tpe)
+        #     default_bus = None
+        # else:
+        #     if bus not in used_buses:
+        #         default_bus = bus
+        #         used_buses.add(bus)
+        #     else:
+        #         default_bus = bus
+        #         # for the new TP processor, a CN always has to have a TP(/Bus)
+        #     vnom = bus.Vnom
+        #     vl = bus.voltage_level
 
         gcdev_elm = gcdev.Bus(
             idtag=cgmes_elm.uuid,
             code=cgmes_elm.description,
             name=cgmes_elm.name,
-            dc=False,
-            default_bus=default_bus,  # this is only set by the BusBar's
-            Vnom=vnom,
-            voltage_level=vl
         )
 
-        gcdev_model.connectivity_nodes.append(gcdev_elm)
+        gcdev_model.add_bus(gcdev_elm)
         cn_look_up.add_cn(gcdev_elm)
         cn_node_dict[gcdev_elm.idtag] = gcdev_elm
 

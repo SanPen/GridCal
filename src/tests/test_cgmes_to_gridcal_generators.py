@@ -65,7 +65,7 @@ def calc_node_dict_object() -> Dict[str, gcdev.Bus]:
     return d
 
 
-def cn_dict_object() -> Dict[str, gcdev.ConnectivityNode]:
+def cn_dict_object() -> Dict[str, gcdev.Bus]:
     d = dict()
     d[cn_test] = cn_test  # TODO ?
     return d

@@ -332,15 +332,13 @@ class SchematicWidget(BaseDiagramWidget):
                  circuit: MultiCircuit,
                  diagram: Union[SchematicDiagram, None],
                  default_bus_voltage: float = 10.0,
-                 time_index: Union[None, int] = None,
-                 prefer_node_breaker: bool = False):
+                 time_index: Union[None, int] = None):
         """
         Creates the Diagram Editor (DiagramEditorWidget)
         :param circuit: Circuit that is handling
         :param diagram: SchematicDiagram to use (optional)
         :param default_bus_voltage: Default bus voltages (KV)
         :param time_index: time index to represent
-        :param prefer_node_breaker: Preffer the node breaker representation?
         """
 
         BaseDiagramWidget.__init__(self,
@@ -369,9 +367,6 @@ class SchematicWidget(BaseDiagramWidget):
 
         # default_bus_voltage (KV)
         self.default_bus_voltage = default_bus_voltage
-
-        # Prefer the node breaker representation?
-        self.prefer_node_breaker: bool = prefer_node_breaker
 
         # nodes distance "explosion" factor
         self.expand_factor = 1.1
@@ -606,22 +601,19 @@ class SchematicWidget(BaseDiagramWidget):
 
     def draw_additional_diagram(self,
                                 diagram: SchematicDiagram,
-                                prefer_node_breaker: bool = False,
                                 logger: Logger = Logger()) -> None:
         """
         Draw a new diagram
         :param diagram: SchematicDiagram
-        :param prefer_node_breaker:
         :param logger: Logger
         """
         inj_dev_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
         inj_dev_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
-        inj_dev_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
 
         # add node-like elements first
         for category, points_group in diagram.data.items():
 
-            if category == DeviceType.BusDevice.value and not prefer_node_breaker:
+            if category == DeviceType.BusDevice.value:
 
                 for idtag, location in points_group.locations.items():
 
@@ -671,74 +663,12 @@ class SchematicWidget(BaseDiagramWidget):
                         graphic_object.create_children_widgets(
                             injections_by_tpe=inj_dev_by_fluid_node.get(location.api_object, dict()))
 
-                        graphic_object.change_size(h=location.h,
-                                                   w=location.w)
+                        graphic_object.change_size(h=location.h, w=location.w)
 
                         # add fluid node reference for later
-                        # fluid_node_dict[idtag] = graphic_object
                         self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
                         if location.api_object.bus is not None:
                             self.graphics_manager.add_device(elm=location.api_object.bus, graphic=graphic_object)
-
-                        # map the internal bus
-                        # if location.api_object.bus is not None:
-                        #     bus_dict[location.api_object.bus.idtag] = graphic_object
-
-            elif category == DeviceType.ConnectivityNodeDevice.value and prefer_node_breaker:
-
-                for idtag, location in points_group.locations.items():
-
-                    if not location.api_object.internal:
-                        # search for the api object, because it may be created already
-                        graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                        if graphic_object is None:
-                            # add the graphic object to the diagram view
-                            graphic_object = self.create_connectivity_node_graphics(node=location.api_object,
-                                                                                    x=location.x,
-                                                                                    y=location.y,
-                                                                                    h=location.h,
-                                                                                    w=location.w,
-                                                                                    draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            # create the bus children
-                            graphic_object.create_children_widgets(
-                                injections_by_tpe=inj_dev_by_cn.get(location.api_object, dict())
-                            )
-
-                            # add buses reference for later
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
-                    else:
-                        # is internal
-                        pass
-
-            elif category == DeviceType.BusBarDevice.value and prefer_node_breaker:
-
-                for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-                        # add the graphic object to the diagram view
-                        graphic_object = self.create_bus_bar_graphics(node=location.api_object,
-                                                                      x=location.x,
-                                                                      y=location.y,
-                                                                      h=location.h,
-                                                                      w=location.w,
-                                                                      draw_labels=location.draw_labels)
-                        self.add_to_scene(graphic_object=graphic_object)
-
-                        # create the bus children
-                        graphic_object.create_children_widgets(
-                            injections_by_tpe=inj_dev_by_cn.get(graphic_object._api_object.bus, dict())
-                        )
-
-                        graphic_object.change_size(w=location.w)
-
-                        # add buses reference for later
-                        self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             else:
                 # pass for now...
@@ -765,7 +695,6 @@ class SchematicWidget(BaseDiagramWidget):
                         w1_graphics = self.add_api_winding(branch=elm.winding1,
                                                            from_port=graphic_object.terminals[0],
                                                            draw_labels=location.draw_labels,
-                                                           prefer_node_breaker=prefer_node_breaker,
                                                            logger=logger)
                         self.graphics_manager.add_device(elm=elm.winding1, graphic=w1_graphics)
                         graphic_object.connection_lines[0] = w1_graphics
@@ -773,7 +702,6 @@ class SchematicWidget(BaseDiagramWidget):
                         w2_graphics = self.add_api_winding(branch=elm.winding2,
                                                            from_port=graphic_object.terminals[1],
                                                            draw_labels=location.draw_labels,
-                                                           prefer_node_breaker=prefer_node_breaker,
                                                            logger=logger)
                         self.graphics_manager.add_device(elm=elm.winding2, graphic=w2_graphics)
                         graphic_object.connection_lines[1] = w2_graphics
@@ -781,7 +709,6 @@ class SchematicWidget(BaseDiagramWidget):
                         w3_graphics = self.add_api_winding(branch=elm.winding3,
                                                            from_port=graphic_object.terminals[2],
                                                            draw_labels=location.draw_labels,
-                                                           prefer_node_breaker=prefer_node_breaker,
                                                            logger=logger)
                         self.graphics_manager.add_device(elm=elm.winding3, graphic=w3_graphics)
                         graphic_object.connection_lines[2] = w3_graphics
@@ -800,7 +727,6 @@ class SchematicWidget(BaseDiagramWidget):
                 for idtag, location in points_group.locations.items():
                     self.add_api_line(branch=location.api_object,
                                       draw_labels=location.draw_labels,
-                                      prefer_node_breaker=prefer_node_breaker,
                                       logger=logger)
 
             elif category == DeviceType.DCLineDevice.value:
@@ -808,7 +734,6 @@ class SchematicWidget(BaseDiagramWidget):
                 for idtag, location in points_group.locations.items():
                     self.add_api_dc_line(branch=location.api_object,
                                          draw_labels=location.draw_labels,
-                                         prefer_node_breaker=prefer_node_breaker,
                                          logger=logger)
 
             elif category == DeviceType.HVDCLineDevice.value:
@@ -816,7 +741,6 @@ class SchematicWidget(BaseDiagramWidget):
                 for idtag, location in points_group.locations.items():
                     self.add_api_hvdc(branch=location.api_object,
                                       draw_labels=location.draw_labels,
-                                      prefer_node_breaker=prefer_node_breaker,
                                       logger=logger)
 
             elif category == DeviceType.VscDevice.value:
@@ -824,7 +748,6 @@ class SchematicWidget(BaseDiagramWidget):
                 for idtag, location in points_group.locations.items():
                     self.add_api_vsc(branch=location.api_object,
                                      draw_labels=location.draw_labels,
-                                     prefer_node_breaker=prefer_node_breaker,
                                      logger=logger)
 
             elif category == DeviceType.UpfcDevice.value:
@@ -832,7 +755,6 @@ class SchematicWidget(BaseDiagramWidget):
                 for idtag, location in points_group.locations.items():
                     self.add_api_upfc(branch=location.api_object,
                                       draw_labels=location.draw_labels,
-                                      prefer_node_breaker=prefer_node_breaker,
                                       logger=logger)
 
             elif category == DeviceType.Transformer2WDevice.value:
@@ -840,7 +762,6 @@ class SchematicWidget(BaseDiagramWidget):
                 for idtag, location in points_group.locations.items():
                     self.add_api_transformer(branch=location.api_object,
                                              draw_labels=location.draw_labels,
-                                             prefer_node_breaker=prefer_node_breaker,
                                              logger=logger)
 
             elif category == DeviceType.SeriesReactanceDevice.value:
@@ -848,7 +769,6 @@ class SchematicWidget(BaseDiagramWidget):
                 for idtag, location in points_group.locations.items():
                     self.add_api_series_reactance(branch=location.api_object,
                                                   draw_labels=location.draw_labels,
-                                                  prefer_node_breaker=prefer_node_breaker,
                                                   logger=logger)
 
             elif category == DeviceType.SwitchDevice.value:
@@ -856,7 +776,6 @@ class SchematicWidget(BaseDiagramWidget):
                 for idtag, location in points_group.locations.items():
                     self.add_api_switch(branch=location.api_object,
                                         draw_labels=location.draw_labels,
-                                        prefer_node_breaker=prefer_node_breaker,
                                         logger=logger)
 
             elif category == DeviceType.WindingDevice.value:
@@ -879,9 +798,8 @@ class SchematicWidget(BaseDiagramWidget):
 
                     if graphic_object is None:
 
-                        from_port, to_port = self.find_ports(branch=location.api_object,
-                                                             prefer_node_breaker=prefer_node_breaker,
-                                                             logger=logger)
+                        from_port, to_port = self.find_ports(branch=location.api_object)
+
                         if from_port is not None and to_port is not None:
                             graphic_object = FluidPathGraphicItem(from_port=from_port,
                                                                   to_port=to_port,
@@ -907,9 +825,7 @@ class SchematicWidget(BaseDiagramWidget):
         """
         Draw the stored diagram
         """
-        self.draw_additional_diagram(diagram=self.diagram,
-                                     prefer_node_breaker=self.prefer_node_breaker,
-                                     logger=self.logger)
+        self.draw_additional_diagram(diagram=self.diagram, logger=self.logger)
 
     def expand_diagram_from_bus(self, root_bus: Bus) -> None:
         """
@@ -920,9 +836,7 @@ class SchematicWidget(BaseDiagramWidget):
                                               root_bus=root_bus,
                                               max_level=1)
 
-        self.draw_additional_diagram(diagram=extra_diagram,
-                                     prefer_node_breaker=self.prefer_node_breaker,
-                                     logger=self.logger)
+        self.draw_additional_diagram(diagram=extra_diagram, logger=self.logger)
 
     def update_diagram_element(self, device: ALL_DEV_TYPES,
                                x: float = 0, y: float = 0, w: int = 0, h: int = 0, r: float = 0,
@@ -995,25 +909,6 @@ class SchematicWidget(BaseDiagramWidget):
             if isinstance(graphic_object, BusGraphicItem):
                 if graphic_object.isSelected():
                     idx, bus = bus_dict[idtag]
-                    lst.append((idx, bus, graphic_object))
-        return lst
-
-    def get_selected_cn(self) -> List[Tuple[int, Bus, CnGraphicItem]]:
-        """
-        Get the selected buses
-        :return:
-        """
-        lst: List[Tuple[int, Bus, Union[CnGraphicItem, None]]] = list()
-        cn_graphic_dict = self.graphics_manager.get_device_type_dict(DeviceType.ConnectivityNodeDevice)
-
-        cn_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b)
-                                               for i, b in
-                                               enumerate(self.circuit.get_connectivity_nodes())}
-
-        for idtag, graphic_object in cn_graphic_dict.items():
-            if isinstance(graphic_object, CnGraphicItem):
-                if graphic_object.isSelected():
-                    idx, bus = cn_dict[idtag]
                     lst.append((idx, bus, graphic_object))
         return lst
 
@@ -1525,7 +1420,6 @@ class SchematicWidget(BaseDiagramWidget):
 
         for dev_tpe in [DeviceType.BusDevice,
                         DeviceType.BusBarDevice,
-                        DeviceType.ConnectivityNodeDevice,
                         DeviceType.FluidNodeDevice,
                         DeviceType.Transformer3WDevice]:
 
@@ -2036,7 +1930,6 @@ class SchematicWidget(BaseDiagramWidget):
         Try to find the connection graphics from the API connection
         :param port: Connection port (optional)
         :param bus: Api Bus (optional)
-        :param cn: API connectivity node (optional)
         :return: OPTIONAL_PORT
         """
         if port is None:
@@ -2060,20 +1953,14 @@ class SchematicWidget(BaseDiagramWidget):
         else:
             return port
 
-    def find_ports(self,
-                   branch: BRANCH_TYPES,
-                   prefer_node_breaker: bool,
-                   logger: Logger) -> Tuple[OPTIONAL_PORT, OPTIONAL_PORT]:
+    def find_ports(self, branch: BRANCH_TYPES) -> Tuple[OPTIONAL_PORT, OPTIONAL_PORT]:
         """
         Find the preferred set of ports for drawing
         :param branch: some API branch
-        :param prefer_node_breaker:
-        :param logger:
         :return: OPTIONAL_PORT, OPTIONAL_PORT
         """
 
-        obj_from, obj_to, is_ok = branch.get_from_and_to_objects(logger=logger,
-                                                                 prefer_node_breaker=prefer_node_breaker)
+        obj_from, obj_to, is_ok = branch.get_from_and_to_objects()
 
         # Bus provided, search its graphics
         bus_graphic0 = self.graphics_manager.query_preferring_busbars(obj_from)
@@ -2095,20 +1982,14 @@ class SchematicWidget(BaseDiagramWidget):
 
         return from_port, to_port
 
-    def find_to_port(self,
-                     branch: BRANCH_TYPES,
-                     prefer_node_breaker: bool,
-                     logger: Logger) -> OPTIONAL_PORT:
+    def find_to_port(self, branch: BRANCH_TYPES) -> OPTIONAL_PORT:
         """
         Find the preferred set of ports for drawing
         :param branch: some API branch
-        :param prefer_node_breaker:
-        :param logger:
         :return: OPTIONAL_PORT, OPTIONAL_PORT
         """
 
-        obj_from, obj_to, is_ok = branch.get_from_and_to_objects(logger=logger,
-                                                                 prefer_node_breaker=prefer_node_breaker)
+        obj_from, obj_to, is_ok = branch.get_from_and_to_objects()
 
         # Bus provided, search its graphics
         bus_graphic1 = self.graphics_manager.query_preferring_busbars(obj_to)
@@ -2131,7 +2012,6 @@ class SchematicWidget(BaseDiagramWidget):
                                                    bool], BRANCH_GRAPHICS],
                        from_port: OPTIONAL_PORT = None,
                        to_port: OPTIONAL_PORT = None,
-                       prefer_node_breaker: bool = False,
                        draw_labels: bool = True,
                        logger: Logger = Logger()) -> Union[TransformerGraphicItem, None]:
         """
@@ -2140,7 +2020,6 @@ class SchematicWidget(BaseDiagramWidget):
         :param new_graphic_func: New graphic object to use if needed
         :param from_port: Connection port from (optional)
         :param to_port: Connection port to (optional)
-        :param prefer_node_breaker: Prefer node breaker representation?
         :param draw_labels: Draw labels by default?
         :param logger: Logger
         """
@@ -2151,13 +2030,9 @@ class SchematicWidget(BaseDiagramWidget):
         if graphic_object is None:
 
             if from_port is None and to_port is None:
-                from_port, to_port = self.find_ports(branch=branch,
-                                                     prefer_node_breaker=prefer_node_breaker,
-                                                     logger=logger)
+                from_port, to_port = self.find_ports(branch=branch)
             elif from_port is not None and to_port is None:
-                to_port = self.find_to_port(branch=branch,
-                                            prefer_node_breaker=prefer_node_breaker,
-                                            logger=logger)
+                to_port = self.find_to_port(branch=branch)
 
             if from_port is not None and to_port is not None and (from_port != to_port):
 
@@ -2190,7 +2065,6 @@ class SchematicWidget(BaseDiagramWidget):
                      from_port: OPTIONAL_PORT = None,
                      to_port: OPTIONAL_PORT = None,
                      draw_labels: bool = True,
-                     prefer_node_breaker: bool = False,
                      logger: Logger = Logger()) -> Union[LineGraphicItem, None]:
         """
         add API branch to the Scene
@@ -2198,7 +2072,6 @@ class SchematicWidget(BaseDiagramWidget):
         :param from_port: Connection port from (optional)
         :param to_port: Connection port to (optional)
         :param draw_labels: Draw labels?
-        :param prefer_node_breaker: Prefer node breaker representation?
         :param logger: Logger
         :return: LineGraphicItem or None
         """
@@ -2207,7 +2080,6 @@ class SchematicWidget(BaseDiagramWidget):
                                    new_graphic_func=LineGraphicItem,
                                    from_port=from_port,
                                    to_port=to_port,
-                                   prefer_node_breaker=prefer_node_breaker,
                                    draw_labels=draw_labels,
                                    logger=logger)
 
@@ -2216,7 +2088,6 @@ class SchematicWidget(BaseDiagramWidget):
                         from_port: OPTIONAL_PORT = None,
                         to_port: OPTIONAL_PORT = None,
                         draw_labels: bool = True,
-                        prefer_node_breaker: bool = False,
                         logger: Logger = Logger()) -> Union[DcLineGraphicItem, None]:
         """
         add API branch to the Scene
@@ -2224,7 +2095,6 @@ class SchematicWidget(BaseDiagramWidget):
         :param from_port: Connection port from (optional)
         :param to_port: Connection port to (optional)
         :param draw_labels: Draw labels?
-        :param prefer_node_breaker: Prefer node breaker representation?
         :param logger: Logger
         :return: DcLineGraphicItem or None
         """
@@ -2233,7 +2103,6 @@ class SchematicWidget(BaseDiagramWidget):
                                    new_graphic_func=DcLineGraphicItem,
                                    from_port=from_port,
                                    to_port=to_port,
-                                   prefer_node_breaker=prefer_node_breaker,
                                    draw_labels=draw_labels,
                                    logger=logger)
 
@@ -2242,7 +2111,6 @@ class SchematicWidget(BaseDiagramWidget):
                      from_port: OPTIONAL_PORT = None,
                      to_port: OPTIONAL_PORT = None,
                      draw_labels: bool = True,
-                     prefer_node_breaker: bool = False,
                      logger: Logger = Logger()) -> Union[HvdcGraphicItem, None]:
         """
         add API branch to the Scene
@@ -2250,7 +2118,6 @@ class SchematicWidget(BaseDiagramWidget):
         :param from_port: Connection port from (optional)
         :param to_port: Connection port to (optional)
         :param draw_labels: Draw labels?
-        :param prefer_node_breaker: Prefer node breaker representation?
         :param logger: Logger
         :return: SeriesReactanceGraphicItem or None
         """
@@ -2259,7 +2126,6 @@ class SchematicWidget(BaseDiagramWidget):
                                    new_graphic_func=HvdcGraphicItem,
                                    from_port=from_port,
                                    to_port=to_port,
-                                   prefer_node_breaker=prefer_node_breaker,
                                    draw_labels=draw_labels,
                                    logger=logger)
 
@@ -2268,7 +2134,6 @@ class SchematicWidget(BaseDiagramWidget):
                     from_port: OPTIONAL_PORT = None,
                     to_port: OPTIONAL_PORT = None,
                     draw_labels: bool = True,
-                    prefer_node_breaker: bool = False,
                     logger: Logger = Logger()) -> Union[VscGraphicItem, None]:
         """
         add API branch to the Scene
@@ -2276,7 +2141,6 @@ class SchematicWidget(BaseDiagramWidget):
         :param from_port: Connection port from (optional)
         :param to_port: Connection port to (optional)
         :param draw_labels: Draw labels?
-        :param prefer_node_breaker: Prefer node breaker representation?
         :param logger: Logger
         :return: SeriesReactanceGraphicItem or None
         """
@@ -2285,7 +2149,6 @@ class SchematicWidget(BaseDiagramWidget):
                                    new_graphic_func=VscGraphicItem,
                                    from_port=from_port,
                                    to_port=to_port,
-                                   prefer_node_breaker=prefer_node_breaker,
                                    draw_labels=draw_labels,
                                    logger=logger)
 
@@ -2294,7 +2157,6 @@ class SchematicWidget(BaseDiagramWidget):
                      from_port: OPTIONAL_PORT = None,
                      to_port: OPTIONAL_PORT = None,
                      draw_labels: bool = True,
-                     prefer_node_breaker: bool = False,
                      logger: Logger = Logger()) -> Union[UpfcGraphicItem, None]:
         """
         add API branch to the Scene
@@ -2302,7 +2164,6 @@ class SchematicWidget(BaseDiagramWidget):
         :param from_port: Connection port from (optional)
         :param to_port: Connection port to (optional)
         :param draw_labels: Draw labels?
-        :param prefer_node_breaker: Prefer node breaker representation?
         :param logger: Logger
         :return: SeriesReactanceGraphicItem or None
         """
@@ -2311,7 +2172,6 @@ class SchematicWidget(BaseDiagramWidget):
                                    new_graphic_func=UpfcGraphicItem,
                                    from_port=from_port,
                                    to_port=to_port,
-                                   prefer_node_breaker=prefer_node_breaker,
                                    draw_labels=draw_labels,
                                    logger=logger)
 
@@ -2320,7 +2180,6 @@ class SchematicWidget(BaseDiagramWidget):
                                  from_port: OPTIONAL_PORT = None,
                                  to_port: OPTIONAL_PORT = None,
                                  draw_labels: bool = True,
-                                 prefer_node_breaker: bool = False,
                                  logger: Logger = Logger()) -> Union[SeriesReactanceGraphicItem, None]:
         """
         add API branch to the Scene
@@ -2328,7 +2187,6 @@ class SchematicWidget(BaseDiagramWidget):
         :param from_port: Connection port from (optional)
         :param to_port: Connection port to (optional)
         :param draw_labels: Draw labels?
-        :param prefer_node_breaker: Prefer node breaker representation?
         :param logger: Logger
         :return: SeriesReactanceGraphicItem or None
         """
@@ -2337,7 +2195,6 @@ class SchematicWidget(BaseDiagramWidget):
                                    new_graphic_func=SeriesReactanceGraphicItem,
                                    from_port=from_port,
                                    to_port=to_port,
-                                   prefer_node_breaker=prefer_node_breaker,
                                    draw_labels=draw_labels,
                                    logger=logger)
 
@@ -2346,7 +2203,6 @@ class SchematicWidget(BaseDiagramWidget):
                             from_port: OPTIONAL_PORT = None,
                             to_port: OPTIONAL_PORT = None,
                             draw_labels: bool = True,
-                            prefer_node_breaker: bool = False,
                             logger: Logger = Logger()) -> Union[TransformerGraphicItem, None]:
         """
         add API branch to the Scene
@@ -2354,7 +2210,6 @@ class SchematicWidget(BaseDiagramWidget):
         :param from_port: Connection port from (optional)
         :param to_port: Connection port to (optional)
         :param draw_labels: Draw labels?
-        :param prefer_node_breaker: Prefer node breaker representation?
         :param logger: Logger
         :return: TransformerGraphicItem or None
         """
@@ -2363,7 +2218,6 @@ class SchematicWidget(BaseDiagramWidget):
                                    new_graphic_func=TransformerGraphicItem,
                                    from_port=from_port,
                                    to_port=to_port,
-                                   prefer_node_breaker=prefer_node_breaker,
                                    draw_labels=draw_labels,
                                    logger=logger)
 
@@ -2372,7 +2226,6 @@ class SchematicWidget(BaseDiagramWidget):
                         from_port: OPTIONAL_PORT = None,
                         to_port: OPTIONAL_PORT = None,
                         draw_labels: bool = True,
-                        prefer_node_breaker: bool = False,
                         logger: Logger = Logger()) -> Union[WindingGraphicItem, None]:
         """
         add API branch to the Scene
@@ -2380,7 +2233,6 @@ class SchematicWidget(BaseDiagramWidget):
         :param from_port: Connection port from (optional)
         :param to_port: Connection port to (optional)
         :param draw_labels: Draw labels?
-        :param prefer_node_breaker: Prefer node breaker representation?
         :param logger: Logger
         :return: WindingGraphicItem or None
         """
@@ -2389,7 +2241,6 @@ class SchematicWidget(BaseDiagramWidget):
                                    new_graphic_func=WindingGraphicItem,
                                    from_port=from_port,
                                    to_port=to_port,
-                                   prefer_node_breaker=prefer_node_breaker,
                                    draw_labels=draw_labels,
                                    logger=logger)
 
@@ -2398,7 +2249,6 @@ class SchematicWidget(BaseDiagramWidget):
                        from_port: OPTIONAL_PORT = None,
                        to_port: OPTIONAL_PORT = None,
                        draw_labels: bool = True,
-                       prefer_node_breaker: bool = False,
                        logger: Logger = Logger()) -> Union[SwitchGraphicItem, None]:
         """
         add API branch to the Scene
@@ -2406,7 +2256,6 @@ class SchematicWidget(BaseDiagramWidget):
         :param from_port: Connection port from (optional)
         :param to_port: Connection port to (optional)
         :param draw_labels: Draw labels?
-        :param prefer_node_breaker: Prefer node breaker representation?
         :param logger: Logger
         """
 
@@ -2414,7 +2263,6 @@ class SchematicWidget(BaseDiagramWidget):
                                    new_graphic_func=SwitchGraphicItem,
                                    from_port=from_port,
                                    to_port=to_port,
-                                   prefer_node_breaker=prefer_node_breaker,
                                    draw_labels=draw_labels,
                                    logger=logger)
 
@@ -2530,8 +2378,7 @@ class SchematicWidget(BaseDiagramWidget):
         graphic_object = self.add_api_hvdc(branch=hvdc,
                                            from_port=line_graphic.get_terminal_from(),
                                            to_port=line_graphic.get_terminal_to(),
-                                           draw_labels=line_graphic.draw_labels,
-                                           prefer_node_breaker=self.prefer_node_breaker)
+                                           draw_labels=line_graphic.draw_labels)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2557,8 +2404,7 @@ class SchematicWidget(BaseDiagramWidget):
         graphic_object = self.add_api_transformer(branch=transformer,
                                                   from_port=line_graphic.get_terminal_from(),
                                                   to_port=line_graphic.get_terminal_to(),
-                                                  draw_labels=line_graphic.draw_labels,
-                                                  prefer_node_breaker=self.prefer_node_breaker)
+                                                  draw_labels=line_graphic.draw_labels)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2585,8 +2431,7 @@ class SchematicWidget(BaseDiagramWidget):
         graphic_object = self.add_api_vsc(branch=vsc,
                                           from_port=line_graphic.get_terminal_from(),
                                           to_port=line_graphic.get_terminal_to(),
-                                          draw_labels=line_graphic.draw_labels,
-                                          prefer_node_breaker=self.prefer_node_breaker)
+                                          draw_labels=line_graphic.draw_labels)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2612,8 +2457,7 @@ class SchematicWidget(BaseDiagramWidget):
         graphic_object = self.add_api_upfc(branch=upfc,
                                            from_port=line_graphic.get_terminal_from(),
                                            to_port=line_graphic.get_terminal_to(),
-                                           draw_labels=line_graphic.draw_labels,
-                                           prefer_node_breaker=self.prefer_node_breaker)
+                                           draw_labels=line_graphic.draw_labels)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2639,8 +2483,7 @@ class SchematicWidget(BaseDiagramWidget):
         graphic_object = self.add_api_series_reactance(branch=series_reactance,
                                                        from_port=line_graphic.get_terminal_from(),
                                                        to_port=line_graphic.get_terminal_to(),
-                                                       draw_labels=line_graphic.draw_labels,
-                                                       prefer_node_breaker=self.prefer_node_breaker)
+                                                       draw_labels=line_graphic.draw_labels)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2666,8 +2509,7 @@ class SchematicWidget(BaseDiagramWidget):
         graphic_object = self.add_api_switch(branch=switch,
                                              from_port=line_graphic.get_terminal_from(),
                                              to_port=line_graphic.get_terminal_to(),
-                                             draw_labels=line_graphic.draw_labels,
-                                             prefer_node_breaker=self.prefer_node_breaker)
+                                             draw_labels=line_graphic.draw_labels)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2700,8 +2542,7 @@ class SchematicWidget(BaseDiagramWidget):
         graphic_object = self.add_api_line(branch=line,
                                            from_port=fl_from.get_terminal(),
                                            to_port=fl_to.get_terminal(),
-                                           draw_labels=True,
-                                           prefer_node_breaker=self.prefer_node_breaker)
+                                           draw_labels=True)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -4273,25 +4114,6 @@ class SchematicWidget(BaseDiagramWidget):
             error_msg(text="You need to select exactly one bus to be set as the generator regulation bus",
                       title="Set regulation bus")
 
-    def set_generator_control_cn(self, generator_graphics: GeneratorGraphicItem):
-        """
-        change the from or to bus of the nbranch with another selected bus
-        :param generator_graphics
-        """
-
-        idx_bus_list = self.get_selected_cn()
-
-        if len(idx_bus_list) == 1:
-
-            # detect the bus and its combinations
-            idx, sel_bus, sel_bus_graphic_item = idx_bus_list[0]
-
-            generator_graphics.api_object.control_cn = sel_bus
-
-        else:
-            error_msg("You need to select exactly one bus to be set as the generator regulation connectivity node",
-                      "Set regulation connectivity node")
-
     def set_branch_control_bus(self, line_graphics: LineGraphicTemplateItem):
         """
         change the from or to bus of the nbranch with another selected bus
@@ -4353,7 +4175,6 @@ class SchematicWidget(BaseDiagramWidget):
             diagram=d_copy,
             default_bus_voltage=self.default_bus_voltage,
             time_index=self.get_time_index(),
-            prefer_node_breaker=self.prefer_node_breaker,
         )
 
     def consolidate_coordinates(self):
@@ -4365,31 +4186,11 @@ class SchematicWidget(BaseDiagramWidget):
             gelm.api_object.x = gelm.x()
             gelm.api_object.y = gelm.y()
 
-        graphics: List[BusBarGraphicItem] = self.graphics_manager.query(elm=DeviceType.BusBarDevice)
-        for gelm in graphics:
-            gelm.api_object.x = gelm.x()
-            gelm.api_object.y = gelm.y()
-
-        graphics: List[CnGraphicItem] = self.graphics_manager.query(elm=DeviceType.ConnectivityNodeDevice)
-        for gelm in graphics:
-            gelm.api_object.x = gelm.x()
-            gelm.api_object.y = gelm.y()
-
     def reset_coordinates(self):
         """
         Reset coordinates to the stored ones in the DataBase
         """
         graphics: List[BusGraphicItem] = self.graphics_manager.query(elm=DeviceType.BusDevice)
-        for gelm in graphics:
-            gelm.x = gelm.api_object.x
-            gelm.y = gelm.api_object.y
-
-        graphics: List[BusBarGraphicItem] = self.graphics_manager.query(elm=DeviceType.BusBarDevice)
-        for gelm in graphics:
-            gelm.x = gelm.api_object.x
-            gelm.y = gelm.api_object.y
-
-        graphics: List[CnGraphicItem] = self.graphics_manager.query(elm=DeviceType.ConnectivityNodeDevice)
         for gelm in graphics:
             gelm.x = gelm.api_object.x
             gelm.y = gelm.api_object.y

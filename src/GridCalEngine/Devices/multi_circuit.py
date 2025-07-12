@@ -235,7 +235,7 @@ class MultiCircuit(Assets):
         Checks if the data could be simulated
         :return: true / false
         """
-        return (self.get_bus_number() + self.get_connectivity_nodes_number()) > 0
+        return self.get_bus_number() > 0
 
     def get_template_objects_list(self) -> List[ALL_DEV_TYPES]:
         """
@@ -321,7 +321,7 @@ class MultiCircuit(Assets):
                 'static_generators',
                 'current_injections',
                 'controllable_shunts',
-                'connectivity_nodes',
+                # 'connectivity_nodes',
                 'bus_bars',
                 'overhead_line_types',
                 'wire_types',
@@ -448,8 +448,6 @@ class MultiCircuit(Assets):
         """
         hvdc = dev.HvdcLine(bus_from=line.bus_from,
                             bus_to=line.bus_to,
-                            cn_from=line.cn_from,
-                            cn_to=line.cn_to,
                             name='HVDC Line',
                             active=line.active,
                             rate=line.rate,
@@ -474,8 +472,6 @@ class MultiCircuit(Assets):
         """
         transformer = dev.Transformer2W(bus_from=line.bus_from,
                                         bus_to=line.bus_to,
-                                        cn_from=line.cn_from,
-                                        cn_to=line.cn_to,
                                         name='Transformer',
                                         active=line.active,
                                         rate=line.rate,
@@ -546,8 +542,6 @@ class MultiCircuit(Assets):
         """
         vsc = dev.VSC(bus_from=line.bus_from,
                       bus_to=line.bus_to,
-                      cn_from=line.cn_from,
-                      cn_to=line.cn_to,
                       name='VSC',
                       active=line.active,
                       rate=line.rate)
@@ -571,8 +565,6 @@ class MultiCircuit(Assets):
         """
         upfc = dev.UPFC(bus_from=line.bus_from,
                         bus_to=line.bus_to,
-                        cn_from=line.cn_from,
-                        cn_to=line.cn_to,
                         name='UPFC',
                         active=line.active,
                         rate=line.rate,
@@ -598,8 +590,6 @@ class MultiCircuit(Assets):
         """
         series_reactance = dev.SeriesReactance(bus_from=line.bus_from,
                                                bus_to=line.bus_to,
-                                               cn_from=line.cn_from,
-                                               cn_to=line.cn_to,
                                                name='Series reactance',
                                                active=line.active,
                                                rate=line.rate,
@@ -626,8 +616,6 @@ class MultiCircuit(Assets):
         """
         series_reactance = dev.Switch(bus_from=line.bus_from,
                                       bus_to=line.bus_to,
-                                      cn_from=line.cn_from,
-                                      cn_to=line.cn_to,
                                       name='Switch',
                                       active=line.active,
                                       rate=line.rate,
@@ -2424,82 +2412,6 @@ class MultiCircuit(Assets):
         self.clean_technologies()
 
         return logger
-
-    def convert_to_node_breaker(self) -> None:
-        """
-        Convert this MultiCircuit in-place from bus/branch to node/breaker network model
-        """
-        # TODO: Modify this to reflect the new reality...
-
-        bus_to_busbar_cn = dict()  # relate a bus to its equivalent busbar's cn
-        for bus in self.buses:
-            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
-            self.add_bus_bar(bus_bar)
-            bus_to_busbar_cn[bus.idtag] = bus_bar.bus
-            bus_bar.bus.code = bus.code  # for soft checking later
-            if bus_bar.bus.bus:
-                bus_bar.bus.bus.code = bus.code  # for soft checking later
-
-        # add the cn's at the branches
-        for lst in [self.get_branches(), self.get_switches()]:
-            for elm in lst:
-                if elm.bus_from:
-                    elm.cn_from = bus_to_busbar_cn.get(elm.bus_from.idtag, None)
-                if elm.bus_to:
-                    elm.cn_to = bus_to_busbar_cn.get(elm.bus_to.idtag, None)
-
-        # add the cn's at the branches
-        for lst in self.get_injection_devices_lists():
-            for elm in lst:
-                if elm.bus:
-                    elm.cn = bus_to_busbar_cn.get(elm.bus.idtag, None)
-
-    def convert_to_node_breaker_adding_switches(self) -> None:
-        """
-        Convert this MultiCircuit in-place from bus/branch to node/breaker network model,
-        adding switches at the extremes of every branch
-        """
-
-        bus_to_busbar_cn = dict()  # relate a bus to its equivalent busbar's cn
-        for bus in self.buses:
-            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
-            self.add_bus_bar(bus_bar)
-            bus_to_busbar_cn[bus.idtag] = bus_bar.bus
-            bus_bar.bus.code = bus.code  # for soft checking later
-            if bus_bar.bus.bus:
-                bus_bar.bus.bus.code = bus.code  # for soft checking later
-
-        # branches
-        for elm in self.get_branches():
-            # Create two new connectivity nodes
-            cnfrom = dev.ConnectivityNode(name='Artificial_CN_from_L{}'.format(elm.name))
-            cnto = dev.ConnectivityNode(name='Artificial_CN_to_L{}'.format(elm.name))
-            self.add_connectivity_node(cnfrom)
-            self.add_connectivity_node(cnto)
-            elm.cn_to = cnto
-            elm.cn_from = cnfrom
-
-            # Create two new switches
-            sw1 = dev.Switch(name='Artificial_SW_from_L{}'.format(elm.name),
-                             cn_from=bus_to_busbar_cn[elm.bus_from.idtag],
-                             cn_to=cnfrom,
-                             active=True)
-            sw2 = dev.Switch(name='Artificial_SW_to_L{}'.format(elm.name),
-                             cn_from=cnto,
-                             cn_to=bus_to_busbar_cn[elm.bus_to.idtag],
-                             active=True)
-            self.add_switch(sw1)
-            self.add_switch(sw2)
-
-        # injections
-        for elm in self.get_injection_devices():
-            # TODO: Add the posibbility to add a switch here too
-            elm.cn = bus_to_busbar_cn[elm.bus.idtag]
-
-        # Removing original buses
-        bidx = [b for b in self.get_buses()]
-        for b in bidx:
-            self.delete_bus(b)
 
     def split_line(self,
                    original_line: Union[dev.Line],

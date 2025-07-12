@@ -505,14 +505,9 @@ class BranchParent(PhysicalDevice):
         else:
             return None
 
-    def get_from_and_to_objects(self,
-                                logger: Logger = Logger(),
-                                prefer_node_breaker: bool = True) -> Tuple[CONNECTION_TYPE, CONNECTION_TYPE, bool]:
+    def get_from_and_to_objects(self) -> Tuple[CONNECTION_TYPE, CONNECTION_TYPE, bool]:
         """
         Get the from and to connection objects of the branch
-        :param logger: Logger object
-        :param prefer_node_breaker: If true the connectivity nodes are examined first,
-                                    otherwise the buses are returned right away
         :return: Object from, Object to, is it ok?
         """
 

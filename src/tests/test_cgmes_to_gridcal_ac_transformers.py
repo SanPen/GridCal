@@ -4,9 +4,6 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from typing import Dict, List
-
-import pytest
-
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures import BusData
@@ -46,7 +43,7 @@ def calc_node_dict_object() -> Dict[str, gcdev.Bus]:
     return d
 
 
-def cn_dict_object() -> Dict[str, List[gcdev.ConnectivityNode]]:
+def cn_dict_object() -> Dict[str, List[ConnectivityNode]]:
     d = dict()
     d["cn1"] = [cn_test]
     return d

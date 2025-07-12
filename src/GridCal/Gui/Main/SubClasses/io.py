@@ -549,9 +549,8 @@ class IoMain(ConfigurationMain):
                         if isinstance(diagram_widget, SchematicWidget):
                             injections_by_bus = new_circuit.get_injection_devices_grouped_by_bus()
                             injections_by_fluid_node = new_circuit.get_injection_devices_grouped_by_fluid_node()
-                            injections_by_cn = new_circuit.get_injection_devices_grouped_by_cn()
+
                             diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
-                                                                     connectivity_nodes=new_circuit.connectivity_nodes,
                                                                      busbars=new_circuit.bus_bars,
                                                                      lines=new_circuit.lines,
                                                                      dc_lines=new_circuit.dc_lines,
@@ -565,7 +564,6 @@ class IoMain(ConfigurationMain):
                                                                      fluid_paths=new_circuit.fluid_paths,
                                                                      injections_by_bus=injections_by_bus,
                                                                      injections_by_fluid_node=injections_by_fluid_node,
-                                                                     injections_by_cn=injections_by_cn,
                                                                      explode_factor=1.0,
                                                                      prog_func=None,
                                                                      text_func=None)
@@ -580,75 +578,8 @@ class IoMain(ConfigurationMain):
         """
         Prompt to export a diff of this circuit and a base one
         """
-        # check that this circuit is ok
-        # logger = Logger()
-        # _, ok = self.circuit.get_all_elements_dict(logger=logger)
-        #
-        # if ok:
-        #     self.open_file_threaded(post_function=self.post_create_circuit_differential,
-        #                             allow_diff_file_format=True,
-        #                             title="Load base grid to compare...")
-        # else:
-        #     dlg = LogsDialogue('This circuit has duplicated idtags :(', logger)
-        #     dlg.exec()
-
         dlg = GridDiffDialogue(grid=self.circuit)
         dlg.exec()
-
-    # def post_create_circuit_differential(self):
-    #     """
-    #
-    #     :return:
-    #     """
-    #     self.stuff_running_now.delete('file_open')
-    #
-    #     if self.open_file_thread_object is not None:
-    #
-    #         if self.open_file_thread_object.logger.has_logs():
-    #             dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
-    #             dlg.exec()
-    #
-    #         if self.open_file_thread_object.valid:
-    #
-    #             if not self.circuit.valid_for_simulation():
-    #                 # load the circuit right away
-    #                 self.stuff_running_now.append('file_open')
-    #                 self.post_open_file()
-    #             else:
-    #                 # diff the circuit
-    #                 new_circuit = self.open_file_thread_object.circuit
-    #
-    #                 dict_logger = Logger()
-    #                 _, dict_ok = new_circuit.get_all_elements_dict(logger=dict_logger)
-    #
-    #                 if dict_ok:
-    #                     # create the differential
-    #                     ok, diff_logger, dgrid = self.circuit.differentiate_circuits(new_circuit)
-    #
-    #                     if diff_logger.has_logs():
-    #                         dlg = LogsDialogue('Grid differences', diff_logger)
-    #                         dlg.exec()
-    #
-    #                     # select the file to save
-    #                     filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file',
-    #                                                                                     dgrid.name,
-    #                                                                                     "GridCal diff (*.dgridcal)")
-    #
-    #                     if filename != '':
-    #
-    #                         # if the user did not enter the extension, add it automatically
-    #                         name, file_extension = os.path.splitext(filename)
-    #
-    #                         if file_extension == '':
-    #                             filename = name + ".dgridcal"
-    #
-    #                         # we were able to compose the file correctly, now save it
-    #                         self.save_file_now(filename=filename,
-    #                                            type_selected=type_selected,
-    #                                            grid=dgrid)
-    #                 else:
-    #                     dlg = LogsDialogue('The base circuit has duplicated idtags :(', dict_logger)
-    #                     dlg.exec()
 
     def save_file_as(self):
         """
