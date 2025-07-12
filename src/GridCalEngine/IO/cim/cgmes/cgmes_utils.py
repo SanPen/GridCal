@@ -620,8 +620,7 @@ def base_voltage_to_str(base_voltage):
 
 def get_regulating_control_params(cgmes_elm,
                                   cgmes_enums,
-                                  calc_node_dict,
-                                  cn_dict,
+                                  bus_dict,
                                   logger: DataLogger):
     control_bus = None
     if cgmes_elm.RegulatingControl is not None:
@@ -673,7 +672,8 @@ def get_regulating_control_params(cgmes_elm,
             if cgmes_elm.EquipmentContainer.tpe == 'VoltageLevel':
                 # find the control node
                 control_terminal = cgmes_elm.RegulatingControl.Terminal
-                control_bus, control_node = find_terminal_bus(cgmes_terminal=control_terminal, bus_dict=calc_node_dict)
+                control_bus = find_terminal_bus(cgmes_terminal=control_terminal, bus_dict=bus_dict)
+                control_node = None
             else:
                 control_node = None
                 v_set = 1.0

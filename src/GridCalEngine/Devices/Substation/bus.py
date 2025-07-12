@@ -467,7 +467,7 @@ class Bus(PhysicalDevice):
 
     @bus_bar.setter
     def bus_bar(self, val: BusBar):
-        if isinstance(val, BusBar):
+        if isinstance(val, BusBar) or val is None:
             self._bus_bar = val
         else:
             raise ValueError("The value must be a BusBar")

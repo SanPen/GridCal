@@ -1369,11 +1369,6 @@ class Assets:
                     else:
                         inj_list[i].bus = None
 
-        # delete associations in bus_bars
-        for bb in self.bus_bars:
-            if bb.bus == obj:
-                bb.bus = None
-
         # delete the bus itself
         try:
             self._buses.remove(obj)
@@ -1434,10 +1429,6 @@ class Assets:
 
         self._bus_bars.append(obj)
 
-        # add the internal bus
-        if obj.bus not in self._buses:  # using a ListSet for fast query time
-            self.add_bus(obj.bus)
-
         return obj
 
     def delete_bus_bar(self, obj: dev.BusBar):
@@ -1445,7 +1436,11 @@ class Assets:
         Delete Substation
         :param obj: Substation object
         """
-        self.delete_bus(obj=obj.bus)
+
+        # remove pointers
+        for bus in self.buses:
+            if bus.bus_bar == obj:
+                bus.bus_bar = None
 
         try:
             self._bus_bars.remove(obj)
