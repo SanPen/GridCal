@@ -12,6 +12,7 @@ from GridCalEngine.enumerations import BusMode, DeviceType, BusGraphicType
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Aggregation import Area, Zone, Country
 from GridCalEngine.Devices.Substation.substation import Substation
+from GridCalEngine.Devices.Substation.busbar import BusBar
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.profile import Profile
 
@@ -43,7 +44,6 @@ class Bus(PhysicalDevice):
         'type',
         'is_slack',
         'is_dc',
-        '_internal',
         'x',
         'y',
         'h',
@@ -55,7 +55,8 @@ class Bus(PhysicalDevice):
         'ph_c',
         'ph_n',
         'is_grounded',
-        'graphic_type'
+        'graphic_type',
+        '_bus_bar'
     )
 
     def __init__(self, name="Bus",
@@ -85,7 +86,8 @@ class Bus(PhysicalDevice):
                  latitude=0.0,
                  Vm0=1,
                  Va0=0,
-                 graphic_type: BusGraphicType = BusGraphicType.BusBar):
+                 graphic_type: BusGraphicType = BusGraphicType.BusBar,
+                 bus_bar: BusBar | None = None):
         """
         The Bus object is the container of all the possible devices that can be attached to
         a bus bar or Substation. Such objects can be loads, voltage controlled generators,
@@ -172,7 +174,12 @@ class Bus(PhysicalDevice):
 
         self._voltage_level: VoltageLevel = voltage_level
 
-        self.graphic_type: BusGraphicType = graphic_type
+        self._bus_bar: BusBar = bus_bar
+
+        if is_internal:
+            self.graphic_type: BusGraphicType = BusGraphicType.Internal
+        else:
+            self.graphic_type: BusGraphicType = graphic_type
 
         if voltage_level is not None:
 
@@ -198,9 +205,6 @@ class Bus(PhysicalDevice):
         # determined if this bus is an AC or DC bus
         self.is_dc = bool(is_dc)
 
-        # determine if this bus is part of a composite transformer such as a 3-winding transformer
-        self._internal = bool(is_internal)
-
         # position and dimensions
         self.x = float(xpos)
         self.y = float(ypos)
@@ -220,10 +224,6 @@ class Bus(PhysicalDevice):
         self.register(key='is_slack', units='', tpe=bool, definition='Force the bus to be of slack type.',
                       profile_name='')
         self.register(key='is_dc', units='', tpe=bool, definition='Is this bus of DC type?.', profile_name='')
-        self.register(key='internal', units='', tpe=bool,
-                      definition='Is this bus part of a composite transformer, '
-                                 'such as  a 3-winding transformer or a fluid node?.',
-                      profile_name='', old_names=['is_tr_bus', 'is_internal'])
         self.register(key='graphic_type', units='', tpe=BusGraphicType, definition='Graphic to use in the schematic.')
         self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the bus.', profile_name='')
         self.register(key='Vm0', units='p.u.', tpe=float, definition='Voltage module guess.', profile_name='')
@@ -260,6 +260,8 @@ class Bus(PhysicalDevice):
                       definition='Substation of the bus.')
         self.register(key='voltage_level', units='', tpe=DeviceType.VoltageLevelDevice,
                       definition='Voltage level of the bus.')
+        self.register(key='bus_bar', units='', tpe=DeviceType.BusBarDevice,
+                      definition='Busbar associated to the bus.')
         self.register(key='longitude', units='deg', tpe=float, definition='longitude of the bus.', profile_name='')
         self.register(key='latitude', units='deg', tpe=float, definition='latitude of the bus.', profile_name='')
 
@@ -450,8 +452,22 @@ class Bus(PhysicalDevice):
 
     @property
     def internal(self):
-        return self._internal
+        return self.graphic_type == BusGraphicType.Internal
 
     @internal.setter
     def internal(self, val: bool):
-        self._internal = val
+        if val:
+            self.graphic_type = BusGraphicType.Internal
+        else:
+            pass
+
+    @property
+    def bus_bar(self) -> BusBar:
+        return self._bus_bar
+
+    @bus_bar.setter
+    def bus_bar(self, val: BusBar):
+        if isinstance(val, BusBar):
+            self._bus_bar = val
+        else:
+            raise ValueError("The value must be a BusBar")

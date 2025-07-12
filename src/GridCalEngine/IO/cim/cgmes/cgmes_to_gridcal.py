@@ -18,7 +18,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_pu_values_power_transformer_end,
                                                     get_slack_id,
                                                     find_object_by_idtag,
-                                                    find_terms_connections,
+                                                    find_terminal_bus,
                                                     build_cgmes_limit_dicts,
                                                     get_voltage_shunt)
 from GridCalEngine.data_logger import DataLogger
@@ -252,40 +252,35 @@ def get_gcdev_dc_device_to_terminal_dict(
     return dc_device_to_terminal_dict, ground_tp_list, ground_node_list
 
 
-def find_connections(cgmes_elm: Base,
-                     device_to_terminal_dict: Dict[str, List[Base]],
-                     calc_node_dict: Dict[str, gcdev.Bus],
-                     cn_dict: Dict[str, gcdev.Bus],
-                     logger: DataLogger) -> Tuple[List[gcdev.Bus], List[gcdev.Bus]]:
+def find_associated_buses(cgmes_elm: Base,
+                          device_to_terminal_dict: Dict[str, List[Base]],
+                          bus_dict: Dict[str, gcdev.Bus],
+                          logger: DataLogger) -> List[gcdev.Bus]:
     """
-
-    :param cgmes_elm:
-    :param device_to_terminal_dict:
-    :param calc_node_dict:
-    :param cn_dict:
-    :param logger:
-    :return:
+    This function finds the buses connected to a device
+    :param cgmes_elm: some CGMES element
+    :param device_to_terminal_dict: dictionary that related the CGMES device to all the terminals it may have
+    :param bus_dict: dictionary of GridCal buses
+    :param logger: DataLogger
+    :return: list of associated buses
     """
     # get the cgmes terminal of this device
     cgmes_terminals = device_to_terminal_dict.get(cgmes_elm.uuid, None)
 
     if cgmes_terminals is not None:
-        calc_nodes = list()
+        buses = list()
         cns = list()
         for cgmes_terminal in cgmes_terminals:
-            calc_node, cn = find_terms_connections(cgmes_terminal,
-                                                   calc_node_dict,
-                                                   cn_dict)
-            calc_nodes.append(calc_node)
+            calc_node, cn = find_terminal_bus(cgmes_terminal, bus_dict)
+            buses.append(calc_node)
             cns.append(cn)
     else:
-        calc_nodes = []
-        cns = []
+        buses = []
         logger.add_error("No terminal for the device",
                          device=cgmes_elm.rdfid,
                          device_class=cgmes_elm.tpe)
 
-    return calc_nodes, cns
+    return buses
 
 
 def get_gcdev_buses(cgmes_model: CgmesCircuit,
@@ -555,11 +550,11 @@ def get_gcdev_dc_lines(cgmes_model: CgmesCircuit,
     # convert DC lines
     for cgmes_elm in cgmes_model.cgmes_assets.DCLineSegment_list:
 
-        calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
-                                           device_to_terminal_dict=device_to_terminal_dict,
-                                           calc_node_dict=calc_node_dict,
-                                           cn_dict=cn_dict,
-                                           logger=logger)
+        calc_nodes, cns = find_associated_buses(cgmes_elm=cgmes_elm,
+                                                device_to_terminal_dict=device_to_terminal_dict,
+                                                bus_dict=calc_node_dict,
+                                                cn_dict=cn_dict,
+                                                logger=logger)
 
         if len(calc_nodes) == 2:
             bus_f = calc_nodes[0]
@@ -631,17 +626,17 @@ def get_gcdev_vsc_converters(cgmes_model: CgmesCircuit,
 
     for cgmes_elm in cgmes_model.cgmes_assets.VsConverter_list:
 
-        bus_dc, cn_dc = find_connections(cgmes_elm=cgmes_elm,
-                                         device_to_terminal_dict=dc_device_to_terminal_dict,
-                                         calc_node_dict=dc_bus_dict,
-                                         cn_dict=dc_cn_dict,
-                                         logger=logger)
+        bus_dc, cn_dc = find_associated_buses(cgmes_elm=cgmes_elm,
+                                              device_to_terminal_dict=dc_device_to_terminal_dict,
+                                              bus_dict=dc_bus_dict,
+                                              cn_dict=dc_cn_dict,
+                                              logger=logger)
 
-        bus_ac, cn_ac = find_connections(cgmes_elm=cgmes_elm,
-                                         device_to_terminal_dict=device_to_terminal_dict,
-                                         calc_node_dict=calc_node_dict,
-                                         cn_dict=cn_dict,
-                                         logger=logger)
+        bus_ac, cn_ac = find_associated_buses(cgmes_elm=cgmes_elm,
+                                              device_to_terminal_dict=device_to_terminal_dict,
+                                              bus_dict=calc_node_dict,
+                                              cn_dict=cn_dict,
+                                              logger=logger)
 
         if len(bus_dc) == 1 and len(bus_ac) == 1:
 
@@ -706,11 +701,11 @@ def get_gcdev_hvdc_from_dcline_and_vscs(
     for dc_line_sgm in cgmes_model.cgmes_assets.DCLineSegment_list:
         # or in more general it is DCLine_list
 
-        dc_buses, dc_cns = find_connections(cgmes_elm=dc_line_sgm,
-                                            device_to_terminal_dict=dc_device_to_terminal_dict,
-                                            calc_node_dict=dc_bus_dict,
-                                            cn_dict=dc_cn_dict,
-                                            logger=logger)
+        dc_buses, dc_cns = find_associated_buses(cgmes_elm=dc_line_sgm,
+                                                 device_to_terminal_dict=dc_device_to_terminal_dict,
+                                                 bus_dict=dc_bus_dict,
+                                                 cn_dict=dc_cn_dict,
+                                                 logger=logger)
 
         # get the cgmes terminal of this device
         dc_terminals = dc_device_to_terminal_dict.get(dc_line_sgm.uuid, None)
@@ -736,18 +731,18 @@ def get_gcdev_hvdc_from_dcline_and_vscs(
 
         else:
             # bus_from: AC side of VSC 1
-            bus_from, cn_from = find_connections(cgmes_elm=vsc_list[0],
-                                                 device_to_terminal_dict=device_to_terminal_dict,
-                                                 calc_node_dict=calc_node_dict,
-                                                 cn_dict=cn_dict,
-                                                 logger=logger)
+            bus_from, cn_from = find_associated_buses(cgmes_elm=vsc_list[0],
+                                                      device_to_terminal_dict=device_to_terminal_dict,
+                                                      bus_dict=calc_node_dict,
+                                                      cn_dict=cn_dict,
+                                                      logger=logger)
 
             # bus_to: AC side of VSC 2
-            bus_to, cn_to = find_connections(cgmes_elm=vsc_list[1],
-                                             device_to_terminal_dict=device_to_terminal_dict,
-                                             calc_node_dict=calc_node_dict,
-                                             cn_dict=cn_dict,
-                                             logger=logger)
+            bus_to, cn_to = find_associated_buses(cgmes_elm=vsc_list[1],
+                                                  device_to_terminal_dict=device_to_terminal_dict,
+                                                  bus_dict=calc_node_dict,
+                                                  cn_dict=cn_dict,
+                                                  logger=logger)
 
             rated_udc = getattr(vsc_list[0], 'ratedUdc', None)
             if rated_udc is None:
@@ -871,11 +866,11 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                         cgmes_model.cgmes_assets.NonConformLoad_list]:
 
         for cgmes_elm in device_list:
-            calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
-                                               device_to_terminal_dict=device_to_terminal_dict,
-                                               calc_node_dict=calc_node_dict,
-                                               cn_dict=cn_dict,
-                                               logger=logger)
+            calc_nodes, cns = find_associated_buses(cgmes_elm=cgmes_elm,
+                                                    device_to_terminal_dict=device_to_terminal_dict,
+                                                    bus_dict=calc_node_dict,
+                                                    cn_dict=cn_dict,
+                                                    logger=logger)
 
             if len(calc_nodes) == 1:
                 calc_node = calc_nodes[0]
@@ -983,11 +978,11 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
     # convert generators
     for device_list in [cgmes_model.cgmes_assets.SynchronousMachine_list]:
         for cgmes_elm in device_list:
-            calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
-                                               device_to_terminal_dict=device_to_terminal_dict,
-                                               calc_node_dict=calc_node_dict,
-                                               cn_dict=cn_dict,
-                                               logger=logger)
+            calc_nodes, cns = find_associated_buses(cgmes_elm=cgmes_elm,
+                                                    device_to_terminal_dict=device_to_terminal_dict,
+                                                    bus_dict=calc_node_dict,
+                                                    cn_dict=cn_dict,
+                                                    logger=logger)
 
             if len(calc_nodes) == 1:
                 calc_node = calc_nodes[0]
@@ -1076,11 +1071,11 @@ def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
     for device_list in [cgmes_model.cgmes_assets.EquivalentInjection_list]:
         # TODO ExternalNetworkInjection
         for cgmes_elm in device_list:
-            calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
-                                               device_to_terminal_dict=device_to_terminal_dict,
-                                               calc_node_dict=calc_node_dict,
-                                               cn_dict=cn_dict,
-                                               logger=logger)
+            calc_nodes, cns = find_associated_buses(cgmes_elm=cgmes_elm,
+                                                    device_to_terminal_dict=device_to_terminal_dict,
+                                                    bus_dict=calc_node_dict,
+                                                    cn_dict=cn_dict,
+                                                    logger=logger)
 
             if len(calc_nodes) == 1:
                 calc_node = calc_nodes[0]
@@ -1154,11 +1149,11 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
     # convert ac lines
     for device_list in [cgmes_model.cgmes_assets.ACLineSegment_list]:
         for cgmes_elm in device_list:
-            calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
-                                               device_to_terminal_dict=device_to_terminal_dict,
-                                               calc_node_dict=calc_node_dict,
-                                               cn_dict=cn_dict,
-                                               logger=logger)
+            calc_nodes, cns = find_associated_buses(cgmes_elm=cgmes_elm,
+                                                    device_to_terminal_dict=device_to_terminal_dict,
+                                                    bus_dict=calc_node_dict,
+                                                    cn_dict=cn_dict,
+                                                    logger=logger)
 
             if len(calc_nodes) == 2:
                 calc_node_f = calc_nodes[0]
@@ -1359,11 +1354,11 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
             else:
                 prot_factor = 1.4
 
-            calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
-                                               device_to_terminal_dict=device_to_terminal_dict,
-                                               calc_node_dict=calc_node_dict,
-                                               cn_dict=cn_dict,
-                                               logger=logger)
+            calc_nodes, cns = find_associated_buses(cgmes_elm=cgmes_elm,
+                                                    device_to_terminal_dict=device_to_terminal_dict,
+                                                    bus_dict=calc_node_dict,
+                                                    cn_dict=cn_dict,
+                                                    logger=logger)
 
             if len(windings) == 2:
 
@@ -1581,9 +1576,9 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                         tc_type = TapChangerTypes.VoltageRegulation
                         tap_module_control_mode = TapModuleControl.Vm
 
-                        reg_bus, reg_cn = find_terms_connections(
+                        reg_bus, reg_cn = find_terminal_bus(
                             cgmes_terminal=tap_changer.TapChangerControl.Terminal,
-                            calc_node_dict=calc_node_dict,
+                            bus_dict=calc_node_dict,
                             cn_dict=cn_dict
                         )
                 else:
@@ -1777,11 +1772,11 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
 
         for cgmes_elm in device_list:
 
-            calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
-                                               device_to_terminal_dict=device_to_terminal_dict,
-                                               calc_node_dict=calc_node_dict,
-                                               cn_dict=cn_dict,
-                                               logger=logger)
+            calc_nodes, cns = find_associated_buses(cgmes_elm=cgmes_elm,
+                                                    device_to_terminal_dict=device_to_terminal_dict,
+                                                    bus_dict=calc_node_dict,
+                                                    cn_dict=cn_dict,
+                                                    logger=logger)
 
             if len(calc_nodes) == 1:
                 calc_node = calc_nodes[0]
@@ -1834,11 +1829,11 @@ def get_gcdev_controllable_shunts(
     # LINEAR
     for cgmes_elm in cgmes_model.cgmes_assets.LinearShuntCompensator_list:
 
-        calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
-                                           device_to_terminal_dict=device_to_terminal_dict,
-                                           calc_node_dict=calc_node_dict,
-                                           cn_dict=cn_dict,
-                                           logger=logger)
+        calc_nodes, cns = find_associated_buses(cgmes_elm=cgmes_elm,
+                                                device_to_terminal_dict=device_to_terminal_dict,
+                                                bus_dict=calc_node_dict,
+                                                cn_dict=cn_dict,
+                                                logger=logger)
 
         if len(calc_nodes) == 1:
             calc_node = calc_nodes[0]
@@ -1889,11 +1884,11 @@ def get_gcdev_controllable_shunts(
     # NON - LINEAR
     for cgmes_elm in cgmes_model.cgmes_assets.NonlinearShuntCompensator_list:
 
-        calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
-                                           device_to_terminal_dict=device_to_terminal_dict,
-                                           calc_node_dict=calc_node_dict,
-                                           cn_dict=cn_dict,
-                                           logger=logger)
+        calc_nodes, cns = find_associated_buses(cgmes_elm=cgmes_elm,
+                                                device_to_terminal_dict=device_to_terminal_dict,
+                                                bus_dict=calc_node_dict,
+                                                cn_dict=cn_dict,
+                                                logger=logger)
 
         if len(calc_nodes) == 1:
             calc_node = calc_nodes[0]
@@ -2023,11 +2018,11 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
                         ]:
 
         for cgmes_elm in device_list:
-            calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
-                                               device_to_terminal_dict=device_to_terminal_dict,
-                                               calc_node_dict=calc_node_dict,
-                                               cn_dict=cn_dict,
-                                               logger=logger)
+            calc_nodes, cns = find_associated_buses(cgmes_elm=cgmes_elm,
+                                                    device_to_terminal_dict=device_to_terminal_dict,
+                                                    bus_dict=calc_node_dict,
+                                                    cn_dict=cn_dict,
+                                                    logger=logger)
 
             if len(calc_nodes) == 2:
                 calc_node_f = calc_nodes[0]
@@ -2208,11 +2203,11 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
 
         for cgmes_elm in device_list:
 
-            calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
-                                               device_to_terminal_dict=device_to_terminal_dict,
-                                               calc_node_dict=calc_node_dict,
-                                               cn_dict=cn_dict,
-                                               logger=logger)
+            calc_nodes, cns = find_associated_buses(cgmes_elm=cgmes_elm,
+                                                    device_to_terminal_dict=device_to_terminal_dict,
+                                                    bus_dict=calc_node_dict,
+                                                    cn_dict=cn_dict,
+                                                    logger=logger)
 
             if len(calc_nodes) == 1 or len(cns) == 1:
 

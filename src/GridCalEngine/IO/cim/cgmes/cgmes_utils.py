@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 
-from typing import List, Tuple, Dict
+from typing import List, Dict
 import numpy as np
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.base import Base, rfid2uuid
@@ -14,55 +14,30 @@ from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import LimitTypeKind
 
 
-def find_terms_connections(cgmes_terminal: Base,
-                           calc_node_dict: Dict[str, gcdev.Bus],
-                           cn_dict: Dict[str, gcdev.ConnectivityNode]) -> Tuple[gcdev.Bus, gcdev.ConnectivityNode]:
+def find_terminal_bus(cgmes_terminal: Base, bus_dict: Dict[str, gcdev.Bus]) -> gcdev.Bus | None:
     """
-
+    Find the bus associated to a terminal
     :param cgmes_terminal:
-    :param calc_node_dict:
-    :param cn_dict:
+    :param bus_dict:
     :return:
     """
-    calc_node = None
-    cn = None
     if cgmes_terminal is not None:
-        try:  # Try for AC terminal
+        if hasattr(cgmes_terminal, "TopologicalNode"):  # Try for AC terminal
             # get the rosetta calculation node if exists
             if cgmes_terminal.TopologicalNode is not None:
-                calc_node = calc_node_dict.get(cgmes_terminal.TopologicalNode.uuid, None)
+                return bus_dict.get(cgmes_terminal.TopologicalNode.uuid, None)
             else:
-                calc_node = None
+                return None
 
-            # get the gcdev connectivity node if exists
-            if cgmes_terminal.ConnectivityNode is not None:
-                cn = cn_dict.get(cgmes_terminal.ConnectivityNode.uuid, None)
+        elif hasattr(cgmes_terminal, "DCTopologicalNode"):  # get the rosetta calculation node if exists
+            if cgmes_terminal.DCTopologicalNode is not None:
+                return bus_dict.get(cgmes_terminal.DCTopologicalNode.uuid, None)
             else:
-                cn = None
-        except:  # Try for DC Terminal
-            # get the rosetta calculation node if exists
-            if hasattr(cgmes_terminal, "DCTopologicalNode"):
-                if cgmes_terminal.DCTopologicalNode is not None:
-                    calc_node = calc_node_dict.get(
-                        cgmes_terminal.DCTopologicalNode.uuid, None)
-                else:
-                    calc_node = None
-            else:
-                calc_node = None
-
-            # get the gcdev connectivity node if exists
-            if hasattr(cgmes_terminal, "DCNode"):
-                if cgmes_terminal.DCNode is not None:
-                    cn = cn_dict.get(cgmes_terminal.DCNode.uuid, None)
-                else:
-                    cn = None
-            else:
-                calc_node = None
+                return None
+        else:
+            return None
     else:
-        calc_node = None
-        cn = None
-
-    return calc_node, cn
+        return None
 
 
 def find_object_by_idtag(object_list: List[ALL_DEV_TYPES], target_idtag: str) -> ALL_DEV_TYPES | None:
@@ -226,7 +201,7 @@ def build_cgmes_limit_dicts(cgmes_model: CgmesCircuit,
     return patl_dict, tatl_900_dict, tatl_60_dict
 
 
-# region PowerTransformer
+# region PowerTransformer ----------------------------------------------------------------------------------------------
 
 
 def get_pu_values_power_transformer(power_transformer, System_Sbase):
@@ -287,7 +262,7 @@ def get_pu_values_power_transformer3w(power_transformer, System_Sbase):
     return r12, r23, r31, x12, x23, x31
 
 
-# endregion
+# endregion ------------------------------------------------------------------------------------------------------------
 
 # region PowerTransformerEnd
 def get_voltage_power_transformer_end(power_transformer_end):
@@ -346,7 +321,7 @@ def get_pu_values_power_transformer_end(power_transformer_end, Sbase_system=100)
     return R, X, G, B, R0, X0, G0, B0
 
 
-# endregion
+# endregion ------------------------------------------------------------------------------------------------------------
 
 # region ACLineSegment
 def get_voltage_ac_line_segment(ac_line_segment, logger: DataLogger) -> float | None:
@@ -376,6 +351,8 @@ def get_pu_values_ac_line_segment(ac_line_segment, logger: DataLogger, Sbase: fl
     """
     Get the per-unit values of the equivalent PI model
 
+    :param ac_line_segment
+    :param logger: DataLogger
     :param Sbase: Sbase in MVA
     :return: R, X, Gch, Bch
     """
@@ -428,7 +405,7 @@ def get_rate_ac_line_segment():
     return 1e-20
 
 
-# endregion
+# endregion ------------------------------------------------------------------------------------------------------------
 
 # region Shunt
 def get_voltage_shunt(shunt, logger: DataLogger) -> float | None:
@@ -486,7 +463,7 @@ def get_values_shunt(shunt,
     return G, B, G0, B0
 
 
-# endregion
+# endregion ------------------------------------------------------------------------------------------------------------
 
 # region Terminal(acdc_terminal.ACDCTerminal)
 def get_voltage_terminal(terminal, logger: DataLogger) -> float | None:
@@ -507,10 +484,10 @@ def get_voltage_terminal(terminal, logger: DataLogger) -> float | None:
         return None
 
 
-# endregion
+# ----------------------------------------------------------------------------------------------------------------------
+# TopologicalNode(IdentifiedObject):
+# ----------------------------------------------------------------------------------------------------------------------
 
-
-# region TopologicalNode(IdentifiedObject):
 def get_nominal_voltage(topological_node, logger) -> float:
     """
 
@@ -629,12 +606,17 @@ def get_nominal_voltage(topological_node, logger) -> float:
 
 # endregion
 
+# ----------------------------------------------------------------------------------------------------------------------
 # region BaseVoltage(IdentifiedObject)
+# ----------------------------------------------------------------------------------------------------------------------
+
 def base_voltage_to_str(base_voltage):
     return base_voltage.tpe + ':' + base_voltage.rdfid + ':' + str(base_voltage.nominalVoltage) + ' kV'
 
 
 # endregion
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 def get_regulating_control_params(cgmes_elm,
                                   cgmes_enums,
@@ -691,11 +673,7 @@ def get_regulating_control_params(cgmes_elm,
             if cgmes_elm.EquipmentContainer.tpe == 'VoltageLevel':
                 # find the control node
                 control_terminal = cgmes_elm.RegulatingControl.Terminal
-                control_bus, control_node = find_terms_connections(
-                    cgmes_terminal=control_terminal,
-                    calc_node_dict=calc_node_dict,
-                    cn_dict=cn_dict
-                )
+                control_bus, control_node = find_terminal_bus(cgmes_terminal=control_terminal, bus_dict=calc_node_dict)
             else:
                 control_node = None
                 v_set = 1.0
@@ -730,8 +708,9 @@ def get_regulating_control_params(cgmes_elm,
 
     return v_set, is_controlled, control_bus, control_node
 
-
+# ----------------------------------------------------------------------------------------------------------------------
 # region export UTILS
+# ----------------------------------------------------------------------------------------------------------------------
 
 # class ReferenceManager:
 #     # use it after an element object added
@@ -810,19 +789,38 @@ def find_tn_by_name(cgmes_model: CgmesCircuit, target_name):
     return None
 
 
-def find_object_by_vnom(cgmes_model: CgmesCircuit, object_list: List[Base], target_vnom):
-    boundary_obj_list = cgmes_model.elements_by_type_boundary.get("BaseVoltage")
+def find_object_by_vnom(cgmes_model: CgmesCircuit, object_list: List[Base], target_vnom: float) -> "BaseVoltage":
+    """
+    Find object in the base voltages
+    :param cgmes_model: CgmesCircuit
+    :param object_list: List of BaseVoltage
+    :param target_vnom: Some voltage to look for
+    :return: BaseVoltage
+    """
+    boundary_obj_list: List["BaseVoltage"] = cgmes_model.elements_by_type_boundary.get("BaseVoltage", None)
+
+    # first, search in the boundary set
     if boundary_obj_list is not None:
         for obj in boundary_obj_list:
             if obj.nominalVoltage == target_vnom:
                 return obj
+
+    # if not found, search in the provided objects list
     for obj in object_list:
         if obj.nominalVoltage == target_vnom:
             return obj
+
     return None
 
 
 def find_object_by_attribute(object_list: List, target_attr_name, target_value):
+    """
+
+    :param object_list:
+    :param target_attr_name:
+    :param target_value:
+    :return:
+    """
     if hasattr(object_list[0], target_attr_name):
         for obj in object_list:
             obj_attr = getattr(obj, target_attr_name)
@@ -834,8 +832,19 @@ def find_object_by_attribute(object_list: List, target_attr_name, target_value):
 def get_ohm_values_power_transformer(r, x, g, b, r0, x0, g0, b0, nominal_power, rated_voltage):
     """
     Get the transformer ohm values
+    :param r:
+    :param x:
+    :param g:
+    :param b:
+    :param r0:
+    :param x0:
+    :param g0:
+    :param b0:
+    :param nominal_power:
+    :param rated_voltage:
     :return:
     """
+
     try:
         Sbase_system = 100
         Zbase = (rated_voltage * rated_voltage) / nominal_power

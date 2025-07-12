@@ -1134,41 +1134,6 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         return self.is_from_port_a_cn() and self.is_to_port_a_cn()
 
-    def connected_between_busbar_and_bus(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_busbar() and self.is_to_port_a_bus()
-
-    def connected_between_bus_and_busbar(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_bus() and self.is_to_port_a_busbar()
-
-    def connected_between_busbar(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_busbar() and self.is_to_port_a_busbar()
-
-    def connected_between_busbar_and_cn(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_busbar() and self.is_to_port_a_cn()
-
-    def connected_between_cn_and_busbar(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_cn() and self.is_to_port_a_busbar()
-
     def should_be_a_converter(self) -> bool:
         """
 

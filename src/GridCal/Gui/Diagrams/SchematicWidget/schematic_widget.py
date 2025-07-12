@@ -104,16 +104,15 @@ class SchematicLibraryModel(QStandardItemModel):
         self.setColumnCount(1)
 
         self.bus_name = "Bus"
+        self.cn_name = "Connectivity bus"
         self.transformer3w_name = "3W-Transformer"
         self.fluid_node_name = "Fluid-node"
-        self.cn_name = "Connectivity node"
-        self.bb_name = "Bus bar"
 
         self.add(name=self.bus_name, icon_name="bus_icon")
+        self.add(name=self.cn_name, icon_name="cn_icon")
         self.add(name=self.transformer3w_name, icon_name="transformer3w")
         self.add(name=self.fluid_node_name, icon_name="dam")
-        self.add(name=self.cn_name, icon_name="cn_icon")
-        self.add(name=self.bb_name, icon_name="bus_bar_icon")
+
 
     def add(self, name: str, icon_name: str):
         """
@@ -1357,41 +1356,6 @@ class SchematicWidget(BaseDiagramWidget):
 
                             self.create_line(bus_from=self.started_branch.get_cn_from(),
                                              bus_to=self.started_branch.get_cn_to(),
-                                             from_port=self.started_branch.get_terminal_from(),
-                                             to_port=self.started_branch.get_terminal_to())
-
-                        elif self.started_branch.connected_between_busbar_and_bus():
-
-                            self.create_line(bus_from=self.started_branch.get_busbar_from().bus,
-                                             bus_to=self.started_branch.get_bus_to(),
-                                             from_port=self.started_branch.get_terminal_from(),
-                                             to_port=self.started_branch.get_terminal_to())
-
-                        elif self.started_branch.connected_between_bus_and_busbar():
-
-                            self.create_line(bus_from=self.started_branch.get_bus_from(),
-                                             bus_to=self.started_branch.get_busbar_to().bus,
-                                             from_port=self.started_branch.get_terminal_from(),
-                                             to_port=self.started_branch.get_terminal_to())
-
-                        elif self.started_branch.connected_between_busbar_and_cn():
-
-                            self.create_line(bus_from=self.started_branch.get_busbar_from().bus,
-                                             bus_to=self.started_branch.get_cn_to(),
-                                             from_port=self.started_branch.get_terminal_from(),
-                                             to_port=self.started_branch.get_terminal_to())
-
-                        elif self.started_branch.connected_between_cn_and_busbar():
-
-                            self.create_line(bus_from=self.started_branch.get_cn_from(),
-                                             bus_to=self.started_branch.get_busbar_to().bus,
-                                             from_port=self.started_branch.get_terminal_from(),
-                                             to_port=self.started_branch.get_terminal_to())
-
-                        elif self.started_branch.connected_between_busbar():
-
-                            self.create_line(bus_from=self.started_branch.get_busbar_from().bus,
-                                             bus_to=self.started_branch.get_busbar_to().bus,
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 

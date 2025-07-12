@@ -28,25 +28,14 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="added BusGraphicType">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Removed cn from the schematic logics">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Injections/generator_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Injections/generator_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Substation/cn_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Substation/cn_graphics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_graphics_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_graphics_template.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/io.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/io.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/branch.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/branch.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Fluid/fluid_path.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Fluid/fluid_path.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/branch_parent.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/branch_parent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Substation/bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Substation/bus.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Substation/busbar.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Substation/busbar.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_cgmes_to_gridcal_ac_transformers.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_cgmes_to_gridcal_ac_transformers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_cgmes_to_gridcal_generators.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_cgmes_to_gridcal_generators.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_topology_processor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_topology_processor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/write_py.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/write_py.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/Loads.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/Loads.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -326,7 +315,7 @@
       <recent name="$PROJECT_DIR$/src/tests/data/grids/RAW" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in tests">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -1168,8 +1157,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest for src.tests.test_topology_processor" />
         <item itemvalue="Python tests.pytest in test_topology_processor.py" />
         <item itemvalue="Python tests.pytest for test_clustering.test_clustering_report" />
@@ -2385,7 +2374,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="741" />
+    <option name="localTasksCounter" value="742" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2431,7 +2420,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added LP model" />
     <MESSAGE value="Fixed nodes indexing and naming in 3phase integration" />
     <MESSAGE value="added numba decorators to some functions" />
     <MESSAGE value="Improved 3phase integration in the GUI" />
@@ -2456,7 +2444,8 @@
     <MESSAGE value="Fixed 409 and 389" />
     <MESSAGE value="Improved bus label clearing" />
     <MESSAGE value="Fixed gslv power flow convergence reporting" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed gslv power flow convergence reporting" />
+    <MESSAGE value="Removed cn from the schematic logics" />
+    <option name="LAST_COMMIT_MESSAGE" value="Removed cn from the schematic logics" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2782,7 +2771,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py</url>
-          <line>2400</line>
+          <line>2395</line>
           <option name="timeStamp" value="2661" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
