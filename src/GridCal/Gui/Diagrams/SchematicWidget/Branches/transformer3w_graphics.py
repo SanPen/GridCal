@@ -355,7 +355,7 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         """
         # Arrange line positions
         for terminal in self.terminals:
-            terminal.process_callbacks(parent_pos=self.pos())
+            terminal.process_callbacks(self.pos())
 
     def get_connection_winding(self, from_port: RoundTerminalItem, to_port: RoundTerminalItem):
         """
