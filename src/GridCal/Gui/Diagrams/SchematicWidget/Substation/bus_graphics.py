@@ -89,8 +89,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                  index=0,
                  editor: SchematicWidget = None,
                  bus: Bus = None,
-                 h: int = 40,
-                 w: int = 80,
+                 h: float = 40,
+                 w: float = 80,
                  x: float = 0,
                  y: float = 0,
                  draw_labels: bool = True,
@@ -292,7 +292,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.setRect(0.0, 0.0, self.w, h)
         self.h = h
 
-    def change_size(self, w: int, dummy: float = 0.0):
+    def change_size(self, w: int | float, dummy: float = 0.0):
         """
         Resize block function
         :param w:

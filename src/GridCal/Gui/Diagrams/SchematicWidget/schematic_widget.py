@@ -42,7 +42,7 @@ from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
-from GridCalEngine.enumerations import DeviceType, ResultTypes
+from GridCalEngine.enumerations import DeviceType, ResultTypes, BusGraphicType
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
@@ -113,7 +113,6 @@ class SchematicLibraryModel(QStandardItemModel):
         self.add(name=self.transformer3w_name, icon_name="transformer3w")
         self.add(name=self.fluid_node_name, icon_name="dam")
 
-
     def add(self, name: str, icon_name: str):
         """
         Add element to the library
@@ -166,13 +165,6 @@ class SchematicLibraryModel(QStandardItemModel):
         :return:
         """
         return self.to_bytes_array(self.cn_name)
-
-    def get_bus_bar_mime_data(self) -> QByteArray:
-        """
-
-        :return:
-        """
-        return self.to_bytes_array(self.bb_name)
 
     def mimeTypes(self) -> List[str]:
         """
@@ -426,8 +418,9 @@ class SchematicWidget(BaseDiagramWidget):
             y0 = point0.y()
 
             if obj_type == self.library_model.get_bus_mime_data():
-                obj = Bus(name=f'Bus {self.circuit.get_bus_number()}', Vnom=self.default_bus_voltage)
-                graphic_object = BusGraphicItem(editor=self, bus=obj, x=x0, y=y0, h=20, w=80)
+                obj = Bus(name=f'Bus {self.circuit.get_bus_number()}', Vnom=self.default_bus_voltage,
+                          graphic_type=BusGraphicType.BusBar)
+                graphic_object = self.create_bus_graphics(bus=obj, x=x0, y=y0, h=20, w=80)
                 self.circuit.add_bus(obj=obj)
 
             elif obj_type == self.library_model.get_3w_transformer_mime_data():
@@ -441,14 +434,10 @@ class SchematicWidget(BaseDiagramWidget):
                 self.circuit.add_fluid_node(obj)
 
             elif obj_type == self.library_model.get_connectivity_node_mime_data():
-                obj = Bus(name=f'Bus {self.circuit.get_bus_number()}', Vnom=self.default_bus_voltage)
-                graphic_object = self.create_connectivity_node_graphics(node=obj, x=x0, y=y0, h=40, w=40)
+                obj = Bus(name=f'Bus {self.circuit.get_bus_number()}', Vnom=self.default_bus_voltage,
+                          graphic_type=BusGraphicType.Connectivity)
+                graphic_object = self.create_bus_graphics(bus=obj, x=x0, y=y0, h=40, w=40)
                 self.circuit.add_bus(obj)
-
-            elif obj_type == self.library_model.get_bus_bar_mime_data():
-                obj = BusBar(name=f"Bus bar {self.circuit.get_bus_bars_number()}")
-                graphic_object = self.create_bus_bar_graphics(node=obj, x=x0, y=y0, h=20, w=80)
-                self.circuit.add_bus_bar(obj)
 
             else:
                 # unrecognized drop
@@ -509,8 +498,8 @@ class SchematicWidget(BaseDiagramWidget):
         """
         self.editor_graphics_view.scale(1.0 / scale_factor, 1.0 / scale_factor)
 
-    def create_bus_graphics(self, bus: Bus, x: float, y: float, h: int, w: int,
-                            draw_labels: bool = True, r: float = 0.0) -> BusGraphicItem:
+    def create_bus_graphics(self, bus: Bus, x: float, y: float, h: float, w: float,
+                            draw_labels: bool = True, r: float = 0.0) -> BusGraphicItem | CnGraphicItem | None:
         """
         create the Bus graphics
         :param bus: GridCal Bus object
@@ -522,16 +511,28 @@ class SchematicWidget(BaseDiagramWidget):
         :param r: rotation angle (deg)
         :return: BusGraphicItem
         """
+        if bus.graphic_type == BusGraphicType.BusBar:
+            return BusGraphicItem(editor=self,
+                                  bus=bus,
+                                  x=x,
+                                  y=y,
+                                  h=h,
+                                  w=w,
+                                  draw_labels=draw_labels,
+                                  r=r)
 
-        graphic_object = BusGraphicItem(editor=self,
-                                        bus=bus,
-                                        x=x,
-                                        y=y,
-                                        h=h,
-                                        w=w,
-                                        draw_labels=draw_labels,
-                                        r=r)
-        return graphic_object
+        elif bus.graphic_type == BusGraphicType.Connectivity:
+            return CnGraphicItem(editor=self,
+                                 bus=bus,
+                                 x=x,
+                                 y=y,
+                                 h=h,
+                                 w=w,
+                                 draw_labels=draw_labels)
+        else:
+            pass
+
+        return None
 
     def create_transformer_3w_graphics(self, elm: Transformer3W, x: float, y: float) -> Transformer3WGraphicItem:
         """
@@ -545,7 +546,7 @@ class SchematicWidget(BaseDiagramWidget):
         graphic_object.setPos(QPointF(x, y))
         return graphic_object
 
-    def create_fluid_node_graphics(self, node: FluidNode, x: float, y: float, h: int, w: int,
+    def create_fluid_node_graphics(self, node: FluidNode, x: float, y: float, h: float, w: float,
                                    draw_labels: bool = True) -> FluidNodeGraphicItem:
         """
         Add fluid node to graphics
@@ -576,7 +577,7 @@ class SchematicWidget(BaseDiagramWidget):
         :return: CnGraphicItem
         """
 
-        graphic_object = CnGraphicItem(editor=self, node=node, x=x, y=y, h=h, w=w,
+        graphic_object = CnGraphicItem(editor=self, bus=node, x=x, y=y, h=h, w=w,
                                        draw_labels=draw_labels)
         return graphic_object
 
@@ -838,7 +839,7 @@ class SchematicWidget(BaseDiagramWidget):
         self.draw_additional_diagram(diagram=extra_diagram, logger=self.logger)
 
     def update_diagram_element(self, device: ALL_DEV_TYPES,
-                               x: float = 0, y: float = 0, w: int = 0, h: int = 0, r: float = 0,
+                               x: float = 0, y: float = 0, w: float = 0, h: float = 0, r: float = 0,
                                draw_labels: bool = True,
                                graphic_object: QGraphicsItem = None) -> None:
         """
@@ -1854,38 +1855,6 @@ class SchematicWidget(BaseDiagramWidget):
 
         return graphic_object
 
-    def add_api_cn(self,
-                   cn: Bus,
-                   injections_by_tpe: Dict[DeviceType, List[ALL_DEV_TYPES]],
-                   x0: Union[int, None] = None,
-                   y0: Union[int, None] = None) -> CnGraphicItem:
-        """
-        Add API bus to the diagram
-        :param cn: Bus instance
-        :param injections_by_tpe: dictionary with the device type as key and the list of devices at the bus as values
-        :param x0: x position of the bus (optional)
-        :param y0: y position of the bus (optional)
-        """
-        x = 0 if x0 is None else x0
-        y = 0 if y0 is None else y0
-
-        # add the graphic object to the diagram view
-        graphic_object = self.create_connectivity_node_graphics(node=cn, x=x, y=y, w=0, h=0)
-
-        # create the bus children
-        if len(injections_by_tpe) > 0:
-            graphic_object.create_children_widgets(injections_by_tpe=injections_by_tpe)
-
-        self.update_diagram_element(device=cn,
-                                    x=x,
-                                    y=y,
-                                    w=0,
-                                    h=0,
-                                    r=0,
-                                    draw_labels=graphic_object.draw_labels,
-                                    graphic_object=graphic_object)
-
-        return graphic_object
 
     def find_port(self,
                   port: OPTIONAL_PORT = None,
@@ -2583,14 +2552,6 @@ class SchematicWidget(BaseDiagramWidget):
                 graphic_obj = self.add_api_fluid_node(node=elm,
                                                       injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
 
-            elif isinstance(elm, BusBar):
-
-                if injections_by_bus is None:
-                    injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
-
-                graphic_obj = self.add_api_busbar(bus=elm,
-                                                  injections_by_tpe=injections_by_bus.get(elm.bus, dict()))
-
             elif isinstance(elm, Line):
                 graphic_obj = self.add_api_line(elm)
 
@@ -2631,7 +2592,6 @@ class SchematicWidget(BaseDiagramWidget):
 
     def add_elements_to_schematic(self,
                                   buses: List[Bus],
-                                  busbars: List[BusBar],
                                   lines: List[Line],
                                   dc_lines: List[DcLine],
                                   transformers2w: List[Transformer2W],
@@ -2650,7 +2610,6 @@ class SchematicWidget(BaseDiagramWidget):
         """
         Add a elements to the schematic scene
         :param buses: list of Bus objects
-        :param busbars: List of usbars
         :param lines: list of Line objects
         :param dc_lines: list of DcLine objects
         :param transformers2w: list of Transformer Objects
@@ -2667,7 +2626,7 @@ class SchematicWidget(BaseDiagramWidget):
         :param prog_func: progress report function
         :param text_func: Text report function
         """
-
+        # --------------------------------------------------------------------------------------------------------------
         # first create the buses
         if text_func is not None:
             text_func('Creating schematic buses')
@@ -2684,21 +2643,6 @@ class SchematicWidget(BaseDiagramWidget):
                                                injections_by_tpe=injections_by_bus.get(bus, dict()),
                                                explode_factor=explode_factor)
                 self.add_to_scene(graphic_obj)
-
-        # --------------------------------------------------------------------------------------------------------------
-        if text_func is not None:
-            text_func('Creating schematic busbars')
-
-        nn = len(busbars)
-        for i, bus in enumerate(busbars):
-
-            if prog_func is not None:
-                prog_func((i + 1) / nn * 100.0)
-
-            graphic_obj = self.add_api_busbar(bus=bus,
-                                              injections_by_tpe=injections_by_bus.get(bus.bus, dict()))
-
-            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
 
@@ -4161,7 +4105,6 @@ class SchematicWidget(BaseDiagramWidget):
 
 
 def generate_schematic_diagram(buses: List[Bus],
-                               busbars: List[BusBar],
                                lines: List[Line],
                                dc_lines: List[DcLine],
                                transformers2w: List[Transformer2W],
@@ -4181,7 +4124,6 @@ def generate_schematic_diagram(buses: List[Bus],
     """
     Add a elements to the schematic scene
     :param buses: list of Bus objects
-    :param busbars: List of Bus bars
     :param lines: list of Line objects
     :param dc_lines: list of DcLine objects
     :param transformers2w: list of Transformer Objects
@@ -4243,7 +4185,6 @@ def generate_schematic_diagram(buses: List[Bus],
 
     # --------------------------------------------------------------------------------------------------------------
 
-    add_devices_list(cls="busbars", dev_lst=busbars)
     add_devices_list(cls="fluid_nodes", dev_lst=fluid_nodes)
     add_devices_list(cls="transformers3w", dev_lst=transformers3w)
 
@@ -4264,7 +4205,6 @@ def generate_schematic_diagram(buses: List[Bus],
 
 
 def get_devices_to_expand(circuit: MultiCircuit, buses: List[Bus], max_level: int = 1) -> Tuple[List[Bus],
-List[BusBar],
 List[Line],
 List[DcLine],
 List[Transformer2W],
@@ -4298,7 +4238,6 @@ List[FluidPath]]:
     bus_pool = [(b, 0) for b in buses]  # store the bus objects and their level from the root
 
     buses = set()
-    busbars = set()
     fluid_nodes = set()
     selected_branches = set()
 
@@ -4377,7 +4316,7 @@ List[FluidPath]]:
         else:
             raise Exception(f'Unrecognized branch type {obj.device_type.value}')
 
-    return (list(buses), list(busbars), lines, dc_lines, transformers2w, transformers3w,
+    return (list(buses), lines, dc_lines, transformers2w, transformers3w,
             windings, hvdc_lines, vsc_converters, upfc_devices, series_reactances, switches,
             list(fluid_nodes), fluid_paths)
 
@@ -4399,7 +4338,7 @@ def make_vicinity_diagram(circuit: MultiCircuit,
     :return:
     """
 
-    (buses, busbars,
+    (buses,
      lines, dc_lines, transformers2w,
      transformers3w, windings, hvdc_lines,
      vsc_converters, upfc_devices,
@@ -4409,7 +4348,6 @@ def make_vicinity_diagram(circuit: MultiCircuit,
     # Draw schematic subset
     diagram = generate_schematic_diagram(
         buses=list(buses),
-        busbars=busbars,
         lines=lines,
         dc_lines=dc_lines,
         transformers2w=transformers2w,
@@ -4446,7 +4384,7 @@ def make_diagram_from_buses(circuit: MultiCircuit,
     :return:
     """
 
-    (buses, busbars,
+    (buses,
      lines, dc_lines, transformers2w,
      transformers3w, windings, hvdc_lines,
      vsc_converters, upfc_devices,
@@ -4455,7 +4393,6 @@ def make_diagram_from_buses(circuit: MultiCircuit,
 
     # Draw schematic subset
     diagram = generate_schematic_diagram(buses=list(buses),
-                                         busbars=busbars,
                                          lines=lines,
                                          dc_lines=dc_lines,
                                          transformers2w=transformers2w,

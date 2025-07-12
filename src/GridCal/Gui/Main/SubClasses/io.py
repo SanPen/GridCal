@@ -551,7 +551,6 @@ class IoMain(ConfigurationMain):
                             injections_by_fluid_node = new_circuit.get_injection_devices_grouped_by_fluid_node()
 
                             diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
-                                                                     busbars=new_circuit.bus_bars,
                                                                      lines=new_circuit.lines,
                                                                      dc_lines=new_circuit.dc_lines,
                                                                      transformers2w=new_circuit.transformers2w,

@@ -52,9 +52,9 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                  parent=None,
                  index=0,
                  editor: SchematicWidget = None,
-                 node: Bus = None,
-                 h: int = 40,
-                 w: int = 40,
+                 bus: Bus = None,
+                 h: float = 40,
+                 w: float = 40,
                  x: float = 0,
                  y: float = 0,
                  draw_labels: bool = True):
@@ -63,13 +63,13 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :param parent:
         :param index:
         :param editor:
-        :param node:
+        :param bus:
         :param h:
         :param w:
         :param x:
         :param y:
         """
-        GenericDiagramWidget.__init__(self, parent=parent, api_object=node, editor=editor, draw_labels=draw_labels)
+        GenericDiagramWidget.__init__(self, parent=parent, api_object=bus, editor=editor, draw_labels=draw_labels)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 5.0
