@@ -7,14 +7,14 @@ from __future__ import annotations
 from typing import List, Dict
 import numpy as np
 import GridCalEngine.Devices as gcdev
-from GridCalEngine.IO.cim.cgmes.base import Base, rfid2uuid
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.base import rfid2uuid
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import (CgmesCircuit, CGMES_TERMINAL, CGMES_BASE_VOLTAGE)
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import LimitTypeKind
 
 
-def find_terminal_bus(cgmes_terminal: Base, bus_dict: Dict[str, gcdev.Bus]) -> gcdev.Bus | None:
+def find_terminal_bus(cgmes_terminal: CGMES_TERMINAL, bus_dict: Dict[str, gcdev.Bus]) -> gcdev.Bus | None:
     """
     Find the bus associated to a terminal
     :param cgmes_terminal:
@@ -712,20 +712,6 @@ def get_regulating_control_params(cgmes_elm,
 # region export UTILS
 # ----------------------------------------------------------------------------------------------------------------------
 
-# class ReferenceManager:
-#     # use it after an element object added
-#     def __init__(self):
-#         self.data = dict()
-#
-#     def add(self, cgmes_obj: Base):
-#
-#         tpe_dict = self.data.get(cgmes_obj.tpe, None)
-#         if tpe_dict is None:
-#             self.data[cgmes_obj.tpe] = {cgmes_obj.rdfid: cgmes_obj}
-#         else:
-#             tpe_dict[cgmes_obj.rdfid] = cgmes_obj
-
-
 def find_object_by_uuid(cgmes_model: CgmesCircuit, object_list, target_uuid):
     """
     Finds an object with the specified uuid
@@ -789,7 +775,7 @@ def find_tn_by_name(cgmes_model: CgmesCircuit, target_name):
     return None
 
 
-def find_object_by_vnom(cgmes_model: CgmesCircuit, object_list: List[Base], target_vnom: float) -> "BaseVoltage":
+def find_object_by_vnom(cgmes_model: CgmesCircuit, object_list: List[CGMES_BASE_VOLTAGE], target_vnom: float) -> CGMES_BASE_VOLTAGE:
     """
     Find object in the base voltages
     :param cgmes_model: CgmesCircuit
@@ -797,7 +783,7 @@ def find_object_by_vnom(cgmes_model: CgmesCircuit, object_list: List[Base], targ
     :param target_vnom: Some voltage to look for
     :return: BaseVoltage
     """
-    boundary_obj_list: List["BaseVoltage"] = cgmes_model.elements_by_type_boundary.get("BaseVoltage", None)
+    boundary_obj_list: List[CGMES_BASE_VOLTAGE] = cgmes_model.elements_by_type_boundary.get("BaseVoltage", None)
 
     # first, search in the boundary set
     if boundary_obj_list is not None:

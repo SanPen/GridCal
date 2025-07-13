@@ -83,7 +83,6 @@ def test_ac_transformers_one_power_transformer_end_log_error():
         cgmes,
         multi_circuit,
         None,
-        None,
         get_gcdev_device_to_terminal_dict(cgmes_model=cgmes, logger=logger),
         logger,
         0
@@ -109,7 +108,7 @@ def test_ac_transformers_zero_calc_node_log_error():
     cgmes.cgmes_assets.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end1,
                                                                        power_transformer_end2]
 
-    get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict, cn_dict_object(),
+    get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict,
                               device_to_terminal_dict_object_2_terminals(),
                               logger,
                               10)
@@ -156,7 +155,7 @@ def test_ac_transformers2w():
     power_transformer_end2.endNumber = 2
     cgmes.cgmes_assets.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end,
                                                                        power_transformer_end2]
-    get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
+    get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict_object(),
                               device_to_terminal_dict_object_2_terminals(), logger,
                               10)
     generated_transtormer2w = multi_circuit.transformers2w[0]
@@ -249,7 +248,7 @@ def test_ac_transformers3w_only_two_terminals_log_error():
     cgmes.cgmes_assets.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end,
                                                                        power_transformer_end2,
                                                                        power_transformer_end3]
-    get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
+    get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict_object(),
                               device_to_terminal_dict_object_2_terminals(), logger,
                               10)
     assert len(logger.entries) == 1
@@ -315,7 +314,7 @@ def test_ac_transformers3w():
     cgmes.cgmes_assets.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end,
                                                                        power_transformer_end2,
                                                                        power_transformer_end3]
-    get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
+    get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict_object(),
                               device_to_terminal_dict_object_3_terminals(), logger,
                               10)
     generated_transformers3w = multi_circuit.transformers3w[0]

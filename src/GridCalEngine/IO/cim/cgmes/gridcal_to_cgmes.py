@@ -10,40 +10,38 @@ import GridCalEngine.Devices as gcdev
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices import MultiCircuit
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
-from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, Base
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
-    (create_cgmes_dc_tp_node, create_cgmes_terminal,
-     create_cgmes_load_response_char, create_cgmes_current_limit,
-     create_cgmes_location, create_cgmes_generating_unit,
-     create_cgmes_regulating_control, create_cgmes_tap_changer_control,
-     create_sv_power_flow, create_cgmes_vsc_converter,
-     create_cgmes_dc_line_segment, create_cgmes_dc_line, create_cgmes_dc_node,
-     create_cgmes_acdc_converter_terminal,
-     create_cgmes_conform_load_group, create_cgmes_operational_limit_type,
-     create_cgmes_sub_load_area,
-     create_cgmes_non_conform_load_group, create_cgmes_nonlinear_sc_point,
-     create_sv_shunt_compensator_sections)
+from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, CGMES_ASSETS
+from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import (create_cgmes_dc_tp_node, create_cgmes_terminal,
+                                                               create_cgmes_load_response_char,
+                                                               create_cgmes_current_limit,
+                                                               create_cgmes_location, create_cgmes_generating_unit,
+                                                               create_cgmes_regulating_control,
+                                                               create_cgmes_tap_changer_control,
+                                                               create_sv_power_flow, create_cgmes_vsc_converter,
+                                                               create_cgmes_dc_line_segment, create_cgmes_dc_line,
+                                                               create_cgmes_dc_node,
+                                                               create_cgmes_acdc_converter_terminal,
+                                                               create_cgmes_conform_load_group,
+                                                               create_cgmes_operational_limit_type,
+                                                               create_cgmes_sub_load_area,
+                                                               create_cgmes_non_conform_load_group,
+                                                               create_cgmes_nonlinear_sc_point,
+                                                               create_sv_shunt_compensator_sections)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (RegulatingControlModeKind,
                                                     TransformerControlMode)
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import (
-    SynchronousMachineOperatingMode,
-    SynchronousMachineKind,
-    LimitTypeKind, OperationalLimitDirectionKind)
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import (SynchronousMachineOperatingMode,
+                                                    SynchronousMachineKind,
+                                                    LimitTypeKind, OperationalLimitDirectionKind)
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (find_object_by_uuid,
                                                     find_object_by_vnom,
                                                     find_object_by_cond_eq_uuid,
                                                     get_ohm_values_power_transformer,
-                                                    find_tn_by_name,
                                                     find_object_by_attribute)
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import \
-    compute_zip_power
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import \
-    PowerFlowResults
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_zip_power
+from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.enumerations import (TapChangerTypes,
-                                        TapPhaseControl,
-                                        TapModuleControl)
+from GridCalEngine.enumerations import (TapChangerTypes, TapPhaseControl, TapModuleControl)
 
 
 # region Convert functions from MC to CC
@@ -193,10 +191,9 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
         if region is not None:
             substation.Region = region
         else:
-            try:
-                substation.Region = \
-                cgmes_model.cgmes_assets.SubGeographicalRegion_list[0]
-            except:
+            if len(cgmes_model.cgmes_assets.SubGeographicalRegion_list) > 0:
+                substation.Region = cgmes_model.cgmes_assets.SubGeographicalRegion_list[0]
+            else:
                 substation.Region = None
                 logger.add_warning(msg='Region not found for Substation',
                                    device_class="SubGeographicalRegion")
@@ -869,7 +866,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             tap_changer.voltageStepIncrement = voltageIncr
             tap_changer.xMin = mc_elm.X
             # TODO tap_changer.xMax from Impedance corr table
-            tap_changer.xMax = mc_elm.X     # just to have it in the export
+            tap_changer.xMax = mc_elm.X  # just to have it in the export
         else:
             logger.add_error(
                 msg='stepVoltageIncrement cannot be filled for TapChanger',
@@ -1061,7 +1058,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 
 
 def get_cgmes_current_limits(cgmes_model: CgmesCircuit,
-                             cgmes_elm: Base,
+                             cgmes_elm: CGMES_ASSETS,
                              mc_elm: BranchParent,
                              op_lim_types: List,
                              logger: DataLogger):
@@ -1086,7 +1083,6 @@ def get_cgmes_current_limits(cgmes_model: CgmesCircuit,
         for rate_mw, op_limit_type in rate_and_type:
 
             if rate_mw != 0.0:
-
                 create_cgmes_current_limit(
                     terminal=termnl,
                     rate_mw=rate_mw,
@@ -1659,7 +1655,6 @@ def get_cgmes_sv_tap_step(multi_circuit: MultiCircuit,
                           cgmes_model: CgmesCircuit,
                           pf_results: PowerFlowResults,
                           logger: DataLogger) -> None:
-
     branch_objects = multi_circuit.get_branches(add_vsc=False, add_hvdc=False, add_switch=True)
 
     tap_modules = pf_results.tap_module
@@ -1684,7 +1679,6 @@ def get_cgmes_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit) -> None:
                    cgmes_model.cgmes_assets.NonlinearShuntCompensator_list]:
 
         for shunt in shunts:
-
             create_sv_shunt_compensator_sections(
                 cgmes_model=cgmes_model,
                 sections=shunt.sections if shunt.sections is not None else 0,

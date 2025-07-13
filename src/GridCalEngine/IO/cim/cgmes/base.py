@@ -80,7 +80,7 @@ class Base:
     Base
     """
 
-    def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
+    def __init__(self, rdfid: str, tpe, resources=None, class_replacements=None):
         """
         General CIM object container
         :param rdfid:
@@ -90,6 +90,12 @@ class Base:
         """
 
         # pick the object id
+        if class_replacements is None:
+            class_replacements = dict()
+
+        if resources is None:
+            resources = list()
+
         rdfid = rdfid.strip()
         self.rdfid = rdfid if rdfid != '' else get_new_rdfid()
         self.uuid = rfid2uuid(self.rdfid)

@@ -3,37 +3,50 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
-
-import pandas as pd
-from collections.abc import Callable
-from typing import Dict, List, Union, Tuple
+from typing import Dict, List, Union, Tuple, Callable
 from enum import Enum, EnumMeta
-
-from numba.core.cgutils import false_bit
-
-from GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_2_4_15_assets import Cgmes_2_4_15_Assets
-from GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_3_0_0_assets import Cgmes_3_0_0_Assets
-# from GridCalEngine.IO.cim.cgmes.cgmes_utils import check_load_response_characteristic, check
+import pandas as pd
+import GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_2_4_15_assets as cgmes24
+import GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_3_0_0_assets as cgmes30
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_property import CgmesProperty
 from GridCalEngine.IO.base.base_circuit import BaseCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
-from GridCalEngine.IO.cim.cgmes.base import Base
 from GridCalEngine.enumerations import CGMESVersions
 
+CGMES_ASSETS = cgmes24.CGMES_2_4_15_ASSETS | cgmes30.CGMES3_ASSETS
+CGMES_TERMINAL = cgmes24.Terminal | cgmes30.Terminal
+CGMES_DC_TERMINAL = cgmes24.DCTerminal | cgmes30.DCTerminal
+CGMES_TOPOLOGICAL_NODE = cgmes24.TopologicalNode | cgmes30.TopologicalNode
+CGMES_DC_TOPOLOGICAL_NODE = cgmes24.DCTopologicalNode | cgmes30.DCTopologicalNode
+CGMES_CONNECTIVITY_NODE = cgmes24.ConnectivityNode | cgmes30.ConnectivityNode
+CGMES_BASE_VOLTAGE = cgmes24.BaseVoltage | cgmes30.BaseVoltage
+CGMES_CONDUCTING_EQUIPMENT = cgmes24.ConductingEquipment | cgmes30.ConductingEquipment
+CGMES_DC_CONDUCTING_EQUIPMENT = cgmes24.DCConductingEquipment | cgmes30.DCConductingEquipment
+CGMES_OPERATIONAL_LIMIT_TYPE = cgmes24.OperationalLimitType | cgmes30.OperationalLimitType
+CGMES_EQUIPMENT_CONTAINER = cgmes24.EquipmentContainer | cgmes30.EquipmentContainer
+CGMES_VS_CONVERTER = cgmes24.VsConverter | cgmes30.VsConverter
+CGMES_DC_CONVERTER_UNIT = cgmes24.DCConverterUnit | cgmes30.DCConverterUnit
+CGMES_LINE = cgmes24.Line | cgmes30.Line
+CGMES_DC_LINE = cgmes24.DCLine | cgmes30.DCLine
+CGMES_DC_LINE_SEGMENT = cgmes24.DCLineSegment | cgmes30.DCLineSegment
+CGMES_LOCATION = cgmes24.Location | cgmes30.Location
+CGMES_POSITION_POINT = cgmes24.PositionPoint | cgmes30.PositionPoint
+CGMES_NON_LINEAR_SHUNT_COMPENSATOR = cgmes24.NonlinearShuntCompensator | cgmes30.NonlinearShuntCompensator
 
-def find_attribute(obj: Base,
+
+def find_attribute(obj: CGMES_ASSETS,
                    property_name: str,
                    association_inverse_dict: Dict[Tuple[str, str], str]):
     return association_inverse_dict.get((obj.tpe, property_name))
 
 
-def find_references(elements_by_type: Dict[str, List[Base]],
-                    all_objects_dict: Dict[str, Base],
-                    all_objects_dict_boundary: Union[Dict[str, Base], None],
+def find_references(elements_by_type: Dict[str, List[CGMES_ASSETS]],
+                    all_objects_dict: Dict[str, CGMES_ASSETS],
+                    all_objects_dict_boundary: Union[Dict[str, CGMES_ASSETS], None],
                     association_inverse_dict: Dict[Tuple[str, str], str],
-                    class_dict: Dict[str, Base],
+                    class_dict: Dict[str, CGMES_ASSETS],
                     logger: DataLogger,
                     mark_used: bool) -> None:
     """
@@ -63,7 +76,7 @@ def find_references(elements_by_type: Dict[str, List[Base]],
                 # try to get the property value, else, fill with None
                 # at this point val is always the string that came in the XML
                 value = getattr(element, property_name)
-                if value is not None and isinstance(value, Base):
+                if value is not None and isinstance(value, CGMES_ASSETS):
                     continue
 
                 if value is not None:  # if the value is something...
@@ -149,7 +162,7 @@ def find_references(elements_by_type: Dict[str, List[Base]],
                         else:
                             referenced_object_list = set()
                             for v in value:
-                                if isinstance(v, Base):
+                                if isinstance(v, CGMES_ASSETS):
                                     continue
 
                                 referenced_object = all_objects_dict.get(v, None)
@@ -231,10 +244,10 @@ def find_references(elements_by_type: Dict[str, List[Base]],
 
 
 def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
-                            all_objects_dict: Dict[str, Base],
-                            all_objects_dict_boundary: Union[Dict[str, Base], None],
-                            elements_by_type: Dict[str, List[Base]],
-                            class_dict: Dict[str, Base],
+                            all_objects_dict: Dict[str, CGMES_ASSETS],
+                            all_objects_dict_boundary: Union[Dict[str, CGMES_ASSETS], None],
+                            elements_by_type: Dict[str, List[CGMES_ASSETS]],
+                            class_dict: Dict[str, CGMES_ASSETS],
                             association_inverse_dict,
                             logger: DataLogger) -> None:
     """
@@ -276,7 +289,7 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                 logger.add_error("Class not recognized", device_class=class_name)
 
         elements_by_type[class_name] = objects_list
-    # replace refferences by actual objects
+    # replace references by actual objects
     find_references(elements_by_type=elements_by_type,
                     all_objects_dict=all_objects_dict,
                     all_objects_dict_boundary=all_objects_dict_boundary,
@@ -324,9 +337,9 @@ class CgmesCircuit(BaseCircuit):
         self.progress_func = progress_func
 
         if cgmes_version == CGMESVersions.v2_4_15:
-            self.cgmes_assets = Cgmes_2_4_15_Assets()
+            self.cgmes_assets = cgmes24.Cgmes_2_4_15_Assets()
         elif cgmes_version == CGMESVersions.v3_0_0:
-            self.cgmes_assets = Cgmes_3_0_0_Assets()
+            self.cgmes_assets = cgmes30.Cgmes_3_0_0_Assets()
         else:
             logger.add_error(msg=f"Unrecognized CGMES version {cgmes_version}")
             raise ValueError(f"Unrecognized CGMES version {cgmes_version}")
@@ -334,13 +347,13 @@ class CgmesCircuit(BaseCircuit):
             # classes to read, theo others are ignored
         self.classes = [key for key, va in self.cgmes_assets.class_dict.items()]
 
-        # dictionary with all objects, usefull to find repeated ID's
-        self.all_objects_dict: Dict[str, Base] = dict()
-        self.all_objects_dict_boundary: Dict[str, Base] = dict()
+        # dictionary with all objects, useful to find repeated ID's
+        self.all_objects_dict: Dict[str, CGMES_ASSETS] = dict()
+        self.all_objects_dict_boundary: Dict[str, CGMES_ASSETS] = dict()
 
         # dictionary with elements by type
-        self.elements_by_type: Dict[str, List[Base]] = dict()
-        self.elements_by_type_boundary: Dict[str, List[Base]] = dict()
+        self.elements_by_type: Dict[str, List[CGMES_ASSETS]] = dict()
+        self.elements_by_type_boundary: Dict[str, List[CGMES_ASSETS]] = dict()
 
         # dictionary representation of the xml data
         self.data: Dict[str, Dict[str, Dict[str, str]]] = dict()
@@ -388,7 +401,7 @@ class CgmesCircuit(BaseCircuit):
         self.emit_progress(20)
         # set the data
         self.set_data(data=data_parser.data,
-                      boundary_set=data_parser.boudary_set)
+                      boundary_set=data_parser.boundary_set)
         self.emit_progress(25)
         # convert the dictionaries to the internal class model for the boundary set
         # do not mark the boundary set objects as used
@@ -459,7 +472,7 @@ class CgmesCircuit(BaseCircuit):
             if not hasattr(self, key + '_list'):
                 print('self.{0}_list: List[{0}] = list()'.format(key))
 
-    def add(self, elm: Base):
+    def add(self, elm: CGMES_ASSETS):
         """
         Add generic object to the circuit
         :param elm: any CGMES object
@@ -499,7 +512,7 @@ class CgmesCircuit(BaseCircuit):
 
         return True
 
-    def get_class_type(self, class_name: str) -> Base:
+    def get_class_type(self, class_name: str) -> CGMES_ASSETS:
         class_type = self.cgmes_assets.class_dict.get(class_name)
         if class_type is None:
             raise NotImplementedError(
@@ -556,7 +569,7 @@ class CgmesCircuit(BaseCircuit):
         self.elements_by_type = dict()
 
     @staticmethod
-    def check_type(xml, class_types, starters=['<cim:', '<md:'], enders=['</cim:', '</md:']):
+    def check_type(xml, class_types, starters=None, enders=None):
         """
         Checks if we are starting an object of the predefined types
         :param xml: some text
@@ -567,6 +580,12 @@ class CgmesCircuit(BaseCircuit):
         """
 
         # for each type
+        if starters is None:
+            starters = ['<cim:', '<md:']
+
+        if enders is None:
+            enders = ['</cim:', '</md:']
+
         for tpe in class_types:
 
             for starter, ender in zip(starters, enders):
@@ -587,7 +606,7 @@ class CgmesCircuit(BaseCircuit):
 
     def delete_unused(self) -> None:
         """
-        Delete elements that have no refferences to them
+        Delete elements that have no references to them
         """
         elements_by_type = dict()
         all_objects_dict = dict()
@@ -794,9 +813,9 @@ class CgmesCircuit(BaseCircuit):
                 self.logger.add_warning(msg="Linking loop",
                                         device=elm.rdfid,
                                         device_class=elm.tpe,
-                                        value=len(visited))
+                                        value=str(len(visited)))
 
-    def get_circular_references(self) -> List[List[Base]]:
+    def get_circular_references(self) -> List[List[CGMES_ASSETS]]:
         """
         Detect circular references
         """
@@ -810,19 +829,15 @@ class CgmesCircuit(BaseCircuit):
 
         return res
 
-    # def get_base_voltages(self) -> List[BaseVoltage]:
-    #     """
-    #
-    #     :return:
-    #     """
-    #     return self.elements_by_type.get('BaseVoltage', [])
-
-    def get_model_xml(self, profiles: List[cgmesProfile] = [cgmesProfile.EQ]) -> Dict[cgmesProfile, str]:
+    def get_model_xml(self, profiles=None) -> Dict[cgmesProfile, str]:
         """
         Get a dictionary of xml per CGMES profile
         :param profiles: list of profiles to acquire
         :returns Dictionary  Dict[cgmesProfile, str]
         """
+        if profiles is None:
+            profiles = [cgmesProfile.EQ]
+
         data = dict()
         for tpe, elm_list in self.elements_by_type.items():
 
@@ -837,11 +852,3 @@ class CgmesCircuit(BaseCircuit):
                     else:
                         data[profile] = txt
         return data
-
-    # def get_boundary_voltages_dict(self) -> Dict[float, BaseVoltage]:
-    #     """
-    #     Get the BaseVoltage objects from the boundary set as
-    #     a dictionary with the nominal voltage as key
-    #     :return: Dict[float, BaseVoltage]
-    #     """
-    #     return {e.nominalVoltage: e for e in self.elements_by_type_boundary['BaseVoltage']}

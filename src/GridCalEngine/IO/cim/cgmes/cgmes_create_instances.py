@@ -1,13 +1,34 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+
 """
 Collection of functions to create new CGMES instances for CGMES export.
 """
 import numpy as np
 from datetime import datetime
-
+from typing import List, Union, Tuple
 from GridCalEngine import StrVec
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import (CgmesCircuit,
+                                                      CGMES_CONDUCTING_EQUIPMENT,
+                                                      CGMES_EQUIPMENT_CONTAINER,
+                                                      CGMES_DC_CONDUCTING_EQUIPMENT,
+                                                      CGMES_OPERATIONAL_LIMIT_TYPE,
+                                                      CGMES_DC_TOPOLOGICAL_NODE,
+                                                      CGMES_CONNECTIVITY_NODE,
+                                                      CGMES_VS_CONVERTER,
+                                                      CGMES_DC_CONVERTER_UNIT,
+                                                      CGMES_LINE,
+                                                      CGMES_DC_LINE,
+                                                      CGMES_DC_LINE_SEGMENT,
+                                                      CGMES_DC_TERMINAL,
+                                                      CGMES_LOCATION,
+                                                      CGMES_POSITION_POINT,
+                                                      CGMES_NON_LINEAR_SHUNT_COMPENSATOR)
+
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile,
                                                     WindGenUnitKind,
                                                     RegulatingControlModeKind,
@@ -16,15 +37,12 @@ from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile,
                                                     DCConverterOperatingModeKind,
                                                     VsPpccControlKind,
                                                     VsQpccControlKind)
-from GridCalEngine.IO.cim.cgmes.cgmes_utils import find_object_by_uuid, \
-    get_voltage_terminal
+
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import find_object_by_uuid, get_voltage_terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
-from GridCalEngine.IO.cim.cgmes.base import Base
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.enumerations import CGMESVersions
-
 from GridCalEngine.data_logger import DataLogger
-from typing import List, Union
 
 
 def create_cgmes_headers(cgmes_model: CgmesCircuit,
@@ -169,7 +187,7 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit,
 
 def create_cgmes_terminal(mc_bus: Bus,
                           seq_num: Union[int, None],
-                          cond_eq: Union[None, Base],
+                          cond_eq: Union[None, CGMES_CONDUCTING_EQUIPMENT],
                           cgmes_model: CgmesCircuit,
                           logger: DataLogger):
     """
@@ -416,7 +434,7 @@ def create_cgmes_tap_changer_control(
 
 def create_cgmes_current_limit(terminal,
                                rate_mw: float,
-                               op_limit_type: Base,
+                               op_limit_type: CGMES_OPERATIONAL_LIMIT_TYPE,
                                cgmes_model: CgmesCircuit,
                                logger: DataLogger):
     """
@@ -523,8 +541,8 @@ def create_cgmes_dc_tp_node(tp_name: str,
 def create_cgmes_dc_node(cn_name: str,
                          cn_description: str,
                          cgmes_model: CgmesCircuit,
-                         dc_tp: Base,
-                         dc_ec: Base,
+                         dc_tp: CGMES_DC_TOPOLOGICAL_NODE,
+                         dc_ec: CGMES_EQUIPMENT_CONTAINER,
                          logger: DataLogger):
     """
     Creates a DCTopologicalNode from a gcdev Bus
@@ -554,7 +572,7 @@ def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
                                gc_vsc: Union[gcdev.VSC, None],
                                p_set: float,
                                v_set: float,
-                               logger: DataLogger) -> (Base, Base):
+                               logger: DataLogger) -> Tuple[CGMES_VS_CONVERTER, CGMES_DC_CONVERTER_UNIT]:
     """
     Creates a new Voltage-source converter
     with a DCConverterUnit as a container
@@ -562,7 +580,8 @@ def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
     :param cgmes_model: CgmesCircuit
     :param gc_vsc: optional input: VSC from GridCal
     :param p_set: power set point
-    :param v_set: voltage set point, only used if gc_vsc is None, otherwise the setpoint is from gc_vsc.vset
+    :param v_set: voltage set point, only used if gc_vsc is None,
+                  otherwise the set point is from gc_vsc.vset
     :param logger: DataLogger
     :return: VsConverter and DCConverterUnit objects
     """
@@ -632,8 +651,8 @@ def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
 def create_cgmes_acdc_converter_terminal(cgmes_model: CgmesCircuit,
                                          mc_dc_bus: Union[None, Bus],
                                          seq_num: Union[int, None],
-                                         dc_node: Union[None, Base],
-                                         dc_cond_eq: Union[None, Base],
+                                         dc_node: Union[None, CGMES_DC_TOPOLOGICAL_NODE],
+                                         dc_cond_eq: Union[None, CGMES_DC_CONDUCTING_EQUIPMENT],
                                          logger: DataLogger):
     """
     Creates a new ACDCConverterDCTerminal in CGMES model,
@@ -697,7 +716,7 @@ def create_cgmes_acdc_converter_terminal(cgmes_model: CgmesCircuit,
 
 
 def create_cgmes_dc_line(cgmes_model: CgmesCircuit,
-                         logger: DataLogger) -> Base:
+                         logger: DataLogger) -> CGMES_DC_LINE:
     """
     Creates a new CGMES DCLine
 
@@ -714,14 +733,13 @@ def create_cgmes_dc_line(cgmes_model: CgmesCircuit,
 
 
 def create_cgmes_dc_line_segment(cgmes_model: CgmesCircuit,
-                                 mc_elm: Union[gcdev.HvdcLine,
-                                 gcdev.DcLine],
-                                 dc_tp_1: Base,
-                                 dc_node_1: Base,
-                                 dc_tp_2: Base,
-                                 dc_node_2: Base,
-                                 eq_cont: Base,
-                                 logger: DataLogger) -> Base:
+                                 mc_elm: Union[gcdev.HvdcLine, gcdev.DcLine],
+                                 dc_tp_1: CGMES_DC_TOPOLOGICAL_NODE,
+                                 dc_node_1: CGMES_CONNECTIVITY_NODE,
+                                 dc_tp_2: CGMES_DC_TOPOLOGICAL_NODE,
+                                 dc_node_2: CGMES_CONNECTIVITY_NODE,
+                                 eq_cont: CGMES_EQUIPMENT_CONTAINER,
+                                 logger: DataLogger) -> CGMES_DC_LINE_SEGMENT:
     """
     Creates a new CGMES DCLineSegment
 
@@ -735,7 +753,7 @@ def create_cgmes_dc_line_segment(cgmes_model: CgmesCircuit,
     :param logger:
     :return:
     """
-    object_template = cgmes_model.get_class_type("DCLineSegment")
+    object_template: CGMES_DC_LINE_SEGMENT = cgmes_model.get_class_type("DCLineSegment")
     dc_line_segment = object_template(rdfid=form_rdfid(mc_elm.idtag))
 
     dc_line_segment.name = mc_elm.name
@@ -768,11 +786,11 @@ def create_cgmes_dc_line_segment(cgmes_model: CgmesCircuit,
 
 
 def create_cgmes_dc_terminal(cgmes_model: CgmesCircuit,
-                             dc_tp: Base,
-                             dc_node: Base,
-                             dc_cond_eq: Base,
+                             dc_tp: CGMES_DC_TOPOLOGICAL_NODE,
+                             dc_node: CGMES_CONNECTIVITY_NODE,
+                             dc_cond_eq: CGMES_DC_CONDUCTING_EQUIPMENT,
                              seq_num: int,
-                             logger: DataLogger) -> Base:
+                             logger: DataLogger) -> CGMES_DC_TERMINAL:
     """
     Creates a new CGMES DCTerminal
 
@@ -785,7 +803,7 @@ def create_cgmes_dc_terminal(cgmes_model: CgmesCircuit,
     :return:
     """
     new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("DCTerminal")
+    object_template: CGMES_DC_TERMINAL = cgmes_model.get_class_type("DCTerminal")
     dc_term = object_template(rdfid=new_rdf_id)
 
     # EQ
@@ -808,7 +826,7 @@ def create_cgmes_dc_terminal(cgmes_model: CgmesCircuit,
 
 
 def create_cgmes_dc_converter_unit(cgmes_model: CgmesCircuit,
-                                   logger: DataLogger) -> Base:
+                                   logger: DataLogger) -> CGMES_DC_CONVERTER_UNIT:
     """
     Creates a new CGMES DCConverterUnit
 
@@ -817,7 +835,7 @@ def create_cgmes_dc_converter_unit(cgmes_model: CgmesCircuit,
     :return:
     """
     new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("DCConverterUnit")
+    object_template: CGMES_DC_CONVERTER_UNIT = cgmes_model.get_class_type("DCConverterUnit")
     dc_cu = object_template(rdfid=new_rdf_id)
 
     dc_cu.Substation = None  # TODO
@@ -828,10 +846,10 @@ def create_cgmes_dc_converter_unit(cgmes_model: CgmesCircuit,
 
 
 def create_cgmes_location(cgmes_model: CgmesCircuit,
-                          device: Base,
+                          device: CGMES_LINE,
                           longitude: float,
                           latitude: float,
-                          logger: DataLogger):
+                          logger: DataLogger) -> CGMES_LOCATION:
     """
 
     :param cgmes_model:
@@ -842,12 +860,12 @@ def create_cgmes_location(cgmes_model: CgmesCircuit,
     :return:
     """
     object_template = cgmes_model.get_class_type("Location")
-    location = object_template(rdfid=get_new_rdfid(), tpe="Location")
+    location: CGMES_LOCATION = object_template(rdfid=get_new_rdfid(), tpe="Location")
 
     location.CoordinateSystem = cgmes_model.cgmes_assets.CoordinateSystem_list[0]
     location.PowerSystemResource = device
 
-    position_point_t = cgmes_model.get_class_type("PositionPoint")
+    position_point_t: CGMES_POSITION_POINT = cgmes_model.get_class_type("PositionPoint")
     pos_point = position_point_t(rdfid=get_new_rdfid(), tpe="PositionPoint")
     pos_point.Location = location
     pos_point.sequenceNumber = 1
@@ -861,7 +879,7 @@ def create_cgmes_location(cgmes_model: CgmesCircuit,
 
     device.Location = location
 
-    return
+    return location
 
 
 def create_sv_power_flow(cgmes_model: CgmesCircuit,
@@ -1021,7 +1039,7 @@ def create_cgmes_nonlinear_sc_point(
         section_num: int,
         b: float,
         g: float,
-        nl_sc: Base,
+        nl_sc: CGMES_NON_LINEAR_SHUNT_COMPENSATOR,
         cgmes_model: CgmesCircuit,
 ):
     """
@@ -1031,7 +1049,6 @@ def create_cgmes_nonlinear_sc_point(
     :param g: g in 
     :param nl_sc: NonlinearShuntCompensator object
     :param cgmes_model: CgmesModel
-    :param logger: DataLogger
     :return: 
     """""
     new_rdf_id = get_new_rdfid()

@@ -3,14 +3,13 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
+from typing import List
+import json
+import os
 from rdflib import OWL
 import rdflib
 from rdflib.graph import Graph
 from rdflib.namespace import RDF, RDFS, Namespace
-
-from typing import List
-import json
-import os
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 
 
