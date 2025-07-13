@@ -8,7 +8,8 @@ from typing import List, Dict
 import numpy as np
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.base import rfid2uuid
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import (CgmesCircuit, CGMES_TERMINAL, CGMES_BASE_VOLTAGE)
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_typing import (CGMES_TERMINAL, CGMES_BASE_VOLTAGE)
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import LimitTypeKind

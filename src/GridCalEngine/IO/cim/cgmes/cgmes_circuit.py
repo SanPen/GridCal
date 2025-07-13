@@ -12,28 +12,9 @@ from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_property import CgmesProperty
 from GridCalEngine.IO.base.base_circuit import BaseCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_typing import CGMES_ASSETS
 from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from GridCalEngine.enumerations import CGMESVersions
-
-CGMES_ASSETS = cgmes24.CGMES_2_4_15_ASSETS | cgmes30.CGMES3_ASSETS
-CGMES_TERMINAL = cgmes24.Terminal | cgmes30.Terminal
-CGMES_DC_TERMINAL = cgmes24.DCTerminal | cgmes30.DCTerminal
-CGMES_TOPOLOGICAL_NODE = cgmes24.TopologicalNode | cgmes30.TopologicalNode
-CGMES_DC_TOPOLOGICAL_NODE = cgmes24.DCTopologicalNode | cgmes30.DCTopologicalNode
-CGMES_CONNECTIVITY_NODE = cgmes24.ConnectivityNode | cgmes30.ConnectivityNode
-CGMES_BASE_VOLTAGE = cgmes24.BaseVoltage | cgmes30.BaseVoltage
-CGMES_CONDUCTING_EQUIPMENT = cgmes24.ConductingEquipment | cgmes30.ConductingEquipment
-CGMES_DC_CONDUCTING_EQUIPMENT = cgmes24.DCConductingEquipment | cgmes30.DCConductingEquipment
-CGMES_OPERATIONAL_LIMIT_TYPE = cgmes24.OperationalLimitType | cgmes30.OperationalLimitType
-CGMES_EQUIPMENT_CONTAINER = cgmes24.EquipmentContainer | cgmes30.EquipmentContainer
-CGMES_VS_CONVERTER = cgmes24.VsConverter | cgmes30.VsConverter
-CGMES_DC_CONVERTER_UNIT = cgmes24.DCConverterUnit | cgmes30.DCConverterUnit
-CGMES_LINE = cgmes24.Line | cgmes30.Line
-CGMES_DC_LINE = cgmes24.DCLine | cgmes30.DCLine
-CGMES_DC_LINE_SEGMENT = cgmes24.DCLineSegment | cgmes30.DCLineSegment
-CGMES_LOCATION = cgmes24.Location | cgmes30.Location
-CGMES_POSITION_POINT = cgmes24.PositionPoint | cgmes30.PositionPoint
-CGMES_NON_LINEAR_SHUNT_COMPENSATOR = cgmes24.NonlinearShuntCompensator | cgmes30.NonlinearShuntCompensator
 
 
 def find_attribute(obj: CGMES_ASSETS,
@@ -512,13 +493,13 @@ class CgmesCircuit(BaseCircuit):
 
         return True
 
-    def get_class_type(self, class_name: str) -> CGMES_ASSETS:
-        class_type = self.cgmes_assets.class_dict.get(class_name)
-        if class_type is None:
-            raise NotImplementedError(
-                f"Class type missing from CGMES assets! ({class_name})"
-            )
-        return class_type
+    # def get_class_type(self, class_name: str) -> CGMES_ASSETS:
+    #     class_type = self.cgmes_assets.class_dict.get(class_name)
+    #     if class_type is None:
+    #         raise NotImplementedError(
+    #             f"Class type missing from CGMES assets! ({class_name})"
+    #         )
+    #     return class_type
 
     def get_properties(self) -> List[CgmesProperty]:
         """

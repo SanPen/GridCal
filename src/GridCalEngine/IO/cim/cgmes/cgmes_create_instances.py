@@ -12,22 +12,25 @@ from typing import List, Union, Tuple
 from GridCalEngine import StrVec
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import (CgmesCircuit,
-                                                      CGMES_CONDUCTING_EQUIPMENT,
-                                                      CGMES_EQUIPMENT_CONTAINER,
-                                                      CGMES_DC_CONDUCTING_EQUIPMENT,
-                                                      CGMES_OPERATIONAL_LIMIT_TYPE,
-                                                      CGMES_DC_TOPOLOGICAL_NODE,
-                                                      CGMES_CONNECTIVITY_NODE,
-                                                      CGMES_VS_CONVERTER,
-                                                      CGMES_DC_CONVERTER_UNIT,
-                                                      CGMES_LINE,
-                                                      CGMES_DC_LINE,
-                                                      CGMES_DC_LINE_SEGMENT,
-                                                      CGMES_DC_TERMINAL,
-                                                      CGMES_LOCATION,
-                                                      CGMES_POSITION_POINT,
-                                                      CGMES_NON_LINEAR_SHUNT_COMPENSATOR)
+import GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_2_4_15_assets as cgmes24
+import GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_3_0_0_assets as cgmes30
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_typing import (is_term,
+                                                     CGMES_CONDUCTING_EQUIPMENT,
+                                                     CGMES_EQUIPMENT_CONTAINER,
+                                                     CGMES_DC_CONDUCTING_EQUIPMENT,
+                                                     CGMES_OPERATIONAL_LIMIT_TYPE,
+                                                     CGMES_DC_TOPOLOGICAL_NODE,
+                                                     CGMES_CONNECTIVITY_NODE,
+                                                     CGMES_VS_CONVERTER,
+                                                     CGMES_DC_CONVERTER_UNIT,
+                                                     CGMES_LINE,
+                                                     CGMES_DC_LINE,
+                                                     CGMES_DC_LINE_SEGMENT,
+                                                     CGMES_TERMINAL,
+                                                     CGMES_DC_TERMINAL,
+                                                     CGMES_LOCATION,
+                                                     CGMES_NON_LINEAR_SHUNT_COMPENSATOR)
 
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile,
                                                     WindGenUnitKind,
@@ -189,7 +192,8 @@ def create_cgmes_terminal(mc_bus: Bus,
                           seq_num: Union[int, None],
                           cond_eq: Union[None, CGMES_CONDUCTING_EQUIPMENT],
                           cgmes_model: CgmesCircuit,
-                          logger: DataLogger):
+                          ver: CGMESVersions,
+                          logger: DataLogger) -> CGMES_TERMINAL:
     """
     Creates a new Terminal in CGMES model,
     and connects it the relating Topological Node
@@ -197,39 +201,57 @@ def create_cgmes_terminal(mc_bus: Bus,
     :param seq_num:
     :param cond_eq:
     :param cgmes_model:
+    :param ver
     :param logger:
-    :return:
+    :return: CGMES_TERMINAL
     """
 
     new_rdf_id = get_new_rdfid()
-    terminal_template = cgmes_model.get_class_type("Terminal")
-    term = terminal_template(new_rdf_id)
-    term.name = f'{cond_eq.name} - T{seq_num}' if cond_eq is not None else ""
-    # term.shortName =
-    if seq_num is not None:
-        term.sequenceNumber = seq_num
-
-    # further properties
-    # term.phases =
-    # term.energyIdentCodeEic =
-
-    cond_eq_type = cgmes_model.get_class_type("ConductingEquipment")
-    if cond_eq and isinstance(cond_eq, cond_eq_type):
-        term.ConductingEquipment = cond_eq
-    term.connected = True
+    name = f'{cond_eq.name} - T{seq_num}' if cond_eq is not None else ""
 
     tn = find_object_by_uuid(
         cgmes_model=cgmes_model,
         object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
         target_uuid=mc_bus.idtag
     )
-    if isinstance(tn, cgmes_model.get_class_type("TopologicalNode")):
-        term.TopologicalNode = tn
-        term.ConnectivityNode = tn.ConnectivityNodes
+
+    if ver == CGMESVersions.v2_4_15:
+        term = cgmes24.Terminal(rdfid=new_rdf_id)
+        term.name = name
+
+        if cond_eq and isinstance(cond_eq, cgmes24.ConductingEquipment):
+            term.ConductingEquipment = cond_eq
+
+        if isinstance(tn, cgmes24.TopologicalNode):
+            term.TopologicalNode = tn
+            term.ConnectivityNode = tn.ConnectivityNodes
+        else:
+            logger.add_error(msg='No found TopologicalNode',
+                             device=mc_bus,
+                             device_class=gcdev.Bus)
+
+    elif CGMESVersions.v3_0_0:
+        term = cgmes30.Terminal(rdfid=new_rdf_id)
+        term.name = name
+
+        if cond_eq and isinstance(cond_eq, cgmes30.ConductingEquipment):
+            term.ConductingEquipment = cond_eq
+
+        if isinstance(tn, cgmes30.TopologicalNode):
+            term.TopologicalNode = tn
+            term.ConnectivityNode = tn.ConnectivityNodes
+        else:
+            logger.add_error(msg='No found TopologicalNode',
+                             device=mc_bus,
+                             device_class=gcdev.Bus)
+
     else:
-        logger.add_error(msg='No found TopologicalNode',
-                         device=mc_bus,
-                         device_class=gcdev.Bus)
+        raise NotImplemented()
+
+    if seq_num is not None:
+        term.sequenceNumber = seq_num
+
+    term.connected = True
 
     cgmes_model.add(term)
 
@@ -238,17 +260,21 @@ def create_cgmes_terminal(mc_bus: Bus,
 
 def create_cgmes_load_response_char(load: gcdev.Load,
                                     cgmes_model: CgmesCircuit,
-                                    logger: DataLogger):
+                                    ver: CGMESVersions):
     """
 
     :param load:
     :param cgmes_model:
-    :param logger:
+    :param ver:
     :return:
     """
-    new_rdf_id = get_new_rdfid()
-    lrc_template = cgmes_model.get_class_type("LoadResponseCharacteristic")
-    lrc = lrc_template(rdfid=new_rdf_id)
+    if ver == CGMESVersions.v2_4_15:
+        lrc = cgmes24.LoadResponseCharacteristic(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        lrc = cgmes30.LoadResponseCharacteristic(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
+
     lrc.name = f'LoadRespChar_{load.name}'
     # lrc.shortName = load.name
     lrc.exponentModel = False
@@ -279,69 +305,109 @@ def create_cgmes_load_response_char(load: gcdev.Load,
 
 
 def create_cgmes_generating_unit(gen: gcdev.Generator,
-                                 cgmes_model: CgmesCircuit):
+                                 cgmes_model: CgmesCircuit,
+                                 ver: CGMESVersions):
     """
     Creates the appropriate CGMES GeneratingUnit object
     from a MultiCircuit Generator.
     """
 
-    new_rdf_id = get_new_rdfid()
-
     if len(gen.technologies) == 0:
-        object_template = cgmes_model.get_class_type("GeneratingUnit")
-        sm = object_template(new_rdf_id)
+        if ver == CGMESVersions.v2_4_15:
+            sm = cgmes24.GeneratingUnit(get_new_rdfid())
+        elif ver == CGMESVersions.v3_0_0:
+            sm = cgmes30.GeneratingUnit(get_new_rdfid())
+        else:
+            raise NotImplemented()
+
         cgmes_model.add(sm)
         return sm
     else:
         for tech_association in gen.technologies:
 
             if tech_association.api_object.name == 'General':
-                object_template = cgmes_model.get_class_type("GeneratingUnit")
-                sm = object_template(new_rdf_id)
+
+                if ver == CGMESVersions.v2_4_15:
+                    sm = cgmes24.GeneratingUnit(get_new_rdfid())
+                elif ver == CGMESVersions.v3_0_0:
+                    sm = cgmes30.GeneratingUnit(get_new_rdfid())
+                else:
+                    raise NotImplemented()
+
                 cgmes_model.add(sm)
                 return sm
 
             if tech_association.api_object.name == 'Thermal':
-                object_template = cgmes_model.get_class_type(
-                    "ThermalGeneratingUnit")
-                tgu = object_template(new_rdf_id)
+
+                if ver == CGMESVersions.v2_4_15:
+                    tgu = cgmes24.ThermalGeneratingUnit(get_new_rdfid())
+                elif ver == CGMESVersions.v3_0_0:
+                    tgu = cgmes30.ThermalGeneratingUnit(get_new_rdfid())
+                else:
+                    raise NotImplemented()
+
                 cgmes_model.add(tgu)
                 return tgu
 
             if tech_association.api_object.name == 'Hydro':
-                object_template = cgmes_model.get_class_type(
-                    "HydroGeneratingUnit")
-                hgu = object_template(new_rdf_id)
+
+                if ver == CGMESVersions.v2_4_15:
+                    hgu = cgmes24.HydroGeneratingUnit(get_new_rdfid())
+                elif ver == CGMESVersions.v3_0_0:
+                    hgu = cgmes30.HydroGeneratingUnit(get_new_rdfid())
+                else:
+                    raise NotImplemented()
+
                 cgmes_model.add(hgu)
                 return hgu
 
             if tech_association.api_object.name == 'Solar':
-                object_template = cgmes_model.get_class_type(
-                    "SolarGeneratingUnit")
-                sgu = object_template(new_rdf_id)
+
+                if ver == CGMESVersions.v2_4_15:
+                    sgu = cgmes24.SolarGeneratingUnit(get_new_rdfid())
+                elif ver == CGMESVersions.v3_0_0:
+                    sgu = cgmes30.SolarGeneratingUnit(get_new_rdfid())
+                else:
+                    raise NotImplemented()
+
                 cgmes_model.add(sgu)
                 return sgu
 
             if tech_association.api_object.name == 'Wind Onshore':
-                object_template = cgmes_model.get_class_type(
-                    "WindGeneratingUnit")
-                wgu = object_template(new_rdf_id)
+
+                if ver == CGMESVersions.v2_4_15:
+                    wgu = cgmes24.WindGeneratingUnit(get_new_rdfid())
+                elif ver == CGMESVersions.v3_0_0:
+                    wgu = cgmes30.WindGeneratingUnit(get_new_rdfid())
+                else:
+                    raise NotImplemented()
+
                 wgu.windGenUnitType = WindGenUnitKind.onshore
                 cgmes_model.add(wgu)
                 return wgu
 
             if tech_association.api_object.name == 'Wind Offshore':
-                object_template = cgmes_model.get_class_type(
-                    "WindGeneratingUnit")
-                wgu = object_template(new_rdf_id)
+
+                if ver == CGMESVersions.v2_4_15:
+                    wgu = cgmes24.WindGeneratingUnit(get_new_rdfid())
+                elif ver == CGMESVersions.v3_0_0:
+                    wgu = cgmes30.WindGeneratingUnit(get_new_rdfid())
+                else:
+                    raise NotImplemented()
+
                 wgu.windGenUnitType = WindGenUnitKind.offshore
                 cgmes_model.add(wgu)
                 return wgu
 
             if tech_association.api_object.name == 'Nuclear':
-                object_template = cgmes_model.get_class_type(
-                    "NuclearGeneratingUnit")
-                ngu = object_template(new_rdf_id)
+
+                if ver == CGMESVersions.v2_4_15:
+                    ngu = cgmes24.NuclearGeneratingUnit(get_new_rdfid())
+                elif ver == CGMESVersions.v3_0_0:
+                    ngu = cgmes30.NuclearGeneratingUnit(get_new_rdfid())
+                else:
+                    raise NotImplemented()
+
                 cgmes_model.add(ngu)
                 return ngu
 
@@ -351,6 +417,7 @@ def create_cgmes_generating_unit(gen: gcdev.Generator,
 def create_cgmes_regulating_control(cgmes_elm,
                                     mc_gen: Union[gcdev.Generator, gcdev.ControllableShunt],
                                     cgmes_model: CgmesCircuit,
+                                    ver: CGMESVersions,
                                     logger: DataLogger):
     """
     Create Regulating Control for a CGMES device
@@ -358,12 +425,18 @@ def create_cgmes_regulating_control(cgmes_elm,
     :param cgmes_elm: Cgmes Synchronous Machine or Shunt (Nonlin or Lin)
     :param mc_gen: MultiCircuit element: Generator or Controllable Shunt
     :param cgmes_model: CgmesCircuit
+    :param ver: Version
     :param logger:
     :return:
     """
     new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("RegulatingControl")
-    rc = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        rc = cgmes24.RegulatingControl(rdfid=new_rdf_id)
+    elif ver == CGMESVersions.v3_0_0:
+        rc = cgmes30.RegulatingControl(rdfid=new_rdf_id)
+    else:
+        raise NotImplemented()
 
     # RC for EQ
     rc.name = f'_RC_{mc_gen.name}'
@@ -390,6 +463,7 @@ def create_cgmes_tap_changer_control(
         tcc_enabled,
         mc_trafo: Union[gcdev.Transformer2W, gcdev.Transformer3W],
         cgmes_model: CgmesCircuit,
+        ver: CGMESVersions,
         logger: DataLogger):
     """
     Create Tap Changer Control for Tap changers.
@@ -399,12 +473,17 @@ def create_cgmes_tap_changer_control(
     :param tcc_enabled: TapChangerContol enabled
     :param mc_trafo: MultiCircuit Transformer
     :param cgmes_model: CgmesCircuit
+    :param ver:
     :param logger: DataLogger
     :return:
     """
-    new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("TapChangerControl")
-    tcc = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        tcc = cgmes24.TapChangerControl(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        tcc = cgmes30.TapChangerControl(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
 
     # EQ
     tcc.name = f'_tcc_{mc_trafo.name}'
@@ -436,6 +515,7 @@ def create_cgmes_current_limit(terminal,
                                rate_mw: float,
                                op_limit_type: CGMES_OPERATIONAL_LIMIT_TYPE,
                                cgmes_model: CgmesCircuit,
+                               ver: CGMESVersions,
                                logger: DataLogger):
     """
 
@@ -443,12 +523,18 @@ def create_cgmes_current_limit(terminal,
     :param rate_mw: rating in GridCal in MW/MVA
     :param op_limit_type: Operational Limit Type
     :param cgmes_model: CgmesModel
+    :param ver: CGMESVersions
     :param logger: DataLogger
     :return:
     """
-    new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("CurrentLimit")
-    curr_lim = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        curr_lim = cgmes24.CurrentLimit(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        curr_lim = cgmes30.CurrentLimit(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
+
     curr_lim.name = f'{terminal.name} - CL-1'
     curr_lim.shortName = f'CL-1'
     curr_lim.description = f'Ratings for element {terminal.ConductingEquipment.name} - Limit'
@@ -462,7 +548,7 @@ def create_cgmes_current_limit(terminal,
 
         curr_lim.value = current_rate  # Current rate in Amps
 
-        op_lim_set_1 = create_operational_limit_set(terminal, cgmes_model, logger)
+        op_lim_set_1 = create_operational_limit_set(terminal, cgmes_model, ver, logger)
         if op_lim_set_1 is not None:
             curr_lim.OperationalLimitSet = op_lim_set_1
         else:
@@ -478,38 +564,49 @@ def create_cgmes_current_limit(terminal,
 
 def create_operational_limit_set(terminal,
                                  cgmes_model: CgmesCircuit,
+                                 ver: CGMESVersions,
                                  logger: DataLogger):
     """
 
     :param terminal:
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
-    new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("OperationalLimitSet")
-    op_lim_set = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        op_lim_set = cgmes24.OperationalLimitSet(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        op_lim_set = cgmes30.OperationalLimitSet(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
+
     term_num = terminal.sequenceNumber if terminal.sequenceNumber is not None else 1
     op_lim_set.name = f'OperationalLimit at Term-{term_num}'
     op_lim_set.description = f'OperationalLimit at Port1'
 
-    terminal_type = cgmes_model.get_class_type('Terminal')
-    if isinstance(terminal, terminal_type):
+    if is_term(terminal):
         op_lim_set.Terminal = terminal
 
     cgmes_model.add(op_lim_set)
     return op_lim_set
 
 
-def create_cgmes_operational_limit_type(cgmes_model: CgmesCircuit):
+def create_cgmes_operational_limit_type(cgmes_model: CgmesCircuit, ver: CGMESVersions):
     """
 
     :param cgmes_model: CgmesModel
+    :param ver:
     :return:
     """
-    new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("OperationalLimitType")
-    op_lim_type = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        op_lim_type = cgmes24.OperationalLimitType(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        op_lim_type = cgmes30.OperationalLimitType(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
 
     cgmes_model.add(op_lim_type)
     return op_lim_type
@@ -518,6 +615,7 @@ def create_cgmes_operational_limit_type(cgmes_model: CgmesCircuit):
 def create_cgmes_dc_tp_node(tp_name: str,
                             tp_description: str,
                             cgmes_model: CgmesCircuit,
+                            ver: CGMESVersions,
                             logger: DataLogger):
     """
     Creates a DCTopologicalNode from a gcdev Bus
@@ -527,9 +625,13 @@ def create_cgmes_dc_tp_node(tp_name: str,
     :param logger:
     :return:
     """
-    new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("DCTopologicalNode")
-    dc_tp = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        dc_tp = cgmes24.DCTopologicalNode(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        dc_tp = cgmes30.DCTopologicalNode(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
 
     dc_tp.name = tp_name
     dc_tp.description = tp_description
@@ -543,6 +645,7 @@ def create_cgmes_dc_node(cn_name: str,
                          cgmes_model: CgmesCircuit,
                          dc_tp: CGMES_DC_TOPOLOGICAL_NODE,
                          dc_ec: CGMES_EQUIPMENT_CONTAINER,
+                         ver: CGMESVersions,
                          logger: DataLogger):
     """
     Creates a DCTopologicalNode from a gcdev Bus
@@ -555,9 +658,13 @@ def create_cgmes_dc_node(cn_name: str,
     :param logger:
     :return:
     """
-    new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("DCNode")
-    dc_node = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        dc_node = cgmes24.DCNode(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        dc_node = cgmes30.DCNode(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
 
     dc_node.name = cn_name
     dc_node.description = cn_description
@@ -572,6 +679,7 @@ def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
                                gc_vsc: Union[gcdev.VSC, None],
                                p_set: float,
                                v_set: float,
+                               ver: CGMESVersions,
                                logger: DataLogger) -> Tuple[CGMES_VS_CONVERTER, CGMES_DC_CONVERTER_UNIT]:
     """
     Creates a new Voltage-source converter
@@ -582,6 +690,7 @@ def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
     :param p_set: power set point
     :param v_set: voltage set point, only used if gc_vsc is None,
                   otherwise the set point is from gc_vsc.vset
+    :param ver:
     :param logger: DataLogger
     :return: VsConverter and DCConverterUnit objects
     """
@@ -589,8 +698,13 @@ def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
         rdf_id = get_new_rdfid()
     else:
         rdf_id = form_rdfid(gc_vsc.idtag)
-    object_template = cgmes_model.get_class_type("VsConverter")
-    vs_converter = object_template(rdfid=rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        vs_converter = cgmes24.VsConverter(rdfid=rdf_id)
+    elif ver == CGMESVersions.v3_0_0:
+        vs_converter = cgmes30.VsConverter(rdfid=rdf_id)
+    else:
+        raise NotImplemented()
 
     if gc_vsc is not None:
         vs_converter.name = gc_vsc.name
@@ -639,8 +753,7 @@ def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
     #     <cim:ACDCConverter.idc>962.342430</cim:ACDCConverter.idc>
 
     # DCConverterUnit for containment
-    dc_conv_unit_1 = create_cgmes_dc_converter_unit(cgmes_model=cgmes_model,
-                                                    logger=logger)
+    dc_conv_unit_1 = create_cgmes_dc_converter_unit(cgmes_model=cgmes_model, ver=ver, logger=logger)
     dc_conv_unit_1.description = f'DC_Converter_Unit_for_{vs_converter.name}'
     vs_converter.EquipmentContainer = dc_conv_unit_1
 
@@ -653,6 +766,7 @@ def create_cgmes_acdc_converter_terminal(cgmes_model: CgmesCircuit,
                                          seq_num: Union[int, None],
                                          dc_node: Union[None, CGMES_DC_TOPOLOGICAL_NODE],
                                          dc_cond_eq: Union[None, CGMES_DC_CONDUCTING_EQUIPMENT],
+                                         ver: CGMESVersions,
                                          logger: DataLogger):
     """
     Creates a new ACDCConverterDCTerminal in CGMES model,
@@ -663,6 +777,7 @@ def create_cgmes_acdc_converter_terminal(cgmes_model: CgmesCircuit,
     :param seq_num:
     :param dc_node:
     :param dc_cond_eq:
+    :param ver:
     :param logger:
     :return:
     """
@@ -676,14 +791,18 @@ def create_cgmes_acdc_converter_terminal(cgmes_model: CgmesCircuit,
                              comment="create_cgmes_acdc_converter_terminal")
             return None
 
-    new_rdf_id = get_new_rdfid()
-    terminal_template = cgmes_model.get_class_type("ACDCConverterDCTerminal")
-    acdc_term = terminal_template(new_rdf_id)
+    if ver == CGMESVersions.v2_4_15:
+        acdc_term = cgmes24.ACDCConverterDCTerminal(get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        acdc_term = cgmes30.ACDCConverterDCTerminal(get_new_rdfid())
+    else:
+        raise NotImplemented()
+
     acdc_term.name = f'{dc_cond_eq.name} - T{seq_num}' if dc_cond_eq is not None else "ACDCTerm"
     acdc_term.description = f'{dc_cond_eq.name}_converter_DC_term'
     acdc_term.sequenceNumber = seq_num if seq_num is not None else 1
 
-    if isinstance(dc_cond_eq, cgmes_model.get_class_type("ACDCConverter")):
+    if isinstance(dc_cond_eq, (cgmes24.ACDCConverter, cgmes30.ACDCConverter)):
         acdc_term.DCConductingEquipment = dc_cond_eq
     else:
         logger.add_error(msg=f'DCConductingEquipment must be an ACDCConverter',
@@ -694,7 +813,7 @@ def create_cgmes_acdc_converter_terminal(cgmes_model: CgmesCircuit,
     acdc_term.connected = True
     acdc_term.polarity = DCPolarityKind.positive
 
-    if isinstance(dc_node, cgmes_model.get_class_type("DCNode")):
+    if isinstance(dc_node, (cgmes24.DCNode, cgmes30.DCNode)):
         acdc_term.DCNode = dc_node
 
     # tn = find_object_by_uuid(
@@ -716,6 +835,7 @@ def create_cgmes_acdc_converter_terminal(cgmes_model: CgmesCircuit,
 
 
 def create_cgmes_dc_line(cgmes_model: CgmesCircuit,
+                         ver: CGMESVersions,
                          logger: DataLogger) -> CGMES_DC_LINE:
     """
     Creates a new CGMES DCLine
@@ -724,9 +844,13 @@ def create_cgmes_dc_line(cgmes_model: CgmesCircuit,
     :param logger:
     :return:
     """
-    new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("DCLine")
-    dc_line = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        dc_line = cgmes24.DCLine(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        dc_line = cgmes30.DCLine(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
 
     cgmes_model.add(dc_line)
     return dc_line
@@ -739,6 +863,7 @@ def create_cgmes_dc_line_segment(cgmes_model: CgmesCircuit,
                                  dc_tp_2: CGMES_DC_TOPOLOGICAL_NODE,
                                  dc_node_2: CGMES_CONNECTIVITY_NODE,
                                  eq_cont: CGMES_EQUIPMENT_CONTAINER,
+                                 ver: CGMESVersions,
                                  logger: DataLogger) -> CGMES_DC_LINE_SEGMENT:
     """
     Creates a new CGMES DCLineSegment
@@ -750,11 +875,16 @@ def create_cgmes_dc_line_segment(cgmes_model: CgmesCircuit,
     :param dc_tp_2:
     :param dc_node_2:
     :param eq_cont: EquipmentContainer (DCLine)
+    :param ver:
     :param logger:
     :return:
     """
-    object_template: CGMES_DC_LINE_SEGMENT = cgmes_model.get_class_type("DCLineSegment")
-    dc_line_segment = object_template(rdfid=form_rdfid(mc_elm.idtag))
+    if ver == CGMESVersions.v2_4_15:
+        dc_line_segment = cgmes24.DCLineSegment(rdfid=form_rdfid(mc_elm.idtag))
+    elif ver == CGMESVersions.v3_0_0:
+        dc_line_segment = cgmes30.DCLineSegment(rdfid=form_rdfid(mc_elm.idtag))
+    else:
+        raise NotImplemented()
 
     dc_line_segment.name = mc_elm.name
     dc_line_segment.description = mc_elm.code
@@ -773,12 +903,14 @@ def create_cgmes_dc_line_segment(cgmes_model: CgmesCircuit,
                              dc_node=dc_node_1,
                              dc_cond_eq=dc_line_segment,
                              seq_num=1,
+                             ver=ver,
                              logger=logger)
     create_cgmes_dc_terminal(cgmes_model=cgmes_model,
                              dc_tp=dc_tp_2,
                              dc_node=dc_node_2,
                              dc_cond_eq=dc_line_segment,
                              seq_num=2,
+                             ver=ver,
                              logger=logger)
 
     cgmes_model.add(dc_line_segment)
@@ -790,6 +922,7 @@ def create_cgmes_dc_terminal(cgmes_model: CgmesCircuit,
                              dc_node: CGMES_CONNECTIVITY_NODE,
                              dc_cond_eq: CGMES_DC_CONDUCTING_EQUIPMENT,
                              seq_num: int,
+                             ver: CGMESVersions,
                              logger: DataLogger) -> CGMES_DC_TERMINAL:
     """
     Creates a new CGMES DCTerminal
@@ -802,14 +935,19 @@ def create_cgmes_dc_terminal(cgmes_model: CgmesCircuit,
     :param logger: DataLogger
     :return:
     """
-    new_rdf_id = get_new_rdfid()
-    object_template: CGMES_DC_TERMINAL = cgmes_model.get_class_type("DCTerminal")
-    dc_term = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        dc_term = cgmes24.DCTerminal(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        dc_term = cgmes30.DCTerminal(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
 
     # EQ
     i = len(cgmes_model.cgmes_assets.DCTerminal_list)
     dc_term.name = f'DC_term_{i + 1}'
-    if isinstance(dc_node, cgmes_model.get_class_type("DCNode")):
+
+    if isinstance(dc_node, (cgmes24.DCNode, cgmes30.DCNode)):
         dc_term.DCNode = dc_node
 
     dc_term.DCConductingEquipment = dc_cond_eq
@@ -826,17 +964,23 @@ def create_cgmes_dc_terminal(cgmes_model: CgmesCircuit,
 
 
 def create_cgmes_dc_converter_unit(cgmes_model: CgmesCircuit,
+                                   ver: CGMESVersions,
                                    logger: DataLogger) -> CGMES_DC_CONVERTER_UNIT:
     """
     Creates a new CGMES DCConverterUnit
 
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
-    new_rdf_id = get_new_rdfid()
-    object_template: CGMES_DC_CONVERTER_UNIT = cgmes_model.get_class_type("DCConverterUnit")
-    dc_cu = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        dc_cu = cgmes24.DCConverterUnit(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        dc_cu = cgmes30.DCConverterUnit(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
 
     dc_cu.Substation = None  # TODO
     dc_cu.operationMode = DCConverterOperatingModeKind.monopolarGroundReturn
@@ -849,6 +993,7 @@ def create_cgmes_location(cgmes_model: CgmesCircuit,
                           device: CGMES_LINE,
                           longitude: float,
                           latitude: float,
+                          ver: CGMESVersions,
                           logger: DataLogger) -> CGMES_LOCATION:
     """
 
@@ -859,14 +1004,23 @@ def create_cgmes_location(cgmes_model: CgmesCircuit,
     :param logger:
     :return:
     """
-    object_template = cgmes_model.get_class_type("Location")
-    location: CGMES_LOCATION = object_template(rdfid=get_new_rdfid(), tpe="Location")
+    if ver == CGMESVersions.v2_4_15:
+        location = cgmes24.Location(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        location = cgmes30.Location(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
 
     location.CoordinateSystem = cgmes_model.cgmes_assets.CoordinateSystem_list[0]
     location.PowerSystemResource = device
 
-    position_point_t: CGMES_POSITION_POINT = cgmes_model.get_class_type("PositionPoint")
-    pos_point = position_point_t(rdfid=get_new_rdfid(), tpe="PositionPoint")
+    if ver == CGMESVersions.v2_4_15:
+        pos_point = cgmes24.PositionPoint(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        pos_point = cgmes30.PositionPoint(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
+
     pos_point.Location = location
     pos_point.sequenceNumber = 1
     pos_point.xPosition = str(longitude)
@@ -885,7 +1039,8 @@ def create_cgmes_location(cgmes_model: CgmesCircuit,
 def create_sv_power_flow(cgmes_model: CgmesCircuit,
                          p: float,
                          q: float,
-                         terminal) -> None:
+                         terminal: CGMES_TERMINAL,
+                         ver: CGMESVersions) -> None:
     """
     Creates a SvPowerFlow instance
 
@@ -897,9 +1052,12 @@ def create_sv_power_flow(cgmes_model: CgmesCircuit,
     :param terminal:
     :return:
     """
-    object_template = cgmes_model.get_class_type("SvPowerFlow")
-    new_rdf_id = get_new_rdfid()
-    sv_pf = object_template(rdfid=new_rdf_id)
+    if ver == CGMESVersions.v2_4_15:
+        sv_pf = cgmes24.SvPowerFlow(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        sv_pf = cgmes30.SvPowerFlow(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
 
     sv_pf.p = p
     sv_pf.q = q
@@ -910,7 +1068,8 @@ def create_sv_power_flow(cgmes_model: CgmesCircuit,
 
 def create_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit,
                                          sections: int,
-                                         cgmes_shunt_compensator) -> None:
+                                         cgmes_shunt_compensator,
+                                         ver: CGMESVersions) -> None:
     """
     Creates a SvShuntCompensatorSections instance
 
@@ -920,10 +1079,12 @@ def create_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit,
         ShuntCompensator instance from cgmes model
     :return:
     """
-    object_template = cgmes_model.get_class_type("SvShuntCompensatorSections")
-    new_rdf_id = get_new_rdfid()
-    sv_scs = object_template(rdfid=new_rdf_id,
-                             tpe="SvShuntCompensatorSections")
+    if ver == CGMESVersions.v2_4_15:
+        sv_scs = cgmes24.SvShuntCompensatorSections(rdfid=get_new_rdfid(), tpe="SvShuntCompensatorSections")
+    elif ver == CGMESVersions.v3_0_0:
+        sv_scs = cgmes30.SvShuntCompensatorSections(rdfid=get_new_rdfid(), tpe="SvShuntCompensatorSections")
+    else:
+        raise NotImplemented()
 
     # sections: The number of sections in service as a continous variable.
     # To get integer value scale with ShuntCompensator.bPerSection.
@@ -935,18 +1096,23 @@ def create_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit,
 
 def create_sv_status(cgmes_model: CgmesCircuit,
                      in_service: int,
-                     cgmes_conducting_equipment) -> None:
+                     cgmes_conducting_equipment,
+                     ver: CGMESVersions) -> None:
     """
     Creates a SvStatus instance
 
     :param cgmes_model: Cgmes Circuit
-    :param in_service: is active paramater
+    :param in_service: is active parameter
     :param cgmes_conducting_equipment: cgmes CondEq
     :return:
     """
-    object_template = cgmes_model.get_class_type("SvStatus")
-    new_rdf_id = get_new_rdfid()
-    sv_status = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        sv_status = cgmes24.SvStatus(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        sv_status = cgmes30.SvStatus(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
 
     sv_status.inService = in_service
     # TODO sv_status.ConductingEquipment = cgmes_conducting_equipment
@@ -956,6 +1122,7 @@ def create_sv_status(cgmes_model: CgmesCircuit,
 
 def create_cgmes_conform_load_group(
         cgmes_model: CgmesCircuit,
+        ver: CGMESVersions,
         logger: DataLogger):
     """
 
@@ -963,9 +1130,14 @@ def create_cgmes_conform_load_group(
     :param logger:
     :return:
     """
-    new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("ConformLoadGroup")
-    c_load_group = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        c_load_group = cgmes24.ConformLoadGroup(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        c_load_group = cgmes30.ConformLoadGroup(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
+
     c_load_group.name = "_CLG_"
     c_load_group.description = "_CLG_"
     c_load_group.EnergyConsumers = []
@@ -977,6 +1149,7 @@ def create_cgmes_conform_load_group(
 
 def create_cgmes_non_conform_load_group(
         cgmes_model: CgmesCircuit,
+        ver: CGMESVersions,
         logger: DataLogger):
     """
 
@@ -984,9 +1157,14 @@ def create_cgmes_non_conform_load_group(
     :param logger:
     :return:
     """
-    new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("NonConformLoadGroup")
-    nc_load_group = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        nc_load_group = cgmes24.NonConformLoadGroup(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        nc_load_group = cgmes30.NonConformLoadGroup(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
+
     nc_load_group.name = "_NCLG_"
     nc_load_group.description = "_NCLG_"
     nc_load_group.EnergyConsumers = []
@@ -998,6 +1176,7 @@ def create_cgmes_non_conform_load_group(
 
 def create_cgmes_sub_load_area(
         cgmes_model: CgmesCircuit,
+        ver: CGMESVersions,
         logger: DataLogger):
     """
 
@@ -1005,12 +1184,17 @@ def create_cgmes_sub_load_area(
     :param logger:
     :return:
     """
-    new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("SubLoadArea")
-    sub_load_area = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        sub_load_area = cgmes24.SubLoadArea(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        sub_load_area = cgmes30.SubLoadArea(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
+
     sub_load_area.name = "_SLA_"
     sub_load_area.description = "_SLA_"
-    sub_load_area.LoadArea = create_cgmes_load_area(cgmes_model, logger)
+    sub_load_area.LoadArea = create_cgmes_load_area(cgmes_model, ver, logger)
 
     cgmes_model.add(sub_load_area)
     return sub_load_area
@@ -1018,6 +1202,7 @@ def create_cgmes_sub_load_area(
 
 def create_cgmes_load_area(
         cgmes_model: CgmesCircuit,
+        ver: CGMESVersions,
         logger: DataLogger):
     """
 
@@ -1025,9 +1210,13 @@ def create_cgmes_load_area(
     :param logger:
     :return:
     """
-    new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("LoadArea")
-    sub_load_area = object_template(rdfid=new_rdf_id)
+    if ver == CGMESVersions.v2_4_15:
+        sub_load_area = cgmes24.LoadArea(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        sub_load_area = cgmes30.LoadArea(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
+
     sub_load_area.name = "_LA_"
     sub_load_area.description = "_LA_"
 
@@ -1041,6 +1230,7 @@ def create_cgmes_nonlinear_sc_point(
         g: float,
         nl_sc: CGMES_NON_LINEAR_SHUNT_COMPENSATOR,
         cgmes_model: CgmesCircuit,
+        ver: CGMESVersions
 ):
     """
     
@@ -1051,9 +1241,13 @@ def create_cgmes_nonlinear_sc_point(
     :param cgmes_model: CgmesModel
     :return: 
     """""
-    new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("NonlinearShuntCompensatorPoint")
-    nl_sc_p = object_template(rdfid=new_rdf_id)
+
+    if ver == CGMESVersions.v2_4_15:
+        nl_sc_p = cgmes24.NonlinearShuntCompensatorPoint(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        nl_sc_p = cgmes30.NonlinearShuntCompensatorPoint(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
 
     nl_sc_p.sectionNumber = section_num
     nl_sc_p.b = b
