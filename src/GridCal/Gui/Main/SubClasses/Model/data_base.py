@@ -21,7 +21,6 @@ from GridCal.Gui.profiles_model import ProfilesModel
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Topology.detect_substations import detect_substations, detect_facilities
-from GridCalEngine.Topology.grid_reduction import ward_reduction
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -30,6 +29,7 @@ from GridCal.Gui.general_dialogues import LogsDialogue
 from GridCal.Gui.SystemScaler.system_scaler import SystemScaler
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, make_diagram_from_substations
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget, make_diagram_from_buses
+from GridCal.Gui.GridReduce.grid_reduce import GridReduceDialogue
 
 
 class DataBaseTableMain(DiagramsMain):
@@ -69,6 +69,8 @@ class DataBaseTableMain(DiagramsMain):
         self.ui.actionScale.triggered.connect(self.scale)
         self.ui.actionDetect_substations.triggered.connect(self.detect_substations)
         self.ui.actionDetect_facilities.triggered.connect(self.detect_facilities)
+        self.ui.actionGrid_reduction.triggered.connect(self.grid_reduction_from_schematic_selection)
+
 
         # tree click
         self.ui.dataStructuresTreeView.clicked.connect(self.view_objects_data)
@@ -698,7 +700,7 @@ class DataBaseTableMain(DiagramsMain):
 
                 self.show_info_toast(f"{len(to_be_deleted)} buses removed from the model")
 
-    def perform_ward_reduction(self):
+    def grid_reduction_from_table_selection(self):
         """
         Crop model to buses selection
         :return:
@@ -710,28 +712,27 @@ class DataBaseTableMain(DiagramsMain):
             # get the previous power flow
             _, pf_res = self.session.power_flow
 
-            if pf_res is None:
-                self.show_error_toast("Run a power flow first!")
-                return
+            self.grid_reduction_dialogue = GridReduceDialogue(grid=self.circuit,
+                                     session=self.session,
+                                     selected_buses_set=selected_buses)
 
-            ok = yes_no_question(
-                text="This will delete the selected buses and reintroduce their influence"
-                     "using the Ward equivalent. This cannot be undone and it is dangerous if you don't know"
-                     "what you are doing \nAre you sure?",
-                title="Ward reduction?")
+            self.grid_reduction_dialogue.show()
 
-            if ok:
-                reduction_bus_indices = np.array([self.circuit.buses.index(b) for b in selected_buses], dtype=int)
+    def grid_reduction_from_schematic_selection(self):
 
-                ward_reduction(
-                    grid=self.circuit,
-                    reduction_bus_indices=reduction_bus_indices,
-                    pf_res=pf_res,
-                    add_power_loads=True
-                )
+        selected_buses = self.get_selected_buses()
 
-                self.view_objects_data()  # re-paint the table
-                self.show_info_toast("Ward reduction done!")
+        if len(selected_buses):
+            # get the previous power flow
+            _, pf_res = self.session.power_flow
+
+            selected_buses_set = {bus for i, bus, graphic in selected_buses}
+
+            self.grid_reduction_dialogue = GridReduceDialogue(grid=self.circuit,
+                                                              session=self.session,
+                                                              selected_buses_set=selected_buses_set)
+
+            self.grid_reduction_dialogue.show()
 
     def add_objects(self):
         """
@@ -1329,7 +1330,7 @@ class DataBaseTableMain(DiagramsMain):
         gf.add_menu_entry(menu=context_menu,
                           text="Ward reduction",
                           icon_path=":/Icons/icons/schematic.svg",
-                          function_ptr=self.perform_ward_reduction)
+                          function_ptr=self.grid_reduction_from_table_selection)
 
         gf.add_menu_entry(menu=context_menu,
                           text="Copy table",
