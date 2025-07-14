@@ -244,14 +244,24 @@ class ShortCircuitDriver(DriverTemplate):
             grid = self.grid
 
         # Compile the grid
-        nc = compile_numerical_circuit_at(circuit=grid,
-                                          t_idx=None,
-                                          apply_temperature=self.pf_options.apply_temperature_correction,
-                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                          opf_results=self.opf_results,
-                                          logger=self.logger,
-                                          fill_three_phase=False
-                                          )
+        if self.options.method == MethodShortCircuit.phases:
+            nc = compile_numerical_circuit_at(circuit=grid,
+                                            t_idx=None,
+                                            apply_temperature=self.pf_options.apply_temperature_correction,
+                                            branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                            opf_results=self.opf_results,
+                                            logger=self.logger,
+                                            fill_three_phase=True
+                                            )
+        else:
+             nc = compile_numerical_circuit_at(circuit=grid,
+                                            t_idx=None,
+                                            apply_temperature=self.pf_options.apply_temperature_correction,
+                                            branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                            opf_results=self.opf_results,
+                                            logger=self.logger,
+                                            fill_three_phase=False
+                                            )           
 
         calculation_inputs = nc.split_into_islands(
             ignore_single_node_islands=self.pf_options.ignore_single_node_islands
