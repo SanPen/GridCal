@@ -11,7 +11,7 @@ from collections import defaultdict
 
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, Base
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, CGMES_ASSETS
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
@@ -852,7 +852,7 @@ def get_tree_item_path(item: QtGui.QStandardItem) -> List[str]:
 
 
 def add_cim_object_node(class_tag,
-                        device: Base,
+                        device: CGMES_ASSETS,
                         editable=False,
                         already_visited: Union[List, None] = None):
     """

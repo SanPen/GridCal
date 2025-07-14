@@ -54,8 +54,6 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
 
         'bus_bar': dev.BusBar(),
 
-        'connectivity node': dev.ConnectivityNode(),
-
         'load': dev.Load(),
 
         'static_generator': dev.StaticGenerator(),

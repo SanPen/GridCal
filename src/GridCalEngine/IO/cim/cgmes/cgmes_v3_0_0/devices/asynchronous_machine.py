@@ -5,7 +5,7 @@
 
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.rotating_machine import RotatingMachine
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, AsynchronousMachineKind, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType, AsynchronousMachineKind, UnitSymbol
 
 
 class AsynchronousMachine(RotatingMachine):

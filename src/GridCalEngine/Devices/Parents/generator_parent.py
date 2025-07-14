@@ -6,7 +6,6 @@
 from typing import Union
 import numpy as np
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Devices.profile import Profile
@@ -37,9 +36,7 @@ class GeneratorParent(InjectionParent):
                  idtag: Union[str, None],
                  code: str,
                  bus: Union[Bus, None],
-                 cn: Union[ConnectivityNode, None],
                  control_bus: Union[Bus, None],
-                 control_cn: Union[ConnectivityNode, None],
                  active: bool,
                  P: float,
                  Pmin: float,
@@ -58,7 +55,6 @@ class GeneratorParent(InjectionParent):
         :param idtag: unique id of the device (if None or "" a new one is generated)
         :param code: secondary code for compatibility
         :param bus: snapshot bus object
-        :param cn: connectivity node
         :param active:active state
         :param P: active power (MW)
         :param Pmin: minimum active power (MW)
@@ -78,7 +74,6 @@ class GeneratorParent(InjectionParent):
                                  idtag=idtag,
                                  code=code,
                                  bus=bus,
-                                 cn=cn,
                                  active=active,
                                  Cost=Cost,
                                  mttf=mttf,
@@ -90,8 +85,6 @@ class GeneratorParent(InjectionParent):
 
         self.control_bus = control_bus
         self._control_bus_prof = Profile(default_value=control_bus, data_type=DeviceType.BusDevice)
-
-        self.control_cn = control_cn
 
         self._P = float(P)
         self._P_prof = Profile(default_value=self.P, data_type=float)
@@ -110,8 +103,6 @@ class GeneratorParent(InjectionParent):
         self.register(key='control_bus', units='', tpe=DeviceType.BusDevice, definition='Control bus',
                       editable=True, profile_name="control_bus_prof")
 
-        self.register(key='control_cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
-                      definition='Control connectivity node', editable=True)
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
         self.register(key='Pmin', units='MW', tpe=float, definition='Minimum active power. Used in OPF.',
                       profile_name='Pmin_prof')

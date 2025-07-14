@@ -6,7 +6,7 @@
 from enum import Enum
 
 
-class cgmesProfile(Enum):
+class CgmesProfileType(Enum):
     EQ_BD = 'EQ_BD'  # EquipmentBoundary
     TP_BD = 'TP_BD'  # TopologyBoundary
     EQ = 'EQ'  # Equipment
@@ -28,7 +28,7 @@ class cgmesProfile(Enum):
     @staticmethod
     def argparse(s):
         try:
-            return cgmesProfile[s]
+            return CgmesProfileType[s]
         except KeyError:
             return s
 

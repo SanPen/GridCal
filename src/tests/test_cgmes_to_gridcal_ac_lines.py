@@ -108,7 +108,7 @@ def test_ac_lines(cgmes_model, calc_node_dict, cn_dict, device_to_terminal_dict,
     multi_circuit = MultiCircuit()
     tn_test.BaseVoltage = BaseVoltage()
     tn_test.BaseVoltage.nominalVoltage = 100
-    get_gcdev_ac_lines(cgmes_model, multi_circuit, calc_node_dict, cn_dict, device_to_terminal_dict, logger, s_base)
+    get_gcdev_ac_lines(cgmes_model, multi_circuit, calc_node_dict, device_to_terminal_dict, logger, s_base)
     generated_ac_line = multi_circuit.lines[0]
 
     assert generated_ac_line.B == expected_b

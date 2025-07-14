@@ -5,7 +5,7 @@
 
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.dc_base_terminal import DCBaseTerminal
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, DCPolarityKind
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType, DCPolarityKind
 
 
 class ACDCConverterDCTerminal(DCBaseTerminal):

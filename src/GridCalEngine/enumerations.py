@@ -61,6 +61,7 @@ class BusGraphicType(Enum):
     """
     BusBar = "BusBar"
     Connectivity = "Connectivity"
+    Internal = "Internal"
 
     def __str__(self):
         return self.value
@@ -981,7 +982,6 @@ class DeviceType(Enum):
 
     GenericArea = 'Generic Area'
     SubstationDevice = 'Substation'
-    ConnectivityNodeDevice = 'Connectivity Node'
     AreaDevice = 'Area'
     ZoneDevice = 'Zone'
     CountryDevice = 'Country'

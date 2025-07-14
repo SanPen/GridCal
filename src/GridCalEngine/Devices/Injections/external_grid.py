@@ -51,7 +51,6 @@ class ExternalGrid(LoadParent):
                             idtag=idtag,
                             code=code,
                             bus=None,
-                            cn=None,
                             active=active,
                             P=P,
                             P1=P1,

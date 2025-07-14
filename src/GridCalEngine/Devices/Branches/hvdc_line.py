@@ -9,11 +9,9 @@ from typing import Tuple, Union
 from matplotlib import pyplot as plt
 
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.enumerations import HvdcControlType
-from GridCalEngine.basic_structures import Vec, IntVec
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
@@ -154,9 +152,9 @@ class HvdcLine(BranchParent):
     )
 
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None,
-                 cn_from: ConnectivityNode = None,
-                 cn_to: ConnectivityNode = None,
+    def __init__(self,
+                 bus_from: Bus = None,
+                 bus_to: Bus = None,
                  name='HVDC Line',
                  idtag=None,
                  active=True,
@@ -183,8 +181,6 @@ class HvdcLine(BranchParent):
         HVDC Line model
         :param bus_from: Bus from
         :param bus_to:  Bus to
-        :param cn_from: Connectivity node from
-        :param cn_to: Connectivity node to
         :param name: name of the line
         :param idtag:  id tag of the line
         :param active:  Is the line active?
@@ -220,8 +216,6 @@ class HvdcLine(BranchParent):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=cn_from,
-                              cn_to=cn_to,
                               active=active,
                               reducible=False,
                               rate=rate,

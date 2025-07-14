@@ -88,12 +88,6 @@ def write_py_for_class(cgmes_version, cgmes_class):
     # Save to file
     py_name = get_format_name(class_name=name)
     folder_name = ""
-    # folder_list = ["ACDCTerminal",
-    #                "TapChanger",
-    #                "ConnectivityNodeContainer",
-    #                "DCConductingEquipment",
-    #                "GeneratingUnit",
-    #                "ConductingEquipment"]
 
     file_path = f"{cgmes_folder}/devices/" + folder_name
     if not os.path.exists(file_path):

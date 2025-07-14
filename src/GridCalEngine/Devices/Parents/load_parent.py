@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Devices.profile import Profile
@@ -47,7 +46,6 @@ class LoadParent(InjectionParent):
                  idtag: Union[str, None],
                  code: str,
                  bus: Union[Bus, None],
-                 cn: Union[ConnectivityNode, None],
                  active: bool,
                  P: float,
                  P1: float,
@@ -70,7 +68,6 @@ class LoadParent(InjectionParent):
         :param idtag: unique id of the device (if None or "" a new one is generated)
         :param code: secondary code for compatibility
         :param bus: snapshot bus object
-        :param cn: connectivity node
         :param active:active state
         :param P: active power (MW)
         :param P1: phase 1 active power (MW)
@@ -94,7 +91,6 @@ class LoadParent(InjectionParent):
                                  idtag=idtag,
                                  code=code,
                                  bus=bus,
-                                 cn=cn,
                                  active=active,
                                  Cost=Cost,
                                  mttf=mttf,

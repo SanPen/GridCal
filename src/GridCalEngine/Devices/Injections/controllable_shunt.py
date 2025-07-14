@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from typing import Union, Tuple
+from typing import Union
 import numpy as np
 
 from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
@@ -86,7 +86,6 @@ class ControllableShunt(ShuntParent):
                              idtag=idtag,
                              code=code,
                              bus=None,
-                             cn=None,
                              active=active,
                              G=G,
                              G1=G1,

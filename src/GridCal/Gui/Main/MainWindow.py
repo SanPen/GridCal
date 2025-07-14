@@ -31,7 +31,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1198, 738)
+        mainWindow.resize(1198, 742)
         mainWindow.setBaseSize(QSize(0, 0))
         font = QFont()
         font.setPointSize(10)
@@ -4874,13 +4874,13 @@ class Ui_mainWindow(object):
         self.menuDiagrams.addAction(self.actionSelect_buses_by)
         self.menuDiagrams.addSeparator()
         self.menuDiagrams.addAction(self.actionAdd_map)
-        self.menuDiagrams.addAction(self.actionConsolidate_diagram_coordinates)
         self.menuDiagrams.addAction(self.actionReset_coordinates)
         self.menuDiagrams.addAction(self.actionColor_substations_by)
         self.menuDiagrams.addSeparator()
         self.menuDiagrams.addAction(self.actionZoom_in)
         self.menuDiagrams.addAction(self.actionZoom_out)
         self.menuDiagrams.addAction(self.actionCenter_view)
+        self.menuDiagrams.addAction(self.actionConsolidate_diagram_coordinates)
         self.menuDiagrams.addAction(self.actionSearchDiagram)
         self.menuDiagrams.addAction(self.actionDelete_selected)
         self.menuDiagrams.addSeparator()

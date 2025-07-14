@@ -107,7 +107,6 @@ class DataBaseTableMain(DiagramsMain):
             DeviceType.SubstationDevice.value: ":/Icons/icons/substation.svg",
             DeviceType.VoltageLevelDevice.value: ":/Icons/icons/voltage_level.svg",
             DeviceType.BusBarDevice.value: ":/Icons/icons/bus_bar_icon.svg",
-            DeviceType.ConnectivityNodeDevice.value: ":/Icons/icons/cn_icon.svg",
             DeviceType.BusDevice.value: ":/Icons/icons/bus_icon.svg",
             DeviceType.SwitchDevice.value: ":/Icons/icons/switch.svg",
 

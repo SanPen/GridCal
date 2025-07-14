@@ -29,7 +29,7 @@ from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.IO.cim.cgmes.cgmes_export import get_available_cgmes_profiles
 from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 from GridCalEngine.IO.gridcal.catalogue import save_catalogue, load_catalogue
 from GridCal.templates import (get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue,
@@ -62,7 +62,7 @@ class IoMain(ConfigurationMain):
                                                         CGMESVersions.v3_0_0]}
         self.ui.cgmes_version_comboBox.setModel(gf.get_list_model(list(self.cgmes_version_dict.keys())))
 
-        self.cgmes_profiles_dict = {key: cgmesProfile(key) for key, val in
+        self.cgmes_profiles_dict = {key: CgmesProfileType(key) for key, val in
                                     get_available_cgmes_profiles(cgmes_version=CGMESVersions.v2_4_15).items()}
 
         self.ui.cgmes_profiles_listView.setModel(gf.get_list_model(list(self.cgmes_profiles_dict.keys()),
@@ -549,10 +549,8 @@ class IoMain(ConfigurationMain):
                         if isinstance(diagram_widget, SchematicWidget):
                             injections_by_bus = new_circuit.get_injection_devices_grouped_by_bus()
                             injections_by_fluid_node = new_circuit.get_injection_devices_grouped_by_fluid_node()
-                            injections_by_cn = new_circuit.get_injection_devices_grouped_by_cn()
+
                             diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
-                                                                     connectivity_nodes=new_circuit.connectivity_nodes,
-                                                                     busbars=new_circuit.bus_bars,
                                                                      lines=new_circuit.lines,
                                                                      dc_lines=new_circuit.dc_lines,
                                                                      transformers2w=new_circuit.transformers2w,
@@ -565,7 +563,6 @@ class IoMain(ConfigurationMain):
                                                                      fluid_paths=new_circuit.fluid_paths,
                                                                      injections_by_bus=injections_by_bus,
                                                                      injections_by_fluid_node=injections_by_fluid_node,
-                                                                     injections_by_cn=injections_by_cn,
                                                                      explode_factor=1.0,
                                                                      prog_func=None,
                                                                      text_func=None)
@@ -580,75 +577,8 @@ class IoMain(ConfigurationMain):
         """
         Prompt to export a diff of this circuit and a base one
         """
-        # check that this circuit is ok
-        # logger = Logger()
-        # _, ok = self.circuit.get_all_elements_dict(logger=logger)
-        #
-        # if ok:
-        #     self.open_file_threaded(post_function=self.post_create_circuit_differential,
-        #                             allow_diff_file_format=True,
-        #                             title="Load base grid to compare...")
-        # else:
-        #     dlg = LogsDialogue('This circuit has duplicated idtags :(', logger)
-        #     dlg.exec()
-
         dlg = GridDiffDialogue(grid=self.circuit)
         dlg.exec()
-
-    # def post_create_circuit_differential(self):
-    #     """
-    #
-    #     :return:
-    #     """
-    #     self.stuff_running_now.delete('file_open')
-    #
-    #     if self.open_file_thread_object is not None:
-    #
-    #         if self.open_file_thread_object.logger.has_logs():
-    #             dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
-    #             dlg.exec()
-    #
-    #         if self.open_file_thread_object.valid:
-    #
-    #             if not self.circuit.valid_for_simulation():
-    #                 # load the circuit right away
-    #                 self.stuff_running_now.append('file_open')
-    #                 self.post_open_file()
-    #             else:
-    #                 # diff the circuit
-    #                 new_circuit = self.open_file_thread_object.circuit
-    #
-    #                 dict_logger = Logger()
-    #                 _, dict_ok = new_circuit.get_all_elements_dict(logger=dict_logger)
-    #
-    #                 if dict_ok:
-    #                     # create the differential
-    #                     ok, diff_logger, dgrid = self.circuit.differentiate_circuits(new_circuit)
-    #
-    #                     if diff_logger.has_logs():
-    #                         dlg = LogsDialogue('Grid differences', diff_logger)
-    #                         dlg.exec()
-    #
-    #                     # select the file to save
-    #                     filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file',
-    #                                                                                     dgrid.name,
-    #                                                                                     "GridCal diff (*.dgridcal)")
-    #
-    #                     if filename != '':
-    #
-    #                         # if the user did not enter the extension, add it automatically
-    #                         name, file_extension = os.path.splitext(filename)
-    #
-    #                         if file_extension == '':
-    #                             filename = name + ".dgridcal"
-    #
-    #                         # we were able to compose the file correctly, now save it
-    #                         self.save_file_now(filename=filename,
-    #                                            type_selected=type_selected,
-    #                                            grid=dgrid)
-    #                 else:
-    #                     dlg = LogsDialogue('The base circuit has duplicated idtags :(', dict_logger)
-    #                     dlg.exec()
 
     def save_file_as(self):
         """
@@ -1159,7 +1089,7 @@ class IoMain(ConfigurationMain):
         """
         cgmes_version = self.cgmes_version_dict[self.ui.cgmes_version_comboBox.currentText()]
 
-        self.cgmes_profiles_dict = {key: cgmesProfile(key) for key, val in
+        self.cgmes_profiles_dict = {key: CgmesProfileType(key) for key, val in
                                     get_available_cgmes_profiles(cgmes_version=cgmes_version).items()}
 
         self.ui.cgmes_profiles_listView.setModel(gf.get_list_model(list(self.cgmes_profiles_dict.keys()),
