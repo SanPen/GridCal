@@ -2837,3 +2837,41 @@ class MultiCircuit(Assets):
 
         # for i, elm in enumerate(self.get_loads()):
         #     elm.P = results.load_power[i]
+
+    def build_reduction_sets(self, reduction_bus_indices: IntVec) -> Tuple[IntVec, IntVec, IntVec]:
+        """
+        Generate the set of bus indices for grid reduction
+        :param reduction_bus_indices: array of bus indices to reduce (external set)
+        :return: external, boundary, internal
+        """
+        bus_idx_dict = self.get_bus_index_dict()
+        external_set = set(reduction_bus_indices)
+        boundary_set = set()
+        internal_set = set()
+        for branch in self.get_branches(add_vsc=True, add_hvdc=True, add_switch=True):
+            f = bus_idx_dict[branch.bus_from]
+            t = bus_idx_dict[branch.bus_to]
+            if f in external_set:
+                if t in external_set:
+                    # the branch belongs to the external set
+                    pass
+                else:
+                    # the branch is a frontier link and t is a frontier bus
+                    boundary_set.add(t)
+            else:
+                # we know f is not external...
+
+                if t in external_set:
+                    # f is not in the external set, but t is: the branch is a frontier link and f is a frontier bus
+                    boundary_set.add(f)
+                else:
+                    # f nor t are in the external set: both belong to the internal set
+                    internal_set.add(f)
+                    internal_set.add(t)
+
+        # convert to arrays and sort
+        external = np.sort(np.array(external_set))
+        boundary = np.sort(np.array(boundary_set))
+        internal = np.sort(np.array(internal_set))
+
+        return external, boundary, internal

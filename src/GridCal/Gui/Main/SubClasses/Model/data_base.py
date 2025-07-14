@@ -728,7 +728,6 @@ class DataBaseTableMain(DiagramsMain):
                     grid=self.circuit,
                     reduction_bus_indices=reduction_bus_indices,
                     pf_res=pf_res,
-                    pf_ts_res=None,
                     add_power_loads=True
                 )
 

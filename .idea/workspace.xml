@@ -28,9 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Refactored 3-phase properties&#10;All test passing&#10;Running 3Ph power flows in grids with only positive sequence data">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="fixed 409">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/object_proxy_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/object_proxy_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/data_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/data_base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/IEEE57.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/IEEE57.gridcal" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -2379,7 +2382,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="737" />
+    <option name="localTasksCounter" value="738" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2425,7 +2428,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved filtering" />
     <MESSAGE value="5.3.54" />
     <MESSAGE value="Fixed bug when computing reactive power limits&#10;Added reactive power limit test (not passing for the slack)" />
     <MESSAGE value="modified the gslv interface" />
@@ -2450,7 +2452,8 @@
     <MESSAGE value="Fixed clustering consistency by not sorting the clusters" />
     <MESSAGE value="Fixed 403" />
     <MESSAGE value="Refactored 3-phase properties&#10;All test passing&#10;Running 3Ph power flows in grids with only positive sequence data" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactored 3-phase properties&#10;All test passing&#10;Running 3Ph power flows in grids with only positive sequence data" />
+    <MESSAGE value="fixed 409" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed 409" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2931,9 +2934,14 @@
           <option name="timeStamp" value="2973" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/object_proxy_model.py</url>
-          <line>104</line>
-          <option name="timeStamp" value="3033" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/data_base.py</url>
+          <line>726</line>
+          <option name="timeStamp" value="3034" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py</url>
+          <line>74</line>
+          <option name="timeStamp" value="3035" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
