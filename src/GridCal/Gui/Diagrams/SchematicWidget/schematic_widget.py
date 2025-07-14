@@ -663,7 +663,7 @@ class SchematicWidget(BaseDiagramWidget):
                         graphic_object.set_position(x=location.x, y=location.y)
                         graphic_object.change_size(h=location.h, w=location.w)
 
-                        graphic_object.update_conn()
+                        # graphic_object.update_conn()
                         self.graphics_manager.add_device(elm=elm, graphic=graphic_object)
 
         # add the rest of the branches
@@ -1203,7 +1203,7 @@ class SchematicWidget(BaseDiagramWidget):
                                                                   bus=bus,
                                                                   conn=winding_graphics,
                                                                   set_voltage=True)
-                                tr3_graphic_object.update_conn()  # create winding
+                                # tr3_graphic_object.update_conn()  # create winding
 
                         elif self.started_branch.connected_between_bus_and_tr3():
 
@@ -1236,7 +1236,7 @@ class SchematicWidget(BaseDiagramWidget):
                                                                   bus=bus,
                                                                   conn=winding_graphics,
                                                                   set_voltage=True)
-                                tr3_graphic_object.update_conn()
+                                # tr3_graphic_object.update_conn()
 
                         elif self.started_branch.connected_between_fluid_nodes():  # fluid path
 
@@ -2118,7 +2118,7 @@ class SchematicWidget(BaseDiagramWidget):
                                    editor=self)
         tr3_graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3, set_voltage=set_voltage)
 
-        tr3_graphic_object.update_conn()
+        # tr3_graphic_object.update_conn()
 
         self.update_diagram_element(device=elm,
                                     x=elm.x,

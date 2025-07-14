@@ -224,7 +224,7 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
                                            r=self.rotation(),
                                            graphic_object=self)
 
-        self.update_conn()
+        # self.update_conn()
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
@@ -349,14 +349,6 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         y = 0 if np.isnan(y) else int(y)
         self.setPos(QPoint(int(x), int(y)))
 
-    def update_conn(self) -> None:
-        """
-        Update the object
-        """
-        # Arrange line positions
-        for terminal in self.terminals:
-            terminal.process_callbacks(self.pos())
-
     def get_connection_winding(self, from_port: RoundTerminalItem, to_port: RoundTerminalItem):
         """
         Find the winding between the terminals
@@ -410,7 +402,7 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         conn.parent_tr3_graphics_item = self
 
         # update the connection placement
-        self.update_conn()
+        # self.update_conn()
         self.mousePressEvent(None)
 
     def remove_winding(self, i: int):

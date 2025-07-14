@@ -27,7 +27,6 @@ def find_references(elements_by_type: Dict[str, List[CGMES_ASSETS]],
                     all_objects_dict: Dict[str, CGMES_ASSETS],
                     all_objects_dict_boundary: Union[Dict[str, CGMES_ASSETS], None],
                     association_inverse_dict: Dict[Tuple[str, str], str],
-                    class_dict: Dict[str, CGMES_ASSETS],
                     logger: DataLogger,
                     mark_used: bool) -> None:
     """
@@ -39,7 +38,6 @@ def find_references(elements_by_type: Dict[str, List[CGMES_ASSETS]],
     :param logger: DataLogger
     :param mark_used: mark objects as used?
     :return: Nothing, it is done in place
-    :param class_dict: Dictionary containing the class name in key and type of the objects in value.
     :param association_inverse_dict: Containing the name of the attributes which associate with each other.
     """
     added_from_the_boundary_set = list()
@@ -277,7 +275,6 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                     all_objects_dict=all_objects_dict,
                     all_objects_dict_boundary=all_objects_dict_boundary,
                     association_inverse_dict=association_inverse_dict,
-                    class_dict=class_dict,
                     logger=logger,
                     mark_used=True)
 
