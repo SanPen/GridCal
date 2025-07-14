@@ -4,6 +4,7 @@ import numpy as np
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 import pandas as pd
+from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
 
 logger = gce.Logger()
 
@@ -16,37 +17,37 @@ grid.fBase = 60
 bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=0)
 bus_632.is_slack = True
 grid.add_bus(obj=bus_632)
-gen = gce.Generator(vset = 1.0)
-grid.add_generator(bus = bus_632, api_obj = gen)
+gen = gce.Generator(vset=1.0, r1=0.004, x1=0.5, r2=0.02, x2=0.5, r0=0.01, x0=0.08)
+grid.add_generator(bus=bus_632, api_obj=gen)
 
-bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100*5, ypos=0)
+bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100 * 5, ypos=0)
 grid.add_bus(obj=bus_645)
 
-bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-200*5, ypos=0)
+bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-200 * 5, ypos=0)
 grid.add_bus(obj=bus_646)
 
-bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
+bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100 * 5, ypos=0)
 grid.add_bus(obj=bus_633)
 
-bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0)
+bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200 * 5, ypos=0, r_fault=0.1)
 grid.add_bus(obj=bus_634)
 
-bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100*5)
+bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100 * 5)
 grid.add_bus(obj=bus_671)
 
-bus_684 = gce.Bus(name='684', Vnom=4.16, xpos=-100*5, ypos=100*5)
+bus_684 = gce.Bus(name='684', Vnom=4.16, xpos=-100 * 5, ypos=100 * 5)
 grid.add_bus(obj=bus_684)
 
-bus_611 = gce.Bus(name='611', Vnom=4.16, xpos=-200*5, ypos=100*5)
+bus_611 = gce.Bus(name='611', Vnom=4.16, xpos=-200 * 5, ypos=100 * 5)
 grid.add_bus(obj=bus_611)
 
-bus_675 = gce.Bus(name='675', Vnom=4.16, xpos=200*5, ypos=100*5)
+bus_675 = gce.Bus(name='675', Vnom=4.16, xpos=200 * 5, ypos=100 * 5)
 grid.add_bus(obj=bus_675)
 
-bus_680 = gce.Bus(name='680', Vnom=4.16, xpos=0, ypos=200*5)
+bus_680 = gce.Bus(name='680', Vnom=4.16, xpos=0, ypos=200 * 5)
 grid.add_bus(obj=bus_680)
 
-bus_652 = gce.Bus(name='652', Vnom=4.16, xpos=-100*5, ypos=200*5)
+bus_652 = gce.Bus(name='652', Vnom=4.16, xpos=-100 * 5, ypos=200 * 5)
 grid.add_bus(obj=bus_652)
 
 """
@@ -95,37 +96,37 @@ y_601 = np.array([
     [1j * 6.2998, 1j * -1.9958, 1j * -1.2595],
     [1j * -1.9958, 1j * 5.9597, 1j * -0.7417],
     [1j * -1.2595, 1j * -0.7417, 1j * 5.6386]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 y_602 = np.array([
     [1j * 5.6990, 1j * -1.0817, 1j * -1.6905],
     [1j * -1.0817, 1j * 5.1795, 1j * -0.6588],
     [1j * -1.6905, 1j * -0.6588, 1j * 5.4246]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 y_603 = np.array([
     [1j * 4.7097, 1j * -0.8999],
     [1j * -0.8999, 1j * 4.6658]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 y_604 = np.array([
     [1j * 4.6658, 1j * -0.8999],
     [1j * -0.8999, 1j * 4.7097]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 y_605 = np.array([
     [1j * 4.5193]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 y_606 = np.array([
     [1j * 96.8897, 1j * 0.0000, 1j * 0.0000],
     [1j * 0.0000, 1j * 96.8897, 1j * 0.0000],
     [1j * 0.0000, 1j * 0.0000, 1j * 96.8897]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 y_607 = np.array([
     [1j * 88.9912]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 """
 Loads
@@ -202,21 +203,21 @@ load_611 = gce.Load(Ir1=0.0,
 load_611.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_611, api_obj=load_611)
 
-load_632_distrib = gce.Load(P1=0.017/2,
-                            Q1=0.010/2,
-                            P2=0.066/2,
-                            Q2=0.038/2,
-                            P3=0.117/2,
-                            Q3=0.068/2)
+load_632_distrib = gce.Load(P1=0.017 / 2,
+                            Q1=0.010 / 2,
+                            P2=0.066 / 2,
+                            Q2=0.038 / 2,
+                            P3=0.117 / 2,
+                            Q3=0.068 / 2)
 load_632_distrib.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_632, api_obj=load_632_distrib)
 
-load_671_distrib = gce.Load(P1=0.017/2,
-                            Q1=0.010/2,
-                            P2=0.066/2,
-                            Q2=0.038/2,
-                            P3=0.117/2,
-                            Q3=0.068/2)
+load_671_distrib = gce.Load(P1=0.017 / 2,
+                            Q1=0.010 / 2,
+                            P2=0.066 / 2,
+                            Q2=0.038 / 2,
+                            P3=0.117 / 2,
+                            Q3=0.068 / 2)
 load_671_distrib.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_671, api_obj=load_671_distrib)
 
@@ -331,45 +332,45 @@ XFM_1 = gce.Transformer2W(name='XFM-1',
                           LV=0.48,
                           nominal_power=0.5,
                           rate=0.5,
-                          r=1.1*2,
-                          x=2*2)
+                          r=1.1 * 2,
+                          x=2 * 2)
 XFM_1.conn_f = WindingType.GroundedStar
 XFM_1.conn_t = WindingType.GroundedStar
 grid.add_transformer2w(XFM_1)
 
 line_632_671 = gce.Line(bus_from=bus_632,
                         bus_to=bus_671,
-                        length= 2000 * 0.0003048)
+                        length=2000 * 0.0003048)
 line_632_671.apply_template(config_601, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_632_671)
 
 line_671_684 = gce.Line(bus_from=bus_671,
                         bus_to=bus_684,
-                        length= 300 * 0.0003048)
+                        length=300 * 0.0003048)
 line_671_684.apply_template(config_604, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_671_684)
 
 line_684_611 = gce.Line(bus_from=bus_684,
                         bus_to=bus_611,
-                        length= 300 * 0.0003048)
+                        length=300 * 0.0003048)
 line_684_611.apply_template(config_605, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_684_611)
 
 line_671_675 = gce.Line(bus_from=bus_671,
                         bus_to=bus_675,
-                        length= 500 * 0.0003048)
+                        length=500 * 0.0003048)
 line_671_675.apply_template(config_606, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_671_675)
 
 line_684_652 = gce.Line(bus_from=bus_684,
                         bus_to=bus_652,
-                        length= 800 * 0.0003048)
+                        length=800 * 0.0003048)
 line_684_652.apply_template(config_607, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_684_652)
 
 line_671_680 = gce.Line(bus_from=bus_671,
                         bus_to=bus_680,
-                        length= 1000 * 0.0003048)
+                        length=1000 * 0.0003048)
 line_671_680.apply_template(config_601, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_671_680)
 
@@ -379,76 +380,66 @@ Save Grid
 gce.save_file(grid=grid, filename='IEEE 13-bus.gridcal')
 
 """
-Power Flow
+Short Circuit
 """
-def power_flow_3ph(grid, t_idx=None):
-    nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx = t_idx)
+def short_circuit_3ph(grid, t_idx=None):
+    """
+    Short Circuit
+    :param grid:
+    :param t_idx:
+    :return:
+    """
 
-    V0 = nc.bus_data.Vbus
-    S0 = nc.get_power_injections_pu()
-    Qmax, Qmin = nc.get_reactive_power_limits()
+    num_pf_res = gce.power_flow(grid=grid, options=gce.PowerFlowOptions(three_phase_unbalanced=True))
 
-    options = gce.PowerFlowOptions(tolerance=1e-10, max_iter=1000)
+    pf_res = gce.PowerFlowResults(
+        n=grid.get_bus_number() * 3,
+        m=grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True) * 3,
+        n_hvdc=grid.get_hvdc_number(),
+        n_vsc=grid.get_vsc_number(),
+        n_gen=grid.get_generators_number(),
+        n_batt=grid.get_batteries_number(),
+        n_sh=grid.get_shunt_like_device_number(),
+        bus_names=grid.get_bus_names(),
+        branch_names=grid.get_branch_names(),
+        hvdc_names=grid.get_hvdc_names(),
+        vsc_names=grid.get_vsc_names(),
+        gen_names=grid.get_generator_names(),
+        batt_names=grid.get_battery_names(),
+        sh_names=grid.get_shunt_like_devices_names(),
+        bus_types=np.ones(grid.get_bus_number())
+    )
 
-    problem = PfBasicFormulation3Ph(V0=V0, S0=S0, Qmin=Qmin*100, Qmax=Qmax*100, nc=nc, options=options, logger=logger)
+    pf_res.voltage = num_pf_res.voltage
+    pf_res.Sbus = num_pf_res.Sbus
 
-    res = newton_raphson_fx(problem=problem, verbose=1, max_iter=1000)
+    sc_options = gce.ShortCircuitOptions(bus_index=4,
+                                         fault_type=FaultType.LG,
+                                         mid_line_fault=False,
+                                         branch_index=0,
+                                         branch_fault_locations=0.5,
+                                         verbose=0,
+                                         method=MethodShortCircuit.phases,
+                                         phases=PhasesShortCircuit.a)
 
-    return res
+    sc_driver = gce.ShortCircuitDriver(grid=grid,
+                                       options=sc_options,
+                                       pf_options=gce.PowerFlowOptions(three_phase_unbalanced=True),
+                                       pf_results=pf_res)
+    sc_driver.run()
 
-res_3ph = power_flow_3ph(grid)
+    return None
 
-U = abs(res_3ph.V)
-angle = np.degrees(np.angle((res_3ph.V)))
-print()
-print(np.round(U, 4))
-# print(U)
-print()
-print(np.round(angle, 2))
 
-print(len(res_3ph.St))
-print('\nSf =', np.round(res_3ph.St/3,4))
+res_3ph = short_circuit_3ph(grid)
 
-# print('U671 =', U[15:18])
-# dU_632_671 = U[0:3] - U[15:18]
-# print(dU_632_671)
-#
-# bus_numbers = [645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
-#
-# k=0
-# for i in range(len(bus_numbers)):
-#     bus = bus_numbers[i]
-#     print(f'\nSbus {bus} =\n', np.round(res_3ph.Sf[k:k+3],4))
-#     k+=3
+print('Done')
+# U = abs(res_3ph.V)
+# angle = np.degrees(np.angle((res_3ph.V)))
+# print()
+# print(np.round(U, 4))
+# print()
+# print(np.round(angle, 2))
 
-bus_numbers = [632, 645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
-
-# Asegurar que U y angle son arrays NumPy
-U = np.array(U)
-angle = np.array(angle)
-
-# Separar magnitudes y ángulos por fases
-U_A = U[0::3]
-U_B = U[1::3]
-U_C = U[2::3]
-
-angle_A = angle[0::3]
-angle_B = angle[1::3]
-angle_C = angle[2::3]
-
-# Crear columnas "MAG at ANGLE"
-def format_column(mags, angles):
-    return [f"{m:.4f} at {a:.2f}" for m, a in zip(mags, angles)]
-
-# Crear DataFrame con columna Buses
-df = pd.DataFrame({
-    'Buses': bus_numbers,
-    'A–N': format_column(U_A, angle_A),
-    'B–N': format_column(U_B, angle_B),
-    'C–N': format_column(U_C, angle_C),
-})
-
-# Exportar a Excel
-df.to_excel("short_circuit.xlsx", index=False)
-
-#print(grid.lines[2].ysh.values)
+# print(len(res_3ph.Scalc))
+# print('\nSf =', np.round(res_3ph.St,4))

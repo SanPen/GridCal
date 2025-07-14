@@ -393,7 +393,7 @@ def power_flow_3ph(grid, t_idx=None):
 
     options = gce.PowerFlowOptions(tolerance=1e-10, max_iter=1000)
 
-    problem = PfBasicFormulation3Ph(V0=V0, S0=S0, Qmin=Qmin * 100, Qmax=Qmax * 100, nc=nc, options=options)
+    problem = PfBasicFormulation3Ph(V0=V0, S0=S0, Qmin=Qmin * 100, Qmax=Qmax * 100, nc=nc, options=options, logger=logger)
 
     res = newton_raphson_fx(problem=problem, verbose=1, max_iter=1000)
 
@@ -415,7 +415,7 @@ def short_circuit_3ph(grid, t_idx=None):
 
     pf_options = gce.PowerFlowOptions(tolerance=1e-10, max_iter=1000)
 
-    pf_problem = PfBasicFormulation3Ph(V0=V0, S0=S0, Qmin=Qmin * 100, Qmax=Qmax * 100, nc=nc, options=pf_options)
+    pf_problem = PfBasicFormulation3Ph(V0=V0, S0=S0, Qmin=Qmin * 100, Qmax=Qmax * 100, nc=nc, options=pf_options, logger=logger)
 
     num_pf_res = newton_raphson_fx(problem=pf_problem, verbose=1, max_iter=1000)
 

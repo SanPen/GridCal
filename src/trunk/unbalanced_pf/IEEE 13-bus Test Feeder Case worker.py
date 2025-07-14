@@ -381,4 +381,6 @@ res = gce.power_flow(grid=grid, options=gce.PowerFlowOptions(three_phase_unbalan
 
 print(res.get_bus_df())
 
+gce.save_file(grid=grid, filename='IEEE 13-bus.gridcal')
+
 gce.save_file(grid, "IEEE 13 bus (3-phase).gridcal")
