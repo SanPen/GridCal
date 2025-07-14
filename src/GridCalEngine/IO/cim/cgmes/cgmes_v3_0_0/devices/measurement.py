@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, PhaseCode, UnitMultiplier, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType, PhaseCode, UnitMultiplier, UnitSymbol
 
 
 class Measurement(IdentifiedObject):

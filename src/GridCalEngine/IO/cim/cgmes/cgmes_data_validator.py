@@ -14,7 +14,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 
 
 class CgmesDataValidator:
-    def __init__(self, cgmes_circuit: CgmesCircuit = None):
+    def __init__(self, cgmes_circuit: CgmesCircuit):
         self.cgmes_circuit = cgmes_circuit
 
     def create_graph(self, profile: List[str]):

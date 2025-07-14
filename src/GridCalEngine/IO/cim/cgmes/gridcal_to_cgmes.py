@@ -14,7 +14,7 @@ from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
 import GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_2_4_15_assets as cgmes24
 import GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_3_0_0_assets as cgmes30
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_typing import CGMES_TERMINAL, CGMES_ASSETS, is_term
+from GridCalEngine.IO.cim.cgmes.cgmes_typing import CGMES_ASSETS, is_term
 from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import (create_cgmes_dc_tp_node, create_cgmes_terminal,
                                                                create_cgmes_load_response_char,
                                                                create_cgmes_current_limit,
@@ -46,9 +46,6 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResu
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.enumerations import CGMESVersions
 from GridCalEngine.enumerations import (TapChangerTypes, TapPhaseControl, TapModuleControl)
-
-
-
 
 
 def get_cgmes_geograpical_regions(multi_circuit_model: MultiCircuit,
@@ -126,18 +123,19 @@ def get_cgmes_sub_geographical_regions(multi_circuit_model: MultiCircuit,
                 object_list=cgmes_model.cgmes_assets.GeographicalRegion_list,
                 target_uuid=region_id
             )
-            if region is not None:
+            if isinstance(region, cgmes_model.assets.GeographicalRegion):
                 sub_geo_region.Region = region
             else:
-                try:
+                if len(cgmes_model.cgmes_assets.GeographicalRegion_list) > 0:
                     sub_geo_region.Region = cgmes_model.cgmes_assets.GeographicalRegion_list[0]
-                except:
+                else:
                     sub_geo_region.Region = None
-                logger.add_warning(
-                    msg='GeographicalRegion not found for SubGeographicalRegion',
-                    device_class="SubGeographicalRegion")
+
+                logger.add_warning(msg='GeographicalRegion not found for SubGeographicalRegion',
+                                   device_class="SubGeographicalRegion")
 
             cgmes_model.add(sub_geo_region)
+
     if len(cgmes_model.cgmes_assets.SubGeographicalRegion_list) == 0:
         logger.add_error(
             msg='Community or Zone is not defined and SubGeographicalRegion cannot be exported',
@@ -230,7 +228,7 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
             # TODO Community.idtag!
         )
 
-        if region is not None:
+        if isinstance(region, cgmes_model.assets.GeographicalRegion):
             substation.Region = region
         else:
             if len(cgmes_model.cgmes_assets.SubGeographicalRegion_list) > 0:
@@ -290,13 +288,15 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
                 target_uuid=mc_elm.substation.idtag
             )
 
-            if isinstance(substation, cgmes24.VoltageLevel) or isinstance(substation, cgmes30.VoltageLevel):
+            if isinstance(substation, cgmes_model.assets.VoltageLevel):
                 vl.Substation = substation
 
                 # link back
                 if substation.VoltageLevels is None:
                     substation.VoltageLevels = list()
+
                 substation.VoltageLevels.append(vl)
+
             else:
                 logger.add_error(
                     msg=f'Substation not found for VoltageLevel',
@@ -366,9 +366,11 @@ def get_cgmes_tp_nodes(multi_circuit_model: MultiCircuit,
                         object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
                         target_uuid=bus.voltage_level.idtag
                     )
-                    tn.ConnectivityNodeContainer = vl
-                    # link back
-                    vl.TopologicalNode = tn
+
+                    if isinstance(vl, cgmes_model.assets.VoltageLevel):
+                        tn.ConnectivityNodeContainer = vl
+                        vl.TopologicalNode = tn  # link back
+
                 else:
                     logger.add_error(
                         msg=f'No Voltage Level found',
@@ -487,12 +489,14 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
         load.name = mc_elm.name
 
         if mc_elm.bus.voltage_level:
+
             vl = find_object_by_uuid(
                 cgmes_model=cgmes_model,
                 object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
                 target_uuid=mc_elm.bus.voltage_level.idtag
             )
-            load.EquipmentContainer = vl
+            if isinstance(vl, cgmes_model.assets.VoltageLevel):
+                load.EquipmentContainer = vl
 
         load.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
                                                object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
@@ -670,7 +674,9 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
                 object_list=cgmes_model.cgmes_assets.Substation_list,
                 target_uuid=mc_elm.bus.substation.idtag
             )
-            if subs is not None:
+
+            if isinstance(subs, cgmes_model.assets.Substation):
+
                 cgmes_gen.EquipmentContainer = subs
                 # link back
                 if isinstance(subs.Equipments, list):
@@ -796,7 +802,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_model.add(cgmes_syn)
 
 
-def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
+def get_cgmes_power_transformers(grid: MultiCircuit,
                                  cgmes_model: CgmesCircuit,
                                  op_lim_types: List,
                                  ver: CGMESVersions,
@@ -804,14 +810,14 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
     """
     Creates all transformer related CGMES classes from GridCal transformer.
 
-    :param multicircuit_model: MultiCircuit model in GridCal
+    :param grid: MultiCircuit model in GridCal
     :param cgmes_model: CgmesModel
     :param op_lim_types:
     :param ver:
     :param logger: DataLogger
     :return:
     """
-    for mc_elm in multicircuit_model.transformers2w:
+    for mc_elm in grid.transformers2w:
 
         # object_template = cgmes_model.get_class_type("PowerTransformer")
         # cm_transformer = object_template(rdfid=form_rdfid(mc_elm.idtag))
@@ -832,11 +838,14 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         ]
         cm_transformer.aggregate = False  # what is this?
         if mc_elm.bus_from.substation:
-            cm_transformer.EquipmentContainer = find_object_by_uuid(
+            substation = find_object_by_uuid(
                 cgmes_model=cgmes_model,
                 object_list=cgmes_model.cgmes_assets.Substation_list,
                 target_uuid=mc_elm.bus_from.substation.idtag
             )
+
+            if isinstance(substation, cgmes_model.assets.Substation):
+                cm_transformer.EquipmentContainer = substation
 
         cm_transformer.PowerTransformerEnd = list()
         # Winding 1 ---------------------------------------------------------
@@ -885,7 +894,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                                      g0=mc_elm.G0,
                                                      b0=mc_elm.B0,
                                                      nominal_power=mc_elm.Sn,
-                                                     rated_voltage=mc_elm.HV)
+                                                     rated_voltage=mc_elm.HV,
+                                                     Sbase=grid.Sbase)
 
         pte1.ratedU = mc_elm.HV
         pte1.ratedS = mc_elm.Sn
@@ -994,7 +1004,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
              voltageIncr,
              tap_changer.step) = mc_elm.tap_changer.get_cgmes_values()
 
-            if isinstance(tap_changer,  (cgmes24.RatioTapChanger, cgmes30.RatioTapChanger)):
+            if isinstance(tap_changer, (cgmes24.RatioTapChanger, cgmes30.RatioTapChanger)):
 
                 tap_changer.stepVoltageIncrement = voltageIncr
 
@@ -1015,7 +1025,6 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                     comment="get_cgmes_power_transformers")
 
             if isinstance(tap_changer, (cgmes24.PhaseTapChangerAsymmetrical, cgmes30.PhaseTapChangerAsymmetrical)):
-
                 tap_changer.windingConnectionAngle = mc_elm.tap_changer.asymmetry_angle
 
             # CONTROL
@@ -1069,7 +1078,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
     # Create the 3W transformers
     # ------------------------------------------------------------------------------------------------------------------
 
-    for mc_elm in multicircuit_model.transformers3w:
+    for mc_elm in grid.transformers3w:
 
         # object_template = cgmes_model.get_class_type("PowerTransformer")
         # cm_transformer = object_template(rdfid=form_rdfid(mc_elm.idtag))
@@ -1090,11 +1099,14 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         ]
 
         if mc_elm.bus1.substation:
-            cm_transformer.EquipmentContainer = find_object_by_uuid(
+            substation = find_object_by_uuid(
                 cgmes_model=cgmes_model,
                 object_list=cgmes_model.cgmes_assets.Substation_list,
                 target_uuid=mc_elm.bus1.substation.idtag
             )
+
+            if isinstance(substation, cgmes_model.assets.Substation):
+                cm_transformer.EquipmentContainer = substation
 
         # TODO tr3w rates?
         # current_rate = mc_elm.rate * 1e3 / (mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
@@ -1143,7 +1155,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                                      g0=mc_elm.winding1.G0,
                                                      b0=mc_elm.winding1.B0,
                                                      nominal_power=mc_elm.winding1.rate,
-                                                     rated_voltage=mc_elm.winding1.HV)
+                                                     rated_voltage=mc_elm.winding1.HV,
+                                                     Sbase=grid.Sbase)
 
         # Winding 2 ---------------------------------------------------------
         pte2.name = mc_elm.name
@@ -1174,7 +1187,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                                      g0=mc_elm.winding2.G0,
                                                      b0=mc_elm.winding2.B0,
                                                      nominal_power=mc_elm.winding2.rate,
-                                                     rated_voltage=mc_elm.winding2.HV)
+                                                     rated_voltage=mc_elm.winding2.HV,
+                                                     Sbase=grid.Sbase)
 
         # Winding 3 ---------------------------------------------------------
         pte3.name = mc_elm.name
@@ -1205,7 +1219,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                                      g0=mc_elm.winding3.G0,
                                                      b0=mc_elm.winding3.B0,
                                                      nominal_power=mc_elm.winding3.rate,
-                                                     rated_voltage=mc_elm.winding3.HV)
+                                                     rated_voltage=mc_elm.winding3.HV,
+                                                     Sbase=grid.Sbase)
 
         # compose transformer ------------------------------------------------------------------------------------------
         cm_transformer.PowerTransformerEnd.append(pte1)
@@ -1344,12 +1359,14 @@ def get_cgmes_equivalent_shunts(multicircuit_model: MultiCircuit,
         eq_shunt.description = mc_elm.code
 
         if mc_elm.bus.voltage_level:
+
             vl = find_object_by_uuid(
                 cgmes_model=cgmes_model,
                 object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
                 target_uuid=mc_elm.bus.voltage_level.idtag
             )
-            if vl is not None:
+
+            if isinstance(vl, cgmes_model.assets.VoltageLevel):
                 eq_shunt.EquipmentContainer = vl
 
         base_voltage = find_object_by_vnom(
@@ -1407,7 +1424,7 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
                     object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
                     target_uuid=mc_elm.bus.voltage_level.idtag
                 )
-                if vl is not None:
+                if isinstance(vl, cgmes_model.assets.VoltageLevel):
                     non_lin_sc.EquipmentContainer = vl
 
             non_lin_sc.BaseVoltage = find_object_by_vnom(
@@ -1488,11 +1505,16 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
                     object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
                     target_uuid=mc_elm.bus.voltage_level.idtag
                 )
-                lsc.EquipmentContainer = vl
 
-            lsc.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
-                                                  object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
-                                                  target_vnom=mc_elm.bus.Vnom)
+                if isinstance(vl, cgmes_model.assets.VoltageLevel):
+                    lsc.EquipmentContainer = vl
+
+            base_voltage = find_object_by_vnom(cgmes_model=cgmes_model,
+                                               object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+                                               target_vnom=mc_elm.bus.Vnom)
+
+            if isinstance(base_voltage, cgmes_model.assets.BaseVoltage):
+                lsc.BaseVoltage = base_voltage
 
             if mc_elm.active:
                 lsc.sections = mc_elm.step + 1
@@ -1623,7 +1645,7 @@ def get_cgmes_sv_voltages(
                 target_uuid=bus.idtag
             )
 
-            if tp_node:
+            if isinstance(tp_node, cgmes_model.assets.TopologicalNode):
 
                 if ver == CGMESVersions.v2_4_15:
                     sv_voltage = cgmes24.SvVoltage(rdfid=get_new_rdfid(), tpe='SvVoltage')
@@ -1641,6 +1663,7 @@ def get_cgmes_sv_voltages(
 
                 # Add the SvVoltage instance to the SvVoltage_list
                 cgmes_model.add(sv_voltage)
+
             else:
                 logger.add_info(
                     msg="TP Node not found for bus",
@@ -1653,7 +1676,6 @@ def get_cgmes_sv_voltages(
                 msg="SvVoltage is not exported for internal (TR3W) buses and DC buses",
                 value=voltage,
             )
-
 
 
 def get_cgmes_sv_power_flow_1(multi_circuit: MultiCircuit,
@@ -1916,24 +1938,26 @@ def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
             tn = find_object_by_uuid(cgmes_model=cgmes_model,
                                      object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
                                      target_uuid=tn_idtag)
-            if tn:
+
+            if isinstance(tn, cgmes_model.assets.TopologicalNode):
                 new_island.TopologicalNodes.append(tn)
                 mc_bus = find_object_by_attribute(multicircuit_model.buses, "idtag", tn_idtag)
                 mc_buses.append(mc_bus)
             else:
-                logger.add_warning(
-                    msg="TopologicalNode missing from TopologicalIsland!",
-                    device=new_island.name,
-                    device_property="TopologicalNode")
+                logger.add_warning(msg="TopologicalNode missing from TopologicalIsland!",
+                                   device=new_island.name,
+                                   device_property="TopologicalNode")
         if mc_buses:
             slack_bus = find_object_by_attribute(mc_buses, "is_slack", True)
             if slack_bus:
                 slack_tn = find_object_by_uuid(cgmes_model,
                                                cgmes_model.cgmes_assets.TopologicalNode_list,
                                                slack_bus.idtag)
-                new_island.AngleRefTopologicalNode = slack_tn
-                for tn in new_island.TopologicalNodes:
-                    tn.AngleRefTopologicalIsland = slack_tn
+
+                if isinstance(slack_tn, cgmes_model.assets.TopologicalNode):
+                    new_island.AngleRefTopologicalNode = slack_tn
+                    for tn in new_island.TopologicalNodes:
+                        tn.AngleRefTopologicalIsland = slack_tn
             else:
                 logger.add_warning(
                     msg="AngleRefTopologicalNode missing from TopologicalIsland!",
@@ -2013,14 +2037,17 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
                                          dc_ec=dc_conv_unit_1,
                                          ver=ver,
                                          logger=logger)
+
         create_cgmes_acdc_converter_terminal(
             cgmes_model=cgmes_model,
             mc_dc_bus=None,
             seq_num=2,
             dc_node=dc_node_1,
             dc_cond_eq=vsc_1,
+            ver=ver,
             logger=logger
         )
+
         create_cgmes_terminal(
             cgmes_model=cgmes_model,
             mc_bus=hvdc_line.bus_from,
@@ -2053,14 +2080,17 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
                                          dc_ec=dc_conv_unit_2,
                                          ver=ver,
                                          logger=logger)
+
         create_cgmes_acdc_converter_terminal(
             cgmes_model=cgmes_model,
             mc_dc_bus=None,
             seq_num=2,
             dc_node=dc_node_2,
             dc_cond_eq=vsc_2,
+            ver=ver,
             logger=logger
         )
+
         create_cgmes_terminal(
             cgmes_model=cgmes_model,
             mc_bus=hvdc_line.bus_to,
@@ -2092,7 +2122,6 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
                      num_circ: NumericalCircuit,
                      pf_results: Union[None, PowerFlowResults],
                      cgmes_model: CgmesCircuit,
-                     ver: CGMESVersions,
                      logger: DataLogger) -> CgmesCircuit:
     """
     Converts the input Multi circuit to a new CGMES Circuit.
@@ -2101,10 +2130,10 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     :param num_circ: Numerical circuit complied from MC
     :param cgmes_model: CGMES circuit object
     :param pf_results: power flow results from GridCal
-    :param ver:
     :param logger: Logger object
     :return: CGMES circuit (as a new object)
     """
+    ver = cgmes_model.cgmes_version
 
     get_cgmes_geograpical_regions(gc_model, cgmes_model, ver, logger)
     get_cgmes_sub_geographical_regions(gc_model, cgmes_model, ver, logger)

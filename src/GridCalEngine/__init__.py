@@ -65,10 +65,10 @@ if PROPERLY_LOADED_API:
         # define the export options
         options = FileSavingOptions()
         options.cgmes_one_file_per_profile = False
-        options.cgmes_profiles = [cgmesProfile.EQ,
-                                  cgmesProfile.OP,
-                                  cgmesProfile.TP,
-                                  cgmesProfile.SSH]
+        options.cgmes_profiles = [CgmesProfileType.EQ,
+                                  CgmesProfileType.OP,
+                                  CgmesProfileType.TP,
+                                  CgmesProfileType.SSH]
         options.cgmes_version = cgmes_version
 
         if pf_results is not None:
@@ -80,7 +80,7 @@ if PROPERLY_LOADED_API:
 
             options.sessions_data.append(pf_session_data)
 
-            options.cgmes_profiles.append(cgmesProfile.SV)
+            options.cgmes_profiles.append(CgmesProfileType.SV)
 
         # since the CGMES boundary set is an external file, you need to define where it is
         options.cgmes_boundary_set = cgmes_boundary_set_path

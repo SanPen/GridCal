@@ -11,7 +11,7 @@ import GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_3_0_0_assets as cgmes30
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_property import CgmesProperty
 from GridCalEngine.IO.base.base_circuit import BaseCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
 from GridCalEngine.IO.cim.cgmes.cgmes_typing import CGMES_ASSETS
 from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from GridCalEngine.enumerations import CGMESVersions
@@ -239,6 +239,7 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                                       add Parsed objects used to find references
     :param elements_by_type: Dictionary of elements by type to fill in (same as all_objects_dict but by categories)
     :param class_dict: CgmesCircuit or None
+    :param association_inverse_dict:
     :param logger:DataLogger
     :return: None
     """
@@ -270,6 +271,7 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                 logger.add_error("Class not recognized", device_class=class_name)
 
         elements_by_type[class_name] = objects_list
+
     # replace references by actual objects
     find_references(elements_by_type=elements_by_type,
                     all_objects_dict=all_objects_dict,
@@ -300,13 +302,18 @@ class CgmesCircuit(BaseCircuit):
     """
 
     def __init__(self,
-                 cgmes_version: Union[None, CGMESVersions] = None,
+                 cgmes_version: CGMESVersions = CGMESVersions.v2_4_15,
                  cgmes_map_areas_like_raw: bool = False,
                  text_func: Union[Callable, None] = None,
                  progress_func: Union[Callable, None] = None,
                  logger=DataLogger()):
         """
         CIM circuit constructor
+        :param cgmes_version:
+        :param cgmes_map_areas_like_raw:
+        :param text_func:
+        :param progress_func:
+        :param logger:
         """
         BaseCircuit.__init__(self)
 
@@ -323,7 +330,7 @@ class CgmesCircuit(BaseCircuit):
             self.cgmes_assets = cgmes30.Cgmes_3_0_0_Assets()
         else:
             logger.add_error(msg=f"Unrecognized CGMES version {cgmes_version}")
-            raise ValueError(f"Unrecognized CGMES version {cgmes_version}")
+            raise NotImplemented(f"Unrecognized CGMES version {cgmes_version}")
 
             # classes to read, theo others are ignored
         self.classes = [key for key, va in self.cgmes_assets.class_dict.items()]
@@ -339,6 +346,19 @@ class CgmesCircuit(BaseCircuit):
         # dictionary representation of the xml data
         self.data: Dict[str, Dict[str, Dict[str, str]]] = dict()
         self.boundary_set: Dict[str, Dict[str, Dict[str, str]]] = dict()
+
+    @property
+    def assets(self):
+        """
+
+        :return:
+        """
+        if self.cgmes_version == CGMESVersions.v2_4_15:
+            return cgmes24
+        elif self.cgmes_version == CGMESVersions.v3_0_0:
+            return cgmes30
+        else:
+            raise NotImplementedError()
 
     def get_cn_to_bb_dict(self) -> Tuple[dict, dict]:
         """
@@ -492,14 +512,6 @@ class CgmesCircuit(BaseCircuit):
             print('Missing list:', list_name)
 
         return True
-
-    # def get_class_type(self, class_name: str) -> CGMES_ASSETS:
-    #     class_type = self.cgmes_assets.class_dict.get(class_name)
-    #     if class_type is None:
-    #         raise NotImplementedError(
-    #             f"Class type missing from CGMES assets! ({class_name})"
-    #         )
-    #     return class_type
 
     def get_properties(self) -> List[CgmesProperty]:
         """
@@ -810,14 +822,14 @@ class CgmesCircuit(BaseCircuit):
 
         return res
 
-    def get_model_xml(self, profiles=None) -> Dict[cgmesProfile, str]:
+    def get_model_xml(self, profiles=None) -> Dict[CgmesProfileType, str]:
         """
         Get a dictionary of xml per CGMES profile
         :param profiles: list of profiles to acquire
         :returns Dictionary  Dict[cgmesProfile, str]
         """
         if profiles is None:
-            profiles = [cgmesProfile.EQ]
+            profiles = [CgmesProfileType.EQ]
 
         data = dict()
         for tpe, elm_list in self.elements_by_type.items():

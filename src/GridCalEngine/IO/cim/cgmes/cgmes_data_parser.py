@@ -93,6 +93,7 @@ def parse_xml_to_dict(xml_element: ET.Element):
                         t_set.update(result[class_name])
                     else:
                         t_set.add(result[class_name])
+
                     t_set.update([obj_id])  # it is a resource id
                     if len(t_set) > 1:
                         result[class_name] = list(t_set)

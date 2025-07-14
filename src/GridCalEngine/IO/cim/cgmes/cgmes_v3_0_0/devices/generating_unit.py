@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.equipment import Equipment
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, Currency, UnitSymbol, GeneratorControlSource
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType, Currency, UnitSymbol, GeneratorControlSource
 
 
 class GeneratingUnit(Equipment):

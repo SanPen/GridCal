@@ -32,7 +32,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_typing import (is_term,
                                                      CGMES_LOCATION,
                                                      CGMES_NON_LINEAR_SHUNT_COMPENSATOR)
 
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile,
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import (CgmesProfileType,
                                                     WindGenUnitKind,
                                                     RegulatingControlModeKind,
                                                     UnitMultiplier,
@@ -50,7 +50,7 @@ from GridCalEngine.data_logger import DataLogger
 
 def create_cgmes_headers(cgmes_model: CgmesCircuit,
                          mas_names: StrVec,
-                         profiles_to_export: List[cgmesProfile],
+                         profiles_to_export: List[CgmesProfileType],
                          logger: DataLogger,
                          desc: str = "",
                          scenario_time: str = "",
@@ -129,9 +129,9 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit,
     if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
         prof = profile_uris.get("EQ")
         fm_list[0].profile = [prof[0]]
-        if cgmesProfile.OP in profiles_to_export:
+        if CgmesProfileType.OP in profiles_to_export:
             fm_list[0].profile.append(prof[1])
-        if cgmesProfile.SC in profiles_to_export:
+        if CgmesProfileType.SC in profiles_to_export:
             fm_list[0].profile.append(prof[2])
     elif cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
         fm_list[0].profile = profile_uris.get("EQ")
@@ -219,10 +219,10 @@ def create_cgmes_terminal(mc_bus: Bus,
         term = cgmes24.Terminal(rdfid=new_rdf_id)
         term.name = name
 
-        if cond_eq and isinstance(cond_eq, cgmes24.ConductingEquipment):
+        if cond_eq and isinstance(cond_eq, cgmes_model.assets.ConductingEquipment):
             term.ConductingEquipment = cond_eq
 
-        if isinstance(tn, cgmes24.TopologicalNode):
+        if isinstance(tn, cgmes_model.assets.TopologicalNode):
             term.TopologicalNode = tn
             term.ConnectivityNode = tn.ConnectivityNodes
         else:
@@ -622,6 +622,7 @@ def create_cgmes_dc_tp_node(tp_name: str,
     :param tp_name:
     :param tp_description:
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
@@ -655,6 +656,7 @@ def create_cgmes_dc_node(cn_name: str,
     :param cgmes_model:
     :param dc_tp: DC TopologicalNode
     :param dc_ec: DC EquipmentContainer (DCConverterUnit)
+    :param ver:
     :param logger:
     :return:
     """
@@ -807,7 +809,7 @@ def create_cgmes_acdc_converter_terminal(cgmes_model: CgmesCircuit,
     else:
         logger.add_error(msg=f'DCConductingEquipment must be an ACDCConverter',
                          device=dc_cond_eq,
-                         value=dc_cond_eq.tpe,
+                         value=str(dc_cond_eq),
                          expected_value="ACDCConverter",
                          comment="create_cgmes_acdc_converter_terminal")
     acdc_term.connected = True
@@ -815,19 +817,6 @@ def create_cgmes_acdc_converter_terminal(cgmes_model: CgmesCircuit,
 
     if isinstance(dc_node, (cgmes24.DCNode, cgmes30.DCNode)):
         acdc_term.DCNode = dc_node
-
-    # tn = find_object_by_uuid(
-    #     cgmes_model=cgmes_model,
-    #     object_list=cgmes_model.cgmes_assets.DCTopologicalNode_list,
-    #     target_uuid=mc_dc_bus.idtag
-    # )
-    # if isinstance(tn, cgmes_model.get_class_type("TopologicalNode")):
-    #     acdc_term.TopologicalNode = tn
-    #     acdc_term.ConnectivityNode = tn.ConnectivityNodes
-    # else:
-    #     logger.add_error(msg='No found TopologinalNode',
-    #                      device=mc_dc_bus,
-    #                      device_class=gcdev.Bus)
 
     cgmes_model.add(acdc_term)
 
@@ -839,8 +828,8 @@ def create_cgmes_dc_line(cgmes_model: CgmesCircuit,
                          logger: DataLogger) -> CGMES_DC_LINE:
     """
     Creates a new CGMES DCLine
-
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
@@ -1001,6 +990,7 @@ def create_cgmes_location(cgmes_model: CgmesCircuit,
     :param device:
     :param longitude:
     :param latitude:
+    :param ver:
     :param logger:
     :return:
     """
@@ -1050,6 +1040,7 @@ def create_sv_power_flow(cgmes_model: CgmesCircuit,
                 from a TopologicalNode (bus) into the conducting equipment.
     :param q:
     :param terminal:
+    :param ver:
     :return:
     """
     if ver == CGMESVersions.v2_4_15:
@@ -1075,8 +1066,8 @@ def create_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit,
 
     :param cgmes_model: Cgmes Circuit
     :param sections: sections active
-    :param cgmes_shunt_compensator: Linear or Non-linear
-        ShuntCompensator instance from cgmes model
+    :param cgmes_shunt_compensator: Linear or Non-linear ShuntCompensator instance from cgmes model
+    :param ver:
     :return:
     """
     if ver == CGMESVersions.v2_4_15:
@@ -1104,6 +1095,7 @@ def create_sv_status(cgmes_model: CgmesCircuit,
     :param cgmes_model: Cgmes Circuit
     :param in_service: is active parameter
     :param cgmes_conducting_equipment: cgmes CondEq
+    :param ver:
     :return:
     """
 
@@ -1127,6 +1119,7 @@ def create_cgmes_conform_load_group(
     """
 
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
@@ -1154,6 +1147,7 @@ def create_cgmes_non_conform_load_group(
     """
 
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
@@ -1181,6 +1175,7 @@ def create_cgmes_sub_load_area(
     """
 
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
@@ -1207,6 +1202,7 @@ def create_cgmes_load_area(
     """
 
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
@@ -1239,6 +1235,7 @@ def create_cgmes_nonlinear_sc_point(
     :param g: g in 
     :param nl_sc: NonlinearShuntCompensator object
     :param cgmes_model: CgmesModel
+    :param ver:
     :return: 
     """""
 

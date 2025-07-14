@@ -9,7 +9,7 @@ import numpy as np
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.base import rfid2uuid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_typing import (CGMES_TERMINAL, CGMES_BASE_VOLTAGE)
+from GridCalEngine.IO.cim.cgmes.cgmes_typing import (CGMES_TERMINAL, CGMES_BASE_VOLTAGE, CGMES_ASSETS)
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import LimitTypeKind
@@ -709,11 +709,12 @@ def get_regulating_control_params(cgmes_elm,
 
     return v_set, is_controlled, control_bus, control_node
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 # region export UTILS
 # ----------------------------------------------------------------------------------------------------------------------
 
-def find_object_by_uuid(cgmes_model: CgmesCircuit, object_list, target_uuid):
+def find_object_by_uuid(cgmes_model: CgmesCircuit, object_list: List[CGMES_ASSETS], target_uuid: str):
     """
     Finds an object with the specified uuid
      in the given object_list from a CGMES Circuit.
@@ -731,6 +732,7 @@ def find_object_by_uuid(cgmes_model: CgmesCircuit, object_list, target_uuid):
         for k, obj in boundary_obj_dict.items():
             if rfid2uuid(k) == target_uuid:
                 return obj
+
     for obj in object_list:
         if obj.uuid == target_uuid:
             return obj
@@ -756,33 +758,14 @@ def find_object_by_cond_eq_uuid(object_list, cond_eq_target_uuid):
     return None
 
 
-def find_tn_by_name(cgmes_model: CgmesCircuit, target_name):
-    """
-    Finds the topological node with the specified name
-     from a CGMES Circuit.
-
-    @param cgmes_model:
-    @param target_name:
-    @return:
-    """
-    boundary_obj_dict = cgmes_model.elements_by_type_boundary.get("TopologicalNode")
-    if boundary_obj_dict is not None:
-        for obj in boundary_obj_dict:
-            if obj.name == target_name:
-                return obj
-    for obj in cgmes_model.cgmes_assets.TopologicalNode_list:
-        if obj.name == target_name:
-            return obj
-    return None
-
-
-def find_object_by_vnom(cgmes_model: CgmesCircuit, object_list: List[CGMES_BASE_VOLTAGE], target_vnom: float) -> CGMES_BASE_VOLTAGE:
+def find_object_by_vnom(cgmes_model: CgmesCircuit, object_list: List[CGMES_BASE_VOLTAGE],
+                        target_vnom: float) -> CGMES_BASE_VOLTAGE | None:
     """
     Find object in the base voltages
     :param cgmes_model: CgmesCircuit
     :param object_list: List of BaseVoltage
     :param target_vnom: Some voltage to look for
-    :return: BaseVoltage
+    :return: BaseVoltage | None
     """
     boundary_obj_list: List[CGMES_BASE_VOLTAGE] = cgmes_model.elements_by_type_boundary.get("BaseVoltage", None)
 
@@ -800,7 +783,7 @@ def find_object_by_vnom(cgmes_model: CgmesCircuit, object_list: List[CGMES_BASE_
     return None
 
 
-def find_object_by_attribute(object_list: List, target_attr_name, target_value):
+def find_object_by_attribute(object_list: List, target_attr_name: str, target_value: str | float | int):
     """
 
     :param object_list:
@@ -816,7 +799,7 @@ def find_object_by_attribute(object_list: List, target_attr_name, target_value):
     return None
 
 
-def get_ohm_values_power_transformer(r, x, g, b, r0, x0, g0, b0, nominal_power, rated_voltage):
+def get_ohm_values_power_transformer(r, x, g, b, r0, x0, g0, b0, nominal_power, rated_voltage, Sbase):
     """
     Get the transformer ohm values
     :param r:
@@ -832,13 +815,11 @@ def get_ohm_values_power_transformer(r, x, g, b, r0, x0, g0, b0, nominal_power, 
     :return:
     """
 
-    try:
-        Sbase_system = 100
+    if nominal_power > 0:
         Zbase = (rated_voltage * rated_voltage) / nominal_power
         Ybase = 1.0 / Zbase
-        R, X, G, B = 0, 0, 0, 0
-        R0, X0, G0, B0 = 0, 0, 0, 0
-        machine_to_sys = Sbase_system / nominal_power
+        machine_to_sys = Sbase / nominal_power
+
         R = r * Zbase / machine_to_sys
         X = x * Zbase / machine_to_sys
         G = g * Ybase / machine_to_sys
@@ -848,7 +829,7 @@ def get_ohm_values_power_transformer(r, x, g, b, r0, x0, g0, b0, nominal_power, 
         G0 = g0 * Ybase / machine_to_sys if g0 is not None else 0
         B0 = b0 * Ybase / machine_to_sys if b0 is not None else 0
 
-    except KeyError:
+    else:
         R, X, G, B = 0, 0, 0, 0
         R0, X0, G0, B0 = 0, 0, 0, 0
 

@@ -29,7 +29,7 @@ from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.IO.cim.cgmes.cgmes_export import get_available_cgmes_profiles
 from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 from GridCalEngine.IO.gridcal.catalogue import save_catalogue, load_catalogue
 from GridCal.templates import (get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue,
@@ -62,7 +62,7 @@ class IoMain(ConfigurationMain):
                                                         CGMESVersions.v3_0_0]}
         self.ui.cgmes_version_comboBox.setModel(gf.get_list_model(list(self.cgmes_version_dict.keys())))
 
-        self.cgmes_profiles_dict = {key: cgmesProfile(key) for key, val in
+        self.cgmes_profiles_dict = {key: CgmesProfileType(key) for key, val in
                                     get_available_cgmes_profiles(cgmes_version=CGMESVersions.v2_4_15).items()}
 
         self.ui.cgmes_profiles_listView.setModel(gf.get_list_model(list(self.cgmes_profiles_dict.keys()),
@@ -1089,7 +1089,7 @@ class IoMain(ConfigurationMain):
         """
         cgmes_version = self.cgmes_version_dict[self.ui.cgmes_version_comboBox.currentText()]
 
-        self.cgmes_profiles_dict = {key: cgmesProfile(key) for key, val in
+        self.cgmes_profiles_dict = {key: CgmesProfileType(key) for key, val in
                                     get_available_cgmes_profiles(cgmes_version=cgmes_version).items()}
 
         self.ui.cgmes_profiles_listView.setModel(gf.get_list_model(list(self.cgmes_profiles_dict.keys()),

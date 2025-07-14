@@ -6,9 +6,11 @@
 from typing import Dict, List, Tuple, Union
 import numpy as np
 import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
-from GridCalEngine import ConverterControlType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.enumerations import CGMESVersions, ConverterControlType
 import GridCalEngine.Devices as gcdev
+import GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_2_4_15_assets as cgmes24
+import GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_3_0_0_assets as cgmes30
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_typing import (CGMES_TERMINAL, CGMES_TOPOLOGICAL_NODE,
                                                      CGMES_CONNECTIVITY_NODE, CGMES_DC_TERMINAL, CGMES_ASSETS)
@@ -30,7 +32,7 @@ from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.enumerations import TapChangerTypes, TapPhaseControl, TapModuleControl
 
 
-class CnLookup:
+class Cn2BusBarLookup:
     """
     Class to properly match the ConnectivityNodes to the BusBars
     """
@@ -147,9 +149,12 @@ def get_gcdev_device_to_terminal_dict(cgmes_model: CgmesCircuit,
     # dictionary relating the conducting equipment to the terminal object
     device_to_terminal_dict: Dict[str, List[CGMES_TERMINAL]] = dict()
 
-    con_eq_type = cgmes_model.get_class_type("ConductingEquipment")
-    if con_eq_type is None:
-        raise NotImplementedError("Class type missing from assets! (ConductingEquipment)")
+    if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
+        con_eq_type = cgmes24.ConductingEquipment
+    elif cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
+        con_eq_type = cgmes30.ConductingEquipment
+    else:
+        raise NotImplementedError()
 
     for term in cgmes_model.cgmes_assets.Terminal_list:
         if isinstance(term.ConductingEquipment, con_eq_type):
@@ -181,10 +186,15 @@ def get_gcdev_dc_device_to_terminal_dict(
 
     dc_device_to_terminal_dict: Dict[str, List[CGMES_TERMINAL]] = dict()
 
-    # dc_con_eq_type = cgmes_model.get_class_type("DCConductingEquipment")
-    # DCConductingEquipment can be a DCLineSegment, DCGround or VsConverter
-    dc_ground_type = cgmes_model.get_class_type("DCGround")
-    dc_terminal_type = cgmes_model.get_class_type("DCTerminal")
+    if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
+        dc_ground_type = cgmes24.DCGround
+        dc_terminal_type = cgmes24.DCTerminal
+
+    elif cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
+        dc_ground_type = cgmes30.DCGround
+        dc_terminal_type = cgmes30.DCTerminal
+    else:
+        raise NotImplementedError()
 
     for dc_term in cgmes_model.cgmes_assets.DCTerminal_list:
 
@@ -293,7 +303,7 @@ def find_associated_buses(cgmes_elm: CGMES_ASSETS,
 def get_gcdev_buses(cgmes_model: CgmesCircuit,
                     gc_model: MultiCircuit,
                     v_dict: Dict[str, Tuple[float, float]],
-                    cn_look_up: CnLookup,
+                    cn_look_up: Cn2BusBarLookup,
                     logger: DataLogger) -> Tuple[Dict[str, gcdev.Bus], bool]:
     """
     Convert the TopologicalNodes to Buses (CalculationNodes)
@@ -365,6 +375,7 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                     object_list=gc_model.voltage_levels,
                     target_idtag=tp_node.ConnectivityNodeContainer.uuid
                 )
+
             if volt_lev is None:
                 line_tpe = cgmes_model.cgmes_assets.class_dict.get("Line")
                 if not isinstance(tp_node.ConnectivityNodeContainer, line_tpe):
@@ -373,14 +384,18 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                                        device_class=tp_node.tpe,
                                        device_property="ConnectivityNodeContainer")
             else:
-                substat: gcdev.Substation | None = find_object_by_idtag(
-                    object_list=gc_model.substations,
-                    target_idtag=volt_lev.substation.idtag
-                )
+                if volt_lev.substation is not None:
+                    substat: gcdev.Substation | None = find_object_by_idtag(
+                        object_list=gc_model.substations,
+                        target_idtag=volt_lev.substation.idtag
+                    )
+                else:
+                    substat = None
+
                 if substat is None:
                     logger.add_warning(msg='No substation found for bus.',
                                        device=volt_lev.rdfid,
-                                       device_class=volt_lev.tpe,
+                                       device_class=str(volt_lev),
                                        device_property="substation")
                     print(f'No substation found for BUS {tp_node.name}')
                 else:
@@ -761,7 +776,7 @@ def get_gcdev_branch_groups(cgmes_model: CgmesCircuit,
 def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
                                  gcdev_model: MultiCircuit,
                                  calc_node_dict: Dict[str, gcdev.Bus],
-                                 cn_look_up: CnLookup,
+                                 cn_look_up: Cn2BusBarLookup,
                                  logger: DataLogger) -> Dict[str, gcdev.Bus]:
     """
     Convert the ConnectivityNodes to GridCal Buses
@@ -876,7 +891,7 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                                        G=g,
                                        B=b)
 
-                if isinstance(cgmes_elm, cgmes_model.get_class_type("ConformLoad")):
+                if isinstance(cgmes_elm, cgmes_model.assets.ConformLoad):
                     gcdev_elm.scalable = True
                 else:
                     gcdev_elm.scalable = False
@@ -1071,7 +1086,7 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
     # build the ratings dictionary
     (patl_dict, tatl_900_dict, tatl_60_dict) = build_cgmes_limit_dicts(
         cgmes_model=cgmes_model,
-        device_type=cgmes_model.get_class_type("ACLineSegment"),
+        device_type=cgmes_model.assets.ACLineSegment,
         logger=logger
     )
     # # build the ratings dictionary
@@ -1269,7 +1284,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
     """
 
     # build the ratings dictionary
-    trafo_type = cgmes_model.get_class_type("PowerTransformer")
+    trafo_type = cgmes_model.assets.PowerTransformer
     (patl_dict, tatl_900_dict, tatl_60_dict) = build_cgmes_limit_dicts(cgmes_model, trafo_type, logger)
 
     # convert transformers
@@ -1483,9 +1498,9 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
     :param logger:
     :return:
     """
-    ratio_tc_class = cgmes_model.get_class_type("RatioTapChanger")
-    phase_sy_class = cgmes_model.get_class_type("PhaseTapChangerSymmetrical")
-    phase_as_class = cgmes_model.get_class_type("PhaseTapChangerAsymmetrical")
+    ratio_tc_class = cgmes_model.assets.RatioTapChanger
+    phase_sy_class = cgmes_model.assets.PhaseTapChangerSymmetrical
+    phase_as_class = cgmes_model.assets.PhaseTapChangerAsymmetrical
 
     # convert ac lines
     for device_list in [cgmes_model.cgmes_assets.RatioTapChanger_list,
@@ -1564,7 +1579,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                                    value=type(tap_changer))
 
             # attribute handling sVI
-            if isinstance(tap_changer, cgmes_model.get_class_type("PhaseTapChanger")):
+            if isinstance(tap_changer, cgmes_model.assets.PhaseTapChanger):
                 tap_changer.stepVoltageIncrement = tap_changer.voltageStepIncrement
 
             if tap_changer.TransformerEnd is not None:
@@ -1902,10 +1917,10 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
     # Build the ratings dictionary
     rates_dict = {}
 
-    sw_type = cgmes_model.get_class_type("Switch")
-    br_type = cgmes_model.get_class_type("Breaker")
-    ds_type = cgmes_model.get_class_type("Disconnector")
-    lbs_type = cgmes_model.get_class_type("LoadBreakSwitch")
+    sw_type = cgmes_model.assets.Switch
+    br_type = cgmes_model.assets.Breaker
+    ds_type = cgmes_model.assets.Disconnector
+    lbs_type = cgmes_model.assets.LoadBreakSwitch
     for e in cgmes_model.cgmes_assets.CurrentLimit_list:
 
         if e.OperationalLimitSet is not None:
@@ -2079,13 +2094,14 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
                 Vnom=cgmes_elm.BaseVoltage.nominalVoltage
             )
 
-            subs = find_object_by_idtag(
-                object_list=gcdev_model.substations,
-                target_idtag=cgmes_elm.Substation.uuid  # gcdev_elm.idtag
-            )
+            if cgmes_elm.Substation is not None:
+                subs = find_object_by_idtag(
+                    object_list=gcdev_model.substations,
+                    target_idtag=cgmes_elm.Substation.uuid  # gcdev_elm.idtag
+                )
 
-            if subs:
-                gcdev_elm.substation = subs
+                if subs:
+                    gcdev_elm.substation = subs
 
             gcdev_model.add_voltage_level(gcdev_elm)
             volt_lev_dict[gcdev_elm.idtag] = gcdev_elm
@@ -2126,10 +2142,9 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
 
             if len(calc_nodes) == 1:
 
-                vl_type = cgmes_model.get_class_type("VoltageLevel")
                 container = cgmes_elm.EquipmentContainer
 
-                if isinstance(container, vl_type):
+                if isinstance(container, cgmes_model.assets.VoltageLevel):
                     vl_cgmes = container
                     vl_gc = vl_dict.get(vl_cgmes.uuid, None)
                 else:
@@ -2293,7 +2308,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
                                        gcdev_model=gc_model,
                                        logger=logger)
 
-    cn_look_up = CnLookup(cgmes_model)
+    cn_look_up = Cn2BusBarLookup(cgmes_model)
 
     sv_volt_dict = get_gcdev_voltage_dict(cgmes_model=cgmes_model,
                                           logger=logger)
