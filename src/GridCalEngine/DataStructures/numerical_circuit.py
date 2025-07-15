@@ -1730,7 +1730,7 @@ class NumericalCircuit:
         Compare this numerical circuit with another numerical circuit
         :param nc_2: other NumericalCircuit
         :param tol: tolerance for numerical values
-        :return: Logger with the errors and warning events
+        :return: all ok?, Logger with the errors and warning events
         """
 
         logger = Logger()
@@ -1766,7 +1766,7 @@ class NumericalCircuit:
         check_arr(self.bus_data.Vbus.real, nc_2.bus_data.Vbus.real, tol, 'BusData', 'V0', logger)
         check_arr(self.bus_data.installed_power, nc_2.bus_data.installed_power, tol, 'BusData', 'installed power',
                   logger)
-        check_arr(self.bus_data.bus_types, nc_2.bus_data.bus_types, tol, 'BusData', 'types', logger)
+        check_arr(self.bus_data.bus_types, nc_2.bus_data.bus_types, tol, 'BusData', 'bus_types', logger)
 
         # generator data
         check_arr(self.generator_data.active, nc_2.generator_data.active, tol, 'GenData', 'active', logger)
@@ -1791,11 +1791,13 @@ class NumericalCircuit:
         # --------------------------------------------------------------------------------------------------------------
         #  Compare arrays and data
         # --------------------------------------------------------------------------------------------------------------
-        sim_idx = self.get_simulation_indices()
-        sim_idx2 = nc_2.get_simulation_indices()
 
         Sbus = self.get_power_injections_pu()
         Sbus2 = nc_2.get_power_injections_pu()
+
+        # the .copy() is so that bus_types is not affected after using this
+        sim_idx = self.get_simulation_indices(Sbus=Sbus.copy(), bus_types=self.bus_data.bus_types.copy())
+        sim_idx2 = nc_2.get_simulation_indices(Sbus=Sbus2.copy(), bus_types=nc_2.bus_data.bus_types.copy())
 
         check_arr(Sbus.real, Sbus2.real, tol, 'Pbus', 'P', logger)
         check_arr(Sbus.imag, Sbus2.imag, tol, 'Qbus', 'Q', logger)
