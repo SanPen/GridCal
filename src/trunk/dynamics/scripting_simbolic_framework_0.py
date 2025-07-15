@@ -133,6 +133,22 @@ load_block = Block(
 # Generator
 # ----------------------------------------------------------------------------------------------------------------------
 
+
+pi = Const(math.pi)
+fn = Const(50)
+# tm = Const(0.1)
+M = Const(1.0)
+D = Const(100)
+ra = Const(0.3)
+xd = Const(0.86138701)
+vf = Const(1.081099313)
+
+omega_ref = Const(1)
+Kp = Const(1.0)
+Ki = Const(10.0)
+Kw = Const(10.0)
+
+
 delta = Var("delta")
 omega = Var("omega")
 psid = Var("psid")
@@ -149,26 +165,13 @@ dg = Var("dg")
 tm = Var("tm")
 et = Var("et")
 
-pi = Const(math.pi)
-fn = Const(50)
-# tm = Const(0.1)
-M = Const(1.0)
-D = Const(100)
-ra = Const(0.3)
-xd = Const(0.86138701)
-vf = Const(1.081099313)
-
-Kp = Const(1.0)
-Ki = Const(10.0)
-Kw = Const(10.0)
-
 generator_block = Block(
     state_eqs=[
         # delta - (2 * pi * fn) * (omega - 1),
         # omega - (-tm / M + t_e / M - D / M * (omega - 1))
-        (2 * pi * fn) * (omega - 1),  # dδ/dt
-        (tm - t_e - D * (omega - 1)) / M,  # dω/dt
-        -Kp * et - Ki * et - Kw * (omega - 1)  # det/dt
+        (2 * pi * fn) * (omega - omega_ref),  # dδ/dt
+        (tm - t_e - D * (omega - omega_ref)) / M,  # dω/dt
+        -Kp * et - Ki * et - Kw * (omega - omega_ref)  # det/dt
     ],
     state_vars=[delta, omega, et],
     algebraic_eqs=[
@@ -274,7 +277,6 @@ vars_mapping = {
 
 event1 = Event(Pl0, 5000, 0.3)
 #event2 = Event(Ql0, 5000, 0.3)
-
 my_events = Events([event1])
 
 params0 = slv.build_init_params_vector(params_mapping)

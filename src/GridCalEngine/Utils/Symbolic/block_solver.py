@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import pdb
 from typing import Tuple
 import pandas as pd
 import numpy as np
@@ -37,6 +38,7 @@ def _compile_equations(eqs: Sequence[Expr],
                        uid2sym_vars: Dict[int, str],
                        uid2sym_params: Dict[int, str],
                        add_doc_string: bool = True) -> Callable[[np.ndarray, np.ndarray], np.ndarray]:
+
     """
     Compile the array of expressions to a function that returns an array of values for those expressions
     :param eqs: Iterable of expressions (Expr)
@@ -174,10 +176,11 @@ class BlockSolver:
             self.uid2idx_vars[v.uid] = i
             i += 1
 
-        for i, ep in enumerate(self._parameters):
-            uid2sym_params[ep.uid] = f"params[{i}]"
-            self.uid2idx_params[ep.uid] = i
-            i += 1
+        j = 0
+        for j, ep in enumerate(self._parameters):
+            uid2sym_params[ep.uid] = f"params[{j}]"
+            self.uid2idx_params[ep.uid] = j
+            j += 1
 
         # Compile RHS and Jacobian
         """
@@ -191,6 +194,7 @@ class BlockSolver:
         print("Compiling...", end="")
         self._rhs_state_fn = _compile_equations(eqs=self._state_eqs, uid2sym_vars=uid2sym_vars,
                                                 uid2sym_params=uid2sym_params)
+
         self._rhs_algeb_fn = _compile_equations(eqs=self._algebraic_eqs, uid2sym_vars=uid2sym_vars,
                                                 uid2sym_params=uid2sym_params)
 
@@ -234,8 +238,11 @@ class BlockSolver:
         x = np.zeros(len(self._state_vars) + len(self._algebraic_vars))
 
         for key, val in mapping.items():
-            i = self.uid2idx_vars[key.uid]
-            x[i] = val
+            if key.uid in self.uid2idx_vars.keys():
+                i = self.uid2idx_vars[key.uid]
+                x[i] = val
+            else:
+                raise ValueError(f"Missing variable {key} definition")
 
         return x
 

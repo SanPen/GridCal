@@ -6,7 +6,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def merge_simulation_results_by_time(csv1, csv2, output_csv= None, time_col='Time [s]'):
+def merge_simulation_results_by_time(csv1, csv2, output_csv= 'merged_data.csv', time_col='Time [s]'):
     """
     Merge two simulation result CSVs by matching nearest time steps.
 
@@ -43,36 +43,39 @@ def merge_simulation_results_by_time(csv1, csv2, output_csv= None, time_col='Tim
         suffixes=('_sim1', '_sim2')
     )
 
-    # Optionally save to a new file
     if output_csv:
         merged_df.to_csv(output_csv, index=False)
         print(f"Merged results saved to: {output_csv}")
 
     return merged_df
 
-comparison = merge_simulation_results_by_time('simulation_results.csv', 'Gen_Load_unchanged_params_out.csv')
+comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_output.csv')
 
 # Load merged CSV
 merged_df = comparison
 
 # Define variable pairs to compare (each pair goes into one subplot)
+# variable_pairs = [
+#     ['delta_Gridcal', 'delta GENCLS 0'],
+#     ['omega_Gridcal', 'omega GENCLS 0'],
+#     ['tm_Gridcal', 'tm GENCLS'],
+#     ['psid_Gridcal', 'psid GENCLS 0'],
+#     ['psiq_Gridcal', 'psiq GENCLS 0'],
+#     ['i_d_Gridcal', 'Id GENCLS 0'],
+#     ['i_q_Gridcal', 'Iq GENCLS 0'],
+#     ['v_d_Gridcal', 'vd GENCLS 0'],
+#     ['v_q_Gridcal', 'vq GENCLS 0'],
+#     ['t_e_Gridcal', 'te GENCLS 0'],
+#     ['P_e_Gridcal', 'Pe GENCLS 0'],
+#     ['Q_e_Gridcal', 'Qe GENCLS 0'],
+#     ['Pline_from_Gridcal', 'a Bus 0'],
+#     ['Qline_from_Gridcal', 'v Bus 0'],
+#     ['Pline_to_Gridcal', 'a Bus 1'],
+#     ['Qline_to_Gridcal', 'v Bus 1']
+# ]
+
 variable_pairs = [
-    ['delta_Gridcal', 'delta GENCLS 0'],
-    ['omega_Gridcal', 'omega GENCLS 0'],
-    ['tm_Gridcal', 'tm GENCLS'],
-    ['psid_Gridcal', 'psid GENCLS 0'],
-    ['psiq_Gridcal', 'psiq GENCLS 0'],
-    ['i_d_Gridcal', 'Id GENCLS 0'],
-    ['i_q_Gridcal', 'Iq GENCLS 0'],
-    ['v_d_Gridcal', 'vd GENCLS 0'],
-    ['v_q_Gridcal', 'vq GENCLS 0'],
-    ['t_e_Gridcal', 'te GENCLS 0'],
-    ['P_e_Gridcal', 'Pe GENCLS 0'],
-    ['Q_e_Gridcal', 'Qe GENCLS 0'],
-    ['Pline_from_Gridcal', 'a Bus 0'],
-    ['Qline_from_Gridcal', 'v Bus 0'],
-    ['Pline_to_Gridcal', 'a Bus 1'],
-    ['Qline_to_Gridcal', 'v Bus 1']
+     ['omega_Gridcal', 'omega_gen_0'],
 ]
 
 # Automatically detect time columns

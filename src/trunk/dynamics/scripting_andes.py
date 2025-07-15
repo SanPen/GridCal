@@ -8,6 +8,12 @@ To run this script andes must be installed (pip install andes)
 """
 import importlib.util
 import sys
+import matplotlib
+import pandas as pd
+matplotlib.use('TkAgg')  # or 'QtAgg', depending on your system
+
+import matplotlib.pyplot as plt
+
 
 def is_installed(package_name):
     return importlib.util.find_spec(package_name) is not None
@@ -29,30 +35,102 @@ andes.config_logger(stream_level=20)
 
 #ss = andes.run('Gen_Load/Gen_load_2.json', default_config=True)
 ss = andes.run('Gen_Load/Gen_Load_unchanged_params.json', default_config=True)
+ss.files.no_output = True
 
 # to make PQ behave as constant power load
 ss.PQ.config.p2p = 1.0
 ss.PQ.config.p2i = 0
 ss.PQ.config.p2z = 0
-
+# ss.PQ.pq2z = 0
 ss.PQ.config.q2q = 1.0
 ss.PQ.config.q2i = 0
 ss.PQ.config.q2z = 0
 
 # config TDS
-total_time = 10
-tstep = 0.001
-ss.TDS.config.tf = total_time
-ss.TDS.config.tstep = tstep
+# total_time = 10
+# tstep = 0.001
+# ss.TDS.config.tf = total_time
+# ss.TDS.config.tstep = tstep
+# ss.TDS.config.shrinkt = 0
 
+tds = ss.TDS
+tds.config.fixt = 1
+tds.config.shrinkt = 0
+tds.config.tstep = 0.1
+tds.config.tf = 10.0
+tds.t = 0.0
+tds.init()
+
+# Logging
+time_history = []
+omega_history = [[] for _ in range(len(ss.GENCLS))]
+Ppf_history = [[] for _ in range(len(ss.PQ))]
 
 # initialize time domain simulation
-ss.TDS.run()
+# ss.TDS.run()
+one = True
+# Step-by-step simulation
+while tds.t < tds.config.tf:
 
-ss.TDS.load_plotter()
-ss.TDS.plt.export_csv()
+    if tds.t > 5.0 and one == True:
+        ss.PQ.set(src='Ppf', idx=0, attr='v', value=5.0)
+        one = False
+        # Log current state
+    time_history.append(tds.t)
+    for i in range(len(ss.GENCLS)):
+        omega_history[i].append(ss.GENCLS.omega.v[i])
+    for i in range(len(ss.PQ)):
+        Ppf_history[i].append(ss.PQ.Ppf.v[i])
 
-# plot results
-fig, ax = ss.TDS.plt.plot(ss.Bus.v)
+    # Advance one time step
+    tds.itm_step()
+    tds.t += tds.config.tstep
 
-fig.savefig('PQ_v_plot.png')
+data = [time_history, omega_history, Ppf_history]
+
+print(omega_history)
+
+omega_df = pd.DataFrame(list(zip(*omega_history)))  # shape: [T, n_generators]
+omega_df.columns = [f"omega_gen_{i}" for i in range(len(omega_history))]
+
+Ppf_df = pd.DataFrame(list(zip(*Ppf_history)))      # shape: [T, n_loads]
+Ppf_df.columns = [f"Ppf_load_{i}" for i in range(len(Ppf_history))]
+
+# Combine all into a single DataFrame
+df = pd.DataFrame({'Time [s]': time_history})
+df = pd.concat([df, omega_df, Ppf_df], axis=1)
+df.to_csv("simulation_output.csv", index=False)
+
+
+# # Plot
+# plt.figure(figsize=(10, 6))
+# for i, omega in enumerate(omega_history):
+#     plt.plot(time_history, omega, label=f'Gen {i+1}')
+# plt.xlabel("Time [s]")
+# plt.ylabel("Speed [pu]")
+# plt.title("Generator Speed ω vs Time")
+# # plt.legend()
+# plt.grid(True)
+# plt.tight_layout()
+# plt.show()
+#
+#
+# # Plot
+# plt.figure(figsize=(10, 6))
+# for i, Ppf in enumerate(Ppf_history):
+#     plt.plot(time_history, Ppf, label=f'PQ {i+1}')
+# plt.xlabel("Time [s]")
+# plt.ylabel("Active Power [pu]")
+# plt.title("Active Power consumtpion vs Time")
+# # plt.legend()
+# plt.grid(True)
+# plt.tight_layout()
+# plt.show()
+# #
+# ss.TDS.load_plotter()
+# ss.TDS.plt.export_csv()
+#
+# # plot results
+# fig, ax = ss.TDS.plt.plot(ss.Bus.v)
+#
+# fig.savefig('PQ_v_plot.png')
