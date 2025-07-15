@@ -13,13 +13,11 @@ from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsPo
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, GenericDiagramWidget, TRANSPARENT, WHITE
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
-from GridCal.Gui.Diagrams.SchematicWidget.Substation.cn_graphics import CnGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.busbar_graphics import BusBarGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 from GridCal.Gui.messages import yes_no_question
 
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.Devices.Substation.busbar import BusBar
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
@@ -38,7 +36,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
 
-NODE_GRAPHIC = BusGraphicItem | CnGraphicItem | BusBarGraphicItem | FluidNodeGraphicItem
+NODE_GRAPHIC = BusGraphicItem | BusBarGraphicItem | FluidNodeGraphicItem
 
 
 class TransformerSymbol(QGraphicsRectItem):
@@ -914,46 +912,6 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         else:
             return False
 
-    def is_from_port_a_cn(self) -> bool:
-        """
-
-        :return:
-        """
-        if self._from_port:
-            return isinstance(self.get_terminal_from_parent(), CnGraphicItem)
-        else:
-            return False
-
-    def is_to_port_a_cn(self) -> bool:
-        """
-
-        :return:
-        """
-        if self._to_port:
-            return isinstance(self.get_terminal_to_parent(), CnGraphicItem)
-        else:
-            return False
-
-    def is_from_port_a_busbar(self) -> bool:
-        """
-
-        :return:
-        """
-        if self._from_port:
-            return isinstance(self.get_terminal_from_parent(), BusBarGraphicItem)
-        else:
-            return False
-
-    def is_to_port_a_busbar(self) -> bool:
-        """
-
-        :return:
-        """
-        if self._to_port:
-            return isinstance(self.get_terminal_to_parent(), BusBarGraphicItem)
-        else:
-            return False
-
     def is_from_port_a_tr3(self) -> bool:
         """
 
@@ -1016,14 +974,14 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         return self.get_to_graphic_object().api_object
 
-    def get_cn_from(self) -> ConnectivityNode:
+    def get_cn_from(self) -> Bus:
         """
 
         :return:
         """
         return self.get_from_graphic_object().api_object
 
-    def get_cn_to(self) -> ConnectivityNode:
+    def get_cn_to(self) -> Bus:
         """
 
         :return:
@@ -1114,61 +1072,6 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         return self.is_from_port_a_bus() and self.is_to_port_a_fluid_node()
 
-    def connected_between_cn_and_bus(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_cn() and self.is_to_port_a_bus()
-
-    def connected_between_bus_and_cn(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_bus() and self.is_to_port_a_cn()
-
-    def connected_between_cn(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_cn() and self.is_to_port_a_cn()
-
-    def connected_between_busbar_and_bus(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_busbar() and self.is_to_port_a_bus()
-
-    def connected_between_bus_and_busbar(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_bus() and self.is_to_port_a_busbar()
-
-    def connected_between_busbar(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_busbar() and self.is_to_port_a_busbar()
-
-    def connected_between_busbar_and_cn(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_busbar() and self.is_to_port_a_cn()
-
-    def connected_between_cn_and_busbar(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_cn() and self.is_to_port_a_busbar()
 
     def should_be_a_converter(self) -> bool:
         """

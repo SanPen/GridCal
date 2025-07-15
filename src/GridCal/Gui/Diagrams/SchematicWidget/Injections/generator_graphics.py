@@ -6,10 +6,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import numpy as np
-from PySide6.QtGui import QPen, QFont
-from PySide6.QtWidgets import (QMenu, QGraphicsTextItem)
+from PySide6.QtWidgets import QMenu
 from GridCalEngine.Devices.Injections.generator import Generator
-from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
+from GridCal.Gui.Diagrams.generic_graphics import Circle
 from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.Diagrams.Editors.generator_editor import GeneratorQCurveEditor
@@ -74,10 +73,6 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                        icon_path="",
                        function_ptr=self.set_regulation_bus)
 
-        add_menu_entry(menu=menu,
-                       text="Set regulation cn",
-                       icon_path="",
-                       function_ptr=self.set_regulation_cn)
 
         add_menu_entry(menu=menu,
                        text="Qcurve edit",
@@ -143,13 +138,6 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         :return:
         """
         self._editor.set_generator_control_bus(generator_graphics=self)
-
-    def set_regulation_cn(self):
-        """
-        Set regulation bus
-        :return:
-        """
-        self._editor.set_generator_control_cn(generator_graphics=self)
 
     def clear_regulation_bus(self):
         """

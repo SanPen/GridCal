@@ -30,7 +30,6 @@ from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
 import GridCal.Gui.gui_functions as gf
-from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,
                                                                    BusGraphicItem,
                                                                    generate_schematic_diagram,
@@ -1568,8 +1567,7 @@ class DiagramsMain(CompiledArraysMain):
                                          circuit=self.circuit,
                                          diagram=diagram,
                                          default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                         time_index=self.get_diagram_slider_index(),
-                                         prefer_node_breaker=False)
+                                         time_index=self.get_diagram_slider_index())
 
         diagram_widget.setStretchFactor(1, 10)
         diagram_widget.center_nodes()
@@ -1590,8 +1588,6 @@ class DiagramsMain(CompiledArraysMain):
             if isinstance(diagram_widget, SchematicWidget):
                 # set pointer to the circuit
                 diagram = generate_schematic_diagram(buses=self.circuit.get_buses(),
-                                                     busbars=self.circuit.get_bus_bars(),
-                                                     connectivity_nodes=self.circuit.get_connectivity_nodes(),
                                                      lines=self.circuit.get_lines(),
                                                      dc_lines=self.circuit.get_dc_lines(),
                                                      transformers2w=self.circuit.get_transformers2w(),
@@ -1622,17 +1618,13 @@ class DiagramsMain(CompiledArraysMain):
         if diagram:
             self.set_diagram_widget(diagram)
 
-    def add_complete_bus_branch_diagram_now(self, name='All bus branches',
-                                            prefer_node_breaker: bool = False) -> SchematicWidget:
+    def add_complete_bus_branch_diagram_now(self, name='All bus branches') -> SchematicWidget:
         """
-        Add ageneral bus-branch diagram
-        :param name:
-        :param prefer_node_breaker:
+        Add a general bus-branch diagram
+        :param name: Name of the diagram
         :return DiagramEditorWidget
         """
         diagram = generate_schematic_diagram(buses=self.circuit.get_buses(),
-                                             busbars=self.circuit.get_bus_bars(),
-                                             connectivity_nodes=self.circuit.get_connectivity_nodes(),
                                              lines=self.circuit.get_lines(),
                                              dc_lines=self.circuit.get_dc_lines(),
                                              transformers2w=self.circuit.get_transformers2w(),
@@ -1654,8 +1646,7 @@ class DiagramsMain(CompiledArraysMain):
                                          circuit=self.circuit,
                                          diagram=diagram,
                                          default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                         time_index=self.get_diagram_slider_index(),
-                                         prefer_node_breaker=prefer_node_breaker)
+                                         time_index=self.get_diagram_slider_index())
 
         diagram_widget.setStretchFactor(1, 10)
         diagram_widget.center_nodes()
@@ -1667,15 +1658,9 @@ class DiagramsMain(CompiledArraysMain):
 
     def add_complete_bus_branch_diagram(self) -> None:
         """
-        Add ageneral bus-branch diagram
+        Add a general bus-branch diagram
         """
-        self.add_complete_bus_branch_diagram_now(name='All bus-branch', prefer_node_breaker=False)
-
-    def add_complete_node_breaker_diagram(self) -> None:
-        """
-        Add ageneral bus-branch diagram
-        """
-        self.add_complete_bus_branch_diagram_now(name='All node-breaker', prefer_node_breaker=True)
+        self.add_complete_bus_branch_diagram_now(name='All bus-branch')
 
     def new_bus_branch_diagram_from_selection(self):
         """
@@ -2110,8 +2095,8 @@ class DiagramsMain(CompiledArraysMain):
         for diagram in self.diagram_widgets_list:
             if isinstance(diagram, SchematicWidget):
                 diagram.set_time_index(time_index=idx2)
-
-                # TODO: consider other diagrams
+            if isinstance(diagram, GridMapWidget):
+                diagram.set_time_index(time_index=idx2)
 
     def update_diagram_time_slider_texts(self):
         """
@@ -2722,17 +2707,12 @@ class DiagramsMain(CompiledArraysMain):
         context_menu = QtWidgets.QMenu(parent=self.ui.diagramsListView)
 
         gf.add_menu_entry(menu=context_menu,
-                          text="New bus-branch",
+                          text="New schematic",
                           icon_path=":/Icons/icons/schematic.svg",
                           function_ptr=self.add_complete_bus_branch_diagram)
 
         gf.add_menu_entry(menu=context_menu,
-                          text="New node-breaker",
-                          icon_path=":/Icons/icons/schematic.svg",
-                          function_ptr=self.add_complete_node_breaker_diagram)
-
-        gf.add_menu_entry(menu=context_menu,
-                          text="New bus-branch from selection",
+                          text="New schematic from selection",
                           icon_path=":/Icons/icons/schematic.svg",
                           function_ptr=self.new_bus_branch_diagram_from_selection)
 

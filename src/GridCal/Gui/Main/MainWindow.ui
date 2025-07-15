@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1198</width>
-    <height>738</height>
+    <height>742</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -10537,6 +10537,7 @@ QProgressBar::chunk{
     <addaction name="actionDetect_substations"/>
     <addaction name="actionDetect_facilities"/>
     <addaction name="actionFuse_devices"/>
+    <addaction name="actionGrid_reduction"/>
     <addaction name="actionre_index_time"/>
     <addaction name="actionScale"/>
     <addaction name="separator"/>
@@ -10572,13 +10573,13 @@ QProgressBar::chunk{
     <addaction name="actionSelect_buses_by"/>
     <addaction name="separator"/>
     <addaction name="actionAdd_map"/>
-    <addaction name="actionConsolidate_diagram_coordinates"/>
     <addaction name="actionReset_coordinates"/>
     <addaction name="actionColor_substations_by"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_in"/>
     <addaction name="actionZoom_out"/>
     <addaction name="actionCenter_view"/>
+    <addaction name="actionConsolidate_diagram_coordinates"/>
     <addaction name="actionSearchDiagram"/>
     <addaction name="actionDelete_selected"/>
     <addaction name="separator"/>
@@ -12284,6 +12285,18 @@ QProgressBar::chunk{
     <font>
      <pointsize>10</pointsize>
     </font>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionGrid_reduction">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Grid reduction</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

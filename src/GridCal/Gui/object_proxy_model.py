@@ -102,11 +102,11 @@ class ObjectModelFilterProxy(QtCore.QSortFilterProxyModel):
             for i in self._allowed_rows:
                 data[i, j] = self._mdl.data_raw(r=i, c=j)
 
-        columns = [self.headerData(i, orientation=QtCore.Qt.Orientation.Horizontal,
-                                   role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(n_cols)]
+        columns = [self._mdl.headerData(section=i, orientation=QtCore.Qt.Orientation.Horizontal,
+                                        role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(n_cols)]
 
-        index = [self.headerData(i, orientation=QtCore.Qt.Orientation.Vertical,
-                                 role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(n_rows)]
+        index = [self._mdl.headerData(section=i, orientation=QtCore.Qt.Orientation.Vertical,
+                                      role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(n_rows)]
 
         return index, columns, data
 

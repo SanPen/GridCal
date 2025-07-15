@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, DeviceType, SubObjectType
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Parents.injection_parent import InjectionParent
@@ -54,7 +53,6 @@ class ShuntParent(InjectionParent):
                  idtag: Union[str, None],
                  code: str,
                  bus: Union[Bus, None],
-                 cn: Union[ConnectivityNode, None],
                  active: bool,
                  G: float,
                  G1: float,
@@ -79,7 +77,6 @@ class ShuntParent(InjectionParent):
         :param idtag: unique id of the device (if None or "" a new one is generated)
         :param code: secondary code for compatibility
         :param bus: snapshot bus object
-        :param cn: connectivity node
         :param active:active state
         :param G: positive conductance (MW @ v=1 p.u.)
         :param G1: positive conductance (MW @ v=1 p.u.)
@@ -105,7 +102,6 @@ class ShuntParent(InjectionParent):
                                  idtag=idtag,
                                  code=code,
                                  bus=bus,
-                                 cn=cn,
                                  active=active,
                                  Cost=Cost,
                                  mttf=mttf,

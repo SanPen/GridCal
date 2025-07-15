@@ -40,7 +40,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
     """
 
     def __init__(self, editor: SchematicWidget, fluid_node: FluidNode,
-                 parent=None, index=0, h: int = 20, w: int = 80, x: float = 0, y: float = 0,
+                 parent=None, index=0, h: float = 20, w: float = 80, x: float = 0, y: float = 0,
                  draw_labels: bool = True):
 
         GenericDiagramWidget.__init__(self, parent=parent, api_object=fluid_node, editor=editor,
@@ -228,7 +228,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.setRect(0.0, 0.0, self.w, h)
         self.h = h
 
-    def change_size(self, w: int, h: Union[None, int] = None):
+    def change_size(self, w: float, h: Union[None, float] = None):
         """
         Resize block function
         @param w:

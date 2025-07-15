@@ -65,7 +65,7 @@ def calc_node_dict_object() -> Dict[str, gcdev.Bus]:
     return d
 
 
-def cn_dict_object() -> Dict[str, gcdev.ConnectivityNode]:
+def cn_dict_object() -> Dict[str, gcdev.Bus]:
     d = dict()
     d[cn_test] = cn_test  # TODO ?
     return d
@@ -94,7 +94,7 @@ generators_test_params = [(cgmes_object(2), calc_node_dict_object(), cn_dict_obj
 def test_get_gcdev_generators(cgmes_model, calc_node_dict, cn_dict, device_to_terminal_dict, expected_power_factor):
     logger = DataLogger()
     multi_circuit = MultiCircuit()
-    get_gcdev_generators(cgmes_model, multi_circuit, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    get_gcdev_generators(cgmes_model, multi_circuit, calc_node_dict, device_to_terminal_dict, logger)
     created_generator = multi_circuit.generators[0]
     cgmes_syncronous_machine = cgmes_model.cgmes_assets.SynchronousMachine_list[0]
     assert created_generator.idtag == cgmes_syncronous_machine.uuid
@@ -116,7 +116,7 @@ def test_get_gcdev_generators_zero_terminals_log_error():
     logger = DataLogger()
     multi_circuit = MultiCircuit()
     cgmes = cgmes_object(p=2)
-    get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
+    get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(),
                          device_terminal_dict, logger)
     assert len(logger.entries) == 2
     assert logger.entries[0].msg == 'No terminal for the device'
@@ -128,7 +128,7 @@ def test_get_gcdev_generators_generating_unit_is_none_log_error():
     multi_circuit = MultiCircuit()
     cgmes = cgmes_object(p=2)
     cgmes.cgmes_assets.SynchronousMachine_list[0].GeneratingUnit = None
-    get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
+    get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(),
                          device_to_terminal_dict_object(), logger)
     assert len(logger.entries) == 1
     assert logger.entries[0].msg == 'SynchronousMachine has no generating unit'
@@ -139,7 +139,7 @@ def test_get_gcdev_generators_regulating_controls_none_log_warning():
     multi_circuit = MultiCircuit()
     cgmes = cgmes_object(p=2)
     cgmes.cgmes_assets.SynchronousMachine_list[0].RegulatingControl = None
-    get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
+    get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(),
                          device_to_terminal_dict_object(), logger)
     assert len(logger.entries) == 1
     assert logger.entries[0].msg == 'RegulatingCondEq has no control'
@@ -150,7 +150,7 @@ def test_get_gcdev_generators_regulating_control_mode_kind_not_voltage_log_warni
     multi_circuit = MultiCircuit()
     cgmes = cgmes_object(p=2)
     cgmes.cgmes_assets.SynchronousMachine_list[0].RegulatingControl.mode = "aaa"
-    get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
+    get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(),
                          device_to_terminal_dict_object(), logger)
     assert len(logger.entries) == 1
     assert logger.entries[0].msg == 'RegulatingCondEq has control, but not voltage'

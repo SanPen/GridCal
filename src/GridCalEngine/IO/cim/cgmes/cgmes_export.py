@@ -15,7 +15,7 @@ import os
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.rdfs_serializations import RDFS_serialization_2_4_15, RDFS_serialization_3_0_0
 from GridCalEngine.IO.cim.cgmes.rdfs_infos import RDFS_INFO_2_4_15, RDFS_INFO_3_0_0
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
 from GridCalEngine.enumerations import CGMESVersions
 import xml.etree.ElementTree as Et
 import xml.dom.minidom
@@ -48,7 +48,7 @@ def get_available_cgmes_profiles(cgmes_version: CGMESVersions):
 
 
 class CimExporter:
-    def __init__(self, cgmes_circuit: CgmesCircuit, profiles_to_export: List[cgmesProfile], one_file_per_profile: bool):
+    def __init__(self, cgmes_circuit: CgmesCircuit, profiles_to_export: List[CgmesProfileType], one_file_per_profile: bool):
         self.cgmes_circuit = cgmes_circuit
 
         self.profiles_to_export = profiles_to_export
@@ -63,9 +63,9 @@ class CimExporter:
         if cgmes_circuit.cgmes_version == CGMESVersions.v2_4_15:
             rdf_serialization.parse(data=RDFS_serialization_2_4_15, format="ttl")
 
-            if cgmesProfile.OP in profiles_to_export:
+            if CgmesProfileType.OP in profiles_to_export:
                 self.export_OP = True
-            if cgmesProfile.SC in profiles_to_export:
+            if CgmesProfileType.SC in profiles_to_export:
                 self.export_SC = True
 
             self.namespaces = {

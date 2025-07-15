@@ -121,15 +121,15 @@ def get_grid_node_breaker() -> gce.MultiCircuit:
     grid2.add_load(bus=None, api_obj=gce.Load(name='load3', P=127.03, Q=50.00), cn=cn3_3)
 
     # add switches
-    grid2.add_switch(gce.Switch(name="CB1", cn_from=cn3_1, cn_to=b3_1.cn, active=True))
-    grid2.add_switch(gce.Switch(name="CB2", cn_from=cn3_2, cn_to=b3_1.cn, active=True))
-    grid2.add_switch(gce.Switch(name="CB3", cn_from=cn3_3, cn_to=b3_1.cn, active=True))
-    grid2.add_switch(gce.Switch(name="CB4", cn_from=cn3_4, cn_to=b3_1.cn, active=True))
+    grid2.add_switch(gce.Switch(name="CB1", cn_from=cn3_1, cn_to=b3_1.bus, active=True))
+    grid2.add_switch(gce.Switch(name="CB2", cn_from=cn3_2, cn_to=b3_1.bus, active=True))
+    grid2.add_switch(gce.Switch(name="CB3", cn_from=cn3_3, cn_to=b3_1.bus, active=True))
+    grid2.add_switch(gce.Switch(name="CB4", cn_from=cn3_4, cn_to=b3_1.bus, active=True))
 
-    grid2.add_switch(gce.Switch(name="CB5", cn_from=cn3_1, cn_to=b3_2.cn, active=True))
-    grid2.add_switch(gce.Switch(name="CB6", cn_from=cn3_2, cn_to=b3_2.cn, active=True))
-    grid2.add_switch(gce.Switch(name="CB7", cn_from=cn3_3, cn_to=b3_2.cn, active=True))
-    grid2.add_switch(gce.Switch(name="CB8", cn_from=cn3_4, cn_to=b3_2.cn, active=True))
+    grid2.add_switch(gce.Switch(name="CB5", cn_from=cn3_1, cn_to=b3_2.bus, active=True))
+    grid2.add_switch(gce.Switch(name="CB6", cn_from=cn3_2, cn_to=b3_2.bus, active=True))
+    grid2.add_switch(gce.Switch(name="CB7", cn_from=cn3_3, cn_to=b3_2.bus, active=True))
+    grid2.add_switch(gce.Switch(name="CB8", cn_from=cn3_4, cn_to=b3_2.bus, active=True))
 
     # Note: As you may observe, objects can be independently connected to buses or connectivity nodes
     # busbars are just a convenient proxy for connectivity nodes, which they store internally.
