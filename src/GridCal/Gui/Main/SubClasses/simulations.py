@@ -2313,37 +2313,39 @@ class SimulationsMain(TimeEventsMain):
         Run OPF NTC time series simulation
         """
         if self.circuit.valid_for_simulation():
+            if self.circuit.has_time_series:
+                if not self.session.is_this_running(SimulationTypes.OPF_NTC_TS_run):
 
-            if not self.session.is_this_running(SimulationTypes.OPF_NTC_TS_run):
+                    self.remove_simulation(SimulationTypes.OPF_NTC_TS_run)
 
-                self.remove_simulation(SimulationTypes.OPF_NTC_TS_run)
+                    options = self.get_opf_ntc_options()
 
-                options = self.get_opf_ntc_options()
+                    if options is None:
+                        return
 
-                if options is None:
-                    return
+                    else:
+
+                        self.ui.progress_label.setText('Running optimal net transfer capacity time series...')
+                        QtGui.QGuiApplication.processEvents()
+
+                        # set optimal net transfer capacity driver instance
+                        drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(
+                            grid=self.circuit,
+                            options=options,
+                            time_indices=self.get_time_indices(),
+                            clustering_results=self.get_clustering_results()
+                        )
+
+                        self.LOCK()
+                        self.session.run(drv,
+                                         post_func=self.post_opf_ntc_ts,
+                                         prog_func=self.ui.progressBar.setValue,
+                                         text_func=self.ui.progress_label.setText)
 
                 else:
-
-                    self.ui.progress_label.setText('Running optimal net transfer capacity time series...')
-                    QtGui.QGuiApplication.processEvents()
-
-                    # set optimal net transfer capacity driver instance
-                    drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(
-                        grid=self.circuit,
-                        options=options,
-                        time_indices=self.get_time_indices(),
-                        clustering_results=self.get_clustering_results()
-                    )
-
-                    self.LOCK()
-                    self.session.run(drv,
-                                     post_func=self.post_opf_ntc_ts,
-                                     prog_func=self.ui.progressBar.setValue,
-                                     text_func=self.ui.progress_label.setText)
-
+                    self.show_warning_toast('Another Optimal NCT time series is being run...')
             else:
-                self.show_warning_toast('Another Optimal NCT time series is being run...')
+                self.show_error_toast("The grid doesn't have time series :/")
         else:
             pass
 

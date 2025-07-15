@@ -8,7 +8,7 @@ from scipy.sparse.linalg import factorized, spsolve
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import IntVec
+from GridCalEngine.basic_structures import IntVec, Logger
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Utils.Sparse.csc2 import pack_4_by_4
 
@@ -17,7 +17,7 @@ def ward_reduction(grid: MultiCircuit,
                    reduction_bus_indices: IntVec,
                    pf_res: PowerFlowResults | None = None,
                    add_power_loads: bool = True,
-                   use_linear: bool = False):
+                   use_linear: bool = False) -> Logger:
     """
     In-place Grid reduction using the Ward equivalent model
     from: Power System Network Reduction for Engineering and Economic Analysis by Di Shi, 2012
@@ -27,8 +27,22 @@ def ward_reduction(grid: MultiCircuit,
     :param add_power_loads: If true Ward currents are converted to loads, else currents are added instead
     :param use_linear: if true, the admittance matrix is used and no voltages are required
     """
+    logger = Logger()
+
     # find the boundary set: buses from the internal set the join to the external set
     e_buses, b_buses, i_buses = grid.build_reduction_sets(reduction_bus_indices=reduction_bus_indices)
+
+    if len(e_buses) == 0:
+        logger.add_info(msg="Nothing to reduce")
+        return logger
+
+    if len(i_buses) == 0:
+        logger.add_info(msg="Nothing to keep (null grid as a result)")
+        return logger
+
+    if len(b_buses) == 0:
+        logger.add_info(msg="The reducible and non reducible sets are disjoint and cannot be reduced")
+        return logger
 
     nc = compile_numerical_circuit_at(grid, t_idx=None)
 
@@ -69,9 +83,7 @@ def ward_reduction(grid: MultiCircuit,
 
     else:
         # now, we compute the new voltages at the internal and boundary (2.15)
-        Ysys = pack_4_by_4(YII.tocsc(), YIB.tocsc(),
-                           YBI.tocsc(), YBBp.tocsc())
-
+        Ysys = pack_4_by_4(YII.tocsc(), YIB.tocsc(), YBI.tocsc(), YBBp.tocsc())
         IBp = IB + Ieq  # IBp = IB - YBE @ YEE_fact(IE)  # 2.14
         Isys = np.r_[II, IBp]
         V = spsolve(Ysys, Isys)
@@ -106,3 +118,5 @@ def ward_reduction(grid: MultiCircuit,
     to_be_deleted = [grid.buses[e] for e in e_buses]
     for bus in to_be_deleted:
         grid.delete_bus(obj=bus, delete_associated=True)
+
+    return logger

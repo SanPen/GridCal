@@ -1141,7 +1141,7 @@ def add_linear_injections_formulation(t: Union[int, None],
     # minimize the slacks
     f_obj += ntc_vars.delta_2[t] - ntc_vars.delta_1[t] + ntc_vars.delta_sl_1[t] + ntc_vars.delta_sl_2[t]
 
-    return f_obj
+    return f_obj, base_power
 
 
 def add_linear_branches_formulation(t_idx: int,
@@ -1901,13 +1901,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     # formulate injections -------------------------------------------------------------------------------------
     indices = nc.get_simulation_indices()
 
-    # magic scaling: the demand must be exactly (to the solver tolerance) the same as the demand
-    Pbus = nc.get_power_injections_pu().real
-    Pbus = Pbus.copy()
-    Ptotal = np.sum(Pbus)
-    Pbus[indices.vd] -= Ptotal / len(indices.vd)
-
-    f_obj += add_linear_injections_formulation(
+    inj_f_obj, Pbus = add_linear_injections_formulation(
         t=t_idx,
         Sbase=nc.Sbase,
         gen_data_t=nc.generator_data,
@@ -1925,6 +1919,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
         prob=lp_model,
         logger=logger
     )
+    f_obj += inj_f_obj
 
     # formulate hvdc -------------------------------------------------------------------------------------------
     f_obj += add_linear_hvdc_formulation(
@@ -1957,7 +1952,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
 
         # compute the sensitivity to the exchange
         dP = compute_dP(
-            P0=Pbus.real,
+            P0=Pbus.real,  # already scaled within add_linear_injections_formulation
             P_installed=nc.bus_data.installed_power,
             Pgen=nc.generator_data.get_injections_per_bus().real,
             Pload=nc.load_data.get_injections_per_bus().real,

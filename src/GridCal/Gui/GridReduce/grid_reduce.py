@@ -8,7 +8,7 @@ from typing import Set
 from PySide6 import QtWidgets
 import numpy as np
 from GridCal.Gui.GridReduce.grid_reduce_gui import Ui_ReduceDialog
-
+from GridCal.Gui.general_dialogues import LogsDialogue
 from GridCal.Gui.messages import yes_no_question, warning_msg
 from GridCal.Gui.gui_functions import get_list_model
 from GridCal.Session.session import SimulationSession
@@ -35,6 +35,7 @@ class GridReduceDialogue(QtWidgets.QDialog):
         self.setWindowTitle('Grid reduction')
 
         self.logger = Logger()
+        self.logs_dialogue: LogsDialogue | None = None
 
         mdl = get_list_model(list(selected_buses_set))
         self.ui.listView.setModel(mdl)
@@ -69,11 +70,17 @@ class GridReduceDialogue(QtWidgets.QDialog):
             if ok:
                 reduction_bus_indices = np.array([self._grid.buses.index(b) for b in self._selected_buses_set], dtype=int)
 
-                ward_reduction(
+                logger = ward_reduction(
                     grid=self._grid,
                     reduction_bus_indices=reduction_bus_indices,
                     pf_res=pf_res,
                     add_power_loads=True,
                     use_linear=self.ui.use_linear_checkBox.isChecked()
                 )
+
+                if logger.has_logs():
+                    self.logs_dialogue = LogsDialogue(name="Import profiles", logger=logger)
+                    self.logs_dialogue.exec()
+
+                # exit
                 self.close()
