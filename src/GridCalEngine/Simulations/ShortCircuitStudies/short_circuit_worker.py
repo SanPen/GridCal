@@ -402,7 +402,40 @@ def short_circuit_abc(nc: NumericalCircuit,
 
             Yf[3 * bus_index + 1] = np.conj(Sb) / np.abs(Vpf[3 * bus_index + 1]) ** 2
 
+        if phases == PhasesShortCircuit.bc:
+
+            Sb = Vpf[3 * bus_index + 1] * np.conj((Vpf[3 * bus_index + 1] - Vpf[3 * bus_index + 2]) / (Zf[bus_index] + 1e-20))
+
+            Yf[3 * bus_index + 1] = np.conj(Sb) / np.abs(Vpf[3 * bus_index + 1])**2
+
+            Sc = Vpf[3 * bus_index + 2] * np.conj((Vpf[3 * bus_index + 2] - Vpf[3 * bus_index + 1]) / (Zf[bus_index] + 1e-20))
+
+            Yf[3 * bus_index + 2] = np.conj(Sc) / np.abs(Vpf[3 * bus_index + 2]) ** 2
+
+        if phases == PhasesShortCircuit.ca:
+
+            Sc = Vpf[3 * bus_index + 2] * np.conj((Vpf[3 * bus_index + 2] - Vpf[3 * bus_index + 0]) / (Zf[bus_index] + 1e-20))
+
+            Yf[3 * bus_index + 2] = np.conj(Sc) / np.abs(Vpf[3 * bus_index + 2])**2
+
+            Sa = Vpf[3 * bus_index + 0] * np.conj((Vpf[3 * bus_index + 0] - Vpf[3 * bus_index + 2]) / (Zf[bus_index] + 1e-20))
+
+            Yf[3 * bus_index + 0] = np.conj(Sa) / np.abs(Vpf[3 * bus_index + 0]) ** 2
+
     # Double Line-to-Ground (DLG)
+    elif fault_type == FaultType.LLG:
+
+        if phases == PhasesShortCircuit.ab:
+            Yf[3 * bus_index + 0] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[3 * bus_index + 1] = 1 / (Zf[bus_index] + 1e-20)
+
+        elif phases == PhasesShortCircuit.bc:
+            Yf[3 * bus_index + 1] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[3 * bus_index + 2] = 1 / (Zf[bus_index] + 1e-20)
+
+        elif phases == PhasesShortCircuit.ca:
+            Yf[3 * bus_index + 2] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[3 * bus_index + 0] = 1 / (Zf[bus_index] + 1e-20)
 
     # Three-Phase Fault (LLL)
 

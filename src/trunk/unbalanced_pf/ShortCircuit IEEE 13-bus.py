@@ -420,7 +420,7 @@ def short_circuit_3ph(grid, t_idx=None):
                                          branch_fault_locations=0.5,
                                          verbose=0,
                                          method=MethodShortCircuit.phases,
-                                         phases=PhasesShortCircuit.ab)
+                                         phases=PhasesShortCircuit.ca)
 
     sc_driver = gce.ShortCircuitDriver(grid=grid,
                                        options=sc_options,
