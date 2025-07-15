@@ -414,13 +414,13 @@ def short_circuit_3ph(grid, t_idx=None):
     pf_res.Sbus = num_pf_res.Sbus
 
     sc_options = gce.ShortCircuitOptions(bus_index=4,
-                                         fault_type=FaultType.LG,
+                                         fault_type=FaultType.LL,
                                          mid_line_fault=False,
                                          branch_index=0,
                                          branch_fault_locations=0.5,
                                          verbose=0,
                                          method=MethodShortCircuit.phases,
-                                         phases=PhasesShortCircuit.a)
+                                         phases=PhasesShortCircuit.ca)
 
     sc_driver = gce.ShortCircuitDriver(grid=grid,
                                        options=sc_options,
@@ -434,12 +434,3 @@ def short_circuit_3ph(grid, t_idx=None):
 res_3ph = short_circuit_3ph(grid)
 
 print('Done')
-# U = abs(res_3ph.V)
-# angle = np.degrees(np.angle((res_3ph.V)))
-# print()
-# print(np.round(U, 4))
-# print()
-# print(np.round(angle, 2))
-
-# print(len(res_3ph.Scalc))
-# print('\nSf =', np.round(res_3ph.St,4))
