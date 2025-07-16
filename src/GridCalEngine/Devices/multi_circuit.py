@@ -2718,7 +2718,7 @@ class MultiCircuit(Assets):
         # for i, elm in enumerate(self.get_loads()):
         #     elm.P = results.load_power[i]
 
-    def build_reduction_sets(self, reduction_bus_indices: IntVec) -> Tuple[IntVec, IntVec, IntVec]:
+    def get_reduction_sets(self, reduction_bus_indices: IntVec) -> Tuple[IntVec, IntVec, IntVec]:
         """
         Generate the set of bus indices for grid reduction
         :param reduction_bus_indices: array of bus indices to reduce (external set)
@@ -2750,8 +2750,8 @@ class MultiCircuit(Assets):
                     internal_set.add(t)
 
         # convert to arrays and sort
-        external = np.sort(np.array(external_set))
-        boundary = np.sort(np.array(boundary_set))
-        internal = np.sort(np.array(internal_set))
+        external = np.sort(np.array(list(external_set)))
+        boundary = np.sort(np.array(list(boundary_set)))
+        internal = np.sort(np.array(list(internal_set)))
 
         return external, boundary, internal

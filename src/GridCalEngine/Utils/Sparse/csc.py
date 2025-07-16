@@ -279,6 +279,29 @@ def pack_4_by_4(A11: CscMat, A12: CscMat, A21: CscMat, A22: CscMat):
     return CscMat((Px, Pi, Pp), shape=(m, n))
 
 
+def pack_4_by_4_scipy(A11: csc_matrix, A12: csc_matrix, A21: csc_matrix, A22: csc_matrix) -> csc_matrix:
+    """
+    Stack 4 CSC matrices in a 2 by 2 structure
+    stack csc sparse float matrices like this:
+    | A11 | A12 |
+    | A21 | A22 |
+    :param A11: Upper left matrix
+    :param A12: Upper right matrix
+    :param A21: Lower left matrix
+    :param A22: Lower right matrix
+    :return: Stitched matrix
+    """
+    assert A11.format == "csc"
+    assert A12.format == "csc"
+    assert A21.format == "csc"
+    assert A22.format == "csc"
+    m, n, Pi, Pp, Px = csc_numba.csc_stack_4_by_4_ff(A11.shape[0], A11.shape[1], A11.indices, A11.indptr, A11.data,
+                                                     A12.shape[0], A12.shape[1], A12.indices, A12.indptr, A12.data,
+                                                     A21.shape[0], A21.shape[1], A21.indices, A21.indptr, A21.data,
+                                                     A22.shape[0], A22.shape[1], A22.indices, A22.indptr, A22.data)
+    return csc_matrix((Px, Pi, Pp), shape=(m, n))
+
+
 def pack_3_by_4(A11: CscMat, A12: CscMat, A21: CscMat):
     """
     Stack 3 CSC matrices in a 2 by 2 structure
