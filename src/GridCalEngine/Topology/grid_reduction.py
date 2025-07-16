@@ -2,15 +2,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-import numpy as np
-from scipy.sparse.linalg import factorized, spsolve
+from __future__ import annotations
 
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+import numpy as np
+from typing import TYPE_CHECKING
+from scipy.sparse.linalg import factorized, spsolve
 import GridCalEngine.Devices as dev
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import IntVec, Logger
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Utils.Sparse.csc2 import pack_4_by_4
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+
+if TYPE_CHECKING:
+    from GridCalEngine.Devices.multi_circuit import MultiCircuit
+    from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 
 
 def ward_reduction(grid: MultiCircuit,
