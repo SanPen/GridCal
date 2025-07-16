@@ -2718,17 +2718,23 @@ class MultiCircuit(Assets):
         # for i, elm in enumerate(self.get_loads()):
         #     elm.P = results.load_power[i]
 
-    def get_reduction_sets(self, reduction_bus_indices: IntVec) -> Tuple[IntVec, IntVec, IntVec]:
+    def get_reduction_sets(self, reduction_bus_indices: IntVec,
+                           add_vsc=False, add_hvdc=False, add_switch=True) -> Tuple[IntVec, IntVec, IntVec, IntVec]:
         """
         Generate the set of bus indices for grid reduction
         :param reduction_bus_indices: array of bus indices to reduce (external set)
-        :return: external, boundary, internal
+        :param add_vsc: Include the list of VSC?
+        :param add_hvdc: Include the list of HvdcLine?
+        :param add_switch: Include the list of Switch?
+        :return: external, boundary, internal, boundary_branches
         """
         bus_idx_dict = self.get_bus_index_dict()
         external_set = set(reduction_bus_indices)
         boundary_set = set()
         internal_set = set()
-        for branch in self.get_branches(add_vsc=True, add_hvdc=True, add_switch=True):
+        boundary_branches = list()
+
+        for k, branch in enumerate(self.get_branches(add_vsc=add_vsc, add_hvdc=add_hvdc, add_switch=add_switch)):
             f = bus_idx_dict[branch.bus_from]
             t = bus_idx_dict[branch.bus_to]
             if f in external_set:
@@ -2736,14 +2742,16 @@ class MultiCircuit(Assets):
                     # the branch belongs to the external set
                     pass
                 else:
-                    # the branch is a frontier link and t is a frontier bus
+                    # the branch is a boundary link and t is a frontier bus
                     boundary_set.add(t)
+                    boundary_branches.append(k)
             else:
                 # we know f is not external...
 
                 if t in external_set:
-                    # f is not in the external set, but t is: the branch is a frontier link and f is a frontier bus
+                    # f is not in the external set, but t is: the branch is a boundary link and f is a frontier bus
                     boundary_set.add(f)
+                    boundary_branches.append(k)
                 else:
                     # f nor t are in the external set: both belong to the internal set
                     internal_set.add(f)
@@ -2753,5 +2761,6 @@ class MultiCircuit(Assets):
         external = np.sort(np.array(list(external_set)))
         boundary = np.sort(np.array(list(boundary_set)))
         internal = np.sort(np.array(list(internal_set)))
+        boundary_branches = np.array(boundary_branches)
 
-        return external, boundary, internal
+        return external, boundary, internal, boundary_branches
