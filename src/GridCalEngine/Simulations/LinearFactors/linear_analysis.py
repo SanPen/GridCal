@@ -2,12 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 
 import numpy as np
 import numba as nb
 import warnings
 import scipy.sparse as sp
-from typing import Union, List, Dict, Tuple
+from typing import Union, List, Dict, Tuple, TYPE_CHECKING
 
 from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import spsolve as scipy_spsolve
@@ -15,7 +16,6 @@ from scipy.sparse.linalg import spsolve as scipy_spsolve
 from GridCalEngine import DeviceType
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec, CxMat, BoolVec
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
 from GridCalEngine.Devices.Aggregation.contingency import Contingency
 from GridCalEngine.Simulations.Derivatives.ac_jacobian import AC_jacobian
@@ -24,6 +24,9 @@ from GridCalEngine.Utils.Sparse.csc import dense_to_csc
 import GridCalEngine.Utils.Sparse.csc2 as csc
 from GridCalEngine.Utils.MIP.selected_interface import lpDot
 from GridCalEngine.enumerations import ContingencyOperationTypes
+
+if TYPE_CHECKING:
+    from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
 @nb.njit()

@@ -10,12 +10,12 @@ from scipy.sparse.linalg import factorized, spsolve
 from scipy.sparse import csc_matrix, bmat
 import GridCalEngine.Devices as dev
 from GridCalEngine.basic_structures import IntVec, Logger
-from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 
 if TYPE_CHECKING:
     from GridCalEngine.Devices.multi_circuit import MultiCircuit
     from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+    from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 
 
 def ward_reduction(grid: MultiCircuit,
@@ -160,12 +160,14 @@ def ward_reduction(grid: MultiCircuit,
 
 def ptdf_reduction(grid: MultiCircuit,
                    reduction_bus_indices: IntVec,
+                   lin: LinearAnalysis,
                    tol=1e-8) -> Logger:
     """
     In-place Grid reduction using the Ward equivalent model
     from: Power System Network Reduction for Engineering and Economic Analysis by Di Shi, 2012
     :param grid: MultiCircuit
     :param reduction_bus_indices: Bus indices of the buses to delete
+    :param lin: LinearAnalysis
     :param tol: Tolerance, any equivalent power value under this is omitted
     """
     logger = Logger()
@@ -184,9 +186,5 @@ def ptdf_reduction(grid: MultiCircuit,
     if len(b_buses) == 0:
         logger.add_info(msg="The reducible and non reducible sets are disjoint and cannot be reduced")
         return logger
-
-    nc = compile_numerical_circuit_at(grid, t_idx=None)
-
-    lin = LinearAnalysis(nc=nc, distributed_slack=False)
 
     # PTDF (branches, buses)
