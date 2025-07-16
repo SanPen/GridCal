@@ -271,7 +271,7 @@ def get_exchange_proportions(power: Vec,
     :param bus_a2_idx: bus indices within area 2
     :param logger: logger instance
     :param decimals: Number of decimals to round to
-    :return: proportions, sense, p_max, p_min
+    :return: proportions (rounded)
     """
     proportions_a1 = get_sensed_proportions(power=power, idx=bus_a1_idx, logger=logger)
     proportions_a2 = get_sensed_proportions(power=power, idx=bus_a2_idx, logger=logger)
@@ -1096,7 +1096,7 @@ def add_linear_injections_formulation(t: Union[int, None],
         Sbase=Sbase
     )
 
-    # compute each area's share with sign
+    # compute each area's share with sign (rounded)
     proportions = get_exchange_proportions(
         power=bus_pref_t,
         bus_a1_idx=bus_a1_idx,

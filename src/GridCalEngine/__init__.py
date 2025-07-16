@@ -17,7 +17,7 @@ try:
     from GridCalEngine.IO.file_handler import FileOpen, FileSave, FileSavingOptions
     from GridCalEngine.IO.gridcal.remote import (gather_model_as_jsons_for_communication, RemoteInstruction,
                                                  SimulationTypes, send_json_data, get_certificate_path, get_certificate)
-
+    from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at, NumericalCircuit
     PROPERLY_LOADED_API = True
 except ModuleNotFoundError as e:
     print("Modules not found :/", e)

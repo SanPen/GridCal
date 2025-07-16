@@ -10,7 +10,6 @@ from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode, DeviceType,
                                         TapModuleControl, TapPhaseControl, HvdcControlType, ConverterControlType,
                                         ShuntConnectionType)
@@ -33,6 +32,7 @@ from GridCalEngine.DataStructures.fluid_path_data import FluidPathData
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Devices.multi_circuit import MultiCircuit
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
     from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
     from GridCalEngine.Simulations.NTC.ntc_results import OptimalNetTransferCapacityResults

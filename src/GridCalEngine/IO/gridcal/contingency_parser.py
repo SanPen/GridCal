@@ -2,13 +2,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 
+from typing import TYPE_CHECKING
 import os
 import json
 from typing import List
 from GridCalEngine.Devices.Aggregation.contingency import Contingency, ContingencyOperationTypes
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
+
+if TYPE_CHECKING:
+    from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
 def parse_contingencies(data):

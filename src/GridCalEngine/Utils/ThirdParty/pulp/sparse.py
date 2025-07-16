@@ -32,9 +32,12 @@ class Matrix(dict):
     """This is a dictionary based sparse matrix class"""
 
     def __init__(self, rows, cols):
-        """initialises the class by creating a matrix that will have the given
-        rows and columns
         """
+        initialises the class by creating a matrix that will have the given rows and columns
+        :param rows
+        :param cols
+        """
+        super().__init__()
         self.rows = rows
         self.cols = cols
         self.rowdict = {row: {} for row in rows}
