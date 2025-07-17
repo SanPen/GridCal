@@ -59,13 +59,13 @@ line5 = gce.Line(name="line 7-8", bus_from=bus7, bus_to=bus8,
                 r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
 line6 = gce.Line(name="line 7-8", bus_from=bus7, bus_to=bus8,
                 r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
-line7 = gce.Line(name="line 8-9", bus_from=bus8, bus_to=bus9,
+line7 = gce.Line(name="line 9-8", bus_from=bus9, bus_to=bus8,
                 r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
-line8 = gce.Line(name="line 8-9", bus_from=bus8, bus_to=bus9,
+line8 = gce.Line(name="line 9-8", bus_from=bus9, bus_to=bus8,
                 r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
-line9 = gce.Line(name="line 9-10", bus_from=bus9, bus_to=bus10,
+line9 = gce.Line(name="line 10-9", bus_from=bus10, bus_to=bus9,
                 r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
-line10 = gce.Line(name="line 9-10", bus_from=bus9, bus_to=bus10,
+line10 = gce.Line(name="line 10-9", bus_from=bus10, bus_to=bus9,
                 r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
 line11 = gce.Line(name="line 1-5", bus_from=bus1, bus_to=bus5,
                 r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
@@ -516,7 +516,7 @@ bus3_block = Block(
         Vg_3 - Vline_from_13,
         dg_3 - dline_from_13
     ],
-    algebraic_vars=[Pline_to_13, Qline_to_13, Vg_3, dg_3]
+    algebraic_vars=[Pline_from_13, Qline_from_13, Vg_3, dg_3]
 )
 
 bus4_block = Block(
@@ -526,7 +526,7 @@ bus4_block = Block(
         Vg_4 - Vline_from_14,
         dg_4 - dline_from_14
     ],
-    algebraic_vars=[Pline_to_14, Qline_to_14, Vg_4, dg_4]
+    algebraic_vars=[Pline_from_14, Qline_from_14, Vg_4, dg_4]
 )
 
 bus5_block = Block(
@@ -590,7 +590,7 @@ bus8_block = Block(
         dline_to_4 - dline_to_5,
         dline_to_4 - dline_to_6
     ],
-    algebraic_vars=[Pline_to_4, Pline_to_5, Pline_to_6, Pline_from_7, Pline_from_8, Qline_to_4, Qline_to_5, Qline_to_6, Qline_from_7, Qline_from_8]
+    algebraic_vars=[Pline_to_4, Pline_to_5, Pline_to_6, Pline_to_7, Pline_to_8, Qline_to_4, Qline_to_5, Qline_to_6, Qline_to_7, Qline_to_8]
 )
 
 bus9_block = Block(
@@ -607,7 +607,7 @@ bus9_block = Block(
         dline_to_7 - dline_to_8
 
     ],
-    algebraic_vars=[Pline_to_7, Pline_to_8, Pline_from_9, Pline_from_10, Pline_from_13, Qline_to_7, Qline_to_8, Qline_from_9, Qline_from_10, Qline_from_13]
+    algebraic_vars=[Pline_from_7, Pline_from_8, Pline_to_9, Pline_to_10, Pline_to_13, Qline_from_7, Qline_from_8, Qline_to_9, Qline_to_10, Qline_to_13]
 )
 
 
@@ -620,7 +620,7 @@ bus10_block = Block(
         dline_to_9 - dline_from_14,
         dline_to_9 - dline_to_10
     ],
-    algebraic_vars=[Pline_from_14, Pline_to_10, Pline_to_9, Qline_from_14, Qline_to_10, Qline_to_9]
+    algebraic_vars=[Pline_to_14, Pline_from_10, Pline_from_9, Qline_to_14, Qline_from_10, Qline_from_9]
 )
 
 
@@ -1395,6 +1395,29 @@ my_events = Events([])
 
 params0 = slv.build_init_params_vector(params_mapping)
 x0 = slv.build_init_vars_vector(vars_mapping)
+
+#
+# x0 = slv.initialize_with_newton(x0=slv.build_init_vars_vector(vars_mapping),
+#                                    params0=params0)
+#
+# x0 = slv.initialize_with_pseudo_transient_gamma(
+#     x0=slv.build_init_vars_vector(vars_mapping),
+#     # x0=np.zeros(len(slv._state_vars) + len(slv._algebraic_vars)),
+#     params0=params0
+#  )
+
+
+# x0, params0 = slv.initialise_homotopy(
+#     z0=slv.build_init_vars_vector(vars_mapping),  # flat start
+#     params=params0,
+#     ramps=[(Pl, 0.0), (Ql, 0.0)],  # tuple of var, value to vary with the homotopy
+# )
+
+# x0, params0 = slv.initialise_homotopy_adaptive_lambda(
+#     z0=slv.build_init_vars_vector(vars_mapping),  # flat start
+#     params=params0,
+#     ramps=[(Pl, 0.0), (Ql, 0.0)],
+# )
 
 vars_in_order = slv.sort_vars(vars_mapping)
 
