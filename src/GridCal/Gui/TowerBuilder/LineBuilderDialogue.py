@@ -96,7 +96,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         Change name
         :return:
         """
-        self.tower_driver.tower.tower_name = self.ui.name_lineEdit.text()
+        self.tower_driver.tower.name = self.ui.name_lineEdit.text()
 
     def add_wire_to_collection(self):
         """

@@ -9,7 +9,8 @@ from typing import TYPE_CHECKING
 from scipy.sparse.linalg import factorized, spsolve
 from scipy.sparse import csc_matrix, bmat
 import GridCalEngine.Devices as dev
-from GridCalEngine.basic_structures import IntVec, Logger
+from GridCalEngine.basic_structures import IntVec, Mat, Logger
+from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 
 if TYPE_CHECKING:
@@ -37,7 +38,7 @@ def ward_reduction(grid: MultiCircuit,
     logger = Logger()
 
     # find the boundary set: buses from the internal set the join to the external set
-    e_buses, b_buses, i_buses = grid.get_reduction_sets(reduction_bus_indices=reduction_bus_indices)
+    e_buses, b_buses, i_buses, b_branches = grid.get_reduction_sets(reduction_bus_indices=reduction_bus_indices)
 
     if len(e_buses) == 0:
         logger.add_info(msg="Nothing to reduce")
@@ -78,7 +79,11 @@ def ward_reduction(grid: MultiCircuit,
     YBBp = YBB + csc_matrix(Yeq)  # YBBp = YBB - YBE @ YEE_fact(YEB)  # 2.13
 
     # compute the current
-    I = (pf_res.Sbus / nc.Sbase) / np.conj(pf_res.voltage)
+    if use_linear:
+        I = nc.get_power_injections_pu()
+    else:
+        I = (pf_res.Sbus / nc.Sbase) / np.conj(pf_res.voltage)
+
     II = I[i_buses]
     IB = I[b_buses]
     IE = I[e_buses]
@@ -160,7 +165,7 @@ def ward_reduction(grid: MultiCircuit,
 
 def ptdf_reduction(grid: MultiCircuit,
                    reduction_bus_indices: IntVec,
-                   lin: LinearAnalysis,
+                   PTDF: Mat,
                    tol=1e-8) -> Logger:
     """
     In-place Grid reduction using the Ward equivalent model
@@ -173,7 +178,7 @@ def ptdf_reduction(grid: MultiCircuit,
     logger = Logger()
 
     # find the boundary set: buses from the internal set the join to the external set
-    e_buses, b_buses, i_buses = grid.get_reduction_sets(reduction_bus_indices=reduction_bus_indices)
+    e_buses, b_buses, i_buses, b_branches = grid.get_reduction_sets(reduction_bus_indices=reduction_bus_indices)
 
     if len(e_buses) == 0:
         logger.add_info(msg="Nothing to reduce")
@@ -187,4 +192,71 @@ def ptdf_reduction(grid: MultiCircuit,
         logger.add_info(msg="The reducible and non reducible sets are disjoint and cannot be reduced")
         return logger
 
-    # PTDF (branches, buses)
+    # Start moving objects
+    e_buses_set = set(e_buses)
+    bus_dict = grid.get_bus_index_dict()
+    has_ts = grid.has_time_series
+
+    for elm in grid.get_injection_devices():
+
+        i = bus_dict[elm.bus]  # bus index where it is currently connected
+
+        if i in e_buses_set:
+            # this generator is to be reduced
+
+            for b in range(len(b_buses)):
+                bus_idx = b_buses[b]
+                branch_idx = b_branches[b]
+                bus = grid.buses[bus_idx]
+                ptdf_val = PTDF[branch_idx, bus_idx]
+
+                if abs(ptdf_val) > tol:
+
+                    # create new device at the boundary bus
+                    if elm.device_type == DeviceType.GeneratorDevice:
+                        new_elm = dev.Generator(name=f"{elm.name}@{bus.name}")
+                        new_elm.P = ptdf_val * elm.P
+                        if has_ts:
+                            new_elm.P_prof = ptdf_val * elm.P_prof.toarray()
+                        new_elm.comment = "Equivalent generator"
+                        grid.add_generator(bus=bus, api_obj=new_elm)
+
+                    elif elm.device_type == DeviceType.BatteryDevice:
+                        new_elm = dev.Battery(name=f"{elm.name}@{bus.name}")
+                        new_elm.P = ptdf_val * elm.P
+                        if has_ts:
+                            new_elm.P_prof = ptdf_val * elm.P_prof.toarray()
+                        new_elm.comment = "Equivalent battery"
+                        grid.add_battery(bus=bus, api_obj=new_elm)
+
+                    elif elm.device_type == DeviceType.StaticGeneratorDevice:
+                        new_elm = dev.StaticGenerator(name=f"{elm.name}@{bus.name}")
+                        new_elm.P = ptdf_val * elm.P
+                        new_elm.Q = ptdf_val * elm.Q
+                        if has_ts:
+                            new_elm.P_prof = ptdf_val * elm.P_prof.toarray()
+                            new_elm.Q_prof = ptdf_val * elm.Q_prof.toarray()
+                        new_elm.comment = "Equivalent static generator"
+                        grid.add_static_generator(bus=bus, api_obj=new_elm)
+
+                    elif elm.device_type == DeviceType.LoadDevice:
+                        new_elm = dev.Load(name=f"{elm.name}@{bus.name}")
+                        new_elm.P = ptdf_val * elm.P
+                        new_elm.Q = ptdf_val * elm.Q
+                        if has_ts:
+                            new_elm.P_prof = ptdf_val * elm.P_prof.toarray()
+                            new_elm.Q_prof = ptdf_val * elm.Q_prof.toarray()
+                        new_elm.comment = "Equivalent load"
+                        grid.add_load(bus=bus, api_obj=new_elm)
+                    else:
+                        # device I don't care about
+                        logger.add_warning(msg="Ignored device",
+                                           device=str(elm),
+                                           device_class=elm.device_type.value)
+
+    # Delete the external buses
+    to_be_deleted = [grid.buses[e] for e in e_buses]
+    for bus in to_be_deleted:
+        grid.delete_bus(obj=bus, delete_associated=True)
+
+    return logger

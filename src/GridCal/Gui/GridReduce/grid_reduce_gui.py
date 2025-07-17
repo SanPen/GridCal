@@ -15,7 +15,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QDialog, QFrame,
+from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QFrame,
     QHBoxLayout, QListView, QPushButton, QSizePolicy,
     QSpacerItem, QVBoxLayout, QWidget)
 
@@ -48,13 +48,10 @@ class Ui_ReduceDialog(object):
         self.horizontalLayout = QHBoxLayout(self.frame)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.use_linear_checkBox = QCheckBox(self.frame)
-        self.use_linear_checkBox.setObjectName(u"use_linear_checkBox")
-        font = QFont()
-        font.setPointSize(9)
-        self.use_linear_checkBox.setFont(font)
+        self.methodComboBox = QComboBox(self.frame)
+        self.methodComboBox.setObjectName(u"methodComboBox")
 
-        self.horizontalLayout.addWidget(self.use_linear_checkBox)
+        self.horizontalLayout.addWidget(self.methodComboBox)
 
         self.horizontalSpacer = QSpacerItem(450, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -76,7 +73,6 @@ class Ui_ReduceDialog(object):
 
     def retranslateUi(self, ReduceDialog):
         ReduceDialog.setWindowTitle(QCoreApplication.translate("ReduceDialog", u"Grid Merge", None))
-        self.use_linear_checkBox.setText(QCoreApplication.translate("ReduceDialog", u"Use linear method", None))
 #if QT_CONFIG(tooltip)
         self.reduceButton.setToolTip(QCoreApplication.translate("ReduceDialog", u"Aply the selected changes", None))
 #endif // QT_CONFIG(tooltip)

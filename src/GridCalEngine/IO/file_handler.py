@@ -42,6 +42,7 @@ from GridCalEngine.IO.others.pandapower_parser import Panda2GridCal
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
 from GridCalEngine.IO.ucte.devices.ucte_circuit import UcteCircuit
 from GridCalEngine.IO.ucte.ucte_to_gridcal import convert_ucte_to_gridcal
+from GridCalEngine.IO.others.rte_parser import rte2gridcal
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.results_template import DriverToSave
@@ -422,10 +423,15 @@ class FileOpen:
                             self.logger += self.cgmes_logger.get_logger()
 
                     else:
-                        # try CIM
-                        parser = CIMImport(text_func=text_func, progress_func=progress_func)
-                        self.circuit = parser.load_cim_file(self.file_name)
-                        self.logger += parser.logger
+                        # try RTE format
+                        circuit, is_valid_rte = rte2gridcal(self.file_name, self.logger)
+                        if is_valid_rte:
+                            self.circuit = circuit
+                        else:
+                            # try CIM
+                            parser = CIMImport(text_func=text_func, progress_func=progress_func)
+                            self.circuit = parser.load_cim_file(self.file_name)
+                            self.logger += parser.logger
 
                 elif file_extension.lower() == '.hdf5':
                     self.circuit = parse_pypsa_hdf5(self.file_name, self.logger)

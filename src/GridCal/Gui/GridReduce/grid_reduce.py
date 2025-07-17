@@ -14,8 +14,9 @@ from GridCal.Gui.gui_functions import get_list_model
 from GridCal.Session.session import SimulationSession
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Topology.grid_reduction import ward_reduction
+from GridCalEngine.Topology.grid_reduction import ward_reduction, ptdf_reduction
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.enumerations import GridReductionMethod
 
 
 class GridReduceDialogue(QtWidgets.QDialog):
@@ -37,8 +38,13 @@ class GridReduceDialogue(QtWidgets.QDialog):
         self.logger = Logger()
         self.logs_dialogue: LogsDialogue | None = None
 
-        mdl = get_list_model(list(selected_buses_set))
-        self.ui.listView.setModel(mdl)
+        lmdl = get_list_model(list(selected_buses_set))
+        self.ui.listView.setModel(lmdl)
+
+        methods = [GridReductionMethod.Ward, GridReductionMethod.WardLinear, GridReductionMethod.PTDF]
+        self.methods_dict = {m.value: m for m in methods}
+        cmdl = get_list_model([m.value for m in methods])
+        self.ui.methodComboBox.setModel(cmdl)
 
         self._grid: MultiCircuit = grid
         self._session: SimulationSession = session
@@ -54,12 +60,7 @@ class GridReduceDialogue(QtWidgets.QDialog):
         """
         if len(self._selected_buses_set):
 
-            # get the previous power flow
-            _, pf_res = self._session.power_flow
-
-            if pf_res is None and not self.ui.use_linear_checkBox.isChecked():
-                warning_msg("Run a power flow first!", "Grid reduction")
-                return
+            method: GridReductionMethod = self.methods_dict[self.ui.methodComboBox.currentText()]
 
             ok = yes_no_question(
                 text="This will delete the selected buses and reintroduce their influence"
@@ -68,19 +69,58 @@ class GridReduceDialogue(QtWidgets.QDialog):
                 title="Grid reduction?")
 
             if ok:
-                reduction_bus_indices = np.array([self._grid.buses.index(b) for b in self._selected_buses_set], dtype=int)
+                reduction_bus_indices = np.array([self._grid.buses.index(b) for b in self._selected_buses_set],
+                                                 dtype=int)
 
-                logger = ward_reduction(
-                    grid=self._grid,
-                    reduction_bus_indices=reduction_bus_indices,
-                    pf_res=pf_res,
-                    add_power_loads=True,
-                    use_linear=self.ui.use_linear_checkBox.isChecked()
-                )
+                if method == GridReductionMethod.Ward:
+
+                    # get the previous power flow
+                    _, pf_res = self._session.power_flow
+
+                    if pf_res is None:
+                        warning_msg("Run a power flow first! or select another method", "Grid reduction")
+                        return
+
+                    logger = ward_reduction(
+                        grid=self._grid,
+                        reduction_bus_indices=reduction_bus_indices,
+                        pf_res=pf_res,
+                        add_power_loads=True,
+                        use_linear=False
+                    )
+
+                elif method == GridReductionMethod.Ward:
+                    logger = ward_reduction(
+                        grid=self._grid,
+                        reduction_bus_indices=reduction_bus_indices,
+                        pf_res=None,
+                        add_power_loads=True,
+                        use_linear=True
+                    )
+
+                elif method == GridReductionMethod.PTDF:
+                    # get the previous power flow
+                    _, lin_res = self._session.linear_power_flow
+
+                    if lin_res is None:
+                        warning_msg("Run a linear analysis first! or select another method", "Grid reduction")
+                        return
+
+                    logger = ptdf_reduction(
+                        grid=self._grid,
+                        reduction_bus_indices=reduction_bus_indices,
+                        PTDF=lin_res.PTDF
+                    )
+                else:
+                    raise NotImplementedError("Reduction method not supported")
 
                 if logger.has_logs():
                     self.logs_dialogue = LogsDialogue(name="Import profiles", logger=logger)
                     self.logs_dialogue.exec()
+            else:
+                pass  # not ok
+        else:
+            warning_msg("No reduction happened", "Grid reduction")
 
-                # exit
-                self.close()
+        # exit
+        self.close()
