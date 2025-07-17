@@ -376,75 +376,83 @@ def short_circuit_abc(nc: NumericalCircuit,
     Y_current_linear /= (nc.Sbase / 3)
 
     Yf = np.zeros(len(Vpf), dtype=complex)
+    a = 3 * bus_index + 0
+    b = 3 * bus_index + 1
+    c = 3 * bus_index + 2
 
     # Single Line-to-Ground (SLG)
     if fault_type == FaultType.LG:
 
         if phases == PhasesShortCircuit.a:
-            Yf[3 * bus_index + 0] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[a] = 1 / (Zf[bus_index] + 1e-20)
 
         if phases == PhasesShortCircuit.b:
-            Yf[3 * bus_index + 1] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[b] = 1 / (Zf[bus_index] + 1e-20)
 
         if phases == PhasesShortCircuit.c:
-            Yf[3 * bus_index + 2] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[c] = 1 / (Zf[bus_index] + 1e-20)
 
     # Line-to-Line (LL)
     elif fault_type == FaultType.LL:
 
         if phases == PhasesShortCircuit.ab:
 
-            Sa = Vpf[3 * bus_index + 0] * np.conj((Vpf[3 * bus_index + 0] - Vpf[3 * bus_index + 1]) / (Zf[bus_index] + 1e-20))
+            Sa = Vpf[a] * np.conj((Vpf[a] - Vpf[b]) / (Zf[bus_index] + 1e-20))
 
-            Yf[3 * bus_index + 0] = np.conj(Sa) / np.abs(Vpf[3 * bus_index + 0])**2
+            Yf[a] = np.conj(Sa) / np.abs(Vpf[a])**2
 
-            Sb = Vpf[3 * bus_index + 1] * np.conj((Vpf[3 * bus_index + 1] - Vpf[3 * bus_index + 0]) / (Zf[bus_index] + 1e-20))
+            Sb = Vpf[b] * np.conj((Vpf[b] - Vpf[a]) / (Zf[bus_index] + 1e-20))
 
-            Yf[3 * bus_index + 1] = np.conj(Sb) / np.abs(Vpf[3 * bus_index + 1]) ** 2
+            Yf[b] = np.conj(Sb) / np.abs(Vpf[b]) ** 2
 
         if phases == PhasesShortCircuit.bc:
 
-            Sb = Vpf[3 * bus_index + 1] * np.conj((Vpf[3 * bus_index + 1] - Vpf[3 * bus_index + 2]) / (Zf[bus_index] + 1e-20))
+            Sb = Vpf[b] * np.conj((Vpf[b] - Vpf[c]) / (Zf[bus_index] + 1e-20))
 
-            Yf[3 * bus_index + 1] = np.conj(Sb) / np.abs(Vpf[3 * bus_index + 1])**2
+            Yf[b] = np.conj(Sb) / np.abs(Vpf[b])**2
 
-            Sc = Vpf[3 * bus_index + 2] * np.conj((Vpf[3 * bus_index + 2] - Vpf[3 * bus_index + 1]) / (Zf[bus_index] + 1e-20))
+            Sc = Vpf[c] * np.conj((Vpf[c] - Vpf[b]) / (Zf[bus_index] + 1e-20))
 
-            Yf[3 * bus_index + 2] = np.conj(Sc) / np.abs(Vpf[3 * bus_index + 2]) ** 2
+            Yf[c] = np.conj(Sc) / np.abs(Vpf[c]) ** 2
 
         if phases == PhasesShortCircuit.ca:
 
-            Sc = Vpf[3 * bus_index + 2] * np.conj((Vpf[3 * bus_index + 2] - Vpf[3 * bus_index + 0]) / (Zf[bus_index] + 1e-20))
+            Sc = Vpf[c] * np.conj((Vpf[c] - Vpf[a]) / (Zf[bus_index] + 1e-20))
 
-            Yf[3 * bus_index + 2] = np.conj(Sc) / np.abs(Vpf[3 * bus_index + 2])**2
+            Yf[c] = np.conj(Sc) / np.abs(Vpf[c])**2
 
-            Sa = Vpf[3 * bus_index + 0] * np.conj((Vpf[3 * bus_index + 0] - Vpf[3 * bus_index + 2]) / (Zf[bus_index] + 1e-20))
+            Sa = Vpf[a] * np.conj((Vpf[a] - Vpf[c]) / (Zf[bus_index] + 1e-20))
 
-            Yf[3 * bus_index + 0] = np.conj(Sa) / np.abs(Vpf[3 * bus_index + 0]) ** 2
+            Yf[a] = np.conj(Sa) / np.abs(Vpf[a]) ** 2
 
     # Double Line-to-Ground (DLG)
     elif fault_type == FaultType.LLG:
 
         if phases == PhasesShortCircuit.ab:
-            Yf[3 * bus_index + 0] = 1 / (Zf[bus_index] + 1e-20)
-            Yf[3 * bus_index + 1] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[a] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[b] = 1 / (Zf[bus_index] + 1e-20)
 
         elif phases == PhasesShortCircuit.bc:
-            Yf[3 * bus_index + 1] = 1 / (Zf[bus_index] + 1e-20)
-            Yf[3 * bus_index + 2] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[b] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[c] = 1 / (Zf[bus_index] + 1e-20)
 
         elif phases == PhasesShortCircuit.ca:
-            Yf[3 * bus_index + 2] = 1 / (Zf[bus_index] + 1e-20)
-            Yf[3 * bus_index + 0] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[c] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[a] = 1 / (Zf[bus_index] + 1e-20)
 
     # Three-Phase Fault (LLL)
+    elif fault_type == FaultType.LLL:
+
+        Yf[a] = 1 / ((Zf[bus_index] + 1e-20) / 3)
+        Yf[b] = 1 / ((Zf[bus_index] + 1e-20) / 3)
+        Yf[c] = 1 / ((Zf[bus_index] + 1e-20) / 3)
 
     # Three-Phase-to-Ground (LLLG)
     elif fault_type == FaultType.ph3:
 
-        Yf[3 * bus_index + 0] = 1 / (Zf[bus_index] + 1e-20)
-        Yf[3 * bus_index + 1] = 1 / (Zf[bus_index] + 1e-20)
-        Yf[3 * bus_index + 2] = 1 / (Zf[bus_index] + 1e-20)
+        Yf[a] = 1 / (Zf[bus_index] + 1e-20)
+        Yf[b] = 1 / (Zf[bus_index] + 1e-20)
+        Yf[c] = 1 / (Zf[bus_index] + 1e-20)
 
     else:
         raise Exception('Incorrect fault type definition.')
@@ -474,6 +482,10 @@ def short_circuit_abc(nc: NumericalCircuit,
 
     Usc = spsolve(Ylinear, Inorton)
     Usc_expanded = expand_magnitudes(Usc, bus_lookup)
+
+    """
+    Data Frame
+    """
     Usc_expanded_abs = abs(Usc_expanded)
 
     bus_numbers = [632, 645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
