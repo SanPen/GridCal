@@ -75,6 +75,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         m = len(branch_names)
         n = len(bus_names)
         nhvdc = len(hvdc_names)
+        nvsc = len(vsc_names)
 
         # self.time_array = time_array
         self.time_indices = time_indices
@@ -109,9 +110,9 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.hvdc_loading = np.zeros((nt, nhvdc), dtype=float)
         self.hvdc_losses = np.zeros((nt, nhvdc), dtype=float)
 
-        self.vsc_Pf = np.zeros((nt, nhvdc), dtype=float)
-        self.vsc_loading = np.zeros((nt, nhvdc), dtype=float)
-        self.vsc_losses = np.zeros((nt, nhvdc), dtype=float)
+        self.vsc_Pf = np.zeros((nt, nvsc), dtype=float)
+        self.vsc_loading = np.zeros((nt, nvsc), dtype=float)
+        self.vsc_losses = np.zeros((nt, nvsc), dtype=float)
 
         # indices to post process
         self.sending_bus_idx: List[int] = list()

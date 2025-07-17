@@ -49,6 +49,7 @@ from GridCal.Session.session import SimulationSession, GcThread
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
+from GridCal.Gui.GridReduce.grid_reduce import GridReduceDialogue
 from GridCal.Gui.RmsModelEditor.rms_model_editor_dialogue import RmsModelEditorGUI
 from GridCal.Gui.Diagrams.generic_graphics import IS_DARK
 from GridCal.Gui.python_console import PythonConsole
@@ -182,6 +183,7 @@ class BaseMainGui(QMainWindow):
         self.contingency_checks_diag: Union[CheckListDialogue, None] = None
         self.ra_checks_diag: Union[CheckListDialogue, None] = None
         self.start_end_dialogue_window: Union[StartEndSelectionDialogue, None] = None
+        self.grid_reduction_dialogue: GridReduceDialogue | None = None
 
         # available engines --------------------------------------------------------------------------------------------
         engine_lst = [EngineType.GridCal]

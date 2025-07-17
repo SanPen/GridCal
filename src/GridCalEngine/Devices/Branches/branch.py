@@ -126,8 +126,6 @@ class Branch(BranchParent):
                               code="",
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=None,
-                              cn_to=None,
                               active=active,
                               reducible=False,
                               rate=rate,

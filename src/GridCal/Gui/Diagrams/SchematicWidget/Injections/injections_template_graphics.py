@@ -19,11 +19,9 @@ from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
     from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
-    from GridCal.Gui.Diagrams.SchematicWidget.Substation.cn_graphics import CnGraphicItem
-    from GridCal.Gui.Diagrams.SchematicWidget.Substation.busbar_graphics import BusBarGraphicItem
     from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 
-    NODE_GRAPHIC = BusGraphicItem | CnGraphicItem | BusBarGraphicItem | FluidNodeGraphicItem
+    NODE_GRAPHIC = BusGraphicItem | FluidNodeGraphicItem
 
 
 class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):

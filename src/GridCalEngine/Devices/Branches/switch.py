@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -26,8 +25,6 @@ class Switch(BranchParent):
     def __init__(self,
                  bus_from: Bus = None,
                  bus_to: Bus = None,
-                 cn_from: ConnectivityNode = None,
-                 cn_to: ConnectivityNode = None,
                  name='Switch',
                  idtag=None,
                  code='',
@@ -59,8 +56,6 @@ class Switch(BranchParent):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=cn_from,
-                              cn_to=cn_to,
                               active=active,
                               reducible=not retained,
                               rate=rate,

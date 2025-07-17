@@ -1,20 +1,39 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 import GridCalEngine.api as gce
 from GridCalEngine import WindingType, ShuntConnectionType
 import numpy as np
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
+from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import (PfBasicFormulation3Ph, expand3ph,
+                                                                                       expandVoltage3ph)
 
-def power_flow_3ph(grid, t_idx=None):
-    nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx=t_idx)
 
-    V0 = nc.bus_data.Vbus
+def power_flow_3ph(grid: gce.MultiCircuit, V0_3ph: Vec):
+    """
+
+    :param grid:
+    :param V0_3ph: Voltage vector expanded for 3N (no need for masks to be applied)
+    :return:
+    """
+    nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx=None)
+
     S0 = nc.get_power_injections_pu()
     Qmax, Qmin = nc.get_reactive_power_limits()
 
     options = gce.PowerFlowOptions(tolerance=1e-10, max_iter=1000)
 
-    problem = PfBasicFormulation3Ph(V0=V0, S0=S0, Qmin=Qmin * 100.0, Qmax=Qmax * 100.0,
-                                    nc=nc, options=options, logger=gce.Logger())
+    problem = PfBasicFormulation3Ph(
+        V0=V0_3ph,
+        S0=expand3ph(S0),
+        Qmin=Qmin * 100.0,
+        Qmax=Qmax * 100.0,
+        nc=nc,
+        options=options,
+        logger=gce.Logger()
+    )
 
     res = newton_raphson_fx(problem=problem, verbose=1, max_iter=1000)
 
@@ -394,13 +413,29 @@ def test_ieee_13_bus_feeder():
     line_671_680.apply_template(config_601, grid.Sbase, grid.fBase, logger)
     grid.add_line(obj=line_671_680)
 
-    res_3ph = power_flow_3ph(grid)
+    # ------------------------------------------------------------------------------------------------------------------
+    # Run power flow
+    # ------------------------------------------------------------------------------------------------------------------
+    nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx=None)
+
+    V0 = expandVoltage3ph(nc.bus_data.Vbus)
+    V0[0] = 1.0210 * np.exp(1j * (-2.49 * np.pi / 180))
+    V0[1] = 1.0420 * np.exp(1j * (-121.72 * np.pi / 180))
+    V0[2] = 1.0174 * np.exp(1j * (117.83 * np.pi / 180))
+
+    res_3ph = power_flow_3ph(grid, V0_3ph=V0)
 
     U_obtained = abs(res_3ph.V)
     angle_obtained = np.degrees(np.angle((res_3ph.V)))
 
-    U_reference = np.array([1.021, 1.042, 1.0174, 0.0, 1.0328, 1.0154, 0.0, 1.0311, 1.0134, 1.018, 1.0401, 1.0148, 0.994, 1.0218, 0.996, 0.99, 1.0529, 0.9777, 0.9881, 0.0, 0.9757, 0.0, 0.0, 0.9737, 0.9835, 1.0553, 0.9758, 0.99, 1.0529, 0.9777, 0.9825, 0.0, 0.0])
-    angle_reference = np.array([-2.49, -121.72, 117.83, 0.0, -121.9, 117.86, 0.0, -121.98, 117.9, -2.55, -121.77, 117.83, -3.23, -122.22, 117.35, -5.3, -122.34, 116.03, -5.32, 0.0, 115.93, 0.0, 0.0, 115.78, -5.55, -122.52, 116.04, -5.3, -122.34, 116.03, -5.25, 0.0, 0.0])
+    U_reference = np.array(
+        [1.021, 1.042, 1.0174, 0.0, 1.0328, 1.0154, 0.0, 1.0311, 1.0134, 1.018, 1.0401, 1.0148, 0.994, 1.0218, 0.996,
+         0.99, 1.0529, 0.9777, 0.9881, 0.0, 0.9757, 0.0, 0.0, 0.9737, 0.9835, 1.0553, 0.9758, 0.99, 1.0529, 0.9777,
+         0.9825, 0.0, 0.0])
+    angle_reference = np.array(
+        [-2.49, -121.72, 117.83, 0.0, -121.9, 117.86, 0.0, -121.98, 117.9, -2.55, -121.77, 117.83, -3.23, -122.22,
+         117.35, -5.3, -122.34, 116.03, -5.32, 0.0, 115.93, 0.0, 0.0, 115.78, -5.55, -122.52, 116.04, -5.3, -122.34,
+         116.03, -5.25, 0.0, 0.0])
 
     assert np.allclose(U_obtained, U_reference, atol=1e-4)
     assert np.allclose(angle_obtained, angle_reference, atol=1e-2)

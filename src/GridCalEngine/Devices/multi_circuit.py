@@ -22,7 +22,7 @@ from GridCalEngine.basic_structures import IntVec, Vec, Mat, CxVec, IntMat, CxMa
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, AREA_TYPES
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Topology.topology as tp
+from GridCalEngine.Topology.topology import find_different_states
 from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType
 
 if TYPE_CHECKING:
@@ -235,7 +235,7 @@ class MultiCircuit(Assets):
         Checks if the data could be simulated
         :return: true / false
         """
-        return (self.get_bus_number() + self.get_connectivity_nodes_number()) > 0
+        return self.get_bus_number() > 0
 
     def get_template_objects_list(self) -> List[ALL_DEV_TYPES]:
         """
@@ -292,7 +292,7 @@ class MultiCircuit(Assets):
                  and that [5, 6, 7, 8] are represented by the topology of 5
         """
 
-        return tp.find_different_states(states_array=self.get_branch_active_time_array())
+        return find_different_states(states_array=self.get_branch_active_time_array())
 
     def copy(self) -> "MultiCircuit":
         """
@@ -321,7 +321,7 @@ class MultiCircuit(Assets):
                 'static_generators',
                 'current_injections',
                 'controllable_shunts',
-                'connectivity_nodes',
+                # 'connectivity_nodes',
                 'bus_bars',
                 'overhead_line_types',
                 'wire_types',
@@ -448,8 +448,6 @@ class MultiCircuit(Assets):
         """
         hvdc = dev.HvdcLine(bus_from=line.bus_from,
                             bus_to=line.bus_to,
-                            cn_from=line.cn_from,
-                            cn_to=line.cn_to,
                             name='HVDC Line',
                             active=line.active,
                             rate=line.rate,
@@ -474,8 +472,6 @@ class MultiCircuit(Assets):
         """
         transformer = dev.Transformer2W(bus_from=line.bus_from,
                                         bus_to=line.bus_to,
-                                        cn_from=line.cn_from,
-                                        cn_to=line.cn_to,
                                         name='Transformer',
                                         active=line.active,
                                         rate=line.rate,
@@ -531,7 +527,7 @@ class MultiCircuit(Assets):
         batt.vset_prof = gen.Vset_prof
 
         # add device to the circuit
-        self.add_battery(bus=gen.bus, api_obj=batt, cn=gen.cn)
+        self.add_battery(bus=gen.bus, api_obj=batt)
 
         # delete_with_dialogue the line from the circuit
         self.delete_injection_device(gen)
@@ -546,8 +542,6 @@ class MultiCircuit(Assets):
         """
         vsc = dev.VSC(bus_from=line.bus_from,
                       bus_to=line.bus_to,
-                      cn_from=line.cn_from,
-                      cn_to=line.cn_to,
                       name='VSC',
                       active=line.active,
                       rate=line.rate)
@@ -571,8 +565,6 @@ class MultiCircuit(Assets):
         """
         upfc = dev.UPFC(bus_from=line.bus_from,
                         bus_to=line.bus_to,
-                        cn_from=line.cn_from,
-                        cn_to=line.cn_to,
                         name='UPFC',
                         active=line.active,
                         rate=line.rate,
@@ -598,8 +590,6 @@ class MultiCircuit(Assets):
         """
         series_reactance = dev.SeriesReactance(bus_from=line.bus_from,
                                                bus_to=line.bus_to,
-                                               cn_from=line.cn_from,
-                                               cn_to=line.cn_to,
                                                name='Series reactance',
                                                active=line.active,
                                                rate=line.rate,
@@ -626,8 +616,6 @@ class MultiCircuit(Assets):
         """
         series_reactance = dev.Switch(bus_from=line.bus_from,
                                       bus_to=line.bus_to,
-                                      cn_from=line.cn_from,
-                                      cn_to=line.cn_to,
                                       name='Switch',
                                       active=line.active,
                                       rate=line.rate,
@@ -846,7 +834,7 @@ class MultiCircuit(Assets):
         """
         coord = np.array([b.get_coordinates() for b in self.buses])
 
-        return coord.mean(axis=0).tolist()
+        return np.mean(coord, axis=0).tolist()
 
     def snapshot_balance(self):
         """
@@ -1171,7 +1159,6 @@ class MultiCircuit(Assets):
                 lst.append((k, branch, -1.0))
         return lst
 
-
     def get_inter_areas_vsc_branches(self, a1: List[dev.Area], a2: List[dev.Area]) -> List[Tuple[int, object, float]]:
         """
         Get the inter-area VSC
@@ -1387,31 +1374,6 @@ class MultiCircuit(Assets):
 
                 if devices_by_type is None:
                     groups[elm.bus] = {elm.device_type: [elm]}
-                else:
-                    lst = devices_by_type.get(elm.device_type, None)
-                    if lst is None:
-                        devices_by_type[elm.device_type] = [elm]
-                    else:
-                        devices_by_type[elm.device_type].append(elm)
-
-        return groups
-
-    def get_injection_devices_grouped_by_cn(self) -> Dict[dev.ConnectivityNode,
-    Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
-        """
-        Get the injection devices grouped by bus and by device type
-        :return: Dict[ConnectivityNode, Dict[DeviceType, List[Injection devs]]
-        """
-        groups: Dict[dev.ConnectivityNode, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]] = dict()
-
-        for lst in self.get_injection_devices_lists():
-
-            for elm in lst:
-
-                devices_by_type = groups.get(elm.cn, None)
-
-                if devices_by_type is None:
-                    groups[elm.cn] = {elm.device_type: [elm]}
                 else:
                     lst = devices_by_type.get(elm.device_type, None)
                     if lst is None:
@@ -2219,15 +2181,11 @@ class MultiCircuit(Assets):
         return logger
 
     def clean_branches(self,
-                       nt: int,
                        bus_set: Set[dev.Bus],
-                       cn_set: Set[dev.ConnectivityNode],
                        logger: Logger) -> None:
         """
         Clean the branch references
-        :param nt: number of time steps
         :param bus_set: Set of Buses
-        :param cn_set: Set of connectivity nodes
         :param logger: Logger
         """
         elements_to_delete = list()
@@ -2249,27 +2207,8 @@ class MultiCircuit(Assets):
                                         device_class=elm.device_type.value,
                                         device_property="bus_to")
 
-                if elm.cn_from is not None:
-                    if elm.cn_from not in cn_set:
-                        elm.cn_from = None
-                        logger.add_info("Cn from set to None",
-                                        device=elm.idtag,
-                                        device_class=elm.device_type.value,
-                                        device_property="cn_from")
-
-                if elm.cn_to is not None:
-                    if elm.cn_to not in cn_set:
-                        elm.cn_to = None
-                        logger.add_info("Cn to set to None",
-                                        device=elm.idtag,
-                                        device_class=elm.device_type.value,
-                                        device_property="cn_to")
-
                 # if the element is topologically isolated, delete_with_dialogue it
-                if (elm.bus_from is None
-                        and elm.bus_to is None
-                        and elm.cn_from is None
-                        and elm.cn_to is None):
+                if (elm.bus_from is None and elm.bus_to is None):
                     elements_to_delete.append(elm)
 
         for elm in elements_to_delete:
@@ -2279,15 +2218,11 @@ class MultiCircuit(Assets):
                             device_class=elm.device_type.value)
 
     def clean_injections(self,
-                         nt: int,
                          bus_set: Set[dev.Bus],
-                         cn_set: Set[dev.ConnectivityNode],
                          logger: Logger) -> None:
         """
-        Clean the branch refferences
-        :param nt: number of time steps
+        Clean the branch references
         :param bus_set: Set of Buses
-        :param cn_set: Set of connectivity nodes
         :param logger: Logger
         """
         elements_to_delete = list()
@@ -2301,16 +2236,8 @@ class MultiCircuit(Assets):
                                         device_class=elm.device_type.value,
                                         device_property="bus")
 
-                if elm.cn is not None:
-                    if elm.cn not in cn_set:
-                        elm.cn = None
-                        logger.add_info("Cn set to None",
-                                        device=elm.idtag,
-                                        device_class=elm.device_type.value,
-                                        device_property="cn")
-
                 # if the element is topologically isolated, delete_with_dialogue it
-                if elm.bus is None and elm.cn is None:
+                if elm.bus is None:
                     elements_to_delete.append(elm)
 
         for elm in elements_to_delete:
@@ -2445,93 +2372,16 @@ class MultiCircuit(Assets):
         """
         logger = Logger()
         bus_set = set(self.buses)
-        cn_set = set(self._connectivity_nodes)
         all_dev, dict_ok = self.get_all_elements_dict()
         nt = self.get_time_number()
 
-        self.clean_branches(nt=nt, bus_set=bus_set, cn_set=cn_set, logger=logger)
-        self.clean_injections(nt=nt, bus_set=bus_set, cn_set=cn_set, logger=logger)
+        self.clean_branches(bus_set=bus_set, logger=logger)
+        self.clean_injections(bus_set=bus_set, logger=logger)
         self.clean_contingencies(all_dev=all_dev, logger=logger)
         self.clean_investments(all_dev=all_dev, logger=logger)
         self.clean_technologies()
 
         return logger
-
-    def convert_to_node_breaker(self) -> None:
-        """
-        Convert this MultiCircuit in-place from bus/branch to node/breaker network model
-        """
-        # TODO: Modify this to reflect the new reality...
-
-        bus_to_busbar_cn = dict()  # relate a bus to its equivalent busbar's cn
-        for bus in self.buses:
-            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
-            self.add_bus_bar(bus_bar)
-            bus_to_busbar_cn[bus.idtag] = bus_bar.cn
-            bus_bar.cn.code = bus.code  # for soft checking later
-            if bus_bar.cn.bus:
-                bus_bar.cn.bus.code = bus.code  # for soft checking later
-
-        # add the cn's at the branches
-        for lst in [self.get_branches(), self.get_switches()]:
-            for elm in lst:
-                if elm.bus_from:
-                    elm.cn_from = bus_to_busbar_cn.get(elm.bus_from.idtag, None)
-                if elm.bus_to:
-                    elm.cn_to = bus_to_busbar_cn.get(elm.bus_to.idtag, None)
-
-        # add the cn's at the branches
-        for lst in self.get_injection_devices_lists():
-            for elm in lst:
-                if elm.bus:
-                    elm.cn = bus_to_busbar_cn.get(elm.bus.idtag, None)
-
-    def convert_to_node_breaker_adding_switches(self) -> None:
-        """
-        Convert this MultiCircuit in-place from bus/branch to node/breaker network model,
-        adding switches at the extremes of every branch
-        """
-
-        bus_to_busbar_cn = dict()  # relate a bus to its equivalent busbar's cn
-        for bus in self.buses:
-            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
-            self.add_bus_bar(bus_bar)
-            bus_to_busbar_cn[bus.idtag] = bus_bar.cn
-            bus_bar.cn.code = bus.code  # for soft checking later
-            if bus_bar.cn.bus:
-                bus_bar.cn.bus.code = bus.code  # for soft checking later
-
-        # branches
-        for elm in self.get_branches():
-            # Create two new connectivity nodes
-            cnfrom = dev.ConnectivityNode(name='Artificial_CN_from_L{}'.format(elm.name))
-            cnto = dev.ConnectivityNode(name='Artificial_CN_to_L{}'.format(elm.name))
-            self.add_connectivity_node(cnfrom)
-            self.add_connectivity_node(cnto)
-            elm.cn_to = cnto
-            elm.cn_from = cnfrom
-
-            # Create two new switches
-            sw1 = dev.Switch(name='Artificial_SW_from_L{}'.format(elm.name),
-                             cn_from=bus_to_busbar_cn[elm.bus_from.idtag],
-                             cn_to=cnfrom,
-                             active=True)
-            sw2 = dev.Switch(name='Artificial_SW_to_L{}'.format(elm.name),
-                             cn_from=cnto,
-                             cn_to=bus_to_busbar_cn[elm.bus_to.idtag],
-                             active=True)
-            self.add_switch(sw1)
-            self.add_switch(sw2)
-
-        # injections
-        for elm in self.get_injection_devices():
-            # TODO: Add the posibbility to add a switch here too
-            elm.cn = bus_to_busbar_cn[elm.bus.idtag]
-
-        # Removing original buses
-        bidx = [b for b in self.get_buses()]
-        for b in bidx:
-            self.delete_bus(b)
 
     def split_line(self,
                    original_line: Union[dev.Line],
@@ -2837,3 +2687,50 @@ class MultiCircuit(Assets):
 
         # for i, elm in enumerate(self.get_loads()):
         #     elm.P = results.load_power[i]
+
+    def get_reduction_sets(self, reduction_bus_indices: IntVec,
+                           add_vsc=False, add_hvdc=False, add_switch=True) -> Tuple[IntVec, IntVec, IntVec, IntVec]:
+        """
+        Generate the set of bus indices for grid reduction
+        :param reduction_bus_indices: array of bus indices to reduce (external set)
+        :param add_vsc: Include the list of VSC?
+        :param add_hvdc: Include the list of HvdcLine?
+        :param add_switch: Include the list of Switch?
+        :return: external, boundary, internal, boundary_branches
+        """
+        bus_idx_dict = self.get_bus_index_dict()
+        external_set = set(reduction_bus_indices)
+        boundary_set = set()
+        internal_set = set()
+        boundary_branches = list()
+
+        for k, branch in enumerate(self.get_branches(add_vsc=add_vsc, add_hvdc=add_hvdc, add_switch=add_switch)):
+            f = bus_idx_dict[branch.bus_from]
+            t = bus_idx_dict[branch.bus_to]
+            if f in external_set:
+                if t in external_set:
+                    # the branch belongs to the external set
+                    pass
+                else:
+                    # the branch is a boundary link and t is a frontier bus
+                    boundary_set.add(t)
+                    boundary_branches.append(k)
+            else:
+                # we know f is not external...
+
+                if t in external_set:
+                    # f is not in the external set, but t is: the branch is a boundary link and f is a frontier bus
+                    boundary_set.add(f)
+                    boundary_branches.append(k)
+                else:
+                    # f nor t are in the external set: both belong to the internal set
+                    internal_set.add(f)
+                    internal_set.add(t)
+
+        # convert to arrays and sort
+        external = np.sort(np.array(list(external_set)))
+        boundary = np.sort(np.array(list(boundary_set)))
+        internal = np.sort(np.array(list(internal_set)))
+        boundary_branches = np.array(boundary_branches)
+
+        return external, boundary, internal, boundary_branches

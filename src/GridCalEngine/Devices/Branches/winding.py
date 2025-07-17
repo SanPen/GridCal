@@ -5,7 +5,6 @@
 
 from typing import Union
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapPhaseControl, TapModuleControl)
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
@@ -20,8 +19,6 @@ class Winding(Transformer2W):
                  name='Winding',
                  idtag: Union[None, str] = None,
                  code: str = '',
-                 cn_from: ConnectivityNode = None,
-                 cn_to: ConnectivityNode = None,
                  HV: Union[None, float] = None,
                  LV: Union[None, float] = None,
                  nominal_power: float = 0.001,
@@ -130,8 +127,6 @@ class Winding(Transformer2W):
                                name=name,
                                idtag=idtag,
                                code=code,
-                               cn_from=cn_from,
-                               cn_to=cn_to,
                                HV=HV,
                                LV=LV,
                                nominal_power=nominal_power,

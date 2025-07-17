@@ -2418,16 +2418,6 @@ def translate_gslv_pf_results(grid: MultiCircuit, res: "pg.PowerFlowResults", lo
     results.battery_q = res.battery_q[0, :]
     results.shunt_q = res.shunt_q[0, :]
 
-    report = ConvergenceReport()
-    report.add(method=SolverType.NR,
-               error=res.error_values[0],
-               elapsed=res.elapsed,
-               iterations=0,
-               converged=res.converged_values[0])
-
-    results.convergence_reports.append(report)
-    # logger.add_info("gslv time", value=res.time_array[0])
-
     results.bus_area_indices = grid.get_bus_area_indices()
     results.area_names = [a.name for a in grid.areas]
     # results.bus_types = convert_bus_types(res.bus_types[0])  # this is a list of lists

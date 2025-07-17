@@ -8,10 +8,10 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import BuildStatus, DeviceType
+from GridCalEngine.enumerations import BuildStatus, DeviceType, SubObjectType
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Parents.injection_parent import InjectionParent
+from GridCalEngine.Devices.admittance_matrix import AdmittanceMatrix
 
 
 class ShuntParent(InjectionParent):
@@ -25,25 +25,27 @@ class ShuntParent(InjectionParent):
         'B',
         '_B_prof',
 
-        'G1',
-        '_G1_prof',
-        'B1',
-        '_B1_prof',
-
-        'G2',
-        '_G2_prof',
-        'B2',
-        '_B2_prof',
-
-        'G3',
-        '_G3_prof',
-        'B3',
-        '_B3_prof',
-
         'G0',
         '_G0_prof',
         'B0',
         '_B0_prof',
+
+        'Ga',
+        '_Ga_prof',
+        'Ba',
+        '_Ba_prof',
+
+        'Gb',
+        '_Gb_prof',
+        'Bb',
+        '_Bb_prof',
+
+        'Gc',
+        '_Gc_prof',
+        'Bc',
+        '_Bc_prof',
+
+        '_ysh'
     )
 
     def __init__(self,
@@ -51,7 +53,6 @@ class ShuntParent(InjectionParent):
                  idtag: Union[str, None],
                  code: str,
                  bus: Union[Bus, None],
-                 cn: Union[ConnectivityNode, None],
                  active: bool,
                  G: float,
                  G1: float,
@@ -76,7 +77,6 @@ class ShuntParent(InjectionParent):
         :param idtag: unique id of the device (if None or "" a new one is generated)
         :param code: secondary code for compatibility
         :param bus: snapshot bus object
-        :param cn: connectivity node
         :param active:active state
         :param G: positive conductance (MW @ v=1 p.u.)
         :param G1: positive conductance (MW @ v=1 p.u.)
@@ -102,7 +102,6 @@ class ShuntParent(InjectionParent):
                                  idtag=idtag,
                                  code=code,
                                  bus=bus,
-                                 cn=cn,
                                  active=active,
                                  Cost=Cost,
                                  mttf=mttf,
@@ -115,26 +114,8 @@ class ShuntParent(InjectionParent):
         self.G = float(G)
         self._G_prof = Profile(default_value=self.G, data_type=float)
 
-        self.G1 = float(G1)
-        self._G1_prof = Profile(default_value=self.G1, data_type=float)
-
-        self.G2 = float(G2)
-        self._G2_prof = Profile(default_value=self.G2, data_type=float)
-
-        self.G3 = float(G3)
-        self._G3_prof = Profile(default_value=self.G3, data_type=float)
-
         self.B = float(B)
         self._B_prof = Profile(default_value=self.B, data_type=float)
-
-        self.B1 = float(B1)
-        self._B1_prof = Profile(default_value=self.B1, data_type=float)
-
-        self.B2 = float(B2)
-        self._B2_prof = Profile(default_value=self.B2, data_type=float)
-
-        self.B3 = float(B3)
-        self._B3_prof = Profile(default_value=self.B3, data_type=float)
 
         self.G0 = float(G0)
         self._G0_prof = Profile(default_value=self.G0, data_type=float)
@@ -142,20 +123,44 @@ class ShuntParent(InjectionParent):
         self.B0 = float(B0)
         self._B0_prof = Profile(default_value=self.B0, data_type=float)
 
+        self.Ga = float(G1)
+        self._Ga_prof = Profile(default_value=self.Ga, data_type=float)
+
+        self.Gb = float(G2)
+        self._Gb_prof = Profile(default_value=self.Gb, data_type=float)
+
+        self.Gc = float(G3)
+        self._Gc_prof = Profile(default_value=self.Gc, data_type=float)
+
+        self.Ba = float(B1)
+        self._Ba_prof = Profile(default_value=self.Ba, data_type=float)
+
+        self.Bb = float(B2)
+        self._Bb_prof = Profile(default_value=self.Bb, data_type=float)
+
+        self.Bc = float(B3)
+        self._Bc_prof = Profile(default_value=self.Bc, data_type=float)
+
+        self._ysh = AdmittanceMatrix()
+
         self.register(key='G', units='MW', tpe=float, definition='Active power', profile_name='G_prof')
-        self.register(key='G1', units='MW', tpe=float, definition='Active power', profile_name='G1_prof')
-        self.register(key='G2', units='MW', tpe=float, definition='Active power', profile_name='G2_prof')
-        self.register(key='G3', units='MW', tpe=float, definition='Active power', profile_name='G3_prof')
-        self.register(key='B', units='MVAr', tpe=float, definition='Reactive power', profile_name='B_prof')
-        self.register(key='B1', units='MVAr', tpe=float, definition='Reactive power', profile_name='B1_prof')
-        self.register(key='B2', units='MVAr', tpe=float, definition='Reactive power', profile_name='B2_prof')
-        self.register(key='B3', units='MVAr', tpe=float, definition='Reactive power', profile_name='B3_prof')
         self.register(key='G0', units='MW', tpe=float,
                       definition='Zero sequence active power of the impedance component at V=1.0 p.u.',
                       profile_name='G0_prof')
+        self.register(key='Ga', units='MW', tpe=float, definition='Active power', profile_name='Ga_prof')
+        self.register(key='Gb', units='MW', tpe=float, definition='Active power', profile_name='Gb_prof')
+        self.register(key='Gc', units='MW', tpe=float, definition='Active power', profile_name='Gc_prof')
+
+        self.register(key='B', units='MVAr', tpe=float, definition='Reactive power', profile_name='B_prof')
         self.register(key='B0', units='MVAr', tpe=float,
                       definition='Zero sequence reactive power of the impedance component at V=1.0 p.u.',
                       profile_name='B0_prof')
+        self.register(key='Ba', units='MVAr', tpe=float, definition='Reactive power', profile_name='Ba_prof')
+        self.register(key='Bb', units='MVAr', tpe=float, definition='Reactive power', profile_name='Bb_prof')
+        self.register(key='Bc', units='MVAr', tpe=float, definition='Reactive power', profile_name='Bc_prof')
+
+        self.register('ysh', units="p.u.", tpe=SubObjectType.AdmittanceMatrix,
+                      definition='Shunt admittance matrix of the branch', editable=False, display=False)
 
     @property
     def G_prof(self) -> Profile:
@@ -175,55 +180,55 @@ class ShuntParent(InjectionParent):
             raise Exception(str(type(val)) + 'not supported to be set into a G_prof')
 
     @property
-    def G1_prof(self) -> Profile:
+    def Ga_prof(self) -> Profile:
         """
         Cost profile
         :return: Profile
         """
-        return self._G1_prof
+        return self._Ga_prof
 
-    @G1_prof.setter
-    def G1_prof(self, val: Union[Profile, np.ndarray]):
+    @Ga_prof.setter
+    def Ga_prof(self, val: Union[Profile, np.ndarray]):
         if isinstance(val, Profile):
-            self._G1_prof = val
+            self._Ga_prof = val
         elif isinstance(val, np.ndarray):
-            self._G1_prof.set(arr=val)
+            self._Ga_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a G1_prof')
+            raise Exception(str(type(val)) + 'not supported to be set into a Ga_prof')
 
     @property
-    def G2_prof(self) -> Profile:
+    def Gb_prof(self) -> Profile:
         """
         Cost profile
         :return: Profile
         """
-        return self._G2_prof
+        return self._Gb_prof
 
-    @G2_prof.setter
-    def G2_prof(self, val: Union[Profile, np.ndarray]):
+    @Gb_prof.setter
+    def Gb_prof(self, val: Union[Profile, np.ndarray]):
         if isinstance(val, Profile):
-            self._G2_prof = val
+            self._Gb_prof = val
         elif isinstance(val, np.ndarray):
-            self._G2_prof.set(arr=val)
+            self._Gb_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a G2_prof')
+            raise Exception(str(type(val)) + 'not supported to be set into a Gb_prof')
 
     @property
-    def G3_prof(self) -> Profile:
+    def Gc_prof(self) -> Profile:
         """
         Cost profile
         :return: Profile
         """
-        return self._G3_prof
+        return self._Gc_prof
 
-    @G3_prof.setter
-    def G3_prof(self, val: Union[Profile, np.ndarray]):
+    @Gc_prof.setter
+    def Gc_prof(self, val: Union[Profile, np.ndarray]):
         if isinstance(val, Profile):
-            self._G3_prof = val
+            self._Gc_prof = val
         elif isinstance(val, np.ndarray):
-            self._G3_prof.set(arr=val)
+            self._Gc_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a G3_prof')
+            raise Exception(str(type(val)) + 'not supported to be set into a Gc_prof')
 
     @property
     def B_prof(self) -> Profile:
@@ -243,55 +248,55 @@ class ShuntParent(InjectionParent):
             raise Exception(str(type(val)) + 'not supported to be set into a B_prof')
 
     @property
-    def B1_prof(self) -> Profile:
+    def Ba_prof(self) -> Profile:
         """
         Cost profile
         :return: Profile
         """
-        return self._B1_prof
+        return self._Ba_prof
 
-    @B1_prof.setter
-    def B1_prof(self, val: Union[Profile, np.ndarray]):
+    @Ba_prof.setter
+    def Ba_prof(self, val: Union[Profile, np.ndarray]):
         if isinstance(val, Profile):
-            self._B1_prof = val
+            self._Ba_prof = val
         elif isinstance(val, np.ndarray):
-            self._B1_prof.set(arr=val)
+            self._Ba_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a B1_prof')
+            raise Exception(str(type(val)) + 'not supported to be set into a Ba_prof')
 
     @property
-    def B2_prof(self) -> Profile:
+    def Bb_prof(self) -> Profile:
         """
         Cost profile
         :return: Profile
         """
-        return self._B2_prof
+        return self._Bb_prof
 
-    @B2_prof.setter
-    def B2_prof(self, val: Union[Profile, np.ndarray]):
+    @Bb_prof.setter
+    def Bb_prof(self, val: Union[Profile, np.ndarray]):
         if isinstance(val, Profile):
-            self._B2_prof = val
+            self._Bb_prof = val
         elif isinstance(val, np.ndarray):
-            self._B2_prof.set(arr=val)
+            self._Bb_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a B2_prof')
+            raise Exception(str(type(val)) + 'not supported to be set into a Bb_prof')
 
     @property
-    def B3_prof(self) -> Profile:
+    def Bc_prof(self) -> Profile:
         """
         Cost profile
         :return: Profile
         """
-        return self._B3_prof
+        return self._Bc_prof
 
-    @B3_prof.setter
-    def B3_prof(self, val: Union[Profile, np.ndarray]):
+    @Bc_prof.setter
+    def Bc_prof(self, val: Union[Profile, np.ndarray]):
         if isinstance(val, Profile):
-            self._B3_prof = val
+            self._Bc_prof = val
         elif isinstance(val, np.ndarray):
-            self._B3_prof.set(arr=val)
+            self._Bc_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a B3_prof')
+            raise Exception(str(type(val)) + 'not supported to be set into a Bc_prof')
 
     @property
     def G0_prof(self) -> Profile:
@@ -327,6 +332,20 @@ class ShuntParent(InjectionParent):
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a B_prof')
 
+    @property
+    def ysh(self) -> AdmittanceMatrix:
+        if self._ysh.size == 0:
+            self.fill_3_phase_from_sequence()
+
+        return self._ysh
+
+    @ysh.setter
+    def ysh(self, val: AdmittanceMatrix):
+        if isinstance(val, AdmittanceMatrix):
+            self._ysh = val
+        else:
+            raise ValueError(f'{val} is not a AdmittanceMatrix')
+
     def plot_profiles(self, time=None, show_fig=True):
         """
         Plot the time series results of this object
@@ -359,3 +378,24 @@ class ShuntParent(InjectionParent):
 
             if show_fig:
                 plt.show()
+
+    def fill_3_phase_from_sequence(self):
+        """
+        Fill the admittance
+        :return:
+        """
+        self.ysh = AdmittanceMatrix(3)
+
+        y1 = self.G + 1j * self.B
+        y0 = self.G0 + 1j * self.B0
+
+        diag = (2.0 * y1 + y0) / 3.0
+        off_diag = (y0 - y1) / 3.0
+
+        yabc = np.full((3, 3), off_diag)
+        np.fill_diagonal(yabc, diag)
+
+        self.ysh.values = yabc
+        self.ysh.phA = 1
+        self.ysh.phB = 1
+        self.ysh.phC = 1

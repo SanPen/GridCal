@@ -7,7 +7,6 @@ from GridCalEngine.Utils.NumericalMethods.common import find_closest_number
 
 
 def test_find_closest_number():
-
     arr = np.arange(1, 10, 0.1)
     # print(arr)
 
@@ -109,8 +108,8 @@ def test_find_closest_number():
     target = 11
     idx, val = find_closest_number(arr, target)
 
-    assert idx == len(arr) -1
-    assert val == arr[len(arr)-1]
+    assert idx == len(arr) - 1
+    assert val == arr[len(arr) - 1]
 
     # test lower outside bounds
     target = 0.3

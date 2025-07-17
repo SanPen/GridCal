@@ -3,7 +3,9 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import math
+import os
 import numpy as np
+import GridCalEngine.api as gce
 from GridCalEngine.Devices.profile import Profile, SparseArray, check_if_sparse
 
 
@@ -165,3 +167,30 @@ def test_profile2():
 
     # x is fully sparse, the size should be 1
     assert len(profile._sparse_array._map) == 1  # only one value is different
+
+
+def test_grid_profile_initialization():
+    """
+    This test checks that when creating a profile, the profile slices are identical to the snapshot
+    """
+    fname1 = os.path.join('data', 'grids', 'Matpower', 'case14.m')
+    fname2 = os.path.join('data', 'grids', 'ACTIVSg2000.gridcal')
+
+    for fname in [fname1, fname2]:
+        grid = gce.open_file(fname)
+
+        # the original grid has no profiles for sure, so we create them
+        grid.delete_profiles()
+        grid.create_profiles(steps=5, step_length=1.0, step_unit="h")
+
+        nc_base = gce.compile_numerical_circuit_at(circuit=grid, t_idx=None)
+
+        for t_idx in range(grid.get_time_number()):
+            nc_t = gce.compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
+
+            ok, logger = nc_base.compare(nc_t)
+
+            if not ok:
+                logger.print()
+
+            assert ok

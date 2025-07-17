@@ -55,6 +55,33 @@ class BusMode(Enum):
             return ""
 
 
+class BusGraphicType(Enum):
+    """
+    Bus graphical modes
+    """
+    BusBar = "BusBar"
+    Connectivity = "Connectivity"
+    Internal = "Internal"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return BusGraphicType[s]
+        except KeyError:
+            return s
+
+
 class CpfStopAt(Enum):
     """
     CpfStopAt
@@ -643,6 +670,7 @@ class FaultType(Enum):
         """
         return list(map(lambda c: c.value, cls))
 
+
 class MethodShortCircuit(Enum):
     """
     Short circuit type
@@ -673,6 +701,7 @@ class MethodShortCircuit(Enum):
         :return:
         """
         return list(map(lambda c: c.value, cls))
+
 
 class PhasesShortCircuit(Enum):
     """
@@ -786,7 +815,6 @@ class WindingType(Enum):
         :return:
         """
         return list(map(lambda c: c.value, cls))
-
 
 
 class ShuntConnectionType(Enum):
@@ -954,7 +982,6 @@ class DeviceType(Enum):
 
     GenericArea = 'Generic Area'
     SubstationDevice = 'Substation'
-    ConnectivityNodeDevice = 'Connectivity Node'
     AreaDevice = 'Area'
     ZoneDevice = 'Zone'
     CountryDevice = 'Country'
@@ -1482,7 +1509,6 @@ class ResultTypes(Enum):
     BatteryInvested = 'Battery invested'
 
     ShuntReactivePower = 'Shunt reactive power'
-
 
     BusVoltagePolarPlot = 'Voltage plot'
     BusNodalCapacity = "Nodal capacity"
@@ -2055,3 +2081,30 @@ class DynamicIntegrationMethod(Enum):
         :return:
         """
         return list(map(lambda c: c.value, cls))
+
+
+class GridReductionMethod(Enum):
+    """
+    GridReductionMethod
+    """
+    Ward = "Ward"
+    WardLinear = "Ward linear"
+    PTDF = "PTDF"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return GridReductionMethod[s]
+        except KeyError:
+            return s

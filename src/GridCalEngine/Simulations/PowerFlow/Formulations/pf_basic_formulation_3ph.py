@@ -474,9 +474,8 @@ def expand_slice_indices_3ph(x: np.ndarray, bus_lookup: IntVec):
 def expandVoltage3ph(V0: CxVec) -> CxVec:
     """
     Expands a numpy array to 3-pase copying the same values
-    :param V0:
-    :param bus_mask:
-    :return:
+    :param V0: array of bus voltages in positive sequence
+    :return: Array of three-phase voltages in 3-phase ABC
     """
     n = len(V0)
     idx3 = np.array([0, 1, 2])
@@ -487,13 +486,6 @@ def expandVoltage3ph(V0: CxVec) -> CxVec:
 
     for k in range(n):
         x3[3 * k + idx3] = Vm[k] * np.exp(1j * (Va[k] + angles))
-
-    x3[0] = 1.0210 * np.exp(1j * (-2.49 * np.pi / 180))
-    x3[1] = 1.0420 * np.exp(1j * (-121.72 * np.pi / 180))
-    x3[2] = 1.0174 * np.exp(1j * (117.83 * np.pi / 180))
-    # x3[0] = (251.900822)/(416/np.sqrt(3)) * np.exp(1j * (-0.526991))
-    # x3[1] = (251.442613)/(416/np.sqrt(3)) * np.exp(1j * (3.659445))
-    # x3[2] = (251.952085)/(416/np.sqrt(3)) * np.exp(1j * (1.569572))
 
     return x3
 
@@ -541,25 +533,31 @@ def expand_matrix(magnitude: np.ndarray, lookup: IntVec):
 
 class PfBasicFormulation3Ph(PfFormulationTemplate):
 
-    def __init__(self, V0: CxVec, S0: CxVec, Qmin: Vec, Qmax: Vec,
-                 nc: NumericalCircuit, options: PowerFlowOptions, logger: Logger):
+    def __init__(self,
+                 V0: CxVec,
+                 S0: CxVec,
+                 Qmin: Vec,
+                 Qmax: Vec,
+                 nc: NumericalCircuit,
+                 options: PowerFlowOptions,
+                 logger: Logger):
         """
         PfBasicFormulation3Ph
-        :param V0: Array of nodal initial solution (N, not 3N)
+        :param V0: Array of nodal initial solution (3N)
+        :param S0: Array of power injections (3N)
         :param Qmin: Array of bus reactive power upper limit (N, not 3N)
         :param Qmax: Array of bus reactive power lower limit (N, not 3N)
         :param nc: NumericalCircuit
         :param options: PowerFlowOptions
         """
         self.Ybus, self.Yf, self.Yt, self.Yshunt_bus, self.mask, self.bus_lookup, self.branch_lookup = compute_ybus(nc)
-        V0new = expandVoltage3ph(V0)[self.mask]
+        V0new = V0[self.mask]
 
         PfFormulationTemplate.__init__(self, V0=V0new.astype(complex), options=options)
         self.logger = logger
         self.nc = nc
 
         self.S0, self.Y_power_star_linear = compute_Sbus_star(nc, V0new, self.mask)
-        self.S0: CxVec
         self.Y_power_star_linear: CxVec
         self.S0 = self.S0 / (nc.Sbase / 3)
         self.Y_power_star_linear = self.Y_power_star_linear / (nc.Sbase / 3)

@@ -5,7 +5,7 @@
 
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.shunt_compensator import ShuntCompensator
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
 
 
 class NonlinearShuntCompensator(ShuntCompensator):

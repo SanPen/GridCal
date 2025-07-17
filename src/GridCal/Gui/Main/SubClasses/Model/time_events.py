@@ -60,12 +60,7 @@ class TimeEventsMain(DataBaseTableMain):
         """
         profile_device_type_changed
         """
-        dev_type = self.get_db_object_selected_type()
-
-        if dev_type is not None:
-            mdl = gf.get_list_model(self.circuit.profile_magnitudes[dev_type][0])
-            self.ui.device_type_magnitude_comboBox.setModel(mdl)
-            self.ui.device_type_magnitude_comboBox_2.setModel(mdl)
+        self.display_profiles(proxy_mdl=self.get_current_objects_model_view())
 
     def new_profiles_structure(self):
         """
@@ -486,7 +481,6 @@ class TimeEventsMain(DataBaseTableMain):
 
         if mdl is not None:
             mdl.copy_to_clipboard(cols=list(cols))
-            print('Copied!')
         else:
             warning_msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
 

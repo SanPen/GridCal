@@ -1865,7 +1865,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
         # time indices:
         # imagine that the complete GridCal DB time goes from 0 to 1000
         # but, for whatever reason, time_indices is [100..200]
-        # local_t_idx would go fro 0..100
+        # local_t_idx would go from 0..100
         # global_t_idx would go from 100..200
 
         # compile the circuit at the master time index ------------------------------------------------------------

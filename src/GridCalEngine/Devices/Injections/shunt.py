@@ -45,7 +45,6 @@ class Shunt(ShuntParent):
                              idtag=idtag,
                              code=code,
                              bus=None,
-                             cn=None,
                              active=active,
                              G=G,
                              G1=G1,
