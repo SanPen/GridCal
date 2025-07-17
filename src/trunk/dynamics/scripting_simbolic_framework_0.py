@@ -102,7 +102,7 @@ pi = Const(math.pi)
 fn = Const(50)
 # tm = Const(0.1)
 M = Const(1.0)
-D = Const(100)
+D = Const(1)
 ra = Const(0.3)
 xd = Const(0.86138701)
 vf = Const(1.081099313)
@@ -135,11 +135,10 @@ generator_block = Block(
         # omega - (-tm / M + t_e / M - D / M * (omega - 1))
         (2 * pi * fn) * (omega - omega_ref),  # dδ/dt
         (tm - t_e - D * (omega - omega_ref)) / M,  # dω/dt
-        -Kp * et - Ki * et - Kw * (omega - omega_ref)  # det/dt
     ],
-    state_vars=[delta, omega, et],
+    state_vars=[delta, omega],
     algebraic_eqs=[
-        et - (tm - t_e),
+        tm + Kw * (omega - omega_ref) ,
         psid - (-ra * i_q + v_q),
         psiq - (-ra * i_d + v_d),
         i_d - (psid + xd * i_d - vf),
@@ -196,29 +195,29 @@ params_mapping = {
 }
 vars_mapping = {
 
-    # start from PF values
-    # dline_from: 15 * (np.pi / 180),
-    # dline_to: 10 * (np.pi / 180),
-    # Vline_from: 1.0,
-    # Vline_to: 0.95,
-    # Vg: 1.0,
-    # dg: 15 * (np.pi / 180),
-    # Pline_from: 0.1,
-    # Qline_from: 0.2,
-    # Pline_to: -0.1,
-    # Qline_to: -0.2,
-
-    # Flat start
-    dline_from: 0.0,
-    dline_to: 0.0,
+    #start from PF values
+    dline_from: 15 * (np.pi / 180),
+    dline_to: 10 * (np.pi / 180),
     Vline_from: 1.0,
-    Vline_to: 1.0,
+    Vline_to: 0.95,
     Vg: 1.0,
-    dg: 0.0,
-    Pline_from: 0.0,
-    Qline_from: 0.0,
-    Pline_to: 0.0,
-    Qline_to: 0.0,
+    dg: 15 * (np.pi / 180),
+    Pline_from: 0.1,
+    Qline_from: 0.2,
+    Pline_to: -0.1,
+    Qline_to: -0.2,
+
+    # # Flat start
+    # dline_from: 0.0,
+    # dline_to: 0.0,
+    # Vline_from: 1.0,
+    # Vline_to: 1.0,
+    # Vg: 1.0,
+    # dg: 0.0,
+    # Pline_from: 0.0,
+    # Qline_from: 0.0,
+    # Pline_to: 0.0,
+    # Qline_to: 0.0,
 
     Pl: 0.1,  # P2
     Ql: 0.2,  # Q2
@@ -244,17 +243,17 @@ event1 = Event(Pl0, 5000, 0.3)
 my_events = Events([event1])
 
 params0 = slv.build_init_params_vector(params_mapping)
-#x0 = slv.build_init_vars_vector(vars_mapping)
+x0 = slv.build_init_vars_vector(vars_mapping)
 
 
 # x0 = slv.initialize_with_newton(x0=slv.build_init_vars_vector(vars_mapping),
 #                                 params0=params0)
 
-x0 = slv.initialize_with_pseudo_transient_gamma(
-    x0=slv.build_init_vars_vector(vars_mapping),
-    # x0=np.zeros(len(slv._state_vars) + len(slv._algebraic_vars)),
-    params0=params0
-)
+# x0 = slv.initialize_with_pseudo_transient_gamma(
+#     x0=slv.build_init_vars_vector(vars_mapping),
+#     # x0=np.zeros(len(slv._state_vars) + len(slv._algebraic_vars)),
+#     params0=params0
+# )
 
 
 # x0, params0 = slv.initialise_homotopy(
@@ -287,7 +286,7 @@ slv.save_simulation_to_csv('simulation_results.csv', t, y)
 fig = plt.figure(figsize=(14, 10))
 
 #Generator state variables
-#plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)")
+plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)")
 #plt.plot(t, y[:, slv.get_var_idx(delta)], label="δ (rad)")
 #plt.plot(t, y[:, slv.get_var_idx(et)], label="et (pu)")
 
@@ -306,18 +305,18 @@ fig = plt.figure(figsize=(14, 10))
 #plt.plot(t, y[:, slv.get_var_idx(dg)], label="θg (rad)")
 
 #Line variables
-plt.plot(t, y[:, slv.get_var_idx(Pline_from)], label="Pline_from (pu)")
-plt.plot(t, y[:, slv.get_var_idx(Qline_from)], label="Qline_from (pu)")
-plt.plot(t, y[:, slv.get_var_idx(Pline_to)], label="Pline_to (pu)")
-plt.plot(t, y[:, slv.get_var_idx(Qline_to)], label="Qline_to (pu)")
-plt.plot(t, y[:, slv.get_var_idx(Vline_from)], label="Vline_from (pu)")
-plt.plot(t, y[:, slv.get_var_idx(Vline_to)], label="Vline_to (pu)")
-plt.plot(t, y[:, slv.get_var_idx(dline_from)], label="δline_from (rad)")
-plt.plot(t, y[:, slv.get_var_idx(dline_to)], label="δline_to (rad)")
+# plt.plot(t, y[:, slv.get_var_idx(Pline_from)], label="Pline_from (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Qline_from)], label="Qline_from (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Pline_to)], label="Pline_to (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Qline_to)], label="Qline_to (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Vline_from)], label="Vline_from (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Vline_to)], label="Vline_to (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(dline_from)], label="δline_from (rad)")
+# plt.plot(t, y[:, slv.get_var_idx(dline_to)], label="δline_to (rad)")
 
 # Load variables
-plt.plot(t, y[:, slv.get_var_idx(Pl)], label="Pl (pu)")
-plt.plot(t, y[:, slv.get_var_idx(Ql)], label="Ql (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Pl)], label="Pl (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Ql)], label="Ql (pu)")
 
 plt.legend(loc='upper right', ncol=2)
 plt.xlabel("Time (s)")

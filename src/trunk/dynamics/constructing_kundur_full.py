@@ -353,7 +353,7 @@ pi = Const(math.pi)
 fn_1 = Const(60)
 # tm = Const(0.1)
 M_1 = Const(1.0)
-D_1 = Const(100)
+D_1 = Const(0)
 ra_1 = Const(0.3)
 xd_1 = Const(0.86138701)
 vf_1 = Const(1.081099313)
@@ -366,7 +366,7 @@ Kw_1 = Const(10.0)
 fn_2 = Const(60)
 # tm = Const(0.1)
 M_2 = Const(1.0)
-D_2 = Const(100)
+D_2 = Const(0)
 ra_2 = Const(0.3)
 xd_2 = Const(0.86138701)
 vf_2 = Const(1.081099313)
@@ -380,7 +380,7 @@ Kw_2 = Const(10.0)
 fn_3 = Const(60)
 # tm = Const(0.1)
 M_3 = Const(1.0)
-D_3 = Const(100)
+D_3 = Const(0)
 ra_3 = Const(0.3)
 xd_3 = Const(0.86138701)
 vf_3 = Const(1.081099313)
@@ -393,7 +393,7 @@ Kw_3 = Const(10.0)
 fn_4 = Const(60)
 # tm = Const(0.1)
 M_4 = Const(1.0)
-D_4 = Const(100)
+D_4 = Const(0)
 ra_4 = Const(0.3)
 xd_4 = Const(0.86138701)
 vf_4 = Const(1.081099313)
@@ -863,12 +863,11 @@ line_14_block = Block(
 generator_block_1 = Block(
     state_eqs=[
         (2 * pi * fn_1) * (omega_1 - omega_ref_1),
-        (tm_1 - t_e_1 - D_1 * (omega_1 - omega_ref_1)) / M_1,
-        -Kp_1 * et_1 - Ki_1 * et_1 - Kw_1 * (omega_1 - omega_ref_1)
+        (tm_1 - t_e_1 - D_1 * (omega_1 - omega_ref_1)) / M_1
     ],
-    state_vars=[delta_1, omega_1, et_1],
+    state_vars=[delta_1, omega_1],
     algebraic_eqs=[
-        et_1 - (tm_1 - t_e_1),
+        tm_1 + Kw_1 * (omega_1 - omega_ref_1),
         psid_1 - (-ra_1 * i_q_1 + v_q_1),
         psiq_1 - (-ra_1 * i_d_1 + v_d_1),
         i_d_1 - (psid_1 + xd_1 * i_d_1 - vf_1),
@@ -963,7 +962,7 @@ generator_block_4 = Block(
 # Load
 # -------------------------------------------------------------
 Ql0_7 = Const(0.1)
-Pl0_7 = Const(0.1)
+Pl0_7 = Var('Pl0_7')
 
 #Pl0_7 = Var('Pl0_7')
 
@@ -973,7 +972,7 @@ load_7 = Block(
         Ql_7 - Ql0_7
     ],
     algebraic_vars=[Ql_7, Pl_7],
-    parameters=[]
+    parameters=[Pl0_7]
 )
 Ql0_8 = Const(0.1)
 Pl0_8 = Const(0.1)
@@ -1098,7 +1097,7 @@ i2 = np.conj(Sb2 / v2)          # ī = (p - jq) / v̄*
 i3 = np.conj(Sb3 / v3)          # ī = (p - jq) / v̄*
 i4 = np.conj(Sb4 / v4)          # ī = (p - jq) / v̄*
 # Delta angle
-delta0_1 = np.angle(v1 + ra_1.value + 1j*xd_1.value * i1)
+delta0_1 = np.angle(v1 + ra_1.value + 1j * xd_1.value * i1)
 delta0_2 = np.angle(v2 + ra_2.value + 1j * xd_2.value * i2)
 delta0_3 = np.angle(v3 + ra_3.value + 1j * xd_3.value * i3)
 delta0_4 = np.angle(v4 + ra_4.value + 1j * xd_4.value * i4)
@@ -1161,7 +1160,7 @@ t_e0_4 = psid0_4 * i_q0_4 - psiq0_4 * i_d0_4
 slv = BlockSolver(sys)
 
 params_mapping = {
-    # Pl0_7: 0.1,
+    Pl0_7: 0.1,
     #Ql0: 0.1
 }
 
@@ -1317,7 +1316,7 @@ vars_mapping = {
     Pline_to_14: Pt0_14,
     Qline_to_14: Qt0_14,
 
-    Pl_7: Pl0_7.value,  # P2
+    Pl_7: 0.1,  # P2
     Ql_7: Ql0_7.value,  # Q2
     Pl_8: Pl0_8.value,  # P2
     Ql_8: Ql0_8.value,  # Q2
@@ -1391,7 +1390,9 @@ vars_mapping = {
 # ---------------------------------------------------------------------------------------
 
 
-my_events = Events([])
+event1 = Event(Pl0_7, 5000, 0.3)
+#event2 = Event(Ql0, 5000, 0.3)
+my_events = Events([event1])
 
 params0 = slv.build_init_params_vector(params_mapping)
 x0 = slv.build_init_vars_vector(vars_mapping)
@@ -1435,7 +1436,67 @@ t, y = slv.simulate(
 slv.save_simulation_to_csv('simulation_results.csv', t, y)
 
 
+# Generator state variables
+# plt.plot(t, y[:, slv.get_var_idx(omega_1)], label="ω (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(delta_1)], label="δ (rad)")
+# plt.plot(t, y[:, slv.get_var_idx(et_1)], label="et (pu)")
 
+# plt.plot(t, y[:, slv.get_var_idx(omega_2)], label="ω (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(delta_2)], label="δ (rad)")
+# plt.plot(t, y[:, slv.get_var_idx(et_2)], label="et (pu)")
+
+# plt.plot(t, y[:, slv.get_var_idx(omega_3)], label="ω (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(delta_3)], label="δ (rad)")
+# plt.plot(t, y[:, slv.get_var_idx(et_3)], label="et (pu)")
+
+# plt.plot(t, y[:, slv.get_var_idx(omega_4)], label="ω (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(delta_4)], label="δ (rad)")
+# plt.plot(t, y[:, slv.get_var_idx(et_4)], label="et (pu)")
+#
+# # Generator algebraic variables
+plt.plot(t, y[:, slv.get_var_idx(tm_1)], label="Tm (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(tm_2)], label="Tm (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(tm_3)], label="Tm (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(tm_4)], label="Tm (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(psid_1)], label="Ψd (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(psiq_1)], label="Ψq (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(i_d_1)], label="Id (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(i_q_1)], label="Iq (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(v_d_1)], label="Vd (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(v_q_1)], label="Vq (pu)")
+plt.plot(t, y[:, slv.get_var_idx(t_e_1)], label="Te (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(t_e_2)], label="Te (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(t_e_3)], label="Te (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(t_e_4)], label="Te (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(p_g_1)], label="Pg (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Q_g_1)], label="Qg (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Vg_1)], label="Vg (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(dg_1)], label="θg (rad)")
+
+# #Line variables
+# plt.plot(t, y[:, slv.get_var_idx(Pline_from_1)], label="Pline_from (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Qline_from_1)], label="Qline_from (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Pline_to_1)], label="Pline_to (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Qline_to_1)], label="Qline_to (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Vline_from_1)], label="Vline_from (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Vline_to_1)], label="Vline_to (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(dline_from_1)], label="δline_from (rad)")
+# plt.plot(t, y[:, slv.get_var_idx(dline_to_1)], label="δline_to (rad)")
+#
+# Load variables
+# plt.plot(t, y[:, slv.get_var_idx(Pl_7)], label="Pl (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Ql_7)], label="Ql (pu)")
+
+# plt.plot(t, y[:, slv.get_var_idx(Pl_8)], label="Pl (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Ql_8)], label="Ql (pu)")
+
+plt.legend(loc='upper right', ncol=2)
+plt.xlabel("Time (s)")
+plt.ylabel("Values (pu)")
+plt.title("Time Series of All System Variables")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
 
 
 
