@@ -15,7 +15,7 @@ from GridCalEngine.Utils.Sparse.csc import diags
 from GridCalEngine.Compilers.circuit_to_data import NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_power, polar_to_rect)
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from GridCalEngine.enumerations import AcOpfMode, BusMode, TapPhaseControl, TapModuleControl
+from GridCalEngine.enumerations import AcOpfMode, TapPhaseControl, TapModuleControl
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger, csr_matrix, csc_matrix
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import get_Sf, get_St
 from GridCalEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx import IpsSolution
@@ -210,8 +210,8 @@ class NonLinearOptimalPfProblem:
         # Since controllable shunts will be treated as generators, we deactivate them to avoid its computation in the
         # Admittance matrix. Then, the admittance elements are stored.
 
-        nc.shunt_data.Y[
-            self.id_sh] = 0 + 0j  # TODO: this modifies the original data, better to make a copy of Y for shunts
+        # TODO: this modifies the original data, better to make a copy of Y for shunts
+        nc.shunt_data.Y[self.id_sh] = 0 + 0j
         self.admittances = nc.get_admittance_matrices()
 
         self.Qsh_max = nc.shunt_data.qmax[self.id_sh] / self.Sbase
@@ -395,7 +395,7 @@ class NonLinearOptimalPfProblem:
 
             # TODO: Unresolved Pmax, ie Pmax and Pmin must be in __init__
             self.Pg = np.r_[
-                (self.Pmax[gen_disp_idx_2] + self.Pmin[gen_disp_idx_2]) / (2 * self.Sbase),
+                (self.Pg_max[gen_disp_idx_2] + self.Pg_min[gen_disp_idx_2]) / (2 * self.Sbase),
                 np.zeros(self.nsh)
             ]
             self.Qg = np.r_[
@@ -1528,7 +1528,8 @@ class NonLinearOptimalPfProblem:
             tap_unit = np.exp(1j * tau)
             tap_unit_c = np.exp(-1j * tau)
 
-            # For each line with a module controlled transformer, compute its second derivatives w.r.t. the tap module and
+            # For each line with a module controlled transformer,
+            # compute its second derivatives w.r.t. the tap module and
             # the rest of the variables.
             mp2 = mp * mp
             mp3 = mp2 * mp

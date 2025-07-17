@@ -8,7 +8,7 @@ import os
 import numpy as np
 import GridCalEngine.api as gce
 from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow, run_nonlinear_opf
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import NonlinearOPFResults
 
 
@@ -24,10 +24,9 @@ def case9() -> NonlinearOPFResults:
     file_path = os.path.join('data', 'grids', 'case9.m')
 
     grid = gce.FileOpen(file_path).open()
-    nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8)
-    return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    return run_nonlinear_opf(grid=grid, t_idx=None, pf_options=pf_options, opf_options=opf_options)
 
 
 def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResults]:
@@ -50,10 +49,10 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
     pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8, ips_iterations=50,
                                               acopf_mode=gce.AcOpfMode.ACOPFstd)
-    base_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    base_sol = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
     opf_options.acopf_mode = gce.AcOpfMode.ACOPFslacks
-    slack_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    slack_sol = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
     grid.transformers2w[0].tap_phase_control_mode = TapPhaseControl.Pt
     grid.transformers2w[0].tap_module_control_mode = TapModuleControl.Qt
@@ -69,12 +68,11 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
     for b in range(len(grid.buses)):
         grid.buses[b].Vm_cost *= 10000
 
-    nc = gce.compile_numerical_circuit_at(grid)
     opf_options.acopf_mode = gce.AcOpfMode.ACOPFstd
-    tap_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    tap_sol = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
     opf_options.acopf_mode = gce.AcOpfMode.ACOPFslacks
-    tap_slack_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    tap_slack_sol = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
     return base_sol, slack_sol, tap_sol, tap_slack_sol
 
@@ -104,12 +102,11 @@ def case14_ctrlQ_shunts() -> NonlinearOPFResults:
 
     grid = gce.FileOpen(file_path_csh).open()
 
-    nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8, ips_iterations=50,
                                               acopf_mode=gce.AcOpfMode.ACOPFstd, ips_control_q_limits=True, verbose=0)
 
-    base_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    base_sol = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
     # delete
     os.remove(file_path_csh)
@@ -127,13 +124,10 @@ def case_pegase89() -> NonlinearOPFResults:
     file_path = os.path.join('data', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
-    nc = gce.compile_numerical_circuit_at(grid)
-    # pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, tolerance=1e-8)
-    # return ac_optimal_power_flow(nc=nc, pf_options=pf_options)
     pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-10,
                                               acopf_mode=gce.AcOpfMode.ACOPFstd)
-    return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    return run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
 
 def test_ieee9():
@@ -324,7 +318,6 @@ def superconductor() -> NonlinearOPFResults:
 def test_superconductors_handling():
     vm_test = [1.0957346797437704, 1.0969574703822882, 1.0862735278860973, 1.0957346797437704,
                1.0854699877686833, 1.0999995150478854, 1.089489008278147, 1.0999995260914164, 1.072794065554122]
-
 
     va_test = [-4.2370941920734066e-20, 0.1286722741064758, 0.09997739459585175, -4.2370941920734066e-20,
                -0.026373782258851553, 0.05377100775984605, 0.022363497246639205, 0.05904426953721843,

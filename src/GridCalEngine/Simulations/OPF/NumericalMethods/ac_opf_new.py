@@ -37,8 +37,6 @@ def run_nonlinear_opf(grid: MultiCircuit,
     :param opf_options: OptimalPowerFlowOptions
     :param pf_options: PowerFlowOptions
     :param t_idx: Time index
-    :param debug: debug? when active the autodiff is activated
-    :param use_autodiff: Use autodiff?
     :param pf_init: Initialize with a power flow?
     :param Sbus_pf0: Sbus initial solution
     :param voltage_pf0: Voltage initial solution
