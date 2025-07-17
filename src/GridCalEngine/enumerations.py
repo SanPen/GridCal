@@ -2045,3 +2045,30 @@ class CascadeType(Enum):
         :return:
         """
         return list(map(lambda c: c.value, cls))
+
+
+class GridReductionMethod(Enum):
+    """
+    GridReductionMethod
+    """
+    Ward = "Ward"
+    WardLinear = "Ward linear"
+    PTDF = "PTDF"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return GridReductionMethod[s]
+        except KeyError:
+            return s
