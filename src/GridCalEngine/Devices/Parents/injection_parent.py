@@ -3,13 +3,12 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import Union, List, Tuple, TYPE_CHECKING
+from typing import Union, List, TYPE_CHECKING
 import numpy as np
 
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, DeviceType, SubObjectType, ShuntConnectionType
 from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Devices.profile import Profile
@@ -20,22 +19,6 @@ if TYPE_CHECKING:
     from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 
-def set_bus(bus: Bus, cn: ConnectivityNode) -> Tuple[Bus | None, ConnectivityNode | None]:
-    """
-
-    :param bus:
-    :param cn:
-    :return:
-    """
-    if bus is None:
-        if cn is None:
-            return None, None
-        else:
-            return cn.bus, cn
-    else:
-        return bus, cn
-
-
 class InjectionParent(PhysicalDevice):
     """
     Parent class for Injections
@@ -43,7 +26,6 @@ class InjectionParent(PhysicalDevice):
 
     __slots__ = (
         '_bus',
-        '_cn',
         'active',
         '_active_prof',
         'mttf',
@@ -67,7 +49,6 @@ class InjectionParent(PhysicalDevice):
                  idtag: Union[str, None],
                  code: str,
                  bus: Union[Bus, None],
-                 cn: Union[ConnectivityNode, None],
                  active: bool,
                  Cost: float,
                  mttf: float,
@@ -82,7 +63,6 @@ class InjectionParent(PhysicalDevice):
         :param idtag: unique id of the device (if None or "" a new one is generated)
         :param code: secondary code for compatibility
         :param bus: snapshot bus object
-        :param cn: connectivity node
         :param active:active state
         :param Cost: cost associated with various actions (dispatch or shedding)
         :param mttf: mean time to failure (h)
@@ -99,7 +79,7 @@ class InjectionParent(PhysicalDevice):
                                 code=code,
                                 device_type=device_type)
 
-        self._bus, self._cn = set_bus(bus, cn)
+        self._bus = bus
 
         self.active = bool(active)
         self._active_prof = Profile(default_value=self.active, data_type=bool)
@@ -132,9 +112,6 @@ class InjectionParent(PhysicalDevice):
         self._conn: ShuntConnectionType = ShuntConnectionType.Star
 
         self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus', editable=False)
-
-        self.register(key='cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
-                      definition='Connection connectivity node', editable=False)
 
         self.register(key='active', units='', tpe=bool, definition='Is the load active?', profile_name='active_prof')
 
@@ -183,27 +160,6 @@ class InjectionParent(PhysicalDevice):
                 self._bus = val
             else:
                 raise Exception(str(type(val)) + 'not supported to be set into a bus')
-
-    @property
-    def cn(self) -> ConnectivityNode:
-        """
-        Bus
-        :return: Bus
-        """
-        return self._cn
-
-    @cn.setter
-    def cn(self, val: ConnectivityNode):
-        if val is None:
-            self._cn = val
-        else:
-            if isinstance(val, ConnectivityNode):
-                self._cn = val
-
-                if self.bus is None:
-                    self.bus = self._cn.bus
-            else:
-                raise Exception(str(type(val)) + 'not supported to be set into a connectivity node')
 
     @property
     def active_prof(self) -> Profile:

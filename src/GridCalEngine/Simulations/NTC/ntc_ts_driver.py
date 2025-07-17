@@ -7,7 +7,7 @@ import numpy as np
 from typing import Union
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf
+from GridCalEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf, NtcVars
 from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityOptions
 from GridCalEngine.Simulations.NTC.ntc_ts_results import OptimalNetTransferCapacityTimeSeriesResults
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
@@ -68,7 +68,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         for t_idx, t in enumerate(self.time_indices):
 
-            opf_vars = run_linear_ntc_opf(
+            opf_vars: NtcVars = run_linear_ntc_opf(
                 grid=self.grid,
                 t=t,  # only one time index at a time
                 solver_type=self.options.opf_options.mip_solver,
@@ -95,7 +95,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.results.receiving_bus_idx = self.options.receiving_bus_idx
                 self.results.inter_space_branches = opf_vars.branch_vars.inter_space_branches
                 self.results.inter_space_hvdc = opf_vars.hvdc_vars.inter_space_hvdc
-                self.results.inter_space_vsc = opf_vars.hvdc_vars.inter_space_vsc
+                self.results.inter_space_vsc = opf_vars.vsc_vars.inter_space_vsc
 
             self.results.voltage[t_idx, :] = opf_vars.get_voltages()[0, :]
             self.results.Sbus[t_idx, :] = opf_vars.bus_vars.Pinj[0, :]

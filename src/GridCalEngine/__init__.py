@@ -17,7 +17,7 @@ try:
     from GridCalEngine.IO.file_handler import FileOpen, FileSave, FileSavingOptions
     from GridCalEngine.IO.gridcal.remote import (gather_model_as_jsons_for_communication, RemoteInstruction,
                                                  SimulationTypes, send_json_data, get_certificate_path, get_certificate)
-
+    from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at, NumericalCircuit
     PROPERLY_LOADED_API = True
 except ModuleNotFoundError as e:
     print("Modules not found :/", e)
@@ -65,10 +65,10 @@ if PROPERLY_LOADED_API:
         # define the export options
         options = FileSavingOptions()
         options.cgmes_one_file_per_profile = False
-        options.cgmes_profiles = [cgmesProfile.EQ,
-                                  cgmesProfile.OP,
-                                  cgmesProfile.TP,
-                                  cgmesProfile.SSH]
+        options.cgmes_profiles = [CgmesProfileType.EQ,
+                                  CgmesProfileType.OP,
+                                  CgmesProfileType.TP,
+                                  CgmesProfileType.SSH]
         options.cgmes_version = cgmes_version
 
         if pf_results is not None:
@@ -80,7 +80,7 @@ if PROPERLY_LOADED_API:
 
             options.sessions_data.append(pf_session_data)
 
-            options.cgmes_profiles.append(cgmesProfile.SV)
+            options.cgmes_profiles.append(CgmesProfileType.SV)
 
         # since the CGMES boundary set is an external file, you need to define where it is
         options.cgmes_boundary_set = cgmes_boundary_set_path
@@ -115,12 +115,16 @@ if PROPERLY_LOADED_API:
     def power_flow_ts(grid: MultiCircuit,
                       options: PowerFlowOptions | None = None,
                       time_indices: Union[IntVec, None] = None,
+                      clustering_results: Union[ClusteringResults, None] = None,
+                      auto_expand: bool = True,
                       engine=EngineType.GridCal) -> PowerFlowResults:
         """
         Run power flow on the time series
         :param grid: MultiCircuit instance
         :param options: PowerFlowOptions instance (optional)
         :param time_indices: Array of time indices to simulate, if None all are used (optional)
+        :param clustering_results: ClusteringResults (optional)
+        :param auto_expand: If true the clustering results are expanded if clustering_results is provided
         :param engine: Engine to run with (optional, default GridCal)
         :return: PowerFlowResults instance
         """
@@ -134,9 +138,13 @@ if PROPERLY_LOADED_API:
         driver = PowerFlowTimeSeriesDriver(grid=grid,
                                            options=options,
                                            time_indices=ti,
+                                           clustering_results=clustering_results,
                                            engine=engine)
         # run
         driver.run()
+
+        if auto_expand and clustering_results is not None:
+            driver.results.expand_clustered_results()
 
         return driver.results
 

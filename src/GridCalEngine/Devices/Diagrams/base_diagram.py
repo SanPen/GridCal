@@ -414,7 +414,7 @@ class BaseDiagram:
         node_count = 0
         graph_node_dictionary = dict()
 
-        for dev_tpe in [DeviceType.BusDevice, DeviceType.ConnectivityNodeDevice, DeviceType.BusBarDevice]:
+        for dev_tpe in [DeviceType.BusDevice, DeviceType.BusBarDevice]:
 
             device_groups = self.data.get(dev_tpe.value, None)
 

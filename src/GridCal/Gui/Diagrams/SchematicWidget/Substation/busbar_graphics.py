@@ -394,7 +394,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         dc_icon.addPixmap(QPixmap(":/Icons/icons/dc.svg"))
         dc.setIcon(dc_icon)
         dc.setCheckable(True)
-        dc.setChecked(self.api_object.cn.dc)
+        dc.setChecked(self.api_object.bus.dc)
         dc.triggered.connect(self.enable_disable_dc)
 
         pl = menu.addAction('Plot profiles')
@@ -586,10 +586,10 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Activates or deactivates the bus as a DC bus
         """
-        if self.api_object.cn.dc:
-            self.api_object.cn.dc = False
+        if self.api_object.bus.dc:
+            self.api_object.bus.dc = False
         else:
-            self.api_object.cn.dc = True
+            self.api_object.bus.dc = True
 
     def plot_profiles(self) -> None:
         """
@@ -679,7 +679,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_load(cn=self._api_object.cn)
+            api_obj = self._editor.circuit.add_load(cn=self._api_object.bus)
 
         _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)
@@ -691,7 +691,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :param api_obj: If None, a new shunt is created
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_shunt(cn=self._api_object.cn)
+            api_obj = self._editor.circuit.add_shunt(cn=self._api_object.bus)
 
         _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)
@@ -703,7 +703,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :param api_obj: if None, a new generator is created
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_generator(cn=self._api_object.cn)
+            api_obj = self._editor.circuit.add_generator(cn=self._api_object.bus)
 
         _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)
@@ -716,7 +716,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_static_generator(cn=self._api_object.cn)
+            api_obj = self._editor.circuit.add_static_generator(cn=self._api_object.bus)
 
         _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)
@@ -729,7 +729,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_battery(cn=self._api_object.cn)
+            api_obj = self._editor.circuit.add_battery(cn=self._api_object.bus)
 
         _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)
@@ -743,7 +743,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_external_grid(cn=self._api_object.cn)
+            api_obj = self._editor.circuit.add_external_grid(cn=self._api_object.bus)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)
@@ -757,7 +757,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_current_injection(cn=self._api_object.cn)
+            api_obj = self._editor.circuit.add_current_injection(cn=self._api_object.bus)
 
         _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)
@@ -771,7 +771,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self._editor.circuit.add_controllable_shunt(cn=self._api_object.cn)
+            api_obj = self._editor.circuit.add_controllable_shunt(cn=self._api_object.bus)
 
         _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.add_child_graphic(elm=api_obj, graphic=_grph)

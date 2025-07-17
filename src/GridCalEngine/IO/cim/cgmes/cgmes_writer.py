@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: MPL-2.0
 import zipfile
 from typing import List, Union, Callable
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 
 
-def write_cgmes(filename_zip: str, model: CgmesCircuit, profiles: List[cgmesProfile],
+def write_cgmes(filename_zip: str, model: CgmesCircuit, profiles: List[CgmesProfileType],
                 text_func: Union[Callable, None] = None,
                 progress_func: Union[Callable, None] = None):
     """

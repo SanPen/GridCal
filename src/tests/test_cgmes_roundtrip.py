@@ -8,7 +8,7 @@ from __future__ import annotations
 import os
 
 import numpy as np
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
 from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions, FileSave
 from GridCalEngine.Simulations import PowerFlowOptions
 from GridCalEngine.Simulations.results_template import DriverToSave
@@ -26,11 +26,11 @@ def create_file_save_options(boundary_zip_path: str) -> FileSavingOptions:
     """
     options = FileSavingOptions()
     options.cgmes_one_file_per_profile = False
-    options.cgmes_profiles = [cgmesProfile.EQ,
-                              cgmesProfile.OP,
-                              cgmesProfile.TP,
-                              cgmesProfile.SV,
-                              cgmesProfile.SSH]
+    options.cgmes_profiles = [CgmesProfileType.EQ,
+                              CgmesProfileType.OP,
+                              CgmesProfileType.TP,
+                              CgmesProfileType.SV,
+                              CgmesProfileType.SSH]
     options.cgmes_version = CGMESVersions.v2_4_15
     options.cgmes_boundary_set = boundary_zip_path
 

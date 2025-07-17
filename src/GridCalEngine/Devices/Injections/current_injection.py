@@ -67,7 +67,6 @@ class CurrentInjection(InjectionParent):
                                  idtag=idtag,
                                  code=code,
                                  bus=None,
-                                 cn=None,
                                  active=active,
                                  Cost=Cost,
                                  mttf=mttf,

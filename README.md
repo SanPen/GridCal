@@ -228,7 +228,7 @@ aligned in memory. The GridCal data model is object-oriented, while the numerica
 ```python
 import GridCalEngine as gce
 
-# load a grid (.gridcal, .m (Matpower), .raw (PSS/e) .rawx (PSS/e), .epc (PowerWorld), .dgs (PowerFactory)
+# load a grid (.gridcal, .m (Matpower), .raw (PSS/e) .rawx (PSS/e), .epc (PSLF), .dgs (PowerFactory)
 my_grid = gce.open_file("my_file.gridcal")
 ```
 
@@ -277,7 +277,7 @@ GridCal supports many file formats:
 - PSS/e raw and rawx versions 29 to 35, including USA market exchange RAW-30 specifics.
 - Matpower .m files directly.
 - DigSilent .DGS (not fully compatible)
-- PowerWorld .EPC (not fully compatible, supports substation coordinates)
+- PSLF .EPC (not fully compatible, supports substation coordinates)
 
 Similarly to CGMES you may be able to use the conversion objects to explore the original formats.
 

@@ -65,7 +65,6 @@ AREA_TYPES = Union[
 SUBSTATION_TYPES = Union[
     Substation,
     Bus,
-    ConnectivityNode,
     BusBar,
     VoltageLevel
 ]
@@ -112,7 +111,7 @@ ALL_DEV_TYPES = Union[
     SequenceLineType
 ]
 
-CONNECTION_TYPE = Union[ConnectivityNode, Bus, None]
+CONNECTION_TYPE = Union[Bus, None]
 
 ASSOCIATION_TYPES = Union[Fuel, Technology, EmissionGas]
 

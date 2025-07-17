@@ -9,10 +9,8 @@ from typing import Tuple
 
 from GridCalEngine.basic_structures import Logger, Mat
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapPhaseControl,
-                                        TapModuleControl, SubObjectType, TapChangerTypes, WindingType)
+                                        TapModuleControl, TapChangerTypes, WindingType)
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType, reverse_transformer_short_circuit_study
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -41,8 +39,6 @@ class Transformer2W(ControllableBranchParent):
                  name='Branch',
                  idtag: str | None = None,
                  code: str = '',
-                 cn_from: ConnectivityNode | None = None,
-                 cn_to: ConnectivityNode | None = None,
                  HV: float | None = None,
                  LV: float | None = None,
                  nominal_power: float = 0.001,
@@ -157,8 +153,6 @@ class Transformer2W(ControllableBranchParent):
                                           code=code,
                                           bus_from=bus_from,
                                           bus_to=bus_to,
-                                          cn_from=cn_from,
-                                          cn_to=cn_to,
                                           active=active,
                                           reducible=reducible,
                                           rate=rate,
@@ -181,7 +175,6 @@ class Transformer2W(ControllableBranchParent):
                                           Qset=Qset,
                                           regulation_branch=None,
                                           regulation_bus=None,
-                                          regulation_cn=None,
                                           temp_base=temp_base,
                                           temp_oper=temp_oper,
                                           alpha=alpha,
@@ -264,10 +257,6 @@ class Transformer2W(ControllableBranchParent):
                                  'phase = vector_group_number · 30º')
 
         self.register(key='template', units='', tpe=DeviceType.TransformerTypeDevice, definition='', editable=False)
-
-        # self.register(key='possible_transformer_types', units='', tpe=SubObjectType.Associations,
-        #               definition='Possible transformer types (>1 to denote association), - to denote no association',
-        #               display=False)
 
     @property
     def conn_f(self) -> WindingType:

@@ -5,7 +5,7 @@
 
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.operational_limit import OperationalLimit
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType, UnitSymbol
 
 
 class VoltageLimit(OperationalLimit):

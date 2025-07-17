@@ -291,6 +291,8 @@ def load_function_from_file_path(file_path: str, function_name: str):
     # Create a new module based on the spec
     module = importlib.util.module_from_spec(spec)
 
+    spec.loader.exec_module(module)
+
     try:
         # Execute the module to populate its namespace
         spec.loader.exec_module(module)

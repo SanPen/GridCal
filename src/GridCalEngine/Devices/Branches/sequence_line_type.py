@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from typing import Tuple
 import numpy as np
+from GridCalEngine.Devices.admittance_matrix import AdmittanceMatrix
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 
 
@@ -83,9 +84,9 @@ class SequenceLineType(EditableDevice):
         'n_circuits'
     )
 
-
     def __init__(self, name='SequenceLine', idtag=None, Imax=1, Vnom=1,
-                 R=1e-20, X=1e-20, B=1e-20, R0=1e-20, X0=1e-20, B0=1e-20, CnF=1e-20, CnF0=1e-20, use_conductance: bool = False):
+                 R=1e-20, X=1e-20, B=1e-20, R0=1e-20, X0=1e-20, B0=1e-20, CnF=1e-20, CnF0=1e-20,
+                 use_conductance: bool = False):
         """
         Constructor
         :param name: name of the model
@@ -173,30 +174,54 @@ class SequenceLineType(EditableDevice):
 
         return R, X, B, R0, X0, B0, rate
 
-    def zs012_ysabc(self):
+    def get_ys_abc(self) -> AdmittanceMatrix:
+        """
+        Get the series 3x3 admittance matrix
+        :return: AdmittanceMatrix
+        """
         z1 = self.R + 1j * self.X
         z0 = self.R0 + 1j * self.X0
 
-        diag = (2*z1 + z0) / 3
-        off_diag = (z0 - z1) / 3
-
-        zabc = np.full((3,3), off_diag)
-        np.fill_diagonal(zabc, diag)
-
-        ysabc = np.linalg.inv(zabc)
-
-        return ysabc
-
-    def zsh012_yshabc(self):
-        z1 = 1 / (1j * 2 * np.pi * 50 * self.Cnf / 10**9 + 1e-20)
-        z0 = 1 / (1j * 2 * np.pi * 50 * self.Cnf0 / 10**9 + 1e-20)
-
-        diag = (2*z1 + z0) / 3
+        diag = (2 * z1 + z0) / 3
         off_diag = (z0 - z1) / 3
 
         zabc = np.full((3, 3), off_diag)
         np.fill_diagonal(zabc, diag)
 
-        yshabc = np.linalg.inv(zabc)
+        adm = AdmittanceMatrix(size=3)
+        try:
+            adm.values = np.linalg.inv(zabc)
+        except np.linalg.LinAlgError:
+            adm.values = np.linalg.pinv(zabc)
 
-        return yshabc
+        adm.phA = 1
+        adm.phB = 1
+        adm.phC = 1
+
+        return adm
+
+    def get_ysh_abc(self) -> AdmittanceMatrix:
+        """
+        get the 3x3 shunt admittance matrix from the sequence values
+        :return AdmittanceMatrix
+        """
+        if self.use_conductance:
+            y1 = 1 / (1j * 2 * np.pi * 50 * self.Cnf / 10 ** 9 + 1e-20)
+            y0 = 1 / (1j * 2 * np.pi * 50 * self.Cnf0 / 10 ** 9 + 1e-20)
+        else:
+            y1 = 1j * self.B
+            y0 = 1j * self.B0
+
+        diag = (2.0 * y1 + y0) / 3.0
+        off_diag = (y0 - y1) / 3.0
+
+        yabc = np.full((3, 3), off_diag)
+        np.fill_diagonal(yabc, diag)
+
+        adm = AdmittanceMatrix(size=3)
+        adm.values = yabc
+        adm.phA = 1
+        adm.phB = 1
+        adm.phC = 1
+
+        return adm
