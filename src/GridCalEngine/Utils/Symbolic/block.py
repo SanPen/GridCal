@@ -148,10 +148,18 @@ class Block:
             out_vars=_deserialize_var_list(data.get("out_vars", [])),
         )
 
+    def copy(self) -> "Block":
+        """
+        Make a deep copy of this
+        :return: deep copy Block
+        """
+        return Block.parse(data=self.to_dict())
+
     def __eq__(self, other):
-        if not isinstance(other, Block):
+        if isinstance(other, Block):
+            return self.to_dict() == other.to_dict()
+        else:
             return False
-        return self.to_dict() == other.to_dict()
 
 
 # ----------------------------------------------------------------------------------------------------------------------

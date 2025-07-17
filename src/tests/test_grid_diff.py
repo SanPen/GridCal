@@ -15,7 +15,9 @@ def test_add_stuff_roundtrip() -> None:
     The difference should be equal to what we added: i.e Lynn5bus
     """
     original = gce.open_file(filename=os.path.join("data", "grids", "IEEE57.gridcal"))  # we use this for diff
-    # gce.save_file(original, os.path.join("data", "grids", "IEEE57.gridcal"))  # it may fail if new properties are added, just save the original file
+
+    # NOTE: it may fail if new properties are added, just save the original file
+    # gce.save_file(original, os.path.join("data", "grids", "IEEE57.gridcal"))
 
     grid1 = gce.open_file(filename=os.path.join("data", "grids", "IEEE57.gridcal"))  # we modify this one in place
 
@@ -39,7 +41,6 @@ def test_add_stuff_roundtrip() -> None:
     assert ok_compare
 
 
-
 def test_grid_modifications() -> None:
     """
     This test does the following:
@@ -49,7 +50,9 @@ def test_grid_modifications() -> None:
     We should get a file with the independent modifications, and some sort of message for colliding modifications
     """
     original = gce.open_file(filename=os.path.join("data", "grids", "case14.gridcal"))  # we use this for diff
-    # gce.save_file(original, os.path.join("data", "grids", "IEEE57.gridcal"))  # it may fail if new properties are added, just save the original file
+
+    # NOTE: it may fail if new properties are added, just save the original file
+    # gce.save_file(original, os.path.join("data", "grids", "case14.gridcal"))
 
     grid1 = gce.open_file(filename=os.path.join("data", "grids", "case14.gridcal"))
     grid2 = gce.open_file(filename=os.path.join("data", "grids", "case14.gridcal"))
@@ -77,7 +80,6 @@ def test_grid_modifications() -> None:
 
     grid1.delete_bus(obj=grid1.buses[11], delete_associated=True)
 
-
     # If it was done in a single PC:
 
     merged_grid = gce.open_file(filename=os.path.join("data", "grids", "case14.gridcal"))
@@ -94,10 +96,6 @@ def test_grid_modifications() -> None:
     merged_grid.delete_line(obj=merged_grid.lines[8])
     merged_grid.add_line(obj=lin)
 
-
-
-
-
     # calculate the difference of the modified grid with the original
     ok_diff1, diff_logger1, diff1 = grid1.differentiate_circuits(base_grid=original)
     ok_diff2, diff_logger2, diff2 = grid2.differentiate_circuits(base_grid=original)
@@ -107,7 +105,6 @@ def test_grid_modifications() -> None:
 
     merge_logger2 = original.merge_circuit(diff2)
     gce.save_file(grid=original, filename=os.path.join("data", "grids", "case14_merge2.gridcal"))
-
 
     # the calculated difference should be equal to the grid we added
     ok_compare, comp_logger = original.compare_circuits(grid2=merged_grid, skip_internals=True)

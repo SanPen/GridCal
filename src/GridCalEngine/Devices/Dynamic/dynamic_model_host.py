@@ -101,3 +101,14 @@ class DynamicModelHost:
                     return self.template.uid == other.template.uid
         else:
             return False
+
+    def copy(self) -> "DynamicModelHost":
+        """
+        Deep copy of DynamicModelHost
+        :return: DynamicModelHost
+        """
+        obj = DynamicModelHost()
+        obj._custom_model = self._custom_model.copy()
+        obj._template = self._template
+        return obj
+

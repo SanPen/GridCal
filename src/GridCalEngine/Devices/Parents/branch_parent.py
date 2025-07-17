@@ -15,7 +15,6 @@ from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Aggregation.branch_group import BranchGroup
 from GridCalEngine.Devices.profile import Profile
-from GridCalEngine.Devices.admittance_matrix import AdmittanceMatrix
 from GridCalEngine.Devices.Dynamic.dynamic_model_host import DynamicModelHost
 
 if TYPE_CHECKING:

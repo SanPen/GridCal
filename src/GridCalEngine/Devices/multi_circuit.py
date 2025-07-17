@@ -1931,99 +1931,99 @@ class MultiCircuit(Assets):
                                  device_class=template_elm.device_type.value,
                                  value=len(elms2),
                                  expected_value=len(elms1))
+            else:
+                # for every property
+                for prop_name, prop in template_elm.registered_properties.items():
 
-            # for every property
-            for prop_name, prop in template_elm.registered_properties.items():
+                    if skip_internals:
+                        analyze = prop.display
+                    else:
+                        analyze = True
 
-                if skip_internals:
-                    analyze = prop.display
-                else:
-                    analyze = True
+                    if analyze:
+                        # for every pair of elements:
+                        for elm1, elm2 in zip(elms1, elms2):
 
-                if analyze:
-                    # for every pair of elements:
-                    for elm1, elm2 in zip(elms1, elms2):
+                            # compare the snapshot values
+                            v1 = elm1.get_property_value(prop=prop, t_idx=None)
+                            v2 = elm2.get_property_value(prop=prop, t_idx=None)
 
-                        # compare the snapshot values
-                        v1 = elm1.get_property_value(prop=prop, t_idx=None)
-                        v2 = elm2.get_property_value(prop=prop, t_idx=None)
-
-                        if prop.tpe == float:
-                            if not np.isclose(v1, v2, atol=tolerance):
-                                logger.add_error(
-                                    msg="Different snapshot values",
-                                    device_class=template_elm.device_type.value,
-                                    device_property=prop.name,
-                                    value=v2,
-                                    expected_value=v1)
-                        elif prop.tpe == SubObjectType.Array:
-                            if len(v1) != len(v2):
-                                logger.add_error(
-                                    msg="Different array length",
-                                    device_class=template_elm.device_type.value,
-                                    device_property=prop.name,
-                                    value=v2,
-                                    expected_value=v1)
-                            else:
-                                if not np.all(np.isclose(v1, v2, atol=tolerance)):
+                            if prop.tpe == float:
+                                if not np.isclose(v1, v2, atol=tolerance):
                                     logger.add_error(
-                                        msg="Different array values",
+                                        msg="Different snapshot values",
                                         device_class=template_elm.device_type.value,
                                         device_property=prop.name,
                                         value=v2,
                                         expected_value=v1)
-                        else:
-                            if v1 != v2:
-                                logger.add_error(msg="Different snapshot values",
-                                                 device_class=template_elm.device_type.value,
-                                                 device_property=prop.name,
-                                                 value=v2,
-                                                 expected_value=v1)
-                        if prop.has_profile():
-                            p1 = elm1.get_profile_by_prop(prop=prop)
-                            p2 = elm2.get_profile_by_prop(prop=prop)
-
-                            if p1 != p2:
-                                logger.add_error(msg="Different profile values",
-                                                 device_class=template_elm.device_type.value,
-                                                 device_property=prop.name,
-                                                 object_value=p2,
-                                                 expected_object_value=p1)
-
-                            if detailed_profile_comparison:
-                                for t_idx in range(nt):
-
-                                    v1 = p1[t_idx]
-                                    v2 = p2[t_idx]
-
-                                    if v1 != v2:
-                                        logger.add_error(msg="Different time series values",
-                                                         device_class=template_elm.device_type.value,
-                                                         device_property=prop.name,
-                                                         device=str(elm1),
-                                                         value=v2,
-                                                         expected_value=v1)
-
-                                    v1b = elm1.get_property_value(prop=prop, t_idx=t_idx)
-                                    v2b = elm2.get_property_value(prop=prop, t_idx=t_idx)
-
-                                    if v1 != v1b:
+                            elif prop.tpe == SubObjectType.Array:
+                                if len(v1) != len(v2):
+                                    logger.add_error(
+                                        msg="Different array length",
+                                        device_class=template_elm.device_type.value,
+                                        device_property=prop.name,
+                                        value=v2,
+                                        expected_value=v1)
+                                else:
+                                    if not np.all(np.isclose(v1, v2, atol=tolerance)):
                                         logger.add_error(
-                                            msg="Profile getting values differ with different getter methods!",
+                                            msg="Different array values",
                                             device_class=template_elm.device_type.value,
                                             device_property=prop.name,
-                                            device=str(elm1),
-                                            value=v1b,
+                                            value=v2,
                                             expected_value=v1)
+                            else:
+                                if v1 != v2:
+                                    logger.add_error(msg="Different snapshot values",
+                                                     device_class=template_elm.device_type.value,
+                                                     device_property=prop.name,
+                                                     value=v2,
+                                                     expected_value=v1)
+                            if prop.has_profile():
+                                p1 = elm1.get_profile_by_prop(prop=prop)
+                                p2 = elm2.get_profile_by_prop(prop=prop)
 
-                                    if v2 != v2b:
-                                        logger.add_error(
-                                            msg="Profile getting values differ with different getter methods!",
-                                            device_class=template_elm.device_type.value,
-                                            device_property=prop.name,
-                                            device=str(elm1),
-                                            value=v1b,
-                                            expected_value=v1)
+                                if p1 != p2:
+                                    logger.add_error(msg="Different profile values",
+                                                     device_class=template_elm.device_type.value,
+                                                     device_property=prop.name,
+                                                     object_value=p2,
+                                                     expected_object_value=p1)
+
+                                if detailed_profile_comparison:
+                                    for t_idx in range(nt):
+
+                                        v1 = p1[t_idx]
+                                        v2 = p2[t_idx]
+
+                                        if v1 != v2:
+                                            logger.add_error(msg="Different time series values",
+                                                             device_class=template_elm.device_type.value,
+                                                             device_property=prop.name,
+                                                             device=str(elm1),
+                                                             value=v2,
+                                                             expected_value=v1)
+
+                                        v1b = elm1.get_property_value(prop=prop, t_idx=t_idx)
+                                        v2b = elm2.get_property_value(prop=prop, t_idx=t_idx)
+
+                                        if v1 != v1b:
+                                            logger.add_error(
+                                                msg="Profile getting values differ with different getter methods!",
+                                                device_class=template_elm.device_type.value,
+                                                device_property=prop.name,
+                                                device=str(elm1),
+                                                value=v1b,
+                                                expected_value=v1)
+
+                                        if v2 != v2b:
+                                            logger.add_error(
+                                                msg="Profile getting values differ with different getter methods!",
+                                                device_class=template_elm.device_type.value,
+                                                device_property=prop.name,
+                                                device=str(elm1),
+                                                value=v1b,
+                                                expected_value=v1)
 
         # if any error in the logger, bad
         return logger.error_count() == 0, logger

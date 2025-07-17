@@ -267,7 +267,7 @@ class Profile:
     def sparsity(self) -> float:
         """
         Get the profile sparsity
-        :return: floar value (0 for fully dense, almos 1 for fully sparse)
+        :return: value (0 for fully dense, almost 1 for fully sparse)
         """
         if self._is_sparse:
             return self._sparse_array.get_sparsity()
