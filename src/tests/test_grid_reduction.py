@@ -14,15 +14,20 @@ def test_ward_reduction():
     remove_bus_idx = np.array([21, 36, 44, 50, 53])
     expected_boundary_idx = np.sort(np.array([20, 77, 15, 32]))
 
-    external, boundary, internal = grid.get_reduction_sets(reduction_bus_indices=remove_bus_idx)
+    external, boundary, internal, boundary_branches = grid.get_reduction_sets(reduction_bus_indices=remove_bus_idx)
 
     assert np.equal(expected_boundary_idx, boundary).all()
 
-    pf_res = gce.power_flow(grid=grid)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.DC)
 
-    gce.ward_reduction(grid=grid, reduction_bus_indices=remove_bus_idx, pf_res=pf_res)
+    pf_res = gce.power_flow(grid=grid, options=pf_options)
 
-    pf_res2 = gce.power_flow(grid=grid)
+    # gce.ward_reduction(grid=grid, reduction_bus_indices=remove_bus_idx, pf_res=pf_res)
+    nc = gce.compile_numerical_circuit_at(circuit=grid, t_idx=None)
+    lin = gce.LinearAnalysis(nc=nc)
+    gce.ptdf_reduction(grid=grid, reduction_bus_indices=remove_bus_idx, PTDF=lin.PTDF)
+
+    pf_res2 = gce.power_flow(grid=grid, options=pf_options)
 
     diff_sf = pf_res.get_branch_df() - pf_res2.get_branch_df()
 
