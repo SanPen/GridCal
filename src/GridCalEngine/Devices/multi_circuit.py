@@ -2755,3 +2755,72 @@ class MultiCircuit(Assets):
         internal = np.sort(np.array(list(internal_set)))
 
         return external, boundary, internal
+
+
+    def get_buses_from_objects(self, elements: List[ALL_DEV_TYPES]) -> Set[dev.Bus]:
+        """
+        Returns set of buses belonging to the list elements
+
+        :param elements: list of objects
+        :return: set of buses
+        """
+
+        buses = set()
+
+        for sel_obj in elements:
+
+            if isinstance(sel_obj, dev.Bus):
+                root_bus = sel_obj
+
+            elif isinstance(sel_obj, dev.Generator):
+                root_bus = sel_obj.bus
+
+            elif isinstance(sel_obj, dev.Battery):
+                root_bus = sel_obj.bus
+
+            elif isinstance(sel_obj, dev.Load):
+                root_bus = sel_obj.bus
+
+            elif isinstance(sel_obj, dev.Shunt):
+                root_bus = sel_obj.bus
+
+            elif isinstance(sel_obj, dev.Line):
+                root_bus = sel_obj.bus_from
+
+            elif isinstance(sel_obj, dev.Transformer2W):
+                root_bus = sel_obj.bus_from
+
+            elif isinstance(sel_obj, dev.DcLine):
+                root_bus = sel_obj.bus_from
+
+            elif isinstance(sel_obj, dev.HvdcLine):
+                root_bus = sel_obj.bus_from
+
+            elif isinstance(sel_obj, dev.VSC):
+                root_bus = sel_obj.bus_from
+
+            elif isinstance(sel_obj, dev.UPFC):
+                root_bus = sel_obj.bus_from
+
+            elif isinstance(sel_obj, dev.Switch):
+                root_bus = sel_obj.bus_from
+
+            elif isinstance(sel_obj, dev.VoltageLevel):
+                root_bus = None
+                sel = self.get_voltage_level_buses(vl=sel_obj)
+                for bus in sel:
+                    buses.add(bus)
+
+            elif isinstance(sel_obj, dev.Substation):
+                root_bus = None
+                sel = self.get_substation_buses(substation=sel_obj)
+                for bus in sel:
+                    buses.add(bus)
+
+            else:
+                root_bus = None
+
+            if root_bus is not None:
+                buses.add(root_bus)
+
+        return buses

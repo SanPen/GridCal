@@ -380,63 +380,10 @@ class DataBaseTableMain(DiagramsMain):
                     unique = {proxy_model.mapToSource(idx).row() for idx in sel_idx}
 
                     for idx in unique:
-
                         sel_obj: ALL_DEV_TYPES = source_model.objects[idx]
                         selected_objects.append(sel_obj)
 
-                        if isinstance(sel_obj, dev.Bus):
-                            root_bus = sel_obj
-
-                        elif isinstance(sel_obj, dev.Generator):
-                            root_bus = sel_obj.bus
-
-                        elif isinstance(sel_obj, dev.Battery):
-                            root_bus = sel_obj.bus
-
-                        elif isinstance(sel_obj, dev.Load):
-                            root_bus = sel_obj.bus
-
-                        elif isinstance(sel_obj, dev.Shunt):
-                            root_bus = sel_obj.bus
-
-                        elif isinstance(sel_obj, dev.Line):
-                            root_bus = sel_obj.bus_from
-
-                        elif isinstance(sel_obj, dev.Transformer2W):
-                            root_bus = sel_obj.bus_from
-
-                        elif isinstance(sel_obj, dev.DcLine):
-                            root_bus = sel_obj.bus_from
-
-                        elif isinstance(sel_obj, dev.HvdcLine):
-                            root_bus = sel_obj.bus_from
-
-                        elif isinstance(sel_obj, dev.VSC):
-                            root_bus = sel_obj.bus_from
-
-                        elif isinstance(sel_obj, dev.UPFC):
-                            root_bus = sel_obj.bus_from
-
-                        elif isinstance(sel_obj, dev.Switch):
-                            root_bus = sel_obj.bus_from
-
-                        elif isinstance(sel_obj, dev.VoltageLevel):
-                            root_bus = None
-                            sel = self.circuit.get_voltage_level_buses(vl=sel_obj)
-                            for bus in sel:
-                                buses.add(bus)
-
-                        elif isinstance(sel_obj, dev.Substation):
-                            root_bus = None
-                            sel = self.circuit.get_substation_buses(substation=sel_obj)
-                            for bus in sel:
-                                buses.add(bus)
-
-                        else:
-                            root_bus = None
-
-                        if root_bus is not None:
-                            buses.add(root_bus)
+                    buses = self.circuit.get_buses_from_objects(elements=selected_objects)
 
         return buses, selected_objects
 
