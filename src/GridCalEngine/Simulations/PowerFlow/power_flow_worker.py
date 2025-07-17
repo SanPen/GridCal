@@ -15,7 +15,9 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation import PfBasicFormulation
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import (PfBasicFormulation3Ph,
-                                                                                       expand3phIndices)
+                                                                                       expand3phIndices,
+                                                                                       expand3ph,
+                                                                                       expandVoltage3ph)
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.powell_fx import powell_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquadt_fx import levenberg_marquardt_fx
@@ -30,7 +32,6 @@ from GridCalEngine.basic_structures import CxVec, Vec
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Compilers.circuit_to_data import VALID_OPF_RESULTS
-
 
 
 def __split_reactive_power_into_devices(nc: NumericalCircuit, Qbus: Vec, results: PowerFlowResults) -> None:
@@ -761,21 +762,21 @@ def __solve_island_limited_support_3phase(island: NumericalCircuit,
 
     # set the initial value
     Qmax, Qmin = island.get_reactive_power_limits()
-    S0: CxVec = Shvdc + S_base
+    S0: CxVec = Shvdc + S_base  # already for 3-phase
 
     if len(indices.vd) == 0:
-        solution = NumericPowerFlowResults(V=np.zeros(len(S0), dtype=complex),
+        solution = NumericPowerFlowResults(V=np.zeros(len(S0) * 3, dtype=complex),
                                            Scalc=S0,
-                                           m=island.active_branch_data.tap_module,
-                                           tau=island.active_branch_data.tap_angle,
-                                           Sf=np.zeros(island.nbr, dtype=complex),
-                                           St=np.zeros(island.nbr, dtype=complex),
-                                           If=np.zeros(island.nbr, dtype=complex),
-                                           It=np.zeros(island.nbr, dtype=complex),
-                                           loading=np.zeros(island.nbr, dtype=complex),
-                                           losses=np.zeros(island.nbr, dtype=complex),
+                                           m=expand3ph(island.active_branch_data.tap_module),
+                                           tau=expand3ph(island.active_branch_data.tap_angle),
+                                           Sf=np.zeros(island.nbr * 3, dtype=complex),
+                                           St=np.zeros(island.nbr * 3, dtype=complex),
+                                           If=np.zeros(island.nbr * 3, dtype=complex),
+                                           It=np.zeros(island.nbr * 3, dtype=complex),
+                                           loading=np.zeros(island.nbr * 3, dtype=complex),
+                                           losses=np.zeros(island.nbr * 3, dtype=complex),
                                            Pf_vsc=np.zeros(island.nvsc, dtype=float),
-                                           St_vsc=np.zeros(island.nvsc, dtype=complex),
+                                           St_vsc=np.zeros(island.nvsc * 3, dtype=complex),
                                            If_vsc=np.zeros(island.nvsc, dtype=float),
                                            It_vsc=np.zeros(island.nvsc, dtype=complex),
                                            losses_vsc=np.zeros(island.nvsc, dtype=float),
@@ -800,18 +801,18 @@ def __solve_island_limited_support_3phase(island: NumericalCircuit,
                                                  converged=False,
                                                  norm_f=1e200,
                                                  Scalc=S0,
-                                                 m=island.active_branch_data.tap_module,
-                                                 tau=island.active_branch_data.tap_angle,
-                                                 Sf=np.zeros(island.nbr, dtype=complex),
-                                                 St=np.zeros(island.nbr, dtype=complex),
-                                                 If=np.zeros(island.nbr, dtype=complex),
-                                                 It=np.zeros(island.nbr, dtype=complex),
-                                                 loading=np.zeros(island.nbr, dtype=complex),
-                                                 losses=np.zeros(island.nbr, dtype=complex),
+                                                 m=expand3ph(island.active_branch_data.tap_module),
+                                                 tau=expand3ph(island.active_branch_data.tap_angle),
+                                                 Sf=np.zeros(island.nbr * 3, dtype=complex),
+                                                 St=np.zeros(island.nbr * 3, dtype=complex),
+                                                 If=np.zeros(island.nbr * 3, dtype=complex),
+                                                 It=np.zeros(island.nbr * 3, dtype=complex),
+                                                 loading=np.zeros(island.nbr * 3, dtype=complex),
+                                                 losses=np.zeros(island.nbr * 3, dtype=complex),
                                                  Pf_vsc=np.zeros(island.nvsc, dtype=float),
-                                                 St_vsc=np.zeros(island.nvsc, dtype=complex),
+                                                 St_vsc=np.zeros(island.nvsc * 3, dtype=complex),
                                                  If_vsc=np.zeros(island.nvsc, dtype=float),
-                                                 It_vsc=np.zeros(island.nvsc, dtype=complex),
+                                                 It_vsc=np.zeros(island.nvsc * 3, dtype=complex),
                                                  losses_vsc=np.zeros(island.nvsc, dtype=float),
                                                  loading_vsc=np.zeros(island.nvsc, dtype=float),
                                                  Sf_hvdc=np.zeros(island.nhvdc, dtype=complex),
@@ -1169,14 +1170,18 @@ def __multi_island_pf_nc_limited_support_3phase(nc: NumericalCircuit,
 
         if len(indices.vd) > 0:
 
+            V0 = island.bus_data.Vbus if V_guess is None else V_guess[island.bus_data.original_idx]
+            S_base = Sbus_base if Sbus_input is None else Sbus_input[island.bus_data.original_idx]
+            Shvdc = Shvdc[island.bus_data.original_idx]
+
             # call the numerical methods
             solution, report = __solve_island_limited_support_3phase(
                 island=island,
                 indices=indices,
                 options=options,
-                V0=island.bus_data.Vbus if V_guess is None else V_guess[island.bus_data.original_idx],
-                S_base=Sbus_base if Sbus_input is None else Sbus_input[island.bus_data.original_idx],
-                Shvdc=Shvdc[island.bus_data.original_idx],
+                V0=expandVoltage3ph(V0),
+                S_base=expand3ph(S_base),
+                Shvdc=expand3ph(Shvdc),
                 logger=logger
             )
 

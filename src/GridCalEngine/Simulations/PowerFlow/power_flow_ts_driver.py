@@ -61,7 +61,8 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             time_array=self.grid.get_time_array()[self.time_indices],
             bus_types=np.ones(n),
             area_names=grid.get_area_names(),
-            clustering_results=None)
+            clustering_results=None
+        )
 
     def run_single_thread(self, time_indices) -> PowerFlowTimeSeriesResults:
         """

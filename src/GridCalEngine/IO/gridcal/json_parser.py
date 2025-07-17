@@ -1452,7 +1452,7 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                            'name': elm.name,
                            'code': elm.code,
                            'voltage_level': get_obj_ref(elm.voltage_level),
-                           'cn': get_obj_ref(elm.cn)} for elm in circuit.get_bus_bars()]
+                           'cn': get_obj_ref(elm.bus)} for elm in circuit.get_bus_bars()]
 
     # load
     elements['Load'] = [{'id': elm.idtag,

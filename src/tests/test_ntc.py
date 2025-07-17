@@ -1281,6 +1281,7 @@ def test_activs_2000():
     assert res.inter_area_flows < res.structural_inter_area_flows
     assert res.inter_area_flows < ntc_no_contingencies
 
+
 def test_activs_2000_acdc():
     """
     Simulate a large size grid: ACTIVSg 2000 extended with 2 DC lines and 2 converters with contingencies
@@ -1361,6 +1362,56 @@ def test_activs_2000_acdc():
     res = drv.results
     assert abs(res.nodal_balance.sum()) < 1e-6
     assert res.converged
+
+
+def test_activs_2000_acdc_ts():
+    """
+    Simulate a large size grid: ACTIVSg 2000 extended with 2 DC lines and 2 converters with contingencies
+    and we extend it to 5 time steps to run them
+    :return:
+    """
+    np.set_printoptions(precision=4)
+    fname = os.path.join('data', 'grids', 'ACTIVSg2000_vsc.gridcal')
+
+    grid = gce.open_file(fname)
+
+    grid.create_profiles(5, step_length=1.0, step_unit='h')
+
+    info = grid.get_inter_aggregation_info(
+        objects_from=[grid.areas[6]],  # Coast
+        objects_to=[grid.areas[7]]  # East
+    )
+
+    opf_options = gce.OptimalPowerFlowOptions(
+        consider_contingencies=True,
+        contingency_groups_used=grid.contingency_groups
+    )
+    lin_options = gce.LinearAnalysisOptions()
+
+    ntc_options = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=info.idx_bus_from,
+        receiving_bus_idx=info.idx_bus_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        loading_threshold_to_report=98.0,
+        skip_generation_limits=True,
+        transmission_reliability_margin=0.1,
+        branch_exchange_sensitivity=0.05,
+        use_branch_exchange_sensitivity=True,
+        branch_rating_contribution=1.0,
+        monitor_only_ntc_load_rule_branches=False,
+        consider_contingencies=True,
+        opf_options=opf_options,
+        lin_options=lin_options
+    )
+
+    drv = gce.OptimalNetTransferCapacityTimeSeriesDriver(grid, ntc_options,
+                                                         time_indices=grid.get_all_time_indices())
+
+    drv.run()
+
+    res = drv.results
+    assert abs(res.nodal_balance.sum()) < 1e-6
+    assert res.converged.all()
 
 
 if __name__ == '__main__':

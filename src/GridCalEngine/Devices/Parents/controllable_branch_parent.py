@@ -7,9 +7,7 @@ from __future__ import annotations
 import numpy as np
 from typing import Union
 
-from GridCalEngine import WindingType
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import (BuildStatus, TapModuleControl, TapPhaseControl, SubObjectType, TapChangerTypes)
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Branches.tap_changer import TapChanger
@@ -57,8 +55,6 @@ class ControllableBranchParent(BranchParent):
                  name: str,
                  idtag: str | None,
                  code: str,
-                 cn_from: ConnectivityNode | None,
-                 cn_to: ConnectivityNode | None,
                  active: bool,
                  reducible: bool,
                  rate: float,
@@ -78,7 +74,6 @@ class ControllableBranchParent(BranchParent):
                  Qset: float,
                  regulation_branch: BranchParent | None,
                  regulation_bus: Bus | None,
-                 regulation_cn: ConnectivityNode | None,
                  temp_base: float,
                  temp_oper: float,
                  alpha: float,
@@ -136,7 +131,6 @@ class ControllableBranchParent(BranchParent):
         :param Pset: Power set point
         :param regulation_branch: Branch object where the flow regulation is applied
         :param regulation_bus: Bus object where the regulation is applied
-        :param regulation_cn: ConnectivityNode where the regulation is applied
         :param temp_base: Base temperature at which `r` is measured in °C
         :param temp_oper: Operating temperature in °C
         :param alpha: Thermal constant of the material in °C
@@ -164,8 +158,6 @@ class ControllableBranchParent(BranchParent):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=cn_from,
-                              cn_to=cn_to,
                               active=active,
                               reducible=reducible,
                               rate=rate,
@@ -253,7 +245,6 @@ class ControllableBranchParent(BranchParent):
         self.regulation_branch: BranchParent = regulation_branch
 
         self.regulation_bus: Bus = regulation_bus
-        self.regulation_cn: ConnectivityNode = regulation_cn
 
         self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.',
                       old_names=['R1', 'Rl'])
@@ -298,9 +289,6 @@ class ControllableBranchParent(BranchParent):
 
         self.register(key='regulation_bus', units='', tpe=DeviceType.BusDevice,
                       definition='Bus where the regulation is applied.', editable=True)
-
-        self.register(key='regulation_cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
-                      definition='Connectivity node where the regulation is applied.', editable=True)
 
         self.register(key='tap_phase', units='rad', tpe=float, definition='Angle shift of the tap changer.',
                       profile_name='tap_phase_prof', old_names=['angle', 'theta'])

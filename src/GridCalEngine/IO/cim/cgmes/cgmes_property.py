@@ -2,10 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from typing import List, Dict
+from typing import List, Dict, TypeVar
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
 from GridCalEngine.IO.base.base_property import BaseProperty
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
 
 
 class CgmesProperty(BaseProperty):
@@ -13,7 +13,7 @@ class CgmesProperty(BaseProperty):
     CgmesProperty
     """
     def __init__(self, property_name: str,
-                 class_type: object,
+                 class_type: TypeVar,
                  multiplier: UnitMultiplier = UnitMultiplier.none,
                  unit: UnitSymbol = UnitSymbol.none,
                  description: str = '',
@@ -21,7 +21,7 @@ class CgmesProperty(BaseProperty):
                  mandatory=False,
                  comment='',
                  out_of_the_standard=False,
-                 profiles: List[cgmesProfile] = ()):
+                 profiles: List[CgmesProfileType] = ()):
         """
         CIM property for soft type checking
         :param property_name: name of the property

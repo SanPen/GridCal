@@ -27,8 +27,8 @@ class DiagramsModel(QtCore.QAbstractListModel):
         self.bus_branch_editor_icon = QtGui.QIcon()
         self.bus_branch_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/schematic.svg"))
 
-        self.bus_branch_vecinity_icon = QtGui.QIcon()
-        self.bus_branch_vecinity_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/grid_icon.svg"))
+        self.bus_branch_vicinity_icon = QtGui.QIcon()
+        self.bus_branch_vicinity_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/grid_icon.svg"))
 
         self.map_editor_icon = QtGui.QIcon()
         self.map_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/map.svg"))
@@ -63,10 +63,11 @@ class DiagramsModel(QtCore.QAbstractListModel):
             if index.row() < len(self.items):
                 diagram = self.items[index.row()]
 
-                if role == QtCore.Qt.ItemDataRole.DisplayRole:
+                if (role == QtCore.Qt.ItemDataRole.DisplayRole or
+                        role == QtCore.Qt.ItemDataRole.EditRole):
                     return diagram.name
-                elif role == QtCore.Qt.ItemDataRole.DecorationRole:
 
+                elif role == QtCore.Qt.ItemDataRole.DecorationRole:
                     if isinstance(diagram, SchematicWidget):
                         return self.bus_branch_editor_icon
                     elif isinstance(diagram, GridMapWidget):
@@ -84,5 +85,5 @@ class DiagramsModel(QtCore.QAbstractListModel):
         """
 
         self.items[index.row()].name = value
-
+        self.dataChanged.emit(index, index, [role])  # keep view in sync
         return True

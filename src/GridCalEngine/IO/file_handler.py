@@ -39,9 +39,10 @@ from GridCalEngine.IO.gridcal.h5_interface import save_h5, open_h5
 from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
 from GridCalEngine.IO.others.pypsa_parser import parse_pypsa_netcdf, parse_pypsa_hdf5
 from GridCalEngine.IO.others.pandapower_parser import Panda2GridCal
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
 from GridCalEngine.IO.ucte.devices.ucte_circuit import UcteCircuit
 from GridCalEngine.IO.ucte.ucte_to_gridcal import convert_ucte_to_gridcal
+from GridCalEngine.IO.others.rte_parser import rte2gridcal
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.results_template import DriverToSave
@@ -64,7 +65,7 @@ class FileSavingOptions:
                  sessions_data: List[DriverToSave] = None,
                  dictionary_of_json_files: Dict[str, Dict[str, Any]] = None,
                  cgmes_version: CGMESVersions = CGMESVersions.v2_4_15,
-                 cgmes_profiles: Union[None, List[cgmesProfile]] = None,
+                 cgmes_profiles: Union[None, List[CgmesProfileType]] = None,
                  cgmes_one_file_per_profile: bool = False,
                  cgmes_map_areas_like_raw: bool = False,
                  raw_version: str = "33"):
@@ -95,15 +96,15 @@ class FileSavingOptions:
         self.type_selected: str = ""
 
         # CGMES profile list
-        self.cgmes_profiles = cgmes_profiles if cgmes_profiles is not None else [cgmesProfile.EQ,
-                                                                                 cgmesProfile.OP,
-                                                                                 cgmesProfile.SC,
-                                                                                 cgmesProfile.TP,
-                                                                                 cgmesProfile.SV,
-                                                                                 cgmesProfile.SSH,
-                                                                                 cgmesProfile.DY,
-                                                                                 cgmesProfile.DL,
-                                                                                 cgmesProfile.GL]
+        self.cgmes_profiles = cgmes_profiles if cgmes_profiles is not None else [CgmesProfileType.EQ,
+                                                                                 CgmesProfileType.OP,
+                                                                                 CgmesProfileType.SC,
+                                                                                 CgmesProfileType.TP,
+                                                                                 CgmesProfileType.SV,
+                                                                                 CgmesProfileType.SSH,
+                                                                                 CgmesProfileType.DY,
+                                                                                 CgmesProfileType.DL,
+                                                                                 CgmesProfileType.GL]
 
         # use one file per profile?
         self.cgmes_one_file_per_profile = cgmes_one_file_per_profile
@@ -422,10 +423,15 @@ class FileOpen:
                             self.logger += self.cgmes_logger.get_logger()
 
                     else:
-                        # try CIM
-                        parser = CIMImport(text_func=text_func, progress_func=progress_func)
-                        self.circuit = parser.load_cim_file(self.file_name)
-                        self.logger += parser.logger
+                        # try RTE format
+                        circuit, is_valid_rte = rte2gridcal(self.file_name, self.logger)
+                        if is_valid_rte:
+                            self.circuit = circuit
+                        else:
+                            # try CIM
+                            parser = CIMImport(text_func=text_func, progress_func=progress_func)
+                            self.circuit = parser.load_cim_file(self.file_name)
+                            self.logger += parser.logger
 
                 elif file_extension.lower() == '.hdf5':
                     self.circuit = parse_pypsa_hdf5(self.file_name, self.logger)

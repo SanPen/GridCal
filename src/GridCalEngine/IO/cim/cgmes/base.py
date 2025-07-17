@@ -5,7 +5,7 @@
 from typing import Dict, List
 from uuid import uuid4, UUID
 from GridCalEngine.IO.cim.cgmes.cgmes_property import CgmesProperty
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.data_logger import DataLogger
 
@@ -80,7 +80,7 @@ class Base:
     Base
     """
 
-    def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
+    def __init__(self, rdfid: str, tpe, resources=None, class_replacements=None):
         """
         General CIM object container
         :param rdfid:
@@ -90,6 +90,12 @@ class Base:
         """
 
         # pick the object id
+        if class_replacements is None:
+            class_replacements = dict()
+
+        if resources is None:
+            resources = list()
+
         rdfid = rdfid.strip()
         self.rdfid = rdfid if rdfid != '' else get_new_rdfid()
         self.uuid = rfid2uuid(self.rdfid)
@@ -214,7 +220,7 @@ class Base:
                           mandatory=False,
                           comment='',
                           out_of_the_standard=False,
-                          profiles: List[cgmesProfile] = ()):
+                          profiles: List[CgmesProfileType] = ()):
         """
         Shortcut to add properties
         :param name: name of the property
@@ -241,7 +247,7 @@ class Base:
     def get_properties(self) -> List[CgmesProperty]:
         return [p for name, p in self.declared_properties.items()]
 
-    def get_xml(self, level=0, profiles: List[cgmesProfile] = [cgmesProfile.EQ]) -> Dict[cgmesProfile, str]:
+    def get_xml(self, level=0, profiles: List[CgmesProfileType] = [CgmesProfileType.EQ]) -> Dict[CgmesProfileType, str]:
 
         """
         Returns an XML representation of the object

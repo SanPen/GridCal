@@ -13,7 +13,8 @@ from __future__ import annotations
 from typing import List, Union, Callable, Any
 import subprocess
 import GridCalEngine.Utils.ThirdParty.pulp as pulp
-from GridCalEngine.Utils.ThirdParty.pulp import HiGHS, CPLEX_CMD
+from GridCalEngine.Utils.ThirdParty.pulp.apis.highs_py import HiGHS
+from GridCalEngine.Utils.ThirdParty.pulp.apis.cplex_cmd import CPLEX_CMD
 from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpAffineExpression as LpExp
 from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpConstraint as LpCst
 from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpVariable as LpVar

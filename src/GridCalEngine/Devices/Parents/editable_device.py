@@ -15,7 +15,8 @@ from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, Wind
                                         InvestmentsEvaluationObjectives, NodalCapacityMethod, TimeGrouping,
                                         ZonalGrouping, MIPSolvers, AcOpfMode, SubstationTypes, BranchGroupTypes,
                                         BranchImpedanceMode, FaultType, TapChangerTypes, ContingencyOperationTypes,
-                                        WindingType, MethodShortCircuit, PhasesShortCircuit)
+                                        WindingType, MethodShortCircuit, PhasesShortCircuit, ShuntConnectionType,
+                                        BusGraphicType)
 
 # types that can be assigned to a GridCal property
 GCPROP_TYPES = Union[
@@ -53,7 +54,9 @@ GCPROP_TYPES = Union[
     Type[WindingType],
     Type[MethodShortCircuit],
     Type[PhasesShortCircuit],
-    Type[DeviceType]
+    Type[DeviceType],
+    Type[ShuntConnectionType],
+    Type[BusGraphicType]
 ]
 
 
@@ -447,6 +450,8 @@ class EditableDevice:
         :param display: display this property?
         :param editable: is this editable?
         :param old_names: List of old names
+        :param is_color: is this a color property?
+        :param is_date: Is this a date property?
         """
         assert (hasattr(self, key))  # the property must exist, this avoids bugs when registering
 

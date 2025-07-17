@@ -52,7 +52,6 @@ class Assets:
         '_windings',
         '_series_reactances',
         '_buses',
-        '_connectivity_nodes',
         '_bus_bars',
         '_voltage_levels',
         '_loads',
@@ -136,9 +135,6 @@ class Assets:
 
         # Should accept buses
         self._buses: List[dev.Bus] = ListSet()
-
-        # array of connectivity nodes
-        self._connectivity_nodes: List[dev.ConnectivityNode] = ListSet()
 
         # array of busbars
         self._bus_bars: List[dev.BusBar] = list()
@@ -282,7 +278,6 @@ class Assets:
                 dev.Substation(),
                 dev.VoltageLevel(),
                 dev.BusBar(),
-                dev.ConnectivityNode(),
                 dev.Bus(),
                 dev.Switch()
             ],
@@ -1379,18 +1374,6 @@ class Assets:
                     else:
                         inj_list[i].bus = None
 
-        # delete associations in connectivity nodes
-        deleted_cn = set()
-        for cn in self._connectivity_nodes:
-            if cn.bus == obj:
-                deleted_cn.add(cn)
-                self.delete_connectivity_node(cn)  # delete the association
-
-        # delete associations in bus_bars
-        for bb in self.bus_bars:
-            if bb.cn in deleted_cn:
-                self.delete_bus_bar(bb)
-
         # delete the bus itself
         try:
             self._buses.remove(obj)
@@ -1411,63 +1394,6 @@ class Assets:
                 data.append(bus)
 
         return data
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # Connectivity nodes
-    # ------------------------------------------------------------------------------------------------------------------
-
-    @property
-    def connectivity_nodes(self) -> List[dev.ConnectivityNode]:
-        """
-        Get connectivity nodes list
-        :return:
-        """
-        return self._connectivity_nodes
-
-    @connectivity_nodes.setter
-    def connectivity_nodes(self, value: List[dev.ConnectivityNode]):
-        self._connectivity_nodes = value
-
-    def get_connectivity_nodes(self) -> List[dev.ConnectivityNode]:
-        """
-        Get all connectivity nodes
-        """
-        return self._connectivity_nodes
-
-    def get_connectivity_nodes_number(self) -> int:
-        """
-        Get all connectivity nodes
-        """
-        return len(self._connectivity_nodes)
-
-    def add_connectivity_node(self, obj: dev.ConnectivityNode):
-        """
-        Add Substation
-        :param obj: BusBar object
-        """
-        if obj is None:
-            obj = dev.ConnectivityNode(name=f"CN{len(self._connectivity_nodes)}")
-
-        self._connectivity_nodes.append(obj)
-
-        # add the internal bus
-        if obj.bus not in self._buses:  # using a ListSet for fast query time
-            self.add_bus(obj=obj.bus)
-
-        return obj
-
-    def delete_connectivity_node(self, obj: dev.ConnectivityNode):
-        """
-        Delete Substation
-        :param obj: Substation object
-        """
-        for elm in self._bus_bars:
-            elm.connectivity_node = None
-
-        try:
-            self._connectivity_nodes.remove(obj)
-        except ValueError:
-            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Bus bars
@@ -1508,10 +1434,6 @@ class Assets:
 
         self._bus_bars.append(obj)
 
-        # add the internal connectivity node
-        if obj.cn not in self._connectivity_nodes:  # using a ListSet for fast query time
-            self.add_connectivity_node(obj.cn)
-
         return obj
 
     def delete_bus_bar(self, obj: dev.BusBar):
@@ -1519,7 +1441,11 @@ class Assets:
         Delete Substation
         :param obj: Substation object
         """
-        self.delete_connectivity_node(obj=obj.cn)
+
+        # remove pointers
+        for bus in self.buses:
+            if bus.bus_bar == obj:
+                bus.bus_bar = None
 
         try:
             self._bus_bars.remove(obj)
@@ -1646,19 +1572,16 @@ class Assets:
 
     def add_load(self,
                  bus: Union[None, dev.Bus] = None,
-                 api_obj: Union[None, dev.Load] = None,
-                 cn: Union[None, dev.ConnectivityNode] = None) -> dev.Load:
+                 api_obj: Union[None, dev.Load] = None) -> dev.Load:
         """
         Add a load device
         :param bus: Main bus (optional)
-        :param cn:  Main connectivity node (Optional)
         :param api_obj: Device to add (optional)
         :return: Load device passed or created
         """
         if api_obj is None:
             api_obj = dev.Load()
         api_obj.bus = bus
-        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.ensure_profiles_exist(self.time_profile)
@@ -1666,8 +1589,6 @@ class Assets:
         if api_obj.name == 'Load':
             if bus is not None:
                 api_obj.name += '@' + bus.name
-            elif cn is not None:
-                api_obj.name += '@' + cn.name
 
         self._loads.append(api_obj)
 
@@ -1721,12 +1642,10 @@ class Assets:
 
     def add_generator(self,
                       bus: Union[None, dev.Bus] = None,
-                      api_obj: Union[None, dev.Generator] = None,
-                      cn: Union[None, dev.ConnectivityNode] = None) -> dev.Generator:
+                      api_obj: Union[None, dev.Generator] = None) -> dev.Generator:
         """
         Add a generator
         :param bus: Main bus (optional)
-        :param cn:  Main connectivity node (Optional)
         :param api_obj: Generator object (optional)
         :return: Generator object (created if api_obj is None)
         """
@@ -1734,7 +1653,6 @@ class Assets:
         if api_obj is None:
             api_obj = dev.Generator()
         api_obj.bus = bus
-        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.ensure_profiles_exist(self.time_profile)
@@ -1742,8 +1660,6 @@ class Assets:
         if api_obj.name == 'gen':
             if bus is not None:
                 api_obj.name += '@' + bus.name
-            elif cn is not None:
-                api_obj.name += '@' + cn.name
 
         self._generators.append(api_obj)
 
@@ -1815,20 +1731,17 @@ class Assets:
 
     def add_external_grid(self,
                           bus: Union[None, dev.Bus] = None,
-                          api_obj: Union[None, dev.ExternalGrid] = None,
-                          cn: Union[None, dev.ConnectivityNode] = None) -> dev.ExternalGrid:
+                          api_obj: Union[None, dev.ExternalGrid] = None) -> dev.ExternalGrid:
         """
         Add an external grid
         :param bus: Bus object
         :param api_obj: api_obj, if None, create a new one
-        :param cn: ConnectivityNode
         :return: ExternalGrid
         """
 
         if api_obj is None:
             api_obj = dev.ExternalGrid()
         api_obj.bus = bus
-        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.ensure_profiles_exist(self.time_profile)
@@ -1836,8 +1749,6 @@ class Assets:
         if api_obj.name == 'External grid':
             if bus is not None:
                 api_obj.name += '@' + bus.name
-            elif cn is not None:
-                api_obj.name += '@' + cn.name
 
         self._external_grids.append(api_obj)
 
@@ -1890,8 +1801,7 @@ class Assets:
 
     def add_shunt(self,
                   bus: Union[None, dev.Bus] = None,
-                  api_obj: Union[None, dev.Shunt] = None,
-                  cn: Union[None, dev.ConnectivityNode] = None) -> dev.Shunt:
+                  api_obj: Union[None, dev.Shunt] = None) -> dev.Shunt:
         """
         Add a :ref:`Shunt<shunt>` object to a :ref:`Bus<bus>`.
 
@@ -1904,7 +1814,6 @@ class Assets:
         if api_obj is None:
             api_obj = dev.Shunt()
         api_obj.bus = bus
-        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.ensure_profiles_exist(self.time_profile)
@@ -1912,8 +1821,6 @@ class Assets:
         if api_obj.name == 'shunt':
             if bus is not None:
                 api_obj.name += '@' + bus.name
-            elif cn is not None:
-                api_obj.name += '@' + cn.name
 
         self._shunts.append(api_obj)
 
@@ -1972,19 +1879,16 @@ class Assets:
 
     def add_battery(self,
                     bus: Union[None, dev.Bus] = None,
-                    api_obj: Union[None, dev.Battery] = None,
-                    cn: Union[None, dev.ConnectivityNode] = None) -> dev.Battery:
+                    api_obj: Union[None, dev.Battery] = None) -> dev.Battery:
         """
         Add battery
         :param bus:
-        :param cn:
         :param api_obj:
         :return:
         """
         if api_obj is None:
             api_obj = dev.Battery()
         api_obj.bus = bus
-        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.ensure_profiles_exist(self.time_profile)
@@ -1992,8 +1896,6 @@ class Assets:
         if api_obj.name == 'batt':
             if bus is not None:
                 api_obj.name += '@' + bus.name
-            elif cn is not None:
-                api_obj.name += '@' + cn.name
 
         self._batteries.append(api_obj)
 
@@ -2057,12 +1959,10 @@ class Assets:
 
     def add_static_generator(self,
                              bus: Union[None, dev.Bus] = None,
-                             api_obj: Union[None, dev.StaticGenerator] = None,
-                             cn: Union[None, dev.ConnectivityNode] = None) -> dev.StaticGenerator:
+                             api_obj: Union[None, dev.StaticGenerator] = None) -> dev.StaticGenerator:
         """
         Add a static generator
         :param bus: Bus object
-        :param cn:  Main connectivity node (Optional)
         :param api_obj: StaticGenerator object
         :return: StaticGenerator object (created if api_obj is None)
         """
@@ -2070,7 +1970,6 @@ class Assets:
         if api_obj is None:
             api_obj = dev.StaticGenerator()
         api_obj.bus = bus
-        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.ensure_profiles_exist(self.time_profile)
@@ -2078,8 +1977,6 @@ class Assets:
         if api_obj.name == 'StaticGen':
             if bus is not None:
                 api_obj.name += '@' + bus.name
-            elif cn is not None:
-                api_obj.name += '@' + cn.name
 
         self._static_generators.append(api_obj)
 
@@ -2143,12 +2040,10 @@ class Assets:
 
     def add_current_injection(self,
                               bus: Union[None, dev.Bus] = None,
-                              api_obj: Union[None, dev.CurrentInjection] = None,
-                              cn: Union[None, dev.ConnectivityNode] = None) -> dev.CurrentInjection:
+                              api_obj: Union[None, dev.CurrentInjection] = None) -> dev.CurrentInjection:
         """
         Add a CurrentInjection object
         :param bus: Bus
-        :param cn: Connectivity node
         :param api_obj: CurrentInjection instance
         """
 
@@ -2156,7 +2051,6 @@ class Assets:
             api_obj = dev.CurrentInjection()
 
         api_obj.bus = bus
-        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.ensure_profiles_exist(self.time_profile)
@@ -2225,12 +2119,10 @@ class Assets:
 
     def add_controllable_shunt(self,
                                bus: Union[None, dev.Bus] = None,
-                               api_obj: Union[None, dev.ControllableShunt] = None,
-                               cn: Union[None, dev.ConnectivityNode] = None) -> dev.ControllableShunt:
+                               api_obj: Union[None, dev.ControllableShunt] = None) -> dev.ControllableShunt:
         """
         Add a ControllableShunt object
         :param bus: Main bus (optional)
-        :param cn:  Main connectivity node (Optional)
         :param api_obj: ControllableShunt instance
         :return: ControllableShunt
         """
@@ -2238,16 +2130,13 @@ class Assets:
         if api_obj is None:
             api_obj = dev.ControllableShunt()
         api_obj.bus = bus
-        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.ensure_profiles_exist(self.time_profile)
 
-        if api_obj.name == 'CShutn':
+        if api_obj.name == 'CShunt':
             if bus is not None:
                 api_obj.name += '@' + bus.name
-            elif cn is not None:
-                api_obj.name += '@' + cn.name
 
         self._controllable_shunts.append(api_obj)
 
@@ -2736,8 +2625,8 @@ class Assets:
         """
         for tower in self._overhead_line_types:
             for elm in tower.wires_in_tower.data:
-                if elm.template == obj:
-                    elm.template = None
+                if elm.wire == obj:
+                    elm.wire = None
         try:
             self._wire_types.remove(obj)
         except ValueError:
@@ -5329,9 +5218,6 @@ class Assets:
         elif device_type == DeviceType.VoltageLevelDevice:
             return self._voltage_levels
 
-        elif device_type == DeviceType.ConnectivityNodeDevice:
-            return self._connectivity_nodes
-
         elif device_type == DeviceType.BusBarDevice:
             return self._bus_bars
 
@@ -5379,9 +5265,6 @@ class Assets:
 
         elif device_type == DeviceType.EmissionGasDevice:
             return self._emission_gases
-
-        elif device_type == DeviceType.ConnectivityNodeDevice:
-            return self._connectivity_nodes
 
         elif device_type == DeviceType.FluidNodeDevice:
             return self._fluid_nodes
@@ -5543,9 +5426,6 @@ class Assets:
         elif device_type == DeviceType.VoltageLevelDevice:
             self._voltage_levels = devices
 
-        elif device_type == DeviceType.ConnectivityNodeDevice:
-            self._connectivity_nodes = ListSet(devices)
-
         elif device_type == DeviceType.BusBarDevice:
             self._bus_bars = devices
 
@@ -5593,9 +5473,6 @@ class Assets:
 
         elif device_type == DeviceType.EmissionGasDevice:
             self._emission_gases = devices
-
-        elif device_type == DeviceType.ConnectivityNodeDevice:
-            self._connectivity_nodes = devices
 
         elif device_type == DeviceType.FluidNodeDevice:
             self._fluid_nodes = devices
@@ -5654,28 +5531,28 @@ class Assets:
         """
 
         if obj.device_type == DeviceType.LoadDevice:
-            self.add_load(api_obj=obj, bus=obj.bus, cn=obj.cn)
+            self.add_load(api_obj=obj, bus=obj.bus)
 
         elif obj.device_type == DeviceType.StaticGeneratorDevice:
-            self.add_static_generator(api_obj=obj, bus=obj.bus, cn=obj.cn)
+            self.add_static_generator(api_obj=obj, bus=obj.bus)
 
         elif obj.device_type == DeviceType.GeneratorDevice:
-            self.add_generator(api_obj=obj, bus=obj.bus, cn=obj.cn)
+            self.add_generator(api_obj=obj, bus=obj.bus)
 
         elif obj.device_type == DeviceType.BatteryDevice:
-            self.add_battery(api_obj=obj, bus=obj.bus, cn=obj.cn)
+            self.add_battery(api_obj=obj, bus=obj.bus)
 
         elif obj.device_type == DeviceType.ShuntDevice:
-            self.add_shunt(api_obj=obj, bus=obj.bus, cn=obj.cn)
+            self.add_shunt(api_obj=obj, bus=obj.bus)
 
         elif obj.device_type == DeviceType.ExternalGridDevice:
-            self.add_external_grid(api_obj=obj, bus=obj.bus, cn=obj.cn)
+            self.add_external_grid(api_obj=obj, bus=obj.bus)
 
         elif obj.device_type == DeviceType.CurrentInjectionDevice:
-            self.add_current_injection(api_obj=obj, bus=obj.bus, cn=obj.cn)
+            self.add_current_injection(api_obj=obj, bus=obj.bus)
 
         elif obj.device_type == DeviceType.ControllableShuntDevice:
-            self.add_controllable_shunt(api_obj=obj, bus=obj.bus, cn=obj.cn)
+            self.add_controllable_shunt(api_obj=obj, bus=obj.bus)
 
         elif obj.device_type == DeviceType.LineDevice:
             self.add_line(obj=obj)
@@ -5703,9 +5580,6 @@ class Assets:
 
         elif obj.device_type == DeviceType.BusDevice:
             self.add_bus(obj=obj)
-
-        elif obj.device_type == DeviceType.ConnectivityNodeDevice:
-            self.add_connectivity_node(obj=obj)
 
         elif obj.device_type == DeviceType.BranchGroupDevice:
             self.add_branch_group(obj=obj)
@@ -5884,9 +5758,6 @@ class Assets:
 
         elif obj.device_type == DeviceType.BusDevice:
             self.delete_bus(obj, delete_associated=True)
-
-        elif obj.device_type == DeviceType.ConnectivityNodeDevice:
-            self.delete_connectivity_node(obj)
 
         elif obj.device_type == DeviceType.BranchGroupDevice:
             self.delete_branch_group(obj)
@@ -6335,14 +6206,6 @@ class Assets:
                 DeviceType.MunicipalityDevice: self.get_municipalities(),
                 DeviceType.AreaDevice: self.get_areas(),
                 DeviceType.ZoneDevice: self.get_zones(),
-            }
-
-        elif elm_type == DeviceType.ConnectivityNodeDevice:
-            elm = dev.ConnectivityNode()
-            dictionary_of_lists = {
-                DeviceType.BusDevice: self.buses,
-                DeviceType.VoltageLevelDevice: self.voltage_levels,
-                DeviceType.ModellingAuthority: self.modelling_authorities,
             }
 
         elif elm_type == DeviceType.BusBarDevice:

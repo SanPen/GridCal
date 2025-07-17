@@ -5,7 +5,7 @@
 
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.rotating_machine import RotatingMachine
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol, ShortCircuitRotorKind, SynchronousMachineKind, SynchronousMachineOperatingMode
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType, UnitSymbol, ShortCircuitRotorKind, SynchronousMachineKind, SynchronousMachineOperatingMode
 
 
 class SynchronousMachine(RotatingMachine):

@@ -5,7 +5,7 @@
 
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.dc_equipment_container import DCEquipmentContainer
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, DCConverterOperatingModeKind
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType, DCConverterOperatingModeKind
 
 
 class DCConverterUnit(DCEquipmentContainer):

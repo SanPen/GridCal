@@ -377,6 +377,7 @@ def short_circuit_abc(nc: NumericalCircuit,
 
     Yf = np.zeros(len(Vpf), dtype=complex)
 
+    # Single Line-to-Ground (SLG)
     if fault_type == FaultType.LG:
 
         if phases == PhasesShortCircuit.a:
@@ -388,7 +389,67 @@ def short_circuit_abc(nc: NumericalCircuit,
         if phases == PhasesShortCircuit.c:
             Yf[3 * bus_index + 2] = 1 / (Zf[bus_index] + 1e-20)
 
-        Yf_masked = Yf[mask]
+    # Line-to-Line (LL)
+    elif fault_type == FaultType.LL:
+
+        if phases == PhasesShortCircuit.ab:
+
+            Sa = Vpf[3 * bus_index + 0] * np.conj((Vpf[3 * bus_index + 0] - Vpf[3 * bus_index + 1]) / (Zf[bus_index] + 1e-20))
+
+            Yf[3 * bus_index + 0] = np.conj(Sa) / np.abs(Vpf[3 * bus_index + 0])**2
+
+            Sb = Vpf[3 * bus_index + 1] * np.conj((Vpf[3 * bus_index + 1] - Vpf[3 * bus_index + 0]) / (Zf[bus_index] + 1e-20))
+
+            Yf[3 * bus_index + 1] = np.conj(Sb) / np.abs(Vpf[3 * bus_index + 1]) ** 2
+
+        if phases == PhasesShortCircuit.bc:
+
+            Sb = Vpf[3 * bus_index + 1] * np.conj((Vpf[3 * bus_index + 1] - Vpf[3 * bus_index + 2]) / (Zf[bus_index] + 1e-20))
+
+            Yf[3 * bus_index + 1] = np.conj(Sb) / np.abs(Vpf[3 * bus_index + 1])**2
+
+            Sc = Vpf[3 * bus_index + 2] * np.conj((Vpf[3 * bus_index + 2] - Vpf[3 * bus_index + 1]) / (Zf[bus_index] + 1e-20))
+
+            Yf[3 * bus_index + 2] = np.conj(Sc) / np.abs(Vpf[3 * bus_index + 2]) ** 2
+
+        if phases == PhasesShortCircuit.ca:
+
+            Sc = Vpf[3 * bus_index + 2] * np.conj((Vpf[3 * bus_index + 2] - Vpf[3 * bus_index + 0]) / (Zf[bus_index] + 1e-20))
+
+            Yf[3 * bus_index + 2] = np.conj(Sc) / np.abs(Vpf[3 * bus_index + 2])**2
+
+            Sa = Vpf[3 * bus_index + 0] * np.conj((Vpf[3 * bus_index + 0] - Vpf[3 * bus_index + 2]) / (Zf[bus_index] + 1e-20))
+
+            Yf[3 * bus_index + 0] = np.conj(Sa) / np.abs(Vpf[3 * bus_index + 0]) ** 2
+
+    # Double Line-to-Ground (DLG)
+    elif fault_type == FaultType.LLG:
+
+        if phases == PhasesShortCircuit.ab:
+            Yf[3 * bus_index + 0] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[3 * bus_index + 1] = 1 / (Zf[bus_index] + 1e-20)
+
+        elif phases == PhasesShortCircuit.bc:
+            Yf[3 * bus_index + 1] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[3 * bus_index + 2] = 1 / (Zf[bus_index] + 1e-20)
+
+        elif phases == PhasesShortCircuit.ca:
+            Yf[3 * bus_index + 2] = 1 / (Zf[bus_index] + 1e-20)
+            Yf[3 * bus_index + 0] = 1 / (Zf[bus_index] + 1e-20)
+
+    # Three-Phase Fault (LLL)
+
+    # Three-Phase-to-Ground (LLLG)
+    elif fault_type == FaultType.ph3:
+
+        Yf[3 * bus_index + 0] = 1 / (Zf[bus_index] + 1e-20)
+        Yf[3 * bus_index + 1] = 1 / (Zf[bus_index] + 1e-20)
+        Yf[3 * bus_index + 2] = 1 / (Zf[bus_index] + 1e-20)
+
+    else:
+        raise Exception('Incorrect fault type definition.')
+
+    Yf_masked = Yf[mask]
 
     Ybus_gen_csc, Ybus_gen = compute_ybus_generator(nc=nc)
     Ybus_gen_masked_csc = Ybus_gen_csc[mask, :][:, mask]

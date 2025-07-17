@@ -5,7 +5,7 @@
 
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.acdc_converter import ACDCConverter
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, CsOperatingModeKind, UnitSymbol, CsPpccControlKind
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType, CsOperatingModeKind, UnitSymbol, CsPpccControlKind
 
 
 class CsConverter(ACDCConverter):

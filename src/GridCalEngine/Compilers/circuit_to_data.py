@@ -10,7 +10,6 @@ from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode, DeviceType,
                                         TapModuleControl, TapPhaseControl, HvdcControlType, ConverterControlType,
                                         ShuntConnectionType)
@@ -33,6 +32,7 @@ from GridCalEngine.DataStructures.fluid_path_data import FluidPathData
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Devices.multi_circuit import MultiCircuit
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
     from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
     from GridCalEngine.Simulations.NTC.ntc_results import OptimalNetTransferCapacityResults
@@ -348,9 +348,9 @@ def get_load_data(data: LoadData,
 
                 if fill_three_phase:
                     if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
-                        data.S3_star[3 * ii + 0] = complex(elm.P1_prof[t_idx], elm.Q1_prof[t_idx])
-                        data.S3_star[3 * ii + 1] = complex(elm.P2_prof[t_idx], elm.Q2_prof[t_idx])
-                        data.S3_star[3 * ii + 2] = complex(elm.P3_prof[t_idx], elm.Q3_prof[t_idx])
+                        data.S3_star[3 * ii + 0] = complex(elm.Pa_prof[t_idx], elm.Qa_prof[t_idx])
+                        data.S3_star[3 * ii + 1] = complex(elm.Pb_prof[t_idx], elm.Qb_prof[t_idx])
+                        data.S3_star[3 * ii + 2] = complex(elm.Pc_prof[t_idx], elm.Qc_prof[t_idx])
 
                         data.I3_star[3 * ii + 0] = complex(elm.Ir1_prof[t_idx], elm.Ii1_prof[t_idx])
                         data.I3_star[3 * ii + 1] = complex(elm.Ir2_prof[t_idx], elm.Ii2_prof[t_idx])
@@ -361,9 +361,9 @@ def get_load_data(data: LoadData,
                         data.Y3_star[3 * ii + 2] = complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
 
                     elif elm.conn == ShuntConnectionType.Delta:
-                        data.S3_delta[3 * ii + 0] = complex(elm.P1_prof[t_idx], elm.Q1_prof[t_idx])
-                        data.S3_delta[3 * ii + 1] = complex(elm.P2_prof[t_idx], elm.Q2_prof[t_idx])
-                        data.S3_delta[3 * ii + 2] = complex(elm.P3_prof[t_idx], elm.Q3_prof[t_idx])
+                        data.S3_delta[3 * ii + 0] = complex(elm.Pa_prof[t_idx], elm.Qa_prof[t_idx])
+                        data.S3_delta[3 * ii + 1] = complex(elm.Pb_prof[t_idx], elm.Qb_prof[t_idx])
+                        data.S3_delta[3 * ii + 2] = complex(elm.Pc_prof[t_idx], elm.Qc_prof[t_idx])
 
                         data.Y3_delta[3 * ii + 0] = complex(elm.G1_prof[t_idx], elm.B1_prof[t_idx])
                         data.Y3_delta[3 * ii + 1] = complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx])
@@ -392,9 +392,9 @@ def get_load_data(data: LoadData,
                     if fill_three_phase:
 
                         if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
-                            data.S3_star[3 * ii + 0] = complex(elm.P1, elm.Q1)
-                            data.S3_star[3 * ii + 1] = complex(elm.P2, elm.Q2)
-                            data.S3_star[3 * ii + 2] = complex(elm.P3, elm.Q3)
+                            data.S3_star[3 * ii + 0] = complex(elm.Pa, elm.Qa)
+                            data.S3_star[3 * ii + 1] = complex(elm.Pb, elm.Qb)
+                            data.S3_star[3 * ii + 2] = complex(elm.Pc, elm.Qc)
 
                             data.I3_star[3 * ii + 0] = complex(elm.Ir1, elm.Ii1)
                             data.I3_star[3 * ii + 1] = complex(elm.Ir2, elm.Ii2)
@@ -405,9 +405,9 @@ def get_load_data(data: LoadData,
                             data.Y3_star[3 * ii + 2] = complex(elm.G3, elm.B3) * 3
 
                         elif elm.conn == ShuntConnectionType.Delta:
-                            data.S3_delta[3 * ii + 0] = complex(elm.P1, elm.Q1)
-                            data.S3_delta[3 * ii + 1] = complex(elm.P2, elm.Q2)
-                            data.S3_delta[3 * ii + 2] = complex(elm.P3, elm.Q3)
+                            data.S3_delta[3 * ii + 0] = complex(elm.Pa, elm.Qa)
+                            data.S3_delta[3 * ii + 1] = complex(elm.Pb, elm.Qb)
+                            data.S3_delta[3 * ii + 2] = complex(elm.Pc, elm.Qc)
 
                             if elm.G1 > 0 and elm.G2 > 0 and elm.G3 > 0:
                                 data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
@@ -470,15 +470,15 @@ def get_load_data(data: LoadData,
 
                 if fill_three_phase:
                     if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
-                        data.S3_star[3 * ii + 0] -= complex(elm.P1_prof[t_idx], elm.Q1_prof[t_idx])
-                        data.S3_star[3 * ii + 1] -= complex(elm.P2_prof[t_idx], elm.Q2_prof[t_idx])
-                        data.S3_star[3 * ii + 2] -= complex(elm.P3_prof[t_idx], elm.Q3_prof[t_idx])
+                        data.S3_star[3 * ii + 0] -= complex(elm.Pa_prof[t_idx], elm.Qa_prof[t_idx])
+                        data.S3_star[3 * ii + 1] -= complex(elm.Pb_prof[t_idx], elm.Qb_prof[t_idx])
+                        data.S3_star[3 * ii + 2] -= complex(elm.Pc_prof[t_idx], elm.Qc_prof[t_idx])
 
 
                     elif elm.conn == ShuntConnectionType.Delta:
-                        data.S3_delta[3 * ii + 0] -= complex(elm.P1_prof[t_idx], elm.Q1_prof[t_idx])
-                        data.S3_delta[3 * ii + 1] -= complex(elm.P2_prof[t_idx], elm.Q2_prof[t_idx])
-                        data.S3_delta[3 * ii + 2] -= complex(elm.P3_prof[t_idx], elm.Q3_prof[t_idx])
+                        data.S3_delta[3 * ii + 0] -= complex(elm.Pa_prof[t_idx], elm.Qa_prof[t_idx])
+                        data.S3_delta[3 * ii + 1] -= complex(elm.Pb_prof[t_idx], elm.Qb_prof[t_idx])
+                        data.S3_delta[3 * ii + 2] -= complex(elm.Pc_prof[t_idx], elm.Qc_prof[t_idx])
 
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")
@@ -488,14 +488,14 @@ def get_load_data(data: LoadData,
 
                 if fill_three_phase:
                     if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
-                        data.S3_star[3 * ii + 0] -= complex(elm.P1, elm.Q1)
-                        data.S3_star[3 * ii + 1] -= complex(elm.P2, elm.Q2)
-                        data.S3_star[3 * ii + 2] -= complex(elm.P3, elm.Q3)
+                        data.S3_star[3 * ii + 0] -= complex(elm.Pa, elm.Qa)
+                        data.S3_star[3 * ii + 1] -= complex(elm.Pb, elm.Qb)
+                        data.S3_star[3 * ii + 2] -= complex(elm.Pc, elm.Qc)
 
                     elif elm.conn == ShuntConnectionType.Delta:
-                        data.S3_delta[3 * ii + 0] -= complex(elm.P1, elm.Q1)
-                        data.S3_delta[3 * ii + 1] -= complex(elm.P2, elm.Q2)
-                        data.S3_delta[3 * ii + 2] -= complex(elm.P3, elm.Q3)
+                        data.S3_delta[3 * ii + 0] -= complex(elm.Pa, elm.Qa)
+                        data.S3_delta[3 * ii + 1] -= complex(elm.Pb, elm.Qb)
+                        data.S3_delta[3 * ii + 2] -= complex(elm.Pc, elm.Qc)
 
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")
@@ -563,15 +563,15 @@ def get_load_data(data: LoadData,
 
                 if fill_three_phase:
                     if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
-                        data.S3_star[3 * ii + 0] += complex(elm.P1_prof[t_idx], elm.Q1_prof[t_idx])
-                        data.S3_star[3 * ii + 1] += complex(elm.P2_prof[t_idx], elm.Q2_prof[t_idx])
-                        data.S3_star[3 * ii + 2] += complex(elm.P3_prof[t_idx], elm.Q3_prof[t_idx])
+                        data.S3_star[3 * ii + 0] += complex(elm.Pa_prof[t_idx], elm.Qa_prof[t_idx])
+                        data.S3_star[3 * ii + 1] += complex(elm.Pb_prof[t_idx], elm.Qb_prof[t_idx])
+                        data.S3_star[3 * ii + 2] += complex(elm.Pc_prof[t_idx], elm.Qc_prof[t_idx])
 
 
                     elif elm.conn == ShuntConnectionType.Delta:
-                        data.S3_delta[3 * ii + 0] += complex(elm.P1_prof[t_idx], elm.Q1_prof[t_idx])
-                        data.S3_delta[3 * ii + 1] += complex(elm.P2_prof[t_idx], elm.Q2_prof[t_idx])
-                        data.S3_delta[3 * ii + 2] += complex(elm.P3_prof[t_idx], elm.Q3_prof[t_idx])
+                        data.S3_delta[3 * ii + 0] += complex(elm.Pa_prof[t_idx], elm.Qa_prof[t_idx])
+                        data.S3_delta[3 * ii + 1] += complex(elm.Pb_prof[t_idx], elm.Qb_prof[t_idx])
+                        data.S3_delta[3 * ii + 2] += complex(elm.Pc_prof[t_idx], elm.Qc_prof[t_idx])
 
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")
@@ -584,14 +584,14 @@ def get_load_data(data: LoadData,
 
                 if fill_three_phase:
                     if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
-                        data.S3_star[3 * ii + 0] += complex(elm.P1, elm.Q1)
-                        data.S3_star[3 * ii + 1] += complex(elm.P2, elm.Q2)
-                        data.S3_star[3 * ii + 2] += complex(elm.P3, elm.Q3)
+                        data.S3_star[3 * ii + 0] += complex(elm.Pa, elm.Qa)
+                        data.S3_star[3 * ii + 1] += complex(elm.Pb, elm.Qb)
+                        data.S3_star[3 * ii + 2] += complex(elm.Pc, elm.Qc)
 
                     elif elm.conn == ShuntConnectionType.Delta:
-                        data.S3_delta[3 * ii + 0] += complex(elm.P1, elm.Q1)
-                        data.S3_delta[3 * ii + 1] += complex(elm.P2, elm.Q2)
-                        data.S3_delta[3 * ii + 2] += complex(elm.P3, elm.Q3)
+                        data.S3_delta[3 * ii + 0] += complex(elm.Pa, elm.Qa)
+                        data.S3_delta[3 * ii + 1] += complex(elm.Pb, elm.Qb)
+                        data.S3_delta[3 * ii + 2] += complex(elm.Pc, elm.Qc)
 
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")
@@ -746,16 +746,16 @@ def get_shunt_data(
                 if fill_three_phase:
                     if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
 
-                        data.Y3_star[3 * ii + 0] = complex(elm.G1_prof[t_idx], elm.B1_prof[t_idx])
-                        data.Y3_star[3 * ii + 1] = complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx])
-                        data.Y3_star[3 * ii + 2] = complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
+                        data.Y3_star[3 * ii + 0] = complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx])
+                        data.Y3_star[3 * ii + 1] = complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx])
+                        data.Y3_star[3 * ii + 2] = complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
                         data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
-                            Yab=complex(elm.G1_prof[t_idx], elm.B1_prof[t_idx]),
-                            Ybc=complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx]),
-                            Yca=complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
+                            Yab=complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx]),
+                            Ybc=complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx]),
+                            Yca=complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
                         )
 
                     else:
@@ -769,16 +769,16 @@ def get_shunt_data(
 
                     if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
 
-                        data.Y3_star[3 * ii + 0] = complex(elm.G1, elm.B1)
-                        data.Y3_star[3 * ii + 1] = complex(elm.G2, elm.B2)
-                        data.Y3_star[3 * ii + 2] = complex(elm.G3, elm.B3)
+                        data.Y3_star[3 * ii + 0] = complex(elm.Ga, elm.Ba)
+                        data.Y3_star[3 * ii + 1] = complex(elm.Gb, elm.Bb)
+                        data.Y3_star[3 * ii + 2] = complex(elm.Gc, elm.Bc)
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
                         data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
-                            Yab=complex(elm.G1, elm.B1),
-                            Ybc=complex(elm.G2, elm.B2),
-                            Yca=complex(elm.G3, elm.B3)
+                            Yab=complex(elm.Ga, elm.Ba),
+                            Ybc=complex(elm.Gb, elm.Bb),
+                            Yca=complex(elm.Gc, elm.Bc)
                         )
 
                     else:
@@ -822,16 +822,16 @@ def get_shunt_data(
                 if fill_three_phase:
                     if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
 
-                        data.Y3_star[3 * ii + 0] = complex(elm.G1_prof[t_idx], elm.B1_prof[t_idx])
-                        data.Y3_star[3 * ii + 1] = complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx])
-                        data.Y3_star[3 * ii + 2] = complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
+                        data.Y3_star[3 * ii + 0] = complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx])
+                        data.Y3_star[3 * ii + 1] = complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx])
+                        data.Y3_star[3 * ii + 2] = complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
                         data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
-                            Yab=complex(elm.G1_prof[t_idx], elm.B1_prof[t_idx]),
-                            Ybc=complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx]),
-                            Yca=complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
+                            Yab=complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx]),
+                            Ybc=complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx]),
+                            Yca=complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
                         )
 
                     else:
@@ -867,16 +867,16 @@ def get_shunt_data(
 
                     if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
 
-                        data.Y3_star[3 * ii + 0] = complex(elm.G1, elm.B1)
-                        data.Y3_star[3 * ii + 1] = complex(elm.G2, elm.B2)
-                        data.Y3_star[3 * ii + 2] = complex(elm.G3, elm.B3)
+                        data.Y3_star[3 * ii + 0] = complex(elm.Ga, elm.Ba)
+                        data.Y3_star[3 * ii + 1] = complex(elm.Gb, elm.Bb)
+                        data.Y3_star[3 * ii + 2] = complex(elm.Gc, elm.Bc)
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
                         data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
-                            Yab=complex(elm.G1, elm.B1),
-                            Ybc=complex(elm.G2, elm.B2),
-                            Yca=complex(elm.G3, elm.B3)
+                            Yab=complex(elm.Ga, elm.Ba),
+                            Ybc=complex(elm.Gb, elm.Bb),
+                            Yca=complex(elm.Gc, elm.Bc)
                         )
 
                     else:

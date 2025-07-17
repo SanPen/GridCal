@@ -30,7 +30,7 @@ from GridCal.Gui.general_dialogues import LogsDialogue
 from GridCal.Gui.SystemScaler.system_scaler import SystemScaler
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, make_diagram_from_substations
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget, make_diagram_from_buses
-
+from GridCal.Gui.GridReduce.grid_reduce import GridReduceDialogue
 
 
 class DataBaseTableMain(DiagramsMain):
@@ -70,6 +70,8 @@ class DataBaseTableMain(DiagramsMain):
         self.ui.actionScale.triggered.connect(self.scale)
         self.ui.actionDetect_substations.triggered.connect(self.detect_substations)
         self.ui.actionDetect_facilities.triggered.connect(self.detect_facilities)
+        self.ui.actionGrid_reduction.triggered.connect(self.grid_reduction_from_schematic_selection)
+
 
         # tree click
         self.ui.dataStructuresTreeView.clicked.connect(self.view_objects_data)
@@ -108,7 +110,6 @@ class DataBaseTableMain(DiagramsMain):
             DeviceType.SubstationDevice.value: ":/Icons/icons/substation.svg",
             DeviceType.VoltageLevelDevice.value: ":/Icons/icons/voltage_level.svg",
             DeviceType.BusBarDevice.value: ":/Icons/icons/bus_bar_icon.svg",
-            DeviceType.ConnectivityNodeDevice.value: ":/Icons/icons/cn_icon.svg",
             DeviceType.BusDevice.value: ":/Icons/icons/bus_icon.svg",
             DeviceType.SwitchDevice.value: ":/Icons/icons/switch.svg",
 
@@ -281,7 +282,7 @@ class DataBaseTableMain(DiagramsMain):
         """
         Copy the current displayed objects table to the clipboard
         """
-        mdl = self.get_current_objects_model_view()
+        mdl: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
         if mdl is not None:
             mdl.copy_to_clipboard()
             self.show_info_toast('Copied!')
@@ -344,6 +345,7 @@ class DataBaseTableMain(DiagramsMain):
             ts_mdl = gf.get_list_model(self.circuit.profile_magnitudes[elm_type][0])
             self.ui.device_type_magnitude_comboBox.setModel(ts_mdl)
             self.ui.device_type_magnitude_comboBox_2.setModel(ts_mdl)
+            # the TS display will be triggered by the on-change event of the combobox
 
             # update the associations view
             assoc_mdl = gf.get_list_model(self.circuit.device_associations[elm_type])
@@ -355,29 +357,6 @@ class DataBaseTableMain(DiagramsMain):
             self.ui.device_type_magnitude_comboBox.clear()
             self.ui.device_type_magnitude_comboBox_2.clear()
             self.ui.associationsComboBox.clear()
-
-    def get_selected_table_objects(self) -> List[ALL_DEV_TYPES]:
-        """
-        Get the list of selected objects
-        :return: List[ALL_DEV_TYPES]
-        """
-        model = self.get_current_objects_model_view()
-
-        if model is not None:
-            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
-            if len(sel_idx) > 0:
-
-                # get the unique rows
-                unique = set()
-                for idx in sel_idx:
-                    unique.add(idx.row())
-
-                return [model.objects[i] for i in unique]
-            else:
-                info_msg('Select some cells')
-                return list()
-        else:
-            return list()
 
     def get_selected_table_buses(self) -> Tuple[Set[dev.Bus], List[ALL_DEV_TYPES]]:
         """
@@ -468,10 +447,7 @@ class DataBaseTableMain(DiagramsMain):
         Get the substations matching the table selection
         :return:  set of substations, list of selected objects originating the substation set
         """
-        substations = set()
-        selected_objects: List[ALL_DEV_TYPES] = list()
-
-        model = self.ui.dataStructureTableView.model()
+        selected_objects = self.get_selected_table_objects()
 
         elm2se: Dict[ALL_DEV_TYPES, List[dev.Substation]] = dict()
 
@@ -494,27 +470,12 @@ class DataBaseTableMain(DiagramsMain):
             if bus.substation is not None:
                 elm2se[bus] = [bus.substation]
 
-        if model is not None:
-
-            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
-            objects = model.objects
-
-            if len(objects) > 0:
-
-                if len(sel_idx) > 0:
-
-                    unique = {idx.row() for idx in sel_idx}
-
-                    for idx in unique:
-
-                        sel_obj: ALL_DEV_TYPES = model.objects[idx]
-                        selected_objects.append(sel_obj)
-
-                        se_list = elm2se.get(sel_obj, None)
-
-                        if se_list is not None:
-                            for se in se_list:
-                                substations.add(se)
+        substations = set()
+        for sel_obj in selected_objects:
+            se_list = elm2se.get(sel_obj, None)
+            if se_list is not None:
+                for se in se_list:
+                    substations.add(se)
 
         return substations, selected_objects
 
@@ -723,7 +684,7 @@ class DataBaseTableMain(DiagramsMain):
         if len(selected_buses):
 
             ok = yes_no_question(
-                text="This will delete_with_dialogue all buses and their connected elements that were not selected."
+                text="This will delete all buses and their connected elements that were not selected."
                      "This cannot be undone and it is dangerous if you don't know"
                      "what you are doing. \nAre you sure?",
                 title="Crop model to buses selection?")
@@ -737,7 +698,43 @@ class DataBaseTableMain(DiagramsMain):
                 for bus in to_be_deleted:
                     self.circuit.delete_bus(obj=bus, delete_associated=True)
 
+                self.view_objects_data()  # re-paint the table
+
                 self.show_info_toast(f"{len(to_be_deleted)} buses removed from the model")
+
+    def grid_reduction_from_table_selection(self):
+        """
+        Crop model to buses selection
+        :return:
+        """
+        selected_buses, selected_objects = self.get_selected_table_buses()
+
+        if len(selected_buses):
+
+            # get the previous power flow
+            _, pf_res = self.session.power_flow
+
+            self.grid_reduction_dialogue = GridReduceDialogue(grid=self.circuit,
+                                     session=self.session,
+                                     selected_buses_set=selected_buses)
+
+            self.grid_reduction_dialogue.show()
+
+    def grid_reduction_from_schematic_selection(self):
+
+        selected_buses = self.get_selected_buses()
+
+        if len(selected_buses):
+            # get the previous power flow
+            _, pf_res = self.session.power_flow
+
+            selected_buses_set = {bus for i, bus, graphic in selected_buses}
+
+            self.grid_reduction_dialogue = GridReduceDialogue(grid=self.circuit,
+                                                              session=self.session,
+                                                              selected_buses_set=selected_buses_set)
+
+            self.grid_reduction_dialogue.show()
 
     def add_objects(self):
         """
@@ -892,39 +889,44 @@ class DataBaseTableMain(DiagramsMain):
         """
         Edit catalogue element
         """
-        model = self.get_current_objects_model_view()
-        sel_item = self.ui.dataStructuresTreeView.selectedIndexes()[0]
-        elm_type = sel_item.data(role=QtCore.Qt.ItemDataRole.DisplayRole)
+        model: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
 
         if model is not None:
 
-            # get the selected index
-            idx = self.ui.dataStructureTableView.currentIndex().row()
+            if len(self.ui.dataStructuresTreeView.selectedIndexes()) > 0:
 
-            if idx > -1:
-                if elm_type == DeviceType.OverheadLineTypeDevice.value:
+                sel_item = self.ui.dataStructuresTreeView.selectedIndexes()[0]
+                elm_type = sel_item.data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
-                    # launch editor
-                    self.tower_builder_window = TowerBuilderGUI(
-                        tower=self.circuit.overhead_line_types[idx],
-                        wires_catalogue=self.circuit.wire_types
-                    )
-                    self.tower_builder_window.setModal(True)
-                    self.tower_builder_window.resize(int(1.81 * 700.0), 700)
-                    self.tower_builder_window.exec()
+                # get the selected index
+                idx = self.ui.dataStructureTableView.currentIndex().row()
 
-                elif elm_type == DeviceType.RmsModelTemplateDevice.value:
+                if idx > -1:
+                    if elm_type == DeviceType.OverheadLineTypeDevice.value:
 
-                    self.rms_model_Editor_window = RmsModelEditorGUI(model=self.circuit.rms_models[idx].block,)
-                    self.rms_model_Editor_window.resize(int(1.81 * 700.0), 700)
-                    self.rms_model_Editor_window.show()
+                        # launch editor
+                        self.tower_builder_window = TowerBuilderGUI(
+                            tower=self.circuit.overhead_line_types[idx],
+                            wires_catalogue=self.circuit.wire_types
+                        )
+                        self.tower_builder_window.setModal(True)
+                        self.tower_builder_window.resize(int(1.81 * 700.0), 700)
+                        self.tower_builder_window.exec()
 
+                    elif elm_type == DeviceType.RmsModelTemplateDevice.value:
+
+                        self.rms_model_Editor_window = RmsModelEditorGUI(model=self.circuit.rms_models[idx].block, )
+                        self.rms_model_Editor_window.resize(int(1.81 * 700.0), 700)
+                        self.rms_model_Editor_window.show()
+
+                    else:
+
+                        warning_msg('No editor available.\n'
+                                    'The values can be changed from the table or '
+                                    'via context menus in the graphical interface.',
+                                    'Edit')
                 else:
-
-                    warning_msg('No editor available.\n'
-                                'The values can be changed from the table or '
-                                'via context menus in the graphical interface.',
-                                'Edit')
+                    info_msg('Choose an element from the table')
             else:
                 info_msg('Choose an element from the table')
         else:
@@ -936,7 +938,7 @@ class DataBaseTableMain(DiagramsMain):
         :return: Nothing
         """
         idx = self.ui.dataStructureTableView.currentIndex()
-        mdl = self.get_current_objects_model_view()
+        mdl: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
         col = idx.column()
         if mdl is not None:
             if col > -1:
@@ -953,7 +955,7 @@ class DataBaseTableMain(DiagramsMain):
         Highlight and select the buses of the selected objects
         """
 
-        model = self.get_current_objects_model_view()
+        model: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
 
         if model is not None:
 
@@ -1015,13 +1017,6 @@ class DataBaseTableMain(DiagramsMain):
         else:
             return t_idx
 
-    def get_current_objects_model_view(self) -> ObjectModelFilterProxy | None:
-        """
-        Get the current ObjectModelFilterProxy from the GUI
-        :return: ObjectModelFilterProxy
-        """
-        return self.ui.dataStructureTableView.model()
-
     def highlight_based_on_property(self):
         """
         Highlight and select the buses of the selected objects
@@ -1029,11 +1024,11 @@ class DataBaseTableMain(DiagramsMain):
         indices = self.ui.dataStructureTableView.selectedIndexes()
 
         if len(indices):
-            model = self.get_current_objects_model_view()
-            t_idx = self.get_objects_time_index()
+            model: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
 
             if model is not None:
                 objects = model.objects
+                t_idx = self.get_objects_time_index()
 
                 if len(objects) > 0:
                     col_indices = list({index.column() for index in indices})
@@ -1116,7 +1111,7 @@ class DataBaseTableMain(DiagramsMain):
         indices = self.ui.dataStructureTableView.selectedIndexes()
 
         if len(indices):
-            model = self.get_current_objects_model_view()
+            model: ObjectModelFilterProxy | None = self.get_current_objects_model_view()
 
             if model is not None:
                 logger = bs.Logger()
@@ -1345,6 +1340,11 @@ class DataBaseTableMain(DiagramsMain):
                           text="Crop model to buses selection",
                           icon_path=":/Icons/icons/schematic.svg",
                           function_ptr=self.crop_model_to_buses_selection)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Grid reduction",
+                          icon_path=":/Icons/icons/schematic.svg",
+                          function_ptr=self.grid_reduction_from_table_selection)
 
         gf.add_menu_entry(menu=context_menu,
                           text="Copy table",

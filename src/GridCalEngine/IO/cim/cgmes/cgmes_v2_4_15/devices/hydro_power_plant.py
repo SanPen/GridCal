@@ -5,7 +5,7 @@
 
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_system_resource import PowerSystemResource
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, HydroPlantStorageKind
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType, HydroPlantStorageKind
 
 
 class HydroPowerPlant(PowerSystemResource):

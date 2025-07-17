@@ -16,7 +16,7 @@ from GridCal.Gui.messages import yes_no_question, warning_msg
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, DEACTIVATED,
                                                    FONT_SCALE, EMERGENCY, TRANSPARENT)
-from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, HandleItem
+from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, HandleItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.load_graphics import LoadGraphicItem, Load
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_graphics import GeneratorGraphicItem, Generator
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.static_generator_graphics import (StaticGeneratorGraphicItem,
@@ -32,7 +32,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Injections.controllable_shunt_graphics
     ControllableShuntGraphicItem,
     ControllableShunt)
 
-from GridCalEngine.enumerations import DeviceType, FaultType
+from GridCalEngine.enumerations import DeviceType, FaultType, BusGraphicType
 from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 from GridCalEngine.Devices.Substation import Bus
 
@@ -89,8 +89,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                  index=0,
                  editor: SchematicWidget = None,
                  bus: Bus = None,
-                 h: int = 40,
-                 w: int = 80,
+                 h: float = 40,
+                 w: float = 80,
                  x: float = 0,
                  y: float = 0,
                  draw_labels: bool = True,
@@ -109,44 +109,88 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         GenericDiagramWidget.__init__(self, parent=parent, api_object=bus, editor=editor, draw_labels=draw_labels)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
-        self.min_w = 180.0
-        self.min_h = 40.0
-        self.offset = 20
-        self.h = h if h >= self.min_h else self.min_h
-        self.w = w if w >= self.min_w else self.min_w
-        self.r = r
+        # Label:
+        self.label = QtWidgets.QGraphicsTextItem(self.api_object.name if self.api_object is not None else "", self)
+        self.label.setDefaultTextColor(ACTIVE['text'])
+        self.label.setScale(FONT_SCALE)
 
         # loads, shunts, generators, etc...
         self._child_graphics: List[INJECTION_GRAPHICS] = list()
+
+        # index
+        self.index = index
+
+        self.big_marker = None
+
+        self.connectivity_graph = False
+
+        # connection terminals the block
+        if self.api_object.graphic_type == BusGraphicType.BusBar:
+            self._terminal = BarTerminalItem('s', parent=self, editor=self.editor)
+            self.min_w = 180.0
+            self.min_h = 40.0
+            self.offset = 20
+
+            self.h = h if h >= self.min_h else self.min_h
+            self.w = w if w >= self.min_w else self.min_w
+            self.r = r
+
+            # square
+            self.tile = QtWidgets.QGraphicsRectItem(0, 0, 20, 20, self)
+            self.tile.setOpacity(0.7)
+
+            # Create corner for resize:
+            self.sizer = HandleItem(self._terminal, callback=self.change_size)
+            self.sizer.setPos(self.w, self.h)
+            self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
+
+        elif self.api_object.graphic_type == BusGraphicType.Connectivity:
+            self._terminal = RoundTerminalItem('s', parent=self, editor=self.editor, h=20, w=20)  # , h=self.h))
+            self.min_w = 50.0
+            self.min_h = 50.0
+            self.offset = 20
+
+            self.h = h if h >= self.min_h else self.min_h
+            self.w = w if w >= self.min_w else self.min_w
+            self.r = r
+
+            self._terminal.setPos(self.w / 2 - self._terminal.w / 2, self.h / 2 - self._terminal.h / 2)
+            # self._terminal.setPos(self.w / 2 + 10, self.h / 2 + 10)
+
+            # square
+            self.tile = None
+
+            # Create corner for resize:
+            self.sizer = None
+
+            self.connectivity_graph = True
+
+        else:
+            self._terminal = BarTerminalItem('s', parent=self, editor=self._editor)
+            self.min_w = 180.0
+            self.min_h = 40.0
+            self.offset = 20
+
+            self.h = h if h >= self.min_h else self.min_h
+            self.w = w if w >= self.min_w else self.min_w
+            self.r = r
+
+            # square
+            self.tile = QtWidgets.QGraphicsRectItem(0, 0, 20, 20, self)
+            self.tile.setOpacity(0.7)
+
+            # Create corner for resize:
+            self.sizer = HandleItem(self._terminal, callback=self.change_size)
+            self.sizer.setPos(self.w, self.h)
+            self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
 
         # Enabled for short circuit
         self.sc_enabled = [False, False, False, False]
         self.sc_type = FaultType.ph3
         self.pen_width = 4
 
-        # index
-        self.index = index
-
-        # Label:
-        self.label = QtWidgets.QGraphicsTextItem(self.api_object.name if self.api_object is not None else "", self)
-        self.label.setDefaultTextColor(ACTIVE['text'])
-        self.label.setScale(FONT_SCALE)
-
-        # square
-        self.tile = QtWidgets.QGraphicsRectItem(0, 0, 20, 20, self)
-        self.tile.setOpacity(0.7)
-
-        # connection terminals the block
-        self._terminal = BarTerminalItem('s', parent=self, editor=self._editor)  # , h=self.h))
         self._terminal.setPen(QPen(TRANSPARENT, self.pen_width, self.style,
                                    Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
-
-        # Create corner for resize:
-        self.sizer = HandleItem(self._terminal, callback=self.change_size)
-        self.sizer.setPos(self.w, self.h)
-        self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
-
-        self.big_marker = None
 
         self.set_tile_color(self.color)
 
@@ -192,6 +236,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
     def get_nexus_point(self) -> QPointF:
         """
         Get the connection point for the children nexus line
+        (connection points for loads, shunts, generators, etc.)
         :return: QPointF
         """
         return QPointF(self.x() + self.rect().width() / 2.0,
@@ -260,13 +305,14 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             y = 0.0
         self.setPos(QPointF(x, y))
 
-    def set_tile_color(self, brush: QBrush) -> None:
+    def set_tile_color(self, brush: QBrush | QColor) -> None:
         """
         Set the color of the bus
         Args:
             brush:  Qt Color
         """
-        self.tile.setBrush(brush)
+        if self.tile is not None:
+            self.tile.setBrush(brush)
         self._terminal.setBrush(brush)
 
     def merge(self, other_bus_graphic: "BusGraphicItem") -> None:
@@ -292,7 +338,15 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.setRect(0.0, 0.0, self.w, h)
         self.h = h
 
-    def change_size(self, w: int, dummy: float = 0.0):
+    def get_terminal_center(self, val: QPointF) -> QPointF:
+        """
+        Get the center of the terminal
+        :param val: position of a branch point
+        :return:
+        """
+        return self._terminal.get_center_pos(val)
+
+    def change_size(self, w: int | float, dummy: float = 0.0):
         """
         Resize block function
         :param w:
@@ -309,8 +363,9 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.label.setPos(self.w + 5, -20)
 
         # lower
-        self._terminal.setPos(x0, y0)
-        self._terminal.setRect(0, 20, self.w, 10)
+        if not self.connectivity_graph:
+            self._terminal.setPos(x0, y0)
+            self._terminal.setRect(0, 20, self.w, 10)
 
         # rearrange children
         self.arrange_children()
@@ -547,12 +602,6 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         self._editor.set_active_status_to_profile(self.api_object)
 
-    # def delete_all_connections(self, delete_from_db: bool) -> None:
-    #     """
-    #     Delete all bus connections
-    #     """
-    #     self._terminal.remove_all_connections(delete_from_db=delete_from_db)
-
     def delete(self) -> None:
         """
         Remove this element
@@ -608,6 +657,9 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             for host in self._terminal.hosting_connections:
                 if host.api_object is not None:
                     host.set_enable(val=self.api_object.active)
+
+            if not self.api_object.active:
+                self.clear_label()
 
             self.update_color()
 
@@ -938,6 +990,14 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         else:
             msg = ""
 
+        title = self._api_object.name if self._api_object is not None else ""
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
+                           f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
+
+        self.setToolTip(msg)
+
+    def clear_label(self):
+        msg = ""
         title = self._api_object.name if self._api_object is not None else ""
         self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
                            f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')

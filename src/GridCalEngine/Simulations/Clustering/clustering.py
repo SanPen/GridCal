@@ -23,29 +23,44 @@ def kmeans_sampling(x_input: Mat, n_points: int = 10) -> Tuple[IntVec, Vec, IntV
     """
     os.environ['OPENBLAS_NUM_THREADS'] = '12'
 
-    # declare the model
+    # # declare the model
     model = KMeans(n_clusters=n_points, random_state=0, n_init=10)
 
-    tm1 = time.time()
-
     # model fitting
-    model.fit_predict(x_input)
-    print(f'kmeans: model fitted in {time.time()-tm1:.2f} scs.')
-
-    centroid_idx = model.transform(x_input).argmin(axis=0)
-    sample_idx = model.transform(x_input).argmin(axis=1)
+    original_points_cluster_indices = model.fit_predict(x_input)
 
     # compute probabilities
     centroids, counts = np.unique(model.labels_, return_counts=True)
-    prob = counts.astype(float) / len(model.labels_)
-    prob_dict = {u: p for u, p in zip(centroids, prob)}
+    cluster_probability = counts.astype(float) / len(model.labels_)
 
-    # sort results and assign probability
-    centroid_idx = np.sort(centroid_idx)
-    samples = sample_idx[centroid_idx]
-    probabilities = [prob_dict[i] for i in samples]
+    # Find the indices from the original data that best represent the found clusters
+    cluster_representative_indices = np.zeros(n_points, dtype=int)
+    for c in range(n_points):
+        # all rows in that cluster
+        idx = np.where(original_points_cluster_indices == c)[0]
 
-    return centroid_idx, probabilities, sample_idx
+        # distances from the original points to the cluster center
+        dists = np.linalg.norm(x_input[idx] - model.cluster_centers_[c], axis=1)
+
+        # index of the
+        rep_idx = idx[np.argmin(dists)]  # single best representative
+        cluster_representative_indices[c] = rep_idx
+
+    # 1. Sort the representatives …
+    sorting_idx = np.argsort(cluster_representative_indices)
+
+    cluster_representative_indices = cluster_representative_indices[sorting_idx]
+    cluster_probability = cluster_probability[sorting_idx]
+
+    # 2. … build a mapping “old label  ➜  new (sorted) label” …
+    #    sorting_idx[new_label] == old_label   ⇒   inverse permutation:
+    label_map = np.empty_like(sorting_idx)  # same length, same dtype
+    label_map[sorting_idx] = np.arange(n_points)  # old_label → new_label
+
+    # 3. … and remap every sample’s label.
+    original_points_cluster_indices = label_map[original_points_cluster_indices]
+
+    return cluster_representative_indices, cluster_probability, original_points_cluster_indices
 
 
 def kmeans_approximate_sampling(x_input: Mat, n_points: int = 10) -> Tuple[IntVec, Vec]:
