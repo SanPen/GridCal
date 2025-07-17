@@ -5,30 +5,55 @@
 
 from __future__ import annotations
 
-import pdb
 import uuid
 from dataclasses import dataclass, field
-from typing import Tuple, Sequence, List
+from typing import Tuple, Sequence, List, Dict, Any
 
 from GridCalEngine.Utils.Symbolic.symbolic import Var, Const, Expr
 
 
 def _new_uid() -> int:
-    """Generate a fresh UUID‑v4 string."""
+    """
+    Generate a fresh UUID‑v4 string.
+    :return: UUIDv4 in integer format
+    """
     return uuid.uuid4().int
 
 
-def _serialize_expr_list(exprs: list[Expr]) -> list[dict]:
+def _serialize_expr_list(exprs: List[Expr]) -> List[Dict[str, Any]]:
+    """
+
+    :param exprs:
+    :return:
+    """
     return [expr.to_dict() for expr in exprs]
 
-def _serialize_var_list(vars_: list[Var | Const]) -> list[dict]:
+
+def _serialize_var_list(vars_: List[Var | Const]) -> List[Dict[str, Any]]:
+    """
+    Serialize list of variables or constants
+    :param vars_: list of Var or Const
+    :return: List of dictionaries with the serialized data
+    """
     return [v.to_dict() for v in vars_]
 
-def _deserialize_expr_list(expr_dicts: list[dict]) -> list[Expr]:
+
+def _deserialize_expr_list(expr_dicts: List[Dict[str, Any]]) -> List[Expr]:
+    """
+
+    :param expr_dicts:
+    :return:
+    """
     return [Expr.from_dict(d) for d in expr_dicts]
 
-def _deserialize_var_list(var_dicts: list[dict]) -> list[Var | Const]:
-    result = []
+
+def _deserialize_var_list(var_dicts: List[Dict[str, Any]]) -> List[Var | Const]:
+    """
+    De-serialize previously serialized data into List of Vars or Const
+    :param var_dicts: List of serialized data
+    :return: List of Vars or Const
+    """
+    result = list()
     for d in var_dicts:
         if d["type"] == "Var":
             result.append(Var(name=d["name"], uid=d["uid"]))
@@ -37,7 +62,6 @@ def _deserialize_var_list(var_dicts: list[dict]) -> list[Var | Const]:
         else:
             raise ValueError(f"Unknown variable type {d['type']}")
     return result
-
 
 
 @dataclass(frozen=True)
@@ -65,7 +89,8 @@ class Block:
 
     def __post_init__(self) -> None:
         if len(self.algebraic_vars) != len(self.algebraic_eqs):
-            raise ValueError(f"algebraic_vars and algebraic_eqs must have the same length: vars is {len(self.algebraic_vars)}, eqs is {len(self.algebraic_eqs)}")
+            raise ValueError(
+                f"algebraic_vars and algebraic_eqs must have the same length: vars is {len(self.algebraic_vars)}, eqs is {len(self.algebraic_eqs)}")
         if len(self.state_vars) != len(self.state_eqs):
             raise ValueError("state_vars and state_eqs must have the same length")
 
@@ -94,7 +119,7 @@ class Block:
         """
         return self.algebraic_vars + self.state_vars
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict[str, List[Dict[str, Any]] | int]:
         return {
             "uid": self.uid,
             "state_vars": _serialize_var_list(self.state_vars),
@@ -109,7 +134,7 @@ class Block:
         }
 
     @staticmethod
-    def parse(data: dict) -> "Block":
+    def parse(data: Dict[str, List[Dict[str, Any]] | int]) -> "Block":
         return Block(
             uid=data["uid"],
             state_vars=_deserialize_var_list(data["state_vars"]),
@@ -127,6 +152,7 @@ class Block:
         if not isinstance(other, Block):
             return False
         return self.to_dict() == other.to_dict()
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Pre defined blocks
