@@ -15,7 +15,7 @@ from GridCalEngine.Utils.Sparse.csc import diags
 from GridCalEngine.Compilers.circuit_to_data import NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_power, polar_to_rect)
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from GridCalEngine.enumerations import AcOpfMode, TapPhaseControl, TapModuleControl
+from GridCalEngine.enumerations import AcOpfMode, BusMode, TapPhaseControl, TapModuleControl
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger, csr_matrix, csc_matrix
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import get_Sf, get_St
 from GridCalEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx import IpsSolution
@@ -393,8 +393,11 @@ class NonLinearOptimalPfProblem:
 
         else:
 
-            # TODO: Unresolved Pmax, ie Pmax and Pmin must be in __init__
+            # TODO: Review this
+            # Pmax = nc.generator_data.pmax / self.Sbase
+            # Pmin = nc.generator_data.pmin / self.Sbase
             self.Pg = np.r_[
+                # (Pmax[gen_disp_idx_2] + Pmin[gen_disp_idx_2]) / 2,
                 (self.Pg_max[gen_disp_idx_2] + self.Pg_min[gen_disp_idx_2]) / (2 * self.Sbase),
                 np.zeros(self.nsh)
             ]
@@ -1528,8 +1531,7 @@ class NonLinearOptimalPfProblem:
             tap_unit = np.exp(1j * tau)
             tap_unit_c = np.exp(-1j * tau)
 
-            # For each line with a module controlled transformer,
-            # compute its second derivatives w.r.t. the tap module and
+            # For each line with a module controlled transformer, compute its second derivatives w.r.t. the tap module and
             # the rest of the variables.
             mp2 = mp * mp
             mp3 = mp2 * mp
