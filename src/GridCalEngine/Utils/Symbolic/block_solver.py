@@ -724,7 +724,7 @@ class BlockSolver:
     def build_params_matrix(self, n_steps: int, params0: np.ndarray, events_list: Events) -> csr_matrix:
         events_matrix = np.zeros((n_steps, len(params0)))
         diff_params_matrix = np.zeros((n_steps, len(params0)))
-        params_matrix_current = params0
+        params_matrix_current = params0.copy()
 
         # get events info
         rows, cols, values = events_list.build_triplets_list()
@@ -741,6 +741,7 @@ class BlockSolver:
                     diff_params_matrix[time_step][prop_idx] += diff_val
                     params_matrix_current[prop_idx] = value
 
+
         # make params matrix sparse
         diff_params_matrix_spa = csr_matrix(diff_params_matrix)
         return diff_params_matrix_spa
@@ -756,6 +757,7 @@ class BlockSolver:
             method: Literal["rk4", "euler", "implicit_euler"] = "rk4",
             newton_tol: float = 1e-8,
             newton_max_iter: int = 1000,
+
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         :param events_list:
@@ -769,6 +771,7 @@ class BlockSolver:
         :param newton_max_iter:
         :return: 1D time array, 2D array of simulated variables
         """
+
         params_matrix = self.build_params_matrix(int(np.ceil((t_end - t0) / h)), params0, events_list)
         if method == "euler":
             return self._simulate_fixed(t0, t_end, h, x0, params0, stepper="euler")
@@ -833,7 +836,6 @@ class BlockSolver:
         diff_params_matrix = diff_params_matrix
         t[0] = t0
         y[0] = x0.copy()
-
         for step_idx in range(steps):
             params_current += diff_params_matrix[step_idx, :].toarray().ravel()
             xn = y[step_idx]

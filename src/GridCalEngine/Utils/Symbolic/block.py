@@ -65,7 +65,7 @@ class Block:
 
     def __post_init__(self) -> None:
         if len(self.algebraic_vars) != len(self.algebraic_eqs):
-            raise ValueError("algebraic_vars and algebraic_eqs must have the same length")
+            raise ValueError(f"algebraic_vars and algebraic_eqs must have the same length: vars is {len(self.algebraic_vars)}, eqs is {len(self.algebraic_eqs)}")
         if len(self.state_vars) != len(self.state_eqs):
             raise ValueError("state_vars and state_eqs must have the same length")
 
