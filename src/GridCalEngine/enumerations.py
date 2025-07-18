@@ -82,6 +82,31 @@ class BusGraphicType(Enum):
             return s
 
 
+class SwitchGraphicType(Enum):
+    """
+    Bus graphical modes
+    """
+    CircuitBreaker = "CircuitBreaker"
+    Disconnector = "Disconnector"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return BusGraphicType[s]
+        except KeyError:
+            return s
+
 class CpfStopAt(Enum):
     """
     CpfStopAt
