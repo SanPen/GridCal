@@ -89,7 +89,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
     # create and initialize results
     results = NonlinearOPFResults()
-    results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen,
+    results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen, nil=len(nc.passive_branch_data.get_monitor_enabled_indices()),
                        nhvdc=nc.nhvdc, ncap=len(capacity_nodes_idx) if capacity_nodes_idx is not None else 0)
 
     for i, island in enumerate(islands):
