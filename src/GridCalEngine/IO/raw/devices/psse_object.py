@@ -268,3 +268,21 @@ class RawObject:
         for i, val in enumerate(values):
             attr = self.__properties[i].property_name
             setattr(self, attr, val)
+
+    def try_parse2(self, values: Sequence[Any], prop_names: Sequence[str]) -> None:
+        """
+        Copy *values* into this object following _ATTR_ORDER.
+        Extra elements are ignored; missing ones keep their default.
+        :param values: values to set
+        :param prop_names: array of names
+        """
+        if len(values) >= len(prop_names):
+            n = len(values)
+        else:
+            n = len(prop_names)
+
+        for i in range(n):
+            if hasattr(self, prop_names[i]):
+                setattr(self, prop_names[i], values[i])
+            else:
+                print(f"PSS/e property does not exist :( '{prop_names[i]}'")

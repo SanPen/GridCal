@@ -38,7 +38,9 @@ class RawOwner(RawObject):
 
         if version >= 29:
 
-            if len(data[0]) == 2:
+            if len(data[0]) == 1:
+                self.I = data[0]
+            elif len(data[0]) == 2:
                 self.I, self.OWNAME = data[0]
             else:
                 self.try_parse(values=data[0])

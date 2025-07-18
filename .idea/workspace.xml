@@ -30,13 +30,10 @@
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="implemented the ptdf reduction and integrated with the diagram">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/area.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/area.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/branch.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/branch.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/bus.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/fixed_shunt.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/fixed_shunt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/inter_area.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/inter_area.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/load.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/load.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/owner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/owner.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/psse_object.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/psse_object.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/two_terminal_dc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/two_terminal_dc_line.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -237,7 +234,7 @@
       <recent name="D:\SIROCO\GridCal\doc\rst_source\figures\Diagrams" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.update_gui_file">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -743,11 +740,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python tests.pytest for test_grid_reduction.test_ward_reduction" />
         <item itemvalue="Python.substations_types" />
         <item itemvalue="Python.substation_wizards" />
-        <item itemvalue="Python.ExecuteGridCal" />
       </list>
     </recent_temporary>
   </component>
@@ -2263,7 +2260,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/data_base.py</url>
-          <line>439</line>
+          <line>386</line>
           <option name="timeStamp" value="2479" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
