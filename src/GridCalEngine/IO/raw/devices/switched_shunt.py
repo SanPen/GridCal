@@ -187,8 +187,8 @@ class RawSwitchedShunt(RawObject):
                 setattr(self, field, value)
 
         if version >= 35:
-            self.I, self.ID, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO, \
-                self.SWREG, self.NREG, self.RMPCT, self.RMIDNT, self.BINIT, *dynamic_values = field_values
+            (self.I, self.ID, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO,
+             self.SWREG, self.NREG, self.RMPCT, self.RMIDNT, self.BINIT, *dynamic_values) = field_values
 
             parse_dynamic_fields(
                 [
@@ -207,7 +207,7 @@ class RawSwitchedShunt(RawObject):
             rest = []
 
             (self.I, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO,
-                self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT, *dynamic_values) = field_values
+             self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT, *dynamic_values) = field_values
 
             parse_dynamic_fields(
                 [
