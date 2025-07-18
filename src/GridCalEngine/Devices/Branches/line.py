@@ -709,37 +709,37 @@ class Line(BranchParent):
         self.ysh = obj.get_ysh_abc()
 
     def initialize_rms(self):
+        if not self.rms_model.empty():
+            Qf = Var("Qf")
+            Qt = Var("Qt")
+            Pf = Var("Pf")
+            Pt = Var("Pt")
 
-        Qf = Var("Qf")
-        Qt = Var("Qt")
-        Pf = Var("Pf")
-        Pt = Var("Pt")
+            ys = 1.0 / complex(self.R, self.X)
+            g = Const(ys.real)
+            b = Const(ys.imag)
+            bsh = Const(self.B)
 
-        ys = 1.0 / complex(self.R, self.X)
-        g = Const(ys.real)
-        b = Const(ys.imag)
-        bsh = Const(self.B)
+            Vmf = self.bus_from.rms_model.model.V("Vm")
+            Vaf = self.bus_from.rms_model.model.V("Va")
+            Vmt = self.bus_to.rms_model.model.V("Vm")
+            Vat = self.bus_to.rms_model.model.V("Va")
+            daft = Vaf - Vat
+            datf = Vat - Vaf
 
-        Vmf = self.bus_from.rms_model.model.V("Vm")
-        Vaf = self.bus_from.rms_model.model.V("Va")
-        Vmt = self.bus_to.rms_model.model.V("Vm")
-        Vat = self.bus_to.rms_model.model.V("Va")
-        daft = Vaf - Vat
-        datf = Vat - Vaf
-
-        self.rms_model.model = Block(
-            algebraic_eqs=[
-                Pf - ((Vmf ** 2 * g) - g * Vmf * Vmt * cos(daft) + b * Vmf * Vmt * cos(daft + np.pi / 2)),
-                Qf - (Vmf ** 2 * (-bsh / 2 - b) - g * Vmf * Vmt * sin(daft) + b * Vmf * Vmt * sin(daft + np.pi / 2)),
-                Pt - ((Vmt ** 2 * g) - g * Vmt * Vmf * cos(datf) + b * Vmt * Vmf * cos(datf + np.pi / 2)),
-                Qt - (Vmt ** 2 * (-bsh / 2 - b) - g * Vmt * Vmf * sin(datf) + b * Vmt * Vmf * sin(datf + np.pi / 2)),
-            ],
-            algebraic_vars=[Pf, Pt, Qf, Qt],
-            parameters=[],
-            external_mapping={
-                DynamicVarType.Pf: Pf,
-                DynamicVarType.Pt: Pt,
-                DynamicVarType.Qf: Qf,
-                DynamicVarType.Qt: Qt,
-            }
-        )
+            self.rms_model.model = Block(
+                algebraic_eqs=[
+                    Pf - ((Vmf ** 2 * g) - g * Vmf * Vmt * cos(daft) + b * Vmf * Vmt * cos(daft + np.pi / 2)),
+                    Qf - (Vmf ** 2 * (-bsh / 2 - b) - g * Vmf * Vmt * sin(daft) + b * Vmf * Vmt * sin(daft + np.pi / 2)),
+                    Pt - ((Vmt ** 2 * g) - g * Vmt * Vmf * cos(datf) + b * Vmt * Vmf * cos(datf + np.pi / 2)),
+                    Qt - (Vmt ** 2 * (-bsh / 2 - b) - g * Vmt * Vmf * sin(datf) + b * Vmt * Vmf * sin(datf + np.pi / 2)),
+                ],
+                algebraic_vars=[Pf, Pt, Qf, Qt],
+                parameters=[],
+                external_mapping={
+                    DynamicVarType.Pf: Pf,
+                    DynamicVarType.Pt: Pt,
+                    DynamicVarType.Qf: Qf,
+                    DynamicVarType.Qt: Qt,
+                }
+            )

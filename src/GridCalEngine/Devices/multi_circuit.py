@@ -23,8 +23,8 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, AREA_TYPES
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Topology.topology import find_different_states
-from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType
-from GridCalEngine.Utils.Symbolic.block import Block
+from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType, DynamicVarType
+from GridCalEngine.Utils.Symbolic.block import Block, Expr
 
 if TYPE_CHECKING:
     from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
@@ -2741,24 +2741,57 @@ class MultiCircuit(Assets):
         Initialize all RMS models
         :return: System block
         """
-        blocks = list()
-        for elm in self.buses:
-            elm.initialize_rms()
-            blocks.append(elm.rms_model.model)
+        # create the system block
+        sys_block = Block(children=[], in_vars=[])
+        bus_dict = dict()
 
+        # balance equation arrays
+        P: List[Expr] = [None] * len(self.buses)
+        Q: List[Expr] = [None] * len(self.buses)
+
+        # initialize buses
+        for i, elm in enumerate(self.buses):
+            elm.initialize_rms()
+            sys_block.children.append(elm.rms_model.model)
+            bus_dict[elm] = i
+
+        # initialize branches
         for elm in self.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
             elm.initialize_rms()
-            blocks.append(elm.rms_model.model)
+            mdl = elm.rms_model.model
+            sys_block.children.append(mdl)
+            f = bus_dict[elm.bus_from]
+            t = bus_dict[elm.bus_to]
+            if P[f] is None:
+                P[f] = mdl.E(DynamicVarType.Pf)
+                Q[f] = mdl.E(DynamicVarType.Qf)
+                P[t] = mdl.E(DynamicVarType.Pt)
+                Q[t] = mdl.E(DynamicVarType.Qt)
+            else:
+                P[f] += mdl.E(DynamicVarType.Pf)
+                Q[f] += mdl.E(DynamicVarType.Qf)
+                P[t] += mdl.E(DynamicVarType.Pt)
+                Q[t] += mdl.E(DynamicVarType.Qt)
 
+        # initialize injections
         for elm in self.get_injection_devices_iter():
             elm.initialize_rms()
-            blocks.append(elm.rms_model.model)
+            mdl = elm.rms_model.model
+            sys_block.children.append(mdl)
+            i = bus_dict[elm.bus]
+            if P[i] is None:
+                P[i] = mdl.E(DynamicVarType.P)
+                Q[i] = mdl.E(DynamicVarType.Q)
+            else:
+                P[i] += mdl.E(DynamicVarType.P)
+                Q[i] += mdl.E(DynamicVarType.Q)
 
-        # TODO: add buses kirchhoff
-
-        sys_block = Block(
-            children=blocks,
-            in_vars=[]
-        )
+        # add the nodal balance equations
+        for i, elm in enumerate(self.buses):
+            mdl = elm.rms_model.model
+            if P[i] is not None:
+                mdl.algebraic_eqs.append(P[i])
+            if Q[i] is not None:
+                mdl.algebraic_eqs.append(Q[i])
 
         return sys_block

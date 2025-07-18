@@ -86,6 +86,12 @@ class DynamicModelHost:
         custom_data = data.get("custom_model", None)
         self._custom_model = Block.parse(data=custom_data)
 
+    def empty(self):
+        if self._template is None:
+            return self._custom_model.empty()
+        else:
+            return self._template.empty()
+
     def __eq__(self, other):
         if isinstance(other, DynamicModelHost):
 

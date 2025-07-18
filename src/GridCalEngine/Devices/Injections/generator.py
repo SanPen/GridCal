@@ -461,56 +461,57 @@ class Generator(GeneratorParent):
 
     def initialize_rms(self):
 
-        pi = Const(np.pi)
-        fn = Const(50)
-        tm = Const(0.1)
-        M = Const(1.0)
-        D = Const(4)
-        ra = Const(0.3)
-        xd = Const(0.86138701)
-        vf = Const(1.081099313)
+        if not self.rms_model.empty():
+            pi = Const(np.pi)
+            fn = Const(50)
+            tm = Const(0.1)
+            M = Const(1.0)
+            D = Const(4)
+            ra = Const(0.3)
+            xd = Const(0.86138701)
+            vf = Const(self.Vset)
 
-        omega_ref = Const(1)
-        Kp = Const(1.0)
-        Ki = Const(10.0)
-        Kw = Const(10.0)
+            omega_ref = Const(1)
+            Kp = Const(1.0)
+            Ki = Const(10.0)
+            Kw = Const(10.0)
 
-        delta = Var("delta")
-        omega = Var("omega")
-        psid = Var("psid")
-        psiq = Var("psiq")
-        i_d = Var("i_d")
-        i_q = Var("i_q")
-        v_d = Var("v_d")
-        v_q = Var("v_q")
-        t_e = Var("t_e")
-        p_g = Var("P_e")
-        Q_g = Var("Q_e")
-        Vg = self.bus.rms_model.model.V("Vm")
-        dg = self.bus.rms_model.model.V("Va")
-        # tm = Var("tm")
-        et = Var("et")
+            delta = Var("delta")
+            omega = Var("omega")
+            psid = Var("psid")
+            psiq = Var("psiq")
+            i_d = Var("i_d")
+            i_q = Var("i_q")
+            v_d = Var("v_d")
+            v_q = Var("v_q")
+            t_e = Var("t_e")
+            p_g = Var("P_e")
+            Q_g = Var("Q_e")
+            Vg = self.bus.rms_model.model.V("Vm")
+            dg = self.bus.rms_model.model.V("Va")
+            # tm = Var("tm")
+            et = Var("et")
 
-        self.rms_model.model = Block(
-            state_eqs=[
-                # delta - (2 * pi * fn) * (omega - 1),
-                # omega - (-tm / M + t_e / M - D / M * (omega - 1))
-                (2 * pi * fn) * (omega - omega_ref),  # dδ/dt
-                (tm - t_e - D * (omega - omega_ref)) / M,  # dω/dt
-            ],
-            state_vars=[delta, omega],
-            algebraic_eqs=[
-                # tm + Kw * (omega - omega_ref) ,
-                psid - (-ra * i_q + v_q),
-                psiq - (-ra * i_d + v_d),
-                i_d - (psid + xd * i_d - vf),
-                i_q - (psiq + xd * i_q),
-                v_d - (Vg * sin(delta - dg)),
-                v_q - (Vg * cos(delta - dg)),
-                t_e - (psid * i_q - psiq * i_d),
-                (v_d * i_d + v_q * i_q) - p_g,
-                (v_q * i_d - v_d * i_q) - Q_g
-            ],
-            algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, p_g, Q_g],
-            parameters=[]
-        )
+            self.rms_model.model = Block(
+                state_eqs=[
+                    # delta - (2 * pi * fn) * (omega - 1),
+                    # omega - (-tm / M + t_e / M - D / M * (omega - 1))
+                    (2 * pi * fn) * (omega - omega_ref),  # dδ/dt
+                    (tm - t_e - D * (omega - omega_ref)) / M,  # dω/dt
+                ],
+                state_vars=[delta, omega],
+                algebraic_eqs=[
+                    # tm + Kw * (omega - omega_ref) ,
+                    psid - (-ra * i_q + v_q),
+                    psiq - (-ra * i_d + v_d),
+                    i_d - (psid + xd * i_d - vf),
+                    i_q - (psiq + xd * i_q),
+                    v_d - (Vg * sin(delta - dg)),
+                    v_q - (Vg * cos(delta - dg)),
+                    t_e - (psid * i_q - psiq * i_d),
+                    (v_d * i_d + v_q * i_q) - p_g,
+                    (v_q * i_d - v_d * i_q) - Q_g
+                ],
+                algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, p_g, Q_g],
+                parameters=[]
+            )

@@ -489,19 +489,21 @@ class Bus(PhysicalDevice):
             raise ValueError("The value must be a BusBar")
 
     def initialize_rms(self):
-        P = Var("P")
-        Q = Var("Q")
-        Vm = Var("Vm")
-        Va = Var("Va")
 
-        self.rms_model.model = Block(
-            algebraic_eqs=[
-            ],
-            algebraic_vars=[P, Q, Vm, Va],
-            external_mapping={
-                DynamicVarType.P: P,
-                DynamicVarType.Q: Q,
-                DynamicVarType.Vm: Vm,
-                DynamicVarType.Va: Va
-            }
-        )
+        if not self.rms_model.empty():
+            P = Var("P")
+            Q = Var("Q")
+            Vm = Var("Vm")
+            Va = Var("Va")
+
+            self.rms_model.model = Block(
+                algebraic_eqs=[
+                ],
+                algebraic_vars=[P, Q, Vm, Va],
+                external_mapping={
+                    DynamicVarType.P: P,
+                    DynamicVarType.Q: Q,
+                    DynamicVarType.Vm: Vm,
+                    DynamicVarType.Va: Va
+                }
+            )
