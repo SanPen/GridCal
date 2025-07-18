@@ -16,7 +16,7 @@ import GridCalEngine.api as gce
 from GridCalEngine.enumerations import DynamicVarType
 
 grid = gce.MultiCircuit()
-bus1 = gce.Bus(name="Bus1", Vnom=10)
+bus1 = gce.Bus(name="Bus1", Vnom=10, is_slack=True)
 bus2 = gce.Bus(name="Bus2", Vnom=10)
 
 grid.add_bus(bus1)
@@ -26,7 +26,7 @@ line = gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2,
                 r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
 grid.add_line(line)
 
-gen = gce.Generator(name="Gen1", P=10, vset=1.0)
+gen = gce.Generator(name="Gen1", P=10, vset=1.081099313)
 grid.add_generator(bus=bus1, api_obj=gen)
 
 load = gce.Load(name="Load1", P=10, Q=10)
@@ -42,7 +42,8 @@ print(res.get_bus_df())
 print(res.get_branch_df())
 print(f"Converged: {res.converged}")
 
-sys = grid.initialize_rms()
+logger = gce.Logger()
+sys = grid.initialize_rms(logger=logger)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -53,23 +54,6 @@ slv = BlockSolver(sys)
 # ----------------------------------------------------------------------------------------------------------------------
 # Intialization
 # ----------------------------------------------------------------------------------------------------------------------
-grid = gce.MultiCircuit()
-
-bus1 = gce.Bus(name="Bus1", Vnom=10)
-bus2 = gce.Bus(name="Bus2", Vnom=10)
-grid.add_bus(bus1)
-grid.add_bus(bus2)
-
-line = gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2,
-                r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
-grid.add_line(line)
-
-gen = gce.Generator(name="Gen1", P=10, vset=1.0)  # PV
-grid.add_generator(bus=bus1, api_obj=gen)
-
-load = gce.Load(name="Load1", P=10, Q=10)  # PQ
-grid.add_load(bus=bus2, api_obj=load)
-
 res = gce.power_flow(grid)
 
 print(f"Converged: {res.converged}")

@@ -461,7 +461,7 @@ class Generator(GeneratorParent):
 
     def initialize_rms(self):
 
-        if not self.rms_model.empty():
+        if self.rms_model.empty():
             pi = Const(np.pi)
             fn = Const(50)
             tm = Const(0.1)
@@ -485,12 +485,10 @@ class Generator(GeneratorParent):
             v_d = Var("v_d")
             v_q = Var("v_q")
             t_e = Var("t_e")
-            p_g = Var("P_e")
-            Q_g = Var("Q_e")
-            Vg = self.bus.rms_model.model.V("Vm")
-            dg = self.bus.rms_model.model.V("Va")
-            # tm = Var("tm")
-            et = Var("et")
+            P_g = Var("Pg")
+            Q_g = Var("Qg")
+            Vm = self.bus.rms_model.model.E(DynamicVarType.Vm)
+            Va = self.bus.rms_model.model.E(DynamicVarType.Va)
 
             self.rms_model.model = Block(
                 state_eqs=[
@@ -506,12 +504,16 @@ class Generator(GeneratorParent):
                     psiq - (-ra * i_d + v_d),
                     i_d - (psid + xd * i_d - vf),
                     i_q - (psiq + xd * i_q),
-                    v_d - (Vg * sin(delta - dg)),
-                    v_q - (Vg * cos(delta - dg)),
+                    v_d - (Vm * sin(delta - Va)),
+                    v_q - (Vm * cos(delta - Va)),
                     t_e - (psid * i_q - psiq * i_d),
-                    (v_d * i_d + v_q * i_q) - p_g,
+                    (v_d * i_d + v_q * i_q) - P_g,
                     (v_q * i_d - v_d * i_q) - Q_g
                 ],
-                algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, p_g, Q_g],
-                parameters=[]
+                algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g],
+                parameters=[],
+                external_mapping={
+                    DynamicVarType.P: P_g,
+                    DynamicVarType.Q: Q_g,
+                }
             )

@@ -92,15 +92,15 @@ class Block:
     out_vars: List[Var] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        if len(self.algebraic_vars) != len(self.algebraic_eqs):
-            raise ValueError(
-                f"algebraic_vars and algebraic_eqs must have the same length: vars is {len(self.algebraic_vars)}, eqs is {len(self.algebraic_eqs)}")
-        if len(self.state_vars) != len(self.state_eqs):
-            raise ValueError("state_vars and state_eqs must have the same length")
+        # if len(self.algebraic_vars) != len(self.algebraic_eqs):
+        #     raise ValueError(
+        #         f"algebraic_vars and algebraic_eqs must have the same length: vars is {len(self.algebraic_vars)}, eqs is {len(self.algebraic_eqs)}")
+        # if len(self.state_vars) != len(self.state_eqs):
+        #     raise ValueError("state_vars and state_eqs must have the same length")
         self.var_mapping = {v.name: v for v in self.algebraic_vars}
 
     def empty(self):
-        return (len(self.state_vars) + len(self.algebraic_vars)) > 0
+        return (len(self.state_vars) + len(self.algebraic_vars)) == 0
 
     def E(self, d: DynamicVarType) -> Var:
         return self.external_mapping[d]

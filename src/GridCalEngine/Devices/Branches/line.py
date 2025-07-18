@@ -709,7 +709,7 @@ class Line(BranchParent):
         self.ysh = obj.get_ysh_abc()
 
     def initialize_rms(self):
-        if not self.rms_model.empty():
+        if self.rms_model.empty():
             Qf = Var("Qf")
             Qt = Var("Qt")
             Pf = Var("Pf")
@@ -720,10 +720,10 @@ class Line(BranchParent):
             b = Const(ys.imag)
             bsh = Const(self.B)
 
-            Vmf = self.bus_from.rms_model.model.V("Vm")
-            Vaf = self.bus_from.rms_model.model.V("Va")
-            Vmt = self.bus_to.rms_model.model.V("Vm")
-            Vat = self.bus_to.rms_model.model.V("Va")
+            Vmf = self.bus_from.rms_model.model.E(DynamicVarType.Vm)
+            Vaf = self.bus_from.rms_model.model.E(DynamicVarType.Va)
+            Vmt = self.bus_to.rms_model.model.E(DynamicVarType.Vm)
+            Vat = self.bus_to.rms_model.model.E(DynamicVarType.Va)
             daft = Vaf - Vat
             datf = Vat - Vaf
 
