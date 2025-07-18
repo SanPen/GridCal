@@ -98,6 +98,13 @@ class RawBranch(RawObject):
                                description="Branch name",
                                max_chars=40)
 
+        for i in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]:
+            self.register_property(property_name="RATE{}".format(i),
+                                   rawx_key="rate{}".format(i),
+                                   class_type=float,
+                                   description="Branch rating power",
+                                   unit=Unit(UnitMultiplier.M, UnitSymbol.VA))
+
         self.register_property(property_name="GI",
                                rawx_key="gi",
                                class_type=float,
@@ -150,20 +157,12 @@ class RawBranch(RawObject):
                                    min_value=1,
                                    max_value=9999,
                                    max_chars=4)
-        for i in range(4):
             self.register_property(property_name="F{}".format(i + 1),
                                    rawx_key="f{}".format(i + 1),
                                    class_type=float,
                                    description="Ownership fraction",
                                    min_value=0.0,
                                    max_value=1.0)
-
-        for i in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]:
-            self.register_property(property_name="RATE{}".format(i),
-                                   rawx_key="rate{}".format(i),
-                                   class_type=float,
-                                   description="Branch rating power",
-                                   unit=Unit(UnitMultiplier.M, UnitSymbol.VA))
 
     def parse(self, data, version, logger: Logger):
         """
@@ -207,10 +206,10 @@ class RawBranch(RawObject):
             GI,       BI,       GJ,       BJ,STAT,MET,  LEN,  O1,  F1,    O2,  F2,    O3,  F3,    O4,  F4
             """
 
-            self.I, self.J, self.CKT, self.R, self.X, self.B, self.NAME, \
-                self.RATE1, self.RATE2, self.RATE3, self.RATE4, self.RATE5, self.RATE6, \
-                self.RATE7, self.RATE8, self.RATE9, self.RATE10, self.RATE11, self.RATE12, \
-                self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, *var = data[0]
+            (self.I, self.J, self.CKT, self.R, self.X, self.B, self.NAME,
+                self.RATE1, self.RATE2, self.RATE3, self.RATE4, self.RATE5, self.RATE6,
+                self.RATE7, self.RATE8, self.RATE9, self.RATE10, self.RATE11, self.RATE12,
+                self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, *var) = data[0]
 
         elif version in [32, 33]:
 
@@ -218,8 +217,8 @@ class RawBranch(RawObject):
             I,J,CKT,R,X,B,RATE1,RATE2,RATE3,GI,BI,GJ,BJ,ST,MET,LEN,O1,F1,...,O4,F4
             '''
 
-            self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATE1, self.RATE2, self.RATE3, \
-                self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, *var = data[0]
+            (self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATE1, self.RATE2, self.RATE3,
+                self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, *var) = data[0]
 
         elif version in [29, 30]:
             """
@@ -227,8 +226,8 @@ class RawBranch(RawObject):
             I,J,CKT,R,X,B,RATE1,RATE2,RATE3,GI,BI,GJ,BJ,ST,LEN,01,F1,...,04,F4
             """
 
-            self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATE1, self.RATE2, self.RATE3, \
-                self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, *var = data[0]
+            (self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATE1, self.RATE2, self.RATE3,
+                self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, *var) = data[0]
 
         else:
 

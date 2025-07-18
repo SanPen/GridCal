@@ -867,7 +867,11 @@ class EditableDevice:
 
         for prop_name, gc_prop in self.registered_properties.items():
             value = getattr(self, prop_name)
-            setattr(new_obj, prop_name, value)
+
+            if gc_prop.tpe == SubObjectType.DynamicModelHostType:
+                setattr(new_obj, prop_name, value.copy())
+            else:
+                setattr(new_obj, prop_name, value)
 
             if gc_prop.has_profile():
                 my_prof = getattr(self, gc_prop.profile_name)
