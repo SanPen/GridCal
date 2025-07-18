@@ -26,7 +26,15 @@ line = gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2,
                 r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
 grid.add_line(line)
 
-gen = gce.Generator(name="Gen1", P=10, vset=1.081099313)
+gen = gce.Generator(name="Gen1", P=10, vset=1.081099313,
+                    x1=0.86138701, r1=0.3, freq=50.0,
+                    m_torque=0.1,
+                    M=1.0,
+                    D=4.0,
+                    omega_ref=1.0,
+                    Kp=1.0,
+                    Ki=10.0,
+                    Kw=10.0)
 grid.add_generator(bus=bus1, api_obj=gen)
 
 load = gce.Load(name="Load1", P=10, Q=10)
@@ -44,7 +52,6 @@ print(f"Converged: {res.converged}")
 
 logger = gce.Logger()
 sys = grid.initialize_rms(logger=logger)
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Solver
@@ -71,7 +78,7 @@ St = res.St / grid.Sbase
 # Current from power and voltage
 i = np.conj(Sb1 / v1)  # ī = (p - jq) / v̄*
 # Delta angle
-delta0 = np.angle(v1 + ra.value + 1j * xd.value * i)
+delta0 = np.angle(v1 + gen.R1 + 1j * gen.X1 * i)
 # dq0 rotation
 rot = np.exp(-1j * (delta0 - np.pi / 2))
 # dq voltages and currents
@@ -80,10 +87,10 @@ v_q0 = np.imag(v1 * rot)
 i_d0 = np.real(i * rot)
 i_q0 = np.imag(i * rot)
 # inductances
-psid0 = -ra.value * i_q0 + v_q0
-psiq0 = -ra.value * i_d0 + v_d0
+psid0 = -gen.ra * i_q0 + v_q0
+psiq0 = -gen.ra * i_d0 + v_d0
 
-vf0 = - i_d0 + psid0 + xd.value * i_d0
+vf0 = - i_d0 + psid0 + gen.xd * i_d0
 print(f"vf = {vf0}")
 
 mapping = {
@@ -116,46 +123,6 @@ params_mapping = {
     Pl0: 0.1,
     # Ql0: 0.1
 }
-# vars_mapping = {
-#
-#     #start from PF values
-#     dline_from: 15 * (np.pi / 180),
-#     dline_to: 10 * (np.pi / 180),
-#     Vline_from: 1.0,
-#     Vline_to: 0.95,
-#     Vg: 1.0,
-#     dg: 15 * (np.pi / 180),
-#     Pline_from: 0.1,
-#     Qline_from: 0.2,
-#     Pline_to: -0.1,
-#     Qline_to: -0.2,
-#
-#     # # Flat start
-#     # dline_from: 0.0,
-#     # dline_to: 0.0,
-#     # Vline_from: 1.0,
-#     # Vline_to: 1.0,
-#     # Vg: 1.0,
-#     # dg: 0.0,
-#     # Pline_from: 0.0,
-#     # Qline_from: 0.0,
-#     # Pline_to: 0.0,
-#     # Qline_to: 0.0,
-#
-#     Pl: 0.1,  # P2
-#     Ql: 0.2,  # Q2
-#     delta: 0.5,
-#     omega: 1.001,
-#     psid: 3.825,  # d-axis flux linkage (pu)
-#     psiq: 0.0277,  # q-axis flux linkage (pu)
-#     i_d: 0.1,  # d-axis stator current (pu)
-#     i_q: 0.2,  # q-axis stator current (pu)
-#     v_d: -0.2588,  # d-axis voltage (pu)
-#     v_q: 0.9659,  # q-axis voltage (pu)
-#     t_e: 0.1,  # electromagnetic torque (pu)
-#     p_g: 0.1673,
-#     Q_g: 0.1484
-# }
 
 # ---------------------------------------------------------------------------------------
 # Events
