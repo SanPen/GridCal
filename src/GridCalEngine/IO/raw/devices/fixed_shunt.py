@@ -60,7 +60,7 @@ class RawFixedShunt(RawObject):
         :param logger:
         """
         if version >= 29:
-            self.I, self.ID, self.STATUS, self.GL, self.BL = data[0]
+            self.I, self.ID, self.STATUS, self.GL, self.BL = self.extend_or_curtail(data[0], 5)
         else:
             logger.add_warning('Shunt not implemented for the version', str(version))
 

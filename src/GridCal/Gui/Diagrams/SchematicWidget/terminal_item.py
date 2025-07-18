@@ -15,7 +15,6 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
     from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
-    from GridCal.Gui.Diagrams.SchematicWidget.Substation.busbar_graphics import BusBarGraphicItem
     from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 
 
@@ -28,7 +27,7 @@ class BarTerminalItem(QGraphicsRectItem):
                  name: str,
                  editor: SchematicWidget,
                  parent: Union[
-                     None, BusGraphicItem, BusBarGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = None,
+                     None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = None,
                  h=10.0,
                  w=10.0):
         """
