@@ -2,18 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-import math
-import pdb
 
 import numpy as np
 from matplotlib import pyplot as plt
 
-from GridCalEngine.Utils.Symbolic.events import Events, Event
-from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
-from GridCalEngine.Utils.Symbolic.block import Block
+from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
 from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
 import GridCalEngine.api as gce
-from GridCalEngine.enumerations import DynamicVarType
 
 grid = gce.MultiCircuit()
 bus1 = gce.Bus(name="Bus1", Vnom=10, is_slack=True)
@@ -128,9 +123,9 @@ params_mapping = {
 # Events
 # ---------------------------------------------------------------------------------------
 
-event1 = Event(Pl0, 5000, 0.3)
+event1 = RmsEvent(Pl0, 5000, 0.3)
 # event2 = Event(Ql0, 5000, 0.3)
-my_events = Events([event1])
+my_events = RmsEvents([event1])
 
 params0 = slv.build_init_params_vector(params_mapping)
 # x0 = slv.build_init_vars_vector(mapping)

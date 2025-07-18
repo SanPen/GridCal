@@ -6,7 +6,6 @@
 
 from __future__ import annotations
 
-import pdb
 from typing import Tuple
 import pandas as pd
 import numpy as np
@@ -18,7 +17,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import gmres, spilu, LinearOperator
 from typing import Dict, List, Literal, Any, Callable, Sequence
 
-from GridCalEngine.Utils.Symbolic.events import Events
+from GridCalEngine.Devices.Dynamic.events import RmsEvents
 from GridCalEngine.Utils.Symbolic.symbolic import Var, Expr, Const, _emit
 from GridCalEngine.Utils.Symbolic.block import Block
 from GridCalEngine.Utils.Sparse.csc import pack_4_by_4_scipy
@@ -721,7 +720,7 @@ class BlockSolver:
         """
         return self._algebraic_eqs, self._state_eqs
 
-    def build_params_matrix(self, n_steps: int, params0: np.ndarray, events_list: Events) -> csr_matrix:
+    def build_params_matrix(self, n_steps: int, params0: np.ndarray, events_list: RmsEvents) -> csr_matrix:
         events_matrix = np.zeros((n_steps, len(params0)))
         diff_params_matrix = np.zeros((n_steps, len(params0)))
         params_matrix_current = params0.copy()
@@ -753,7 +752,7 @@ class BlockSolver:
             h: float,
             x0: np.ndarray,
             params0: np.ndarray,
-            events_list: Events,
+            events_list: RmsEvents,
             method: Literal["rk4", "euler", "implicit_euler"] = "rk4",
             newton_tol: float = 1e-8,
             newton_max_iter: int = 1000,

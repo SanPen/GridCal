@@ -3,7 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import math
-import pdb
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -12,7 +11,7 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from GridCalEngine.Utils.Symbolic.events import Events, Event
+from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
 from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
 from GridCalEngine.Utils.Symbolic.block import Block
 from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
@@ -1390,9 +1389,9 @@ vars_mapping = {
 # ---------------------------------------------------------------------------------------
 
 
-event1 = Event(Pl0_7, 5000, 0.3)
+event1 = RmsEvent(Pl0_7, 5000, 0.3)
 #event2 = Event(Ql0, 5000, 0.3)
-my_events = Events([event1])
+my_events = RmsEvents([event1])
 
 params0 = slv.build_init_params_vector(params_mapping)
 x0 = slv.build_init_vars_vector(vars_mapping)
