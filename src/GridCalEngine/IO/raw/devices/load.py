@@ -169,47 +169,45 @@ class RawLoad(RawObject):
                 (self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
                  self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT,
                  self.DGENP, self.DGENQ, self.LOADTYPE) = data[0]
+
             elif len(data[0]) == 13:
                 # 1,'1 ',1,11,38,0,1.754,0,0,0,0,115,    /[1 ROANSPRARE 1 LD]/
                 (self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
                  self.IP, self.IQ, self.YP, self.YQ, self.OWNER, comment) = data[0]
+
             else:
-                self.try_parse(values=data[0])
+                raise Exception("PSSe 35 load data came with {} "
+                                "elements and 18 or 17 were expected :/".format(len(data[0])))
 
         elif version == 34:
 
             #  I,'ID',STAT,AREA,ZONE,PL, QL,IP,IQ, YP,YQ, OWNER,SCALE,INTRPT,  DGENP,     DGENQ, DGENF
-            if len(data[0]) == 17:
-                (self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
-                 self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE,
-                 self.INTRPT, self.DGENP, self.DGENQ, self.DGENM) = data[0]
-            else:
-                self.try_parse(values=data[0])
+            n = len(data[0])
+            dta = np.zeros(17, dtype=object)
+            dta[0:n] = data[0]
+
+            (self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
+             self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE,
+             self.INTRPT, self.DGENP, self.DGENQ, self.DGENM) = dta
 
         elif version == 33:
 
-            if len(data[0]) == 14:
-                (self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
-                 self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT) = data[0]
-            else:
-                self.try_parse(values=data[0])
+            n = len(data[0])
+            dta = np.zeros(14, dtype=object)
+            dta[0:n] = data[0]
 
+            (self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
+             self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT) = dta
         elif version == 32:
 
-            if len(data[0]) == 13:
-                (self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
-                 self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE) = data[0]
-            else:
-                self.try_parse(values=data[0])
+            (self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
+             self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE) = data[0]
 
         elif version in [29, 30]:
             # I, ID, STATUS, AREA, ZONE, PL, QL, IP, IQ, YP, YQ, OWNER
-            if len(data[0]) == 12:
-                (self.I, self.ID, self.STATUS, self.AREA, self.ZONE,
-                 self.PL, self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER) = data[0]
-            else:
-                self.try_parse(values=data[0])
-                
+            self.I, self.ID, self.STATUS, self.AREA, self.ZONE, \
+                self.PL, self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER = data[0]
+
             self.SCALE = 1.0
 
         else:

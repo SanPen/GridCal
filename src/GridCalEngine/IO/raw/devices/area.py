@@ -65,11 +65,11 @@ class RawArea(RawObject):
             if len(data[0]) == 5:
                 # I, ISW, PDES, PTOL, 'ARNAME'
                 self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
-
-                self.ARNAME = self.ARNAME.replace("'", "").strip()
             else:
                 logger.add_warning('Undefined number of Area attributes', value=len(data[0]), expected_value=5)
                 self.try_parse(values=data[0])
+
+            self.ARNAME = self.ARNAME.replace("'", "").strip()
         else:
             logger.add_warning('Areas not defined for version', str(version))
 
