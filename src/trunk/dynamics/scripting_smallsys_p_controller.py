@@ -100,9 +100,8 @@ load_block = Block(
 
 pi = Const(math.pi)
 fn = Const(50)
-tm = Const(0.1)
 M = Const(1.0)
-D = Const(4)
+D = Const(0)
 ra = Const(0.3)
 xd = Const(0.86138701)
 vf = Const(1.081099313)
@@ -126,19 +125,17 @@ p_g = Var("P_e")
 Q_g = Var("Q_e")
 Vg = Var("Vg")
 dg = Var("dg")
-#tm = Var("tm")
+tm = Var("tm")
 et = Var("et")
 
 generator_block = Block(
     state_eqs=[
-        # delta - (2 * pi * fn) * (omega - 1),
-        # omega - (-tm / M + t_e / M - D / M * (omega - 1))
-        (2 * pi * fn) * (omega - omega_ref),  # dδ/dt
-        (tm - t_e - D * (omega - omega_ref)) / M,  # dω/dt
+        (2 * pi * fn) * (omega - omega_ref),
+        (tm - t_e - D * (omega - omega_ref)) / M
     ],
     state_vars=[delta, omega],
     algebraic_eqs=[
-        #tm + Kw * (omega - omega_ref) ,
+        tm + Kw * (omega - omega_ref),
         psid - (-ra * i_q + v_q),
         psiq - (-ra * i_d + v_d),
         i_d - (psid + xd * i_d - vf),
@@ -149,7 +146,7 @@ generator_block = Block(
         (v_d * i_d + v_q * i_q) - p_g,
         (v_q * i_d - v_d * i_q) - Q_g
     ],
-    algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, p_g, Q_g],
+    algebraic_vars=[tm, psid, psiq, i_d, i_q, v_d, v_q, t_e, p_g, Q_g],
     parameters=[]
 )
 
@@ -321,7 +318,7 @@ event1 = Event(Pl0, 5000, 0.3)
 my_events = Events([event1])
 
 params0 = slv.build_init_params_vector(params_mapping)
-# x0 = slv.build_init_vars_vector(mapping)
+x0 = slv.build_init_vars_vector(mapping)
 
 
 # x0 = slv.initialize_with_newton(x0=slv.build_init_vars_vector(vars_mapping),
