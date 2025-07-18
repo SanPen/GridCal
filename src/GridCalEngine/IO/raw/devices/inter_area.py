@@ -60,10 +60,13 @@ class RawInterArea(RawObject):
             # I, ISW, PDES, PTOL, 'ARNAME'
             if len(data[0]) == 5:
                 self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
+
             elif len(data[0]) == 4:
                 self.I, self.ISW, self.ARNAME, self.PDES = data[0]
+
             else:
                 logger.add_warning(f'Unrecognized number of inter-area arguments {len(data[0])}', str(version))
+                self.try_parse(values=data[0])
 
             self.ARNAME = self.ARNAME.replace("'", "").strip()
         else:

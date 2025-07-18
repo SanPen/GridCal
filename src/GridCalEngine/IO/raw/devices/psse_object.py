@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 import hashlib
 import uuid as uuidlib
-from typing import List, Dict, TypeVar, Any
+from typing import List, Dict, TypeVar, Any, Sequence
 from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_property import PsseProperty
 
@@ -61,6 +61,7 @@ class RawObject:
         self.idtag = uuidlib.uuid4().hex  # always initialize with random  uuid
 
         self.__registered_properties: Dict[str, PsseProperty] = dict()
+        self.__properties: List[PsseProperty] = list()
 
         self.register_property(property_name="idtag",
                                rawx_key="uuid:string",
@@ -130,16 +131,18 @@ class RawObject:
         :param format_rule: some formatting rule
         """
         if hasattr(self, property_name):
-            self.__registered_properties[property_name] = PsseProperty(property_name=property_name,
-                                                                       rawx_key=rawx_key,
-                                                                       class_type=class_type,
-                                                                       unit=unit,
-                                                                       denominator_unit=denominator_unit,
-                                                                       description=description,
-                                                                       max_chars=max_chars,
-                                                                       min_value=min_value,
-                                                                       max_value=max_value,
-                                                                       format_rule=format_rule)
+            gc_prop = PsseProperty(property_name=property_name,
+                                   rawx_key=rawx_key,
+                                   class_type=class_type,
+                                   unit=unit,
+                                   denominator_unit=denominator_unit,
+                                   description=description,
+                                   max_chars=max_chars,
+                                   min_value=min_value,
+                                   max_value=max_value,
+                                   format_rule=format_rule)
+            self.__registered_properties[property_name] = gc_prop
+            self.__properties.append(gc_prop)
         else:
             raise Exception('Property not found when trying to declare it :(')
 
@@ -169,12 +172,15 @@ class RawObject:
         :return: extended or curtailed data
         """
         if len(data) == n:
+            # it's ok
             return data
         elif len(data) < n:
+            # extend
             diff = n - len(data)
             extra = [0 for _ in range(diff)]
             return data + extra
         elif len(data) > n:
+            # curtail
             return [data[i] for i in range(n)]
 
     def format_raw_line(self, props: List[str]) -> str:
@@ -253,3 +259,12 @@ class RawObject:
         :return: UUID based on the PSSe seed
         """
         return uuid_from_seed(seed=self.get_seed())
+
+    def try_parse(self, values: Sequence[Any]) -> None:
+        """
+        Copy *values* into this object following _ATTR_ORDER.
+        Extra elements are ignored; missing ones keep their default.
+        """
+        for i, val in enumerate(values):
+            attr = self.__properties[i].property_name
+            setattr(self, attr, val)

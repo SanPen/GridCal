@@ -39,12 +39,12 @@ class RawZone(RawObject):
 
         if version >= 29:
             if len(data[0]) == 2:
-                # I, 'ZONAME'
+
                 self.I, self.ZONAME = data[0]
 
                 self.ZONAME = self.ZONAME.replace("'", "").strip()
             elif len(data[0]) == 1:
-                # I, 'ZONAME'
+
                 self.I = data[0]
             else:
                 logger.add_warning('Undefined number of Zone attributes',
