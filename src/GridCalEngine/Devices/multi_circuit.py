@@ -24,6 +24,7 @@ from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, F
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Topology.topology import find_different_states
 from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType
+from GridCalEngine.Utils.Symbolic.block import Block
 
 if TYPE_CHECKING:
     from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
@@ -2734,3 +2735,30 @@ class MultiCircuit(Assets):
         boundary_branches = np.array(boundary_branches)
 
         return external, boundary, internal, boundary_branches
+
+    def initialize_rms(self) -> Block:
+        """
+        Initialize all RMS models
+        :return: System block
+        """
+        blocks = list()
+        for elm in self.buses:
+            elm.initialize_rms()
+            blocks.append(elm.rms_model.model)
+
+        for elm in self.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
+            elm.initialize_rms()
+            blocks.append(elm.rms_model.model)
+
+        for elm in self.get_injection_devices_iter():
+            elm.initialize_rms()
+            blocks.append(elm.rms_model.model)
+
+        # TODO: add buses kirchhoff
+
+        sys_block = Block(
+            children=blocks,
+            in_vars=[]
+        )
+
+        return sys_block
