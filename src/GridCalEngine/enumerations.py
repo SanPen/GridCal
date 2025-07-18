@@ -643,6 +643,7 @@ class FaultType(Enum):
     LG = 'LG'
     LL = 'LL'
     LLG = 'LLG'
+    LLL = 'LLL'
 
     def __str__(self):
         return str(self.value)

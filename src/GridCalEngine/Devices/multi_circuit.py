@@ -527,7 +527,7 @@ class MultiCircuit(Assets):
         batt.vset_prof = gen.Vset_prof
 
         # add device to the circuit
-        self.add_battery(bus=gen.bus, api_obj=batt, cn=gen.cn)
+        self.add_battery(bus=gen.bus, api_obj=batt)
 
         # delete_with_dialogue the line from the circuit
         self.delete_injection_device(gen)
@@ -834,7 +834,7 @@ class MultiCircuit(Assets):
         """
         coord = np.array([b.get_coordinates() for b in self.buses])
 
-        return coord.mean(axis=0).tolist()
+        return np.mean(coord, axis=0).tolist()
 
     def snapshot_balance(self):
         """
@@ -1159,7 +1159,6 @@ class MultiCircuit(Assets):
                 lst.append((k, branch, -1.0))
         return lst
 
-
     def get_inter_areas_vsc_branches(self, a1: List[dev.Area], a2: List[dev.Area]) -> List[Tuple[int, object, float]]:
         """
         Get the inter-area VSC
@@ -1375,31 +1374,6 @@ class MultiCircuit(Assets):
 
                 if devices_by_type is None:
                     groups[elm.bus] = {elm.device_type: [elm]}
-                else:
-                    lst = devices_by_type.get(elm.device_type, None)
-                    if lst is None:
-                        devices_by_type[elm.device_type] = [elm]
-                    else:
-                        devices_by_type[elm.device_type].append(elm)
-
-        return groups
-
-    def get_injection_devices_grouped_by_cn(self) -> Dict[dev.ConnectivityNode,
-    Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
-        """
-        Get the injection devices grouped by bus and by device type
-        :return: Dict[ConnectivityNode, Dict[DeviceType, List[Injection devs]]
-        """
-        groups: Dict[dev.ConnectivityNode, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]] = dict()
-
-        for lst in self.get_injection_devices_lists():
-
-            for elm in lst:
-
-                devices_by_type = groups.get(elm.cn, None)
-
-                if devices_by_type is None:
-                    groups[elm.cn] = {elm.device_type: [elm]}
                 else:
                     lst = devices_by_type.get(elm.device_type, None)
                     if lst is None:
@@ -2211,7 +2185,6 @@ class MultiCircuit(Assets):
                        logger: Logger) -> None:
         """
         Clean the branch references
-        :param nt: number of time steps
         :param bus_set: Set of Buses
         :param logger: Logger
         """
@@ -2234,8 +2207,6 @@ class MultiCircuit(Assets):
                                         device_class=elm.device_type.value,
                                         device_property="bus_to")
 
-
-
                 # if the element is topologically isolated, delete_with_dialogue it
                 if (elm.bus_from is None and elm.bus_to is None):
                     elements_to_delete.append(elm)
@@ -2251,7 +2222,6 @@ class MultiCircuit(Assets):
                          logger: Logger) -> None:
         """
         Clean the branch references
-        :param nt: number of time steps
         :param bus_set: Set of Buses
         :param logger: Logger
         """
@@ -2406,7 +2376,7 @@ class MultiCircuit(Assets):
         nt = self.get_time_number()
 
         self.clean_branches(bus_set=bus_set, logger=logger)
-        self.clean_injections( bus_set=bus_set,  logger=logger)
+        self.clean_injections(bus_set=bus_set, logger=logger)
         self.clean_contingencies(all_dev=all_dev, logger=logger)
         self.clean_investments(all_dev=all_dev, logger=logger)
         self.clean_technologies()
