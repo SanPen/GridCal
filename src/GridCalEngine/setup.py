@@ -100,7 +100,6 @@ setup(
     author='Santiago Peñate Vera et. Al.',  # Optional
     author_email='spenate@eroots.tech',  # Optional
     classifiers=[
-        'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Programming Language :: Python :: 3.8',
     ],
     keywords='power systems planning',  # Optional

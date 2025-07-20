@@ -17,6 +17,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath('../src'))
 sys.path.append("..")
+sys.setrecursionlimit(5000)
 from doc.auto_document_models import write_models_to_rst
 from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 

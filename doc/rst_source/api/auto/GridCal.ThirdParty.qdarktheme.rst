@@ -15,5 +15,5 @@ Module contents
 
 .. automodule:: GridCal.ThirdParty.qdarktheme
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

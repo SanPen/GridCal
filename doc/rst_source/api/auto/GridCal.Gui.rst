@@ -14,6 +14,8 @@ Subpackages
    GridCal.Gui.CoordinatesInput
    GridCal.Gui.Diagrams
    GridCal.Gui.GridGenerator
+   GridCal.Gui.GridMerge
+   GridCal.Gui.GridReduce
    GridCal.Gui.LoadCatalogue
    GridCal.Gui.LoadDesigner
    GridCal.Gui.Main
@@ -38,125 +40,149 @@ GridCal.Gui.associations\_model module
 
 .. automodule:: GridCal.Gui.associations_model
    :members:
-   :undoc-members:
    :show-inheritance:
-
-GridCal.Gui.console\_widget module
-----------------------------------
-
-.. automodule:: GridCal.Gui.console_widget
-   :members:
    :undoc-members:
-   :show-inheritance:
 
 GridCal.Gui.general\_dialogues module
 -------------------------------------
 
 .. automodule:: GridCal.Gui.general_dialogues
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.gui\_functions module
 ---------------------------------
 
 .. automodule:: GridCal.Gui.gui_functions
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.messages module
 ---------------------------
 
 .. automodule:: GridCal.Gui.messages
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.object\_model module
 --------------------------------
 
 .. automodule:: GridCal.Gui.object_model
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
+
+GridCal.Gui.object\_proxy\_model module
+---------------------------------------
+
+.. automodule:: GridCal.Gui.object_proxy_model
+   :members:
+   :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.pandas\_model module
 --------------------------------
 
 .. automodule:: GridCal.Gui.pandas_model
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.plot\_config module
 -------------------------------
 
 .. automodule:: GridCal.Gui.plot_config
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.profiles\_model module
 ----------------------------------
 
 .. automodule:: GridCal.Gui.profiles_model
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
+
+GridCal.Gui.python\_console module
+----------------------------------
+
+.. automodule:: GridCal.Gui.python_console
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+GridCal.Gui.python\_highlighter module
+--------------------------------------
+
+.. automodule:: GridCal.Gui.python_highlighter
+   :members:
+   :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.results\_model module
 ---------------------------------
 
 .. automodule:: GridCal.Gui.results_model
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.table\_view\_header\_wrap module
 --------------------------------------------
 
 .. automodule:: GridCal.Gui.table_view_header_wrap
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.themes module
 -------------------------
 
 .. automodule:: GridCal.Gui.themes
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
+
+GridCal.Gui.toast\_widget module
+--------------------------------
+
+.. automodule:: GridCal.Gui.toast_widget
+   :members:
+   :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.update\_gui\_all module
 -----------------------------------
 
 .. automodule:: GridCal.Gui.update_gui_all
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.update\_gui\_common module
 --------------------------------------
 
 .. automodule:: GridCal.Gui.update_gui_common
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.wrappable\_table\_model module
 ------------------------------------------
 
 .. automodule:: GridCal.Gui.wrappable_table_model
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCal.Gui
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

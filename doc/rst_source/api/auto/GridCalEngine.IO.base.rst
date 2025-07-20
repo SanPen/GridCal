@@ -9,37 +9,37 @@ GridCalEngine.IO.base.base\_circuit module
 
 .. automodule:: GridCalEngine.IO.base.base_circuit
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.IO.base.base\_device module
 -----------------------------------------
 
 .. automodule:: GridCalEngine.IO.base.base_device
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.IO.base.base\_property module
 -------------------------------------------
 
 .. automodule:: GridCalEngine.IO.base.base_property
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.IO.base.units module
 ----------------------------------
 
 .. automodule:: GridCalEngine.IO.base.units
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCalEngine.IO.base
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

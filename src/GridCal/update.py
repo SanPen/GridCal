@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 from typing import Tuple
-import subprocess
 import requests
 import sys
 import packaging.version as pkg
