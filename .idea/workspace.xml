@@ -28,24 +28,15 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="updated GUI 3-phase label">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improvements in docs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/contingency_analysis.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/contingency_analysis.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/md_source/continuation_power_flow.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/continuation_power_flow.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/file_operations.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/file_operations.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/installation.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/installation.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/md_source/investment_optimization.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/investment_optimization.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/linear_analysis.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/linear_analysis.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/model_debugging.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/model_debugging.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/modelling.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/modelling.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/md_source/net_transfer_capacity.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/net_transfer_capacity.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/md_source/nodal_hosting_capacity.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/nodal_hosting_capacity.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/md_source/optimal_power_flow.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/optimal_power_flow.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/reliability.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/reliability.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/short_circuit.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/short_circuit.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/state_estimation.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/state_estimation.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/power_flow.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/power_flow.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/md_source/stochastic_power_flow.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/stochastic_power_flow.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/structure.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/structure.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/md_source/topology.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/topology.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/md_source/user_interface.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/user_interface.md" afterDir="false" />
     </list>
@@ -2316,7 +2307,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="695" />
+    <option name="localTasksCounter" value="696" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2362,7 +2353,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed cgmes export reporting in get_cgmes_cn_nodes_from_tp_nodes" />
     <MESSAGE value="5.3.29" />
     <MESSAGE value="Fixed bug in gslv conversion" />
     <MESSAGE value="5.3.30" />
@@ -2387,7 +2377,8 @@
     <MESSAGE value="Started refactoring the docs" />
     <MESSAGE value="Added specific overload logging" />
     <MESSAGE value="updated GUI 3-phase label" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated GUI 3-phase label" />
+    <MESSAGE value="Improvements in docs" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improvements in docs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

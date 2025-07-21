@@ -6,6 +6,41 @@ Branches with the `reducible` flag enabled are candidates for disappearing at th
 `NumericalCircuit level when computing any simulation. Typically, switches will be reduced, but if not they will
 use their declared impedance, which is not advised.
 
+## Other topology functions
+
+There are some other topological functions that can be accessed through the GUI for special purposes.
+
+![](figures/settings-topology.png)
+
+Select branch types to reduce
+    The topological reduction is a top feature of GridCal. With it you can remove the influence of the redundant
+    branches. This is specially relevant when you are provided with grids that have thousands of switches and
+    connection branches that add no simulation value. Those can be removed in a very smart way.
+
+Filter by r+x under threshold
+    This feature establishes if to topologically remove branches whose resistance + reactance
+    is lower than a threshold. The threshold is given by the exponent number. i.e. 5 corresponds to `r+x < 1e-5`.
+
+Automatic layout algorithm
+    Another nice feature in GridCal is the ability to sort bus bar locations according to a graph algorithm.
+    This is especially useful when you are provided with a grid that has no schematic, where the graphical
+    representation depict all the bus bars in the same place.
+
+Ask before applying
+    Raise a question before applying the graph layout algorithm.
+
+Node expansion factor
+    The nodes in GridCal can be expanded (far from each other) or shrink (closer) this parameter
+    set the "explosion" factor that determines how far from each other shall the nodes become.
+
+Branch rating factor
+    For the branch automatic rating, this is the rate multiplier.
+
+Override values
+    If selected any non-zero rate is overridden by the calculated value.
+
+
+
 ## Theory
 In this section, we are going to explain how to do topology processing properly
 for once and for all. This topic is of capital importance in power systems but is

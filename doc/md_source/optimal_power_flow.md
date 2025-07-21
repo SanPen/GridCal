@@ -1,6 +1,29 @@
 #  🏁 Optimal power flow
 
 
+![](figures/settings-opf.png)
+
+Solver
+    Optimal power flow solver to use
+
+    DC OPF: classic optimal power flow mixing active power with lines reactance.
+    AC OPF: Innovative linear AC optimal power flow based on the AC linear power flow implemented in GridCal.
+
+Load shedding
+    This option activates the load shedding slack.
+    It is possible to assign an arbitrary weight to this slack.
+
+Generation shedding
+    This option activated the generation shedding slack.
+    It is possible to assign an arbitrary weight to this slack.
+
+Show the real associated values
+    Compute a power flow with the OPF results and show that as the OPF results.
+
+Control batteries
+    Control the batteries state of charge when running the optimization in time series.
+
+
 ## API
 
 ### Linear optimization

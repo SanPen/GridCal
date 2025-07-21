@@ -1,5 +1,67 @@
 # 🔥 Power flow
 
+
+
+
+![](figures/settings-pf.png)
+
+Solver
+    The power flow solver to use.
+
+    - Newton-Raphson in power:
+    - Newton-Raphson in current:
+    - Newton-Raphson-Iwamoto:
+    - Levenberg-Marquardt:
+    - Fast-Decoupled:
+    - Holomorphic-Embedding:
+    - Linear AC approximation:
+    - DC approximation:
+
+    All these solvers are covered in the theory section.
+
+Retry with other methods is failed:
+    This option tries other numerical solvers to try to find a power flow solution.
+    This option is relevant because different numerical algorithms may be more suited to certain grid configurations.
+    In general the Newton-Raphson implementation in GridCal includes back-tracing and other innovations that make it
+    a very competitive method to consider by default.
+
+Automatic precision
+    The precision to use for the numerical solvers depends on the magnitude of the power injections.
+    If we are dealing with hundreds of MW, the precision may be `1e-3`, but if we are dealing with Watts, the precision has
+    to be greater. The automatic precision checks the loading for a suitable precision such that the results are fine.
+
+Precision
+    Exponent of the numerical precision. i.e. `4` corresponds to `1e-4` MW in p.u. of precision
+
+Numerical method max. iterations
+    Number of "inner" iterations of the numerical method before terminating.
+
+Outer loop max. iterations
+    Number of "outer loop" iterations to figure out the values of the set controls.
+
+Reactive power control mode
+    This is the mode of reactive power control for the generators that are set in PV mode.
+
+    - No control: The reactive power limits are not enforced.
+    - Direct: The classic pq-pv switching algorithm.
+    - Iterative: An iterative algorithm that uses the power flow as objective function to
+      find suitable reactive power limits.
+
+Q steepness factor (iterative ctrl.)
+    Steepness factor for the iterative reactive power control.
+
+Transformer taps control mode
+
+    - No control: The transformer voltage taps control is not enforced.
+    - Direct:
+    - Iterative:
+
+Apply temperature correction
+    When selected the branches apply the correction of the resistance due to the temperature.
+
+Apply impedance tolerances
+    ???
+
 GridCal has the most power flow features in any open-source software.
 The following table shows the features present in each solver:
 
@@ -15,6 +77,8 @@ The following table shows the features present in each solver:
 | Local AC and DC active power control using converter.               |✅   | ✅  |  ✅ |   |   |   |   |   |   |
 | Local AC reactive power control using a converter.                  | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
 | 3-phase unbalanced.                                                 | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
+
+
 
 
 ## API

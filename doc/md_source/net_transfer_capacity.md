@@ -56,7 +56,7 @@ assert res.converged
 assert res.inter_area_flows < res.structural_inter_area_flows
 ```
 
-To run a time series of NTS optimizations:
+To run a time series of NTC optimizations:
 ```python
 # same inputs as before ...
 

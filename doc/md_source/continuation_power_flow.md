@@ -3,6 +3,27 @@
 
 GridCal can run continuation power flows (voltage collapse studies) 
 
+![](figures/settings-stability.png)
+
+Max. Iterations
+    Number of iteration to perform at each voltage stability (predictor-corrector) stage.
+
+Stop at
+    Point of the curve to top at
+
+    - Nose: Stop at the voltage collapse point
+    - Full: Trace the full curve.
+
+Use alpha target from the base situation
+    The voltage collapse (stability) simulation is a "travel" from a base situation towards a "final" one.
+    When this mode is selected the final situation is a linear combination of the base situation. All the
+    power values are multiplied by the same number.
+
+Use departure and target points from time series
+    When this option is selected the base and the target points are given by time series points.
+    This allows that the base and the final situations to have non even relationships while evolving
+    from the base situation to the target situation.
+
 ## API
 
 ### Snapshot continuation power flow
