@@ -12,7 +12,7 @@ import numpy as np
 
 class RmsEvent:
     def __init__(self,
-                 device,
+                 device: str,
                  variable: Var,
                  time_step: int = 0.0,
                  value: float = 0.0):
