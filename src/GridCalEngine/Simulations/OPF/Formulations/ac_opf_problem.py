@@ -384,10 +384,10 @@ class NonLinearOptimalPfProblem:
             ngenforgen = np.bincount(self.gen_bus_idx[:self.ngen])[self.gen_bus_idx[:self.ngen]]
 
             # If there are multiple generators connected to the same bus, they share in equal parts the injection.
-            allPgen = (Sbus_pf.real / self.Sbase + self.Sd.real)[self.gen_bus_idx[:self.ngen]] / ngenforgen
+            allPgen = (Sbus_pf.real + self.Sd.real)[self.gen_bus_idx[:self.ngen]] / ngenforgen
 
             # Same for Q
-            allQgen = (Sbus_pf.imag / self.Sbase + self.Sd.imag)[self.gen_bus_idx[:self.ngen]] / ngenforgen
+            allQgen = (Sbus_pf.imag + self.Sd.imag)[self.gen_bus_idx[:self.ngen]] / ngenforgen
 
             self.Sg_undis = allPgen[self.gen_nondisp_idx] + 1j * allQgen[self.gen_nondisp_idx]
             self.Pg = np.r_[allPgen[self.gen_disp_idx], np.zeros(self.nsh)]
@@ -405,11 +405,11 @@ class NonLinearOptimalPfProblem:
             # Pmin = nc.generator_data.pmin / self.Sbase
             self.Pg = np.r_[
                 # (Pmax[gen_disp_idx_2] + Pmin[gen_disp_idx_2]) / 2,
-                (self.Pg_max[self.gen_disp_idx] + self.Pg_min[self.gen_disp_idx]) / (2 * self.Sbase),
+                (self.Pg_max[self.gen_disp_idx] + self.Pg_min[self.gen_disp_idx]) / 2,
                 np.zeros(self.nsh)
             ]
             self.Qg = np.r_[
-                (self.Qg_max[self.gen_disp_idx] + self.Qg_min[self.gen_disp_idx]) / (2 * self.Sbase),
+                (self.Qg_max[self.gen_disp_idx] + self.Qg_min[self.gen_disp_idx]) / 2 ,
                 np.zeros(self.nsh)
             ]
             self.Va = np.angle(nc.bus_data.Vbus)
@@ -743,6 +743,9 @@ class NonLinearOptimalPfProblem:
         E = Vmat @ vm_inv
         Ibus = self.admittances.Ybus @ self.V
 
+        self.all_tap_m[self.k_m] = self.tap_m
+        self.all_tap_tau[self.k_tau] = self.tap_tau
+
         # Useful pre-constructed matrices:
         diags_gensh_disp_ones = diags(np.ones(self.n_gen_disp_sh))
         diags_bus_ones = diags(np.ones(self.nbus))
@@ -1020,7 +1023,7 @@ class NonLinearOptimalPfProblem:
                 HSfdata = self.Sf.real[SfX.row] * SfX.data.real + self.Sf.imag[SfX.row] * SfX.data.imag
                 HSf = 2 * csc((HSfdata, (SfX.row, SfX.col)), shape=(self.n_br_mon, self.NV))
 
-                HStdata = self.St.real[SfX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
+                HStdata = self.St.real[StX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
                 HSt = 2 * csc((HStdata, (StX.row, StX.col)), shape=(self.n_br_mon, self.NV))
 
             if self.ntapm != 0:
@@ -1074,7 +1077,7 @@ class NonLinearOptimalPfProblem:
                 HSfdata = self.Sf.real[SfX.row] * SfX.data.real + self.Sf.imag[SfX.row] * SfX.data.imag
                 HSf = 2 * csc((HSfdata, (SfX.row, SfX.col)), shape=(self.n_br_mon, self.NV)) + Hslsf
 
-                HStdata = self.St.real[SfX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
+                HStdata = self.St.real[StX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
                 HSt = 2 * csc((HStdata, (StX.row, StX.col)), shape=(self.n_br_mon, self.NV)) + Hslst
 
             else:
@@ -1085,7 +1088,7 @@ class NonLinearOptimalPfProblem:
                 HSfdata = self.Sf.real[SfX.row] * SfX.data.real + self.Sf.imag[SfX.row] * SfX.data.imag
                 HSf = 2 * csc((HSfdata, (SfX.row, SfX.col)), shape=(self.n_br_mon, self.NV))
 
-                HStdata = self.St.real[SfX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
+                HStdata = self.St.real[StX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
                 HSt = 2 * csc((HStdata, (StX.row, StX.col)), shape=(self.n_br_mon, self.NV))
 
         if self.options.ips_control_q_limits:  # if reactive power control...
@@ -1164,15 +1167,15 @@ class NonLinearOptimalPfProblem:
             lam_p = lam[0: self.nbus]
             lam_diag_p = diags(lam_p)
 
-            # B_p = np.conj(self.admittances.Ybus @ Vmat)
-            data = self.admittances.Ybus.data * self.V[self.Ybus_indices]
-            B_p = csc_matrix((np.conj(data), self.Ybus_indices, self.Ybus_indptr),
-                             shape=(self.nbus, self.nbus)).transpose()
+            B_p = np.conj(self.admittances.Ybus @ Vmat)
+            # data = self.admittances.Ybus.data * self.V[self.Ybus_indices]
+            # B_p = csc_matrix((np.conj(data), self.Ybus_indices, self.Ybus_indptr),
+            #                  shape=(self.nbus, self.nbus)).transpose()
 
-            # D_p = np.conj(self.admittances.Ybus).T @ Vmat
-            data = np.conj(self.admittances.Ybus.data) * self.V[self.Ybus_cols]
-            D_p = csc_matrix((data, (self.Ybus_cols, self.Ybus_indices)),
-                             shape=(self.nbus, self.nbus)).transpose()
+            D_p = np.conj(self.admittances.Ybus).T @ Vmat
+            # data = np.conj(self.admittances.Ybus.data) * self.V[self.Ybus_cols]
+            # D_p = csc_matrix((data, (self.Ybus_cols, self.Ybus_indices)),
+            #                  shape=(self.nbus, self.nbus)).transpose()
 
             I_p = np.conj(Vmat) @ (D_p @ lam_diag_p - diags(D_p @ lam_p))
             F_p = lam_diag_p @ Vmat @ (B_p - diags(np.conj(Ibus)))
@@ -1415,17 +1418,27 @@ class NonLinearOptimalPfProblem:
             ts_hxx = 0
             te_hxx = 0
 
-        print(1000 * np.array([te_fx - ts_fx,
-                               te_gx - ts_gx,
-                               te_hx - ts_hx,
-                               te_fxx - ts_fxx,
-                               te_gxx - ts_gxx,
-                               te_hxx - ts_hxx]), 100 * np.array([te_fx - ts_fx,
-                                                                  te_gx - ts_gx,
-                                                                  te_hx - ts_hx,
-                                                                  te_fxx - ts_fxx,
-                                                                  te_gxx - ts_gxx,
-                                                                  te_hxx - ts_hxx]) / (te_hxx - ts_fx))
+        # # Save to csv fx, Gx, Hx, fxx, Gxx, Hxx
+        #
+        # fx.tofile('fx_n.csv', sep=',')
+        # Gx.toarray().tofile('Gx_n.csv', sep=',')
+        # Hx.toarray().tofile('Hx_n.csv', sep=',')
+        # fxx.toarray().tofile('fxx_n.csv', sep=',')
+        # Gxx.toarray().tofile('Gxx_n.csv', sep=',')
+        # Hxx.toarray().tofile('Hxx_n.csv', sep=',')
+
+        #
+        # print(1000 * np.array([te_fx - ts_fx,
+        #                        te_gx - ts_gx,
+        #                        te_hx - ts_hx,
+        #                        te_fxx - ts_fxx,
+        #                        te_gxx - ts_gxx,
+        #                        te_hxx - ts_hxx]), 100 * np.array([te_fx - ts_fx,
+        #                                                           te_gx - ts_gx,
+        #                                                           te_hx - ts_hx,
+        #                                                           te_fxx - ts_fxx,
+        #                                                           te_gxx - ts_gxx,
+        #                                                           te_hxx - ts_hxx]) / (te_hxx - ts_fx))
 
         return fx, Gx, Hx, fxx, Gxx, Hxx
 

@@ -23,7 +23,6 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       opf_options: OptimalPowerFlowOptions,
                       pf_options: PowerFlowOptions,
                       t_idx: Union[None, int] = None,
-                      pf_init=False,
                       Sbus_pf0: Union[CxVec, None] = None,
                       voltage_pf0: Union[CxVec, None] = None,
                       plot_error: bool = False,
@@ -51,7 +50,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
     # compile the system
     nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx, logger=logger)
 
-    if pf_init:
+    if opf_options.ips_init_with_pf:
         if Sbus_pf0 is None:
             # run power flow to initialize
             pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
@@ -87,7 +86,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
         problem = NonLinearOptimalPfProblem(nc=island,
                                             options=opf_options,
-                                            pf_init=pf_init,
+                                            pf_init=opf_options.ips_init_with_pf,
                                             Sbus_pf=Sbus_pf[island.bus_data.original_idx],
                                             voltage_pf=voltage_pf[island.bus_data.original_idx],
                                             optimize_nodal_capacity=optimize_nodal_capacity,
@@ -128,6 +127,9 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
     # expand voltages if there was a bus topology reduction
     if nc.topology_performed:
+
+        results.Va = nc.propagate_bus_result(results.Va)
+        results.Vm = nc.propagate_bus_result(results.Vm)
         results.voltage = nc.propagate_bus_result(results.voltage)
 
     return results
