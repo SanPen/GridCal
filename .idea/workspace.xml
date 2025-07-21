@@ -28,208 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added InvestmentsWhenToMakePlot">
-      <change afterPath="$PROJECT_DIR$/doc/md_source/cascading.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/clustering.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/contingency_analysis.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/continuation_power_flow.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/data_models.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/development.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/Architechture.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/Architechture.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/BranchModel.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/BranchModel.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/CompilationProcess.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/CompilationProcess.eps" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/CompilationProcess.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/DataModel.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/DataModel.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/DataModelSimulation.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/DataModelSimulation.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/Diagrams/ESTRUCTURA.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/Diagrams_structure.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/Diagrams_structure.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/ElementBusAgregation.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/ElementBusAgregation.eps" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/ElementBusAgregation.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/GUI_IEEE39.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/GeneralConverterModel.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/GridCal.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/HVDC_diagrama2.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/MapView_to_MapWidget.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/OPF_results.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/PTDF_flows_comparison.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/Packages.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/Packages.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/Proper_CN_TN relationships.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/Proper_CN_TN relationships.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/Roseta_grid_converter.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/Roseta_grid_converter.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/SRAP.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/SRAP.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/TopologyProcessing1.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/TopologyProcessing1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/TopologyRoundtrip.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/TopologyRoundtrip.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/analysis.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/coefficients_structure.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/console.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/cpf_south_island_new_zealand.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/diagnostic.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/diagrams_architecture.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/generalized_branch_models.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/generalized_branch_models.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/gridcal_gui.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/gui_ieee_39.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/130bus_grid_diagram.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/3d_rosenbrock.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/3d_sumfunction.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/Figure_1_w_capex-e-6.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/Figure_1_w_capex_e-3_v2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/Figure_1_w_capex_e-4.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/Figure_1_w_capex_e-4_v2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/Figure_1_w_capex_e-5.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/Figure_1_w_capex_e-5_v2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/Figure_1_w_capex_e-6_v2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/Figure_1_wo_capex.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/Figure_1_wo_capex_v2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/Figure_2_normalization.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/Figure_3_normalization.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/Pareto_multi.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/Pareto_single.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/ZDT3_pareto.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/ding0_test_network_2_mvlv_HYPEROPT_10x_3900iterations_normalized.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/ding0_test_network_2_mvlv_INDEPENDENT_normalized.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/ding0_test_network_2_mvlv_MVRSM_10x_3900iterations_normalized.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/multi_pareto_iterations.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/simple_algo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/single_pareto_iterations.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/single_pareto_iterations_2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/zdt3_multi_1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/zdt3_multi_2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/zdt3_multi_3.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/zdt3_single_1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/zdt3_single_2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/investments/zdt3_single_3.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/line_search_acceleratin_effect.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/map_internals.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/matrix-reduction.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/model-arrays.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/model-coments.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/model-objects-2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/model-objects.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/model-schematic-2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/model-schematic.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/model-time.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/model-types.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/nsga/10mins.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/nsga/2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/nsga/4.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/nsga/binary.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/nsga/dirs.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/nsga/integer.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/nsga/lhs.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/nsga/normal.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/nsga/partitioned.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/nsga/ref.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/nsga/refdirs.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/nsga/uniform.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/opf/case6_fluid.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/opf/fluid_elements.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/opf/fluid_node_diagram.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/opf/fluid_node_diagram.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/pi_trafo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/profiles_import.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/ptdf_result.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/ptdf_ts.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/results-data.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/results.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/roseta.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/roseta.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/settings-opf.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/settings-pf.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/settings-stability.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/settings-stochastic.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/settings-topology.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tower.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/awgsld.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/busaddition.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/downtriangle.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/filelocation.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/fourhouses.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/importprofiles.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/isslack.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/loadprofilechart.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/loads.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/morebuses.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/morebuseslines.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/noslackbus.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/overview.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/plotoptions.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/plotprofiles.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/pprofile.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/profilegraph.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/profileplot.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/profileselection.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/qprofile.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/results.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/resultselection.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/resultsorting.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/runpf.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/runpftimeseries.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/scaling.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/snapshotpf.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/threeawgsld.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/threebusaddition.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/timeevents.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/timeselection.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/transformer.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/transformerpower.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/dg/typescatalogue.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/tower/editor1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/tower/editorY.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/tower/editorZ.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/tower/tower.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/tutorials/tower/wires.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/video_tutorial.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/vtdf.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/file_operations.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/installation.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/investment_optimization.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/license.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/linear_analysis.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/model_debugging.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/modelling.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/net_transfer_capacity.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/nodal_hosting_capacity.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/optimal_power_flow.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/power_flow.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/reliability.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/short_circuit.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/state_estimation.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/stochastic_power_flow.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/structure.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/topology.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/user_interface.md" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Started refactoring the docs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/auto_document_models.py" beforeDir="false" afterPath="$PROJECT_DIR$/doc/auto_document_models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/doc/conf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/index.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/index.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.PowerFlow.Formulations.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.PowerFlow.Formulations.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/change_log.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/change_log.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/development/data_models.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/development/data_models.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/development/development.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/development/development.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/license.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/version_harmony.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/version_harmony.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/CascadingSteps/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/CascadingSteps/cascading_steps.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/CascadingSteps/gui.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/CascadingSteps/gui.ui" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/CascadingSteps/update_gui_file.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/plugins.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/plugins.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/update.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/update.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -479,7 +280,7 @@
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Substation" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.make">
+  <component name="RunManager" selected="Python tests.pytest in test_ntc.py">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -881,28 +682,6 @@
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
@@ -1267,6 +1046,23 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
+    <configuration name="pytest in test_ntc.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_ntc.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Python.test_gslv_conversion" />
       <item itemvalue="Python.test_power_flow" />
@@ -1274,16 +1070,16 @@
       <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.auto_document_models" />
       <item itemvalue="Python.make" />
-      <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python tests.pytest in test_ntc.py" />
       <item itemvalue="Shell Script.make.sh" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.pytest in test_ntc.py" />
         <item itemvalue="Python.make" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.auto_document_models" />
         <item itemvalue="Shell Script.make.sh" />
-        <item itemvalue="Python.ExecuteGridCal" />
       </list>
     </recent_temporary>
   </component>
@@ -2496,7 +2292,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="692" />
+    <option name="localTasksCounter" value="693" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2542,7 +2338,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Protected compilation against none buses in generators, shunts and loads&#10;Improvements to the GUI behaviour" />
     <MESSAGE value="5.3.28" />
     <MESSAGE value="Fixed Code scanning alert #4" />
     <MESSAGE value="Fixed cgmes export reporting in get_cgmes_cn_nodes_from_tp_nodes" />
@@ -2567,7 +2362,8 @@
     <MESSAGE value="Removed &quot;kconv&quot;" />
     <MESSAGE value="wip" />
     <MESSAGE value="Added InvestmentsWhenToMakePlot" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added InvestmentsWhenToMakePlot" />
+    <MESSAGE value="Started refactoring the docs" />
+    <option name="LAST_COMMIT_MESSAGE" value="Started refactoring the docs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
