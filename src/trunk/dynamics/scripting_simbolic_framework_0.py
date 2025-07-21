@@ -8,16 +8,44 @@ import pdb
 import numpy as np
 from matplotlib import pyplot as plt
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 from GridCalEngine.Utils.Symbolic.events import Events, Event
 from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
 from GridCalEngine.Utils.Symbolic.block import Block
 from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
 import GridCalEngine.api as gce
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Constants
+# ----------------------------------------------------------------------------------------------------------------------
+pi = Const(math.pi)
+fn = Const(50)
+M = Const(1.0)
+D = Const(1)
+ra = Const(0.3)
+xd = Const(0.86138701)
+vf = Const(1.081099313)
+
+omega_ref = Const(1)
+Kp = Const(1.0)
+Ki = Const(10.0)
+Kw = Const(10.0)
+
+g = Const(5)
+b = Const(-12)
+bsh = Const(0.03)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Power flow
+# ----------------------------------------------------------------------------------------------------------------------
+
 grid = gce.MultiCircuit()
+
 bus1 = gce.Bus(name="Bus1", Vnom=10)
 bus2 = gce.Bus(name="Bus2", Vnom=10)
-
 grid.add_bus(bus1)
 grid.add_bus(bus2)
 
@@ -25,21 +53,45 @@ line = gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2,
                 r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
 grid.add_line(line)
 
-gen = gce.Generator(name="Gen1", P=10, vset=1.0)
+gen = gce.Generator(name="Gen1", P=10, vset=1.0) # PV
 grid.add_generator(bus=bus1, api_obj=gen)
 
-load = gce.Load(name="Load1", P=10, Q=10)
+load = gce.Load(name="Load1", P=10, Q=10)        # PQ
 grid.add_load(bus=bus2, api_obj=load)
 
 res = gce.power_flow(grid)
 
-res.voltage  # voltage in p.u.
-res.Sf / grid.Sbase  # from power of the branches
-res.St / grid.Sbase  # to power of the branches
-
-print(res.get_bus_df())
-print(res.get_branch_df())
 print(f"Converged: {res.converged}")
+
+# System
+v1 = res.voltage[0]
+v2 = res.voltage[1]
+
+Sb1 = res.Sbus[0] / grid.Sbase
+Sb2 = res.Sbus[1] / grid.Sbase
+Sf = res.Sf / grid.Sbase
+St = res.St / grid.Sbase
+
+# Generator
+# Current from power and voltage
+i = np.conj(Sb1 / v1)          # ī = (p - jq) / v̄* #NOTE: Sb1 to check
+# Delta angle 
+delta0 = np.angle(v1 + (ra.value + 1j*xd.value) * i)
+# dq0 rotation
+rot = np.exp(-1j * (delta0 - np.pi/2))
+# dq voltages and currents
+v_d0 = np.real(v1*rot)
+v_q0 = np.imag(v1*rot)
+i_d0 = np.real(i*rot)
+i_q0 = np.imag(i*rot)
+# inductances 
+psid0 = ra.value * i_q0 + v_q0
+psiq0 = -ra.value * i_d0 - v_d0
+
+te0 = psid0 * i_q0 - psiq0 * i_d0 #NOTE: try a +
+tm0 = Const(te0)
+vf0 = psid0 + xd.value * i_d0
+print(f"vf = {vf0}")
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Line
@@ -52,10 +104,6 @@ Vline_from = Var("Vline_from")
 Vline_to = Var("Vline_to")
 dline_from = Var("dline_from")
 dline_to = Var("dline_to")
-
-g = Const(5)
-b = Const(-12)
-bsh = Const(0.03)
 
 line_block = Block(
     algebraic_eqs=[
@@ -80,8 +128,8 @@ Ql = Var("Ql")
 Pl = Var("Pl")
 
 coeff_alfa = Const(1.8)
-Pl0 = Var('Pl0')
-Ql0 = Const(0.1)
+Pl0 = Var("Pl0")
+Ql0 = Const(Sb2.imag)
 coeff_beta = Const(8.0)
 
 load_block = Block(
@@ -96,23 +144,6 @@ load_block = Block(
 # ----------------------------------------------------------------------------------------------------------------------
 # Generator
 # ----------------------------------------------------------------------------------------------------------------------
-
-
-pi = Const(math.pi)
-fn = Const(50)
-# tm = Const(0.1)
-M = Const(1.0)
-D = Const(1)
-ra = Const(0.3)
-xd = Const(0.86138701)
-vf = Const(1.081099313)
-
-omega_ref = Const(1)
-Kp = Const(1.0)
-Ki = Const(10.0)
-Kw = Const(10.0)
-
-
 delta = Var("delta")
 omega = Var("omega")
 psid = Var("psid")
@@ -122,8 +153,8 @@ i_q = Var("i_q")
 v_d = Var("v_d")
 v_q = Var("v_q")
 t_e = Var("t_e")
-p_g = Var("P_e")
-Q_g = Var("Q_e")
+P_g = Var("P_g")
+Q_g = Var("Q_g")
 Vg = Var("Vg")
 dg = Var("dg")
 tm = Var("tm")
@@ -131,27 +162,36 @@ et = Var("et")
 
 generator_block = Block(
     state_eqs=[
-        # delta - (2 * pi * fn) * (omega - 1),
-        # omega - (-tm / M + t_e / M - D / M * (omega - 1))
         (2 * pi * fn) * (omega - omega_ref),  # dδ/dt
-        (tm - t_e - D * (omega - omega_ref)) / M,  # dω/dt
+        (tm  - t_e - D * (omega - omega_ref)) / M,  # dω/dt
+        (omega - omega_ref)
     ],
-    state_vars=[delta, omega],
+    state_vars=[delta, omega, et],
     algebraic_eqs=[
-        tm + Kw * (omega - omega_ref) ,
-        psid - (-ra * i_q + v_q),
-        psiq - (-ra * i_d + v_d),
-        i_d - (psid + xd * i_d - vf),
-        i_q - (psiq + xd * i_q),
+        psid - (ra * i_q + v_q),
+        psiq + (ra * i_d + v_d),
+        0 - (psid + xd * i_d - vf),
+        0 - (psiq + xd * i_q),
         v_d - (Vg * sin(delta - dg)),
         v_q - (Vg * cos(delta - dg)),
         t_e - (psid * i_q - psiq * i_d),
-        (v_d * i_d + v_q * i_q) - p_g,
-        (v_q * i_d - v_d * i_q) - Q_g
+        P_g - (v_d * i_d + v_q * i_q),
+        Q_g - (v_q * i_d - v_d * i_q),
+        (tm - tm0) + (Kp * (omega - omega_ref) + Ki * et),
     ],
-    algebraic_vars=[tm, psid, psiq, i_d, i_q, v_d, v_q, t_e, p_g, Q_g],
+    algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g, tm],
     parameters=[]
 )
+
+# psid - (-ra * i_q + v_q),
+# psiq - (-ra * i_d + v_d),
+# i_d - (psid + xd * i_d - vf),
+# i_q - (psiq + xd * i_q),
+# v_d - (Vg * sin(delta - dg)),
+# v_q - (Vg * cos(delta - dg)),
+# t_e - (psid * i_q - psiq * i_d),
+# (v_d * i_d + v_q * i_q) - p_g,
+# (v_q * i_d - v_d * i_q) - Q_g
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Buses
@@ -159,7 +199,7 @@ generator_block = Block(
 
 bus1_block = Block(
     algebraic_eqs=[
-        p_g - Pline_from,
+        P_g - Pline_from,
         Q_g - Qline_from,
         Vg - Vline_from,
         dg - dline_from
@@ -190,57 +230,73 @@ sys = Block(
 slv = BlockSolver(sys)
 
 params_mapping = {
-    Pl0: 0.1,
+    Pl0: Sb2.real
     #Ql0: 0.1
 }
+# ----------------------------------------------------------------------------------------------------------------------
+# Intialization
+# ----------------------------------------------------------------------------------------------------------------------
 vars_mapping = {
-
-    #start from PF values
-    dline_from: 15 * (np.pi / 180),
-    dline_to: 10 * (np.pi / 180),
-    Vline_from: 1.0,
-    Vline_to: 0.95,
-    Vg: 1.0,
-    dg: 15 * (np.pi / 180),
-    Pline_from: 0.1,
-    Qline_from: 0.2,
-    Pline_to: -0.1,
-    Qline_to: -0.2,
-
-    # # Flat start
-    # dline_from: 0.0,
-    # dline_to: 0.0,
-    # Vline_from: 1.0,
-    # Vline_to: 1.0,
-    # Vg: 1.0,
-    # dg: 0.0,
-    # Pline_from: 0.0,
-    # Qline_from: 0.0,
-    # Pline_to: 0.0,
-    # Qline_to: 0.0,
-
-    Pl: 0.1,  # P2
-    Ql: 0.2,  # Q2
-    delta: 0.5,
-    omega: 1.001,
-    psid: 3.825,  # d-axis flux linkage (pu)
-    psiq: 0.0277,  # q-axis flux linkage (pu)
-    i_d: 0.1,  # d-axis stator current (pu)
-    i_q: 0.2,  # q-axis stator current (pu)
-    v_d: -0.2588,  # d-axis voltage (pu)
-    v_q: 0.9659,  # q-axis voltage (pu)
-    t_e: 0.1,  # electromagnetic torque (pu)
-    p_g: 0.1673,
-    Q_g: 0.1484
+    dline_from: np.angle(v1),
+    dline_to: np.angle(v2),
+    Vline_from: np.abs(v1),
+    Vline_to: np.abs(v2),
+    Vg: np.abs(v1),
+    dg: np.angle(v1),
+    Pline_from: Sf.real,
+    Qline_from: Sf.imag,
+    Pline_to: St.real,
+    Qline_to: St.imag,
+    Pl: Sb2.real,  # P2
+    Ql: Sb2.imag,  # Q2
+    delta: delta0,
+    omega: 1.0,
+    psid: psid0,  # d-axis flux linkage (pu)
+    psiq: psiq0,  # q-axis flux linkage (pu)
+    i_d: i_d0,  # d-axis stator current (pu)
+    i_q: i_q0,  # q-axis stator current (pu)
+    v_d: v_d0,  # d-axis voltage (pu)
+    v_q: v_q0,  # q-axis voltage (pu)
+    t_e: te0,  # electromagnetic torque (pu)
+    P_g: Sb1.real,
+    Q_g: Sb1.imag,
+    tm: te0
 }
+
+# Consistency check 
+residuals = {
+    "f1: (2 * pi * fn) * (omega - omega_ref)": (2 * pi.value * fn.value) * (1.0 - omega_ref.value),
+    "f2: (tm - t_e - D * (omega - omega_ref)) / M": (te0 - te0 - D.value * (1.0 - omega_ref.value)) / M.value,
+    "g1: psid - (-ra * i_q + v_q)": psid0 - (ra.value * i_q0 + v_q0),
+    "g2: psiq - (-ra * i_d + v_d)": psiq0 + (ra.value * i_d0 + v_d0),
+    "g3: 0 - (psid + xd * i_d - vf)": 0 - (psid0 + xd.value * i_d0 - vf0),
+    "g4: 0 - (psiq + xd * i_q)": 0 - (psiq0 + xd.value * i_q0),
+    "g5: v_d - (Vg * sin(delta - dg))": v_d0 - (np.abs(v1) * np.sin(delta0 - np.angle(v1))),
+    "g6: v_q - (Vg * cos(delta - dg))": v_q0 - (np.abs(v1) * np.cos(delta0 - np.angle(v1))),
+    "g7: t_e - (psid * i_q - psiq * i_d)": te0 - (psid0 * i_q0 - psiq0 * i_d0),
+    "g8: (v_d * i_d + v_q * i_q) - p_g": (v_d0 * i_d0 + v_q0 * i_q0) - Sb1.real,
+    "g9: (v_q * i_d - v_d * i_q) - Q_g": (v_q0 * i_d0 - v_d0 * i_q0) - Sb1.imag,
+    "g10: P_g - Pline_from": Sb1.real - Sf[0].real,
+    "g11: Q_g - Qline_from": Sb1.imag - Sf[0].imag,
+    "g14: Pl - Pline_to": Sb2.real - St[0].real,
+    "g15: Ql - Qline_to": Sb2.imag - St[0].imag,
+    "g16: Pl - Pl0": Sb2.real - Sb2.real,
+    "g17: Ql - Ql0": Sb2.imag - Ql0.value
+}
+
+# Print results
+print("\n🔍 Residuals of generator algebraic equations:\n")
+for eq, val in residuals.items():
+    print(f"{eq:55} = {val:.3e}")
 
 # ---------------------------------------------------------------------------------------
 # Events
 # ---------------------------------------------------------------------------------------
 
-event1 = Event(Pl0, 5000, 0.3)
-#event2 = Event(Ql0, 5000, 0.3)
+event1 = Event(Pl0, 2500, 0.15)
+# event2 = Event(Ql0, 5000, 0.3)
 my_events = Events([event1])
+# my_events = Events([])
 
 params0 = slv.build_init_params_vector(params_mapping)
 x0 = slv.build_init_vars_vector(vars_mapping)
@@ -286,12 +342,13 @@ slv.save_simulation_to_csv('simulation_results.csv', t, y)
 fig = plt.figure(figsize=(14, 10))
 
 #Generator state variables
-plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)")
+plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)", color='red')
+# plt.plot(t, y[:, slv.get_var_idx(t_e)], label="Te (pu)")
 #plt.plot(t, y[:, slv.get_var_idx(delta)], label="δ (rad)")
 #plt.plot(t, y[:, slv.get_var_idx(et)], label="et (pu)")
 
 #Generator algebraic variables
-#plt.plot(t, y[:, slv.get_var_idx(tm)], label="Tm (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(tm)], label="Tm (pu)")
 #plt.plot(t, y[:, slv.get_var_idx(psid)], label="Ψd (pu)")
 #plt.plot(t, y[:, slv.get_var_idx(psiq)], label="Ψq (pu)")
 #plt.plot(t, y[:, slv.get_var_idx(i_d)], label="Id (pu)")
@@ -321,7 +378,9 @@ plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)")
 plt.legend(loc='upper right', ncol=2)
 plt.xlabel("Time (s)")
 plt.ylabel("Values (pu)")
-plt.title("Time Series of All System Variables")
+plt.title("Small System: Control Proof")
+plt.xlim(0, 10)
+plt.ylim(0.85, 1.15)
 plt.grid(True)
 plt.tight_layout()
 plt.show()
