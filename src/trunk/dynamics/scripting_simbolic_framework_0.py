@@ -345,7 +345,7 @@ for eq, val in residuals.items():
 # Events
 # ---------------------------------------------------------------------------------------
 
-event1 = RmsEvent(Pl0, 2500, 0.15)
+event1 = RmsEvent('Load', Pl0, 2500, 0.15)
 #event2 = Event(Ql0, 5000, 0.3)
 my_events = RmsEvents([event1])
 
