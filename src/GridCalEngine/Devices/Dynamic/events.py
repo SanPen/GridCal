@@ -5,26 +5,25 @@
 
 from __future__ import annotations
 
-import pdb
 from typing import List, Any, Dict
-
+from GridCalEngine.Utils.Symbolic.symbolic import Var
 import numpy as np
 
-from GridCalEngine.Utils.Symbolic.symbolic import Const
 
-
-class Event:
+class RmsEvent:
     def __init__(self,
-                 prop: Any | None = None,
+                 device,
+                 variable: Var,
                  time_step: int = 0.0,
                  value: float = 0.0):
-        self._prop = prop
+        self._device = device
+        self._variable = variable
         self._time_step = time_step
         self._value = value
 
     @property
-    def prop(self):
-        return self._prop
+    def variable(self):
+        return self._variable
 
     @property
     def value(self):
@@ -35,9 +34,8 @@ class Event:
         return self._time_step
 
 
-
-class Events:
-    def __init__(self, events: List[Event]):
+class RmsEvents:
+    def __init__(self, events: List[RmsEvent]):
         self._events = events
         self._n_events = len(events)
 
@@ -45,16 +43,15 @@ class Events:
         self._events.sort(key=lambda e: e.time_step)
 
     def build_triplets_list(self):
-        rows = np.ndarray(self._n_events)
-        cols = np.ndarray(self._n_events, dtype=object)
-        values = np.ndarray(self._n_events)
+        rows = np.zeros(self._n_events)
+        cols = np.zeros(self._n_events, dtype=object)
+        values = np.zeros(self._n_events)
         for i, event in enumerate(self._events):
             rows[i] = event.time_step
-            cols[i] = event.prop
+            cols[i] = event.variable
             values[i] = event.value
 
         return rows, cols, values
-
 
     @property
     def events(self):

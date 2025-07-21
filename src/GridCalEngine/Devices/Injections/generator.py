@@ -48,6 +48,14 @@ class Generator(GeneratorParent):
         'emissions',
         'fuels',
         'Sbase',
+        'freq',
+        'm_torque',
+        'M',
+        'D',
+        'omega_ref',
+        'Kp',
+        'Ki',
+        'Kw'
     )
 
     def __init__(self,
@@ -79,6 +87,14 @@ class Generator(GeneratorParent):
                  x0: float = 1e-20,
                  r2: float = 1e-20,
                  x2: float = 1e-20,
+                 freq=50.0,
+                 m_torque=0.1,
+                 M=1.0,
+                 D=4.0,
+                 omega_ref=1.0,
+                 Kp=1.0,
+                 Ki=10.0,
+                 Kw=10.0,
                  capex: float = 0,
                  opex: float = 0,
                  srap_enabled: bool = True,
@@ -212,6 +228,15 @@ class Generator(GeneratorParent):
 
         # system base power MVA
         self.Sbase = float(Sbase)
+
+        self.freq = freq
+        self.m_torque = m_torque
+        self.M = M
+        self.D = D
+        self.omega_ref = omega_ref
+        self.Kp = Kp
+        self.Ki = Ki
+        self.Kw = Kw
 
         self.register(key='is_controlled', units='', tpe=bool, definition='Is this generator voltage-controlled?')
 
@@ -461,56 +486,57 @@ class Generator(GeneratorParent):
 
     def initialize_rms(self):
 
-        pi = Const(np.pi)
-        fn = Const(50)
-        tm = Const(0.1)
-        M = Const(1.0)
-        D = Const(4)
-        ra = Const(0.3)
-        xd = Const(0.86138701)
-        vf = Const(1.081099313)
+        if self.rms_model.empty():
+            # fn = 50.0
+            # tm = 0.1
+            # M = 1.0
+            # D = 4.0
+            # ra = 0.3
+            # xd = 0.86138701
+            # vset = self.Vset
+            # omega_ref = 1.0
+            # Kp = 1.0
+            # Ki = 10.0
+            # Kw = 10.0
 
-        omega_ref = Const(1)
-        Kp = Const(1.0)
-        Ki = Const(10.0)
-        Kw = Const(10.0)
+            delta = Var("delta")
+            omega = Var("omega")
+            psid = Var("psid")
+            psiq = Var("psiq")
+            i_d = Var("i_d")
+            i_q = Var("i_q")
+            v_d = Var("v_d")
+            v_q = Var("v_q")
+            t_e = Var("t_e")
+            P_g = Var("Pg")
+            Q_g = Var("Qg")
+            Vm = self.bus.rms_model.model.E(DynamicVarType.Vm)
+            Va = self.bus.rms_model.model.E(DynamicVarType.Va)
 
-        delta = Var("delta")
-        omega = Var("omega")
-        psid = Var("psid")
-        psiq = Var("psiq")
-        i_d = Var("i_d")
-        i_q = Var("i_q")
-        v_d = Var("v_d")
-        v_q = Var("v_q")
-        t_e = Var("t_e")
-        p_g = Var("P_e")
-        Q_g = Var("Q_e")
-        Vg = self.bus.rms_model.model.V("Vm")
-        dg = self.bus.rms_model.model.V("Va")
-        # tm = Var("tm")
-        et = Var("et")
-
-        self.rms_model.model = Block(
-            state_eqs=[
-                # delta - (2 * pi * fn) * (omega - 1),
-                # omega - (-tm / M + t_e / M - D / M * (omega - 1))
-                (2 * pi * fn) * (omega - omega_ref),  # dδ/dt
-                (tm - t_e - D * (omega - omega_ref)) / M,  # dω/dt
-            ],
-            state_vars=[delta, omega],
-            algebraic_eqs=[
-                # tm + Kw * (omega - omega_ref) ,
-                psid - (-ra * i_q + v_q),
-                psiq - (-ra * i_d + v_d),
-                i_d - (psid + xd * i_d - vf),
-                i_q - (psiq + xd * i_q),
-                v_d - (Vg * sin(delta - dg)),
-                v_q - (Vg * cos(delta - dg)),
-                t_e - (psid * i_q - psiq * i_d),
-                (v_d * i_d + v_q * i_q) - p_g,
-                (v_q * i_d - v_d * i_q) - Q_g
-            ],
-            algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, p_g, Q_g],
-            parameters=[]
-        )
+            self.rms_model.model = Block(
+                state_eqs=[
+                    # delta - (2 * pi * fn) * (omega - 1),
+                    # omega - (-tm / M + t_e / M - D / M * (omega - 1))
+                    (2 * np.pi * self.freq) * (omega - self.omega_ref),  # dδ/dt
+                    (self.m_torque - t_e - self.D * (omega - self.omega_ref)) / self.M,  # dω/dt
+                ],
+                state_vars=[delta, omega],
+                algebraic_eqs=[
+                    # tm + Kw * (omega - omega_ref) ,
+                    psid - (-self.R1 * i_q + v_q),
+                    psiq - (-self.R1 * i_d + v_d),
+                    i_d - (psid + self.X1 * i_d - self.Vset),
+                    i_q - (psiq + self.X1 * i_q),
+                    v_d - (Vm * sin(delta - Va)),
+                    v_q - (Vm * cos(delta - Va)),
+                    t_e - (psid * i_q - psiq * i_d),
+                    (v_d * i_d + v_q * i_q) - P_g,
+                    (v_q * i_d - v_d * i_q) - Q_g
+                ],
+                algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g],
+                parameters=[],
+                external_mapping={
+                    DynamicVarType.P: P_g,
+                    DynamicVarType.Q: Q_g,
+                }
+            )

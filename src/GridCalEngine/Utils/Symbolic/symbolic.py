@@ -199,16 +199,6 @@ class Expr:
     def __gt__(self, other: "Expr" | NUMBER) -> Comparison:
         return Comparison(self, CmpOp.GT, other)
 
-    # reversed versions so 0 <= expr works
-    # def __rle__(self, other: "Expr" | NUMBER) -> Comparison:
-    #     return Comparison(other, CmpOp.LE, self)
-    #
-    # def __rge__(self, other: "Expr" | NUMBER) -> Comparison:
-    #     return Comparison(other, CmpOp.GE, self)
-    #
-    # def __req__(self, other: "Expr" | NUMBER) -> Comparison:
-    #     return Comparison(other, CmpOp.EQ, self)
-
     def __str__(self) -> str:  # pragma: no cover – abstract
         """
         Display helper
@@ -216,7 +206,8 @@ class Expr:
         """
         raise NotImplementedError
 
-    __repr__ = __str__
+    def __repr__(self):
+        return self.__str__()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -228,7 +219,6 @@ class Const(Expr):
     value: NUMBER
     name: str = 'name'
     uid: int = field(default_factory=_new_uid)
-
 
     def eval(self, **bindings: NUMBER) -> NUMBER:
         return self.value
@@ -248,6 +238,9 @@ class Const(Expr):
 
     def __str__(self) -> str:
         return str(self.value)
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 @dataclass(frozen=True)
@@ -396,6 +389,9 @@ class BinOp(Expr):
     def __str__(self) -> str:
         return f"({self.left}) {self.op} ({self.right})"
 
+    def __repr__(self) -> str:
+        return self.__str__()
+
 
 @dataclass(frozen=True)
 class UnOp(Expr):
@@ -439,6 +435,9 @@ class UnOp(Expr):
 
     def __str__(self) -> str:
         return f"{self.op}({self.operand})"
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -525,6 +524,9 @@ class Func(Expr):
 
     def __str__(self) -> str:
         return f"{self.name}({self.arg})"
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 # Helpers for functions not primitive nodes (sec for tan derivative)

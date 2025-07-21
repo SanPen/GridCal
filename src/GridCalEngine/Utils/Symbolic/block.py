@@ -78,10 +78,8 @@ class Block:
     algebraic_vars: List[Var] = field(default_factory=list)
     algebraic_eqs: List[Expr] = field(default_factory=list)
 
-    external_mapping: Dict[DynamicVarType, Var] = field(default_factory= dict)
+    external_mapping: Dict[DynamicVarType, Var] = field(default_factory=dict)
     var_mapping: Dict[str, Var] = field(default_factory=dict)
-
-
 
     # parameters
     parameters: List[Var | Const] = field(default_factory=list)
@@ -94,17 +92,20 @@ class Block:
     out_vars: List[Var] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        if len(self.algebraic_vars) != len(self.algebraic_eqs):
-            raise ValueError(
-                f"algebraic_vars and algebraic_eqs must have the same length: vars is {len(self.algebraic_vars)}, eqs is {len(self.algebraic_eqs)}")
-        if len(self.state_vars) != len(self.state_eqs):
-            raise ValueError("state_vars and state_eqs must have the same length")
+        # if len(self.algebraic_vars) != len(self.algebraic_eqs):
+        #     raise ValueError(
+        #         f"algebraic_vars and algebraic_eqs must have the same length: vars is {len(self.algebraic_vars)}, eqs is {len(self.algebraic_eqs)}")
+        # if len(self.state_vars) != len(self.state_eqs):
+        #     raise ValueError("state_vars and state_eqs must have the same length")
         self.var_mapping = {v.name: v for v in self.algebraic_vars}
 
-    def E(self, d: DynamicVarType)-> Var:
+    def empty(self):
+        return (len(self.state_vars) + len(self.algebraic_vars)) == 0
+
+    def E(self, d: DynamicVarType) -> Var:
         return self.external_mapping[d]
 
-    def V(self, d: str)-> Var:
+    def V(self, d: str) -> Var:
         return self.var_mapping[d]
 
     def add(self, val: "Block"):
@@ -173,7 +174,6 @@ class Block:
             return self.to_dict() == other.to_dict()
         else:
             return False
-
 
 
 # ----------------------------------------------------------------------------------------------------------------------
