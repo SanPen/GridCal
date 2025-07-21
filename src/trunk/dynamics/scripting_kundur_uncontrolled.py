@@ -350,9 +350,9 @@ pi = Const(math.pi)
 
 # Generator 1
 fn_1 = Const(60)
-# tm = Const(0.1)
+tm_1 = Const(0.1)
 M_1 = Const(1.0)
-D_1 = Const(0)
+D_1 = Const(4)
 ra_1 = Const(0.3)
 xd_1 = Const(0.86138701)
 vf_1 = Const(1.081099313)
@@ -363,9 +363,9 @@ Kw_1 = Const(10.0)
 
 # Generator 2
 fn_2 = Const(60)
-# tm = Const(0.1)
+tm_2 = Const(0.1)
 M_2 = Const(1.0)
-D_2 = Const(0)
+D_2 = Const(4)
 ra_2 = Const(0.3)
 xd_2 = Const(0.86138701)
 vf_2 = Const(1.081099313)
@@ -377,9 +377,9 @@ Kw_2 = Const(10.0)
 
 # Generator 3
 fn_3 = Const(60)
-# tm = Const(0.1)
+tm_3 = Const(0.1)
 M_3 = Const(1.0)
-D_3 = Const(0)
+D_3 = Const(4)
 ra_3 = Const(0.3)
 xd_3 = Const(0.86138701)
 vf_3 = Const(1.081099313)
@@ -390,9 +390,9 @@ Kw_3 = Const(10.0)
 
 # Generator 4
 fn_4 = Const(60)
-# tm = Const(0.1)
+tm_4 = Const(0.1)
 M_4 = Const(1.0)
-D_4 = Const(0)
+D_4 = Const(4)
 ra_4 = Const(0.3)
 xd_4 = Const(0.86138701)
 vf_4 = Const(1.081099313)
@@ -415,7 +415,7 @@ t_e_1 = Var("t_e_1")
 p_g_1 = Var("P_e_1")
 Q_g_1 = Var("Q_e_1")
 dg_1 = Var("dg_1")
-tm_1 = Var("tm_1")
+#tm_1 = Var("tm_1")
 et_1 = Var("et_1")
 Vg_1 = Var("Vg_1")
 
@@ -434,7 +434,7 @@ i_q_2 = Var("i_q_2")
 v_d_2 = Var("v_d_2")
 v_q_2 = Var("v_q_2")
 t_e_2 = Var("t_e_2")
-tm_2 = Var("tm_2")
+#tm_2 = Var("tm_2")
 et_2 = Var("et_2")
 
 
@@ -453,7 +453,7 @@ i_q_3 = Var("i_q_3")
 v_d_3 = Var("v_d_3")
 v_q_3 = Var("v_q_3")
 t_e_3 = Var("t_e_3")
-tm_3 = Var("tm_3")
+#tm_3 = Var("tm_3")
 et_3 = Var("et_3")
 
 # Gencls 4
@@ -471,7 +471,7 @@ i_q_4 = Var("i_q_4")
 v_d_4 = Var("v_d_4")
 v_q_4 = Var("v_q_4")
 t_e_4 = Var("t_e_4")
-tm_4 = Var("tm_4")
+#tm_4 = Var("tm_4")
 et_4 = Var("et_4")
 
 # Load 7
@@ -866,7 +866,7 @@ generator_block_1 = Block(
     ],
     state_vars=[delta_1, omega_1],
     algebraic_eqs=[
-        tm_1 + Kw_1 * (omega_1 - omega_ref_1),
+        #tm_1 + Kw_1 * (omega_1 - omega_ref_1),
         psid_1 - (-ra_1 * i_q_1 + v_q_1),
         psiq_1 - (-ra_1 * i_d_1 + v_d_1),
         i_d_1 - (psid_1 + xd_1 * i_d_1 - vf_1),
@@ -877,7 +877,7 @@ generator_block_1 = Block(
         (v_d_1 * i_d_1 + v_q_1 * i_q_1) - p_g_1,
         (v_q_1 * i_d_1 - v_d_1 * i_q_1) - Q_g_1
     ],
-    algebraic_vars=[tm_1, psid_1, psiq_1, i_d_1, i_q_1, v_d_1, v_q_1, t_e_1, p_g_1, Q_g_1],
+    algebraic_vars=[psid_1, psiq_1, i_d_1, i_q_1, v_d_1, v_q_1, t_e_1, p_g_1, Q_g_1],
     parameters=[]
 )
 
@@ -887,11 +887,10 @@ generator_block_2 = Block(
     state_eqs=[
         (2 * pi * fn_2) * (omega_2 - omega_ref_2),
         (tm_2 - t_e_2 - D_2 * (omega_2 - omega_ref_2)) / M_2,
-        -Kp_2 * et_2 - Ki_2 * et_2 - Kw_2 * (omega_2 - omega_ref_2)
     ],
-    state_vars=[delta_2, omega_2, et_2],
+    state_vars=[delta_2, omega_2],
     algebraic_eqs=[
-        et_2 - (tm_2 - t_e_2),
+        # tm_2 + Kw_2 * (omega_2 - omega_ref_2),
         psid_2 - (-ra_2 * i_q_2 + v_q_2),
         psiq_2 - (-ra_2 * i_d_2 + v_d_2),
         i_d_2 - (psid_2 + xd_2 * i_d_2 - vf_2),
@@ -902,7 +901,7 @@ generator_block_2 = Block(
         (v_d_2 * i_d_2 + v_q_2 * i_q_2) - p_g_2,
         (v_q_2 * i_d_2 - v_d_2 * i_q_2) - Q_g_2
     ],
-    algebraic_vars=[tm_2, psid_2, psiq_2, i_d_2, i_q_2, v_d_2, v_q_2, t_e_2, p_g_2, Q_g_2],
+    algebraic_vars=[psid_2, psiq_2, i_d_2, i_q_2, v_d_2, v_q_2, t_e_2, p_g_2, Q_g_2],
     parameters=[]
 )
 
@@ -912,11 +911,10 @@ generator_block_3 = Block(
     state_eqs=[
         (2 * pi * fn_3) * (omega_3 - omega_ref_3),
         (tm_3 - t_e_3 - D_3 * (omega_3 - omega_ref_3)) / M_3,
-        -Kp_3 * et_3 - Ki_3 * et_3 - Kw_3 * (omega_3 - omega_ref_3)
     ],
-    state_vars=[delta_3, omega_3, et_3],
+    state_vars=[delta_3, omega_3],
     algebraic_eqs=[
-        et_3 - (tm_3 - t_e_3),
+        # tm_3 + Kw_3 * (omega_3 - omega_ref_3),
         psid_3 - (-ra_3 * i_q_3 + v_q_3),
         psiq_3 - (-ra_3 * i_d_3 + v_d_3),
         i_d_3 - (psid_3 + xd_3 * i_d_3 - vf_3),
@@ -927,7 +925,7 @@ generator_block_3 = Block(
         (v_d_3 * i_d_3 + v_q_3 * i_q_3) - p_g_3,
         (v_q_3 * i_d_3 - v_d_3 * i_q_3) - Q_g_3
     ],
-    algebraic_vars=[tm_3, psid_3, psiq_3, i_d_3, i_q_3, v_d_3, v_q_3, t_e_3, p_g_3, Q_g_3],
+    algebraic_vars=[psid_3, psiq_3, i_d_3, i_q_3, v_d_3, v_q_3, t_e_3, p_g_3, Q_g_3],
     parameters=[]
 )
 
@@ -938,11 +936,10 @@ generator_block_4 = Block(
     state_eqs=[
         (2 * pi * fn_4) * (omega_4 - omega_ref_4),
         (tm_4 - t_e_4 - D_4 * (omega_4 - omega_ref_4)) / M_4,
-        -Kp_4 * et_4 - Ki_4 * et_4 - Kw_4 * (omega_4 - omega_ref_4)
     ],
-    state_vars=[delta_4, omega_4, et_4],
+    state_vars=[delta_4, omega_4],
     algebraic_eqs=[
-        et_4 - (tm_4 - t_e_4),
+        # tm_4 + Kw_4 * (omega_4 - omega_ref_4),
         psid_4 - (-ra_4 * i_q_4 + v_q_4),
         psiq_4 - (-ra_4 * i_d_4 + v_d_4),
         i_d_4 - (psid_4 + xd_4 * i_d_4 - vf_4),
@@ -953,7 +950,7 @@ generator_block_4 = Block(
         (v_d_4 * i_d_4 + v_q_4 * i_q_4) - p_g_4,
         (v_q_4 * i_d_4 - v_d_4 * i_q_4) - Q_g_4
     ],
-    algebraic_vars=[tm_4, psid_4, psiq_4, i_d_4, i_q_4, v_d_4, v_q_4, t_e_4, p_g_4, Q_g_4],
+    algebraic_vars=[psid_4, psiq_4, i_d_4, i_q_4, v_d_4, v_q_4, t_e_4, p_g_4, Q_g_4],
     parameters=[]
 )
 
@@ -1330,7 +1327,7 @@ vars_mapping = {
     i_q_1: i_q0_1,
     v_d_1: v_d0_1,
     v_q_1: v_q0_1,
-    tm_1: t_e0_1,
+    #tm_1: t_e0_1,
     t_e_1: t_e0_1,
     p_g_1: Pf0_11,
     Q_g_1: Qf0_11,
@@ -1345,7 +1342,7 @@ vars_mapping = {
     i_q_2: i_q0_2,
     v_d_2: v_d0_2,
     v_q_2: v_q0_2,
-    tm_2: t_e0_2,
+    #tm_2: t_e0_2,
     t_e_2: t_e0_2,
     p_g_2: Pf0_12,
     Q_g_2: Qf0_12,
@@ -1361,7 +1358,7 @@ vars_mapping = {
     i_q_3: i_q0_3,
     v_d_3: v_d0_3,
     v_q_3: v_q0_3,
-    tm_3: t_e0_3,
+    #tm_3: t_e0_3,
     t_e_3: t_e0_3,
     p_g_3: Pf0_13,
     Q_g_3: Qf0_13,
@@ -1376,7 +1373,7 @@ vars_mapping = {
     i_q_4: i_q0_4,
     v_d_4: v_d0_4,
     v_q_4: v_q0_4,
-    tm_4: t_e0_4,
+    #tm_4: t_e0_4,
     t_e_4: t_e0_4,
     p_g_4: Pf0_14,
     Q_g_4: Qf0_14,
@@ -1431,12 +1428,41 @@ t, y = slv.simulate(
     method="implicit_euler"
 )
 
+
 # save to csv
 slv.save_simulation_to_csv('simulation_results.csv', t, y)
+# Lists of actual variable objects, NOT strings
+omega_vars = [omega_1, omega_2, omega_3, omega_4]
+te_vars = [t_e_1, t_e_2, t_e_3, t_e_4]
 
+# Create subplots
+fig, axs = plt.subplots(2, 2, figsize=(12, 8))
+fig.suptitle("Generator Dynamics")
+
+axs = axs.flatten()
+
+# Loop over each generator
+for i in range(4):
+    ax = axs[i]
+
+    omega_idx = slv.get_var_idx(omega_vars[i])
+    te_idx = slv.get_var_idx(te_vars[i])
+
+    ax.plot(t, y[:, omega_idx], label="ω (pu)")
+    ax.plot(t, y[:, te_idx], label="Te (pu)")
+
+    ax.set_title(f"Generator {i + 1}")
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Value (pu)")
+    ax.grid(True)
+    ax.legend()
+
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.show()
 
 # Generator state variables
 # plt.plot(t, y[:, slv.get_var_idx(omega_1)], label="ω (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(t_e_1)], label="Te (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(delta_1)], label="δ (rad)")
 # plt.plot(t, y[:, slv.get_var_idx(et_1)], label="et (pu)")
 
@@ -1453,7 +1479,7 @@ slv.save_simulation_to_csv('simulation_results.csv', t, y)
 # plt.plot(t, y[:, slv.get_var_idx(et_4)], label="et (pu)")
 #
 # # Generator algebraic variables
-plt.plot(t, y[:, slv.get_var_idx(tm_1)], label="Tm (pu)")
+#plt.plot(t, y[:, slv.get_var_idx(tm_1)], label="Tm (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(tm_2)], label="Tm (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(tm_3)], label="Tm (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(tm_4)], label="Tm (pu)")
@@ -1463,7 +1489,7 @@ plt.plot(t, y[:, slv.get_var_idx(tm_1)], label="Tm (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(i_q_1)], label="Iq (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(v_d_1)], label="Vd (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(v_q_1)], label="Vq (pu)")
-plt.plot(t, y[:, slv.get_var_idx(t_e_1)], label="Te (pu)")
+#plt.plot(t, y[:, slv.get_var_idx(t_e_1)], label="Te (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(t_e_2)], label="Te (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(t_e_3)], label="Te (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(t_e_4)], label="Te (pu)")
@@ -1489,13 +1515,13 @@ plt.plot(t, y[:, slv.get_var_idx(t_e_1)], label="Te (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(Pl_8)], label="Pl (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(Ql_8)], label="Ql (pu)")
 
-plt.legend(loc='upper right', ncol=2)
-plt.xlabel("Time (s)")
-plt.ylabel("Values (pu)")
-plt.title("Time Series of All System Variables")
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+# plt.legend(loc='upper right', ncol=2)
+# plt.xlabel("Time (s)")
+# plt.ylabel("Values (pu)")
+# plt.title("Time Series of All System Variables")
+# plt.grid(True)
+# plt.tight_layout()
+# plt.show()
 
 
 

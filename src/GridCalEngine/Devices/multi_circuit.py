@@ -23,7 +23,8 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, AREA_TYPES
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Topology.topology import find_different_states
-from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType
+from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType, DynamicVarType
+from GridCalEngine.Utils.Symbolic.block import Block, Expr
 
 if TYPE_CHECKING:
     from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
@@ -2734,3 +2735,77 @@ class MultiCircuit(Assets):
         boundary_branches = np.array(boundary_branches)
 
         return external, boundary, internal, boundary_branches
+
+    def initialize_rms(self, logger: Logger = Logger()) -> Block:
+        """
+        Initialize all RMS models
+        :return: System block
+        """
+        # create the system block
+        sys_block = Block(children=[], in_vars=[])
+        bus_dict = dict()
+
+        # balance equation arrays
+        n = len(self.buses)
+        P: List[Expr] = np.zeros(n, dtype=object)
+        Q: List[Expr] = np.zeros(n, dtype=object)
+        P_used = np.zeros(n, dtype=int)
+        Q_used = np.zeros(n, dtype=int)
+
+        def setP(k, val):
+            if not P_used[k]:
+                P[k] = val
+                P_used[k] = 1
+            else:
+                P[k] += val
+
+        def setQ(k, val):
+            if not Q_used[k]:
+                Q[k] = val
+                Q_used[k] = 1
+            else:
+                Q[k] += val
+
+        # initialize buses
+        for i, elm in enumerate(self.buses):
+            elm.initialize_rms()
+            mdl = elm.rms_model.model
+            sys_block.children.append(mdl)
+            bus_dict[elm] = i
+
+        # initialize branches
+        for elm in self.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
+            elm.initialize_rms()
+            mdl = elm.rms_model.model
+            sys_block.children.append(mdl)
+            f = bus_dict[elm.bus_from]
+            t = bus_dict[elm.bus_to]
+
+            setP(f, mdl.E(DynamicVarType.Pf))
+            setP(t, mdl.E(DynamicVarType.Pt))
+            setQ(f, mdl.E(DynamicVarType.Qf))
+            setQ(t, mdl.E(DynamicVarType.Qt))
+
+        # initialize injections
+        for elm in self.get_injection_devices_iter():
+            elm.initialize_rms()
+            mdl = elm.rms_model.model
+            sys_block.children.append(mdl)
+            f = bus_dict[elm.bus]
+            if elm.device_type == DeviceType.LoadDevice:
+                setP(f, -mdl.E(DynamicVarType.P))
+                setQ(f, -mdl.E(DynamicVarType.Q))
+            else:
+                setP(f, mdl.E(DynamicVarType.P))
+                setQ(f, mdl.E(DynamicVarType.Q))
+
+        # add the nodal balance equations
+        for i, elm in enumerate(self.buses):
+            mdl = elm.rms_model.model
+            if P_used[i] == 0 and Q_used[i] == 0:
+                logger.add_error("Isolated bus", value=i)
+            else:
+                mdl.algebraic_eqs.append(P[i])
+                mdl.algebraic_eqs.append(Q[i])
+
+        return sys_block

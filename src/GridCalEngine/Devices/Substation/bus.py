@@ -16,6 +16,7 @@ from GridCalEngine.Devices.Substation.busbar import BusBar
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Dynamic.dynamic_model_host import DynamicModelHost
+from GridCalEngine.Utils.Symbolic.block import Block, Var, DynamicVarType
 
 
 class Bus(PhysicalDevice):
@@ -486,3 +487,20 @@ class Bus(PhysicalDevice):
             self._bus_bar = val
         else:
             raise ValueError("The value must be a BusBar")
+
+    def initialize_rms(self):
+
+        if self.rms_model.empty():
+
+            Vm = Var("Vm")
+            Va = Var("Va")
+
+            self.rms_model.model = Block(
+                algebraic_eqs=[
+                ],
+                algebraic_vars=[Vm, Va],
+                external_mapping={
+                    DynamicVarType.Vm: Vm,
+                    DynamicVarType.Va: Va
+                }
+            )

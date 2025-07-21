@@ -19,6 +19,8 @@ from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
 from GridCalEngine.Devices.admittance_matrix import AdmittanceMatrix
+from GridCalEngine.Utils.Symbolic.block import Block, Var, Const, DynamicVarType
+from GridCalEngine.Utils.Symbolic.symbolic import cos, sin
 
 
 def accept_line_connection(V1: float, V2: float, branch_connection_voltage_tolerance=0.1) -> float:
@@ -705,3 +707,39 @@ class Line(BranchParent):
             obj = SequenceLineType(R=self.R, R0=2.0 * self.R, X=self.X, X0=2.0 * self.X)
         self.ys = obj.get_ys_abc()
         self.ysh = obj.get_ysh_abc()
+
+    def initialize_rms(self):
+        if self.rms_model.empty():
+            Qf = Var("Qf")
+            Qt = Var("Qt")
+            Pf = Var("Pf")
+            Pt = Var("Pt")
+
+            ys = 1.0 / complex(self.R, self.X)
+            g = Const(ys.real)
+            b = Const(ys.imag)
+            bsh = Const(self.B)
+
+            Vmf = self.bus_from.rms_model.model.E(DynamicVarType.Vm)
+            Vaf = self.bus_from.rms_model.model.E(DynamicVarType.Va)
+            Vmt = self.bus_to.rms_model.model.E(DynamicVarType.Vm)
+            Vat = self.bus_to.rms_model.model.E(DynamicVarType.Va)
+            daft = Vaf - Vat
+            datf = Vat - Vaf
+
+            self.rms_model.model = Block(
+                algebraic_eqs=[
+                    Pf - ((Vmf ** 2 * g) - g * Vmf * Vmt * cos(daft) + b * Vmf * Vmt * cos(daft + np.pi / 2)),
+                    Qf - (Vmf ** 2 * (-bsh / 2 - b) - g * Vmf * Vmt * sin(daft) + b * Vmf * Vmt * sin(daft + np.pi / 2)),
+                    Pt - ((Vmt ** 2 * g) - g * Vmt * Vmf * cos(datf) + b * Vmt * Vmf * cos(datf + np.pi / 2)),
+                    Qt - (Vmt ** 2 * (-bsh / 2 - b) - g * Vmt * Vmf * sin(datf) + b * Vmt * Vmf * sin(datf + np.pi / 2)),
+                ],
+                algebraic_vars=[Pf, Pt, Qf, Qt],
+                parameters=[],
+                external_mapping={
+                    DynamicVarType.Pf: Pf,
+                    DynamicVarType.Pt: Pt,
+                    DynamicVarType.Qf: Qf,
+                    DynamicVarType.Qt: Qt,
+                }
+            )

@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import DeviceType, BuildStatus
 from GridCalEngine.Devices.Parents.load_parent import LoadParent
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Utils.Symbolic.block import Block, Var, Const, DynamicVarType
 
 
 class Load(LoadParent):
@@ -51,7 +52,6 @@ class Load(LoadParent):
         '_B3_prof',
         '_Ir3_prof',
         '_Ii3_prof',
-
 
         '_n_customers',
         '_n_customers_prof',
@@ -170,27 +170,36 @@ class Load(LoadParent):
         self.register(key='Ii', units='MVAr', tpe=float,
                       definition='Reactive power of the current component at V=1.0 p.u.', profile_name='Ii_prof')
         self.register(key='Ii1', units='MVAr', tpe=float,
-                      definition='Reactive power of the phase 1 current component at V=1.0 p.u.', profile_name='Ii1_prof')
+                      definition='Reactive power of the phase 1 current component at V=1.0 p.u.',
+                      profile_name='Ii1_prof')
         self.register(key='Ii2', units='MVAr', tpe=float,
-                      definition='Reactive power of the phase 2 current component at V=1.0 p.u.', profile_name='Ii2_prof')
+                      definition='Reactive power of the phase 2 current component at V=1.0 p.u.',
+                      profile_name='Ii2_prof')
         self.register(key='Ii3', units='MVAr', tpe=float,
-                      definition='Reactive power of the phase 3 current component at V=1.0 p.u.', profile_name='Ii3_prof')
+                      definition='Reactive power of the phase 3 current component at V=1.0 p.u.',
+                      profile_name='Ii3_prof')
         self.register(key='G', units='MW', tpe=float,
                       definition='Active power of the impedance component at V=1.0 p.u.', profile_name='G_prof')
         self.register(key='G1', units='MW', tpe=float,
-                      definition='Active power of the phase 1 impedance component at V=1.0 p.u.', profile_name='G1_prof')
+                      definition='Active power of the phase 1 impedance component at V=1.0 p.u.',
+                      profile_name='G1_prof')
         self.register(key='G2', units='MW', tpe=float,
-                      definition='Active power of the phase 2 impedance component at V=1.0 p.u.', profile_name='G2_prof')
+                      definition='Active power of the phase 2 impedance component at V=1.0 p.u.',
+                      profile_name='G2_prof')
         self.register(key='G3', units='MW', tpe=float,
-                      definition='Active power of the phase 3 impedance component at V=1.0 p.u.', profile_name='G3_prof')
+                      definition='Active power of the phase 3 impedance component at V=1.0 p.u.',
+                      profile_name='G3_prof')
         self.register(key='B', units='MVAr', tpe=float,
                       definition='Reactive power of the impedance component at V=1.0 p.u.', profile_name='B_prof')
         self.register(key='B1', units='MVAr', tpe=float,
-                      definition='Reactive power of the phase 1 impedance component at V=1.0 p.u.', profile_name='B1_prof')
+                      definition='Reactive power of the phase 1 impedance component at V=1.0 p.u.',
+                      profile_name='B1_prof')
         self.register(key='B2', units='MVAr', tpe=float,
-                      definition='Reactive power of the phase 2 impedance component at V=1.0 p.u.', profile_name='B2_prof')
+                      definition='Reactive power of the phase 2 impedance component at V=1.0 p.u.',
+                      profile_name='B2_prof')
         self.register(key='B3', units='MVAr', tpe=float,
-                      definition='Reactive power of the phase 3 impedance component at V=1.0 p.u.', profile_name='B3_prof')
+                      definition='Reactive power of the phase 3 impedance component at V=1.0 p.u.',
+                      profile_name='B3_prof')
         self.register(key='n_customers', units='unit', tpe=int,
                       definition='Number of customers represented by this load', profile_name='n_customers_prof')
 
@@ -537,3 +546,21 @@ class Load(LoadParent):
 
             if show_fig:
                 plt.show()
+
+    def initialize_rms(self, Sbase: float = 100):
+        if self.rms_model.empty():
+            Ql = Var("Ql")
+            Pl = Var("Pl")
+
+            self.rms_model.model = Block(
+                algebraic_eqs=[
+                    Pl - (self.P / Sbase),
+                    Ql - (self.Q / Sbase)
+                ],
+                algebraic_vars=[Ql, Pl],
+                parameters=[],
+                external_mapping={
+                    DynamicVarType.P: Pl,
+                    DynamicVarType.Q: Ql,
+                }
+            )

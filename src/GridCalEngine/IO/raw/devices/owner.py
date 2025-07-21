@@ -37,8 +37,11 @@ class RawOwner(RawObject):
         """
 
         if version >= 29:
-            # I, 'ZONAME'
-            self.I, self.OWNAME = data[0]
+
+            if len(data[0]) == 2:
+                self.I, self.OWNAME = data[0]
+            else:
+                self.try_parse(values=data[0])
 
             self.OWNAME = self.OWNAME.replace("'", "").strip()
         else:

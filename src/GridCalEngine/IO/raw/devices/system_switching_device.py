@@ -112,6 +112,7 @@ class RawSystemSwitchingDevice(RawObject):
                  self.STATUS, self.NSTATUS, self.METERED, self.STYPE, self.NAME) = data[0]
             else:
                 logger.add_warning('Switch line length could not be identified :/', value=",".join(data[0]))
+                self.try_parse(values=data[0])
 
             self.NAME = self.NAME.replace("'", "").strip()
         elif version == 35:
@@ -121,6 +122,7 @@ class RawSystemSwitchingDevice(RawObject):
                  self.STATUS, self.NSTATUS, self.METERED, self.STYPE, self.NAME) = data[0]
             else:
                 logger.add_warning('Switch line length could not be identified :/', value=",".join(data[0]))
+                self.try_parse(values=data[0])
 
             self.NAME = self.NAME.replace("'", "").strip()
         else:

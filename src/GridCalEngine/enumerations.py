@@ -2108,3 +2108,34 @@ class GridReductionMethod(Enum):
             return GridReductionMethod[s]
         except KeyError:
             return s
+
+class DynamicVarType(Enum):
+    """
+       GridReductionMethod
+       """
+    Vm = "Vm"
+    Va = "Va"
+    P = "P"
+    Q = "Q"
+    Pf = "Pf"
+    Qf = "Qf"
+    Pt = "Pt"
+    Qt = "Qt"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return DynamicVarType[s]
+        except KeyError:
+            return s
