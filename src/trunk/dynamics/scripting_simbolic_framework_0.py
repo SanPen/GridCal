@@ -74,7 +74,7 @@ St = res.St / grid.Sbase
 
 # Generator
 # Current from power and voltage
-i = np.conj(Sb1 / v1)          # ī = (p - jq) / v̄* #NOTE: Sb1 to check
+i = np.conj(Sb1 / v1)          # ī = (p - jq) / v̄* 
 # Delta angle 
 delta0 = np.angle(v1 + (ra.value + 1j*xd.value) * i)
 # dq0 rotation
@@ -88,7 +88,7 @@ i_q0 = np.imag(i*rot)
 psid0 = ra.value * i_q0 + v_q0
 psiq0 = -ra.value * i_d0 - v_d0
 
-te0 = psid0 * i_q0 - psiq0 * i_d0 #NOTE: try a +
+te0 = psid0 * i_q0 - psiq0 * i_d0 
 tm0 = Const(te0)
 vf0 = psid0 + xd.value * i_d0
 print(f"vf = {vf0}")
@@ -266,7 +266,7 @@ St = res.St / grid.Sbase
 # Current from power and voltage
 i = np.conj(Sb1 / v1)          # ī = (p - jq) / v̄*
 # Delta angle
-delta0 = np.angle(v1 + ra.value + 1j*xd.value * i)
+delta0 = np.angle(v1 + (ra.value + 1j*xd.value) * i)
 # dq0 rotation
 rot = np.exp(-1j * (delta0 - np.pi/2))
 # dq voltages and currents
@@ -275,37 +275,11 @@ v_q0 = np.imag(v1*rot)
 i_d0 = np.real(i*rot)
 i_q0 = np.imag(i*rot)
 # inductances
-psid0 = -ra.value * i_q0 + v_q0
-psiq0 = -ra.value * i_d0 + v_d0
+psid0 = ra.value * i_q0 + v_q0
+psiq0 = -ra.value * i_d0 - v_d0
 
-vf0 = - i_d0 + psid0 + xd.value * i_d0
+vf0 = psid0 + xd.value * i_d0
 print(f"vf = {vf0}")
-
-mapping = {
-    dline_from: np.angle(v1),
-    dline_to: np.angle(v2),
-    Vline_from: np.abs(v1),
-    Vline_to: np.abs(v2),
-    Vg: np.abs(v1),
-    dg: np.angle(v1),
-    Pline_from: Sf.imag,
-    Qline_from: Sf.imag,
-    Pline_to: St.real,
-    Qline_to: St.imag,
-    Pl: Sb2.real,  # P2
-    Ql: Sb2.imag,  # Q2
-    delta: delta0,
-    omega: 1.0,
-    psid: psid0,  # d-axis flux linkage (pu)
-    psiq: psiq0,  # q-axis flux linkage (pu)
-    i_d: i_d0,  # d-axis stator current (pu)
-    i_q: i_q0,  # q-axis stator current (pu)
-    v_d: v_d0,  # d-axis voltage (pu)
-    v_q: v_q0,  # q-axis voltage (pu)
-    t_e: 0.1,  # electromagnetic torque (pu)
-    p_g: Sb1.real,
-    Q_g: Sb1.imag
-}
 
 params_mapping = {
     Pl0: Sb2.real
@@ -401,7 +375,7 @@ x0 = slv.build_init_vars_vector(vars_mapping)
 #     ramps=[(Pl, 0.0), (Ql, 0.0)],
 # )
 
-vars_in_order = slv.sort_vars(mapping)
+vars_in_order = slv.sort_vars(vars_mapping)
 
 t, y = slv.simulate(
     t0=0,
