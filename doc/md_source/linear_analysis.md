@@ -1,6 +1,8 @@
 # 📏 Linear analysis
 
 
+## API
+
 We can run an PTDF equivalent of the power flow with the linear analysis drivers:
 
 ```python
@@ -82,7 +84,8 @@ Branch 1-2   -1.000000    0.344795    0.307071   -1.000000   -1.000000   -0.3070
 Branch 2-3   -1.000000    0.344795    0.307071   -1.000000   -1.000000   -0.307071
 Branch 3-4   -0.457143   -0.655205    1.000000   -0.457143   -0.457143   -1.000000
 ```
-## Linear vs non-linear analysis comparison
+
+### Linear vs non-linear analysis comparison
 
 Now let's make a comparison between the linear flows and the non-linear flows from Newton-Raphson:
 
@@ -132,7 +135,7 @@ plt.show()
 ![PTDF flows comparison.png](figures/PTDF_flows_comparison.png)
 
 
-## SRAP: Automatic Power Reduction System
+### SRAP: Automatic Power Reduction System
 
 The Automatic Power Reduction System or SRAP from its acronym in Spanish is a mechanism that allows
 to dismiss contingencies if they can be solved by generation increase or decrease.

@@ -1,7 +1,9 @@
 # 💾 File loading and saving
 
 
-## Loading a grid
+## API
+
+### Loading a grid
 
 ```python
 import GridCalEngine as gce
@@ -59,7 +61,7 @@ GridCal supports many file formats:
 
 Similarly to CGMES you may be able to use the conversion objects to explore the original formats.
 
-## Save a grid
+### Save a grid
 
 ```python
 import GridCalEngine as gce
@@ -93,7 +95,7 @@ gce.save_cgmes_file(grid=my_grid,
 ```
 
 
-## Export the results
+### Export the results
 
 A simple function is available to export the results of a driver.
 
@@ -135,7 +137,7 @@ gce.export_results(results_list=[pf_results, pf_ts_results], file_name="IEEE39_1
 ```
 
 
-## Client - Server operation
+### Client - Server operation
 
 To use the gridcal server, you need to install the `GridCalServer` python package. Once this is done,
 the `gridcalserver`command will be available on the system.

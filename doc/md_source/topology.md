@@ -1,22 +1,31 @@
 # 🌵 Topology
 
+The topology processing in GridCal is handled automatically and you need to do nothing for it to work.
+
+Branches with the `reducible` flag enabled are candidates for disappearing at the 
+`NumericalCircuit level when computing any simulation. Typically, switches will be reduced, but if not they will
+use their declared impedance, which is not advised.
+
+## Theory
 In this section, we are going to explain how to do topology processing properly
 for once and for all. This topic is of capital importance in power systems but is
 rarely dealt with in a structured and comprehensive manner.
 
+**A Graph in Power Systems**
+
 A power system model is essentially a graph. A graph is structure
-where relationships are represented with nodes (what is related) and edges (the relationship). 
-
-**What is a Graph in Power Systems?**
-
+where relationships are represented with nodes (what is related) and edges (the relationship).
 To understand topology processing, it's essential to grasp the basics of graph
-theory. In a power system graph:
+theory. A graph is composed of:
 
 - **Nodes (Buses):** Represent points of calculation, such as substations, generation points, or load centers.
 - **Edges (Branches):** Represent the connections, such as transmission lines, transformers, or circuit breakers.
 
 This abstraction simplifies the network, retaining its essential
 connectivity and operational properties.
+
+If you come from the Ontologies world, a power system's graph is strictly speaking buses and branches.
+Branches connected to fictitious entities that may or may not be connected to buses have no room here.
 
 **Why is Topology Processing Important?**
 
@@ -55,7 +64,7 @@ of equipment. This necessitates finding sub-circuits. Additionally, certain
 branches in the circuit might have zero impedance, making $Y$ singular. We
 must eliminate these problematic branches as part of the processing.
 
-## Steps in Topology Processing
+### Steps in Topology Processing
 
 Broadly, topology processing involves the following steps:
 
@@ -374,7 +383,7 @@ In the second connectivity matrix (A), we reflect the connection of the branches
 ![Topology processing steps](figures/TopologyProcessing1.png)
 
 
-## The spirit of CIM
+### The spirit of CIM
 
 If you've encountered CIM or CGMES, or participated in guild discussions, you've
 likely heard about **node-breaker** and **bus-branch** modeling styles as distinct
@@ -435,7 +444,7 @@ complexity to modeling workflows. By adhering to this perspective, we can
 simplify processes and focus on building more efficient and accurate models.
 
 
-## How is it done in GridCal?
+### How is it done in GridCal?
 
 In GridCal, the **MultiCircuit** serves as the grid's in-memory database. It is
 crucial that no topological processing is ever performed directly on the
@@ -484,8 +493,7 @@ allowing for compatibility with the so-called legacy models.
 ![TopologyRoundtrip](figures/TopologyRoundtrip.png)
 
 
-
-## Takeaways
+### Takeaways
 
 
 - Bus-branch and node-breaker modelling styles are the same thing.

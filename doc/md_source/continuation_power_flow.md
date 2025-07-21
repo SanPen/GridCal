@@ -3,6 +3,10 @@
 
 GridCal can run continuation power flows (voltage collapse studies) 
 
+## API
+
+### Snapshot continuation power flow
+
 ```python
 import os
 from matplotlib import pyplot as plt

@@ -28,9 +28,26 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Started refactoring the docs">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="updated GUI 3-phase label">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/contingency_analysis.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/contingency_analysis.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/continuation_power_flow.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/continuation_power_flow.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/file_operations.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/file_operations.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/installation.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/installation.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/investment_optimization.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/investment_optimization.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/linear_analysis.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/linear_analysis.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/model_debugging.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/model_debugging.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/modelling.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/modelling.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/net_transfer_capacity.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/net_transfer_capacity.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/nodal_hosting_capacity.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/nodal_hosting_capacity.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/optimal_power_flow.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/optimal_power_flow.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/reliability.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/reliability.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/short_circuit.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/short_circuit.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/state_estimation.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/state_estimation.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/stochastic_power_flow.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/stochastic_power_flow.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/structure.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/structure.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/topology.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/topology.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/user_interface.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/user_interface.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -280,7 +297,7 @@
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Substation" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in test_ntc.py">
+  <component name="RunManager" selected="Python.make">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -686,6 +703,28 @@
     </configuration>
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -721,28 +760,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="auto_document_models" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/doc" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/doc/auto_document_models.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -911,6 +928,28 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="update_gui_file (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/Main" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="update_gui_file" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -931,21 +970,6 @@
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
       <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="make.sh" type="ShConfigurationType" temporary="true">
-      <option name="SCRIPT_TEXT" value="" />
-      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/doc/make.sh" />
-      <option name="SCRIPT_OPTIONS" value="" />
-      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
-      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$/doc" />
-      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
-      <option name="INTERPRETER_PATH" value="/bin/zsh" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="EXECUTE_IN_TERMINAL" value="true" />
-      <option name="EXECUTE_SCRIPT_FILE" value="true" />
-      <envs />
       <method v="2" />
     </configuration>
     <configuration default="true" type="Tox" factoryName="Tox">
@@ -1068,18 +1092,18 @@
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
       <item itemvalue="Python.update_gui_file" />
-      <item itemvalue="Python.auto_document_models" />
+      <item itemvalue="Python.update_gui_file (1)" />
       <item itemvalue="Python.make" />
+      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.pytest in test_ntc.py" />
-      <item itemvalue="Shell Script.make.sh" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.pytest in test_ntc.py" />
         <item itemvalue="Python.make" />
+        <item itemvalue="Python.update_gui_file (1)" />
+        <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python tests.pytest in test_ntc.py" />
         <item itemvalue="Python.update_gui_file" />
-        <item itemvalue="Python.auto_document_models" />
-        <item itemvalue="Shell Script.make.sh" />
       </list>
     </recent_temporary>
   </component>
@@ -2292,7 +2316,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="693" />
+    <option name="localTasksCounter" value="695" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2338,8 +2362,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.3.28" />
-    <MESSAGE value="Fixed Code scanning alert #4" />
     <MESSAGE value="Fixed cgmes export reporting in get_cgmes_cn_nodes_from_tp_nodes" />
     <MESSAGE value="5.3.29" />
     <MESSAGE value="Fixed bug in gslv conversion" />
@@ -2363,7 +2385,9 @@
     <MESSAGE value="wip" />
     <MESSAGE value="Added InvestmentsWhenToMakePlot" />
     <MESSAGE value="Started refactoring the docs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Started refactoring the docs" />
+    <MESSAGE value="Added specific overload logging" />
+    <MESSAGE value="updated GUI 3-phase label" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated GUI 3-phase label" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

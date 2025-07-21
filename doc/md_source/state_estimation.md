@@ -1,8 +1,13 @@
 # 🌀 State estimation
 
+GridCal has the ability to run state estimation simulations, however not 
+from the interface since GridCal since it is not a SCADA capable software.
+Hence the simulation will only be available through the API.
+
+## API
 
 Now lets program the example from the state estimation reference book
-_State Estimation in Electric Power Systems by A. Monticelli_.
+State Estimation in Electric Power Systems by A. Monticelli.
 
 ```python
 import GridCalEngine as gce

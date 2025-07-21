@@ -1,7 +1,9 @@
 #  🏁 Optimal power flow
 
 
-## Linear optimization
+## API
+
+### Linear optimization
 
 ```python
 import os
@@ -236,5 +238,5 @@ time                | f1         | f2  | f3  | f4
 2023-01-01 09:00:00 | 49.989768  | 0.0 | 0.0 | 50.010231
 ```
 
-## Non-linear optimization
+### Non-linear optimization
 

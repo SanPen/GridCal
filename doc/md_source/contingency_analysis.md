@@ -3,7 +3,11 @@
 
 GriCal has contingency simulations, and it features a quite flexible way of defining contingencies.
 Firs you define a contingency group, and then define individual events that are assigned to that contingency group.
-The simulation then tries all the contingency groups and apply the events registered in each group:
+The simulation then tries all the contingency groups and apply the events registered in each group.
+
+## API
+
+### Snapshot contingency analysis
 
 ```python
 import os
@@ -77,7 +81,7 @@ Contingency flows:
 
 This simulation can also be done for time series.
 
-## Contingency analysis time series
+### Contingency analysis time series
 
 To perform the contingency analysis of a time series, it's easier to directly usi the API:
 

@@ -1,7 +1,8 @@
 # 🪲 Model debugging
 
+## API
 
-## Inputs analysis
+### Inputs analysis
 
 GridCal can perform a summary of the inputs with the `InputsAnalysisDriver`:
 
