@@ -1,5 +1,7 @@
 sphinx
 pandas
 pytablewriter
-sphinx_rtd_theme
+myst-parser
+sphinx-rtd-theme
+linkify-it-py
 GridCalEngine >= 5.3.41

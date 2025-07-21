@@ -9,7 +9,6 @@ Subpackages
 
    GridCal.Gui.AboutDialogue
    GridCal.Gui.Analysis
-   GridCal.Gui.CascadingSteps
    GridCal.Gui.ContingencyPlanner
    GridCal.Gui.CoordinatesInput
    GridCal.Gui.Diagrams

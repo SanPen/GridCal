@@ -10,26 +10,6 @@ import packaging.version as pkg
 from GridCal.__version__ import __GridCal_VERSION__
 
 
-# def find_latest_version(name: str = 'GridCal') -> str | None:
-#     """
-#     Find the latest version of a package
-#     :param name: name of the Package
-#     :return: version string
-#     """
-#     latest_version = str(subprocess.run([sys.executable, '-m', 'pip',
-#                                          'install', f'{name}==random',
-#                                          '--break-system-packages'],
-#                                         capture_output=True, text=True))
-#     latest_version = latest_version[latest_version.find('(from versions:') + 15:]
-#     latest_version = latest_version[:latest_version.find(')')]
-#     latest_version = latest_version.replace(' ', '').split(',')[-1]
-#
-#     if latest_version == 'none':
-#         return None
-#
-#     return latest_version
-
-
 def find_latest_version(package_name: str = 'GridCal'):
     try:
         url = f"https://pypi.org/pypi/{package_name}/json"

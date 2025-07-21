@@ -183,7 +183,7 @@ description of the theory, the models and the objects.
 
 ### Understanding the program structure
 
-GridCal structure is composed by objects aranged in a "database" and  by "structs" at a deeper level.
+GridCal structure is composed by objects arranged in a "database" and  by "structs" at a deeper level.
 Learn [here](https://gridcal.readthedocs.io/en/latest/rst_source/development/structure.html) why.
 
 All simulations in GridCal are handled by the simulation drivers. The structure is as follows:
@@ -496,7 +496,7 @@ Exactly the same results as the example from the book of the issue.
 ### Power Flow
 
 GridCal has the most power flow features in any open-source software.
-The following table shows what solvers offer what features:
+The following table shows the features present in each solver:
 
 |                                                                     | Newton Raphson  |Powell Dog-leg|Levenberg-Marquardt|Iwamoto|Fast-decoupled|Gauss-seidel|Holomorphic embedding|Linear without voltage modules|Linear with voltage modules|
 |---------------------------------------------------------------------|---|---|---|---|---|---|---|---|---|

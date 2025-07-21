@@ -62,11 +62,11 @@ repository with the setting as defined above.
 **Contribute**
 
 All contributions to the **GridCal** repository are made through pull requests to the
-`master` branch. You can either submit a pull request from the develop branch of your
+`devel` branch. You can either submit a pull request from the develop branch of your
 fork or create a special feature branch that you keep the changes on. A feature branch
 is the way to go if you have multiple issues that you are working on in parallel and
-want to submit with seperate pull requests. If you only have small, one-time changes
-to submit, you can also use the `master` branch to submit your pull request.
+want to submit with separate pull requests. If you only have small, one-time changes
+to submit, you can also use the `devel` branch to submit your pull request.
 
 If you wish to discuss a contribution before the pull request is ready to be officially
 submitted, create an issue in the official repository and link to your own fork. **Do**
@@ -104,5 +104,5 @@ files matching `test_*.py` are executed by running:
 Files matching `*_test.py` are not executed; they were not formatted specifically for
 `pytest` but were mostly done for manual testing and documentation purposes.
 
-Additional tests should be developped for each new and existing feature. `pytest`
+Additional tests should be developed for each new and existing feature. `pytest`
 should be run before each commit to prevent easily detectable bugs.

@@ -4,22 +4,6 @@ GridCalEngine.Simulations.PowerFlow.Formulations package
 Submodules
 ----------
 
-GridCalEngine.Simulations.PowerFlow.Formulations.dummy\_lookup module
----------------------------------------------------------------------
-
-.. automodule:: GridCalEngine.Simulations.PowerFlow.Formulations.dummy_lookup
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-GridCalEngine.Simulations.PowerFlow.Formulations.mask module
-------------------------------------------------------------
-
-.. automodule:: GridCalEngine.Simulations.PowerFlow.Formulations.mask
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 GridCalEngine.Simulations.PowerFlow.Formulations.pf\_advanced\_formulation module
 ---------------------------------------------------------------------------------
 

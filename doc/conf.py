@@ -18,7 +18,7 @@ import sys
 sys.path.insert(0, os.path.abspath('../src'))
 sys.path.append("..")
 sys.setrecursionlimit(5000)
-from doc.auto_document_models import write_models_to_rst
+from doc.auto_document_models import write_models_to_md
 from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 
 # -- Project information -----------------------------------------------------
@@ -58,11 +58,13 @@ extensions.append('sphinx.ext.viewcode')
 extensions.append('sphinx.ext.graphviz')
 extensions.append('sphinx_rtd_theme')
 # extensions.append('sphinx_build_compatibility.extension')
+extensions.append('myst_parser')  # markdown
 
 autosummary_generate = True
+myst_dmath_allow_labels = True
 
 # generate CGMES, PSSe and GridCal data models' rst files
-write_models_to_rst(os.path.join('rst_source', 'development', 'data_models.rst'))
+write_models_to_md(os.path.join('md_source', 'data_models.md'))
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -70,8 +72,24 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
+
+myst_enable_extensions = [
+    "amsmath",
+    "attrs_inline",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "fieldlist",
+    "html_admonition",
+    "html_image",
+    "linkify",
+    "replacements",
+    "smartquotes",
+    "strikethrough",
+    "substitution",
+    "tasklist",
+]
 
 # The master toctree document.
 master_doc = 'index'
