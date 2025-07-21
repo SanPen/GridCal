@@ -24,7 +24,7 @@ import GridCalEngine.api as gce
 pi = Const(math.pi)
 fn = Const(50)
 M = Const(1.0)
-D = Const(1)
+D = Const(1.0)
 ra = Const(0.3)
 xd = Const(0.86138701)
 vf = Const(1.081099313)
@@ -89,10 +89,10 @@ psid0 = ra.value * i_q0 + v_q0
 psiq0 = -ra.value * i_d0 - v_d0
 
 te0 = psid0 * i_q0 - psiq0 * i_d0 
-tm0 = Const(te0)
 vf0 = psid0 + xd.value * i_d0
-print(f"vf = {vf0}")
-
+# ----------------------------------------------------------------------------------------------------------------------
+tm0 = Const(te0)
+Ql0 = Const(Sb2.imag)
 # ----------------------------------------------------------------------------------------------------------------------
 # Line
 # ----------------------------------------------------------------------------------------------------------------------
@@ -126,11 +126,7 @@ line_block = Block(
 
 Ql = Var("Ql")
 Pl = Var("Pl")
-
-coeff_alfa = Const(1.8)
 Pl0 = Var("Pl0")
-Ql0 = Const(Sb2.imag)
-coeff_beta = Const(8.0)
 
 load_block = Block(
     algebraic_eqs=[
@@ -182,16 +178,6 @@ generator_block = Block(
     algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g, tm],
     parameters=[]
 )
-
-# psid - (-ra * i_q + v_q),
-# psiq - (-ra * i_d + v_d),
-# i_d - (psid + xd * i_d - vf),
-# i_q - (psiq + xd * i_q),
-# v_d - (Vg * sin(delta - dg)),
-# v_q - (Vg * cos(delta - dg)),
-# t_e - (psid * i_q - psiq * i_d),
-# (v_d * i_d + v_q * i_q) - p_g,
-# (v_q * i_d - v_d * i_q) - Q_g
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Buses
