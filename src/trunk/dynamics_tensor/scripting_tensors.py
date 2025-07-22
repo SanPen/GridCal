@@ -338,7 +338,7 @@ bus2_block = Block(
 # ----------------------------------------------------------------------------------------------------------------------
 
 sys = Block(
-    children=[line_block, load_block, generator_block, bus1_block, bus2_block],
+    children=[line_block, load_block, generator_block_ML, bus1_block, bus2_block],
     in_vars=[]
 )
 
@@ -435,10 +435,10 @@ vars_mapping = {
     P_g: Sb1.real,
     Q_g: Sb1.imag,
     tm: te0,
-    #u_sin: np.sin(delta0 -dg0),
-    #u_cos: np.cos(delta0 -dg0),
-    #v_sin: np.sin(delta0 -dg0),
-    #v_cos: np.cos(delta0 -dg0),
+    u_sin: np.sin(delta0 -dg0),
+    u_cos: np.cos(delta0 -dg0),
+    v_sin: np.sin(delta0 -dg0),
+    v_cos: np.cos(delta0 -dg0),
     #int_sin2: 0.5*((delta0-dg0)-u_sin0*u_cos0),
     #int_sin2cos2:  1/32*(4*(delta0-dg0) - (4*u_cos0**3*u_sin0 - 4*u_sin0**3*u_cos)),
     #delta_dt: 0
@@ -523,6 +523,9 @@ fig = plt.figure(figsize=(14, 10))
 
 #Generator state variables
 plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)", color='red')
+plt.plot(t, y[:, slv.get_var_idx(u_cos)], label="cos (pu)", color='blue')
+plt.plot(t, y[:, slv.get_var_idx(u_sin)], label="sin (pu)", color='yellow')
+plt.plot(t, y[:, slv.get_var_idx(delta)], label="delta", color='black')
 # plt.plot(t, y[:, slv.get_var_idx(t_e)], label="Te (pu)")
 #plt.plot(t, y[:, slv.get_var_idx(delta)], label="δ (rad)")
 #plt.plot(t, y[:, slv.get_var_idx(et)], label="et (pu)")
