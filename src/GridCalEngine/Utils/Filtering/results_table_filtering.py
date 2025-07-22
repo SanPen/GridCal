@@ -198,6 +198,9 @@ class FilterResultsTable:
         :param expression:
         :return:
         """
+        if expression.startswith("=") or expression.startswith(">") or expression.startswith("<"):
+            expression = "val " + expression
+
         self.master_filter = parse_expression(expression=expression)
 
     def apply(self) -> ResultsTable:

@@ -356,7 +356,17 @@ def parse_single(token: str) -> Union[Filter, None]:
     :param token: Token
     :return: Filter or None if the token is not valid
     """
-    elms = re.split(r'(?<=\s)([<>=!]=?|in|starts|ends|like|notlike)(?=\s)', token)
+
+    #  old: r'(?<=\s)([<>=!]=?|in|starts|ends|like|notlike)(?=\s)'
+    # elms = re.split(r'(?<!\S)([<>=!]=?|in|starts|ends|like|notlike)(?!\S)', token)
+
+    TOKEN_SPLIT_RE = re.compile(
+        r'\s*('  # optional whitespace to discard
+        r'\b(?:in|starts|ends|like|notlike)\b'  # alphabetic operators – whole words
+        r'|!=|>=|<=|[<>]|='  # symbolic operators
+        r')\s*'  # optional whitespace to discard
+    )
+    elms = TOKEN_SPLIT_RE.split(token)
 
     if len(elms) == 3:
 

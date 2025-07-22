@@ -51,7 +51,7 @@ class ResultsMain(SimulationsMain):
         self.ui.results_treeView.clicked.connect(self.results_tree_view_click)
 
         # line edit enter
-        self.ui.sear_results_lineEdit.returnPressed.connect(self.search_in_results)
+        self.ui.search_results_lineEdit.returnPressed.connect(self.search_in_results)
 
         # wrap headers
         self.ui.resultsTableView.setHorizontalHeader(HeaderViewWithWordWrap(self.ui.resultsTableView))
@@ -256,7 +256,7 @@ class ResultsMain(SimulationsMain):
 
         if self.results_mdl is not None:
 
-            txt = self.ui.sear_results_lineEdit.text().strip()
+            txt = self.ui.search_results_lineEdit.text().strip()
 
             filter_ = flt.FilterResultsTable(self.results_mdl.table)
 
