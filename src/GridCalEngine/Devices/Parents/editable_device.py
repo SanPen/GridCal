@@ -16,7 +16,7 @@ from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, Wind
                                         ZonalGrouping, MIPSolvers, AcOpfMode, SubstationTypes, BranchGroupTypes,
                                         BranchImpedanceMode, FaultType, TapChangerTypes, ContingencyOperationTypes,
                                         WindingType, MethodShortCircuit, PhasesShortCircuit, ShuntConnectionType,
-                                        BusGraphicType)
+                                        BusGraphicType, SwitchGraphicType)
 
 # types that can be assigned to a GridCal property
 GCPROP_TYPES = Union[
@@ -56,7 +56,8 @@ GCPROP_TYPES = Union[
     Type[PhasesShortCircuit],
     Type[DeviceType],
     Type[ShuntConnectionType],
-    Type[BusGraphicType]
+    Type[BusGraphicType],
+    Type[SwitchGraphicType]
 ]
 
 

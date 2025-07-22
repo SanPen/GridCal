@@ -176,11 +176,14 @@ class TowerBuilderGUI(QtWidgets.QDialog):
             self.ui.matrixTableView.setModel(PandasModel(z_df))
 
         elif idx == 2:
-            if self.tower_driver.tower.z_seq.shape[0] == 3:
-                ncirc = max(self.tower_driver.tower.wires_in_tower.get_circuits())
-                cols = [f'Seq{i}@circ{c + 1}' for i in range(3) for c in range(ncirc)]
-                z_df = pd.DataFrame(data=self.tower_driver.tower.z_seq, columns=cols, index=cols)
-                self.ui.matrixTableView.setModel(PandasModel(z_df))
+            if self.tower_driver.tower.z_seq is not None:
+                if self.tower_driver.tower.z_seq.shape[0] % 3 == 0:
+                    ncirc = max(self.tower_driver.tower.wires_in_tower.get_circuits())
+                    cols = [f'Seq{i}@circ{c + 1}' for i in range(3) for c in range(ncirc)]
+                    z_df = pd.DataFrame(data=self.tower_driver.tower.z_seq, columns=cols, index=cols)
+                    self.ui.matrixTableView.setModel(PandasModel(z_df))
+                else:
+                    self.ui.matrixTableView.setModel(None)
             else:
                 self.ui.matrixTableView.setModel(None)
 
@@ -196,11 +199,14 @@ class TowerBuilderGUI(QtWidgets.QDialog):
             self.ui.matrixTableView.setModel(PandasModel(z_df))
 
         elif idx == 5:
-            if self.tower_driver.tower.y_seq.shape[0] == 3:
-                ncirc = max(self.tower_driver.tower.wires_in_tower.get_circuits())
-                cols = [f'Seq{i}@circ{c + 1}' for i in range(3) for c in range(ncirc)]
-                z_df = pd.DataFrame(data=self.tower_driver.tower.y_seq.imag * 1e6, columns=cols, index=cols)
-                self.ui.matrixTableView.setModel(PandasModel(z_df))
+            if self.tower_driver.tower.y_seq is not None:
+                if self.tower_driver.tower.y_seq.shape[0] % 3 == 0:
+                    ncirc = max(self.tower_driver.tower.wires_in_tower.get_circuits())
+                    cols = [f'Seq{i}@circ{c + 1}' for i in range(3) for c in range(ncirc)]
+                    z_df = pd.DataFrame(data=self.tower_driver.tower.y_seq.imag * 1e6, columns=cols, index=cols)
+                    self.ui.matrixTableView.setModel(PandasModel(z_df))
+                else:
+                    self.ui.matrixTableView.setModel(None)
             else:
                 self.ui.matrixTableView.setModel(None)
 

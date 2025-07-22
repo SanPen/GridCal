@@ -1244,7 +1244,7 @@ def calc_z_matrix(wires_in_tower: ListOfWires, f: float = 50, rho: float = 100, 
     phases_abc = phases_abcn[a]
 
     # compute the sequence components
-    if z_abc.shape[0] == 3:
+    if z_abc.shape[0] % 3 == 0:
         z_seq = abc_2_seq(z_abc)
     else:
         z_seq = None
@@ -1332,7 +1332,7 @@ def calc_y_matrix(wires_in_tower: ListOfWires, f: float = 50):
     y_abc = 1j * w * np.linalg.inv(p_abc)  # [S/km]
 
     # compute the sequence components
-    if y_abc.shape[0] == 3:
+    if y_abc.shape[0] % 3 == 0:
         y_seq = abc_2_seq(y_abc)  # [S/km]
     else:
         y_seq = None

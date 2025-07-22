@@ -414,13 +414,13 @@ def short_circuit_3ph(grid, t_idx=None):
     pf_res.Sbus = num_pf_res.Sbus
 
     sc_options = gce.ShortCircuitOptions(bus_index=4,
-                                         fault_type=FaultType.LL,
+                                         fault_type=FaultType.LLL,
                                          mid_line_fault=False,
                                          branch_index=0,
                                          branch_fault_locations=0.5,
                                          verbose=0,
                                          method=MethodShortCircuit.phases,
-                                         phases=PhasesShortCircuit.ca)
+                                         phases=PhasesShortCircuit.abc)
 
     sc_driver = gce.ShortCircuitDriver(grid=grid,
                                        options=sc_options,

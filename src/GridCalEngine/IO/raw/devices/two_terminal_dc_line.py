@@ -378,11 +378,31 @@ class RawTwoTerminalDCLine(RawObject):
             (self.NAME, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER,
              self.DCVMIN, self.CCCITMX, self.CCCACC) = data[0]
 
-            (self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR,
-             self.TMXR, self.TMNR, self.STPR, self.ICR, self.NDR, self.IFR, self.ITR, self.IDR, self.XCAPR) = data[1]
+            if len(data[1]) == 18:
+                (self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR,
+                 self.TMXR, self.TMNR, self.STPR, self.ICR, self.NDR, self.IFR, self.ITR, self.IDR,
+                 self.XCAPR) = data[1]
+            if len(data[1]) == 17:
+                (self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR,
+                 self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR) = data[1]
+            else:
+                self.try_parse2(data[1], prop_names=[
+                    "IPR", "NBR", "ANMXR", "ANMNR", "RCR", "XCR", "EBASR", "TRR", "TAPR",
+                    "TMXR", "TMNR", "STPR", "ICR", "NDR", "IFR", "ITR", "IDR", "XCAPR"
+                ])
 
-            (self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI,
-             self.TMXI, self.TMNI, self.STPI, self.ICI, self.NDI, self.IFI, self.ITI, self.IDI, self.XCAPI) = data[2]
+            if len(data[2]) == 18:
+                (self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI,
+                 self.TMXI, self.TMNI, self.STPI, self.ICI, self.NDI, self.IFI, self.ITI, self.IDI,
+                 self.XCAPI) = data[2]
+            if len(data[2]) == 17:
+                (self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI,
+                 self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI) = data[2]
+            else:
+                self.try_parse2(data[2], prop_names=[
+                    "IPI", "NBI", "ANMXI", "ANMNI", "RCI", "XCI", "EBASI", "TRI", "TAPI",
+                    "TMXI", "TMNI", "STPI", "ICI", "NDI", "IFI", "ITI", "IDI", "XCAPI"
+                ])
 
         elif 30 <= version <= 33:
             '''

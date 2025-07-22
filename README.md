@@ -107,6 +107,7 @@ GridCal is packed with features:
 
 - Large collection of devices to model electricity grids
 - AC/DC multi-grid power flow
+- 3-phase unbalanced power flow and short circuit
 - AC/DC multi-grid linear optimal power flow
 - AC linear analysis (PTDF & LODF)
 - AC linear net transfer capacity calculation
@@ -182,7 +183,7 @@ description of the theory, the models and the objects.
 
 ### Understanding the program structure
 
-GridCal structure is composed by objects aranged in a "database" and  by "structs" at a deeper level.
+GridCal structure is composed by objects arranged in a "database" and  by "structs" at a deeper level.
 Learn [here](https://gridcal.readthedocs.io/en/latest/rst_source/development/structure.html) why.
 
 All simulations in GridCal are handled by the simulation drivers. The structure is as follows:
@@ -309,7 +310,7 @@ pf_results = gce.power_flow(my_grid)
 gce.save_cgmes_file(grid=my_grid,
                     filename="My_cgmes_model.zip",
                     cgmes_boundary_set_path="path_to_the_boundary_set.zip",
-                    cgmes_version=CGMESVersions.v2_4_15,
+                    cgmes_version=gce.CGMESVersions.v2_4_15,
                     pf_results=pf_results)
 
 ```
@@ -493,6 +494,23 @@ Which yields:
 Exactly the same results as the example from the book of the issue.
 
 ### Power Flow
+
+GridCal has the most power flow features in any open-source software.
+The following table shows the features present in each solver:
+
+|                                                                     | Newton Raphson  |Powell Dog-leg|Levenberg-Marquardt|Iwamoto|Fast-decoupled|Gauss-seidel|Holomorphic embedding|Linear without voltage modules|Linear with voltage modules|
+|---------------------------------------------------------------------|---|---|---|---|---|---|---|---|---|
+| Local voltage control using a Generator.                            |  ✅ | ✅  | ✅  |  ✅ | ✅  | ✅  |  ✅ |   |  ✅ |
+| Remote voltage control using a Generator.                           | ✅  |  ✅ |  ✅ |  ✅ |  ✅ |   |   |   |   |
+| Generator reactive power limits.                                    | ✅  |  ✅ |  ✅ |  ✅ | ✅  |  ✅ |   |   |   |
+| Local and remote voltage control using a transformer's tap changer. | ✅  |  ✅ |  ✅ |   |   |   |   |   |   |
+| Local active power control using a transformer's tap changer.       |  ✅ | ✅  |  ✅ |   |   |   |   |   |   |
+| Local reactive power control using a transformer's tap changer.     | ✅  | ✅  | ✅  |   |   |   |   |   |   |
+| Local and remote AC and DC voltage control using a converter.       | ✅  | ✅  | ✅  |   |   |   |   |   |   |
+| Local AC and DC active power control using converter.               |✅   | ✅  |  ✅ |   |   |   |   |   |   |
+| Local AC reactive power control using a converter.                  | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
+| 3-phase unbalanced.                                                 | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
+
 
 Using the simplified API:
 
@@ -1308,6 +1326,7 @@ Br3  38.591163 22.775597  -37.956374 -21.082828  38.591163 0.634789 1.692770
 A simple function is available to export the results of a driver.
 
 ```python
+import os
 import GridCalEngine as gce
 
 fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
@@ -1329,6 +1348,7 @@ You could save many drivers in the same zip file passing then into the list `dri
 Also there is a function to save from the results objects themselves:
 
 ```python
+import os
 import GridCalEngine as gce
 
 fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")

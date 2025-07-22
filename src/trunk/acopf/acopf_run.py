@@ -1,8 +1,9 @@
 import os
 import GridCalEngine.api as gce
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
+from GridCalEngine.Simulations.OPF.NumericalMethods.acopf_old import ac_optimal_power_flow
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_new import run_nonlinear_opf
+from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl
 
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 # from GridCalEngine.enumerations import TransformerControlType
@@ -214,7 +215,7 @@ def two_grids_of_3bus():
     # print('\tConv:\n', power_flow.results.get_branch_df())
 
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_tolerance=1e-8,
-                                              ips_iterations=25)
+                                              ips_iterations=25, ips_init_with_pf=False)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3, max_iter=25)
     # run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
     island = compile_numerical_circuit_at(circuit=grid, t_idx=None)
@@ -246,6 +247,7 @@ def case9():
                             optimize_nodal_capacity=True,
                             nodal_capacity_sign=-1.0,
                             capacity_nodes_idx=np.array([5]))
+
 
 
 def case14_linear_vs_nonlinear():
@@ -307,9 +309,31 @@ def case14():
 
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, control_q=True)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=gce.AcOpfMode.ACOPFstd,
-                                              ips_tolerance=1e-6, ips_iterations=50, ips_control_q_limits=True, verbose=1)
-    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
+                                              ips_tolerance=1e-8, ips_iterations=50, ips_control_q_limits=False, verbose=1)
+    # res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
     print('')
+    opf_options.acopf_mode = gce.AcOpfMode.ACOPFslacks
+    # slack_sol = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
+
+    grid.transformers2w[0].tap_phase_control_mode = TapPhaseControl.Pt
+    grid.transformers2w[0].tap_module_control_mode = TapModuleControl.Qt
+
+    grid.transformers2w[1].tap_phase_control_mode = TapPhaseControl.Pf
+
+    grid.transformers2w[2].tap_module_control_mode = TapModuleControl.Vm
+    grid.transformers2w[2].regulation_bus = grid.transformers2w[2].bus_from
+
+    for ll in range(len(grid.lines)):
+        grid.lines[ll].monitor_loading = True
+
+    for b in range(len(grid.buses)):
+        grid.buses[b].Vm_cost *= 10000
+
+    opf_options.acopf_mode = gce.AcOpfMode.ACOPFstd
+    tap_sol = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
+
+    opf_options.acopf_mode = gce.AcOpfMode.ACOPFslacks
+    # tap_slack_sol = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
 
 def case_gb():
@@ -540,6 +564,8 @@ def superconductor():
     nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8, verbose=1)
+
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=False)
     return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
 
@@ -550,7 +576,7 @@ if __name__ == '__main__':
     # two_grids_of_3bus()
     # case9()
     # case14_linear_vs_nonlinear()
-    # case14()
+    case14()
     # case_gb()
     # case6ww()
     #  case_pegase89()
@@ -559,4 +585,4 @@ if __name__ == '__main__':
     # casehvdc()
     # caseREE()
     # case_nodalcap()
-    superconductor()
+    # superconductor()

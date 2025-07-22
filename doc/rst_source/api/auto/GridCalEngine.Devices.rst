@@ -19,58 +19,66 @@ Subpackages
 Submodules
 ----------
 
+GridCalEngine.Devices.admittance\_matrix module
+-----------------------------------------------
+
+.. automodule:: GridCalEngine.Devices.admittance_matrix
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 GridCalEngine.Devices.assets module
 -----------------------------------
 
 .. automodule:: GridCalEngine.Devices.assets
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.Devices.comparison module
 ---------------------------------------
 
 .. automodule:: GridCalEngine.Devices.comparison
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.Devices.measurement module
 ----------------------------------------
 
 .. automodule:: GridCalEngine.Devices.measurement
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.Devices.multi\_circuit module
 -------------------------------------------
 
 .. automodule:: GridCalEngine.Devices.multi_circuit
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.Devices.profile module
 ------------------------------------
 
 .. automodule:: GridCalEngine.Devices.profile
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.Devices.types module
 ----------------------------------
 
 .. automodule:: GridCalEngine.Devices.types
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCalEngine.Devices
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
