@@ -60,25 +60,25 @@ g_9 = 5
 b_9 = -12
 bsh_9 = 0.03
 
-g_10 = 5
-b_10 = -12
-bsh_10 = 0.03
+g_10 = 1.983297344095537
+b_10 = -19.79730978804259
+bsh_10 = 0.075
 
-g_11 = 5
-b_11 = -12
-bsh_11 = 0.03
+g_11 = 6.896608323313494
+b_11 = -82.75854126043255
+bsh_11 = 0.0
 
-g_12 = 4
-b_12 = -10
-bsh_12 = 0.03
+g_12 = 6.896608323313494
+b_12 = -82.75854126043255
+bsh_12 = 0.0
 
-g_13 = 4.6
-b_13 = -11.2
-bsh_13 = 0.03
+g_13 = 6.896608323313494
+b_13 = -82.75854126043255
+bsh_13 = 0.0
 
-g_14 = 4.9
-b_14 = -10.2
-bsh_14 = 0.03
+g_14 = 6.896608323313494
+b_14 = -82.75854126043255
+bsh_14 = 0.0
 
 pi = Const(math.pi)
 
@@ -90,7 +90,7 @@ ra_1 = Const(0.3)
 xd_1 = Const(0.86138701)
 omega_ref_1 = Const(1.0)
 Kp_1 = Const(1.0)
-Ki_1 = Const(10.0)
+Ki_1 = Const(0.0)
 Kw_1 = Const(10.0)
 
 # Generator 2
@@ -101,7 +101,7 @@ ra_2 = Const(0.3)
 xd_2 = Const(0.86138701)
 omega_ref_2 = Const(1.0)
 Kp_2 = Const(1.0)
-Ki_2 = Const(10.0)
+Ki_2 = Const(0.0)
 Kw_2 = Const(10.0)
 
 # Generator 3
@@ -112,7 +112,7 @@ ra_3 = Const(0.3)
 xd_3 = Const(0.86138701)
 omega_ref_3 = Const(1.0)
 Kp_3 = Const(1.0)
-Ki_3 = Const(10.0)
+Ki_3 = Const(0.0)
 Kw_3 = Const(10.0)
 
 # Generator 4
@@ -123,7 +123,7 @@ ra_4 = Const(0.3)
 xd_4 = Const(0.86138701)
 omega_ref_4 = Const(1.0)
 Kp_4 = Const(1.0)
-Ki_4 = Const(10.0)
+Ki_4 = Const(0.0)
 Kw_4 = Const(10.0)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -176,15 +176,15 @@ line8 = gce.Line(name="line 8-9", bus_from=bus8, bus_to=bus9,
 line9 = gce.Line(name="line 9-10", bus_from=bus9, bus_to=bus10,
                 r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
 line10 = gce.Line(name="line 9-10", bus_from=bus9, bus_to=bus10,
-                r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
+                r= 0.00501, x=0.05001, b=0.075, rate=100.0)
 line11 = gce.Line(name="line 1-5", bus_from=bus1, bus_to=bus5,
-                r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
+                r=0.001, x=0.012, b=0.0, rate=100.0)
 line12 = gce.Line(name="line 2-6", bus_from=bus2, bus_to=bus6,
-                r=0.034482758620689655, x=0.08620689655172414, b=0.03, rate=100.0)
+                r=0.001, x=0.012, b=0.0, rate=100.0)
 line13 = gce.Line(name="line 3-9", bus_from=bus3, bus_to=bus9,
-                r=0.03137789904502047, x=0.07639836289222374, b=0.03, rate=100.0)
+                r=0.001, x= 0.012, b=0.0, rate=100.0)
 line14 = gce.Line(name="line 4-10", bus_from=bus4, bus_to=bus10,
-                r=0.03826630222569309, x=0.07965638422491214, b=0.03, rate=100.0)
+                r=0.001, x= 0.012, b=0.0, rate=100.0)
 grid.add_line(line0)
 grid.add_line(line1)
 grid.add_line(line2)
@@ -245,6 +245,7 @@ Sb3 = res.Sbus[2] / grid.Sbase
 Sb4 = res.Sbus[3] / grid.Sbase
 Sb7 = res.Sbus[6] / grid.Sbase
 Sb8 = res.Sbus[7] / grid.Sbase
+
 
 Sf = res.Sf / grid.Sbase
 St = res.St / grid.Sbase
@@ -1410,7 +1411,7 @@ for eq, val in residuals.items():
 # ---------------------------------------------------------------------------------------
 
 
-event1 = RmsEvent('Load', Pl0_7, 2500, 0.15)
+event1 = RmsEvent('Load', Pl0_7, 2500, 0.1174)
 #event2 = Event(Ql0, 5000, 0.3)
 my_events = RmsEvents([event1])
 
@@ -1445,7 +1446,7 @@ vars_in_order = slv.sort_vars(vars_mapping)
 t, y = slv.simulate(
     t0=0,
     t_end=10.0,
-    h=0.01,
+    h=0.001,
     x0=x0,
     params0=params0,
     events_list=my_events,
@@ -1472,6 +1473,7 @@ plt.plot(t, y[:, slv.get_var_idx(omega_3)], label="ω (pu)")
 plt.plot(t, y[:, slv.get_var_idx(omega_4)], label="ω (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(delta_4)], label="δ (rad)")
 # plt.plot(t, y[:, slv.get_var_idx(et_4)], label="et (pu)")
+plt.plot(t, y[:, slv.get_var_idx(Pl_7)], label="Pl7 (pu)")
 #
 # # Generator algebraic variables
 # plt.plot(t, y[:, slv.get_var_idx(tm_1)], label="Tm (pu)")

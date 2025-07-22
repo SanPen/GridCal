@@ -89,8 +89,8 @@ D_1 = Const(0.0)
 ra_1 = Const(0.0)
 xd_1 = Const(1.7)
 omega_ref_1 = Const(1.0)
-Kp_1 = Const(1.0)
-Ki_1 = Const(10.0)
+Kp_1 = Const(0.05)
+Ki_1 = Const(0.0)
 Kw_1 = Const(10.0)
 
 # Generator 2
@@ -100,8 +100,8 @@ D_2 = Const(0.0)
 ra_2 = Const(0.0)
 xd_2 = Const(1.7)
 omega_ref_2 = Const(1.0)
-Kp_2 = Const(1.0)
-Ki_2 = Const(10.0)
+Kp_2 = Const(0.05)
+Ki_2 = Const(0.0)
 Kw_2 = Const(10.0)
 
 # Generator 3
@@ -111,8 +111,8 @@ D_3 = Const(0.0)
 ra_3 = Const(0.0)
 xd_3 = Const(1.7)
 omega_ref_3 = Const(1.0)
-Kp_3 = Const(1.0)
-Ki_3 = Const(10.0)
+Kp_3 = Const(0.05)
+Ki_3 = Const(0.0)
 Kw_3 = Const(10.0)
 
 # Generator 4
@@ -122,8 +122,8 @@ D_4 = Const(0.0)
 ra_4 = Const(0.0)
 xd_4 = Const(1.7)
 omega_ref_4 = Const(1.0)
-Kp_4 = Const(1.0)
-Ki_4 = Const(10.0)
+Kp_4 = Const(0.05)
+Ki_4 = Const(0.0)
 Kw_4 = Const(10.0)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -248,6 +248,8 @@ Sb8 = res.Sbus[7] / grid.Sbase
 
 Sf = res.Sf / grid.Sbase
 St = res.St / grid.Sbase
+
+print(Sb7.real)
 
 Pf0_0 = Sf[0].real
 Qf0_0 = Sf[0].imag
@@ -1410,7 +1412,7 @@ for eq, val in residuals.items():
 # ---------------------------------------------------------------------------------------
 
 
-event1 = RmsEvent('Load', Pl0_7, 2500, 0.15)
+event1 = RmsEvent('Load', Pl0_7, 2500, Sb7.real - 0.0015)
 #event2 = Event(Ql0, 5000, 0.3)
 my_events = RmsEvents([event1])
 
@@ -1445,7 +1447,7 @@ vars_in_order = slv.sort_vars(vars_mapping)
 t, y = slv.simulate(
     t0=0,
     t_end=10.0,
-    h=0.01,
+    h=0.001,
     x0=x0,
     params0=params0,
     events_list=my_events,
@@ -1472,6 +1474,8 @@ plt.plot(t, y[:, slv.get_var_idx(omega_3)], label="ω (pu)")
 plt.plot(t, y[:, slv.get_var_idx(omega_4)], label="ω (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(delta_4)], label="δ (rad)")
 # plt.plot(t, y[:, slv.get_var_idx(et_4)], label="et (pu)")
+
+plt.plot(t, y[:, slv.get_var_idx(Pl_7)], label="Pl7(pu)")
 #
 # # Generator algebraic variables
 # plt.plot(t, y[:, slv.get_var_idx(tm_1)], label="Tm (pu)")
@@ -1515,7 +1519,7 @@ plt.xlabel("Time (s)")
 plt.ylabel("Values (pu)")
 plt.title("Time Series of All System Variables")
 plt.xlim([0, 10])
-plt.ylim([0.85, 1.15])
+#plt.ylim([0.85, 1.15])
 plt.grid(True)
 plt.tight_layout()
 plt.show()

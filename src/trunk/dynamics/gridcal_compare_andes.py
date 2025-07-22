@@ -53,7 +53,9 @@ def merge_simulation_results_by_time(csv1, csv2, output_csv= 'merged_data.csv', 
 comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_andes_output.csv')
 
 # Load merged CSV
+
 merged_df = comparison
+merged_df['Pl_7_Gridcal'] = merged_df['Pl_7_Gridcal'] * (-100)
 
 # Define variable pairs to compare (each pair goes into one subplot)
 # variable_pairs = [
@@ -77,6 +79,11 @@ merged_df = comparison
 
 variable_pairs = [
      ['omega_1_Gridcal', 'omega_andes_gen_1'],
+     ['omega_2_Gridcal', 'omega_andes_gen_2'],
+     ['omega_3_Gridcal', 'omega_andes_gen_3'],
+     ['omega_4_Gridcal', 'omega_andes_gen_4'],
+     ['Pl_7_Gridcal', 'Ppf_andes_load_0']
+
      #['omega2_Gridcal', 'omega_andes_gen_2'],
      #['omega3_Gridcal', 'omega_andes_gen_3'],
      #['omega4_Gridcal', 'omega_andes_gen_4']
