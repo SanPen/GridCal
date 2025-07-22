@@ -3833,7 +3833,7 @@ class Assets:
 
     def get_investment_by_groups_index_dict(self) -> Dict[int, List[dev.Investment]]:
         """
-        Get a dictionary of investments goups and their
+        Get a dictionary of investments groups
         :return: Dict[investment group index] = list of investments
         """
         d = {e: idx for idx, e in enumerate(self._investments_groups)}
@@ -4572,7 +4572,7 @@ class Assets:
     # ------------------------------------------------------------------------------------------------------------------
     def add_branch(self, obj: Union[BRANCH_TYPES, dev.Branch]) -> None:
         """
-        Add any branch object (it's type will be infered here)
+        Add any branch object (it's type will be inferred here)
         :param obj: any class inheriting from ParentBranch
         """
 
@@ -5264,7 +5264,7 @@ class Assets:
             return self.get_modelling_authorities()
 
         elif device_type == DeviceType.FacilityDevice:
-            return self._facilities
+            return self.facilities
 
         elif device_type == DeviceType.LambdaDevice:
             return list()
@@ -5981,9 +5981,10 @@ class Assets:
             elm_type: DeviceType
     ) -> Tuple[ALL_DEV_TYPES, Dict[DeviceType, List[ALL_DEV_TYPES]]]:
         """
-
-        :param elm_type:
-        :return:
+        Function that returns the template of an elements and a dictionary
+        of the lists of elements that contain it's dependencies
+        :param elm_type: DeviceType
+        :return: Template, dictionary of dependencies
         """
         dictionary_of_lists = dict()
 

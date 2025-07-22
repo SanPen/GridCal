@@ -655,14 +655,14 @@ class CreatedOnTheFly:
         elm.technologies.add_object(api_object=tech, val=1.0)
 
 
-def parse_object_type_from_dataframe(main_df: pd.DataFrame,
-                                     template_elm: ALL_DEV_TYPES,
-                                     elements_dict_by_type: Dict[DeviceType, Dict[str, ALL_DEV_TYPES]],
-                                     time_profile: pd.DatetimeIndex,
-                                     object_type_key: str,
-                                     data: Dict[str, Union[float, str, pd.DataFrame]],
-                                     logger: Logger) -> Tuple[
-    List[ALL_DEV_TYPES], Dict[str, ALL_DEV_TYPES], CreatedOnTheFly]:
+def parse_object_type_from_dataframe(
+        main_df: pd.DataFrame,
+        template_elm: ALL_DEV_TYPES,
+        elements_dict_by_type: Dict[DeviceType, Dict[str, ALL_DEV_TYPES]],
+        time_profile: pd.DatetimeIndex,
+        object_type_key: str,
+        data: Dict[str, Union[float, str, pd.DataFrame]],
+        logger: Logger) -> Tuple[List[ALL_DEV_TYPES], Dict[str, ALL_DEV_TYPES], CreatedOnTheFly]:
     """
     Convert a DataFrame to a list of GridCal devices
     :param main_df: DataFrame to convert
@@ -954,7 +954,7 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
     return devices, devices_dict, on_the_fly
 
 
-def searc_property_into_json(json_entry: dict, prop: GCProp):
+def search_property_into_json(json_entry: dict, prop: GCProp):
     """
     Find property in Json entry
     :param json_entry: json of an object
@@ -1042,7 +1042,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
         for property_name, gc_prop in template_elm.registered_properties.items():
 
             # search for the property in the json
-            property_value = searc_property_into_json(json_entry=json_entry, prop=gc_prop)
+            property_value = search_property_into_json(json_entry=json_entry, prop=gc_prop)
 
             if property_value is not None:
 
@@ -1114,7 +1114,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                     if isinstance(property_value, str):
                                         q_curve.parse(json.loads(property_value))
                                     else:
-                                        q_curve.parse(property_value)
+                                        q_curve.parse(data=property_value)
 
                                 elif gc_prop.tpe == SubObjectType.LineLocations:
 
