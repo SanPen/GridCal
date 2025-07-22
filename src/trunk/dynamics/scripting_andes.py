@@ -34,7 +34,7 @@ print("ANDES is installed. Continuing with the rest of the script...")
 andes.config_logger(stream_level=20)
 
 #ss = andes.run('Gen_Load/Gen_load_2.json', default_config=True)
-ss = andes.run('Gen_Load/kundur_full_compare_orig.json', default_config=True)
+ss = andes.run('src/trunk/dynamics/Gen_Load/kundur_full_compare_orig.json', default_config=True)
 ss.files.no_output = True
 
 # to make PQ behave as constant power load
