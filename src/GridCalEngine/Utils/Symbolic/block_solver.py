@@ -11,10 +11,14 @@ import pandas as pd
 import numpy as np
 import numba as nb
 import math
+import warnings
+
 import scipy.sparse as sp
+from scipy.sparse.linalg import lsqr
+from numpy.linalg import LinAlgError
 from scipy.sparse.linalg import spsolve
-from scipy.sparse import csr_matrix
-from scipy.sparse.linalg import gmres, spilu, LinearOperator
+from scipy.sparse import csr_matrix, identity
+from scipy.sparse.linalg import gmres, spilu, LinearOperator, MatrixRankWarning
 from typing import Dict, List, Literal, Any, Callable, Sequence
 
 from GridCalEngine.Devices.Dynamic.events import RmsEvents
@@ -238,8 +242,11 @@ class BlockSolver:
 
         for key, val in mapping.items():
             if key.uid in self.uid2idx_vars.keys():
-                i = self.uid2idx_vars[key.uid]
-                x[i] = val
+                try:
+                    i = self.uid2idx_vars[key.uid]
+                    x[i] = val
+                except:
+                    _=0
             else:
                 raise ValueError(f"Missing variable {key} definition")
 
@@ -841,14 +848,31 @@ class BlockSolver:
             x_new = xn.copy()  # initial guess
             converged = False
             n_iter = 0
+            lambda_reg = 1e-8  # small regularization factor
+            max_reg_tries = 5  # limit how much regularization is added
+
             while not converged and n_iter < max_iter:
                 rhs = self.rhs_implicit(x_new, xn, params_current, step_idx, h)
                 converged = np.linalg.norm(rhs, np.inf) < tol
 
                 if converged:
                     break
+                
                 Jf = self.jacobian_implicit(x_new, params_current, h)  # sparse matrix
-                delta = sp.linalg.spsolve(Jf, -rhs)
+
+                reg_attempts = 0
+                solved = False
+                while not solved and reg_attempts <= max_reg_tries:
+                    try:
+                        delta = sp.linalg.spsolve(Jf, -rhs)
+                        solved = True
+                    except:
+                        print('[Run] lsqr')
+                        delta = np.linalg.pinv(Jf.toarray()) @ (-rhs)
+                        solved = True
+                if not solved:
+                    raise RuntimeError("Failed to solve linear system even with regularization.")
+
                 x_new += delta
                 n_iter += 1
 
