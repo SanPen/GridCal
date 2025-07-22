@@ -24,11 +24,11 @@ def remap_original_bus_indices(n_bus, original_bus_idx: Sequence[int]) -> Tuple[
              island_indices: array of island indices that apply for this island
     """
     original_idx = np.arange(n_bus, dtype=int)
-    maping = {o: i for i, o in enumerate(original_idx)}
+    mapping = {o: i for i, o in enumerate(original_idx)}
     island_indices = list()
     original_indices = list()
     for a, o in enumerate(original_bus_idx):
-        i = maping.get(o, None)
+        i = mapping.get(o, None)
         if i is not None:
             island_indices.append(i)
             original_indices.append(a)
@@ -40,7 +40,6 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       opf_options: OptimalPowerFlowOptions,
                       pf_options: PowerFlowOptions,
                       t_idx: Union[None, int] = None,
-                      pf_init=False,
                       Sbus_pf0: Union[CxVec, None] = None,
                       voltage_pf0: Union[CxVec, None] = None,
                       plot_error: bool = False,
@@ -54,7 +53,6 @@ def run_nonlinear_opf(grid: MultiCircuit,
     :param opf_options: OptimalPowerFlowOptions
     :param pf_options: PowerFlowOptions
     :param t_idx: Time index
-    :param pf_init: Initialize with a power flow?
     :param Sbus_pf0: Sbus initial solution
     :param voltage_pf0: Voltage initial solution
     :param plot_error: Plot the error evolution
@@ -68,7 +66,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
     # compile the system
     nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx, logger=logger)
 
-    if pf_init:
+    if opf_options.ips_init_with_pf:
         if Sbus_pf0 is None:
             # run power flow to initialize
             pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
@@ -89,8 +87,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
     # create and initialize results
     results = NonlinearOPFResults()
-    results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen,
-                       nil=len(nc.passive_branch_data.get_monitor_enabled_indices()),
+    results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen, nil=len(nc.passive_branch_data.get_monitor_enabled_indices()),
                        nhvdc=nc.nhvdc, ncap=len(capacity_nodes_idx) if capacity_nodes_idx is not None else 0)
 
     for i, island in enumerate(islands):
@@ -105,7 +102,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
         problem = NonLinearOptimalPfProblem(nc=island,
                                             options=opf_options,
-                                            pf_init=pf_init,
+                                            pf_init=opf_options.ips_init_with_pf,
                                             Sbus_pf=Sbus_pf[island.bus_data.original_idx],
                                             voltage_pf=voltage_pf[island.bus_data.original_idx],
                                             optimize_nodal_capacity=optimize_nodal_capacity,
@@ -146,6 +143,9 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
     # expand voltages if there was a bus topology reduction
     if nc.topology_performed:
+
+        results.Va = nc.propagate_bus_result(results.Va)
+        results.Vm = nc.propagate_bus_result(results.Vm)
         results.voltage = nc.propagate_bus_result(results.voltage)
 
     return results
