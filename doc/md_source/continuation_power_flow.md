@@ -126,3 +126,75 @@ plt.show()
 ```
 
 ![cpf_south_island_new_zealand.png](figures/cpf_south_island_new_zealand.png)
+
+
+## Theory
+
+The continuation power flow is a technique that traces a trajectory from a 
+base situation given to a combination of power $S_0$ and voltage $V_0$, 
+to another situation determined by another combination of power $S'$. 
+When the final power situation is undefined, then the algorithm continues 
+until the Jacobian is singular, tracing the voltage collapse curve.
+
+The method uses a predictor-corrector technique to trace this trajectory.
+
+### Predictor step
+
+$$
+
+    \begin{bmatrix}
+        \theta \\
+        V \\
+        \lambda \\
+    \end{bmatrix}^{predicted}
+    =
+    \begin{bmatrix}
+            \theta \\
+            V \\
+            \lambda \\
+        \end{bmatrix}^{i}
+    +
+    \sigma \cdot
+    \begin{bmatrix}
+        J11  &  J12  & P_{base} \\
+        J21  &  J22  & Q_{base} \\
+        0    & 0    & 1 \\
+    \end{bmatrix}^{-1}
+    \times
+    \begin{bmatrix}
+        \hat{0} \\
+        \hat{0} \\
+        1\\
+    \end{bmatrix}
+$$
+
+### Corrector step
+
+$$
+
+    \begin{bmatrix}
+        d\theta \\
+        dV \\
+        d\lambda \\
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+            d\theta_0\\
+            dV_0 \\
+            d\lambda_0 \\
+        \end{bmatrix}
+    +
+    \sigma \cdot
+    \begin{bmatrix}
+        J11  &  J12  & P_{base} \\
+        J21  &  J22  & Q_{base} \\
+        0    & -1    & 0 \\
+    \end{bmatrix}^{-1}
+    \times
+    \begin{bmatrix}
+        \hat{0} \\
+        \hat{0} \\
+        1\\
+    \end{bmatrix}
+
+$$

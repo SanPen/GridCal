@@ -48,7 +48,7 @@ Contents
     md_source/model_debugging.md
     md_source/file_operations.md
 
-    md_source/data_models.md
+
     md_source/topology.md
     md_source/clustering.md
 
@@ -69,8 +69,10 @@ Contents
     md_source/state_estimation.md
 
     md_source/development.md
+    md_source/plugins.md
     md_source/license.md
     rst_source/change_log
+    md_source/data_models.md
     rst_source/api/auto/modules
 
 

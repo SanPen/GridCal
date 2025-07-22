@@ -2,6 +2,101 @@
 
 ## AC modelling
 
+### Universal Branch Model
+
+This section describes the positive‑sequence branch model implemented in **GridCal**. 
+The formulation is state‑of‑the‑art and general enough to cover overhead lines, 
+cables and transformers.
+
+![π model of a branch](figures/BranchModel.png "π model of a branch")
+
+To define the π‑model we must specify the following quantities:
+
+| Magnitude | Units | Description |
+|-----------|-------|-------------|
+| $R$ | p.u. | Resistance of the equivalent branch. |
+| $X$ | p.u. | Reactance of the equivalent branch. |
+| $G$ | p.u. | Shunt conductance. |
+| $B$ | p.u. | Shunt susceptance. |
+| $|\mathrm{tap}|$ | p.u. | Transformer tap magnitude (internal voltage regulation, e.g. 0.98 or 1.05). |
+| $\delta$ | rad | Phase‑shift angle. |
+| $\mathrm{tap}_f$ | p.u. | *Virtual* tap on the high‑voltage side (difference between bus HV rating and transformer HV rating). |
+| $\mathrm{tap}_t$ | p.u. | *Virtual* tap on the low‑voltage side (difference between bus LV rating and transformer LV rating). |
+
+`GridCal` computes $\mathrm{tap}_f$ and $\mathrm{tap}_t$ automatically, taking the connection sense into account.
+
+#### Basic complex quantities
+
+$$
+Y_s = \frac{1}{R + jX}
+$$
+
+$$
+Y_{sh} = G + jB
+$$
+
+$$
+\mathrm{tap} = |\mathrm{tap}| \, e^{j\delta}
+$$
+
+$$
+\mathrm{tap}_f = \frac{V_{HV}}{V_{\text{bus, HV}}}
+$$
+
+$$
+\mathrm{tap}_t = \frac{V_{LV}}{V_{\text{bus, LV}}}
+$$
+
+#### Primitive admittances
+
+$$
+Y_{tt} = \frac{Y_s + Y_{sh}}{2\,\mathrm{tap}_t^{2}}
+$$
+
+$$
+Y_{ff} = \frac{Y_s + Y_{sh}}{2\,\mathrm{tap}_f^{2}\,\mathrm{tap}\,\mathrm{tap}^*}
+$$
+
+$$
+Y_{ft} = -\frac{Y_s}{\mathrm{tap}_f\,\mathrm{tap}_t\,\mathrm{tap}^*}
+$$
+
+$$
+Y_{tf} = -\frac{Y_s}{\mathrm{tap}_t\,\mathrm{tap}_f\,\mathrm{tap}}
+$$
+
+In the actual implementation all branch primitives are assembled simultaneously 
+in matrix form; the scalar expressions above are shown purely for clarity.
+
+
+
+#### Temperature correction
+
+`GridCal` can adjust the resistance to account for conductor temperature:
+
+$$
+R' = R \bigl(1 + \alpha\,\Delta t\bigr)
+$$
+
+where $\alpha$ depends on the conductor material and $\Delta t$ is the 
+temperature rise above the reference value (commonly 20 °C).
+
+| Material | Reference T (°C) | $\alpha$ (1/°C) |
+|----------|-----------------|------------------|
+| Copper | 20 | 0.004041 |
+| Copper | 75 | 0.00323 |
+| Annealed copper | 20 | 0.00393 |
+| Aluminum | 20 | 0.004308 |
+| Aluminum | 75 | 0.00330 |
+
+
+
+#### Embedded tap‑changer
+
+The general branch model includes a **discrete tap changer** so that the 
+magnitude $|\mathrm{tap}|$ can be regulated manually or automatically by 
+the power‑flow routines, enabling realistic transformer control within simulations.
+
 
 ## AC-DC modelling
 
@@ -11,7 +106,10 @@
 
 ## Distribution Grid example
 
-This tutorial shows a step by step guide on how to build distribution grid system that contains: 13 Buses, 4 Transformers, 4 Loads. The tutorial shows how to create a grid using time profiles and device templates. The tutorial also contains:
+This tutorial shows a step by step guide on how to build distribution grid 
+system that contains: 13 Buses, 4 Transformers, 4 Loads. 
+The tutorial shows how to create a grid using time profiles and device templates. 
+The tutorial also contains:
 
 - Easy drag and drop creation of components.
 - Transformer type creation.

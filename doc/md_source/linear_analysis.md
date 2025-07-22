@@ -177,3 +177,47 @@ con_drv = ContingencyAnalysisDriver(grid=grid,
 
 con_drv.run()
 ```
+
+## Benchmark
+
+###  Linear algebra frameworks benchmark
+
+#### IEEE 39 1-year time series
+
+The experiment is to test the time taken by the time series simulation using different linear algebra solvers.
+
+The power flow tolerance is ser to 1e-4.
+
+
+The time in seconds taken using each of the solvers is:
+
+|         | KLU   | LAPACK | ILU   | SuperLU | Pardiso |
+|---------|-------|--------|-------|---------|---------|
+| Test 1  | 82.03 | 82.10  | 81.79 | 82.88   | 93.23   |
+| Test 2  | 80.22 | 80.84  | 81.71 | 81.37   | 95.29   |
+| Test 3  | 79.53 | 82.32  | 82.75 | 80.98   | 92.62   |
+| Test 4  | 80.06 | 82.66  | 82.14 | 80.17   | 97.60   |
+| Test 5  | 80.07 | 80.51  | 81.94 | 80.03   | 93.39   |
+| Average | 80.38 | 81.68  | 82.07 | 81.09   | 94.42   |
+
+
+#### 2869 Pegase 1-week time series
+
+The experiment is to test the time taken by the time series simulation using different linear algebra solvers.
+
+The power flow tolerance is ser to 1e-4.
+
+
+The time in seconds taken using each of the solvers is:
+
+|         | KLU   | LAPACK | ILU   | SuperLU | Pardiso |
+|---------|-------|--------|-------|---------|---------|
+| Test 1  | 2.46  | 2.50   | 2.52  | 2.48    | 2.54    |
+| Test 2  | 2.35  | 2.31   | 2.36  | 2.32    | 2.59    |
+| Test 3  | 2.40  | 2.42   | 2.46  | 2.46    | 2.46    |
+| Test 4  | 2.33  | 2.31   | 2.34  | 2.33    | 2.42    |
+| Test 5  | 2.31  | 2.32   | 2.45  | 2.33    | 2.51    |
+| Average | 2.37  | 2.37   | 2.43  | 2.39    | 2.51    |
+
+So from the light of these tests the solvers are roughly equivalent except the Pardiso one with is
+worse than the others for these type of simulations.
