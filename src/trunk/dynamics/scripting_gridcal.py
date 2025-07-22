@@ -1052,7 +1052,7 @@ generator_block_2 = Block(
         Q_g_2 - (v_q_2 * i_d_2 - v_d_2 * i_q_2),
         tm_ref_2 - (tm0_2 + Kp_2 * (omega_2 - omega_ref_2) + Ki_2 * et_2)
     ],
-    algebraic_vars=[psid_2, psiq_2, i_d_2, i_q_2, v_d_2, v_q_2, t_e_2, P_g_2, Q_g_2, tm_2, tm_ref_2], #
+    algebraic_vars=[psid_2, psiq_2, i_d_2, i_q_2, v_d_2, v_q_2, t_e_2, P_g_2, Q_g_2, tm_ref_2], #
     parameters=[]
 )
 
