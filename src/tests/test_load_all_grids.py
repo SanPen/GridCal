@@ -61,3 +61,15 @@ def test_line_templates_finding():
         opener.logger.print()
 
     assert not opener.logger.has_logs()
+
+
+def test_issue_337():
+    # get the directory of this file
+    current_path = os.path.dirname(__file__)
+
+    # navigate to the grids folder
+    fname = os.path.join(current_path, 'data', 'grids', 'RAW', 'issue_337.raw')
+
+    grid = FileOpen(fname).open()
+
+    print()
