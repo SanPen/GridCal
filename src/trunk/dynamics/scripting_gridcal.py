@@ -1323,6 +1323,7 @@ vars_mapping = {
     P_g_1: Sb1.real,
     Q_g_1: Sb1.imag,
     et_1: 0.0,
+    tm_ref_1: t_e0_1,
 
     Vg_2: np.abs(v2),
     dg_2: np.angle(v2),
@@ -1339,6 +1340,7 @@ vars_mapping = {
     P_g_2: Sb2.real,
     Q_g_2: Sb2.imag,
     et_2: 0.0,
+    tm_ref_2: t_e0_2,
 
     Vg_3: np.abs(v3),
     dg_3: np.angle(v3),
@@ -1355,6 +1357,7 @@ vars_mapping = {
     P_g_3: Sb3.real,
     Q_g_3: Sb3.imag,
     et_3: 0.0,
+    tm_ref_3: t_e0_3,
 
     Vg_4: np.abs(v4),
     dg_4: np.angle(v4),
@@ -1370,7 +1373,8 @@ vars_mapping = {
     t_e_4: t_e0_4,
     P_g_4: Sb4.real,
     Q_g_4: Sb4.imag,
-    et_4: 0.0
+    et_4: 0.0,
+    tm_ref_4: t_e0_4
 }
 
 
