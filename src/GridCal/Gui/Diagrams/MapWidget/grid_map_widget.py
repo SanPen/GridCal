@@ -1121,7 +1121,7 @@ class GridMapWidget(BaseDiagramWidget):
                        vsc_loading: Vec = None,
                        vsc_active: IntVec = None,
                        ma: Vec = None,
-                       theta: Vec = None,
+                       tau: Vec = None,
                        fluid_node_p2x_flow: Vec = None,
                        fluid_node_current_level: Vec = None,
                        fluid_node_spillage: Vec = None,
@@ -1134,7 +1134,8 @@ class GridMapWidget(BaseDiagramWidget):
                        max_branch_width=5,
                        min_bus_width=20,
                        max_bus_width=20,
-                       cmap: palettes.Colormaps = None):
+                       cmap: palettes.Colormaps = None,
+                       is_three_phase: bool = False):
         """
         Color objects based on the results passed
         :param Sbus: Buses power (MVA)
@@ -1157,9 +1158,9 @@ class GridMapWidget(BaseDiagramWidget):
         :param vsc_losses: VSC branch losses [MW]
         :param vsc_loading: VSC Branch loading [%]
         :param vsc_active: VSC Branch status
-        :param loading_label: String saling whatever the loading label means
+        :param loading_label: String saying whatever the loading label means
         :param ma: branch phase shift angle (rad)
-        :param theta: branch tap module (p.u.)
+        :param tau: branch tap module (p.u.)
         :param fluid_node_p2x_flow: P2X flow rate (m3)
         :param fluid_node_current_level: Current level (m3)
         :param fluid_node_spillage: Spillage (m3)
@@ -1173,6 +1174,7 @@ class GridMapWidget(BaseDiagramWidget):
         :param min_bus_width: Minimum bus width [px]
         :param max_bus_width: Maximum bus width [px]
         :param cmap: Color map [palettes.Colormaps]
+        :param is_three_phase: the results are three-phase
         """
 
         # voltage_cmap = viz.get_voltage_color_map()
