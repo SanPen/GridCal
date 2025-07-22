@@ -57,14 +57,17 @@ tds = ss.TDS
 tds.config.fixt = 1
 tds.config.shrinkt = 0
 tds.config.tstep = 0.001
-tds.config.tf = 10.0
+tds.config.tf = 20.0
 tds.t = 0.0
 tds.init()
 
 # Logging
 time_history = []
-omega_history = [[] for _ in range(len(ss.GENROU))]
+omega_history = [[] for _ in range(len(ss.GENCLS))]
 Ppf_history = [[] for _ in range(len(ss.PQ))]
+tm_history = [[] for _ in range(len(ss.GENCLS))]
+v_history = [[] for _ in range(len(ss.Bus))]
+
 
 # initialize time domain simulation
 # ss.TDS.run()
@@ -73,14 +76,17 @@ one = True
 while tds.t < tds.config.tf:
 
     if tds.t > 2.5 and one == True:
-        ss.PQ.set(src='Ppf', idx='PQ_0', attr='v', value=11.74)
+        ss.PQ.set(src='Ppf', idx='PQ_0', attr='v', value=11.09)
         one = False
         # Log current state
     time_history.append(tds.t)
-    for i in range(len(ss.GENROU)):
-        omega_history[i].append(ss.GENROU.omega.v[i])
+    for i in range(len(ss.GENCLS)):
+        omega_history[i].append(ss.GENCLS.omega.v[i])
+        tm_history[i].append(ss.GENCLS.tm.v[i])
     for i in range(len(ss.PQ)):
         Ppf_history[i].append(ss.PQ.Ppf.v[i])
+    for i in range(len(ss.Bus)):
+        v_history[i].append(ss.Bus.v.v[i])
 
     # Advance one time step
     tds.itm_step()
@@ -92,12 +98,18 @@ data = [time_history, omega_history, Ppf_history]
 omega_df = pd.DataFrame(list(zip(*omega_history)))  # shape: [T, n_generators]
 omega_df.columns = [f"omega_andes_gen_{i+1}" for i in range(len(omega_history))]
 
+tm_df = pd.DataFrame(list(zip(*tm_history)))  # shape: [T, n_generators]
+tm_df.columns = [f"tm_andes_gen_{i+1}" for i in range(len(omega_history))]
+
 Ppf_df = pd.DataFrame(list(zip(*Ppf_history)))      # shape: [T, n_loads]
 Ppf_df.columns = [f"Ppf_andes_load_{i}" for i in range(len(Ppf_history))]
 
+v_df = pd.DataFrame(list(zip(*v_history)))      # shape: [T, n_loads]
+v_df.columns = [f"v_andes_Bus_{i+1}" for i in range(len(v_history))]
+
 # Combine all into a single DataFrame
 df = pd.DataFrame({'Time [s]': time_history})
-df = pd.concat([df, omega_df, Ppf_df], axis=1)
+df = pd.concat([df, omega_df, tm_df, Ppf_df, v_df], axis=1)
 df.to_csv("simulation_andes_output.csv", index=False)
 print('simulation results saved in simulation_andes_output.csv')
 

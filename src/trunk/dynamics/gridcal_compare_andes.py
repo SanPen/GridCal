@@ -58,31 +58,23 @@ merged_df = comparison
 merged_df['Pl_7_Gridcal'] = merged_df['Pl_7_Gridcal'] * (-100)
 
 # Define variable pairs to compare (each pair goes into one subplot)
-# variable_pairs = [
-#     ['delta_Gridcal', 'delta GENCLS 0'],
-#     ['omega_Gridcal', 'omega GENCLS 0'],
-#     ['tm_Gridcal', 'tm GENCLS'],
-#     ['psid_Gridcal', 'psid GENCLS 0'],
-#     ['psiq_Gridcal', 'psiq GENCLS 0'],
-#     ['i_d_Gridcal', 'Id GENCLS 0'],
-#     ['i_q_Gridcal', 'Iq GENCLS 0'],
-#     ['v_d_Gridcal', 'vd GENCLS 0'],
-#     ['v_q_Gridcal', 'vq GENCLS 0'],
-#     ['t_e_Gridcal', 'te GENCLS 0'],
-#     ['P_e_Gridcal', 'Pe GENCLS 0'],
-#     ['Q_e_Gridcal', 'Qe GENCLS 0'],
-#     ['Pline_from_Gridcal', 'a Bus 0'],
-#     ['Qline_from_Gridcal', 'v Bus 0'],
-#     ['Pline_to_Gridcal', 'a Bus 1'],
-#     ['Qline_to_Gridcal', 'v Bus 1']
-# ]
+
 
 variable_pairs = [
-     ['omega_1_Gridcal', 'omega_andes_gen_1'],
-     ['omega_2_Gridcal', 'omega_andes_gen_2'],
-     ['omega_3_Gridcal', 'omega_andes_gen_3'],
-     ['omega_4_Gridcal', 'omega_andes_gen_4'],
-     ['Pl_7_Gridcal', 'Ppf_andes_load_0']
+     # ['omega_1_Gridcal', 'omega_andes_gen_1'],
+     # ['omega_2_Gridcal', 'omega_andes_gen_2'],
+     # ['omega_3_Gridcal', 'omega_andes_gen_3'],
+     # ['omega_4_Gridcal', 'omega_andes_gen_4'],
+     # ['Pl_7_Gridcal', 'Ppf_andes_load_0'],
+     ['Vline_from_12_Gridcal', 'v_andes_Bus_2'],
+     ['Vline_from_11_Gridcal', 'v_andes_Bus_1'],
+     ['Vline_from_14_Gridcal', 'v_andes_Bus_4'],
+     ['Vline_from_13_Gridcal', 'v_andes_Bus_3'],
+     ['tm_1_Gridcal', 'tm_andes_gen_1'],
+     ['tm_2_Gridcal', 'tm_andes_gen_2'],
+     ['tm_3_Gridcal', 'tm_andes_gen_3'],
+     ['tm_4_Gridcal', 'tm_andes_gen_4'],
+
 
      #['omega2_Gridcal', 'omega_andes_gen_2'],
      #['omega3_Gridcal', 'omega_andes_gen_3'],

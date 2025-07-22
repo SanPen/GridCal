@@ -28,11 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved rms generator values">
-      <change afterPath="$PROJECT_DIR$/src/trunk/dynamics/converter.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Equivalent events in simulations">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/dynamics/constructing_kundur_full.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/dynamics/constructing_kundur_full.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/dynamics/scripting_andes.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/dynamics/scripting_andes.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -194,6 +191,7 @@
     "Python.raw_imp_exp_test.executor": "Run",
     "Python.readme_checks.executor": "Run",
     "Python.scripting_andes.executor": "Run",
+    "Python.scripting_gridcal.executor": "Run",
     "Python.scripting_simbolic_framework_0.executor": "Run",
     "Python.scripting_small_sys_bus_mapping.executor": "Run",
     "Python.substation_wizards.executor": "Run",
@@ -1900,7 +1898,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="589" />
+    <option name="localTasksCounter" value="590" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1946,7 +1944,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed bug in line.apply_template, now each template is handled independently" />
     <MESSAGE value="Added format_lines to raw_parser_writer.py to format lines" />
     <MESSAGE value="5.3.10" />
     <MESSAGE value="Now we keep the wire configuration that was lost in overhead_line_type" />
@@ -1971,7 +1968,8 @@
     <MESSAGE value="Improved psse parsing" />
     <MESSAGE value="Improved rms initialize" />
     <MESSAGE value="Improved rms generator values" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved rms generator values" />
+    <MESSAGE value="Equivalent events in simulations" />
+    <option name="LAST_COMMIT_MESSAGE" value="Equivalent events in simulations" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

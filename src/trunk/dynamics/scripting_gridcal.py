@@ -85,7 +85,7 @@ pi = Const(math.pi)
 # Generator 1
 fn_1 = Const(60.0)
 M_1 = Const(13.0)
-D_1 = Const(0.0)
+D_1 = Const(10.0)
 ra_1 = Const(0.0)
 xd_1 = Const(0.3)
 omega_ref_1 = Const(1.0)
@@ -97,7 +97,7 @@ T_1 = Const(2.1)
 # Generator 2
 fn_2 = Const(60.0)
 M_2 = Const(13.0)
-D_2 = Const(0.0)
+D_2 = Const(10.0)
 ra_2 = Const(0.0)
 xd_2 = Const(0.3)
 omega_ref_2 = Const(1.0)
@@ -109,7 +109,7 @@ T_2 = Const(2.1)
 # Generator 3
 fn_3 = Const(60.0)
 M_3 = Const(12.35)
-D_3 = Const(0.0)
+D_3 = Const(10.0)
 ra_3 = Const(0.0)
 xd_3 = Const(0.3)
 omega_ref_3 = Const(1.0)
@@ -121,7 +121,7 @@ T_3 = Const(2.1)
 # Generator 4
 fn_4 = Const(60.0)
 M_4 = Const(12.35)
-D_4 = Const(0.0)
+D_4 = Const(10.0)
 ra_4 = Const(0.0)
 xd_4 = Const(0.3)
 omega_ref_4 = Const(1.0)
@@ -253,7 +253,6 @@ Sb8 = res.Sbus[7] / grid.Sbase
 Sf = res.Sf / grid.Sbase
 St = res.St / grid.Sbase
 
-print(Sb7.real)
 
 Pf0_0 = Sf[0].real
 Qf0_0 = Sf[0].imag
@@ -400,6 +399,11 @@ vf_3  = Const(vf0_3)
 
 tm0_4 = Const(t_e0_4)
 vf_4  = Const(vf0_4)
+
+tm_1 = Const(t_e0_1)
+tm_2 = Const(t_e0_2)
+tm_3 = Const(t_e0_3)
+tm_4 = Const(t_e0_4)
 # ----------------------------------------------------------------------------------------------------------------------
 
 # Line 0
@@ -566,10 +570,10 @@ t_e_1 = Var("t_e_1")
 P_g_1 = Var("P_e_1")
 Q_g_1 = Var("Q_e_1")
 dg_1 = Var("dg_1")
-tm_1 = Var("tm_1")
-et_1 = Var("et_1")
+# tm_1 = Var("tm_1")
+# et_1 = Var("et_1")
 Vg_1 = Var("Vg_1")
-tm_ref_1 = Var("tm_ref_1")
+# tm_ref_1 = Var("tm_ref_1")
 
 # Gencls 2
 P_g_2 = Var("P_g_2")
@@ -585,9 +589,9 @@ i_q_2 = Var("i_q_2")
 v_d_2 = Var("v_d_2")
 v_q_2 = Var("v_q_2")
 t_e_2 = Var("t_e_2")
-tm_2 = Var("tm_2")
-et_2 = Var("et_2")
-tm_ref_2 = Var("tm_ref_2")
+# tm_2 = Var("tm_2")
+# et_2 = Var("et_2")
+#tm_ref_2 = Var("tm_ref_2")
 
 # Gencls 3
 P_g_3 = Var("P_g_3")
@@ -603,9 +607,9 @@ i_q_3 = Var("i_q_3")
 v_d_3 = Var("v_d_3")
 v_q_3 = Var("v_q_3")
 t_e_3 = Var("t_e_3")
-tm_3 = Var("tm_3")
-et_3 = Var("et_3")
-tm_ref_3 = Var("tm_ref_3")
+#tm_3 = Var("tm_3")
+# et_3 = Var("et_3")
+#tm_ref_3 = Var("tm_ref_3")
 
 # Gencls 4
 P_g_4 = Var("P_g_4")
@@ -621,9 +625,9 @@ i_q_4 = Var("i_q_4")
 v_d_4 = Var("v_d_4")
 v_q_4 = Var("v_q_4")
 t_e_4 = Var("t_e_4")
-tm_4 = Var("tm_4")
-et_4 = Var("et_4")
-tm_ref_4 = Var("tm_ref_4")
+#tm_4 = Var("tm_4")
+# et_4 = Var("et_4")
+#tm_ref_4 = Var("tm_ref_4")
 
 # Load 7
 Pl_7 = Var("Pl_7")
@@ -1010,10 +1014,10 @@ generator_block_1 = Block(
     state_eqs=[
         (2 * pi * fn_1) * (omega_1 - omega_ref_1),
         (tm_1 - t_e_1 - D_1 * (omega_1 - omega_ref_1)) / M_1,
-        (omega_1 - omega_ref_1),
-        (tm_ref_1 - tm_1) / T_1
+        # (omega_1 - omega_ref_1),
+        # (tm_ref_1 - tm_1) / T_1
     ],
-    state_vars=[delta_1, omega_1, et_1, tm_1], # 
+    state_vars=[delta_1, omega_1], # , et_1, tm_1
     algebraic_eqs=[
         psid_1 - (ra_1 * i_q_1 + v_q_1),
         psiq_1 + (ra_1 * i_d_1 + v_d_1),
@@ -1024,9 +1028,9 @@ generator_block_1 = Block(
         t_e_1 - (psid_1 * i_q_1 - psiq_1 * i_d_1),
         P_g_1 - (v_d_1 * i_d_1 + v_q_1 * i_q_1),
         Q_g_1 - (v_q_1 * i_d_1 - v_d_1 * i_q_1), 
-        tm_ref_1 - (tm0_1 + Kp_1 * (omega_1 - omega_ref_1) + Ki_1 * et_1)
+        # tm_ref_1 - (tm0_1 + Kp_1 * (omega_1 - omega_ref_1) + Ki_1 * et_1)
     ],
-    algebraic_vars=[psid_1, psiq_1, i_d_1, i_q_1, v_d_1, v_q_1, t_e_1, P_g_1, Q_g_1, tm_ref_1], #, 
+    algebraic_vars=[psid_1, psiq_1, i_d_1, i_q_1, v_d_1, v_q_1, t_e_1, P_g_1, Q_g_1], #, , tm_ref_1
     parameters=[]
 )
 
@@ -1036,10 +1040,10 @@ generator_block_2 = Block(
     state_eqs=[
         (2 * pi * fn_2) * (omega_2 - omega_ref_2),
         (tm_2 - t_e_2 - D_2 * (omega_2 - omega_ref_2)) / M_2,
-        (omega_2 - omega_ref_2),
-        (tm_ref_2 - tm_2) / T_2
+        # (omega_2 - omega_ref_2),
+        # (tm_ref_2 - tm_2) / T_2
     ],
-    state_vars=[delta_2, omega_2, et_2, tm_2], #
+    state_vars=[delta_2, omega_2], #, tm_2, , et_2
     algebraic_eqs=[
         psid_2 - (ra_2 * i_q_2 + v_q_2),
         psiq_2 + (ra_2 * i_d_2 + v_d_2),
@@ -1050,9 +1054,9 @@ generator_block_2 = Block(
         t_e_2 - (psid_2 * i_q_2 - psiq_2 * i_d_2),
         P_g_2 - (v_d_2 * i_d_2 + v_q_2 * i_q_2),
         Q_g_2 - (v_q_2 * i_d_2 - v_d_2 * i_q_2),
-        tm_ref_2 - (tm0_2 + Kp_2 * (omega_2 - omega_ref_2) + Ki_2 * et_2)
+        # tm_ref_2 - (tm0_2 + Kp_2 * (omega_2 - omega_ref_2) + Ki_2 * et_2)
     ],
-    algebraic_vars=[psid_2, psiq_2, i_d_2, i_q_2, v_d_2, v_q_2, t_e_2, P_g_2, Q_g_2, tm_ref_2], #
+    algebraic_vars=[psid_2, psiq_2, i_d_2, i_q_2, v_d_2, v_q_2, t_e_2, P_g_2, Q_g_2], #, tm_ref_2
     parameters=[]
 )
 
@@ -1060,10 +1064,10 @@ generator_block_3 = Block(
     state_eqs=[
         (2 * pi * fn_3) * (omega_3 - omega_ref_3),
         (tm_3 - t_e_3 - D_3 * (omega_3 - omega_ref_3)) / M_3,
-        (omega_3 - omega_ref_3),
-        (tm_ref_3 - tm_3) / T_3
+        # (omega_3 - omega_ref_3),
+        # (tm_ref_3 - tm_3) / T_3
     ],
-    state_vars=[delta_3, omega_3, et_3, tm_3],
+    state_vars=[delta_3, omega_3], #, tm_3 , et_3
     algebraic_eqs=[
         psid_3 - (ra_3 * i_q_3 + v_q_3),
         psiq_3 + (ra_3 * i_d_3 + v_d_3),
@@ -1074,9 +1078,9 @@ generator_block_3 = Block(
         t_e_3 - (psid_3 * i_q_3 - psiq_3 * i_d_3),
         P_g_3 - (v_d_3 * i_d_3 + v_q_3 * i_q_3),
         Q_g_3 - (v_q_3 * i_d_3 - v_d_3 * i_q_3),
-        tm_ref_3 - (tm0_3 + Kp_3 * (omega_3 - omega_ref_3) + Ki_3 * et_3)
+        # tm_ref_3 - (tm0_3 + Kp_3 * (omega_3 - omega_ref_3) + Ki_3 * et_3)
     ],
-    algebraic_vars=[psid_3, psiq_3, i_d_3, i_q_3, v_d_3, v_q_3, t_e_3, P_g_3, Q_g_3, tm_ref_3],
+    algebraic_vars=[psid_3, psiq_3, i_d_3, i_q_3, v_d_3, v_q_3, t_e_3, P_g_3, Q_g_3], #, tm_ref_3
     parameters=[]
 )
 
@@ -1084,10 +1088,10 @@ generator_block_4 = Block(
     state_eqs=[
         (2 * pi * fn_4) * (omega_4 - omega_ref_4),
         (tm_4 - t_e_4 - D_4 * (omega_4 - omega_ref_4)) / M_4,
-        (omega_4 - omega_ref_4),
-        (tm_ref_4 - tm_4) / T_4
+        # (omega_4 - omega_ref_4),
+        # (tm_ref_4 - tm_4) / T_4
     ],
-    state_vars=[delta_4, omega_4, et_4, tm_4],
+    state_vars=[delta_4, omega_4], #, tm_4 , et_4
     algebraic_eqs=[
         psid_4 - (ra_4 * i_q_4 + v_q_4),
         psiq_4 + (ra_4 * i_d_4 + v_d_4),
@@ -1098,9 +1102,9 @@ generator_block_4 = Block(
         t_e_4 - (psid_4 * i_q_4 - psiq_4 * i_d_4),
         P_g_4 - (v_d_4 * i_d_4 + v_q_4 * i_q_4),
         Q_g_4 - (v_q_4 * i_d_4 - v_d_4 * i_q_4),
-        tm_ref_4 - (tm0_4 + Kp_4 * (omega_4 - omega_ref_4) + Ki_4 * et_4)
+        # tm_ref_4 - (tm0_4 + Kp_4 * (omega_4 - omega_ref_4) + Ki_4 * et_4)
     ],
-    algebraic_vars=[psid_4, psiq_4, i_d_4, i_q_4, v_d_4, v_q_4, t_e_4, P_g_4, Q_g_4, tm_ref_4],
+    algebraic_vars=[psid_4, psiq_4, i_d_4, i_q_4, v_d_4, v_q_4, t_e_4, P_g_4, Q_g_4], # , tm_ref_4
     parameters=[]
 )
 
@@ -1318,12 +1322,12 @@ vars_mapping = {
     i_q_1: i_q0_1,
     v_d_1: v_d0_1,
     v_q_1: v_q0_1,
-    tm_1: t_e0_1,
+    #tm_1: t_e0_1,
     t_e_1: t_e0_1,
     P_g_1: Sb1.real,
     Q_g_1: Sb1.imag,
-    et_1: 0.0,
-    tm_ref_1: t_e0_1,
+    # et_1: 0.0,
+    # tm_ref_1: t_e0_1,
 
     Vg_2: np.abs(v2),
     dg_2: np.angle(v2),
@@ -1335,12 +1339,12 @@ vars_mapping = {
     i_q_2: i_q0_2,
     v_d_2: v_d0_2,
     v_q_2: v_q0_2,
-    tm_2: t_e0_2,
+    # tm_2: t_e0_2,
     t_e_2: t_e0_2,
     P_g_2: Sb2.real,
     Q_g_2: Sb2.imag,
-    et_2: 0.0,
-    tm_ref_2: t_e0_2,
+    # et_2: 0.0,
+    # tm_ref_2: t_e0_2,
 
     Vg_3: np.abs(v3),
     dg_3: np.angle(v3),
@@ -1352,12 +1356,12 @@ vars_mapping = {
     i_q_3: i_q0_3,
     v_d_3: v_d0_3,
     v_q_3: v_q0_3,
-    tm_3: t_e0_3,
+    # tm_3: t_e0_3,
     t_e_3: t_e0_3,
     P_g_3: Sb3.real,
     Q_g_3: Sb3.imag,
-    et_3: 0.0,
-    tm_ref_3: t_e0_3,
+    # et_3: 0.0,
+    # tm_ref_3: t_e0_3,
 
     Vg_4: np.abs(v4),
     dg_4: np.angle(v4),
@@ -1369,12 +1373,12 @@ vars_mapping = {
     i_q_4: i_q0_4,
     v_d_4: v_d0_4,
     v_q_4: v_q0_4,
-    tm_4: t_e0_4,
+    # tm_4: t_e0_4,
     t_e_4: t_e0_4,
     P_g_4: Sb4.real,
     Q_g_4: Sb4.imag,
-    et_4: 0.0,
-    tm_ref_4: t_e0_4
+    # et_4: 0.0,
+    # tm_ref_4: t_e0_4
 }
 
 
@@ -1424,7 +1428,7 @@ for eq, val in residuals.items():
 # ---------------------------------------------------------------------------------------
 
 
-event1 = RmsEvent('Load', Pl0_7, 2500, Sb7.real - 0.0015)
+event1 = RmsEvent('Load', Pl0_7, 2500, Sb7.real - 0.05)
 #event2 = Event(Ql0, 5000, 0.3)
 my_events = RmsEvents([event1])
 
@@ -1458,7 +1462,7 @@ vars_in_order = slv.sort_vars(vars_mapping)
 
 t, y = slv.simulate(
     t0=0,
-    t_end=10.0,
+    t_end=40.0,
     h=0.001,
     x0=x0,
     params0=params0,
@@ -1487,8 +1491,13 @@ plt.plot(t, y[:, slv.get_var_idx(omega_4)], label="ω (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(delta_4)], label="δ (rad)")
 # plt.plot(t, y[:, slv.get_var_idx(et_4)], label="et (pu)")
 
-plt.plot(t, y[:, slv.get_var_idx(Pl_7)], label="Pl7(pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Pl_7)], label="Pl7(pu)")
 #
+# plt.plot(t, y[:, slv.get_var_idx(Vline_from_12)], label="Vline_from (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Vline_to_11)], label="Vline_to (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Vline_from_14)], label="Vline_from (pu)")
+# plt.plot(t, y[:, slv.get_var_idx(Vline_to_13)], label="Vline_to (pu)")
+
 # # Generator algebraic variables
 # plt.plot(t, y[:, slv.get_var_idx(tm_1)], label="Tm (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(tm_2)], label="Tm (pu)")
@@ -1530,7 +1539,7 @@ plt.legend(loc='upper right', ncol=2)
 plt.xlabel("Time (s)")
 plt.ylabel("Values (pu)")
 plt.title("Time Series of All System Variables")
-plt.xlim([0, 10])
+plt.xlim([0, 40])
 #plt.ylim([0.85, 1.15])
 plt.grid(True)
 plt.tight_layout()
