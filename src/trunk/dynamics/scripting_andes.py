@@ -34,7 +34,7 @@ print("ANDES is installed. Continuing with the rest of the script...")
 andes.config_logger(stream_level=20)
 
 #ss = andes.run('Gen_Load/Gen_load_2.json', default_config=True)
-ss = andes.run('Gen_Load/kundur_full_compare.json', default_config=True)
+ss = andes.run('Gen_Load/kundur_full_compare_orig.json', default_config=True)
 ss.files.no_output = True
 
 # to make PQ behave as constant power load
@@ -56,14 +56,14 @@ ss.PQ.config.q2z = 0
 tds = ss.TDS
 tds.config.fixt = 1
 tds.config.shrinkt = 0
-tds.config.tstep = 0.1
+tds.config.tstep = 0.01
 tds.config.tf = 10.0
 tds.t = 0.0
 tds.init()
 
 # Logging
 time_history = []
-omega_history = [[] for _ in range(len(ss.GENCLS))]
+omega_history = [[] for _ in range(len(ss.GENROU))]
 Ppf_history = [[] for _ in range(len(ss.PQ))]
 
 # initialize time domain simulation
@@ -72,13 +72,13 @@ one = True
 # Step-by-step simulation
 while tds.t < tds.config.tf:
 
-    if tds.t > 5.0 and one == True:
-        ss.PQ.set(src='Ppf', idx=0, attr='v', value=5.0)
+    if tds.t > 2.5 and one == True:
+        ss.PQ.set(src='Ppf', idx='PQ_0', attr='v', value=11.74)
         one = False
         # Log current state
     time_history.append(tds.t)
-    for i in range(len(ss.GENCLS)):
-        omega_history[i].append(ss.GENCLS.omega.v[i])
+    for i in range(len(ss.GENROU)):
+        omega_history[i].append(ss.GENROU.omega.v[i])
     for i in range(len(ss.PQ)):
         Ppf_history[i].append(ss.PQ.Ppf.v[i])
 
@@ -88,18 +88,18 @@ while tds.t < tds.config.tf:
 
 data = [time_history, omega_history, Ppf_history]
 
-print(omega_history)
 
 omega_df = pd.DataFrame(list(zip(*omega_history)))  # shape: [T, n_generators]
-omega_df.columns = [f"omega_gen_{i}" for i in range(len(omega_history))]
+omega_df.columns = [f"omega_andes_gen_{i+1}" for i in range(len(omega_history))]
 
 Ppf_df = pd.DataFrame(list(zip(*Ppf_history)))      # shape: [T, n_loads]
-Ppf_df.columns = [f"Ppf_load_{i}" for i in range(len(Ppf_history))]
+Ppf_df.columns = [f"Ppf_andes_load_{i}" for i in range(len(Ppf_history))]
 
 # Combine all into a single DataFrame
 df = pd.DataFrame({'Time [s]': time_history})
 df = pd.concat([df, omega_df, Ppf_df], axis=1)
-df.to_csv("simulation_output.csv", index=False)
+df.to_csv("simulation_andes_output.csv", index=False)
+print('simulation results saved in simulation_andes_output.csv')
 
 
 # # Plot

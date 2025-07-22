@@ -7,6 +7,8 @@ from __future__ import annotations
 import os
 import cmath
 import copy
+import pdb
+
 import numpy as np
 import pandas as pd
 from typing import List, Dict, Tuple, Union, Set, TYPE_CHECKING
@@ -2741,6 +2743,8 @@ class MultiCircuit(Assets):
         Initialize all RMS models
         :return: System block
         """
+        # already computed grid power flow
+
         # create the system block
         sys_block = Block(children=[], in_vars=[])
         bus_dict = dict()
@@ -2807,5 +2811,6 @@ class MultiCircuit(Assets):
             else:
                 mdl.algebraic_eqs.append(P[i])
                 mdl.algebraic_eqs.append(Q[i])
+
 
         return sys_block

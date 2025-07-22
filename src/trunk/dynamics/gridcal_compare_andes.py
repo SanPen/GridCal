@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+import pdb
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -49,7 +50,7 @@ def merge_simulation_results_by_time(csv1, csv2, output_csv= 'merged_data.csv', 
 
     return merged_df
 
-comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_output.csv')
+comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_andes_output.csv')
 
 # Load merged CSV
 merged_df = comparison
@@ -75,13 +76,19 @@ merged_df = comparison
 # ]
 
 variable_pairs = [
-     ['omega_Gridcal', 'omega_gen_0'],
+     ['omega_1_Gridcal', 'omega_andes_gen_1'],
+     #['omega2_Gridcal', 'omega_andes_gen_2'],
+     #['omega3_Gridcal', 'omega_andes_gen_3'],
+     #['omega4_Gridcal', 'omega_andes_gen_4']
 ]
 
 # Automatically detect time columns
-time_columns = [col for col in merged_df.columns if 'time' in col.lower()]
-time1 = merged_df[time_columns[0]]
-time2 = merged_df[time_columns[1]] if len(time_columns) > 1 else time1  # fallback to same time
+time_column = merged_df['Time [s]']
+time_columns = [col for col in merged_df.columns if 'Time [s]' in col.lower()]
+time1 = time_column
+
+#time1 = merged_df[time_columns]
+#time2 = merged_df[time_columns[1]] if len(time_columns) > 1 else time1  # fallback to same time
 
 # Create subplots
 n = len(variable_pairs)
@@ -90,12 +97,12 @@ rows = (n + 1) // cols
 
 fig, axes = plt.subplots(rows, cols, figsize=(16, 4 * rows), sharex=True)
 axes = axes.flatten()
-
 for idx, (var1, var2) in enumerate(variable_pairs):
     ax = axes[idx]
     if var1 in merged_df and var2 in merged_df:
+
         ax.plot(time1, merged_df[var1], label=var1, linestyle='-')
-        ax.plot(time2, merged_df[var2], label=var2, linestyle='--')
+        ax.plot(time1, merged_df[var2], label=var2, linestyle='--')
         ax.set_title(f"{var1} vs {var2}", fontsize=9)
         ax.set_xlabel("Time (s)", fontsize=8)
         ax.set_ylabel("Value (pu)", fontsize=8)

@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+import pdb
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -47,11 +48,16 @@ print(f"Converged: {res.converged}")
 
 logger = gce.Logger()
 sys = grid.initialize_rms(logger=logger)
+#sys = grid.initialize_rms(res, logger=logger)
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Solver
 # ----------------------------------------------------------------------------------------------------------------------
 slv = BlockSolver(sys)
+
+pdb.set_trace()
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Intialization
@@ -84,7 +90,6 @@ i_q0 = np.imag(i * rot)
 # inductances
 psid0 = -gen.ra * i_q0 + v_q0
 psiq0 = -gen.ra * i_d0 + v_d0
-
 vf0 = - i_d0 + psid0 + gen.xd * i_d0
 print(f"vf = {vf0}")
 
@@ -115,7 +120,7 @@ mapping = {
 }
 
 params_mapping = {
-    Pl0: 0.1,
+    # Pl0: 0.1,
     # Ql0: 0.1
 }
 
@@ -123,22 +128,22 @@ params_mapping = {
 # Events
 # ---------------------------------------------------------------------------------------
 
-event1 = RmsEvent(Pl0, 5000, 0.3)
+# event1 = RmsEvent(Pl0, 5000, 0.3)
 # event2 = Event(Ql0, 5000, 0.3)
-my_events = RmsEvents([event1])
-
+# my_events = RmsEvents([event1])
+my_events = RmsEvents([])
 params0 = slv.build_init_params_vector(params_mapping)
-# x0 = slv.build_init_vars_vector(mapping)
+x0 = slv.build_init_vars_vector(mapping)
 
 
 # x0 = slv.initialize_with_newton(x0=slv.build_init_vars_vector(vars_mapping),
 #                                 params0=params0)
 #
-# x0 = slv.initialize_with_pseudo_transient_gamma(
-#     x0=slv.build_init_vars_vector(mapping),
-#     # x0=np.zeros(len(slv._state_vars) + len(slv._algebraic_vars)),
-#     params0=params0
-# )
+x0 = slv.initialize_with_pseudo_transient_gamma(
+    x0=slv.build_init_vars_vector(mapping),
+    # x0=np.zeros(len(slv._state_vars) + len(slv._algebraic_vars)),
+    params0=params0
+)
 
 
 # x0, params0 = slv.initialise_homotopy(

@@ -513,6 +513,22 @@ class Generator(GeneratorParent):
             Vm = self.bus.rms_model.model.E(DynamicVarType.Vm)
             Va = self.bus.rms_model.model.E(DynamicVarType.Va)
 
+            # # Current from power and voltage
+            # i = np.conj(Sb1 / v1)  # ī = (p - jq) / v̄*
+            # # Delta angle
+            # delta0 = np.angle(v1 + gen.R1 + 1j * gen.X1 * i)
+            # # dq0 rotation
+            # rot = np.exp(-1j * (delta0 - np.pi / 2))
+            # # dq voltages and currents
+            # v_d0 = np.real(v1 * rot)
+            # v_q0 = np.imag(v1 * rot)
+            # i_d0 = np.real(i * rot)
+            # i_q0 = np.imag(i * rot)
+            # # inductances
+            # psid0 = -gen.ra * i_q0 + v_q0
+            # psiq0 = -gen.ra * i_d0 + v_d0
+            # vf0 = - i_d0 + psid0 + gen.xd * i_d0
+
             self.rms_model.model = Block(
                 state_eqs=[
                     # delta - (2 * pi * fn) * (omega - 1),
