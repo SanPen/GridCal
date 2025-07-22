@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
-from typing import Union, Tuple
+from typing import Union, Tuple, Sequence
 from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
@@ -15,19 +15,19 @@ from GridCalEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx import
 from GridCalEngine.basic_structures import CxVec, IntVec, Logger
 
 
-def remap_original_bus_indices(nbus, orginal_bus_idx: IntVec) -> Tuple[IntVec, IntVec]:
+def remap_original_bus_indices(n_bus, original_bus_idx: Sequence[int]) -> Tuple[IntVec, IntVec]:
     """
     Get arrays of bus mappings
-    :param nbus: number of buses
-    :param orginal_bus_idx: array of bus indices in the multi-island scheme
+    :param n_bus: number of buses
+    :param original_bus_idx: array of bus indices in the multi-island scheme
     :return: original_indices: array of bus indices in the multi-island that apply for this island,
              island_indices: array of island indices that apply for this island
     """
-    original_idx = np.arange(nbus, dtype=int)
+    original_idx = np.arange(n_bus, dtype=int)
     maping = {o: i for i, o in enumerate(original_idx)}
     island_indices = list()
     original_indices = list()
-    for a, o in enumerate(orginal_bus_idx):
+    for a, o in enumerate(original_bus_idx):
         i = maping.get(o, None)
         if i is not None:
             island_indices.append(i)
@@ -89,7 +89,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
     # create and initialize results
     results = NonlinearOPFResults()
-    results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen, nil=len(nc.passive_branch_data.get_monitor_enabled_indices()),
+    results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen,
+                       nil=len(nc.passive_branch_data.get_monitor_enabled_indices()),
                        nhvdc=nc.nhvdc, ncap=len(capacity_nodes_idx) if capacity_nodes_idx is not None else 0)
 
     for i, island in enumerate(islands):
@@ -97,7 +98,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
         if capacity_nodes_idx is not None:
             # get the
             (capacity_nodes_idx_org,
-             capacity_nodes_idx_isl) = remap_original_bus_indices(nbus=nc.nbus, orginal_bus_idx=capacity_nodes_idx)
+             capacity_nodes_idx_isl) = remap_original_bus_indices(n_bus=nc.nbus, original_bus_idx=capacity_nodes_idx)
         else:
             capacity_nodes_idx_org = None
             capacity_nodes_idx_isl = None

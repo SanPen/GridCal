@@ -79,7 +79,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
         if capacity_nodes_idx is not None:
             # get the
             (capacity_nodes_idx_org,
-             capacity_nodes_idx_isl) = remap_original_bus_indices(nbus=nc.nbus, orginal_bus_idx=capacity_nodes_idx)
+             capacity_nodes_idx_isl) = remap_original_bus_indices(n_bus=nc.nbus, original_bus_idx=capacity_nodes_idx)
         else:
             capacity_nodes_idx_org = None
             capacity_nodes_idx_isl = None

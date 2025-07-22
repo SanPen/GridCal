@@ -8,8 +8,8 @@ import os
 import numpy as np
 import GridCalEngine.api as gce
 from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_new import run_nonlinear_opf
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_new import NonlinearOPFResults
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import NonlinearOPFResults
 
 
 def case9() -> NonlinearOPFResults:
