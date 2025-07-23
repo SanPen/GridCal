@@ -8,7 +8,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
-from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
+from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver, compose_system_block
 import GridCalEngine.api as gce
 
 grid = gce.MultiCircuit()
@@ -47,8 +47,10 @@ print(res.get_branch_df())
 print(f"Converged: {res.converged}")
 
 logger = gce.Logger()
-sys = grid.initialize_rms(logger=logger)
-#sys = grid.initialize_rms(res, logger=logger)
+grid.initialize_rms(logger=logger)
+sys = compose_system_block(grid=grid)
+
+# sys = grid.initialize_rms(res, logger=logger)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

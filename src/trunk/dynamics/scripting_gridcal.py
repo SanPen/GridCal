@@ -9,68 +9,77 @@ from matplotlib import pyplot as plt
 
 import sys
 import os
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
 from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
 from GridCalEngine.Utils.Symbolic.block import Block
-from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
+from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver, compose_system_block
 import GridCalEngine.api as gce
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Constants
 # ----------------------------------------------------------------------------------------------------------------------
-# lines
-r_0, x_0, bsh_0 = 0.005,   0.05,   0.075
-r_1, x_1, bsh_1 = 0.00501, 0.05001, 0.075
-r_2, x_2, bsh_2 = 0.002,   0.02,   0.03
-r_3, x_3, bsh_3 = 0.00201, 0.02001, 0.03
-r_4, x_4, bsh_4 = 0.02201, 0.22001, 0.33
-r_5, x_5, bsh_5 = 0.02202, 0.22002, 0.33
-r_6, x_6, bsh_6 = 0.022,   0.22,   0.33
-r_7, x_7, bsh_7 = 0.002,   0.02,   0.03
-r_8, x_8, bsh_8 = 0.00201, 0.02001, 0.03
-r_9, x_9, bsh_9 = 0.005,   0.05,   0.075
-r_10, x_10, bsh_10 = 0.00501, 0.05001, 0.075
-r_11, x_11, bsh_11 = 0.001,  0.012,  0.0
-r_12, x_12, bsh_12 = 0.001,  0.012,  0.0
-r_13, x_13, bsh_13 = 0.001,  0.012,  0.0
-r_14, x_14, bsh_14 = 0.001,  0.012,  0.0
+g_0 = 1.9802011175359897
+b_0 = -19.80197553181107
+bsh_0 = 0.075
 
-def compute_ghk_bhk(r, x, u=1.0):
-    denominator = r + 1j * (x + 1e-8) + 1e-8
-    yhk = u / denominator
-    return yhk.real, yhk.imag
+g_1 = 1.983297344095537
+b_1 = -19.79730978804259
+bsh_1 = 0.075
 
-g_0, b_0 = compute_ghk_bhk(r_0, x_0)
+g_2 = 4.950514410328389
+b_2 = -49.504921331249285
+bsh_2 = 0.03
 
-g_1, b_1 = compute_ghk_bhk(r_1, x_1)
+g_3 = 4.969851689511383
+b_3 = -49.47576479999586
+bsh_3 = 0.03
 
-g_2, b_2 = compute_ghk_bhk(r_2, x_2)
+g_4 = 0.45020515378940984
+b_4 = -4.500208786241333
+bsh_4 = 0.33
 
-g_3, b_3 = compute_ghk_bhk(r_3, x_3)
+g_5 = 0.45036510771086197
+b_5 = -4.499967779405863
+bsh_5 = 0.33
 
-g_4, b_4 = compute_ghk_bhk(r_4, x_4)
+g_6 = 0.4500451645074322
+b_6 = -4.500449803981304
+bsh_6 = 0.33
 
-g_5, b_5 = compute_ghk_bhk(r_5, x_5)
+g_7 = 4.950514410328389
+b_7 = -49.504921331249285
+bsh_7 = 0.03
 
-g_6, b_6 = compute_ghk_bhk(r_6, x_6)
+g_8 = 4.969851689511383
+b_8 = -49.47576479999586
+bsh_8 = 0.03
 
-g_7, b_7 = compute_ghk_bhk(r_7, x_7)
+g_9 = 1.9802011175359897
+b_9 = -19.80197553181107
+bsh_9 = 0.075
 
-g_8, b_8 = compute_ghk_bhk(r_8, x_8)
+g_10 = 1.983297344095537
+b_10 = -19.79730978804259
+bsh_10 = 0.075
 
-g_9, b_9 = compute_ghk_bhk(r_9, x_9)
+g_11 = 6.896608323313494
+b_11 = -82.75854126043255
+bsh_11 = 0.0
 
-g_10, b_10 = compute_ghk_bhk(r_10, x_10)
+g_12 = 6.896608323313494
+b_12 = -82.75854126043255
+bsh_12 = 0.0
 
-g_11, b_11 = compute_ghk_bhk(r_11, x_11)
+g_13 = 6.896608323313494
+b_13 = -82.75854126043255
+bsh_13 = 0.0
 
-g_12, b_12 = compute_ghk_bhk(r_12, x_12)
-
-g_13, b_13 = compute_ghk_bhk(r_13, x_13)
-
-g_14, b_14 = compute_ghk_bhk(r_14, x_14)
+g_14 = 6.896608323313494
+b_14 = -82.75854126043255
+bsh_14 = 0.0
 
 pi = Const(math.pi)
 
@@ -81,8 +90,9 @@ D_1 = Const(10.0)
 ra_1 = Const(0.0)
 xd_1 = Const(0.3)
 omega_ref_1 = Const(1.0)
-Kp_1 = Const(0.0)
+Kp_1 = Const(0.05)
 Ki_1 = Const(0.0)
+Kw_1 = Const(10.0)
 T_1 = Const(2.1)
 
 # Generator 2
@@ -92,8 +102,9 @@ D_2 = Const(10.0)
 ra_2 = Const(0.0)
 xd_2 = Const(0.3)
 omega_ref_2 = Const(1.0)
-Kp_2 = Const(0.0)
+Kp_2 = Const(0.05)
 Ki_2 = Const(0.0)
+Kw_2 = Const(10.0)
 T_2 = Const(2.1)
 
 # Generator 3
@@ -103,8 +114,9 @@ D_3 = Const(10.0)
 ra_3 = Const(0.0)
 xd_3 = Const(0.3)
 omega_ref_3 = Const(1.0)
-Kp_3 = Const(0.0)
+Kp_3 = Const(0.05)
 Ki_3 = Const(0.0)
+Kw_3 = Const(10.0)
 T_3 = Const(2.1)
 
 # Generator 4
@@ -114,134 +126,139 @@ D_4 = Const(10.0)
 ra_4 = Const(0.0)
 xd_4 = Const(0.3)
 omega_ref_4 = Const(1.0)
-Kp_4 = Const(0.0)
+Kp_4 = Const(0.05)
 Ki_4 = Const(0.0)
+Kw_4 = Const(10.0)
 T_4 = Const(2.1)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Power flow
 # ----------------------------------------------------------------------------------------------------------------------
 # Build the system to compute the powerflow
-grid = gce.MultiCircuit()
-grid.fBase = 60.0
+# grid = gce.MultiCircuit(Sbase=100, fbase=60.0)
+#
+# # Buses
+# bus1 = gce.Bus(name="Bus1", Vnom=230, is_slack=True, Vm0=1.03, Va0=np.deg2rad(20.2))
+# bus2 = gce.Bus(name="Bus2", Vnom=20, Va0=np.deg2rad(20.2))
+# bus3 = gce.Bus(name="Bus3", Vnom=230, Vm0=1.03, Va0=np.deg2rad(20.2))
+# bus4 = gce.Bus(name="Bus4", Vnom=20, Va0=np.deg2rad(20.2))
+# bus5 = gce.Bus(name="Bus5", Vnom=230, Va0=np.deg2rad(20.2))
+# bus6 = gce.Bus(name="Bus6", Vnom=230, Va0=np.deg2rad(20.2))
+# bus7 = gce.Bus(name="Bus7", Vnom=230, Va0=np.deg2rad(20.2))
+# bus8 = gce.Bus(name="Bus8", Vnom=230, Va0=np.deg2rad(20.2))
+# bus9 = gce.Bus(name="Bus9", Vnom=230, Va0=np.deg2rad(20.2))
+# bus10 = gce.Bus(name="Bus10", Vnom=230, Va0=np.deg2rad(20.2))
+# bus11 = gce.Bus(name="Bus10", Vnom=230, Va0=np.deg2rad(20.2))
+#
+# grid.add_bus(bus1)
+# grid.add_bus(bus2)
+# grid.add_bus(bus3)
+# grid.add_bus(bus4)
+# grid.add_bus(bus5)
+# grid.add_bus(bus6)
+# grid.add_bus(bus7)
+# grid.add_bus(bus8)
+# grid.add_bus(bus9)
+# grid.add_bus(bus10)
+# grid.add_bus(bus11)
+#
+# # Lines
+# # S = I*V*sqrt(3)
+# line1 = grid.add_line(gce.Line(name="line 5-6", bus_from=bus5, bus_to=bus6, length=25.0))
+# line2 = grid.add_line(gce.Line(name="line 6-7", bus_from=bus6, bus_to=bus7, length=10.0))
+#
+# line3 = grid.add_line(gce.Line(name="line 7-8 A", bus_from=bus7, bus_to=bus8, length=110.0))
+# line4 = grid.add_line(gce.Line(name="line 7-8 B", bus_from=bus7, bus_to=bus8, length=110.0))
+#
+# line5 = grid.add_line(gce.Line(name="line 8-9", bus_from=bus8, bus_to=bus9, length=110.0))
+# line6 = grid.add_line(gce.Line(name="line 8-9", bus_from=bus8, bus_to=bus9, length=110.0))
+#
+# line7 = grid.add_line(gce.Line(name="line 9-10", bus_from=bus9, bus_to=bus10, length=10.0))
+# line8 = grid.add_line(gce.Line(name="line 10-11", bus_from=bus10, bus_to=bus11, length=25.0))
+#
+# # apply the template
+# R = 0.0001
+# X = 0.001
+# B = 0.00175
+# for lne in grid.lines:
+#     lne.R = R * lne.length
+#     lne.X = X * lne.length
+#     lne.B = B * lne.length
+#
+# # transformers
+# x_pu_tr = 0.15
+# x_pu_grid = x_pu_tr * (100.0 / 900.0)
+#
+#
+# tr1 = grid.add_transformer2w(
+#     gce.Transformer2W(name="TR1", bus_from=bus2, bus_to=bus6, x=x_pu_grid, rate=900.0, HV=230.0, LV=20.0)
+# )
+#
+# tr2 = grid.add_transformer2w(
+#     gce.Transformer2W(name="TR2", bus_from=bus4, bus_to=bus10, x=x_pu_grid, rate=900.0, HV=230.0, LV=20.0)
+# )
+#
+# tr3 = grid.add_transformer2w(
+#     gce.Transformer2W(name="TR3", bus_from=bus1, bus_to=bus5, x=x_pu_grid, rate=900.0, HV=230.0, LV=20.0)
+# )
+#
+# tr4 = grid.add_transformer2w(
+#     gce.Transformer2W(name="TR4", bus_from=bus3, bus_to=bus11, x=x_pu_grid, rate=900.0, HV=230.0, LV=20.0)
+# )
+#
+# # loads
+# l1 = grid.add_load(bus=bus7, api_obj=gce.Load(P=967.0, Q=100.0))
+# l2 = grid.add_load(bus=bus9, api_obj=gce.Load(P=1767.0, Q=100.0))
+#
+# sh1 = grid.add_shunt(bus=bus7, api_obj=gce.Shunt(G=0.0, B=200.0))
+# sh2 = grid.add_shunt(bus=bus9, api_obj=gce.Shunt(G=0.0, B=350.0))
+#
+# # Generators
+# gen1 = gce.Generator(name="Gen1", P=700.105, vset=1.03, Snom=900.0)
+# grid.add_generator(bus=bus1, api_obj=gen1)
+#
+# gen2 = gce.Generator(name="Gen2", P=700.0, vset=1.01, Snom=900.0)
+# grid.add_generator(bus=bus2, api_obj=gen2)
+#
+# gen3 = gce.Generator(name="Gen3", P=719.0, vset=1.03, Snom=900.0)
+# grid.add_generator(bus=bus3, api_obj=gen3)
+#
+# gen4 = gce.Generator(name="Gen4", P=700.0, vset=1.01, Snom=900.0)
+# grid.add_generator(bus=bus4, api_obj=gen4)
 
-# Buses
-bus1 = gce.Bus(name="Bus1", Vnom=230)
-bus2 = gce.Bus(name="Bus2", Vnom=230)
-bus3 = gce.Bus(name="Bus3", Vnom=230)
-bus4 = gce.Bus(name="Bus4", Vnom=230)
-bus5 = gce.Bus(name="Bus5", Vnom=230)
-bus6 = gce.Bus(name="Bus6", Vnom=230)
-bus7 = gce.Bus(name="Bus7", Vnom=230)
-bus8 = gce.Bus(name="Bus8", Vnom=230)
-bus9 = gce.Bus(name="Bus9", Vnom=230)
-bus10 = gce.Bus(name="Bus10", Vnom=230)
+grid = gce.open_file(filename=os.path.join('Two_Areas_PSS_E', 'Benchmark_4ger_33_2015.raw'))
 
-grid.add_bus(bus1)
-grid.add_bus(bus2)
-grid.add_bus(bus3)
-grid.add_bus(bus4)
-grid.add_bus(bus5)
-grid.add_bus(bus6)
-grid.add_bus(bus7)
-grid.add_bus(bus8)
-grid.add_bus(bus9)
-grid.add_bus(bus10)
-
-# Lines
-line0 = gce.Line(name="line 5-6", bus_from=bus5, bus_to=bus6,
-                r=r_0, x=x_0, b=bsh_0, rate=100.0)
-line1 = gce.Line(name="line 5-6", bus_from=bus5, bus_to=bus6,
-                r=r_1, x=x_1, b=bsh_1, rate=100.0)
-line2 = gce.Line(name="line 6-7", bus_from=bus6, bus_to=bus7,
-                r=r_2, x=x_2, b=bsh_2, rate=100.0)
-line3 = gce.Line(name="line 6-7", bus_from=bus6, bus_to=bus7,
-                r=r_3, x=x_3, b=bsh_3, rate=100.0)
-line4 = gce.Line(name="line 7-8", bus_from=bus7, bus_to=bus8,
-                r=r_4, x=x_4, b=bsh_4, rate=100.0)
-line5 = gce.Line(name="line 7-8", bus_from=bus7, bus_to=bus8,
-                r=r_5, x=x_5, b=bsh_5, rate=100.0)
-line6 = gce.Line(name="line 7-8", bus_from=bus7, bus_to=bus8,
-                r=r_6, x=x_6, b=bsh_6, rate=100.0)
-line7 = gce.Line(name="line 8-9", bus_from=bus8, bus_to=bus9,
-                r=r_7, x=x_7, b=bsh_7, rate=100.0)
-line8 = gce.Line(name="line 8-9", bus_from=bus8, bus_to=bus9,
-                r=r_8, x=x_8, b=bsh_8, rate=100.0)
-line9 = gce.Line(name="line 9-10", bus_from=bus9, bus_to=bus10,
-                r=r_9, x=x_9, b=bsh_9, rate=100.0)
-line10 = gce.Line(name="line 9-10", bus_from=bus9, bus_to=bus10,
-                r=r_10, x=x_10, b=bsh_10, rate=100.0)
-line11 = gce.Line(name="line 1-5", bus_from=bus1, bus_to=bus5,
-                r=r_11, x=x_11, b=bsh_11, rate=100.0)
-line12 = gce.Line(name="line 2-6", bus_from=bus2, bus_to=bus6,
-                r=r_12, x=x_12, b=bsh_12, rate=100.0)
-line13 = gce.Line(name="line 3-9", bus_from=bus3, bus_to=bus9,
-                r=r_13, x=x_13, b=bsh_13, rate=100.0)
-line14 = gce.Line(name="line 4-10", bus_from=bus4, bus_to=bus10,
-                r=r_14, x=x_14, b=bsh_14, rate=100.0)
-grid.add_line(line0)
-grid.add_line(line1)
-grid.add_line(line2)
-grid.add_line(line3)
-grid.add_line(line4)
-grid.add_line(line5)
-grid.add_line(line6)
-grid.add_line(line7)
-grid.add_line(line8)
-grid.add_line(line9)
-grid.add_line(line10)
-grid.add_line(line11)
-grid.add_line(line12)
-grid.add_line(line13)
-grid.add_line(line14)
-
-# Generators
-gen1 = gce.Generator(name="Gen1", P=7.45861, vset=1.0)
-grid.add_generator(bus=bus1, api_obj=gen1)
-
-gen2 = gce.Generator(name="Gen2", P=7.0, vset=1.0)
-grid.add_generator(bus=bus2, api_obj=gen2)
-
-gen3 = gce.Generator(name="Gen3", P=7.0, vset=1.0)
-grid.add_generator(bus=bus3, api_obj=gen3)
-
-gen4 = gce.Generator(name="Gen4", P=7.0, vset=1.0)
-grid.add_generator(bus=bus4, api_obj=gen4)
-
-# Loads
-load7 = gce.Load(name="Load7", P=11.59, Q=-0.735)
-grid.add_load(bus=bus7, api_obj=load7)
-
-load8 = gce.Load(name="Load8", P=15.75, Q=-0.899)
-grid.add_load(bus=bus8, api_obj=load8)
-
-options = gce.PowerFlowOptions(solver_type = gce.SolverType.NR,
-                               retry_with_other_methods = False,
-                               verbose = 0,
-                               initialize_with_existing_solution = False,
-                               tolerance = 1e-6,
-                               max_iter = 25,
-                               control_q = False,
-                               control_taps_modules = False,
-                               control_taps_phase = False,
-                               control_remote_voltage = False,
-                               orthogonalize_controls = False,
-                               apply_temperature_correction = False,
-                               branch_impedance_tolerance_mode=gce.BranchImpedanceMode.Specified,
-                               distributed_slack = False,
-                               ignore_single_node_islands = False,
-                               trust_radius = 1.0,
-                               backtracking_parameter = 0.05,
-                               use_stored_guess = False,
-                               initialize_angles = False,
-                               generate_report = False,
-                               three_phase_unbalanced = False)
-
-gce.save_file(grid, "kundur_full_compare_orig.gridcal")
-
-res = gce.power_flow(grid)
+options = gce.PowerFlowOptions(
+    solver_type=gce.SolverType.NR,
+    retry_with_other_methods=False,
+    verbose=0,
+    initialize_with_existing_solution=True,
+    tolerance=1e-6,
+    max_iter=25,
+    control_q=False,
+    control_taps_modules=True,
+    control_taps_phase=True,
+    control_remote_voltage=True,
+    orthogonalize_controls=True,
+    apply_temperature_correction=True,
+    branch_impedance_tolerance_mode=gce.BranchImpedanceMode.Specified,
+    distributed_slack=False,
+    ignore_single_node_islands=False,
+    trust_radius=1.0,
+    backtracking_parameter=0.05,
+    use_stored_guess=False,
+    initialize_angles=False,
+    generate_report=False,
+    three_phase_unbalanced=False
+)
+res = gce.power_flow(grid, options=options)
 
 print(f"Converged: {res.converged}")
+print(res.get_bus_df())
+print(res.get_branch_df())
+
+grid.initialize_rms()
+# sys_block = compose_system_block(grid=grid)  # after all the blocks changes
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Intialization
@@ -266,7 +283,6 @@ Sb8 = res.Sbus[7] / grid.Sbase
 
 Sf = res.Sf / grid.Sbase
 St = res.St / grid.Sbase
-
 
 Pf0_0 = Sf[0].real
 Qf0_0 = Sf[0].imag
@@ -345,25 +361,25 @@ Qt0_14 = St[14].imag
 
 # Generator
 # Current from power and voltage
-i1 = np.conj(Sb1 / v1)          # ī = (p - jq) / v̄*
-i2 = np.conj(Sb2 / v2)          # ī = (p - jq) / v̄*
-i3 = np.conj(Sb3 / v3)          # ī = (p - jq) / v̄*
-i4 = np.conj(Sb4 / v4)          # ī = (p - jq) / v̄*
+i1 = np.conj(Sb1 / v1)  # ī = (p - jq) / v̄*
+i2 = np.conj(Sb2 / v2)  # ī = (p - jq) / v̄*
+i3 = np.conj(Sb3 / v3)  # ī = (p - jq) / v̄*
+i4 = np.conj(Sb4 / v4)  # ī = (p - jq) / v̄*
 # Delta angle
 delta0_1 = np.angle(v1 + (ra_1.value + 1j * xd_1.value) * i1)
 delta0_2 = np.angle(v2 + (ra_2.value + 1j * xd_2.value) * i2)
 delta0_3 = np.angle(v3 + (ra_3.value + 1j * xd_3.value) * i3)
 delta0_4 = np.angle(v4 + (ra_4.value + 1j * xd_4.value) * i4)
 # dq0 rotation
-rot_1 = np.exp(-1j * (delta0_1 - np.pi/2))
-rot_2 = np.exp(-1j * (delta0_2 - np.pi/2))
-rot_3 = np.exp(-1j * (delta0_3 - np.pi/2))
-rot_4 = np.exp(-1j * (delta0_4 - np.pi/2))
+rot_1 = np.exp(-1j * (delta0_1 - np.pi / 2))
+rot_2 = np.exp(-1j * (delta0_2 - np.pi / 2))
+rot_3 = np.exp(-1j * (delta0_3 - np.pi / 2))
+rot_4 = np.exp(-1j * (delta0_4 - np.pi / 2))
 # dq voltages and currents
-v_d0_1 = np.real(v1*rot_1)
-v_q0_1 = np.imag(v1*rot_1)
-i_d0_1 = np.real(i1*rot_1)
-i_q0_1 = np.imag(i1*rot_1)
+v_d0_1 = np.real(v1 * rot_1)
+v_q0_1 = np.imag(v1 * rot_1)
+i_d0_1 = np.real(i1 * rot_1)
+i_q0_1 = np.imag(i1 * rot_1)
 
 v_d0_2 = np.real(v2 * rot_2)
 v_q0_2 = np.imag(v2 * rot_2)
@@ -403,21 +419,21 @@ t_e0_4 = psid0_4 * i_q0_4 - psiq0_4 * i_d0_4
 
 # ----------------------------------------------------------------------------------------------------------------------
 tm0_1 = Const(t_e0_1)
-vf_1  = Const(vf0_1)
+vf_1 = Const(vf0_1)
 
 tm0_2 = Const(t_e0_2)
-vf_2  = Const(vf0_2)
+vf_2 = Const(vf0_2)
 
 tm0_3 = Const(t_e0_3)
-vf_3  = Const(vf0_3)
+vf_3 = Const(vf0_3)
 
 tm0_4 = Const(t_e0_4)
-vf_4  = Const(vf0_4)
+vf_4 = Const(vf0_4)
 
-# tm_1 = Const(t_e0_1)
-# tm_2 = Const(t_e0_2)
-# tm_3 = Const(t_e0_3)
-# tm_4 = Const(t_e0_4)
+tm_1 = Const(t_e0_1)
+tm_2 = Const(t_e0_2)
+tm_3 = Const(t_e0_3)
+tm_4 = Const(t_e0_4)
 # ----------------------------------------------------------------------------------------------------------------------
 
 # Line 0
@@ -499,7 +515,6 @@ Vline_to_7 = Var("Vline_to_7")
 dline_to_7 = Var("dline_to_7")
 Vline_from_7 = Var("Vline_from_7")
 dline_from_7 = Var("dline_from_7")
-
 
 # Line 8
 Pline_from_8 = Var("Pline_from_8")
@@ -584,8 +599,8 @@ t_e_1 = Var("t_e_1")
 P_g_1 = Var("P_e_1")
 Q_g_1 = Var("Q_e_1")
 dg_1 = Var("dg_1")
-tm_1 = Var("tm_1")
-et_1 = Var("et_1")
+# tm_1 = Var("tm_1")
+# et_1 = Var("et_1")
 Vg_1 = Var("Vg_1")
 # tm_ref_1 = Var("tm_ref_1")
 
@@ -603,8 +618,8 @@ i_q_2 = Var("i_q_2")
 v_d_2 = Var("v_d_2")
 v_q_2 = Var("v_q_2")
 t_e_2 = Var("t_e_2")
-tm_2 = Var("tm_2")
-et_2 = Var("et_2")
+# tm_2 = Var("tm_2")
+# et_2 = Var("et_2")
 # tm_ref_2 = Var("tm_ref_2")
 
 # Gencls 3
@@ -621,8 +636,8 @@ i_q_3 = Var("i_q_3")
 v_d_3 = Var("v_d_3")
 v_q_3 = Var("v_q_3")
 t_e_3 = Var("t_e_3")
-tm_3 = Var("tm_3")
-et_3 = Var("et_3")
+# tm_3 = Var("tm_3")
+# et_3 = Var("et_3")
 # tm_ref_3 = Var("tm_ref_3")
 
 # Gencls 4
@@ -639,8 +654,8 @@ i_q_4 = Var("i_q_4")
 v_d_4 = Var("v_d_4")
 v_q_4 = Var("v_q_4")
 t_e_4 = Var("t_e_4")
-tm_4 = Var("tm_4")
-et_4 = Var("et_4")
+# tm_4 = Var("tm_4")
+# et_4 = Var("et_4")
 # tm_ref_4 = Var("tm_ref_4")
 
 # Load 7
@@ -650,7 +665,6 @@ Ql_7 = Var("Ql_7")
 # Load 8
 Pl_8 = Var("Pl_8")
 Ql_8 = Var("Ql_8")
-
 
 # -----------------------------------------------------
 # Buses
@@ -709,8 +723,6 @@ bus5_block = Block(
     algebraic_vars=[Pline_from_0, Pline_from_1, Pline_to_11, Qline_from_0, Qline_from_1, Qline_to_11]
 )
 
-
-
 bus6_block = Block(
     algebraic_eqs=[
         - Pline_from_2 - Pline_from_3 - Pline_to_12 - Pline_to_1 - Pline_to_0,
@@ -724,7 +736,8 @@ bus6_block = Block(
         dline_to_12 - dline_to_0,
         dline_to_12 - dline_to_1
     ],
-    algebraic_vars=[Pline_from_2, Pline_from_3, Pline_to_12, Pline_to_1, Pline_to_0, Qline_from_2, Qline_from_3, Qline_to_12, Qline_to_1, Qline_to_0]
+    algebraic_vars=[Pline_from_2, Pline_from_3, Pline_to_12, Pline_to_1, Pline_to_0, Qline_from_2, Qline_from_3,
+                    Qline_to_12, Qline_to_1, Qline_to_0]
 )
 
 bus7_block = Block(
@@ -741,7 +754,8 @@ bus7_block = Block(
         dline_to_2 - dline_to_3
 
     ],
-    algebraic_vars=[Pline_to_2, Pline_to_3, Pline_from_4, Pline_from_5, Pline_from_6, Qline_to_2, Qline_to_3, Qline_from_4, Qline_from_5, Qline_from_6]
+    algebraic_vars=[Pline_to_2, Pline_to_3, Pline_from_4, Pline_from_5, Pline_from_6, Qline_to_2, Qline_to_3,
+                    Qline_from_4, Qline_from_5, Qline_from_6]
 )
 
 bus8_block = Block(
@@ -757,7 +771,8 @@ bus8_block = Block(
         dline_to_4 - dline_to_5,
         dline_to_4 - dline_to_6
     ],
-    algebraic_vars=[Pline_to_4, Pline_to_5, Pline_to_6, Pline_to_7, Pline_to_8, Qline_to_4, Qline_to_5, Qline_to_6, Qline_to_7, Qline_to_8]
+    algebraic_vars=[Pline_to_4, Pline_to_5, Pline_to_6, Pline_to_7, Pline_to_8, Qline_to_4, Qline_to_5, Qline_to_6,
+                    Qline_to_7, Qline_to_8]
 )
 
 bus9_block = Block(
@@ -774,9 +789,9 @@ bus9_block = Block(
         dline_to_7 - dline_to_8
 
     ],
-    algebraic_vars=[Pline_from_7, Pline_from_8, Pline_to_9, Pline_to_10, Pline_to_13, Qline_from_7, Qline_from_8, Qline_to_9, Qline_to_10, Qline_to_13]
+    algebraic_vars=[Pline_from_7, Pline_from_8, Pline_to_9, Pline_to_10, Pline_to_13, Qline_from_7, Qline_from_8,
+                    Qline_to_9, Qline_to_10, Qline_to_13]
 )
-
 
 bus10_block = Block(
     algebraic_eqs=[
@@ -789,7 +804,6 @@ bus10_block = Block(
     ],
     algebraic_vars=[Pline_to_14, Pline_from_10, Pline_from_9, Qline_to_14, Qline_from_10, Qline_from_9]
 )
-
 
 # -----------------------------------------------------------------------------------
 # Lines
@@ -948,13 +962,17 @@ line_9_block = Block(
 line_10_block = Block(
     algebraic_eqs=[
         Pline_from_10 - ((Vline_from_10 ** 2 * g_10) - g_10 * Vline_from_10 * Vline_to_10 * cos(
-            dline_from_10 - dline_to_10) + b_10 * Vline_from_10 * Vline_to_10 * cos(dline_from_10 - dline_to_10 + np.pi / 2)),
+            dline_from_10 - dline_to_10) + b_10 * Vline_from_10 * Vline_to_10 * cos(
+            dline_from_10 - dline_to_10 + np.pi / 2)),
         Qline_from_10 - (Vline_from_10 ** 2 * (-bsh_10 / 2 - b_10) - g_10 * Vline_from_10 * Vline_to_10 * sin(
-            dline_from_10 - dline_to_10) + b_10 * Vline_from_10 * Vline_to_10 * sin(dline_from_10 - dline_to_10 + np.pi / 2)),
+            dline_from_10 - dline_to_10) + b_10 * Vline_from_10 * Vline_to_10 * sin(
+            dline_from_10 - dline_to_10 + np.pi / 2)),
         Pline_to_10 - ((Vline_to_10 ** 2 * g_10) - g_10 * Vline_to_10 * Vline_from_10 * cos(
-            dline_to_10 - dline_from_10) + b_10 * Vline_to_10 * Vline_from_10 * cos(dline_to_10 - dline_from_10 + np.pi / 2)),
+            dline_to_10 - dline_from_10) + b_10 * Vline_to_10 * Vline_from_10 * cos(
+            dline_to_10 - dline_from_10 + np.pi / 2)),
         Qline_to_10 - (Vline_to_10 ** 2 * (-bsh_10 / 2 - b_10) - g_10 * Vline_to_10 * Vline_from_10 * sin(
-            dline_to_10 - dline_from_10) + b_10 * Vline_to_10 * Vline_from_10 * sin(dline_to_10 - dline_from_10 + np.pi / 2)),
+            dline_to_10 - dline_from_10) + b_10 * Vline_to_10 * Vline_from_10 * sin(
+            dline_to_10 - dline_from_10 + np.pi / 2)),
     ],
     algebraic_vars=[dline_from_10, Vline_from_10, dline_to_10, Vline_to_10],
     parameters=[]
@@ -963,13 +981,17 @@ line_10_block = Block(
 line_11_block = Block(
     algebraic_eqs=[
         Pline_from_11 - ((Vline_from_11 ** 2 * g_11) - g_11 * Vline_from_11 * Vline_to_11 * cos(
-            dline_from_11 - dline_to_11) + b_11 * Vline_from_11 * Vline_to_11 * cos(dline_from_11 - dline_to_11 + np.pi / 2)),
+            dline_from_11 - dline_to_11) + b_11 * Vline_from_11 * Vline_to_11 * cos(
+            dline_from_11 - dline_to_11 + np.pi / 2)),
         Qline_from_11 - (Vline_from_11 ** 2 * (-bsh_11 / 2 - b_11) - g_11 * Vline_from_11 * Vline_to_11 * sin(
-            dline_from_11 - dline_to_11) + b_11 * Vline_from_11 * Vline_to_11 * sin(dline_from_11 - dline_to_11 + np.pi / 2)),
+            dline_from_11 - dline_to_11) + b_11 * Vline_from_11 * Vline_to_11 * sin(
+            dline_from_11 - dline_to_11 + np.pi / 2)),
         Pline_to_11 - ((Vline_to_11 ** 2 * g_11) - g_11 * Vline_to_11 * Vline_from_11 * cos(
-            dline_to_11 - dline_from_11) + b_11 * Vline_to_11 * Vline_from_11 * cos(dline_to_11 - dline_from_11 + np.pi / 2)),
+            dline_to_11 - dline_from_11) + b_11 * Vline_to_11 * Vline_from_11 * cos(
+            dline_to_11 - dline_from_11 + np.pi / 2)),
         Qline_to_11 - (Vline_to_11 ** 2 * (-bsh_11 / 2 - b_11) - g_11 * Vline_to_11 * Vline_from_11 * sin(
-            dline_to_11 - dline_from_11) + b_11 * Vline_to_11 * Vline_from_11 * sin(dline_to_11 - dline_from_11 + np.pi / 2)),
+            dline_to_11 - dline_from_11) + b_11 * Vline_to_11 * Vline_from_11 * sin(
+            dline_to_11 - dline_from_11 + np.pi / 2)),
     ],
     algebraic_vars=[dline_from_11, Vline_from_11, dline_to_11, Vline_to_11],
     parameters=[]
@@ -978,13 +1000,17 @@ line_11_block = Block(
 line_12_block = Block(
     algebraic_eqs=[
         Pline_from_12 - ((Vline_from_12 ** 2 * g_12) - g_12 * Vline_from_12 * Vline_to_12 * cos(
-            dline_from_12 - dline_to_12) + b_12 * Vline_from_12 * Vline_to_12 * cos(dline_from_12 - dline_to_12 + np.pi / 2)),
+            dline_from_12 - dline_to_12) + b_12 * Vline_from_12 * Vline_to_12 * cos(
+            dline_from_12 - dline_to_12 + np.pi / 2)),
         Qline_from_12 - (Vline_from_12 ** 2 * (-bsh_12 / 2 - b_12) - g_12 * Vline_from_12 * Vline_to_12 * sin(
-            dline_from_12 - dline_to_12) + b_12 * Vline_from_12 * Vline_to_12 * sin(dline_from_12 - dline_to_12 + np.pi / 2)),
+            dline_from_12 - dline_to_12) + b_12 * Vline_from_12 * Vline_to_12 * sin(
+            dline_from_12 - dline_to_12 + np.pi / 2)),
         Pline_to_12 - ((Vline_to_12 ** 2 * g_12) - g_12 * Vline_to_12 * Vline_from_12 * cos(
-            dline_to_12 - dline_from_12) + b_12 * Vline_to_12 * Vline_from_12 * cos(dline_to_12 - dline_from_12 + np.pi / 2)),
+            dline_to_12 - dline_from_12) + b_12 * Vline_to_12 * Vline_from_12 * cos(
+            dline_to_12 - dline_from_12 + np.pi / 2)),
         Qline_to_12 - (Vline_to_12 ** 2 * (-bsh_12 / 2 - b_12) - g_12 * Vline_to_12 * Vline_from_12 * sin(
-            dline_to_12 - dline_from_12) + b_12 * Vline_to_12 * Vline_from_12 * sin(dline_to_12 - dline_from_12 + np.pi / 2)),
+            dline_to_12 - dline_from_12) + b_12 * Vline_to_12 * Vline_from_12 * sin(
+            dline_to_12 - dline_from_12 + np.pi / 2)),
     ],
     algebraic_vars=[dline_from_12, Vline_from_12, dline_to_12, Vline_to_12],
     parameters=[]
@@ -993,13 +1019,17 @@ line_12_block = Block(
 line_13_block = Block(
     algebraic_eqs=[
         Pline_from_13 - ((Vline_from_13 ** 2 * g_13) - g_13 * Vline_from_13 * Vline_to_13 * cos(
-            dline_from_13 - dline_to_13) + b_13 * Vline_from_13 * Vline_to_13 * cos(dline_from_13 - dline_to_13 + np.pi / 2)),
+            dline_from_13 - dline_to_13) + b_13 * Vline_from_13 * Vline_to_13 * cos(
+            dline_from_13 - dline_to_13 + np.pi / 2)),
         Qline_from_13 - (Vline_from_13 ** 2 * (-bsh_13 / 2 - b_13) - g_13 * Vline_from_13 * Vline_to_13 * sin(
-            dline_from_13 - dline_to_13) + b_13 * Vline_from_13 * Vline_to_13 * sin(dline_from_13 - dline_to_13 + np.pi / 2)),
+            dline_from_13 - dline_to_13) + b_13 * Vline_from_13 * Vline_to_13 * sin(
+            dline_from_13 - dline_to_13 + np.pi / 2)),
         Pline_to_13 - ((Vline_to_13 ** 2 * g_13) - g_13 * Vline_to_13 * Vline_from_13 * cos(
-            dline_to_13 - dline_from_13) + b_13 * Vline_to_13 * Vline_from_13 * cos(dline_to_13 - dline_from_13 + np.pi / 2)),
+            dline_to_13 - dline_from_13) + b_13 * Vline_to_13 * Vline_from_13 * cos(
+            dline_to_13 - dline_from_13 + np.pi / 2)),
         Qline_to_13 - (Vline_to_13 ** 2 * (-bsh_13 / 2 - b_13) - g_13 * Vline_to_13 * Vline_from_13 * sin(
-            dline_to_13 - dline_from_13) + b_13 * Vline_to_13 * Vline_from_13 * sin(dline_to_13 - dline_from_13 + np.pi / 2)),
+            dline_to_13 - dline_from_13) + b_13 * Vline_to_13 * Vline_from_13 * sin(
+            dline_to_13 - dline_from_13 + np.pi / 2)),
     ],
     algebraic_vars=[dline_from_13, Vline_from_13, dline_to_13, Vline_to_13],
     parameters=[]
@@ -1008,13 +1038,17 @@ line_13_block = Block(
 line_14_block = Block(
     algebraic_eqs=[
         Pline_from_14 - ((Vline_from_14 ** 2 * g_14) - g_14 * Vline_from_14 * Vline_to_14 * cos(
-            dline_from_14 - dline_to_14) + b_14 * Vline_from_14 * Vline_to_14 * cos(dline_from_14 - dline_to_14 + np.pi / 2)),
+            dline_from_14 - dline_to_14) + b_14 * Vline_from_14 * Vline_to_14 * cos(
+            dline_from_14 - dline_to_14 + np.pi / 2)),
         Qline_from_14 - (Vline_from_14 ** 2 * (-bsh_14 / 2 - b_14) - g_14 * Vline_from_14 * Vline_to_14 * sin(
-            dline_from_14 - dline_to_14) + b_14 * Vline_from_14 * Vline_to_14 * sin(dline_from_14 - dline_to_14 + np.pi / 2)),
+            dline_from_14 - dline_to_14) + b_14 * Vline_from_14 * Vline_to_14 * sin(
+            dline_from_14 - dline_to_14 + np.pi / 2)),
         Pline_to_14 - ((Vline_to_14 ** 2 * g_14) - g_14 * Vline_to_14 * Vline_from_14 * cos(
-            dline_to_14 - dline_from_14) + b_14 * Vline_to_14 * Vline_from_14 * cos(dline_to_14 - dline_from_14 + np.pi / 2)),
+            dline_to_14 - dline_from_14) + b_14 * Vline_to_14 * Vline_from_14 * cos(
+            dline_to_14 - dline_from_14 + np.pi / 2)),
         Qline_to_14 - (Vline_to_14 ** 2 * (-bsh_14 / 2 - b_14) - g_14 * Vline_to_14 * Vline_from_14 * sin(
-            dline_to_14 - dline_from_14) + b_14 * Vline_to_14 * Vline_from_14 * sin(dline_to_14 - dline_from_14 + np.pi / 2)),
+            dline_to_14 - dline_from_14) + b_14 * Vline_to_14 * Vline_from_14 * sin(
+            dline_to_14 - dline_from_14 + np.pi / 2)),
     ],
     algebraic_vars=[dline_from_14, Vline_from_14, dline_to_14, Vline_to_14],
     parameters=[]
@@ -1028,10 +1062,10 @@ generator_block_1 = Block(
     state_eqs=[
         (2 * pi * fn_1) * (omega_1 - omega_ref_1),
         (tm_1 - t_e_1 - D_1 * (omega_1 - omega_ref_1)) / M_1,
-        (omega_1 - omega_ref_1),
+        # (omega_1 - omega_ref_1),
         # (tm_ref_1 - tm_1) / T_1
     ],
-    state_vars=[delta_1, omega_1, et_1], # 
+    state_vars=[delta_1, omega_1],  # , et_1, tm_1
     algebraic_eqs=[
         psid_1 - (ra_1 * i_q_1 + v_q_1),
         psiq_1 + (ra_1 * i_d_1 + v_d_1),
@@ -1041,23 +1075,21 @@ generator_block_1 = Block(
         v_q_1 - (Vg_1 * cos(delta_1 - dg_1)),
         t_e_1 - (psid_1 * i_q_1 - psiq_1 * i_d_1),
         P_g_1 - (v_d_1 * i_d_1 + v_q_1 * i_q_1),
-        Q_g_1 - (v_q_1 * i_d_1 - v_d_1 * i_q_1), 
-        tm_1 - (tm0_1 + Kp_1 * (omega_1 - omega_ref_1) + Ki_1 * et_1)
+        Q_g_1 - (v_q_1 * i_d_1 - v_d_1 * i_q_1),
+        # tm_ref_1 - (tm0_1 + Kp_1 * (omega_1 - omega_ref_1) + Ki_1 * et_1)
     ],
-    algebraic_vars=[psid_1, psiq_1, i_d_1, i_q_1, v_d_1, v_q_1, t_e_1, P_g_1, Q_g_1, tm_1], #, tm_ref_1
+    algebraic_vars=[psid_1, psiq_1, i_d_1, i_q_1, v_d_1, v_q_1, t_e_1, P_g_1, Q_g_1],  # , , tm_ref_1
     parameters=[]
 )
-
-
 
 generator_block_2 = Block(
     state_eqs=[
         (2 * pi * fn_2) * (omega_2 - omega_ref_2),
         (tm_2 - t_e_2 - D_2 * (omega_2 - omega_ref_2)) / M_2,
-        (omega_2 - omega_ref_2),
+        # (omega_2 - omega_ref_2),
         # (tm_ref_2 - tm_2) / T_2
     ],
-    state_vars=[delta_2, omega_2, et_2], #
+    state_vars=[delta_2, omega_2],  # , tm_2, , et_2
     algebraic_eqs=[
         psid_2 - (ra_2 * i_q_2 + v_q_2),
         psiq_2 + (ra_2 * i_d_2 + v_d_2),
@@ -1068,9 +1100,9 @@ generator_block_2 = Block(
         t_e_2 - (psid_2 * i_q_2 - psiq_2 * i_d_2),
         P_g_2 - (v_d_2 * i_d_2 + v_q_2 * i_q_2),
         Q_g_2 - (v_q_2 * i_d_2 - v_d_2 * i_q_2),
-        tm_2 - (tm0_2 + Kp_2 * (omega_2 - omega_ref_2) + Ki_2 * et_2)
+        # tm_ref_2 - (tm0_2 + Kp_2 * (omega_2 - omega_ref_2) + Ki_2 * et_2)
     ],
-    algebraic_vars=[psid_2, psiq_2, i_d_2, i_q_2, v_d_2, v_q_2, t_e_2, P_g_2, Q_g_2, tm_2], #, tm_ref_2
+    algebraic_vars=[psid_2, psiq_2, i_d_2, i_q_2, v_d_2, v_q_2, t_e_2, P_g_2, Q_g_2],  # , tm_ref_2
     parameters=[]
 )
 
@@ -1078,10 +1110,10 @@ generator_block_3 = Block(
     state_eqs=[
         (2 * pi * fn_3) * (omega_3 - omega_ref_3),
         (tm_3 - t_e_3 - D_3 * (omega_3 - omega_ref_3)) / M_3,
-        (omega_3 - omega_ref_3),
+        # (omega_3 - omega_ref_3),
         # (tm_ref_3 - tm_3) / T_3
     ],
-    state_vars=[delta_3, omega_3, et_3], #
+    state_vars=[delta_3, omega_3],  # , tm_3 , et_3
     algebraic_eqs=[
         psid_3 - (ra_3 * i_q_3 + v_q_3),
         psiq_3 + (ra_3 * i_d_3 + v_d_3),
@@ -1092,9 +1124,9 @@ generator_block_3 = Block(
         t_e_3 - (psid_3 * i_q_3 - psiq_3 * i_d_3),
         P_g_3 - (v_d_3 * i_d_3 + v_q_3 * i_q_3),
         Q_g_3 - (v_q_3 * i_d_3 - v_d_3 * i_q_3),
-        tm_3 - (tm0_3 + Kp_3 * (omega_3 - omega_ref_3) + Ki_3 * et_3)
+        # tm_ref_3 - (tm0_3 + Kp_3 * (omega_3 - omega_ref_3) + Ki_3 * et_3)
     ],
-    algebraic_vars=[psid_3, psiq_3, i_d_3, i_q_3, v_d_3, v_q_3, t_e_3, P_g_3, Q_g_3, tm_3], #, tm_ref_3
+    algebraic_vars=[psid_3, psiq_3, i_d_3, i_q_3, v_d_3, v_q_3, t_e_3, P_g_3, Q_g_3],  # , tm_ref_3
     parameters=[]
 )
 
@@ -1102,10 +1134,10 @@ generator_block_4 = Block(
     state_eqs=[
         (2 * pi * fn_4) * (omega_4 - omega_ref_4),
         (tm_4 - t_e_4 - D_4 * (omega_4 - omega_ref_4)) / M_4,
-        (omega_4 - omega_ref_4),
+        # (omega_4 - omega_ref_4),
         # (tm_ref_4 - tm_4) / T_4
     ],
-    state_vars=[delta_4, omega_4, et_4], #
+    state_vars=[delta_4, omega_4],  # , tm_4 , et_4
     algebraic_eqs=[
         psid_4 - (ra_4 * i_q_4 + v_q_4),
         psiq_4 + (ra_4 * i_d_4 + v_d_4),
@@ -1116,13 +1148,11 @@ generator_block_4 = Block(
         t_e_4 - (psid_4 * i_q_4 - psiq_4 * i_d_4),
         P_g_4 - (v_d_4 * i_d_4 + v_q_4 * i_q_4),
         Q_g_4 - (v_q_4 * i_d_4 - v_d_4 * i_q_4),
-        tm_4 - (tm0_4 + Kp_4 * (omega_4 - omega_ref_4) + Ki_4 * et_4)
+        # tm_ref_4 - (tm0_4 + Kp_4 * (omega_4 - omega_ref_4) + Ki_4 * et_4)
     ],
-    algebraic_vars=[psid_4, psiq_4, i_d_4, i_q_4, v_d_4, v_q_4, t_e_4, P_g_4, Q_g_4, tm_4], # tm_ref_4
+    algebraic_vars=[psid_4, psiq_4, i_d_4, i_q_4, v_d_4, v_q_4, t_e_4, P_g_4, Q_g_4],  # , tm_ref_4
     parameters=[]
 )
-
-
 
 # -------------------------------------------------------------
 # Load
@@ -1155,7 +1185,11 @@ load_8 = Block(
 # System
 # ----------------------------------------------------------------------------------------------------------------------
 sys = Block(
-    children=[line_0_block, line_1_block, line_2_block, line_3_block, line_4_block, line_5_block, line_6_block, line_7_block, line_8_block, line_9_block, line_10_block, line_11_block, line_12_block, line_13_block, line_14_block, load_7, load_8, generator_block_1, generator_block_2, generator_block_3, generator_block_4, bus1_block, bus2_block, bus3_block, bus4_block, bus5_block, bus6_block, bus7_block, bus8_block, bus9_block, bus10_block],
+    children=[line_0_block, line_1_block, line_2_block, line_3_block, line_4_block, line_5_block, line_6_block,
+              line_7_block, line_8_block, line_9_block, line_10_block, line_11_block, line_12_block, line_13_block,
+              line_14_block, load_7, load_8, generator_block_1, generator_block_2, generator_block_3, generator_block_4,
+              bus1_block, bus2_block, bus3_block, bus4_block, bus5_block, bus6_block, bus7_block, bus8_block,
+              bus9_block, bus10_block],
     in_vars=[]
 )
 
@@ -1166,7 +1200,7 @@ slv = BlockSolver(sys)
 
 params_mapping = {
     Pl0_7: Sb7.real,
-    #Ql0: 0.1
+    # Ql0: 0.1
 }
 
 vars_mapping = {
@@ -1187,7 +1221,7 @@ vars_mapping = {
     Vline_to_2: np.abs(v7),
 
     dline_from_3: np.angle(v6),
-    dline_to_3:  np.angle(v7),
+    dline_to_3: np.angle(v7),
     Vline_from_3: np.abs(v6),
     Vline_to_3: np.abs(v7),
 
@@ -1202,19 +1236,19 @@ vars_mapping = {
     Vline_to_5: np.abs(v8),
 
     dline_from_6: np.angle(v7),
-    dline_to_6:  np.angle(v8),
+    dline_to_6: np.angle(v8),
     Vline_from_6: np.abs(v7),
     Vline_to_6: np.abs(v8),
 
     dline_from_7: np.angle(v8),
     dline_to_7: np.angle(v9),
     Vline_from_7: np.abs(v8),
-    Vline_to_7:  np.abs(v9),
+    Vline_to_7: np.abs(v9),
 
     dline_from_8: np.angle(v8),
     dline_to_8: np.angle(v9),
     Vline_from_8: np.abs(v8),
-    Vline_to_8:  np.abs(v9),
+    Vline_to_8: np.abs(v9),
 
     dline_from_9: np.angle(v9),
     dline_to_9: np.angle(v10),
@@ -1336,11 +1370,11 @@ vars_mapping = {
     i_q_1: i_q0_1,
     v_d_1: v_d0_1,
     v_q_1: v_q0_1,
-    tm_1: t_e0_1,
+    # tm_1: t_e0_1,
     t_e_1: t_e0_1,
     P_g_1: Sb1.real,
     Q_g_1: Sb1.imag,
-    et_1: 0.0,
+    # et_1: 0.0,
     # tm_ref_1: t_e0_1,
 
     Vg_2: np.abs(v2),
@@ -1353,11 +1387,11 @@ vars_mapping = {
     i_q_2: i_q0_2,
     v_d_2: v_d0_2,
     v_q_2: v_q0_2,
-    tm_2: t_e0_2,
+    # tm_2: t_e0_2,
     t_e_2: t_e0_2,
     P_g_2: Sb2.real,
     Q_g_2: Sb2.imag,
-    et_2: 0.0,
+    # et_2: 0.0,
     # tm_ref_2: t_e0_2,
 
     Vg_3: np.abs(v3),
@@ -1370,11 +1404,11 @@ vars_mapping = {
     i_q_3: i_q0_3,
     v_d_3: v_d0_3,
     v_q_3: v_q0_3,
-    tm_3: t_e0_3,
+    # tm_3: t_e0_3,
     t_e_3: t_e0_3,
     P_g_3: Sb3.real,
     Q_g_3: Sb3.imag,
-    et_3: 0.0,
+    # et_3: 0.0,
     # tm_ref_3: t_e0_3,
 
     Vg_4: np.abs(v4),
@@ -1387,96 +1421,61 @@ vars_mapping = {
     i_q_4: i_q0_4,
     v_d_4: v_d0_4,
     v_q_4: v_q0_4,
-    tm_4: t_e0_4,
+    # tm_4: t_e0_4,
     t_e_4: t_e0_4,
     P_g_4: Sb4.real,
     Q_g_4: Sb4.imag,
-    et_4: 0.0,
+    # et_4: 0.0,
     # tm_ref_4: t_e0_4
 }
 
-
 residuals = {
-    "G1: (2 * pi * fn) * (omega - omega_ref)": (2 * pi.value * fn_1.value) * (1.0 - omega_ref_1.value),
-    "G1: (tm - t_e - D * (omega - omega_ref)) / M": (t_e0_1 - t_e0_1 - D_1.value * (1.0 - omega_ref_1.value)) / M_1.value,
-    "G1: psid - (-ra * i_q + v_q)": psid0_1 - (ra_1.value * i_q0_1 + v_q0_1),
-    "G1: psiq - (-ra * i_d + v_d)": psiq0_1 + (ra_1.value * i_d0_1 + v_d0_1),
-    "G1: 0 - (psid + xd * i_d - vf)": 0 - (psid0_1 + xd_1.value * i_d0_1 - vf0_1),
-    "G1: 0 - (psiq + xd * i_q)": 0 - (psiq0_1 + xd_1.value * i_q0_1),
-    "G1: v_d - (Vg * sin(delta - dg))": v_d0_1 - (np.abs(v1) * np.sin(delta0_1 - np.angle(v1))),
-    "G1: v_q - (Vg * cos(delta - dg))": v_q0_1 - (np.abs(v1) * np.cos(delta0_1 - np.angle(v1))),
-    "G1: t_e - (psid * i_q - psiq * i_d)": t_e0_1 - (psid0_1 * i_q0_1 - psiq0_1 * i_d0_1),
-    "G1: (v_d * i_d + v_q * i_q) - p_g": (v_d0_1 * i_d0_1 + v_q0_1 * i_q0_1) - Sb1.real,
-    "G1: (v_q * i_d - v_d * i_q) - Q_g": (v_q0_1 * i_d0_1 - v_d0_1 * i_q0_1) - Sb1.imag,
-    "G2: (2 * pi * fn) * (omega - omega_ref)": (2 * pi.value * fn_2.value) * (1.0 - omega_ref_2.value),
-    "G2: (tm - t_e - D * (omega - omega_ref)) / M": (t_e0_2 - t_e0_2 - D_2.value * (1.0 - omega_ref_2.value)) / M_2.value,
-    "G2: psid - (-ra * i_q + v_q)": psid0_2 - (ra_2.value * i_q0_2 + v_q0_2),
-    "G2: psiq - (-ra * i_d + v_d)": psiq0_2 + (ra_2.value * i_d0_2 + v_d0_2),
-    "G2: 0 - (psid + xd * i_d - vf)": 0 - (psid0_2 + xd_2.value * i_d0_2 - vf0_2),
-    "G2: 0 - (psiq + xd * i_q)": 0 - (psiq0_2 + xd_2.value * i_q0_2),
-    "G2: v_d - (Vg * sin(delta - dg))": v_d0_2 - (np.abs(v2) * np.sin(delta0_2 - np.angle(v2))),
-    "G2: v_q - (Vg * cos(delta - dg))": v_q0_2 - (np.abs(v2) * np.cos(delta0_2 - np.angle(v2))),
-    "G2: t_e - (psid * i_q - psiq * i_d)": t_e0_2 - (psid0_2 * i_q0_2 - psiq0_2 * i_d0_2),
-    "G2: (v_d * i_d + v_q * i_q) - p_g": (v_d0_2 * i_d0_2 + v_q0_2 * i_q0_2) - Sb2.real,
-    "G2: (v_q * i_d - v_d * i_q) - Q_g": (v_q0_2 * i_d0_2 - v_d0_2 * i_q0_2) - Sb2.imag,
-    "G3: (2 * pi * fn) * (omega - omega_ref)": (2 * pi.value * fn_3.value) * (1.0 - omega_ref_3.value),
-    "G3: (tm - t_e - D * (omega - omega_ref)) / M": (t_e0_3 - t_e0_3 - D_3.value * (1.0 - omega_ref_3.value)) / M_3.value,
-    "G3: psid - (-ra * i_q + v_q)": psid0_3 - (ra_3.value * i_q0_3 + v_q0_3),
-    "G3: psiq - (-ra * i_d + v_d)": psiq0_3 + (ra_3.value * i_d0_3 + v_d0_3),
-    "G3: 0 - (psid + xd * i_d - vf)": 0 - (psid0_3 + xd_3.value * i_d0_3 - vf0_3),
-    "G3: 0 - (psiq + xd * i_q)": 0 - (psiq0_3 + xd_3.value * i_q0_3),
-    "G3: v_d - (Vg * sin(delta - dg))": v_d0_3 - (np.abs(v3) * np.sin(delta0_3 - np.angle(v3))),
-    "G3: v_q - (Vg * cos(delta - dg))": v_q0_3 - (np.abs(v3) * np.cos(delta0_3 - np.angle(v3))),
-    "G3: t_e - (psid * i_q - psiq * i_d)": t_e0_3 - (psid0_3 * i_q0_3 - psiq0_3 * i_d0_3),
-    "G3: (v_d * i_d + v_q * i_q) - p_g": (v_d0_3 * i_d0_3 + v_q0_3 * i_q0_3) - Sb3.real,
-    "G3: (v_q * i_d - v_d * i_q) - Q_g": (v_q0_3 * i_d0_3 - v_d0_3 * i_q0_3) - Sb3.imag,
-    "G4: (2 * pi * fn) * (omega - omega_ref)": (2 * pi.value * fn_4.value) * (1.0 - omega_ref_4.value),
-    "G4: (tm - t_e - D * (omega - omega_ref)) / M": (t_e0_4 - t_e0_4 - D_4.value * (1.0 - omega_ref_4.value)) / M_4.value,
-    "G4: psid - (-ra * i_q + v_q)": psid0_4 - (ra_4.value * i_q0_4 + v_q0_4),
-    "G4: psiq - (-ra * i_d + v_d)": psiq0_4 + (ra_4.value * i_d0_4 + v_d0_4),
-    "G4: 0 - (psid + xd * i_d - vf)": 0 - (psid0_4 + xd_4.value * i_d0_4 - vf0_4),
-    "G4: 0 - (psiq + xd * i_q)": 0 - (psiq0_4 + xd_4.value * i_q0_4),
-    "G4: v_d - (Vg * sin(delta - dg))": v_d0_4 - (np.abs(v4) * np.sin(delta0_4 - np.angle(v4))),
-    "G4: v_q - (Vg * cos(delta - dg))": v_q0_4 - (np.abs(v4) * np.cos(delta0_4 - np.angle(v4))),
-    "G4: t_e - (psid * i_q - psiq * i_d)": t_e0_4 - (psid0_4 * i_q0_4 - psiq0_4 * i_d0_4),
-    "G4: (v_d * i_d + v_q * i_q) - p_g": (v_d0_4 * i_d0_4 + v_q0_4 * i_q0_4) - Sb4.real,
-    "G4: (v_q * i_d - v_d * i_q) - Q_g": (v_q0_4 * i_d0_4 - v_d0_4 * i_q0_4) - Sb4.imag,
-    "bus 1 P":  Sb1.real - Pf0_11,
-    "bus 1 Q":  Sb1.imag - Qf0_11,
-    "bus 2 P":  Sb2.real - Pf0_12,
-    "bus 2 Q":  Sb2.imag - Qf0_12,
-    "bus 3 P":  Sb3.real - Pf0_13,
-    "bus 3 Q":  Sb3.imag - Qf0_13,
-    "bus 4 P":  Sb4.real - Pf0_14,
-    "bus 4 Q":  Sb4.imag - Qf0_14,
-    "bus 5 P":  - Pf0_0 - Pf0_1 - Pt0_11,
-    "bus 5 Q":  - Qf0_0 - Qf0_1 - Qt0_11,
-    "bus 6 P":  - Pf0_2 - Pf0_3 - Pt0_12 - Pt0_1 - Pt0_0,
-    "bus 6 Q":  - Qf0_2 - Qf0_3 - Qt0_12 - Qt0_1 - Qt0_0,
-    "bus 7 P":  - Pt0_2 - Pt0_3 - Pf0_4 - Pf0_5 - Pf0_6 + Sb7.real,
-    "bus 7 Q":  - Qt0_2 - Qt0_3 - Qf0_4 - Qf0_5 - Qf0_6 + Sb7.imag, 
-    "bus 8 P":  - Pt0_4 - Pt0_5 - Pt0_6 - Pf0_7 - Pf0_8 + Sb8.real,
-    "bus 8 Q":  - Qt0_4 - Qt0_5 - Qt0_6 - Qf0_7 - Qf0_8 + Sb8.imag,
-    "bus 9 P":  - Pt0_7 - Pt0_8 - Pf0_9 - Pf0_10 - Pt0_13,
-    "bus 9 Q":  - Qt0_7 - Qt0_8 - Qf0_9 - Qf0_10 - Qt0_13,
+    "f1: (2 * pi * fn) * (omega - omega_ref)": (2 * pi.value * fn_1.value) * (1.0 - omega_ref_1.value),
+    "f2: (tm - t_e - D * (omega - omega_ref)) / M": (t_e0_1 - t_e0_1 - D_1.value * (
+            1.0 - omega_ref_1.value)) / M_1.value,
+    "g1: psid - (-ra * i_q + v_q)": psid0_1 - (ra_1.value * i_q0_1 + v_q0_1),
+    "g2: psiq - (-ra * i_d + v_d)": psiq0_1 + (ra_1.value * i_d0_1 + v_d0_1),
+    "g3: 0 - (psid + xd * i_d - vf)": 0 - (psid0_1 + xd_1.value * i_d0_1 - vf0_1),
+    "g4: 0 - (psiq + xd * i_q)": 0 - (psiq0_1 + xd_1.value * i_q0_1),
+    "g5: v_d - (Vg * sin(delta - dg))": v_d0_1 - (np.abs(v1) * np.sin(delta0_1 - np.angle(v1))),
+    "g6: v_q - (Vg * cos(delta - dg))": v_q0_1 - (np.abs(v1) * np.cos(delta0_1 - np.angle(v1))),
+    "g7: t_e - (psid * i_q - psiq * i_d)": t_e0_1 - (psid0_1 * i_q0_1 - psiq0_1 * i_d0_1),
+    "g8: (v_d * i_d + v_q * i_q) - p_g": (v_d0_1 * i_d0_1 + v_q0_1 * i_q0_1) - Sb1.real,
+    "g9: (v_q * i_d - v_d * i_q) - Q_g": (v_q0_1 * i_d0_1 - v_d0_1 * i_q0_1) - Sb1.imag,
+    "bus 1 P": Sb1.real - Pf0_11,
+    "bus 1 Q": Sb1.imag - Qf0_11,
+    "bus 2 P": Sb2.real - Pf0_12,
+    "bus 2 Q": Sb2.imag - Qf0_12,
+    "bus 3 P": Sb3.real - Pf0_13,
+    "bus 3 Q": Sb3.imag - Qf0_13,
+    "bus 4 P": Sb4.real - Pf0_14,
+    "bus 4 Q": Sb4.imag - Qf0_14,
+    "bus 5 P": - Pf0_0 - Pf0_1 - Pt0_11,
+    "bus 5 Q": - Qf0_0 - Qf0_1 - Qt0_11,
+    "bus 6 P": - Pf0_2 - Pf0_3 - Pt0_12 - Pt0_1 - Pt0_0,
+    "bus 6 Q": - Qf0_2 - Qf0_3 - Qt0_12 - Qt0_1 - Qt0_0,
+    "bus 7 P": - Pt0_2 - Pt0_3 - Pf0_4 - Pf0_5 - Pf0_6 + Sb7.real,
+    "bus 7 Q": - Qt0_2 - Qt0_3 - Qf0_4 - Qf0_5 - Qf0_6 + Sb7.imag,
+    "bus 8 P": - Pt0_4 - Pt0_5 - Pt0_6 - Pf0_7 - Pf0_8 + Sb8.real,
+    "bus 8 Q": - Qt0_4 - Qt0_5 - Qt0_6 - Qf0_7 - Qf0_8 + Sb8.imag,
+    "bus 9 P": - Pt0_7 - Pt0_8 - Pf0_9 - Pf0_10 - Pt0_13,
+    "bus 9 Q": - Qt0_7 - Qt0_8 - Qf0_9 - Qf0_10 - Qt0_13,
     "bus 10 P": - Pt0_14 - Pt0_10 - Pt0_9,
     "bus 10 Q": - Qt0_14 - Qt0_10 - Qt0_9,
 }
-
 
 # Print results
 print("\n🔍 Residuals of generator algebraic equations:\n")
 for eq, val in residuals.items():
     print(f"{eq:55} = {val:.3e}")
 
-
 # ---------------------------------------------------------------------------------------
 # Events
 # ---------------------------------------------------------------------------------------
 
 
-event1 = RmsEvent('Load', Pl0_7, 2500, Sb7.real + 0.5/100)
-#event2 = Event(Ql0, 5000, 0.3)
+event1 = RmsEvent('Load', Pl0_7, 2500, Sb7.real - 0.05)
+# event2 = Event(Ql0, 5000, 0.3)
 my_events = RmsEvents([event1])
 
 params0 = slv.build_init_params_vector(params_mapping)
@@ -1509,7 +1508,7 @@ vars_in_order = slv.sort_vars(vars_mapping)
 
 t, y = slv.simulate(
     t0=0,
-    t_end=20.0,
+    t_end=40.0,
     h=0.001,
     x0=x0,
     params0=params0,
@@ -1519,7 +1518,6 @@ t, y = slv.simulate(
 
 # save to csv
 slv.save_simulation_to_csv('simulation_results.csv', t, y)
-
 
 # Generator state variables
 plt.plot(t, y[:, slv.get_var_idx(omega_1)], label="ω (pu)")
@@ -1587,12 +1585,7 @@ plt.xlabel("Time (s)")
 plt.ylabel("Values (pu)")
 plt.title("Time Series of All System Variables")
 plt.xlim([0, 40])
-#plt.ylim([0.85, 1.15])
+# plt.ylim([0.85, 1.15])
 plt.grid(True)
 plt.tight_layout()
 plt.show()
-
-
-
-
-
