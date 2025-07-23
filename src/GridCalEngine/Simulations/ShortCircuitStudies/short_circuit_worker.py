@@ -125,7 +125,7 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
                              Vpf: CxVec,
                              Zf: CxVec,
                              bus_index: int,
-                             fault_type: FaultType):
+                             fault_type: FaultType) -> ShortCircuitResults:
     """
     Run an unbalanced short circuit simulation for a single island
     :param nc:
@@ -337,7 +337,7 @@ def short_circuit_abc(nc: NumericalCircuit,
                       fault_type: FaultType,
                       method: MethodShortCircuit,
                       phases: PhasesShortCircuit,
-                      Spf: CxVec):
+                      Spf: CxVec) -> ShortCircuitResults:
     """
     Run a short circuit simulation in the phase domain
     :param nc:
@@ -486,29 +486,75 @@ def short_circuit_abc(nc: NumericalCircuit,
     Usc = spsolve(Ylinear, Inorton)
     Usc_expanded = expand_magnitudes(Usc, bus_lookup)
 
-    """
-    Data Frame
-    """
-    Usc_expanded_abs = abs(Usc_expanded)
+    # voltage, Sf, loading, losses, error, converged, Qpv
+    results = ShortCircuitResults(n=nc.nbus,
+                                  m=nc.nbr,
+                                  n_hvdc=nc.nhvdc,
+                                  bus_names=nc.bus_data.names,
+                                  branch_names=nc.passive_branch_data.names,
+                                  hvdc_names=nc.hvdc_data.names,
+                                  bus_types=nc.bus_data.bus_types,
+                                  area_names=None)
 
-    bus_numbers = [632, 645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
+    Ylinear_expanded = np.zeros_like(Yf)
+    Ylinear_expanded[np.ix_(mask, mask)] = Ylinear
 
-    # Separar magnitudes y ángulos por fases
-    U_A = Usc_expanded_abs[0::3]
-    U_B = Usc_expanded_abs[1::3]
-    U_C = Usc_expanded_abs[2::3]
+    results.ICurrent = Usc_expanded @ Ylinear_expanded
 
-    def format_column(mags):
-        return [f"{m:.4f}" for m in mags]
+    results.SCpower = SCC
 
-    df = pd.DataFrame({
-        'Buses': bus_numbers,
-        'Ua': format_column(U_A),
-        'Ub': format_column(U_B),
-        'Uc': format_column(U_C),
-    })
+    results.voltage0 = V0
+    results.Sf0 = Sfb0  # in MVA already
+    results.St0 = Stb0  # in MVA already
+    results.If0 = If0  # in p.u.
+    results.It0 = It0  # in p.u.
+    results.Vbranch0 = Vbranch0
+    results.loading0 = loading0
+    results.losses0 = losses0
 
-    print(df)
-    print()
+    results.voltage1 = V1
+    results.Sf1 = Sfb1  # in MVA already
+    results.St1 = Stb1  # in MVA already
+    results.If1 = If1  # in p.u.
+    results.It1 = It1  # in p.u.
+    results.Vbranch1 = Vbranch1
+    results.loading1 = loading1
+    results.losses1 = losses1
 
-    return None
+    results.voltage2 = V2
+    results.Sf2 = Sfb2  # in MVA already
+    results.St2 = Stb2  # in MVA already
+    results.If2 = If2  # in p.u.
+    results.It2 = It2  # in p.u.
+    results.Vbranch2 = Vbranch2
+    results.loading2 = loading2
+    results.losses2 = losses2
+
+    return results
+
+    # """
+    # Data Frame
+    # """
+    # Usc_expanded_abs = abs(Usc_expanded)
+    #
+    # bus_numbers = [632, 645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
+    #
+    # # Separar magnitudes y ángulos por fases
+    # U_A = Usc_expanded_abs[0::3]
+    # U_B = Usc_expanded_abs[1::3]
+    # U_C = Usc_expanded_abs[2::3]
+    #
+    # def format_column(mags):
+    #     return [f"{m:.4f}" for m in mags]
+    #
+    # df = pd.DataFrame({
+    #     'Buses': bus_numbers,
+    #     'Ua': format_column(U_A),
+    #     'Ub': format_column(U_B),
+    #     'Uc': format_column(U_C),
+    # })
+    #
+    # print(df)
+    # print()
+    #
+    # return None

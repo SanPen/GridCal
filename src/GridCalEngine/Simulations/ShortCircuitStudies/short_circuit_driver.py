@@ -15,7 +15,6 @@ from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_worker import (short_circuit_ph3,
                                                                                 short_circuit_unbalanced,
                                                                                 short_circuit_abc)
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices import Line, Bus
@@ -177,14 +176,14 @@ class ShortCircuitDriver(DriverTemplate):
                     raise Exception('Unknown fault type!')
 
             elif method == MethodShortCircuit.phases:
-                short_circuit_abc(nc=nc,
-                                  Vpf=Vpf,
-                                  Zf=Zf,
-                                  bus_index=island_bus_index,
-                                  fault_type=fault_type,
-                                  method = method,
-                                  phases = phases,
-                                  Spf=Spf)
+                return short_circuit_abc(nc=nc,
+                                          Vpf=Vpf,
+                                          Zf=Zf,
+                                          bus_index=island_bus_index,
+                                          fault_type=fault_type,
+                                          method = method,
+                                          phases = phases,
+                                          Spf=Spf)
 
             else:
                 raise Exception('Short-circuit calculation method is unknown!')

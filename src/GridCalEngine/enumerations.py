@@ -1560,10 +1560,24 @@ class ResultTypes(Enum):
 
     # Short-circuit
     BusShortCircuitActivePower = 'Short circuit active power'
-    BusShortCircuitReactivePower = 'Short circuit reactive power'
+    BusShortCircuitActivePowerA = 'Short circuit active power A'
+    BusShortCircuitActivePowerB = 'Short circuit active power B'
+    BusShortCircuitActivePowerC = 'Short circuit active power C'
+
+    BusShortCircuitReactivePower = 'Short circuit reactive power '
+    BusShortCircuitReactivePowerA = 'Short circuit reactive power A'
+    BusShortCircuitReactivePowerB = 'Short circuit reactive power B'
+    BusShortCircuitReactivePowerC = 'Short circuit reactive power C'
 
     BusShortCircuitActiveCurrent = 'Short circuit active current'
+    BusShortCircuitActiveCurrentA = 'Short circuit active current A'
+    BusShortCircuitActiveCurrentB = 'Short circuit active current B'
+    BusShortCircuitActiveCurrentC = 'Short circuit active current C'
+
     BusShortCircuitReactiveCurrent = 'Short circuit reactive current'
+    BusShortCircuitReactiveCurrentA = 'Short circuit reactive current A'
+    BusShortCircuitReactiveCurrentB = 'Short circuit reactive current B'
+    BusShortCircuitReactiveCurrentC = 'Short circuit reactive current C'
 
     # PTDF
     PTDF = 'PTDF'
@@ -1698,6 +1712,36 @@ class ResultTypes(Enum):
     BranchActiveLosses2 = 'Branch active losses (2)'
     BranchReactiveLosses2 = 'Branch reactive losses (2)'
     BranchMonitoring = 'Branch monitoring logic'
+
+    BusVoltageModuleA = 'Voltage module (A)'
+    BusVoltageAngleA = 'Voltage angle (A)'
+    BranchActivePowerFromA = 'Branch active power "from" (A)'
+    BranchReactivePowerFromA = 'Branch reactive power "from" (A)'
+    BranchActiveCurrentFromA = 'Branch active current "from" (A)'
+    BranchReactiveCurrentFromA = 'Branch reactive current "from" (A)'
+    BranchLoadingA = 'Branch loading (A)'
+    BranchActiveLossesA = 'Branch active losses (A)'
+    BranchReactiveLossesA = 'Branch reactive losses (A)'
+
+    BusVoltageModuleB = 'Voltage module (B)'
+    BusVoltageAngleB = 'Voltage angle (B)'
+    BranchActivePowerFromB = 'Branch active power "from" (B)'
+    BranchReactivePowerFromB = 'Branch reactive power "from" (B)'
+    BranchActiveCurrentFromB = 'Branch active current "from" (B)'
+    BranchReactiveCurrentFromB = 'Branch reactive current "from" (B)'
+    BranchLoadingB = 'Branch loading (B)'
+    BranchActiveLossesB = 'Branch active losses (B)'
+    BranchReactiveLossesB = 'Branch reactive losses (B)'
+
+    BusVoltageModuleC = 'Voltage module (C)'
+    BusVoltageAngleC = 'Voltage angle (C)'
+    BranchActivePowerFromC = 'Branch active power "from" (C)'
+    BranchReactivePowerFromC = 'Branch reactive power "from" (C)'
+    BranchActiveCurrentFromC = 'Branch active current "from" (C)'
+    BranchReactiveCurrentFromC = 'Branch reactive current "from" (C)'
+    BranchLoadingC = 'Branch loading (C)'
+    BranchActiveLossesC = 'Branch active losses (C)'
+    BranchReactiveLossesC = 'Branch reactive losses (C)'
 
     ShortCircuitInfo = 'Short-circuit information'
 
