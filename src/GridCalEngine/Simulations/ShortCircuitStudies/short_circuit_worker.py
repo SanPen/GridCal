@@ -434,17 +434,21 @@ def short_circuit_abc(nc: NumericalCircuit,
     # Three-Phase Fault (LLL)
     elif fault_type == FaultType.LLL:
 
-        # Yf[a, a] = 2 / (Zf[bus_index] + 1e-20)
-        # Yf[a, b] = -1 / (Zf[bus_index] + 1e-20)
-        # Yf[a, c] = -1 / (Zf[bus_index] + 1e-20)
-        #
-        # Yf[b, b] = 2 / (Zf[bus_index] + 1e-20)
-        # Yf[b, a] = -1 / (Zf[bus_index] + 1e-20)
-        # Yf[b, c] = -1 / (Zf[bus_index] + 1e-20)
-        #
-        # Yf[c, c] = 2 / (Zf[bus_index] + 1e-20)
-        # Yf[c, a] = -1 / (Zf[bus_index] + 1e-20)
-        # Yf[c, b] = -1 / (Zf[bus_index] + 1e-20)
+        Yf[a, a] = 2 / (Zf[bus_index] + 1e-20)
+        Yf[a, b] = -1 / (Zf[bus_index] + 1e-20)
+        Yf[a, c] = -1 / (Zf[bus_index] + 1e-20)
+
+        Yf[b, b] = 2 / (Zf[bus_index] + 1e-20)
+        Yf[b, a] = -1 / (Zf[bus_index] + 1e-20)
+        Yf[b, c] = -1 / (Zf[bus_index] + 1e-20)
+
+        Yf[c, c] = 2 / (Zf[bus_index] + 1e-20)
+        Yf[c, a] = -1 / (Zf[bus_index] + 1e-20)
+        Yf[c, b] = -1 / (Zf[bus_index] + 1e-20)
+
+        # Yf[a, a] = 3 / (Zf[bus_index] + 1e-20)
+        # Yf[b, b] = 3 / (Zf[bus_index] + 1e-20)
+        # Yf[c, c] = 3 / (Zf[bus_index] + 1e-20)
 
     # Three-Phase-to-Ground (LLLG)
     elif fault_type == FaultType.ph3:
