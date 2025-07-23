@@ -138,17 +138,17 @@ T_4 = Const(2.1)
 grid = gce.MultiCircuit(Sbase=100, fbase=60.0)
 
 # Buses
-bus1 = gce.Bus(name="Bus1", Vnom=230)
-bus2 = gce.Bus(name="Bus2", Vnom=20)
-bus3 = gce.Bus(name="Bus3", Vnom=230)
-bus4 = gce.Bus(name="Bus4", Vnom=20)
-bus5 = gce.Bus(name="Bus5", Vnom=230)
-bus6 = gce.Bus(name="Bus6", Vnom=230)
-bus7 = gce.Bus(name="Bus7", Vnom=230)
-bus8 = gce.Bus(name="Bus8", Vnom=230)
-bus9 = gce.Bus(name="Bus9", Vnom=230)
-bus10 = gce.Bus(name="Bus10", Vnom=230)
-bus11 = gce.Bus(name="Bus10", Vnom=230)
+bus1 = gce.Bus(name="Bus1", Vnom=230, is_slack=True, Vm0=1.03, Va0=np.deg2rad(20.2))
+bus2 = gce.Bus(name="Bus2", Vnom=20, Va0=np.deg2rad(20.2))
+bus3 = gce.Bus(name="Bus3", Vnom=230, Vm0=1.03, Va0=np.deg2rad(20.2))
+bus4 = gce.Bus(name="Bus4", Vnom=20, Va0=np.deg2rad(20.2))
+bus5 = gce.Bus(name="Bus5", Vnom=230, Va0=np.deg2rad(20.2))
+bus6 = gce.Bus(name="Bus6", Vnom=230, Va0=np.deg2rad(20.2))
+bus7 = gce.Bus(name="Bus7", Vnom=230, Va0=np.deg2rad(20.2))
+bus8 = gce.Bus(name="Bus8", Vnom=230, Va0=np.deg2rad(20.2))
+bus9 = gce.Bus(name="Bus9", Vnom=230, Va0=np.deg2rad(20.2))
+bus10 = gce.Bus(name="Bus10", Vnom=230, Va0=np.deg2rad(20.2))
+bus11 = gce.Bus(name="Bus10", Vnom=230, Va0=np.deg2rad(20.2))
 
 grid.add_bus(bus1)
 grid.add_bus(bus2)
@@ -186,8 +186,9 @@ for lne in grid.lines:
     lne.B = B * lne.length
 
 # transformers
-x_pu_tr = 0.15
-x_pu_grid = (x_pu_tr / 2 * (100.0 / 900.0) * (20 / 20) ** 2) + (x_pu_tr / 2 * (100.0 / 900.0) * (230 / 230) ** 2)
+# x_pu_tr = 0.15
+# x_pu_grid = (x_pu_tr / 2 * (100.0 / 900.0) * (20 / 20) ** 2) + (x_pu_tr / 2 * (100.0 / 900.0) * (230 / 230) ** 2)
+x_pu_grid = 0.15
 
 tr1 = grid.add_transformer2w(
     gce.Transformer2W(name="TR1", bus_from=bus2, bus_to=bus6, x=x_pu_grid, rate=900.0, HV=230.0, LV=20.0)
@@ -225,7 +226,30 @@ grid.add_generator(bus=bus3, api_obj=gen3)
 gen4 = gce.Generator(name="Gen4", P=700.0, vset=1.01, Snom=900.0)
 grid.add_generator(bus=bus4, api_obj=gen4)
 
-res = gce.power_flow(grid)
+options = gce.PowerFlowOptions(
+    solver_type=gce.SolverType.NR,
+    retry_with_other_methods=False,
+    verbose=0,
+    initialize_with_existing_solution=True,
+    tolerance=1e-6,
+    max_iter=25,
+    control_q=False,
+    control_taps_modules=True,
+    control_taps_phase=True,
+    control_remote_voltage=True,
+    orthogonalize_controls=True,
+    apply_temperature_correction=True,
+    branch_impedance_tolerance_mode=gce.BranchImpedanceMode.Specified,
+    distributed_slack=False,
+    ignore_single_node_islands=False,
+    trust_radius=1.0,
+    backtracking_parameter=0.05,
+    use_stored_guess=False,
+    initialize_angles=False,
+    generate_report=False,
+    three_phase_unbalanced=False
+)
+res = gce.power_flow(grid, options=options)
 
 print(f"Converged: {res.converged}")
 print(res.get_bus_df())
