@@ -25,7 +25,7 @@ from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.vsc_data import VscData
 from GridCalEngine.DataStructures.bus_data import BusData
-from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, CxMat, Mat, ObjVec
+from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, StrVec, CxMat, Mat, ObjVec
 from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, set_var_bounds, join
 from GridCalEngine.enumerations import TapPhaseControl, HvdcControlType, AvailableTransferMode, ConverterControlType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
@@ -484,8 +484,8 @@ def formulate_lp_piece_wise(
     Generic function to implement piece wise linear function
     :param solver: lp solver instance
     :param lp_var: output variable
-    :param higher_exp: expresion when condition >= 0
-    :param lower_exp: expresion when condition <= 0
+    :param higher_exp: expression when condition >= 0
+    :param lower_exp: expression when condition <= 0
     :param condition: bounding condition
     :param name: output variable name
     :param M: Value representing the infinite (i.e. 1e20)
@@ -653,7 +653,6 @@ class BusNtcVars:
 
         # nodal load
         self.load_p = np.zeros((nt, n_elm), dtype=float)
-        self.load_shedding = np.zeros((nt, n_elm), dtype=object)
 
         # nodal gen
         self.Pinj = np.zeros((nt, n_elm), dtype=object)
@@ -679,7 +678,6 @@ class BusNtcVars:
                 data.Va[t, i] = model.get_value(self.Va[t, i])
                 data.Vm[t, i] = model.get_value(self.Vm[t, i])
                 data.shadow_prices[t, i] = model.get_dual_value(self.kirchhoff[t, i])
-                data.load_shedding[t, i] = model.get_value(self.load_shedding[t, i]) * Sbase
                 data.Pbalance[t, i] = model.get_value(self.Pbalance[t, i]) * Sbase
                 data.Pinj[t, i] = model.get_value(self.Pinj[t, i]) * Sbase
                 data.delta_p[t, i] = model.get_value(self.delta_p[t, i]) * Sbase
@@ -687,8 +685,6 @@ class BusNtcVars:
         # format the arrays appropriately
         data.Va = data.Va.astype(float, copy=False)
         data.Vm = data.Vm.astype(float, copy=False)
-
-        data.load_shedding = data.load_shedding.astype(float, copy=False)
 
         data.Pbalance = data.Pbalance.astype(float, copy=False)
         data.delta_p = data.delta_p.astype(float, copy=False)
@@ -708,8 +704,6 @@ class BranchNtcVars:
         :param n_elm: Number of branches
         """
         self.flows = np.zeros((nt, n_elm), dtype=object)
-        self.flow_slacks_pos = np.zeros((nt, n_elm), dtype=object)
-        self.flow_slacks_neg = np.zeros((nt, n_elm), dtype=object)
         self.tap_angles = np.zeros((nt, n_elm), dtype=object)
         self.flow_constraints_ub = np.zeros((nt, n_elm), dtype=object)
         self.flow_constraints_lb = np.zeros((nt, n_elm), dtype=object)
@@ -722,8 +716,8 @@ class BranchNtcVars:
         self.monitor = np.zeros((nt, n_elm), dtype=bool)
         self.monitor_logic = np.zeros((nt, n_elm), dtype=int)
 
-        # t, m, c, contingency, negative_slack, positive_slack
-        self.contingency_flow_data: List[Tuple[int, int, int, Union[float, LpVar, LpExp], LpVar, LpVar]] = list()
+        # t, m, c, contingency
+        self.contingency_flow_data: List[Tuple[int, int, int, Union[float, LpVar, LpExp]]] = list()
 
         self.inter_space_branches: List[Tuple[int, float]] = list()  # index, sense
 
@@ -746,23 +740,16 @@ class BranchNtcVars:
         for t in range(nt):
             for i in range(n_elm):
                 data.flows[t, i] = model.get_value(self.flows[t, i]) * Sbase
-                data.flow_slacks_pos[t, i] = model.get_value(self.flow_slacks_pos[t, i]) * Sbase
-                data.flow_slacks_neg[t, i] = model.get_value(self.flow_slacks_neg[t, i]) * Sbase
                 data.tap_angles[t, i] = model.get_value(self.tap_angles[t, i])
                 data.flow_constraints_ub[t, i] = model.get_value(self.flow_constraints_ub[t, i])
                 data.flow_constraints_lb[t, i] = model.get_value(self.flow_constraints_lb[t, i])
 
         for i in range(len(self.contingency_flow_data)):
-            t, m, c, var, neg_slack, pos_slack = self.contingency_flow_data[i]
-            self.contingency_flow_data[i] = (t, m, c,
-                                             model.get_value(var) * Sbase,
-                                             model.get_value(neg_slack) * Sbase,
-                                             model.get_value(pos_slack) * Sbase)
+            t, m, c, var = self.contingency_flow_data[i]
+            self.contingency_flow_data[i] = (t, m, c, model.get_value(var) * Sbase)
 
         # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
-        data.flow_slacks_pos = data.flow_slacks_pos.astype(float, copy=False)
-        data.flow_slacks_neg = data.flow_slacks_neg.astype(float, copy=False)
         data.tap_angles = data.tap_angles.astype(float, copy=False)
         data.contingency_flow_data = self.contingency_flow_data
 
@@ -772,9 +759,7 @@ class BranchNtcVars:
         return data
 
     def add_contingency_flow(self, t: int, m: int, c: int,
-                             flow_var: Union[float, LpVar, LpExp],
-                             neg_slack: LpVar,
-                             pos_slack: LpVar):
+                             flow_var: Union[float, LpVar, LpExp]):
         """
         Add contingency flow
         :param t: time index
@@ -784,14 +769,7 @@ class BranchNtcVars:
         :param neg_slack: negative flow slack variable
         :param pos_slack: positive flow slack variable
         """
-        self.contingency_flow_data.append((t, m, c, flow_var, neg_slack, pos_slack))
-
-    def get_total_flow_slack(self):
-        """
-        Get total flow slacks
-        :return:
-        """
-        return self.flow_slacks_pos - self.flow_slacks_neg
+        self.contingency_flow_data.append((t, m, c, flow_var))
 
 
 class HvdcNtcVars:
@@ -1324,7 +1302,7 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                                                   structural_ntc: float,
                                                   ntc_load_rule: float,
                                                   alpha_threshold: float,
-                                                  alpha_n1: Mat):
+                                                  alpha_n1_abs: Mat):
     """
     Formulate the branches
     :param t_idx: time index
@@ -1341,7 +1319,7 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
     :param structural_ntc:
     :param ntc_load_rule:
     :param alpha_threshold:
-    :param alpha_n1:
+    :param alpha_n1_abs:
     :return objective function
     """
     f_obj = 0.0
@@ -1376,8 +1354,8 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                         monitor_by_load_rule_n1 = True
                         for c_br in contingency.branch_indices:
                             monitor_by_load_rule_n1 = (monitor_by_load_rule_n1 and
-                                                       (ntc_load_rule * branch_data_t.rates[m] / (
-                                                               alpha_n1[m, c_br] + 1e-20) <= structural_ntc))
+                                                       (ntc_load_rule * branch_data_t.rates[m] /
+                                                        (alpha_n1_abs[m, c_br] + 1e-20) <= structural_ntc))
 
                     else:
                         monitor_by_load_rule_n1 = True
@@ -1387,34 +1365,25 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                         monitor_by_sensitivity_n1 = True
                         for c_br in contingency.branch_indices:
                             monitor_by_sensitivity_n1 = (monitor_by_sensitivity_n1 and
-                                                         (alpha_n1[m, c_br] > alpha_threshold))
+                                                         (alpha_n1_abs[m, c_br] > alpha_threshold))
                     else:
                         monitor_by_sensitivity_n1 = True
 
                     if monitor_by_load_rule_n1 and monitor_by_sensitivity_n1:
-                        # declare slack variables
-                        pos_slack = prob.add_var(0, 1e20, join("br_cst_flow_pos_sl_", [t_idx, m, c]))
-                        neg_slack = prob.add_var(0, 1e20, join("br_cst_flow_neg_sl_", [t_idx, m, c]))
-
                         # register the contingency data to evaluate the result at the end
-                        branch_vars.add_contingency_flow(t=t_idx, m=m, c=c,
-                                                         flow_var=contingency_flow,
-                                                         neg_slack=neg_slack,
-                                                         pos_slack=pos_slack)
+                        branch_vars.add_contingency_flow(t=t_idx, m=m, c=c, flow_var=contingency_flow)
 
                         # add upper rate constraint
                         prob.add_cst(
-                            cst=contingency_flow + pos_slack <= branch_data_t.contingency_rates[m] / Sbase,
+                            cst=contingency_flow <= branch_data_t.contingency_rates[m] / Sbase,
                             name=join("br_cst_flow_upper_lim_", [t_idx, m, c])
                         )
 
                         # add lower rate constraint
                         prob.add_cst(
-                            cst=contingency_flow - neg_slack >= -branch_data_t.contingency_rates[m] / Sbase,
+                            cst=contingency_flow >= -branch_data_t.contingency_rates[m] / Sbase,
                             name=join("br_cst_flow_lower_lim_", [t_idx, m, c])
                         )
-
-                        f_obj += pos_slack + neg_slack
 
     # copy the contingency rates
     branch_vars.contingency_rates[t_idx, :] = branch_data_t.contingency_rates
@@ -1788,27 +1757,27 @@ def add_linear_node_balance(t_idx: int,
         set_var_bounds(var=bus_vars.Va[t_idx, i], lb=Va[i], ub=Va[i])
 
 
-def run_linear_ntc_opf(grid: MultiCircuit,
-                       t: Union[int, None],
-                       solver_type: MIPSolvers = MIPSolvers.HIGHS,
-                       zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
-                       skip_generation_limits: bool = False,
-                       consider_contingencies: bool = False,
-                       contingency_groups_used: List[ContingencyGroup] = (),
-                       alpha_threshold: float = 0.001,
-                       lodf_threshold: float = 0.001,
-                       bus_a1_idx: IntVec | None = None,
-                       bus_a2_idx: IntVec | None = None,
-                       transfer_method: AvailableTransferMode = AvailableTransferMode.InstalledPower,
-                       monitor_only_sensitive_branches: bool = True,
-                       monitor_only_ntc_load_rule_branches: bool = False,
-                       ntc_load_rule: float = 0.7,  # 70%
-                       logger: Logger = Logger(),
-                       progress_text: Union[None, Callable[[str], None]] = None,
-                       progress_func: Union[None, Callable[[float], None]] = None,
-                       export_model_fname: Union[None, str] = None,
-                       verbose: int = 0,
-                       robust: bool = False) -> NtcVars:
+def run_linear_ntc_opf_strict(grid: MultiCircuit,
+                              t: Union[int, None],
+                              solver_type: MIPSolvers = MIPSolvers.HIGHS,
+                              zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
+                              skip_generation_limits: bool = False,
+                              consider_contingencies: bool = False,
+                              contingency_groups_used: List[ContingencyGroup] = (),
+                              alpha_threshold: float = 0.001,
+                              lodf_threshold: float = 0.001,
+                              bus_a1_idx: IntVec | None = None,
+                              bus_a2_idx: IntVec | None = None,
+                              transfer_method: AvailableTransferMode = AvailableTransferMode.InstalledPower,
+                              monitor_only_sensitive_branches: bool = True,
+                              monitor_only_ntc_load_rule_branches: bool = False,
+                              ntc_load_rule: float = 0.7,  # 70%
+                              logger: Logger = Logger(),
+                              progress_text: Union[None, Callable[[str], None]] = None,
+                              progress_func: Union[None, Callable[[float], None]] = None,
+                              export_model_fname: Union[None, str] = None,
+                              verbose: int = 0,
+                              robust: bool = False) -> NtcVars:
     """
 
     :param grid: MultiCircuit instance
@@ -2038,7 +2007,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                     structural_ntc=structural_ntc,
                     ntc_load_rule=ntc_load_rule,
                     alpha_threshold=alpha_threshold,
-                    alpha_n1=alpha_n1
+                    alpha_n1_abs=np.abs(alpha_n1)  # as per RE requirement
                 )
 
             else:
@@ -2132,14 +2101,6 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     for k in inter_area_vsc_idx:
         logger.add_info("Inter area Vsc", device=f"({k}) - {nc.vsc_data.names[k]}",
                         value=vars_v.vsc_vars.flows[t_idx, k])
-
-    for k, (sl_up, sl_down) in enumerate(zip(vars_v.branch_vars.flow_slacks_pos[t_idx, :],
-                                             vars_v.branch_vars.flow_slacks_neg[t_idx, :])):
-        if sl_up > 0.0:
-            logger.add_warning("Overload (+)", device=f"({k}) - {nc.passive_branch_data.names[k]}",  value=sl_up)
-
-        if sl_down > 0.0:
-            logger.add_warning("Overload (-)", device=f"({k}) - {nc.passive_branch_data.names[k]}",  value=sl_down)
 
     # The summation of flow increments in the inter-area branches must be ΔP in A1.
     vars_v.inter_area_flows[t_idx] = (

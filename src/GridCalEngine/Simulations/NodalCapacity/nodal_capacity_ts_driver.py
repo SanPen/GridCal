@@ -175,6 +175,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.results.Sf = opf_vars.branch_vars.flows
         self.results.St = -opf_vars.branch_vars.flows
         self.results.overloads = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
+
         self.results.loading = opf_vars.branch_vars.loading
         self.results.phase_shift = opf_vars.branch_vars.tap_angles
 
