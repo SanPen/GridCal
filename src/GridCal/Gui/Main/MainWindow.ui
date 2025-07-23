@@ -4741,8 +4741,13 @@
                </item>
                <item>
                 <widget class="QCheckBox" name="pf_three_phase_checkBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, GridCal will run a complete 3-wire, unbanced power flow&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If active, the power flow is run using the three-pahse unbalanced formulation composing 3x3 impedance matrices form the available database data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
                   <string>3-phase</string>

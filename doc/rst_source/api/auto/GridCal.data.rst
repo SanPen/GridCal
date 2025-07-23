@@ -6,5 +6,5 @@ Module contents
 
 .. automodule:: GridCal.data
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

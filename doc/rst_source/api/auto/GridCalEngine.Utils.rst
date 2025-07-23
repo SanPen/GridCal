@@ -21,29 +21,29 @@ GridCalEngine.Utils.progress\_bar module
 
 .. automodule:: GridCalEngine.Utils.progress_bar
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.Utils.scores module
 ---------------------------------
 
 .. automodule:: GridCalEngine.Utils.scores
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.Utils.zip\_file\_mgmt module
 ------------------------------------------
 
 .. automodule:: GridCalEngine.Utils.zip_file_mgmt
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCalEngine.Utils
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

@@ -16,5 +16,5 @@ Module contents
 
 .. automodule:: GridCalEngine.IO.cim
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

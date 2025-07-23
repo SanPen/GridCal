@@ -162,7 +162,7 @@ def test_lodf_ieee14_definition() -> None:
         # diff = simulation.results.LODF - lodf
         # print(diff)
 
-        assert np.allclose(simulation.results.LODF, lodf)
+        assert np.allclose(simulation.results.LODF, lodf, atol=1e-10)
 
 
 def test_lodf_ieee14_psse() -> None:
@@ -668,7 +668,7 @@ def test_generation_contingencies_powerflow():
         power_flow = gce.PowerFlowDriver(main_circuit, pf_options)
         power_flow.run()
 
-        ok = np.allclose(cont_analysis_driver1.results.Sf, power_flow.results.Sf)
+        ok = np.allclose(cont_analysis_driver1.results.Sf, power_flow.results.Sf, atol=1e-10)
         assert ok
 
 

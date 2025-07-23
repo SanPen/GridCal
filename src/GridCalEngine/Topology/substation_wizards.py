@@ -5,7 +5,7 @@
 from pandas.core.nanops import set_use_bottleneck
 
 import GridCalEngine.Devices as dev
-from GridCalEngine import Country, BusGraphicType
+from GridCalEngine import Country, BusGraphicType, SwitchGraphicType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
@@ -39,9 +39,8 @@ def simple_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: flo
     bar = dev.Bus(f"{name} bar", substation=substation, Vnom=v_nom, voltage_level=vl,
                   width=max(n_lines, n_trafos) * bus_width + bus_width * 2 + (x_dist - bus_width) * (
                       max(n_lines, n_trafos) - 1),
-                  xpos=-bus_width, ypos=y_dist * 3, country=country)
+                  xpos=-bus_width, ypos=y_dist * 3, country=country, graphic_type=BusGraphicType.BusBar)
     grid.add_bus(bar)
-    # busbar = dev.BusBar(f"{name} bar")
 
     if include_disconnectors:
 
@@ -55,16 +54,16 @@ def simple_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: flo
             bus3 = dev.Bus(f"LineBus3_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=0 + i * x_dist, ypos=y_dist * 2, width=bus_width, country=country,
                            graphic_type=BusGraphicType.Connectivity)
-            sec1 = dev.Switch(name=f"Sec1_{i}", bus_from=bus1, bus_to=bus2)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus2, bus_to=bus3)
-            sec2 = dev.Switch(name=f"Sec2_{i}", bus_from=bar, bus_to=bus3)
+            dis1 = dev.Switch(name=f"Dis1_{i}", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus2, bus_to=bus3, graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis2 = dev.Switch(name=f"Dis2_{i}", bus_from=bar, bus_to=bus3, graphic_type=SwitchGraphicType.Disconnector)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
             grid.add_bus(bus3)
-            grid.add_switch(sec1)
-            grid.add_switch(sw1)
-            grid.add_switch(sec2)
+            grid.add_switch(dis1)
+            grid.add_switch(cb1)
+            grid.add_switch(dis2)
 
         for i in range(n_trafos):
             bus1 = dev.Bus(f"{name}_trafo_conn_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
@@ -73,32 +72,32 @@ def simple_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: flo
             bus2 = dev.Bus(f"trafo2_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist, ypos=y_dist * 4, width=bus_width,
                            country=country, graphic_type=BusGraphicType.Connectivity)
-            sec1 = dev.Switch(name=f"Sec1_{i}", bus_from=bar, bus_to=bus2)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus1, bus_to=bus2)
+            dis1 = dev.Switch(name=f"Dis1_{i}", bus_from=bar, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.CircuitBreaker)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
-            grid.add_switch(sec1)
-            grid.add_switch(sw1)
+            grid.add_switch(dis1)
+            grid.add_switch(cb1)
 
     else:
         for i in range(n_lines):
             bus1 = dev.Bus(f"{name}_line_conn_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=0 + i * x_dist, ypos=y_dist * 2, width=bus_width, country=country,
                            graphic_type=BusGraphicType.Connectivity)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus1, bus_to=bar)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus1, bus_to=bar, graphic_type=SwitchGraphicType.CircuitBreaker)
 
             grid.add_bus(bus1)
-            grid.add_switch(sw1)
+            grid.add_switch(cb1)
 
         for i in range(n_trafos):
             bus1 = dev.Bus(f"{name}_trafo_conn_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist, ypos=y_dist * 4, width=bus_width, country=country,
                            graphic_type=BusGraphicType.Connectivity)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bar, bus_to=bus1)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bar, bus_to=bus1, graphic_type=SwitchGraphicType.CircuitBreaker)
 
             grid.add_bus(bus1)
-            grid.add_switch(sw1)
+            grid.add_switch(cb1)
 
 
 def simple_bar_with_bypass(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: float,
@@ -130,7 +129,7 @@ def simple_bar_with_bypass(name, grid: MultiCircuit, n_lines: int, n_trafos: int
     bar = dev.Bus(f"{name} bar", substation=substation, Vnom=v_nom, voltage_level=vl,
                   width=max(n_lines, n_trafos) * bus_width + bus_width * 2 + (x_dist - bus_width) * (
                       max(n_lines, n_trafos) - 1),
-                  xpos=-bus_width, ypos=y_dist * 3, country=country)
+                  xpos=-bus_width, ypos=y_dist * 3, country=country, graphic_type=BusGraphicType.BusBar)
     grid.add_bus(bar)
 
     if include_disconnectors:
@@ -145,18 +144,18 @@ def simple_bar_with_bypass(name, grid: MultiCircuit, n_lines: int, n_trafos: int
             bus3 = dev.Bus(f"LineBus3_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=0 + i * x_dist, ypos=y_dist * 2, width=bus_width, country=country,
                            graphic_type=BusGraphicType.Connectivity)
-            sec1 = dev.Switch(name=f"Sec1_{i}", bus_from=bus1, bus_to=bus2)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus2, bus_to=bus3)
-            sec2 = dev.Switch(name=f"Sec2_{i}", bus_from=bus3, bus_to=bar)
-            sec3 = dev.Switch(name=f"Sec3_{i}", bus_from=bus1, bus_to=bar)
+            dis1 = dev.Switch(name=f"Dis1_{i}", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus2, bus_to=bus3, graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis2 = dev.Switch(name=f"Dis2_{i}", bus_from=bus3, bus_to=bar, graphic_type=SwitchGraphicType.Disconnector)
+            dis3 = dev.Switch(name=f"Dis3_{i}", bus_from=bus1, bus_to=bar, graphic_type=SwitchGraphicType.Disconnector)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
             grid.add_bus(bus3)
-            grid.add_switch(sec1)
-            grid.add_switch(sw1)
-            grid.add_switch(sec2)
-            grid.add_switch(sec3)
+            grid.add_switch(dis1)
+            grid.add_switch(cb1)
+            grid.add_switch(dis2)
+            grid.add_switch(dis3)
 
         for i in range(n_trafos):
             bus1 = dev.Bus(f"{name}_trafo_conn_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
@@ -165,37 +164,37 @@ def simple_bar_with_bypass(name, grid: MultiCircuit, n_lines: int, n_trafos: int
             bus2 = dev.Bus(f"trafo2_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist, ypos=y_dist * 4, width=bus_width, country=country,
                            graphic_type=BusGraphicType.Connectivity)
-            sec1 = dev.Switch(name=f"Sec1_{i}", bus_from=bar, bus_to=bus2)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus2, bus_to=bus1)
-            sec2 = dev.Switch(name=f"Sec2_{i}", bus_from=bus1, bus_to=bar)
+            dis1 = dev.Switch(name=f"Dis1_{i}", bus_from=bar, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus2, bus_to=bus1, graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis2 = dev.Switch(name=f"Dis2_{i}", bus_from=bus1, bus_to=bar, graphic_type=SwitchGraphicType.Disconnector)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
-            grid.add_switch(sec1)
-            grid.add_switch(sw1)
-            grid.add_switch(sec2)
+            grid.add_switch(dis1)
+            grid.add_switch(cb1)
+            grid.add_switch(dis2)
     else:
         for i in range(n_lines):
             bus1 = dev.Bus(f"{name}_line_conn_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=0 + i * x_dist, ypos=y_dist * 2, width=bus_width, country=country,
                            graphic_type=BusGraphicType.Connectivity)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus1, bus_to=bar)
-            sec3 = dev.Switch(name=f"Sec_{i}", bus_from=bus1, bus_to=bar)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus1, bus_to=bar, graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis3 = dev.Switch(name=f"Dis_{i}", bus_from=bus1, bus_to=bar, graphic_type=SwitchGraphicType.Disconnector)
 
             grid.add_bus(bus1)
-            grid.add_switch(sw1)
-            grid.add_switch(sec3)
+            grid.add_switch(cb1)
+            grid.add_switch(dis3)
 
         for i in range(n_trafos):
             bus1 = dev.Bus(f"{name}_trafo_conn_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist, ypos=y_dist * 4, width=bus_width, country=country,
                            graphic_type=BusGraphicType.Connectivity)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bar, bus_to=bus1)
-            sec2 = dev.Switch(name=f"Sec_{i}", bus_from=bus1, bus_to=bar)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bar, bus_to=bus1, graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis2 = dev.Switch(name=f"Dis_{i}", bus_from=bus1, bus_to=bar, graphic_type=SwitchGraphicType.Disconnector)
 
             grid.add_bus(bus1)
-            grid.add_switch(sw1)
-            grid.add_switch(sec2)
+            grid.add_switch(cb1)
+            grid.add_switch(dis2)
 
 
 def simple_split_bars(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: float,
@@ -236,16 +235,17 @@ def simple_split_bars(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_n
         max(n_lines_bar_2, n_trafos_bar_2) - 1)
 
     bar1 = dev.Bus(f"{name} bar 1", substation=substation, Vnom=v_nom, voltage_level=vl,
-                   width=width_bar_1, xpos=-bus_width, ypos=y_dist * 3, country=country)
+                   width=width_bar_1, xpos=-bus_width, ypos=y_dist * 3, country=country,
+                   graphic_type=BusGraphicType.BusBar)
     grid.add_bus(bar1)
 
     bar2 = dev.Bus(f"{name} bar 2", substation=substation, Vnom=v_nom, voltage_level=vl,
                    width=width_bar_2, xpos=width_bar_1 + bar_2_x_offset, ypos=y_dist * 3 + bar_2_y_offset,
-                   country=country)
+                   country=country, graphic_type=BusGraphicType.BusBar)
     grid.add_bus(bar2)
 
-    sw_bars = dev.Switch(name=f"SW_bars", bus_from=bar1, bus_to=bar2)
-    grid.add_switch(sw_bars)
+    cb_bars = dev.Switch(name=f"CB_bars", bus_from=bar1, bus_to=bar2, graphic_type=SwitchGraphicType.CircuitBreaker)
+    grid.add_switch(cb_bars)
 
     if include_disconnectors:
 
@@ -268,16 +268,16 @@ def simple_split_bars(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_n
             bus3 = dev.Bus(f"LineBus3_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist + x_offset, ypos=y_dist * 2 + y_offset, width=bus_width, country=country,
                            graphic_type=BusGraphicType.Connectivity)
-            sec1 = dev.Switch(name=f"Sec1_{i}", bus_from=bus1, bus_to=bus2)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus2, bus_to=bus3)
-            sec2 = dev.Switch(name=f"Sec2_{i}", bus_from=bar, bus_to=bus3)
+            dis1 = dev.Switch(name=f"Dis1_{i}", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus2, bus_to=bus3, graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis2 = dev.Switch(name=f"Dis2_{i}", bus_from=bar, bus_to=bus3, graphic_type=SwitchGraphicType.Disconnector)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
             grid.add_bus(bus3)
-            grid.add_switch(sec1)
-            grid.add_switch(sw1)
-            grid.add_switch(sec2)
+            grid.add_switch(dis1)
+            grid.add_switch(cb1)
+            grid.add_switch(dis2)
 
         for i in range(n_trafos):
             if i < n_trafos_bar_1:
@@ -295,13 +295,13 @@ def simple_split_bars(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_n
             bus2 = dev.Bus(f"trafo2_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist + x_offset, ypos=y_dist * 4 + y_offset, width=bus_width,
                            country=country, graphic_type=BusGraphicType.Connectivity)
-            sec1 = dev.Switch(name=f"Sec1_{i}", bus_from=bar, bus_to=bus2)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus1, bus_to=bus2)
+            dis1 = dev.Switch(name=f"Dis1_{i}", bus_from=bar, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.CircuitBreaker)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
-            grid.add_switch(sec1)
-            grid.add_switch(sw1)
+            grid.add_switch(dis1)
+            grid.add_switch(cb1)
     else:
         for i in range(n_lines):
             if i < n_lines_bar_1:
@@ -316,10 +316,10 @@ def simple_split_bars(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_n
             bus1 = dev.Bus(f"{name}_line_conn_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist + x_offset, ypos=y_dist * 2 + y_offset, width=bus_width, country=country,
                            graphic_type=BusGraphicType.Connectivity)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bar, bus_to=bus1)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bar, bus_to=bus1, graphic_type=SwitchGraphicType.CircuitBreaker)
 
             grid.add_bus(bus1)
-            grid.add_switch(sw1)
+            grid.add_switch(cb1)
 
         for i in range(n_trafos):
             if i < n_trafos_bar_1:
@@ -334,10 +334,10 @@ def simple_split_bars(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_n
             bus1 = dev.Bus(f"{name}_trafo_conn_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist + x_offset, ypos=y_dist * 4 + y_offset, width=bus_width,
                            country=country, graphic_type=BusGraphicType.Connectivity)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bar, bus_to=bus1)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bar, bus_to=bus1, graphic_type=SwitchGraphicType.CircuitBreaker)
 
             grid.add_bus(bus1)
-            grid.add_switch(sw1)
+            grid.add_switch(cb1)
 
 
 def double_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: float,
@@ -369,13 +369,13 @@ def double_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: flo
     bar1 = dev.Bus(f"{name} bar1", substation=substation, Vnom=v_nom, voltage_level=vl,
                    width=(max(n_lines, n_trafos) + 1) * bus_width + bus_width * 2 + (x_dist - bus_width) * max(n_lines,
                                                                                                                n_trafos),
-                   xpos=-bus_width, ypos=y_dist * 3, country=country)
+                   xpos=-bus_width, ypos=y_dist * 3, country=country, graphic_type=BusGraphicType.BusBar)
     grid.add_bus(bar1)
 
     bar2 = dev.Bus(f"{name} bar2", substation=substation, Vnom=v_nom, voltage_level=vl,
                    width=(max(n_lines, n_trafos) + 1) * bus_width + bus_width * 2 + (x_dist - bus_width) * max(n_lines,
                                                                                                                n_trafos),
-                   xpos=-bus_width, ypos=y_dist * 4, country=country)
+                   xpos=-bus_width, ypos=y_dist * 4, country=country, graphic_type=BusGraphicType.BusBar)
     grid.add_bus(bar2)
 
     if include_disconnectors:
@@ -389,18 +389,18 @@ def double_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: flo
             bus3 = dev.Bus(f"LineBus3_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=0 + i * x_dist, ypos=y_dist * 2, width=bus_width, country=country,
                            graphic_type=BusGraphicType.Connectivity)
-            sec1 = dev.Switch(name=f"Sec1_{i}", bus_from=bus1, bus_to=bus2)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus2, bus_to=bus3)
-            sec2 = dev.Switch(name=f"Sec2_{i}", bus_from=bar1, bus_to=bus3)
-            sec3 = dev.Switch(name=f"Sec3_{i}", bus_from=bar2, bus_to=bus3)
+            dis1 = dev.Switch(name=f"Dis1_{i}", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus2, bus_to=bus3, graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis2 = dev.Switch(name=f"Dis2_{i}", bus_from=bar1, bus_to=bus3, graphic_type=SwitchGraphicType.Disconnector)
+            dis3 = dev.Switch(name=f"Dis3_{i}", bus_from=bar2, bus_to=bus3, graphic_type=SwitchGraphicType.Disconnector)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
             grid.add_bus(bus3)
-            grid.add_switch(sec1)
-            grid.add_switch(sw1)
-            grid.add_switch(sec2)
-            grid.add_switch(sec3)
+            grid.add_switch(dis1)
+            grid.add_switch(cb1)
+            grid.add_switch(dis2)
+            grid.add_switch(dis3)
 
         for i in range(n_trafos):
             bus1 = dev.Bus(f"{name}_trafo_conn_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
@@ -409,15 +409,15 @@ def double_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: flo
             bus2 = dev.Bus(f"trafo2_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist, ypos=y_dist * 5, width=bus_width,
                            country=country, graphic_type=BusGraphicType.Connectivity)
-            sec1 = dev.Switch(name=f"Sec1_{i}", bus_from=bar1, bus_to=bus2)
-            sec2 = dev.Switch(name=f"Sec2_{i}", bus_from=bar2, bus_to=bus2)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus1, bus_to=bus2)
+            dis1 = dev.Switch(name=f"Dis1_{i}", bus_from=bar1, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+            dis2 = dev.Switch(name=f"Dis2_{i}", bus_from=bar2, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.CircuitBreaker)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
-            grid.add_switch(sec1)
-            grid.add_switch(sec2)
-            grid.add_switch(sw1)
+            grid.add_switch(dis1)
+            grid.add_switch(dis2)
+            grid.add_switch(cb1)
 
         # coupling
         bus1 = dev.Bus(f"{name}_coupling_bar1", substation=substation, Vnom=v_nom, voltage_level=vl,
@@ -427,15 +427,15 @@ def double_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: flo
                        xpos=max(n_lines, n_trafos) * x_dist + x_dist * 0.5, ypos=y_dist * 3.6, width=bus_width,
                        country=country,
                        graphic_type=BusGraphicType.Connectivity)
-        sec1 = dev.Switch(name="Sec_bar1", bus_from=bar1, bus_to=bus1)
-        sec2 = dev.Switch(name="Sec_bar2", bus_from=bar2, bus_to=bus2)
-        sw1 = dev.Switch(name="SW_coupling", bus_from=bus1, bus_to=bus2)
+        dis1 = dev.Switch(name="Dis_bar1", bus_from=bar1, bus_to=bus1, graphic_type=SwitchGraphicType.Disconnector)
+        dis2 = dev.Switch(name="Dis_bar2", bus_from=bar2, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+        cb1 = dev.Switch(name="CB_coupling", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.CircuitBreaker)
 
         grid.add_bus(bus1)
         grid.add_bus(bus2)
-        grid.add_switch(sec1)  # this disconnectors must be included to respect the SE geometry
-        grid.add_switch(sec2)  # this disconnectors must be included to respect the SE geometry
-        grid.add_switch(sw1)
+        grid.add_switch(dis1)  # this disconnectors must be included to respect the SE geometry
+        grid.add_switch(dis2)  # this disconnectors must be included to respect the SE geometry
+        grid.add_switch(cb1)
 
     else:
         for i in range(n_lines):
@@ -445,15 +445,15 @@ def double_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: flo
             bus2 = dev.Bus(f"LineBus2_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=0 + i * x_dist, ypos=y_dist * 2, width=bus_width, country=country,
                            graphic_type=BusGraphicType.Connectivity)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus1, bus_to=bus2)
-            sec1 = dev.Switch(name=f"Sec2_{i}", bus_from=bar1, bus_to=bus2)
-            sec2 = dev.Switch(name=f"Sec3_{i}", bus_from=bar2, bus_to=bus2)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis1 = dev.Switch(name=f"Dis2_{i}", bus_from=bar1, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+            dis2 = dev.Switch(name=f"Dis3_{i}", bus_from=bar2, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
-            grid.add_switch(sw1)
-            grid.add_switch(sec1)  # this disconnectors must be included to respect the SE geometry
-            grid.add_switch(sec2)  # this disconnectors must be included to respect the SE geometry
+            grid.add_switch(cb1)
+            grid.add_switch(dis1)  # this disconnectors must be included to respect the SE geometry
+            grid.add_switch(dis2)  # this disconnectors must be included to respect the SE geometry
 
         for i in range(n_trafos):
             bus1 = dev.Bus(f"{name}_trafo_conn_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
@@ -462,19 +462,19 @@ def double_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: flo
             bus2 = dev.Bus(f"trafo2_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist, ypos=y_dist * 5, width=bus_width,
                            country=country, graphic_type=BusGraphicType.Connectivity)
-            sec1 = dev.Switch(name=f"Sec1_{i}", bus_from=bar1, bus_to=bus2)
-            sec2 = dev.Switch(name=f"Sec2_{i}", bus_from=bar2, bus_to=bus2)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus1, bus_to=bus2)
+            dis1 = dev.Switch(name=f"Dis1_{i}", bus_from=bar1, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+            dis2 = dev.Switch(name=f"Dis2_{i}", bus_from=bar2, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.CircuitBreaker)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
-            grid.add_switch(sec1)  # this disconnectors must be included to respect the SE geometry
-            grid.add_switch(sec2)  # this disconnectors must be included to respect the SE geometry
-            grid.add_switch(sw1)
+            grid.add_switch(dis1)  # this disconnectors must be included to respect the SE geometry
+            grid.add_switch(dis2)  # this disconnectors must be included to respect the SE geometry
+            grid.add_switch(cb1)
 
         # coupling
-        sw1 = dev.Switch(name="SW_coupling", bus_from=bar1, bus_to=bar2)
-        grid.add_switch(sw1)
+        cb1 = dev.Switch(name="CB_coupling", bus_from=bar1, bus_to=bar2, graphic_type=SwitchGraphicType.CircuitBreaker)
+        grid.add_switch(cb1)
 
 
 def double_bar_with_transfer_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: float,
@@ -506,20 +506,20 @@ def double_bar_with_transfer_bar(name, grid: MultiCircuit, n_lines: int, n_trafo
     bar1 = dev.Bus(f"{name} bar1", substation=substation, Vnom=v_nom, voltage_level=vl,
                    width=(max(n_lines, n_trafos) + 1) * bus_width + bus_width * 3 + (x_dist - bus_width) * max(n_lines,
                                                                                                                n_trafos),
-                   xpos=-bus_width, ypos=y_dist * 3, country=country)
+                   xpos=-bus_width, ypos=y_dist * 3, country=country, graphic_type=BusGraphicType.BusBar)
     grid.add_bus(bar1)
 
     bar2 = dev.Bus(f"{name} bar2", substation=substation, Vnom=v_nom, voltage_level=vl,
                    width=(max(n_lines, n_trafos) + 1) * bus_width + bus_width * 3 + (x_dist - bus_width) * max(n_lines,
                                                                                                                n_trafos),
-                   xpos=-bus_width, ypos=y_dist * 4, country=country)
+                   xpos=-bus_width, ypos=y_dist * 4, country=country, graphic_type=BusGraphicType.BusBar)
     grid.add_bus(bar2)
 
     transfer_bar = dev.Bus(f"{name} transfer bar", substation=substation, Vnom=v_nom, voltage_level=vl,
                            width=(max(n_lines, n_trafos) + 1) * bus_width + bus_width * 3 + (x_dist - bus_width) * max(
                                n_lines,
                                n_trafos),
-                           xpos=-bus_width, ypos=y_dist * 5, country=country)
+                           xpos=-bus_width, ypos=y_dist * 5, country=country, graphic_type=BusGraphicType.BusBar)
     grid.add_bus(transfer_bar)
 
     if include_disconnectors:
@@ -533,20 +533,21 @@ def double_bar_with_transfer_bar(name, grid: MultiCircuit, n_lines: int, n_trafo
             bus3 = dev.Bus(f"LineBus3_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist - x_dist * 0.25, ypos=y_dist * 2, width=bus_width, country=country,
                            graphic_type=BusGraphicType.Connectivity)
-            sec1 = dev.Switch(name=f"Sec1_{i}", bus_from=bus1, bus_to=bus2)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus2, bus_to=bus3)
-            sec2 = dev.Switch(name=f"Sec2_{i}", bus_from=bar1, bus_to=bus3)
-            sec3 = dev.Switch(name=f"Sec3_{i}", bus_from=bar2, bus_to=bus3)
-            sec4 = dev.Switch(name=f"Sec4_{i}", bus_from=bus1, bus_to=transfer_bar)
+            dis1 = dev.Switch(name=f"Dis1_{i}", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus2, bus_to=bus3, graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis2 = dev.Switch(name=f"Dis2_{i}", bus_from=bar1, bus_to=bus3, graphic_type=SwitchGraphicType.Disconnector)
+            dis3 = dev.Switch(name=f"Dis3_{i}", bus_from=bar2, bus_to=bus3, graphic_type=SwitchGraphicType.Disconnector)
+            dis4 = dev.Switch(name=f"Dis4_{i}", bus_from=bus1, bus_to=transfer_bar,
+                              graphic_type=SwitchGraphicType.Disconnector)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
             grid.add_bus(bus3)
-            grid.add_switch(sec1)
-            grid.add_switch(sw1)
-            grid.add_switch(sec2)
-            grid.add_switch(sec3)
-            grid.add_switch(sec4)
+            grid.add_switch(dis1)
+            grid.add_switch(cb1)
+            grid.add_switch(dis2)
+            grid.add_switch(dis3)
+            grid.add_switch(dis4)
 
         for i in range(n_trafos):
             bus1 = dev.Bus(f"{name}_trafo_conn_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
@@ -558,20 +559,21 @@ def double_bar_with_transfer_bar(name, grid: MultiCircuit, n_lines: int, n_trafo
             bus3 = dev.Bus(f"trafo3_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist, ypos=y_dist * 6, width=bus_width,
                            country=country, graphic_type=BusGraphicType.Connectivity)
-            sec1 = dev.Switch(name=f"Sec1_{i}", bus_from=bus1, bus_to=bus2)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus2, bus_to=bus3)
-            sec2 = dev.Switch(name=f"Sec2_{i}", bus_from=bus3, bus_to=bar1)
-            sec3 = dev.Switch(name=f"Sec3_{i}", bus_from=bus3, bus_to=bar2)
-            sec4 = dev.Switch(name=f"Sec4_{i}", bus_from=bus1, bus_to=transfer_bar)
+            dis1 = dev.Switch(name=f"Dis1_{i}", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.Disconnector)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus2, bus_to=bus3, graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis2 = dev.Switch(name=f"Dis2_{i}", bus_from=bus3, bus_to=bar1, graphic_type=SwitchGraphicType.Disconnector)
+            dis3 = dev.Switch(name=f"Dis3_{i}", bus_from=bus3, bus_to=bar2, graphic_type=SwitchGraphicType.Disconnector)
+            dis4 = dev.Switch(name=f"Dis4_{i}", bus_from=bus1, bus_to=transfer_bar,
+                              graphic_type=SwitchGraphicType.Disconnector)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
             grid.add_bus(bus3)
-            grid.add_switch(sec1)
-            grid.add_switch(sec2)
-            grid.add_switch(sw1)
-            grid.add_switch(sec3)
-            grid.add_switch(sec4)
+            grid.add_switch(dis1)
+            grid.add_switch(dis2)
+            grid.add_switch(cb1)
+            grid.add_switch(dis3)
+            grid.add_switch(dis4)
 
         # coupling
         bus1 = dev.Bus(f"{name}_coupling_bar1", substation=substation, Vnom=v_nom, voltage_level=vl,
@@ -582,17 +584,18 @@ def double_bar_with_transfer_bar(name, grid: MultiCircuit, n_lines: int, n_trafo
                        xpos=max(n_lines, n_trafos) * x_dist + x_dist * 0.25, ypos=y_dist * 4.6, width=bus_width,
                        country=country,
                        graphic_type=BusGraphicType.Connectivity)
-        sec1 = dev.Switch(name="Sec_bar1", bus_from=bus1, bus_to=bar1)
-        sec2 = dev.Switch(name="Sec_bar2", bus_from=bus1, bus_to=bar2)
-        sw1 = dev.Switch(name="SW_coupling", bus_from=bus1, bus_to=bus2)
-        sec3 = dev.Switch(name="Sec_coupling", bus_from=bus2, bus_to=transfer_bar)
+        dis1 = dev.Switch(name="Dis_bar1", bus_from=bus1, bus_to=bar1, graphic_type=SwitchGraphicType.Disconnector)
+        dis2 = dev.Switch(name="Dis_bar2", bus_from=bus1, bus_to=bar2, graphic_type=SwitchGraphicType.Disconnector)
+        cb1 = dev.Switch(name="CB_coupling", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.CircuitBreaker)
+        dis3 = dev.Switch(name="Dis_coupling", bus_from=bus2, bus_to=transfer_bar,
+                          graphic_type=SwitchGraphicType.Disconnector)
 
         grid.add_bus(bus1)
         grid.add_bus(bus2)
-        grid.add_switch(sec1)
-        grid.add_switch(sec2)
-        grid.add_switch(sw1)
-        grid.add_switch(sec3)
+        grid.add_switch(dis1)
+        grid.add_switch(dis2)
+        grid.add_switch(cb1)
+        grid.add_switch(dis3)
 
     else:
         for i in range(n_lines):
@@ -602,17 +605,18 @@ def double_bar_with_transfer_bar(name, grid: MultiCircuit, n_lines: int, n_trafo
             bus2 = dev.Bus(f"LineBus2_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist - x_dist * 0.1, ypos=y_dist * 2, width=bus_width, country=country,
                            graphic_type=BusGraphicType.Connectivity)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus1, bus_to=bus2)
-            sec1 = dev.Switch(name=f"Sec1_{i}", bus_from=bus2, bus_to=bar1)
-            sec2 = dev.Switch(name=f"Sec2_{i}", bus_from=bus2, bus_to=bar2)
-            sec3 = dev.Switch(name=f"Sec3_{i}", bus_from=bus1, bus_to=transfer_bar)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis1 = dev.Switch(name=f"Dis1_{i}", bus_from=bus2, bus_to=bar1, graphic_type=SwitchGraphicType.Disconnector)
+            dis2 = dev.Switch(name=f"Dis2_{i}", bus_from=bus2, bus_to=bar2, graphic_type=SwitchGraphicType.Disconnector)
+            dis3 = dev.Switch(name=f"Dis3_{i}", bus_from=bus1, bus_to=transfer_bar,
+                              graphic_type=SwitchGraphicType.Disconnector)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
-            grid.add_switch(sw1)
-            grid.add_switch(sec1)  # this disconnector must be included to respect the SE geometry
-            grid.add_switch(sec2)  # this disconnector must be included to respect the SE geometry
-            grid.add_switch(sec3)  # this disconnector must be included to respect the SE geometry
+            grid.add_switch(cb1)
+            grid.add_switch(dis1)  # this disconnector must be included to respect the SE geometry
+            grid.add_switch(dis2)  # this disconnector must be included to respect the SE geometry
+            grid.add_switch(dis3)  # this disconnector must be included to respect the SE geometry
 
         for i in range(n_trafos):
             bus1 = dev.Bus(f"{name}_trafo_conn_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
@@ -621,31 +625,33 @@ def double_bar_with_transfer_bar(name, grid: MultiCircuit, n_lines: int, n_trafo
             bus2 = dev.Bus(f"trafo2_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist, ypos=y_dist * 6, width=bus_width,
                            country=country, graphic_type=BusGraphicType.Connectivity)
-            sec1 = dev.Switch(name=f"Sec1_{i}", bus_from=bus2, bus_to=bar1)
-            sec2 = dev.Switch(name=f"Sec2_{i}", bus_from=bus2, bus_to=bar2)
-            sw1 = dev.Switch(name=f"SW_{i}", bus_from=bus1, bus_to=bus2)
-            sec3 = dev.Switch(name=f"Sec3_{i}", bus_from=bus1, bus_to=transfer_bar)
+            dis1 = dev.Switch(name=f"Dis1_{i}", bus_from=bus2, bus_to=bar1, graphic_type=SwitchGraphicType.Disconnector)
+            dis2 = dev.Switch(name=f"Dis2_{i}", bus_from=bus2, bus_to=bar2, graphic_type=SwitchGraphicType.Disconnector)
+            cb1 = dev.Switch(name=f"CB_{i}", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis3 = dev.Switch(name=f"Dis3_{i}", bus_from=bus1, bus_to=transfer_bar,
+                              graphic_type=SwitchGraphicType.Disconnector)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
-            grid.add_switch(sec1)
-            grid.add_switch(sec2)  # this disconnector must be included to respect the SE geometry
-            grid.add_switch(sw1)  # this disconnector must be included to respect the SE geometry
-            grid.add_switch(sec3)  # this disconnector must be included to respect the SE geometry
+            grid.add_switch(dis1)
+            grid.add_switch(dis2)  # this disconnector must be included to respect the SE geometry
+            grid.add_switch(cb1)  # this disconnector must be included to respect the SE geometry
+            grid.add_switch(dis3)  # this disconnector must be included to respect the SE geometry
 
         # coupling
         bus1 = dev.Bus(f"{name}_coupling_bar1", substation=substation, Vnom=v_nom, voltage_level=vl,
                        xpos=max(n_lines, n_trafos) * x_dist + x_dist * 0.25, ypos=y_dist * 3.6, width=bus_width,
                        country=country,
                        graphic_type=BusGraphicType.Connectivity)
-        sec1 = dev.Switch(name="Sec_bar1", bus_from=bus1, bus_to=bar1)
-        sec2 = dev.Switch(name="Sec_bar2", bus_from=bus1, bus_to=bar2)
-        sw1 = dev.Switch(name="SW_coupling", bus_from=bus1, bus_to=transfer_bar)
+        dis1 = dev.Switch(name="Dis_bar1", bus_from=bus1, bus_to=bar1, graphic_type=SwitchGraphicType.Disconnector)
+        dis2 = dev.Switch(name="Dis_bar2", bus_from=bus1, bus_to=bar2, graphic_type=SwitchGraphicType.Disconnector)
+        cb1 = dev.Switch(name="CB_coupling", bus_from=bus1, bus_to=transfer_bar,
+                         graphic_type=SwitchGraphicType.CircuitBreaker)
 
         grid.add_bus(bus1)
-        grid.add_switch(sec1)
-        grid.add_switch(sec2)
-        grid.add_switch(sw1)
+        grid.add_switch(dis1)
+        grid.add_switch(dis2)
+        grid.add_switch(cb1)
 
 
 def breaker_and_a_half(name, grid: MultiCircuit, n_lines: int, v_nom: float,
@@ -675,12 +681,14 @@ def breaker_and_a_half(name, grid: MultiCircuit, n_lines: int, v_nom: float,
     y_dist = bus_width * 1.5
 
     bar1 = dev.Bus(f"{name} bar1", substation=substation, Vnom=v_nom, voltage_level=vl,
-                   width=(n_lines + n_lines % 2) * x_dist, xpos=-x_dist, ypos=0, country=country)
+                   width=(n_lines + n_lines % 2) * x_dist, xpos=-x_dist, ypos=0, country=country,
+                   graphic_type=BusGraphicType.BusBar)
     grid.add_bus(bar1)
 
     if include_disconnectors:
         bar2 = dev.Bus(f"{name} bar2", substation=substation, Vnom=v_nom, voltage_level=vl,
-                       width=(n_lines + n_lines % 2) * x_dist, xpos=-x_dist, ypos=y_dist * 9, country=country)
+                       width=(n_lines + n_lines % 2) * x_dist, xpos=-x_dist, ypos=y_dist * 9, country=country,
+                       graphic_type=BusGraphicType.BusBar)
         grid.add_bus(bar2)
 
         for i in range(0, n_lines, 2):
@@ -718,17 +726,19 @@ def breaker_and_a_half(name, grid: MultiCircuit, n_lines: int, v_nom: float,
             bus8 = dev.Bus(f"LineBus8_{i}", substation=substation, Vnom=v_nom, voltage_level=vl,
                            xpos=i * x_dist - bus_width / 2, ypos=y_dist * 8, width=bus_width, country=country,
                            graphic_type=BusGraphicType.Connectivity)
-            sec1 = dev.Switch(name=f"Sec1_{i}", bus_from=bar1, bus_to=bus1)
-            sw1 = dev.Switch(name=f"SW1_{i}", bus_from=bus1, bus_to=bus2)
-            sec2 = dev.Switch(name=f"Sec2_{i}", bus_from=bus2, bus_to=bus3)
-            sec3 = dev.Switch(name=f"Sec3_{i}", bus_from=bus3, bus_to=bus_line_connection_1)
-            sec4 = dev.Switch(name=f"Sec4_{i}", bus_from=bus3, bus_to=bus4)
-            sw2 = dev.Switch(name=f"SW2_{i}", bus_from=bus4, bus_to=bus5)
-            sec5 = dev.Switch(name=f"Sec5_{i}", bus_from=bus5, bus_to=bus6)
-            sec6 = dev.Switch(name=f"Sec6_{i}", bus_from=bus6, bus_to=bus_line_connection_2)
-            sec7 = dev.Switch(name=f"Sec6_{i}", bus_from=bus6, bus_to=bus7)
-            sw3 = dev.Switch(name=f"SW3_{i}", bus_from=bus7, bus_to=bus8)
-            sec8 = dev.Switch(name=f"Sec6_{i}", bus_from=bus8, bus_to=bar2)
+            dis1 = dev.Switch(name=f"Dis1_{i}", bus_from=bar1, bus_to=bus1, graphic_type=SwitchGraphicType.Disconnector)
+            cb1 = dev.Switch(name=f"SW1_{i}", bus_from=bus1, bus_to=bus2, graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis2 = dev.Switch(name=f"Dis2_{i}", bus_from=bus2, bus_to=bus3, graphic_type=SwitchGraphicType.Disconnector)
+            dis3 = dev.Switch(name=f"Dis3_{i}", bus_from=bus3, bus_to=bus_line_connection_1,
+                              graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis4 = dev.Switch(name=f"Dis4_{i}", bus_from=bus3, bus_to=bus4, graphic_type=SwitchGraphicType.Disconnector)
+            cb2 = dev.Switch(name=f"SW2_{i}", bus_from=bus4, bus_to=bus5, graphic_type=SwitchGraphicType.Disconnector)
+            dis5 = dev.Switch(name=f"Dis5_{i}", bus_from=bus5, bus_to=bus6, graphic_type=SwitchGraphicType.Disconnector)
+            dis6 = dev.Switch(name=f"Dis6_{i}", bus_from=bus6, bus_to=bus_line_connection_2,
+                              graphic_type=SwitchGraphicType.CircuitBreaker)
+            dis7 = dev.Switch(name=f"Dis6_{i}", bus_from=bus6, bus_to=bus7, graphic_type=SwitchGraphicType.Disconnector)
+            cb3 = dev.Switch(name=f"SW3_{i}", bus_from=bus7, bus_to=bus8, graphic_type=SwitchGraphicType.Disconnector)
+            dis8 = dev.Switch(name=f"Dis6_{i}", bus_from=bus8, bus_to=bar2, graphic_type=SwitchGraphicType.Disconnector)
 
             grid.add_bus(bus1)
             grid.add_bus(bus2)
@@ -740,21 +750,22 @@ def breaker_and_a_half(name, grid: MultiCircuit, n_lines: int, v_nom: float,
             grid.add_bus(bus8)
             grid.add_bus(bus_line_connection_1)
             grid.add_bus(bus_line_connection_2)
-            grid.add_switch(sec1)
-            grid.add_switch(sw1)
-            grid.add_switch(sec2)
-            grid.add_switch(sec3)
-            grid.add_switch(sec4)
-            grid.add_switch(sw2)
-            grid.add_switch(sec5)
-            grid.add_switch(sec6)
-            grid.add_switch(sec7)
-            grid.add_switch(sw3)
-            grid.add_switch(sec8)
+            grid.add_switch(dis1)
+            grid.add_switch(cb1)
+            grid.add_switch(dis2)
+            grid.add_switch(dis3)
+            grid.add_switch(dis4)
+            grid.add_switch(cb2)
+            grid.add_switch(dis5)
+            grid.add_switch(dis6)
+            grid.add_switch(dis7)
+            grid.add_switch(cb3)
+            grid.add_switch(dis8)
 
     else:
         bar2 = dev.Bus(f"{name} bar2", substation=substation, Vnom=v_nom, voltage_level=vl,
-                       width=(n_lines + n_lines % 2) * x_dist, xpos=-x_dist, ypos=y_dist * 3, country=country)
+                       width=(n_lines + n_lines % 2) * x_dist, xpos=-x_dist, ypos=y_dist * 3, country=country,
+                       graphic_type=BusGraphicType.BusBar)
         grid.add_bus(bar2)
 
         for i in range(0, n_lines, 2):
@@ -768,12 +779,15 @@ def breaker_and_a_half(name, grid: MultiCircuit, n_lines: int, v_nom: float,
                                             xpos=i * x_dist - bus_width / 2, ypos=y_dist * 2, width=0,
                                             country=country,
                                             graphic_type=BusGraphicType.Connectivity)
-            sw1 = dev.Switch(name=f"SW1_{i}", bus_from=bar1, bus_to=bus_line_connection_1)
-            sw2 = dev.Switch(name=f"SW2_{i}", bus_from=bus_line_connection_1, bus_to=bus_line_connection_2)
-            sw3 = dev.Switch(name=f"SW3_{i}", bus_from=bus_line_connection_2, bus_to=bar2)
+            cb1 = dev.Switch(name=f"SW1_{i}", bus_from=bar1, bus_to=bus_line_connection_1,
+                             graphic_type=SwitchGraphicType.CircuitBreaker)
+            cb2 = dev.Switch(name=f"SW2_{i}", bus_from=bus_line_connection_1, bus_to=bus_line_connection_2,
+                             graphic_type=SwitchGraphicType.CircuitBreaker)
+            cb3 = dev.Switch(name=f"SW3_{i}", bus_from=bus_line_connection_2, bus_to=bar2,
+                             graphic_type=SwitchGraphicType.CircuitBreaker)
 
             grid.add_bus(bus_line_connection_1)
             grid.add_bus(bus_line_connection_2)
-            grid.add_switch(sw1)
-            grid.add_switch(sw2)
-            grid.add_switch(sw3)
+            grid.add_switch(cb1)
+            grid.add_switch(cb2)
+            grid.add_switch(cb3)

@@ -9,21 +9,21 @@ GridCal.Gui.Widgets.custom\_qrangeslider module
 
 .. automodule:: GridCal.Gui.Widgets.custom_qrangeslider
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.Widgets.matplotlibwidget module
 -------------------------------------------
 
 .. automodule:: GridCal.Gui.Widgets.matplotlibwidget
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCal.Gui.Widgets
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

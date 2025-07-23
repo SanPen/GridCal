@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    GridCalEngine.Utils.ThirdParty.SyntheticNetworks
+   GridCalEngine.Utils.ThirdParty.gslv
    GridCalEngine.Utils.ThirdParty.pulp
 
 Module contents
@@ -15,5 +16,5 @@ Module contents
 
 .. automodule:: GridCalEngine.Utils.ThirdParty
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

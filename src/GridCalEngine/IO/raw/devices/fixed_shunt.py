@@ -60,9 +60,12 @@ class RawFixedShunt(RawObject):
         :param logger:
         """
         if version >= 29:
-            self.I, self.ID, self.STATUS, self.GL, self.BL = self.extend_or_curtail(data[0], 5)
+            self.I, self.ID, self.STATUS, self.GL, self.BL = data[0]
         else:
             logger.add_warning('Shunt not implemented for the version', str(version))
+            self.try_parse2(data[0], prop_names=[
+                "I", "ID", "STATUS", "GL", "BL"
+            ])
 
     def get_raw_line(self, version):
 

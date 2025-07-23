@@ -1672,12 +1672,9 @@ class GridMapWidget(BaseDiagramWidget):
                 line2 = Line(name=line.name, code=line.code, bus_from=added_bus, bus_to=line.bus_to,
                              circuit_idx=line.circuit_idx, length=length2)
 
-                template = line.template
-                if isinstance(template, OverheadLineType):
-                    template.compute()
-                line1.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
-
-                line2.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+                if line.template is not None:
+                    line1.apply_template(line.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+                    line2.apply_template(line.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
                 line1.color = line.color
                 line2.color = line.color
@@ -1753,14 +1750,19 @@ class GridMapWidget(BaseDiagramWidget):
 
             if inpt.is_accepted:
                 circ_idx = inpt.value
-                if circ_idx > line1.template.n_circuits:
-                    self.gui.show_error_toast(f'The circuit id introduced is greater than the maximum id that this '
-                                              f'template can use. The template has {line1.template.n_circuits}, the '
-                                              f'maximum possible value for the circuit_idx is '
-                                              f'{line1.template.n_circuits}, try again.')
-                    return
+                if line1.template is not None:
+
+                    if circ_idx > line1.template.n_circuits:
+                        self.gui.show_error_toast(f'The circuit id introduced is greater than the maximum id that this '
+                                                  f'template can use. The template has {line1.template.n_circuits}, the '
+                                                  f'maximum possible value for the circuit_idx is '
+                                                  f'{line1.template.n_circuits}, try again.')
+                        return
+                    else:
+                        pass
                 else:
                     pass
+
             else:
                 self.gui.show_error_toast(f'Dialogue not accepted. Operation not performed.')
                 return
@@ -1823,7 +1825,8 @@ class GridMapWidget(BaseDiagramWidget):
                         length=line1.length + line2.length, circuit_idx=circ_idx)
         new_line.color = line1.color
 
-        new_line.apply_template(obj=line1.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        if line1.template is not None:
+            new_line.apply_template(obj=line1.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         previous_coordinates = [0, 0]
 
@@ -2072,8 +2075,9 @@ class GridMapWidget(BaseDiagramWidget):
                      protection_rating_factor=line_api.protection_rating_factor,
                      circuit_idx=line_api.circuit_idx)
 
-        line1.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
-        line2.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        if line_api.template is not None:
+            line1.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+            line2.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
@@ -2498,8 +2502,9 @@ class GridMapWidget(BaseDiagramWidget):
                      protection_rating_factor=line_api.protection_rating_factor,
                      circuit_idx=line_api.circuit_idx)
 
-        line1.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
-        line2.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        if line_api.template is not None:
+            line1.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+            line2.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
@@ -2540,7 +2545,8 @@ class GridMapWidget(BaseDiagramWidget):
                                protection_rating_factor=line_api.protection_rating_factor,
                                circuit_idx=line_api.circuit_idx)
 
-        connection_line.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        if line_api.template is not None:
+            connection_line.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):

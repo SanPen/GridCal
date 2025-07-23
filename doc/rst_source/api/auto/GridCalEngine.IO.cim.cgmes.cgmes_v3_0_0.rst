@@ -14,5 +14,5 @@ Module contents
 
 .. automodule:: GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

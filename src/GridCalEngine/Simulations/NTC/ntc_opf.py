@@ -2133,6 +2133,14 @@ def run_linear_ntc_opf(grid: MultiCircuit,
         logger.add_info("Inter area Vsc", device=f"({k}) - {nc.vsc_data.names[k]}",
                         value=vars_v.vsc_vars.flows[t_idx, k])
 
+    for k, (sl_up, sl_down) in enumerate(zip(vars_v.branch_vars.flow_slacks_pos[t_idx, :],
+                                             vars_v.branch_vars.flow_slacks_neg[t_idx, :])):
+        if sl_up > 0.0:
+            logger.add_warning("Overload (+)", device=f"({k}) - {nc.passive_branch_data.names[k]}",  value=sl_up)
+
+        if sl_down > 0.0:
+            logger.add_warning("Overload (-)", device=f"({k}) - {nc.passive_branch_data.names[k]}",  value=sl_down)
+
     # The summation of flow increments in the inter-area branches must be ΔP in A1.
     vars_v.inter_area_flows[t_idx] = (
             np.sum(vars_v.branch_vars.flows[t_idx, inter_area_branch_idx] * inter_area_branch_sense)

@@ -5,7 +5,7 @@
 import os
 from typing import Dict
 import pandas as pd
-from pytablewriter import RstSimpleTableWriter
+from pytablewriter import RstSimpleTableWriter, MarkdownTableWriter
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -253,12 +253,12 @@ def write_dataframes_to_latex(data_frames: Dict[str, Dict[str, pd.DataFrame]],
                     w.write("\n\n")
 
 
-def write_dataframes_to_rst2(w, data_frames: Dict[str, pd.DataFrame], tilte):
+def write_dataframes_to_rst2(w, data_frames: Dict[str, pd.DataFrame], title):
     """
 
     :param w:
     :param data_frames:
-    :param tilte:
+    :param title:
     :return:
     """
     m = 10
@@ -266,8 +266,8 @@ def write_dataframes_to_rst2(w, data_frames: Dict[str, pd.DataFrame], tilte):
     names = list(data_frames.keys())
     names.sort()
 
-    w.write(tilte + "\n")
-    w.write("-" * (len(tilte) * m) + "\n\n")
+    w.write(title + "\n")
+    w.write("-" * (len(title) * m) + "\n\n")
 
     for key in names:
         df = data_frames[key]
@@ -279,7 +279,36 @@ def write_dataframes_to_rst2(w, data_frames: Dict[str, pd.DataFrame], tilte):
             s = "No table info."
 
         w.write(key + "\n")
-        w.write("^" * (len(tilte) * m) + "\n\n")
+        w.write("^" * (len(title) * m) + "\n\n")
+        w.write(s)
+        w.write("\n\n")
+
+
+def write_dataframes_to_md(w, data_frames: Dict[str, pd.DataFrame], title):
+    """
+
+    :param w:
+    :param data_frames:
+    :param title:
+    :return:
+    """
+    m = 10
+
+    names = list(data_frames.keys())
+    names.sort()
+
+    w.write("## " + title + "\n\n")
+
+    for key in names:
+        df = data_frames[key]
+
+        if df.shape[0] > 0:
+            writer = MarkdownTableWriter(dataframe=df)
+            s = writer.dumps()
+        else:
+            s = "No table info."
+
+        w.write("### " + key + "\n\n")
         w.write(s)
         w.write("\n\n")
 
@@ -303,6 +332,22 @@ def write_models_to_rst(filename):
         write_dataframes_to_rst2(w, gridcal_info, "GridCal")
 
 
+def write_models_to_md(filename):
+    """
+
+    :param filename:
+    :return:
+    """
+    with open(filename, 'w') as w:
+        w.write("# Data Models\n")
+
+        cgmes_info = get_cgmes_data_frames()
+        gridcal_info = get_gridcal_data_frames()
+
+        write_dataframes_to_md(w, gridcal_info, "GridCal")
+        write_dataframes_to_md(w, cgmes_info, "CGMES")
+
+
 if __name__ == '__main__':
     # cgmes_info = get_cgmes_data_frames()
     # psse_info = get_psse_data_frames()
@@ -322,5 +367,6 @@ if __name__ == '__main__':
     # write_dataframes_to_latex(gridcal_info_cat)
 
     write_models_to_rst(os.path.join('rst_source', 'development', 'data_models.rst'))
+    write_models_to_md(os.path.join('md_source',  'data_models.md'))
 
     print("done")

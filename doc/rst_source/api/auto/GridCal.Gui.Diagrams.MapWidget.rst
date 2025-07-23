@@ -19,21 +19,21 @@ GridCal.Gui.Diagrams.MapWidget.grid\_map\_widget module
 
 .. automodule:: GridCal.Gui.Diagrams.MapWidget.grid_map_widget
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.Diagrams.MapWidget.map\_widget module
 -------------------------------------------------
 
 .. automodule:: GridCal.Gui.Diagrams.MapWidget.map_widget
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCal.Gui.Diagrams.MapWidget
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

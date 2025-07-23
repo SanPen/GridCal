@@ -9,13 +9,13 @@ GridCal.Gui.Main.SubClasses.Results.results module
 
 .. automodule:: GridCal.Gui.Main.SubClasses.Results.results
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCal.Gui.Main.SubClasses.Results
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
