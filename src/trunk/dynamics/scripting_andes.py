@@ -15,103 +15,111 @@ matplotlib.use('TkAgg')  # or 'QtAgg', depending on your system
 import matplotlib.pyplot as plt
 
 
-def is_installed(package_name):
-    return importlib.util.find_spec(package_name) is not None
+# def is_installed(package_name):
+#     return importlib.util.find_spec(package_name) is not None
 
-# Check andes installation
-if not is_installed("andes"):
-    print("ANDES is NOT installed. Please install it using 'pip install andes'.")
-    sys.exit(1)  # Exit with a non-zero status (indicates error)
+# # Check andes installation
+# if not is_installed("andes"):
+#     print("ANDES is NOT installed. Please install it using 'pip install andes'.")
+#     sys.exit(1)  # Exit with a non-zero status (indicates error)
 
 # If installed, import and continue
 import andes
 
-print("ANDES is installed. Continuing with the rest of the script...")
-
-
+# print("ANDES is installed. Continuing with the rest of the script...")
 # build system
 
 andes.config_logger(stream_level=20)
 
 #ss = andes.run('Gen_Load/Gen_load_2.json', default_config=True)
-ss = andes.run('Gen_Load/kundur_full_compare_orig.json', default_config=True)
-ss.files.no_output = True
+def main():
+    andes.config_logger(stream_level=20)
+    ss = andes.load('src/trunk/dynamics/Gen_Load/kundur_full_compare_orig.json', default_config=True)
 
-# to make PQ behave as constant power load
-ss.PQ.config.p2p = 1.0
-ss.PQ.config.p2i = 0
-ss.PQ.config.p2z = 0
-ss.PQ.pq2z = 0
-ss.PQ.config.q2q = 1.0
-ss.PQ.config.q2i = 0
-ss.PQ.config.q2z = 0
+    ss.files.no_output = True
 
-# config TDS
-# total_time = 10
-# tstep = 0.001
-# ss.TDS.config.tf = total_time
-# ss.TDS.config.tstep = tstep
-# ss.TDS.config.shrinkt = 0
+    # to make PQ behave as constant power load
+    ss.PQ.config.p2p = 1.0
+    ss.PQ.config.p2i = 0
+    ss.PQ.config.p2z = 0
+    ss.PQ.pq2z = 0
+    ss.PQ.config.q2q = 1.0
+    ss.PQ.config.q2i = 0
+    ss.PQ.config.q2z = 0
+    
+    ss.PFlow.run()
 
-tds = ss.TDS
-tds.config.fixt = 1
-tds.config.shrinkt = 0
-tds.config.tstep = 0.001
-tds.config.tf = 20.0
-tds.t = 0.0
-tds.init()
+    # config TDS
+    # total_time = 10
+    # tstep = 0.001
+    # ss.TDS.config.tf = total_time
+    # ss.TDS.config.tstep = tstep
+    # ss.TDS.config.shrinkt = 0
 
-# Logging
-time_history = []
-omega_history = [[] for _ in range(len(ss.GENCLS))]
-Ppf_history = [[] for _ in range(len(ss.PQ))]
-tm_history = [[] for _ in range(len(ss.GENCLS))]
-v_history = [[] for _ in range(len(ss.Bus))]
+    tds = ss.TDS
+    tds.config.fixt = 1
+    tds.config.shrinkt = 0
+    tds.config.tstep = 0.001
+    tds.config.tf = 20.0
+    tds.t = 0.0
+    tds.init()
 
-
-# initialize time domain simulation
-# ss.TDS.run()
-one = True
-# Step-by-step simulation
-while tds.t < tds.config.tf:
-
-    if tds.t > 2.5 and one == True:
-        ss.PQ.set(src='Ppf', idx='PQ_0', attr='v', value=11.09)
-        one = False
-        # Log current state
-    time_history.append(tds.t)
-    for i in range(len(ss.GENCLS)):
-        omega_history[i].append(ss.GENCLS.omega.v[i])
-        tm_history[i].append(ss.GENCLS.tm.v[i])
-    for i in range(len(ss.PQ)):
-        Ppf_history[i].append(ss.PQ.Ppf.v[i])
-    for i in range(len(ss.Bus)):
-        v_history[i].append(ss.Bus.v.v[i])
-
-    # Advance one time step
-    tds.itm_step()
-    tds.t += tds.config.tstep
-
-data = [time_history, omega_history, Ppf_history]
+    # Logging
+    time_history = []
+    omega_history = [[] for _ in range(len(ss.GENCLS))]
+    Ppf_history = [[] for _ in range(len(ss.PQ))]
+    tm_history = [[] for _ in range(len(ss.GENCLS))]
+    te_history = [[] for _ in range(len(ss.GENCLS))]
+    v_history = [[] for _ in range(len(ss.Bus))]
 
 
-omega_df = pd.DataFrame(list(zip(*omega_history)))  # shape: [T, n_generators]
-omega_df.columns = [f"omega_andes_gen_{i+1}" for i in range(len(omega_history))]
+    # initialize time domain simulation
+    # ss.TDS.run()
+    one = True
+    # Step-by-step simulation
+    while tds.t < tds.config.tf:
 
-tm_df = pd.DataFrame(list(zip(*tm_history)))  # shape: [T, n_generators]
-tm_df.columns = [f"tm_andes_gen_{i+1}" for i in range(len(omega_history))]
+        if tds.t > 2.5 and one == True:
+            ss.PQ.set(src='Ppf', idx='PQ_0', attr='v', value=11.09)
+            one = False
+            # Log current state
+        time_history.append(tds.t)
+        for i in range(len(ss.GENCLS)):
+            omega_history[i].append(ss.GENCLS.omega.v[i])
+            tm_history[i].append(ss.GENCLS.tm.v[i])
+            te_history[i].append(ss.GENCLS.te.v[i])
+        for i in range(len(ss.PQ)):
+            Ppf_history[i].append(ss.PQ.Ppf.v[i])
+        for i in range(len(ss.Bus)):
+            v_history[i].append(ss.Bus.v.v[i])
 
-Ppf_df = pd.DataFrame(list(zip(*Ppf_history)))      # shape: [T, n_loads]
-Ppf_df.columns = [f"Ppf_andes_load_{i}" for i in range(len(Ppf_history))]
+        # Advance one time step
+        tds.itm_step()
+        tds.t += tds.config.tstep
 
-v_df = pd.DataFrame(list(zip(*v_history)))      # shape: [T, n_loads]
-v_df.columns = [f"v_andes_Bus_{i+1}" for i in range(len(v_history))]
+    data = [time_history, omega_history, Ppf_history, te_history]
 
-# Combine all into a single DataFrame
-df = pd.DataFrame({'Time [s]': time_history})
-df = pd.concat([df, omega_df, tm_df, Ppf_df, v_df], axis=1)
-df.to_csv("simulation_andes_output.csv", index=False)
-print('simulation results saved in simulation_andes_output.csv')
+
+    omega_df = pd.DataFrame(list(zip(*omega_history)))  # shape: [T, n_generators]
+    omega_df.columns = [f"omega_andes_gen_{i+1}" for i in range(len(omega_history))]
+
+    tm_df = pd.DataFrame(list(zip(*tm_history)))  # shape: [T, n_generators]
+    tm_df.columns = [f"tm_andes_gen_{i+1}" for i in range(len(omega_history))]
+
+    te_df = pd.DataFrame(list(zip(*te_history)))  # shape: [T, n_generators]
+    te_df.columns = [f"te_andes_gen_{i+1}" for i in range(len(omega_history))]
+
+    Ppf_df = pd.DataFrame(list(zip(*Ppf_history)))      # shape: [T, n_loads]
+    Ppf_df.columns = [f"Ppf_andes_load_{i}" for i in range(len(Ppf_history))]
+
+    v_df = pd.DataFrame(list(zip(*v_history)))      # shape: [T, n_loads]
+    v_df.columns = [f"v_andes_Bus_{i+1}" for i in range(len(v_history))]
+
+    # Combine all into a single DataFrame
+    df = pd.DataFrame({'Time [s]': time_history})
+    df = pd.concat([df, omega_df, tm_df, te_df, Ppf_df, v_df], axis=1)
+    df.to_csv("simulation_andes_output.csv", index=False)
+    print('simulation results saved in simulation_andes_output.csv')
 
 
 # # Plot
@@ -146,3 +154,7 @@ print('simulation results saved in simulation_andes_output.csv')
 # fig, ax = ss.TDS.plt.plot(ss.Bus.v)
 #
 # fig.savefig('PQ_v_plot.png')
+
+
+if __name__ == '__main__':
+    main()

@@ -53,32 +53,33 @@ def merge_simulation_results_by_time(csv1, csv2, output_csv= 'merged_data.csv', 
 comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_andes_output.csv')
 
 # Load merged CSV
-
+i = 3
 merged_df = comparison
 merged_df['Pl_7_Gridcal'] = merged_df['Pl_7_Gridcal'] * (-100)
-
+merged_df[f"tm_{i}_Gridcal"] = merged_df[f"tm_{i}_Gridcal"] * (100)
+merged_df[f"t_e_{i}_Gridcal"] = merged_df[f"t_e_{i}_Gridcal"] * (100)
 # Define variable pairs to compare (each pair goes into one subplot)
 
 
 variable_pairs = [
-     # ['omega_1_Gridcal', 'omega_andes_gen_1'],
-     # ['omega_2_Gridcal', 'omega_andes_gen_2'],
-     # ['omega_3_Gridcal', 'omega_andes_gen_3'],
-     # ['omega_4_Gridcal', 'omega_andes_gen_4'],
-     # ['Pl_7_Gridcal', 'Ppf_andes_load_0'],
-     ['Vline_from_12_Gridcal', 'v_andes_Bus_2'],
-     ['Vline_from_11_Gridcal', 'v_andes_Bus_1'],
-     ['Vline_from_14_Gridcal', 'v_andes_Bus_4'],
-     ['Vline_from_13_Gridcal', 'v_andes_Bus_3'],
-     ['tm_1_Gridcal', 'tm_andes_gen_1'],
-     ['tm_2_Gridcal', 'tm_andes_gen_2'],
-     ['tm_3_Gridcal', 'tm_andes_gen_3'],
-     ['tm_4_Gridcal', 'tm_andes_gen_4'],
+     [f"omega_{i}_Gridcal", f"omega_andes_gen_{i}"],
+     ['Pl_7_Gridcal', 'Ppf_andes_load_0'],
+     [f"tm_{i}_Gridcal", f"tm_andes_gen_{i}"],
+     [f"t_e_{i}_Gridcal", f"te_andes_gen_{i}"]
 
-
+    #  ['tm_2_Gridcal', 'tm_andes_gen_2'],
+    #  ['tm_3_Gridcal', 'tm_andes_gen_3'],
+    #  ['tm_4_Gridcal', 'tm_andes_gen_4'],
+    #  ['omega_2_Gridcal', 'omega_andes_gen_2'],
+    #  ['omega_3_Gridcal', 'omega_andes_gen_3'],
+    #  ['omega_4_Gridcal', 'omega_andes_gen_4'],
      #['omega2_Gridcal', 'omega_andes_gen_2'],
      #['omega3_Gridcal', 'omega_andes_gen_3'],
      #['omega4_Gridcal', 'omega_andes_gen_4']
+         #  ['Vline_from_12_Gridcal', 'v_andes_Bus_2'],
+    #  ['Vline_from_11_Gridcal', 'v_andes_Bus_1'],
+    #  ['Vline_from_14_Gridcal', 'v_andes_Bus_4'],
+    #  ['Vline_from_13_Gridcal', 'v_andes_Bus_3'],
 ]
 
 # Automatically detect time columns
@@ -108,6 +109,10 @@ for idx, (var1, var2) in enumerate(variable_pairs):
         ax.tick_params(axis='both', labelsize=7)
         ax.legend(fontsize=7, loc='best')
         ax.grid(True)
+        if idx == 0:
+            ax.set_ylim(0.998, 1.002)
+        if idx == 2 or idx == 3:
+            ax.set_ylim(6, 8)
     else:
         ax.set_visible(False)  # hide empty subplot
 
@@ -117,5 +122,5 @@ plt.suptitle("Simulation Variable Comparison (GridCal vs GENCLS)", fontsize=16, 
 plt.subplots_adjust(top=0.95)
 plt.show()
 
-plt.savefig('comparison_plots.png', dpi=300)
+# plt.savefig('comparison_plots.png', dpi=300)
 
