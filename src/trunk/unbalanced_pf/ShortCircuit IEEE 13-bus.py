@@ -1,10 +1,13 @@
 import GridCalEngine.api as gce
 from GridCalEngine import WindingType, ShuntConnectionType, AdmittanceMatrix
 import numpy as np
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import (PfBasicFormulation3Ph,
+                                                                                       expand3ph,
+                                                                                       expandVoltage3ph)
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 import pandas as pd
 from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
+from GridCalEngine.basic_structures import Vec
 
 logger = gce.Logger()
 
@@ -17,7 +20,7 @@ grid.fBase = 60
 bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=0)
 bus_632.is_slack = True
 grid.add_bus(obj=bus_632)
-gen = gce.Generator(vset=1.0, r1=0.004, x1=0.5, r2=0.02, x2=0.5, r0=0.01, x0=0.08)
+gen = gce.Generator(vset=1.0, r1=0.004*10**(-10), x1=0.5*10**(-10), r2=0.02*10**(-10), x2=0.5*10**(-10), r0=0.01*10**(-10), x0=0.08*10**(-10))
 grid.add_generator(bus=bus_632, api_obj=gen)
 
 bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100 * 5, ypos=0)
@@ -379,6 +382,34 @@ Save Grid
 """
 gce.save_file(grid=grid, filename='IEEE 13-bus.gridcal')
 
+def power_flow_3ph(grid: gce.MultiCircuit, V0_3ph: Vec):
+    """
+
+    :param grid:
+    :param V0_3ph: Voltage vector expanded for 3N (no need for masks to be applied)
+    :return:
+    """
+    nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx=None)
+
+    S0 = nc.get_power_injections_pu()
+    Qmax, Qmin = nc.get_reactive_power_limits()
+
+    options = gce.PowerFlowOptions(tolerance=1e-10, max_iter=1000)
+
+    problem = PfBasicFormulation3Ph(
+        V0=V0_3ph,
+        S0=expand3ph(S0),
+        Qmin=Qmin * 100.0,
+        Qmax=Qmax * 100.0,
+        nc=nc,
+        options=options,
+        logger=gce.Logger()
+    )
+
+    res = newton_raphson_fx(problem=problem, verbose=1, max_iter=1000)
+
+    return res
+
 """
 Short Circuit
 """
@@ -389,8 +420,17 @@ def short_circuit_3ph(grid, t_idx=None):
     :param t_idx:
     :return:
     """
+    nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx=None)
 
-    num_pf_res = gce.power_flow(grid=grid, options=gce.PowerFlowOptions(three_phase_unbalanced=True))
+    V0 = expandVoltage3ph(nc.bus_data.Vbus)
+    V0[0] = 1.0210 * np.exp(1j * (-2.49 * np.pi / 180))
+    V0[1] = 1.0420 * np.exp(1j * (-121.72 * np.pi / 180))
+    V0[2] = 1.0174 * np.exp(1j * (117.83 * np.pi / 180))
+    # V0[0] = 1.0 * np.exp(1j * (0 * np.pi / 180))
+    # V0[1] = 1.0 * np.exp(1j * (-120 * np.pi / 180))
+    # V0[2] = 1.0 * np.exp(1j * (120 * np.pi / 180))
+
+    res_3ph = power_flow_3ph(grid, V0_3ph=V0)
 
     pf_res = gce.PowerFlowResults(
         n=grid.get_bus_number() * 3,
@@ -410,8 +450,8 @@ def short_circuit_3ph(grid, t_idx=None):
         bus_types=np.ones(grid.get_bus_number())
     )
 
-    pf_res.voltage = num_pf_res.voltage
-    pf_res.Sbus = num_pf_res.Sbus
+    pf_res.voltage = res_3ph.V
+    pf_res.Sbus = res_3ph.Scalc
 
     sc_options = gce.ShortCircuitOptions(bus_index=4,
                                          fault_type=FaultType.LLL,
