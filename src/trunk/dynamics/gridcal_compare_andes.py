@@ -53,7 +53,7 @@ def merge_simulation_results_by_time(csv1, csv2, output_csv= 'merged_data.csv', 
 comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_andes_output.csv')
 
 # Load merged CSV
-i = 3
+i = 1
 merged_df = comparison
 merged_df['Pl_7_Gridcal'] = merged_df['Pl_7_Gridcal'] * (-100)
 merged_df[f"tm_{i}_Gridcal"] = merged_df[f"tm_{i}_Gridcal"] * (100)

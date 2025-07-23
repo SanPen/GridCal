@@ -7,6 +7,7 @@
 To run this script andes must be installed (pip install andes)
 """
 import importlib.util
+import pdb
 import sys
 import matplotlib
 import pandas as pd
@@ -34,7 +35,7 @@ andes.config_logger(stream_level=20)
 #ss = andes.run('Gen_Load/Gen_load_2.json', default_config=True)
 def main():
     andes.config_logger(stream_level=20)
-    ss = andes.load('src/trunk/dynamics/Gen_Load/kundur_full_compare_orig.json', default_config=True)
+    ss = andes.load('Gen_Load/Benchmark_4ger_ESST1A_TGR_2015.dyr', default_config=True)
 
     ss.files.no_output = True
 
@@ -48,6 +49,9 @@ def main():
     ss.PQ.config.q2z = 0
     
     ss.PFlow.run()
+
+    print(ss.Bus.v.v)
+    print(ss.Bus.name.v)
 
     # config TDS
     # total_time = 10
@@ -80,7 +84,7 @@ def main():
     while tds.t < tds.config.tf:
 
         if tds.t > 2.5 and one == True:
-            ss.PQ.set(src='Ppf', idx='PQ_0', attr='v', value=11.09)
+            #ss.PQ.set(src='Ppf', idx='PQ_0', attr='v', value=11.09)
             one = False
             # Log current state
         time_history.append(tds.t)
@@ -118,7 +122,7 @@ def main():
     # Combine all into a single DataFrame
     df = pd.DataFrame({'Time [s]': time_history})
     df = pd.concat([df, omega_df, tm_df, te_df, Ppf_df, v_df], axis=1)
-    df.to_csv("simulation_andes_output.csv", index=False)
+    df.to_csv("simulation_andes_output_gridcal_powerflow.csv", index=False)
     print('simulation results saved in simulation_andes_output.csv')
 
 

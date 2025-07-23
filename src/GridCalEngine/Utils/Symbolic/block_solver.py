@@ -139,16 +139,19 @@ def compose_system_block(grid: MultiCircuit) -> Block:
     # buses
     for i, elm in enumerate(grid.buses):
         mdl = elm.rms_model.model
+        #mdl.compute_init_guess
         sys_block.children.append(mdl)
 
     # branches
     for elm in grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
         mdl = elm.rms_model.model
+        #mdl.compute_init_guess
         sys_block.children.append(mdl)
 
     # initialize injections
     for elm in grid.get_injection_devices_iter():
         mdl = elm.rms_model.model
+        #mdl.compute_init_guess
         sys_block.children.append(mdl)
 
     return sys_block
