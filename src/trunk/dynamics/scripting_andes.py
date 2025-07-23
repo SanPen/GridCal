@@ -34,7 +34,7 @@ andes.config_logger(stream_level=20)
 #ss = andes.run('Gen_Load/Gen_load_2.json', default_config=True)
 def main():
     andes.config_logger(stream_level=20)
-    ss = andes.run('src/trunk/dynamics/Gen_Load/kundur_full_compare_orig.json', default_config=True)
+    ss = andes.load('src/trunk/dynamics/Gen_Load/kundur_full_compare_orig.json', default_config=True)
 
     ss.files.no_output = True
 
@@ -46,6 +46,8 @@ def main():
     ss.PQ.config.q2q = 1.0
     ss.PQ.config.q2i = 0
     ss.PQ.config.q2z = 0
+    
+    ss.PFlow.run()
 
     # config TDS
     # total_time = 10

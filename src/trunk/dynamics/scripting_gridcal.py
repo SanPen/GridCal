@@ -20,65 +20,57 @@ import GridCalEngine.api as gce
 # ----------------------------------------------------------------------------------------------------------------------
 # Constants
 # ----------------------------------------------------------------------------------------------------------------------
-g_0 = 1.9802011175359897     
-b_0 = -19.80197553181107 
-bsh_0 = 0.075  
+# lines
+r_0, x_0, bsh_0 = 0.005,   0.05,   0.075
+r_1, x_1, bsh_1 = 0.00501, 0.05001, 0.075
+r_2, x_2, bsh_2 = 0.002,   0.02,   0.03
+r_3, x_3, bsh_3 = 0.00201, 0.02001, 0.03
+r_4, x_4, bsh_4 = 0.02201, 0.22001, 0.33
+r_5, x_5, bsh_5 = 0.02202, 0.22002, 0.33
+r_6, x_6, bsh_6 = 0.022,   0.22,   0.33
+r_7, x_7, bsh_7 = 0.002,   0.02,   0.03
+r_8, x_8, bsh_8 = 0.00201, 0.02001, 0.03
+r_9, x_9, bsh_9 = 0.005,   0.05,   0.075
+r_10, x_10, bsh_10 = 0.00501, 0.05001, 0.075
+r_11, x_11, bsh_11 = 0.001,  0.012,  0.0
+r_12, x_12, bsh_12 = 0.001,  0.012,  0.0
+r_13, x_13, bsh_13 = 0.001,  0.012,  0.0
+r_14, x_14, bsh_14 = 0.001,  0.012,  0.0
 
-g_1 = 1.983297344095537
-b_1 = -19.79730978804259
-bsh_1 = 0.075
+def compute_ghk_bhk(r, x, u=1.0):
+    denominator = r + 1j * (x + 1e-8) + 1e-8
+    yhk = u / denominator
+    return yhk.real, yhk.imag
 
-g_2 = 4.950514410328389
-b_2 = -49.504921331249285
-bsh_2 = 0.03
+g_0, b_0 = compute_ghk_bhk(r_0, x_0)
 
-g_3 = 4.969851689511383
-b_3 = -49.47576479999586
-bsh_3 = 0.03
+g_1, b_1 = compute_ghk_bhk(r_1, x_1)
 
-g_4 = 0.45020515378940984
-b_4 = -4.500208786241333
-bsh_4 = 0.33
+g_2, b_2 = compute_ghk_bhk(r_2, x_2)
 
-g_5 = 0.45036510771086197
-b_5 = -4.499967779405863
-bsh_5 = 0.33
+g_3, b_3 = compute_ghk_bhk(r_3, x_3)
 
-g_6 =  0.4500451645074322
-b_6 =  -4.500449803981304
-bsh_6 = 0.33
+g_4, b_4 = compute_ghk_bhk(r_4, x_4)
 
-g_7 = 4.950514410328389
-b_7 = -49.504921331249285
-bsh_7 = 0.03
+g_5, b_5 = compute_ghk_bhk(r_5, x_5)
 
-g_8 = 4.969851689511383
-b_8 = -49.47576479999586
-bsh_8 = 0.03
+g_6, b_6 = compute_ghk_bhk(r_6, x_6)
 
-g_9 = 1.9802011175359897     
-b_9 = -19.80197553181107 
-bsh_9 = 0.075  
+g_7, b_7 = compute_ghk_bhk(r_7, x_7)
 
-g_10 = 1.983297344095537
-b_10 = -19.79730978804259
-bsh_10 = 0.075
+g_8, b_8 = compute_ghk_bhk(r_8, x_8)
 
-g_11 = 6.896608323313494
-b_11 = -82.75854126043255
-bsh_11 = 0.0
+g_9, b_9 = compute_ghk_bhk(r_9, x_9)
 
-g_12 = 6.896608323313494
-b_12 = -82.75854126043255
-bsh_12 = 0.0
+g_10, b_10 = compute_ghk_bhk(r_10, x_10)
 
-g_13 = 6.896608323313494
-b_13 = -82.75854126043255
-bsh_13 = 0.0
+g_11, b_11 = compute_ghk_bhk(r_11, x_11)
 
-g_14 = 6.896608323313494
-b_14 = -82.75854126043255
-bsh_14 = 0.0
+g_12, b_12 = compute_ghk_bhk(r_12, x_12)
+
+g_13, b_13 = compute_ghk_bhk(r_13, x_13)
+
+g_14, b_14 = compute_ghk_bhk(r_14, x_14)
 
 pi = Const(math.pi)
 
@@ -156,35 +148,35 @@ grid.add_bus(bus10)
 
 # Lines
 line0 = gce.Line(name="line 5-6", bus_from=bus5, bus_to=bus6,
-                r=0.005, x=0.05, b=0.075, rate=100.0)
+                r=r_0, x=x_0, b=bsh_0, rate=100.0)
 line1 = gce.Line(name="line 5-6", bus_from=bus5, bus_to=bus6,
-                r=0.00501, x=0.05001, b=0.075, rate=100.0)
+                r=r_1, x=x_1, b=bsh_1, rate=100.0)
 line2 = gce.Line(name="line 6-7", bus_from=bus6, bus_to=bus7,
-                r=0.002, x=0.02, b=0.03, rate=100.0)
+                r=r_2, x=x_2, b=bsh_2, rate=100.0)
 line3 = gce.Line(name="line 6-7", bus_from=bus6, bus_to=bus7,
-                r=0.00201, x=0.02001, b=0.03, rate=100.0)
+                r=r_3, x=x_3, b=bsh_3, rate=100.0)
 line4 = gce.Line(name="line 7-8", bus_from=bus7, bus_to=bus8,
-                r=0.02201, x=0.22001, b=0.33, rate=100.0)
+                r=r_4, x=x_4, b=bsh_4, rate=100.0)
 line5 = gce.Line(name="line 7-8", bus_from=bus7, bus_to=bus8,
-                r=0.02202, x=0.22002, b=0.33, rate=100.0)
+                r=r_5, x=x_5, b=bsh_5, rate=100.0)
 line6 = gce.Line(name="line 7-8", bus_from=bus7, bus_to=bus8,
-                r=0.022, x=0.22, b=0.33, rate=100.0)
+                r=r_6, x=x_6, b=bsh_6, rate=100.0)
 line7 = gce.Line(name="line 8-9", bus_from=bus8, bus_to=bus9,
-                r=0.002, x=0.02, b=0.03, rate=100.0)
+                r=r_7, x=x_7, b=bsh_7, rate=100.0)
 line8 = gce.Line(name="line 8-9", bus_from=bus8, bus_to=bus9,
-                r=0.00201, x=0.02001, b=0.03, rate=100.0)
+                r=r_8, x=x_8, b=bsh_8, rate=100.0)
 line9 = gce.Line(name="line 9-10", bus_from=bus9, bus_to=bus10,
-                r=0.005, x=0.05, b=0.075, rate=100.0)
+                r=r_9, x=x_9, b=bsh_9, rate=100.0)
 line10 = gce.Line(name="line 9-10", bus_from=bus9, bus_to=bus10,
-                r= 0.00501, x=0.05001, b=0.075, rate=100.0)
+                r=r_10, x=x_10, b=bsh_10, rate=100.0)
 line11 = gce.Line(name="line 1-5", bus_from=bus1, bus_to=bus5,
-                r=0.001, x=0.012, b=0.0, rate=100.0)
+                r=r_11, x=x_11, b=bsh_11, rate=100.0)
 line12 = gce.Line(name="line 2-6", bus_from=bus2, bus_to=bus6,
-                r=0.001, x=0.012, b=0.0, rate=100.0)
+                r=r_12, x=x_12, b=bsh_12, rate=100.0)
 line13 = gce.Line(name="line 3-9", bus_from=bus3, bus_to=bus9,
-                r=0.001, x= 0.012, b=0.0, rate=100.0)
+                r=r_13, x=x_13, b=bsh_13, rate=100.0)
 line14 = gce.Line(name="line 4-10", bus_from=bus4, bus_to=bus10,
-                r=0.001, x= 0.012, b=0.0, rate=100.0)
+                r=r_14, x=x_14, b=bsh_14, rate=100.0)
 grid.add_line(line0)
 grid.add_line(line1)
 grid.add_line(line2)
