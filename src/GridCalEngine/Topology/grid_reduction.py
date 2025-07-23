@@ -172,7 +172,7 @@ def ptdf_reduction(grid: MultiCircuit,
     from: Power System Network Reduction for Engineering and Economic Analysis by Di Shi, 2012
     :param grid: MultiCircuit
     :param reduction_bus_indices: Bus indices of the buses to delete
-    :param lin: LinearAnalysis
+    :param PTDF: PTDF matrix
     :param tol: Tolerance, any equivalent power value under this is omitted
     """
     logger = Logger()

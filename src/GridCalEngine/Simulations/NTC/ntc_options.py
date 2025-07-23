@@ -28,10 +28,11 @@ class OptimalNetTransferCapacityOptions(OptionsTemplate):
                  branch_rating_contribution: float = 70 / 100.0,
                  monitor_only_ntc_load_rule_branches: bool = False,
                  consider_contingencies: bool = False,
+                 strict_formulation: bool = False,
                  opf_options: OptimalPowerFlowOptions | None = None,
                  lin_options: LinearAnalysisOptions | None = None, ):
         """
-
+        OptimalNetTransferCapacityOptions
         :param sending_bus_idx: array of area "from" bus indices
         :param receiving_bus_idx: array of area "to" bus indices
         :param transfer_method: AvailableTransferMode
@@ -42,7 +43,9 @@ class OptimalNetTransferCapacityOptions(OptionsTemplate):
         :param use_branch_exchange_sensitivity:
         :param branch_rating_contribution:
         :param monitor_only_ntc_load_rule_branches:
-        :param consider_contingencies:
+        :param consider_contingencies: if True, the contingency groups needed (contingency_groups_used)
+                                       must be passed inside the opf_options
+        :param strict_formulation: Use the strict formulation
         :param opf_options: OptimalPowerFlowOptions
         :param lin_options: LinearAnalysisOptions
         """
@@ -60,6 +63,7 @@ class OptimalNetTransferCapacityOptions(OptionsTemplate):
         self.branch_rating_contribution: float = branch_rating_contribution
         self.monitor_only_ntc_load_rule_branches: bool = monitor_only_ntc_load_rule_branches
         self.consider_contingencies: bool = consider_contingencies
+        self.strict_formulation: bool = strict_formulation
 
         if opf_options is None:
             self.opf_options = OptimalPowerFlowOptions()
@@ -82,5 +86,6 @@ class OptimalNetTransferCapacityOptions(OptionsTemplate):
         self.register(key="branch_rating_contribution", tpe=float)
         self.register(key="monitor_only_ntc_load_rule_branches", tpe=bool)
         self.register(key="consider_contingencies", tpe=bool)
+        self.register(key="strict_formulation", tpe=bool)
         self.register(key="opf_options", tpe=DeviceType.SimulationOptionsDevice)
         self.register(key="lin_options", tpe=DeviceType.SimulationOptionsDevice)

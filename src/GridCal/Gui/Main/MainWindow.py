@@ -3117,42 +3117,11 @@ class Ui_mainWindow(object):
         self.groupBox_5.setFont(font5)
         self.gridLayout_15 = QGridLayout(self.groupBox_5)
         self.gridLayout_15.setObjectName(u"gridLayout_15")
-        self.label_26 = QLabel(self.groupBox_5)
-        self.label_26.setObjectName(u"label_26")
-
-        self.gridLayout_15.addWidget(self.label_26, 9, 0, 1, 1)
-
-        self.consider_ntc_contingencies_checkBox = QCheckBox(self.groupBox_5)
-        self.consider_ntc_contingencies_checkBox.setObjectName(u"consider_ntc_contingencies_checkBox")
-        self.consider_ntc_contingencies_checkBox.setFont(font1)
-
-        self.gridLayout_15.addWidget(self.consider_ntc_contingencies_checkBox, 11, 0, 1, 2)
-
         self.ntcSelectBasedOnAcerCriteriaCheckBox = QCheckBox(self.groupBox_5)
         self.ntcSelectBasedOnAcerCriteriaCheckBox.setObjectName(u"ntcSelectBasedOnAcerCriteriaCheckBox")
         self.ntcSelectBasedOnAcerCriteriaCheckBox.setFont(font1)
 
         self.gridLayout_15.addWidget(self.ntcSelectBasedOnAcerCriteriaCheckBox, 7, 0, 1, 1)
-
-        self.label_105 = QLabel(self.groupBox_5)
-        self.label_105.setObjectName(u"label_105")
-        palette17 = QPalette()
-        brush4 = QBrush(QColor(36, 31, 49, 255))
-        brush4.setStyle(Qt.SolidPattern)
-        palette17.setBrush(QPalette.Active, QPalette.WindowText, brush4)
-        brush5 = QBrush(QColor(0, 0, 0, 255))
-        brush5.setStyle(Qt.SolidPattern)
-        palette17.setBrush(QPalette.Inactive, QPalette.WindowText, brush5)
-        palette17.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_105.setPalette(palette17)
-        self.label_105.setFont(font6)
-
-        self.gridLayout_15.addWidget(self.label_105, 10, 0, 1, 2)
-
-        self.label_36 = QLabel(self.groupBox_5)
-        self.label_36.setObjectName(u"label_36")
-
-        self.gridLayout_15.addWidget(self.label_36, 3, 0, 1, 1)
 
         self.skipNtcGenerationLimitsCheckBox = QCheckBox(self.groupBox_5)
         self.skipNtcGenerationLimitsCheckBox.setObjectName(u"skipNtcGenerationLimitsCheckBox")
@@ -3160,36 +3129,6 @@ class Ui_mainWindow(object):
         self.skipNtcGenerationLimitsCheckBox.setChecked(True)
 
         self.gridLayout_15.addWidget(self.skipNtcGenerationLimitsCheckBox, 0, 0, 1, 2)
-
-        self.verticalSpacer_23 = QSpacerItem(20, 168, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.gridLayout_15.addItem(self.verticalSpacer_23, 12, 1, 1, 1)
-
-        self.ntcAlphaSpinBox = QSpinBox(self.groupBox_5)
-        self.ntcAlphaSpinBox.setObjectName(u"ntcAlphaSpinBox")
-        self.ntcAlphaSpinBox.setFont(font1)
-        self.ntcAlphaSpinBox.setMaximum(100)
-        self.ntcAlphaSpinBox.setValue(5)
-
-        self.gridLayout_15.addWidget(self.ntcAlphaSpinBox, 6, 0, 1, 1)
-
-        self.ntcSelectBasedOnExchangeSensitivityCheckBox = QCheckBox(self.groupBox_5)
-        self.ntcSelectBasedOnExchangeSensitivityCheckBox.setObjectName(u"ntcSelectBasedOnExchangeSensitivityCheckBox")
-        self.ntcSelectBasedOnExchangeSensitivityCheckBox.setFont(font1)
-        self.ntcSelectBasedOnExchangeSensitivityCheckBox.setChecked(True)
-
-        self.gridLayout_15.addWidget(self.ntcSelectBasedOnExchangeSensitivityCheckBox, 5, 0, 1, 1)
-
-        self.label_64 = QLabel(self.groupBox_5)
-        self.label_64.setObjectName(u"label_64")
-        palette18 = QPalette()
-        palette18.setBrush(QPalette.Active, QPalette.WindowText, brush4)
-        palette18.setBrush(QPalette.Inactive, QPalette.WindowText, brush5)
-        palette18.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_64.setPalette(palette18)
-        self.label_64.setFont(font6)
-
-        self.gridLayout_15.addWidget(self.label_64, 4, 0, 1, 2)
 
         self.trmSpinBox = QSpinBox(self.groupBox_5)
         self.trmSpinBox.setObjectName(u"trmSpinBox")
@@ -3201,11 +3140,18 @@ class Ui_mainWindow(object):
 
         self.gridLayout_15.addWidget(self.trmSpinBox, 2, 0, 1, 1)
 
-        self.label_231 = QLabel(self.groupBox_5)
-        self.label_231.setObjectName(u"label_231")
-        self.label_231.setFont(font1)
+        self.consider_ntc_contingencies_checkBox = QCheckBox(self.groupBox_5)
+        self.consider_ntc_contingencies_checkBox.setObjectName(u"consider_ntc_contingencies_checkBox")
+        self.consider_ntc_contingencies_checkBox.setFont(font1)
 
-        self.gridLayout_15.addWidget(self.label_231, 1, 0, 1, 1)
+        self.gridLayout_15.addWidget(self.consider_ntc_contingencies_checkBox, 11, 0, 1, 2)
+
+        self.ntcSelectBasedOnExchangeSensitivityCheckBox = QCheckBox(self.groupBox_5)
+        self.ntcSelectBasedOnExchangeSensitivityCheckBox.setObjectName(u"ntcSelectBasedOnExchangeSensitivityCheckBox")
+        self.ntcSelectBasedOnExchangeSensitivityCheckBox.setFont(font1)
+        self.ntcSelectBasedOnExchangeSensitivityCheckBox.setChecked(True)
+
+        self.gridLayout_15.addWidget(self.ntcSelectBasedOnExchangeSensitivityCheckBox, 5, 0, 1, 1)
 
         self.ntcLoadRuleSpinBox = QSpinBox(self.groupBox_5)
         self.ntcLoadRuleSpinBox.setObjectName(u"ntcLoadRuleSpinBox")
@@ -3214,6 +3160,66 @@ class Ui_mainWindow(object):
         self.ntcLoadRuleSpinBox.setValue(70)
 
         self.gridLayout_15.addWidget(self.ntcLoadRuleSpinBox, 8, 0, 1, 1)
+
+        self.label_26 = QLabel(self.groupBox_5)
+        self.label_26.setObjectName(u"label_26")
+
+        self.gridLayout_15.addWidget(self.label_26, 9, 0, 1, 1)
+
+        self.verticalSpacer_23 = QSpacerItem(20, 168, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_15.addItem(self.verticalSpacer_23, 13, 1, 1, 1)
+
+        self.label_36 = QLabel(self.groupBox_5)
+        self.label_36.setObjectName(u"label_36")
+
+        self.gridLayout_15.addWidget(self.label_36, 3, 0, 1, 1)
+
+        self.label_64 = QLabel(self.groupBox_5)
+        self.label_64.setObjectName(u"label_64")
+        palette17 = QPalette()
+        brush4 = QBrush(QColor(36, 31, 49, 255))
+        brush4.setStyle(Qt.SolidPattern)
+        palette17.setBrush(QPalette.Active, QPalette.WindowText, brush4)
+        brush5 = QBrush(QColor(0, 0, 0, 255))
+        brush5.setStyle(Qt.SolidPattern)
+        palette17.setBrush(QPalette.Inactive, QPalette.WindowText, brush5)
+        palette17.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_64.setPalette(palette17)
+        self.label_64.setFont(font6)
+
+        self.gridLayout_15.addWidget(self.label_64, 4, 0, 1, 2)
+
+        self.label_105 = QLabel(self.groupBox_5)
+        self.label_105.setObjectName(u"label_105")
+        palette18 = QPalette()
+        palette18.setBrush(QPalette.Active, QPalette.WindowText, brush4)
+        palette18.setBrush(QPalette.Inactive, QPalette.WindowText, brush5)
+        palette18.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_105.setPalette(palette18)
+        self.label_105.setFont(font6)
+
+        self.gridLayout_15.addWidget(self.label_105, 10, 0, 1, 2)
+
+        self.ntcAlphaSpinBox = QSpinBox(self.groupBox_5)
+        self.ntcAlphaSpinBox.setObjectName(u"ntcAlphaSpinBox")
+        self.ntcAlphaSpinBox.setFont(font1)
+        self.ntcAlphaSpinBox.setMaximum(100)
+        self.ntcAlphaSpinBox.setValue(5)
+
+        self.gridLayout_15.addWidget(self.ntcAlphaSpinBox, 6, 0, 1, 1)
+
+        self.label_231 = QLabel(self.groupBox_5)
+        self.label_231.setObjectName(u"label_231")
+        self.label_231.setFont(font1)
+
+        self.gridLayout_15.addWidget(self.label_231, 1, 0, 1, 1)
+
+        self.strict_ntc_formulation_checkBox = QCheckBox(self.groupBox_5)
+        self.strict_ntc_formulation_checkBox.setObjectName(u"strict_ntc_formulation_checkBox")
+        self.strict_ntc_formulation_checkBox.setFont(font1)
+
+        self.gridLayout_15.addWidget(self.strict_ntc_formulation_checkBox, 12, 0, 1, 2)
 
 
         self.gridLayout_13.addWidget(self.groupBox_5, 2, 2, 2, 1)
@@ -5857,39 +5863,43 @@ class Ui_mainWindow(object):
         self.ntc_tab.setToolTip(QCoreApplication.translate("mainWindow", u"Net transfer capacity settings", None))
 #endif // QT_CONFIG(tooltip)
         self.groupBox_5.setTitle(QCoreApplication.translate("mainWindow", u"Optimization", None))
-        self.label_26.setText("")
+#if QT_CONFIG(tooltip)
+        self.ntcSelectBasedOnAcerCriteriaCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>This criteria springs from the ACER (Agency for the Cooperation for Energy Regulators).</p><p>It determines that a branch is only relevant to be considered in a NTC calculation if the flow due to the exchange is over a percentage (70%) </p><p><br/></p><p>A branch is monitored only if:</p><p>(branch_rate * 70%) / branch_alpha &lt;= total exchange rating</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.ntcSelectBasedOnAcerCriteriaCheckBox.setText(QCoreApplication.translate("mainWindow", u"Branch rating contribution (ACER)", None))
+#if QT_CONFIG(tooltip)
+        self.skipNtcGenerationLimitsCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"If activated, the generation limits are not considered", None))
+#endif // QT_CONFIG(tooltip)
+        self.skipNtcGenerationLimitsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Skip generation limits", None))
+        self.trmSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
 #if QT_CONFIG(tooltip)
         self.consider_ntc_contingencies_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If checked, the NTC optimization will use the system declared contingencies", None))
 #endif // QT_CONFIG(tooltip)
         self.consider_ntc_contingencies_checkBox.setText(QCoreApplication.translate("mainWindow", u"Consider constingencies", None))
 #if QT_CONFIG(tooltip)
-        self.ntcSelectBasedOnAcerCriteriaCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>This criteria springs from the ACER (Agency for the Cooperation for Energy Regulators).</p><p>It determines that a branch is only relevant to be considered in a NTC calculation if the flow due to the exchange is over a percentage (70%) </p><p><br/></p><p>A branch is monitored only if:</p><p>(branch_rate * 70%) / branch_alpha &lt;= total exchange rating</p></body></html>", None))
+        self.ntcSelectBasedOnExchangeSensitivityCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>A branch is monitored solely based on its contribution to the inter-area excahge sensitivity. Therefore a branch is selected if it's alpha value is greater than the set alpha %</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.ntcSelectBasedOnAcerCriteriaCheckBox.setText(QCoreApplication.translate("mainWindow", u"Branch rating contribution (ACER)", None))
-        self.label_105.setText(QCoreApplication.translate("mainWindow", u"Contingencies", None))
+        self.ntcSelectBasedOnExchangeSensitivityCheckBox.setText(QCoreApplication.translate("mainWindow", u"Branch exchange sensitivity (\u03b1)", None))
+        self.ntcLoadRuleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
+        self.label_26.setText("")
         self.label_36.setText("")
 #if QT_CONFIG(tooltip)
-        self.skipNtcGenerationLimitsCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"If activated, the generation limits are not considered", None))
+        self.label_64.setToolTip(QCoreApplication.translate("mainWindow", u"Determine the branches that enter the optimization", None))
 #endif // QT_CONFIG(tooltip)
-        self.skipNtcGenerationLimitsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Skip generation limits", None))
+        self.label_64.setText(QCoreApplication.translate("mainWindow", u"Branch monitoring selection criteria", None))
+        self.label_105.setText(QCoreApplication.translate("mainWindow", u"Contingencies", None))
 #if QT_CONFIG(tooltip)
         self.ntcAlphaSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Minimum exchange contribution (Alpha)", None))
 #endif // QT_CONFIG(tooltip)
         self.ntcAlphaSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
 #if QT_CONFIG(tooltip)
-        self.ntcSelectBasedOnExchangeSensitivityCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>A branch is monitored solely based on its contribution to the inter-area excahge sensitivity. Therefore a branch is selected if it's alpha value is greater than the set alpha %</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.ntcSelectBasedOnExchangeSensitivityCheckBox.setText(QCoreApplication.translate("mainWindow", u"Branch exchange sensitivity (\u03b1)", None))
-#if QT_CONFIG(tooltip)
-        self.label_64.setToolTip(QCoreApplication.translate("mainWindow", u"Determine the branches that enter the optimization", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_64.setText(QCoreApplication.translate("mainWindow", u"Branch monitoring selection criteria", None))
-        self.trmSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
-#if QT_CONFIG(tooltip)
         self.label_231.setToolTip(QCoreApplication.translate("mainWindow", u"Transmission reliability margin (TRM)", None))
 #endif // QT_CONFIG(tooltip)
         self.label_231.setText(QCoreApplication.translate("mainWindow", u"Transmission reliability margin (TRM)", None))
-        self.ntcLoadRuleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
+#if QT_CONFIG(tooltip)
+        self.strict_ntc_formulation_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"More strict NTC Formulation: No slacks of any type and specific monitoring criteria", None))
+#endif // QT_CONFIG(tooltip)
+        self.strict_ntc_formulation_checkBox.setText(QCoreApplication.translate("mainWindow", u"Strict formulation", None))
         self.groupBox_4.setTitle(QCoreApplication.translate("mainWindow", u"General", None))
         self.label_30.setText(QCoreApplication.translate("mainWindow", u"Loading threshold to report", None))
         self.label_77.setText(QCoreApplication.translate("mainWindow", u"Transfer method", None))

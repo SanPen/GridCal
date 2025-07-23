@@ -39,6 +39,7 @@ ntc_options = gce.OptimalNetTransferCapacityOptions(
     branch_rating_contribution=1.0,
     monitor_only_ntc_load_rule_branches=False,
     consider_contingencies=False,
+    strict_formulation=False,
     opf_options=opf_options,
     lin_options=lin_options
 )
