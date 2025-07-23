@@ -123,6 +123,8 @@ T_4 = Const(2.1)
 # ----------------------------------------------------------------------------------------------------------------------
 # Build the system to compute the powerflow
 grid = gce.MultiCircuit()
+grid.fBase = 60.0
+
 # Buses
 bus1 = gce.Bus(name="Bus1", Vnom=230)
 bus2 = gce.Bus(name="Bus2", Vnom=230)
@@ -212,6 +214,30 @@ grid.add_load(bus=bus7, api_obj=load7)
 
 load8 = gce.Load(name="Load8", P=15.75, Q=-0.899)
 grid.add_load(bus=bus8, api_obj=load8)
+
+options = gce.PowerFlowOptions(solver_type = gce.SolverType.NR,
+                               retry_with_other_methods = False,
+                               verbose = 0,
+                               initialize_with_existing_solution = False,
+                               tolerance = 1e-6,
+                               max_iter = 25,
+                               control_q = False,
+                               control_taps_modules = False,
+                               control_taps_phase = False,
+                               control_remote_voltage = False,
+                               orthogonalize_controls = False,
+                               apply_temperature_correction = False,
+                               branch_impedance_tolerance_mode=gce.BranchImpedanceMode.Specified,
+                               distributed_slack = False,
+                               ignore_single_node_islands = False,
+                               trust_radius = 1.0,
+                               backtracking_parameter = 0.05,
+                               use_stored_guess = False,
+                               initialize_angles = False,
+                               generate_report = False,
+                               three_phase_unbalanced = False)
+
+gce.save_file(grid, "kundur_full_compare_orig.gridcal")
 
 res = gce.power_flow(grid)
 
