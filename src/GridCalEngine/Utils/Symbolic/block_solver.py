@@ -38,7 +38,6 @@ def _compile_equations(eqs: Sequence[Expr],
                        uid2sym_vars: Dict[int, str],
                        uid2sym_params: Dict[int, str],
                        add_doc_string: bool = True) -> Callable[[np.ndarray, np.ndarray], np.ndarray]:
-
     """
     Compile the array of expressions to a function that returns an array of values for those expressions
     :param eqs: Iterable of expressions (Expr)
@@ -371,11 +370,13 @@ class BlockSolver:
         :param use_preconditioner: Use a GMRES preconditioner?
         :return: new, hopefully better initial point
         """
-        x_vec = x0.copy() # initial guess vector
+        x_vec = x0.copy()  # initial guess vector
 
         for k in range(max_it):
-            F = self.residual_init(x_vec, params=params0) # F is a numpy array containing the f and g functions residuals
-            if np.linalg.norm(F, np.inf) < tol: # use infinit norm: The maximum absolute value of the components of the vector
+            F = self.residual_init(x_vec,
+                                   params=params0)  # F is a numpy array containing the f and g functions residuals
+            if np.linalg.norm(F,
+                              np.inf) < tol:  # use infinit norm: The maximum absolute value of the components of the vector
                 print(f"Converged in {k} iterations :", x_vec)
                 break
 
@@ -464,7 +465,7 @@ class BlockSolver:
                 except RuntimeError:
                     M = None  # fallback – still works thanks to I/dt term
 
-                dz, info = gmres(A=J, b = -R, M=M, atol=1e-9, restart=200)
+                dz, info = gmres(A=J, b=-R, M=M, atol=1e-9, restart=200)
                 if info != 0:
                     raise RuntimeError(f"GMRES failed at Ψtc step {step}, "
                                        f"Newton iter {it} (info={info})")
@@ -612,87 +613,32 @@ class BlockSolver:
         print("Homotopy initialisation succeeded ✔")
         return z, params
 
-    def _psi_tc(self,
-                z_init: np.ndarray,
-                params: np.ndarray,
-                dt0: float,
-                beta: float,
-                psi_tol: float,
-                newton_tol: float,
-                newton_max: int) -> np.ndarray:
-        """
-        Pseudo-transient continuation inner solver (index-1 semi-explicit DAE).
-        Returns a *consistent* z vector for the **current** parameter set.
-        """
-        n_s = self._n_state
-        I_s = sp.eye(n_s, format="csc") if n_s else None
-        z = z_init.copy()
-        dt = dt0
-
-        while True:
-            z_prev = z.copy()
-            # ------------ Newton on Ψtc residual -----------------------------
-            for _ in range(newton_max):
-                f_a = np.array(self._rhs_algeb_fn(z, params))
-                if n_s:
-                    f_s = np.array(self._rhs_state_fn(z, params))
-                    R = np.r_[(z[:n_s] - z_prev[:n_s]) / dt - f_s, f_a]
-                else:
-                    R = f_a
-
-                if np.linalg.norm(R, np.inf) < newton_tol:
-                    break
-
-                J22 = self._j22_fn(z, params)
-                J12 = self._j12_fn(z, params)
-                J21 = self._j21_fn(z, params)
-
-                if n_s:
-                    J11 = self._j11_fn(z, params)
-                    JL = I_s / dt - J11
-                    JR = -J12
-                    top = sp.hstack([JL, JR], format="csc")
-                    bot = sp.hstack([J21, J22], format="csc")
-                    J = sp.vstack([top, bot], format="csc")
-                else:
-                    J = J22
-
-                try:
-                    M = LinearOperator(J.shape,
-                                       spilu(J, drop_tol=1e-5, fill_factor=10).solve)
-                except RuntimeError:
-                    M = None
-
-                dz, info = gmres(J, -R, M=M, atol=1e-9, restart=200)
-                if info != 0:
-                    raise RuntimeError("GMRES failed during Ψtc")
-                z += dz
-
-            # ------------ stop when original residual is small ---------------
-            res = np.linalg.norm(self._rhs_algeb_fn(z, params), np.inf)
-            if n_s:
-                res = max(res, np.linalg.norm(self._rhs_state_fn(z, params), np.inf))
-            if res < psi_tol:
-                return z
-
-            dt *= beta
-            if dt < 1e-9:
-                raise RuntimeError("Ψtc stalled ⇒ no equilibrium?")
-
     def initialise_homotopy_adaptive_lambda(self,
-                            z0,
-                            params,
-                            ramps: list[tuple[Const | Var, float]] | None = None,
-                            psi_dt0: float = 5.0,
-                            psi_beta: float = 0.4,
-                            psi_tol: float = 1e-10,
-                            newton_tol: float = 1e-12,
-                            newton_max: int = 10,
-                            delta_lam_init: float = 0.05,
-                            min_step: float = 1e-4,
-                            max_step: float = 0.2) -> tuple[np.ndarray, np.ndarray]:
+                                            z0,
+                                            params,
+                                            ramps: list[tuple[Const | Var, float]] | None = None,
+                                            psi_dt0: float = 5.0,
+                                            psi_beta: float = 0.4,
+                                            psi_tol: float = 1e-10,
+                                            newton_tol: float = 1e-12,
+                                            newton_max: int = 10,
+                                            delta_lam_init: float = 0.05,
+                                            min_step: float = 1e-4,
+                                            max_step: float = 0.2) -> tuple[np.ndarray, np.ndarray]:
         """
         Homotopy with adaptive lambda stepping.
+        :param z0:
+        :param params:
+        :param ramps:
+        :param psi_dt0:
+        :param psi_beta:
+        :param psi_tol:
+        :param newton_tol:
+        :param newton_max:
+        :param delta_lam_init:
+        :param min_step:
+        :param max_step:
+        :return:
         """
         z = z0.copy()
 
@@ -768,7 +714,6 @@ class BlockSolver:
                     diff_val = value - params_matrix_current[prop_idx]
                     diff_params_matrix[time_step][prop_idx] += diff_val
                     params_matrix_current[prop_idx] = value
-
 
         # make params matrix sparse
         diff_params_matrix_spa = csr_matrix(diff_params_matrix)
@@ -911,7 +856,7 @@ class BlockSolver:
         """
         # Combine state and algebraic variables
         all_vars = self._state_vars + self._algebraic_vars
-        var_names = [str(var)+'_Gridcal' for var in all_vars]
+        var_names = [str(var) + '_Gridcal' for var in all_vars]
 
         # Create DataFrame with time and variable data
         df = pd.DataFrame(data=y, columns=var_names)
@@ -920,5 +865,3 @@ class BlockSolver:
         # Save to CSV
         df.to_csv(filename, index=False)
         print(f"Simulation results saved to: {filename}")
-
-

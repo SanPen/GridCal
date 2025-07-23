@@ -28,13 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Worked on the kundur modelling">
-      <change afterPath="$PROJECT_DIR$/src/trunk/dynamics/Two_Areas_PSS_E/Benchmark_4ger_33_2015.raw" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/dynamics/Two_Areas_PSS_E/Benchmark_4ger_ESST1A_TGR_2015.dyr" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/dynamics/Two_Areas_PSS_E/Benchmark_4ger_ESST1A_noTGR_PSSmod_2015.dyr" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/dynamics/Two_Areas_PSS_E/Benchmark_4ger_ESST1A_noTGR_PSSori_2015.dyr" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="added compose_system_block">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/dynamics/scripting_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/dynamics/scripting_gridcal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic/block_solver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Symbolic/block_solver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1894,7 +1890,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="592" />
+    <option name="localTasksCounter" value="594" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1940,8 +1936,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.3.10" />
-    <MESSAGE value="Now we keep the wire configuration that was lost in overhead_line_type" />
     <MESSAGE value="Improved tests to check different Sbase" />
     <MESSAGE value="Handle that requests may fail loading" />
     <MESSAGE value="Refactored the transformers short-circuit definition to system per-unit" />
@@ -1965,7 +1959,9 @@
     <MESSAGE value="Improved rms generator values" />
     <MESSAGE value="Equivalent events in simulations" />
     <MESSAGE value="Worked on the kundur modelling" />
-    <option name="LAST_COMMIT_MESSAGE" value="Worked on the kundur modelling" />
+    <MESSAGE value="Loading the kundur model from a file" />
+    <MESSAGE value="added compose_system_block" />
+    <option name="LAST_COMMIT_MESSAGE" value="added compose_system_block" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2462,7 +2458,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/trunk/dynamics/scripting_gridcal.py</url>
-          <line>262</line>
+          <line>265</line>
           <option name="timeStamp" value="2975" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
