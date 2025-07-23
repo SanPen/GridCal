@@ -2804,15 +2804,12 @@ class MultiCircuit(Assets):
 
         return buses
 
-    def initialize_rms(self, logger: Logger = Logger()) -> Block:
+    def initialize_rms(self, logger: Logger = Logger()):
         """
         Initialize all RMS models
-        :return: System block
         """
         # already computed grid power flow
 
-        # create the system block
-        sys_block = Block(children=[], in_vars=[])
         bus_dict = dict()
 
         # balance equation arrays
@@ -2839,15 +2836,12 @@ class MultiCircuit(Assets):
         # initialize buses
         for i, elm in enumerate(self.buses):
             elm.initialize_rms()
-            mdl = elm.rms_model.model
-            sys_block.children.append(mdl)
             bus_dict[elm] = i
 
         # initialize branches
         for elm in self.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
             elm.initialize_rms()
             mdl = elm.rms_model.model
-            sys_block.children.append(mdl)
             f = bus_dict[elm.bus_from]
             t = bus_dict[elm.bus_to]
 
@@ -2860,7 +2854,6 @@ class MultiCircuit(Assets):
         for elm in self.get_injection_devices_iter():
             elm.initialize_rms()
             mdl = elm.rms_model.model
-            sys_block.children.append(mdl)
             f = bus_dict[elm.bus]
             if elm.device_type == DeviceType.LoadDevice:
                 setP(f, -mdl.E(DynamicVarType.P))
@@ -2877,6 +2870,3 @@ class MultiCircuit(Assets):
             else:
                 mdl.algebraic_eqs.append(P[i])
                 mdl.algebraic_eqs.append(Q[i])
-
-
-        return sys_block

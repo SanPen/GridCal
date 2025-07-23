@@ -17,6 +17,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import gmres, spilu, LinearOperator
 from typing import Dict, List, Literal, Any, Callable, Sequence
 
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Dynamic.events import RmsEvents
 from GridCalEngine.Utils.Symbolic.symbolic import Var, Expr, Const, _emit
 from GridCalEngine.Utils.Symbolic.block import Block
@@ -123,6 +124,34 @@ def _get_jacobian(eqs: List[Expr],
         return sp.csc_matrix((data, indices, indptr), shape=(len(eqs), len(variables)))
 
     return jac_fn
+
+
+def compose_system_block(grid: MultiCircuit) -> Block:
+    """
+    Compose all RMS models
+    :return: System block
+    """
+    # already computed grid power flow
+
+    # create the system block
+    sys_block = Block(children=[], in_vars=[])
+
+    # buses
+    for i, elm in enumerate(grid.buses):
+        mdl = elm.rms_model.model
+        sys_block.children.append(mdl)
+
+    # branches
+    for elm in grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
+        mdl = elm.rms_model.model
+        sys_block.children.append(mdl)
+
+    # initialize injections
+    for elm in grid.get_injection_devices_iter():
+        mdl = elm.rms_model.model
+        sys_block.children.append(mdl)
+
+    return sys_block
 
 
 class BlockSolver:

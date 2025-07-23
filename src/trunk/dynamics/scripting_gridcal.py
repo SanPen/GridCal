@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
 from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
 from GridCalEngine.Utils.Symbolic.block import Block
-from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
+from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver, compose_system_block
 import GridCalEngine.api as gce
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -186,9 +186,9 @@ T_4 = Const(2.1)
 #     lne.B = B * lne.length
 #
 # # transformers
-# # x_pu_tr = 0.15
-# # x_pu_grid = (x_pu_tr / 2 * (100.0 / 900.0) * (20 / 20) ** 2) + (x_pu_tr / 2 * (100.0 / 900.0) * (230 / 230) ** 2)
-# x_pu_grid = 0.15
+# x_pu_tr = 0.15
+# x_pu_grid = x_pu_tr * (100.0 / 900.0)
+#
 #
 # tr1 = grid.add_transformer2w(
 #     gce.Transformer2W(name="TR1", bus_from=bus2, bus_to=bus6, x=x_pu_grid, rate=900.0, HV=230.0, LV=20.0)
@@ -256,6 +256,9 @@ res = gce.power_flow(grid, options=options)
 print(f"Converged: {res.converged}")
 print(res.get_bus_df())
 print(res.get_branch_df())
+
+grid.initialize_rms()
+# sys_block = compose_system_block(grid=grid)  # after all the blocks changes
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Intialization
