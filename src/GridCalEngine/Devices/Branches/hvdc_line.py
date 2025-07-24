@@ -480,7 +480,8 @@ class HvdcLine(BranchParent):
 
                 self._length = val
             else:
-                print('The length cannot be zero, ignoring value')
+                # print('The length cannot be zero, ignoring value')
+                pass
         else:
             raise Exception('The length must be a float value')
 

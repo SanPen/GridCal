@@ -1240,7 +1240,7 @@ def add_linear_branches_formulation(t_idx: int,
                         # rest of the branches with tau = 0
                         prob.add_cst(
                             cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.Va[t_idx, fr] - bus_vars.Va[t_idx, to]),
-                            name=join("ac_flow_", [t_idx, m], "_")
+                            name=join("ac_flows_", [t_idx, m], "_")
                         )
 
             # We save in Pcalc the balance of the branch flows
@@ -1279,7 +1279,8 @@ def add_linear_branches_formulation(t_idx: int,
             # add the rate constraint if the branch is monitored
             if branch_vars.monitor_logic[t_idx, m]:
                 # here flows is always a variable
-                branch_vars.flows[t_idx, m].bounds(low=-rate_pu, up=rate_pu)
+                # branch_vars.flows[t_idx, m].bounds(low=-rate_pu, up=rate_pu)
+                set_var_bounds(var=branch_vars.flows[t_idx, m], ub=-rate_pu, lb=rate_pu)
 
     # add the inter-area flows to the objective function with the correct sign
     for k, sense in branch_vars.inter_space_branches:
