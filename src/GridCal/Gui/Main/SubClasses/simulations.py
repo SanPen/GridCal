@@ -564,11 +564,10 @@ class SimulationsMain(TimeEventsMain):
         :return:
         """
         model = QtGui.QStandardItemModel()
-        model.setHorizontalHeaderLabels(["Combination"] + list(drv.problem.get_objectives_names()))
+        model.setHorizontalHeaderLabels(["Combination"] + list(drv.results.f_names))
 
-        results = drv.results
-        for i in range(results.max_eval):
-            idx = np.where(results.x[i, :] != 0)[0]
+        for i in range(drv.results.max_eval):
+            idx = np.where(drv.results.x[i, :] != 0)[0]
             if len(idx):
                 row_items = [QtGui.QStandardItem(f"Combination {i}")] + [
                     QtGui.QStandardItem(f"{fi:.2f}") for fi in drv.results.f[i, :]
@@ -578,7 +577,7 @@ class SimulationsMain(TimeEventsMain):
                 # Add names as child nodes under this combination
                 names_parent_item = row_items[0]  # Use the first column (Combination) as parent
                 for k in idx:
-                    name_item = QtGui.QStandardItem(results.x_names[k])
+                    name_item = QtGui.QStandardItem(drv.results.x_names[k])
                     names_parent_item.appendRow([name_item])
 
         return model
