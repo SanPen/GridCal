@@ -44,33 +44,19 @@ def compute_ghk_bhk(r, x, u=1.0):
     return yhk.real, yhk.imag
 
 g_0, b_0 = compute_ghk_bhk(r_0, x_0)
-
 g_1, b_1 = compute_ghk_bhk(r_1, x_1)
-
 g_2, b_2 = compute_ghk_bhk(r_2, x_2)
-
 g_3, b_3 = compute_ghk_bhk(r_3, x_3)
-
 g_4, b_4 = compute_ghk_bhk(r_4, x_4)
-
 g_5, b_5 = compute_ghk_bhk(r_5, x_5)
-
 g_6, b_6 = compute_ghk_bhk(r_6, x_6)
-
 g_7, b_7 = compute_ghk_bhk(r_7, x_7)
-
 g_8, b_8 = compute_ghk_bhk(r_8, x_8)
-
 g_9, b_9 = compute_ghk_bhk(r_9, x_9)
-
 g_10, b_10 = compute_ghk_bhk(r_10, x_10)
-
 g_11, b_11 = compute_ghk_bhk(r_11, x_11)
-
 g_12, b_12 = compute_ghk_bhk(r_12, x_12)
-
 g_13, b_13 = compute_ghk_bhk(r_13, x_13)
-
 g_14, b_14 = compute_ghk_bhk(r_14, x_14)
 
 pi = Const(math.pi)
