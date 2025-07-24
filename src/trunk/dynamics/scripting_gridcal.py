@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import math
+import pdb
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -15,7 +16,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
 from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
 from GridCalEngine.Utils.Symbolic.block import Block
-from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver, compose_system_block
+from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver #compose_system_block
 import GridCalEngine.api as gce
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -258,7 +259,8 @@ print(res.get_bus_df())
 print(res.get_branch_df())
 
 grid.initialize_rms()
-# sys_block = compose_system_block(grid=grid)  # after all the blocks changes
+pdb.set_trace()
+#sys_block = compose_system_block(grid=grid, power_flow_results=res)  # after all the blocks changes
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Intialization

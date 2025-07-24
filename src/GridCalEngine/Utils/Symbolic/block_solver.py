@@ -17,7 +17,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import gmres, spilu, LinearOperator
 from typing import Dict, List, Literal, Any, Callable, Sequence
 
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
+#from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Dynamic.events import RmsEvents
 from GridCalEngine.Utils.Symbolic.symbolic import Var, Expr, Const, _emit
 from GridCalEngine.Utils.Symbolic.block import Block
@@ -125,35 +125,45 @@ def _get_jacobian(eqs: List[Expr],
     return jac_fn
 
 
-def compose_system_block(grid: MultiCircuit) -> Block:
-    """
-    Compose all RMS models
-    :return: System block
-    """
-    # already computed grid power flow
-
-    # create the system block
-    sys_block = Block(children=[], in_vars=[])
-
-    # buses
-    for i, elm in enumerate(grid.buses):
-        mdl = elm.rms_model.model
-        #mdl.compute_init_guess
-        sys_block.children.append(mdl)
-
-    # branches
-    for elm in grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
-        mdl = elm.rms_model.model
-        #mdl.compute_init_guess
-        sys_block.children.append(mdl)
-
-    # initialize injections
-    for elm in grid.get_injection_devices_iter():
-        mdl = elm.rms_model.model
-        #mdl.compute_init_guess
-        sys_block.children.append(mdl)
-
-    return sys_block
+# def compose_system_block(grid: MultiCircuit, power_flow_results) -> Block:
+#     """
+#     Compose all RMS models
+#     :return: System block
+#     """
+#     # already computed grid power flow
+#     res = power_flow_results
+#
+#     # create the system block
+#     sys_block = Block(children=[], in_vars=[])
+#
+#     # initialize set variables list
+#     already_set: List[Var] = list()
+#
+#     # buses
+#     for i, elm in enumerate(grid.buses):
+#         mdl = elm.rms_model.model
+#         #mdl.compute_init_guess
+#         # set already computed values
+#         Vm0 = res.voltage[i]
+#         already_set.append(Vm0)
+#         init_eqs = mdl.init_eqs
+#         sys_block.children.append(mdl)
+#
+#     # branches
+#     for elm in grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
+#         mdl = elm.rms_model.model
+#         #mdl.compute_init_guess
+#         init_eqs = mdl.init_eqs
+#         sys_block.children.append(mdl)
+#
+#     # initialize injections
+#     for elm in grid.get_injection_devices_iter():
+#         mdl = elm.rms_model.model
+#         #mdl.compute_init_guess
+#         init_eqs = mdl.init_eqs
+#         sys_block.children.append(mdl)
+#
+#     return sys_block
 
 
 class BlockSolver:
@@ -173,7 +183,7 @@ class BlockSolver:
         self._algebraic_eqs: List[Expr] = list()
         self._state_vars: List[Var] = list()
         self._state_eqs: List[Expr] = list()
-        self._parameters: List[Var] = list()
+        self._parameters: List[Const] = list()
 
         for b in self.block_system.get_all_blocks():
             self._algebraic_vars.extend(b.algebraic_vars)
@@ -699,7 +709,16 @@ class BlockSolver:
         return self._algebraic_eqs, self._state_eqs
 
     def build_params_matrix(self, n_steps: int, params0: np.ndarray, events_list: RmsEvents) -> csr_matrix:
-        events_matrix = np.zeros((n_steps, len(params0)))
+        """
+
+        :param n_steps:
+        :param params0:
+        :param events_list:
+        :return:
+        """
+        # TODO: reconsider this algorithm entirely,
+        #  this all looks like it can be built from the rows, cols, values info
+
         diff_params_matrix = np.zeros((n_steps, len(params0)))
         params_matrix_current = params0.copy()
 
@@ -707,15 +726,13 @@ class BlockSolver:
         rows, cols, values = events_list.build_triplets_list()
 
         # build diff sparse matrix
-        for i, row in enumerate(events_matrix):
-            if i in rows:
-                positions = np.where(rows == i)
-                for position in positions:
-                    time_step = i
+        for time_step in range(n_steps):
+            if time_step in rows:  # TODO: very expensive
+                for position in np.where(rows == time_step)[0]:
                     prop_idx = self.uid2idx_params[cols[position][0].uid]
                     value = values[position]
                     diff_val = value - params_matrix_current[prop_idx]
-                    diff_params_matrix[time_step][prop_idx] += diff_val
+                    diff_params_matrix[time_step, prop_idx] += diff_val
                     params_matrix_current[prop_idx] = value
 
         # make params matrix sparse
@@ -747,15 +764,18 @@ class BlockSolver:
         :param newton_max_iter:
         :return: 1D time array, 2D array of simulated variables
         """
-
-        params_matrix = self.build_params_matrix(int(np.ceil((t_end - t0) / h)), params0, events_list)
         if method == "euler":
             return self._simulate_fixed(t0, t_end, h, x0, params0, stepper="euler")
         if method == "rk4":
             return self._simulate_fixed(t0, t_end, h, x0, params0, stepper="rk4")
         if method == "implicit_euler":
+
+            params_matrix = self.build_params_matrix(n_steps=int(np.ceil((t_end - t0) / h)),
+                                                     params0=params0,
+                                                     events_list=events_list)
+
             return self._simulate_implicit_euler(
-                t0, t_end, h, x0, params0, params_matrix,
+                t0=t0, t_end=t_end, h=h, x0=x0, params0=params0, diff_params_matrix=params_matrix,
                 tol=newton_tol, max_iter=newton_max_iter,
             )
         raise ValueError(f"Unknown method '{method}'")
@@ -793,7 +813,11 @@ class BlockSolver:
             t[i + 1] = tn + h
         return t, y
 
-    def _simulate_implicit_euler(self, t0, t_end, h, x0, params0: np.ndarray, diff_params_matrix, tol=1e-8,
+    def _simulate_implicit_euler(self, t0: float, t_end: float, h: float,
+                                 x0: np.ndarray,
+                                 params0: np.ndarray,
+                                 diff_params_matrix: csr_matrix,  # TODO: Not sure if a CSR is the best thing here
+                                 tol=1e-8,
                                  max_iter=1000):
         """
         :param t0:
@@ -809,11 +833,10 @@ class BlockSolver:
         t = np.empty(steps + 1)
         y = np.empty((steps + 1, self._n_vars))
         params_current = params0
-        diff_params_matrix = diff_params_matrix
         t[0] = t0
         y[0] = x0.copy()
         for step_idx in range(steps):
-            params_current += diff_params_matrix[step_idx, :].toarray().ravel()
+            params_current += diff_params_matrix[step_idx, :].toarray().ravel()  # TODO think of a better way
             xn = y[step_idx]
             x_new = xn.copy()  # initial guess
             converged = False

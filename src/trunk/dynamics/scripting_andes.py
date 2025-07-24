@@ -35,7 +35,7 @@ andes.config_logger(stream_level=20)
 #ss = andes.run('Gen_Load/Gen_load_2.json', default_config=True)
 def main():
     andes.config_logger(stream_level=20)
-    ss = andes.load('Gen_Load/Benchmark_4ger_ESST1A_TGR_2015.dyr', default_config=True)
+    ss = andes.load('Gen_Load/kundur_full_compare_orig.json', default_config=True)
 
     ss.files.no_output = True
 
