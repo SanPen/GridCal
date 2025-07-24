@@ -28,17 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="improved the adequacy problem with the firm capacity limit&#10;Improved the disk saving capabilities of the InvestmentsEvaluationResults">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons/disconnector.svg" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved the substation designer&#10;Added disconnector icon&#10;Modified the switch icon">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/substations_types.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/substations_types.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_graphics_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_graphics_template.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons/switch.svg" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons/switch.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SubstationDesigner/substation_designer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SubstationDesigner/substation_designer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/substation_wizards.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/substation_wizards.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Substation/bus_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Substation/bus_graphics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/gui_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/gui_functions.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1880,7 +1873,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="592" />
+    <option name="localTasksCounter" value="593" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1926,7 +1919,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Now we keep the wire configuration that was lost in overhead_line_type" />
     <MESSAGE value="Improved tests to check different Sbase" />
     <MESSAGE value="Handle that requests may fail loading" />
     <MESSAGE value="Refactored the transformers short-circuit definition to system per-unit" />
@@ -1951,7 +1943,8 @@
     <MESSAGE value="All short-circuit types validated." />
     <MESSAGE value="added ortools as an option (WIP)&#10;Small modifications to handle ortools&#10;Added Dependency map to the license docs" />
     <MESSAGE value="improved the adequacy problem with the firm capacity limit&#10;Improved the disk saving capabilities of the InvestmentsEvaluationResults" />
-    <option name="LAST_COMMIT_MESSAGE" value="improved the adequacy problem with the firm capacity limit&#10;Improved the disk saving capabilities of the InvestmentsEvaluationResults" />
+    <MESSAGE value="Improved the substation designer&#10;Added disconnector icon&#10;Modified the switch icon" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved the substation designer&#10;Added disconnector icon&#10;Modified the switch icon" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
