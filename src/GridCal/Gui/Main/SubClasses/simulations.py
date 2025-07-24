@@ -103,6 +103,8 @@ class SimulationsMain(TimeEventsMain):
         self.mip_solvers_dict[MIPSolvers.CPLEX.value] = MIPSolvers.CPLEX
         self.mip_solvers_dict[MIPSolvers.GUROBI.value] = MIPSolvers.GUROBI
         self.mip_solvers_dict[MIPSolvers.XPRESS.value] = MIPSolvers.XPRESS
+        self.mip_solvers_dict[MIPSolvers.CBC.value] = MIPSolvers.CBC
+        self.mip_solvers_dict[MIPSolvers.PDLP.value] = MIPSolvers.PDLP
 
         # opf solvers dictionary
         self.nodal_capacity_methods_dict = OrderedDict()
@@ -1965,7 +1967,7 @@ class SimulationsMain(TimeEventsMain):
         """
         # get the power flow options from the GUI
         solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
-        mip_solver = self.mip_solvers_dict.get(self.ui.mip_solver_comboBox.currentText(), MIPSolvers.HIGHS.value)
+        mip_solver = self.mip_solvers_dict.get(self.ui.mip_solver_comboBox.currentText(), MIPSolvers.HIGHS)
         time_grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
         zonal_grouping = self.opf_zonal_groups[self.ui.opfZonalGroupByComboBox.currentText()]
         pf_options = self.get_selected_power_flow_options()
