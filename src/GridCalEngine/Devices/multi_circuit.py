@@ -2844,7 +2844,7 @@ class MultiCircuit(Assets):
             mdl = elm.rms_model.model
             f = bus_dict[elm.bus_from]
             t = bus_dict[elm.bus_to]
-
+            # add variable to conservation equations of the bus to which the element is connected
             setP(f, mdl.E(DynamicVarType.Pf))
             setP(t, mdl.E(DynamicVarType.Pt))
             setQ(f, mdl.E(DynamicVarType.Qf))
@@ -2856,9 +2856,11 @@ class MultiCircuit(Assets):
             mdl = elm.rms_model.model
             f = bus_dict[elm.bus]
             if elm.device_type == DeviceType.LoadDevice:
+                # connect element with the corresponding bus
                 setP(f, -mdl.E(DynamicVarType.P))
                 setQ(f, -mdl.E(DynamicVarType.Q))
             else:
+                # connect element with the corresponding bus
                 setP(f, mdl.E(DynamicVarType.P))
                 setQ(f, mdl.E(DynamicVarType.Q))
 

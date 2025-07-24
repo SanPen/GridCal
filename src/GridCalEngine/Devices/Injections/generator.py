@@ -550,7 +550,10 @@ class Generator(GeneratorParent):
                     (v_q * i_d - v_d * i_q) - Q_g
                 ],
                 algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g],
+                init_eqs=[],
+                init_vars=[],
                 parameters=[],
+
                 external_mapping={
                     DynamicVarType.P: P_g,
                     DynamicVarType.Q: Q_g,

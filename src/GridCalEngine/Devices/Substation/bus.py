@@ -495,10 +495,15 @@ class Bus(PhysicalDevice):
             Vm = Var("Vm")
             Va = Var("Va")
 
+            Vm0 = Var("Vm0")
+            Va0 = Var("Va0")
+
             self.rms_model.model = Block(
                 algebraic_eqs=[
                 ],
                 algebraic_vars=[Vm, Va],
+                init_eqs=[],
+                init_vars=[Vm0, Va0],
                 external_mapping={
                     DynamicVarType.Vm: Vm,
                     DynamicVarType.Va: Va
