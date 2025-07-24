@@ -64,8 +64,6 @@ class LpModel:
         self.solver_type: MIPSolvers = solver_type
 
         self.solver = model_builder.Solver(solver_type.value)
-        self.solver.set_solver_specific_parameters('feasibility_tolerance', tolerance)
-        self.solver.set_parameter('optimality_tolerance', tolerance)
 
         if not self.solver.solver_is_supported():
             raise Exception(f"The solver {solver_type.value} is not supported")
