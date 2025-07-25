@@ -319,7 +319,8 @@ class LpModel:
         elif isinstance(x, LpExp):
             val = self.solver.value(x)
         elif isinstance(x, LpCstBounded):
-            val = self.solver.value(x.expression)
+            # val = self.solver.value(x.expression)
+            val = sum(self.solver.values(x.vars).values * x.coeffs)
         elif isinstance(x, float) or isinstance(x, int):
             return x
         else:
