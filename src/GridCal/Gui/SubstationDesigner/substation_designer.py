@@ -20,6 +20,14 @@ class VoltageLevelTemplate(EditableDevice):
 
     def __init__(self, name='', code='', idtag: str | None = None,
                  device_type=DeviceType.GenericArea, voltage: float = 10):
+        """
+
+        :param name:
+        :param code:
+        :param idtag:
+        :param device_type:
+        :param voltage:
+        """
         EditableDevice.__init__(self,
                                 name=name,
                                 code=code,
@@ -28,9 +36,22 @@ class VoltageLevelTemplate(EditableDevice):
 
         self.vl_type: SubstationTypes = SubstationTypes.SingleBar
         self.voltage: float = voltage
+        self.n_line_positions: int = 0
+        self.n_transformer_positions: int = 0
+        self.add_disconnectors: bool = False
 
-        self.register(key='vl_type', units='', tpe=SubstationTypes, definition='longitude.', editable=True)
+        self.register(key='vl_type', units='', tpe=SubstationTypes, definition='Voltage level type', editable=True)
+
         self.register(key='voltage', units='KV', tpe=float, definition='Voltage.', editable=True)
+
+        self.register(key='n_line_positions', units='', tpe=int,
+                      definition='Number of line positions to add.', editable=True)
+
+        self.register(key='n_transformer_positions', units='', tpe=int,
+                      definition='Number of transformer positions to add.', editable=True)
+
+        self.register(key='add_disconnectors', units='', tpe=bool,
+                      definition='Add disconnectors additionally to the circuit breakers', editable=True)
 
 
 class SubstationDesigner(QtWidgets.QDialog):
@@ -60,7 +81,7 @@ class SubstationDesigner(QtWidgets.QDialog):
         obj1 = VoltageLevelTemplate(name="VL", voltage=self.default_voltage,
                                     device_type=DeviceType.VoltageLevelTemplate)
 
-        self.property_list = [obj1.property_list[i] for i in [1, 5, 6]]
+        self.property_list = [obj1.property_list[i] for i in [1, 5, 6, 7, 8, 9, 10]]
 
         self.mdl = ObjectsModel(objects=[obj1],
                                 property_list=self.property_list,
@@ -168,7 +189,8 @@ class SubstationDesigner(QtWidgets.QDialog):
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    window = SubstationDesigner(None)
+    grid_ = MultiCircuit()
+    window = SubstationDesigner(grid=grid_)
     # window.resize(int(1.61 * 700.0), int(600.0))  # golden ratio
     window.show()
     sys.exit(app.exec())

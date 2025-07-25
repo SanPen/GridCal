@@ -1290,7 +1290,7 @@ def add_linear_branches_formulation(t_idx: int,
 
             # Monitoring logic: Exclude branches with not enough sensibility to exchange in N condition
             if monitor_only_sensitive_branches:
-                monitor_by_sensitivity_n = alpha[m] > alpha_threshold
+                monitor_by_sensitivity_n = abs(alpha[m]) > alpha_threshold
             else:
                 monitor_by_sensitivity_n = True
 
@@ -1347,74 +1347,74 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
     f_obj = 0.0
     for c, contingency in enumerate(linear_multi_contingencies.multi_contingencies):
 
-        contingency_flows, mask = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
-                                                                       injections=bus_vars.Pinj[t_idx, :],
-                                                                       hvdc_flow=hvdc_vars.flows[t_idx, :],
-                                                                       vsc_flow=vsc_vars.flows[t_idx, :])
+        contingency_flows, mask, changed_idx = contingency.get_lp_contingency_flows(
+            base_flow=branch_vars.flows[t_idx, :],
+            injections=bus_vars.Pinj[t_idx, :],
+            hvdc_flow=hvdc_vars.flows[t_idx, :],
+            vsc_flow=vsc_vars.flows[t_idx, :]
+        )
 
-        for m, contingency_flow in enumerate(contingency_flows):
+        for m in changed_idx:
 
-            if mask[m]:
+            if isinstance(contingency_flows[m], LpExp):
 
-                if isinstance(contingency_flow, LpExp):
+                # Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N-1 condition
+                if monitor_only_ntc_load_rule_branches:
+                    """
+                    Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER,
+                    y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural
+                    significa que la linea no puede limitar el intercambio
+                    Ejemplo:
+                        ntc_load_rule = 0.7
+                        rate = 1700
+                        alpha_n1 = 0.05
+                        structural_rate = 5200
+                        0.7 * 1700 --> 1190 mw para el intercambio
+                        1190 / 0.05 --> 23.800 MW en la frontera en N
+                        23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
+                       """
+                    monitor_by_load_rule_n1 = True
+                    for c_br in contingency.branch_indices:
+                        monitor_by_load_rule_n1 = (monitor_by_load_rule_n1 and
+                                                   (ntc_load_rule * branch_data_t.rates[m] / (
+                                                           abs(alpha_n1[m, c_br]) + 1e-20) <= structural_ntc))
 
-                    # Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N-1 condition
-                    if monitor_only_ntc_load_rule_branches:
-                        """
-                        Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER,
-                        y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural
-                        significa que la linea no puede limitar el intercambio
-                        Ejemplo:
-                            ntc_load_rule = 0.7
-                            rate = 1700
-                            alpha_n1 = 0.05
-                            structural_rate = 5200
-                            0.7 * 1700 --> 1190 mw para el intercambio
-                            1190 / 0.05 --> 23.800 MW en la frontera en N
-                            23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
-                           """
-                        monitor_by_load_rule_n1 = True
-                        for c_br in contingency.branch_indices:
-                            monitor_by_load_rule_n1 = (monitor_by_load_rule_n1 and
-                                                       (ntc_load_rule * branch_data_t.rates[m] / (
-                                                               alpha_n1[m, c_br] + 1e-20) <= structural_ntc))
+                else:
+                    monitor_by_load_rule_n1 = True
 
-                    else:
-                        monitor_by_load_rule_n1 = True
+                # Monitoring logic: Exclude branches with not enough sensibility to exchange in N-1 condition
+                if monitor_only_sensitive_branches:
+                    monitor_by_sensitivity_n1 = True
+                    for c_br in contingency.branch_indices:
+                        monitor_by_sensitivity_n1 = (monitor_by_sensitivity_n1 and
+                                                     (abs(alpha_n1[m, c_br]) > alpha_threshold))
+                else:
+                    monitor_by_sensitivity_n1 = True
 
-                    # Monitoring logic: Exclude branches with not enough sensibility to exchange in N-1 condition
-                    if monitor_only_sensitive_branches:
-                        monitor_by_sensitivity_n1 = True
-                        for c_br in contingency.branch_indices:
-                            monitor_by_sensitivity_n1 = (monitor_by_sensitivity_n1 and
-                                                         (alpha_n1[m, c_br] > alpha_threshold))
-                    else:
-                        monitor_by_sensitivity_n1 = True
+                if monitor_by_load_rule_n1 and monitor_by_sensitivity_n1:
+                    # declare slack variables
+                    pos_slack = prob.add_var(0, 1e20, join("br_cst_flow_pos_sl_", [t_idx, m, c]))
+                    neg_slack = prob.add_var(0, 1e20, join("br_cst_flow_neg_sl_", [t_idx, m, c]))
 
-                    if monitor_by_load_rule_n1 and monitor_by_sensitivity_n1:
-                        # declare slack variables
-                        pos_slack = prob.add_var(0, 1e20, join("br_cst_flow_pos_sl_", [t_idx, m, c]))
-                        neg_slack = prob.add_var(0, 1e20, join("br_cst_flow_neg_sl_", [t_idx, m, c]))
+                    # register the contingency data to evaluate the result at the end
+                    branch_vars.add_contingency_flow(t=t_idx, m=m, c=c,
+                                                     flow_var=contingency_flows[m],
+                                                     neg_slack=neg_slack,
+                                                     pos_slack=pos_slack)
 
-                        # register the contingency data to evaluate the result at the end
-                        branch_vars.add_contingency_flow(t=t_idx, m=m, c=c,
-                                                         flow_var=contingency_flow,
-                                                         neg_slack=neg_slack,
-                                                         pos_slack=pos_slack)
+                    # add upper rate constraint
+                    prob.add_cst(
+                        cst=contingency_flows[m] + pos_slack <= branch_data_t.contingency_rates[m] / Sbase,
+                        name=join("br_cst_flow_upper_lim_", [t_idx, m, c])
+                    )
 
-                        # add upper rate constraint
-                        prob.add_cst(
-                            cst=contingency_flow + pos_slack <= branch_data_t.contingency_rates[m] / Sbase,
-                            name=join("br_cst_flow_upper_lim_", [t_idx, m, c])
-                        )
+                    # add lower rate constraint
+                    prob.add_cst(
+                        cst=contingency_flows[m] - neg_slack >= -branch_data_t.contingency_rates[m] / Sbase,
+                        name=join("br_cst_flow_lower_lim_", [t_idx, m, c])
+                    )
 
-                        # add lower rate constraint
-                        prob.add_cst(
-                            cst=contingency_flow - neg_slack >= -branch_data_t.contingency_rates[m] / Sbase,
-                            name=join("br_cst_flow_lower_lim_", [t_idx, m, c])
-                        )
-
-                        f_obj += pos_slack + neg_slack
+                    f_obj += pos_slack + neg_slack
 
     # copy the contingency rates
     branch_vars.contingency_rates[t_idx, :] = branch_data_t.contingency_rates
@@ -2136,10 +2136,10 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     for k, (sl_up, sl_down) in enumerate(zip(vars_v.branch_vars.flow_slacks_pos[t_idx, :],
                                              vars_v.branch_vars.flow_slacks_neg[t_idx, :])):
         if sl_up > 0.0:
-            logger.add_warning("Overload (+)", device=f"({k}) - {nc.passive_branch_data.names[k]}",  value=sl_up)
+            logger.add_warning("Overload (+)", device=f"({k}) - {nc.passive_branch_data.names[k]}", value=sl_up)
 
         if sl_down > 0.0:
-            logger.add_warning("Overload (-)", device=f"({k}) - {nc.passive_branch_data.names[k]}",  value=sl_down)
+            logger.add_warning("Overload (-)", device=f"({k}) - {nc.passive_branch_data.names[k]}", value=sl_down)
 
     # The summation of flow increments in the inter-area branches must be ΔP in A1.
     vars_v.inter_area_flows[t_idx] = (

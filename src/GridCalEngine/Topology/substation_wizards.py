@@ -2,16 +2,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from pandas.core.nanops import set_use_bottleneck
 
+from typing import Tuple
 import GridCalEngine.Devices as dev
 from GridCalEngine import Country, BusGraphicType, SwitchGraphicType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
-def simple_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: float,
-               lat: float | None = None, lon: float | None = None, country: Country = None,
-               include_disconnectors: bool = True):
+def create_single_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: float,
+                      substation: dev.Substation, country: Country = None,
+                      include_disconnectors: bool = True,
+                      offset_x=0, offset_y=0) -> Tuple[dev.VoltageLevel, int, int]:
     """
 
     :param name:
@@ -19,16 +20,13 @@ def simple_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: flo
     :param n_lines:
     :param n_trafos:
     :param v_nom:
-    :param lat:
-    :param lon:
+    :param substation:
     :param country:
     :param include_disconnectors:
     :return:
     """
-
-    substation = dev.Substation(name=name, latitude=lat, longitude=lon, country=country)
-    grid.add_substation(substation)
-
+    offset_inc_x = 0
+    offset_inc_y = 0
     vl = dev.VoltageLevel(name=name, substation=substation, Vnom=v_nom)
     grid.add_voltage_level(vl)
 
@@ -38,7 +36,7 @@ def simple_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: flo
 
     bar = dev.Bus(f"{name} bar", substation=substation, Vnom=v_nom, voltage_level=vl,
                   width=max(n_lines, n_trafos) * bus_width + bus_width * 2 + (x_dist - bus_width) * (
-                      max(n_lines, n_trafos) - 1),
+                          max(n_lines, n_trafos) - 1),
                   xpos=-bus_width, ypos=y_dist * 3, country=country, graphic_type=BusGraphicType.BusBar)
     grid.add_bus(bar)
 
@@ -99,6 +97,8 @@ def simple_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: flo
             grid.add_bus(bus1)
             grid.add_switch(cb1)
 
+    return vl, offset_inc_x, offset_inc_y
+
 
 def simple_bar_with_bypass(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: float,
                            lat: float | None = None, lon: float | None = None, country: Country = None,
@@ -128,7 +128,7 @@ def simple_bar_with_bypass(name, grid: MultiCircuit, n_lines: int, n_trafos: int
 
     bar = dev.Bus(f"{name} bar", substation=substation, Vnom=v_nom, voltage_level=vl,
                   width=max(n_lines, n_trafos) * bus_width + bus_width * 2 + (x_dist - bus_width) * (
-                      max(n_lines, n_trafos) - 1),
+                          max(n_lines, n_trafos) - 1),
                   xpos=-bus_width, ypos=y_dist * 3, country=country, graphic_type=BusGraphicType.BusBar)
     grid.add_bus(bar)
 
@@ -230,9 +230,9 @@ def simple_split_bars(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_n
     n_trafos_bar_2 = n_trafos - n_trafos_bar_1
 
     width_bar_1 = max(n_lines_bar_1, n_trafos_bar_1) * bus_width + bus_width * 2 + (x_dist - bus_width) * (
-        max(n_lines_bar_1, n_trafos_bar_1) - 1)
+            max(n_lines_bar_1, n_trafos_bar_1) - 1)
     width_bar_2 = max(n_lines_bar_2, n_trafos_bar_2) * bus_width + bus_width * 2 + (x_dist - bus_width) * (
-        max(n_lines_bar_2, n_trafos_bar_2) - 1)
+            max(n_lines_bar_2, n_trafos_bar_2) - 1)
 
     bar1 = dev.Bus(f"{name} bar 1", substation=substation, Vnom=v_nom, voltage_level=vl,
                    width=width_bar_1, xpos=-bus_width, ypos=y_dist * 3, country=country,

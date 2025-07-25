@@ -13,7 +13,7 @@ from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.messages import yes_no_question, warning_msg
-from GridCal.Gui.gui_functions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry, add_sub_menu
 from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, DEACTIVATED,
                                                    FONT_SCALE, EMERGENCY, TRANSPARENT)
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, HandleItem, RoundTerminalItem
@@ -158,7 +158,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             # self._terminal.setPos(self.w / 2 + 10, self.h / 2 + 10)
 
             # square
-            self.tile = None
+            self.tile = QtWidgets.QGraphicsRectItem(0, 0, 5, 5, self)
+            self.tile.setOpacity(1.0)
 
             # Create corner for resize:
             self.sizer = None
@@ -185,7 +186,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
 
         # Enabled for short circuit
-        self.sc_enabled = [False, False, False, False]
+        self.sc_enabled = np.zeros(4, dtype=bool)
         self.sc_type = FaultType.ph3
         self.pen_width = 4
 
@@ -467,45 +468,46 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                        checkeable=True,
                        checked_value=self.draw_labels)
 
-        sc = menu.addMenu('Short circuit')
-        sc_icon = QIcon()
-        sc_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc.setIcon(sc_icon)
+        # sc = menu.addMenu('Short circuit')
+        # sc_icon = QIcon()
+        # sc_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
+        # sc.setIcon(sc_icon)
 
-        sc_3p = sc.addAction('3-phase')
-        sc_3p_icon = QIcon()
-        sc_3p_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc_3p.setIcon(sc_3p_icon)
-        sc_3p.setCheckable(True)
-        sc_3p.setChecked(self.sc_enabled[0])
-        sc_3p.triggered.connect(self.enable_disable_sc_3p)
+        sc = add_sub_menu(menu=menu,
+                          text="Short circuit",
+                          icon_path=":/Icons/icons/short_circuit.svg")
 
-        sc_lg = sc.addAction('Line-Ground')
-        sc_lg_icon = QIcon()
-        sc_lg_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc_lg.setIcon(sc_lg_icon)
-        sc_lg.setCheckable(True)
-        sc_lg.setChecked(self.sc_enabled[1])
-        sc_lg.triggered.connect(self.enable_disable_sc_lg)
+        add_menu_entry(menu=sc,
+                       text="3-phase (x)" if self.sc_enabled[0] else "3-phase",
+                       icon_path=":/Icons/icons/short_circuit.svg",
+                       function_ptr=self.enable_disable_sc_3p,
+                       checkeable=True,
+                       checked_value=self.sc_enabled[0])
 
-        sc_ll = sc.addAction('Line-Line')
-        sc_ll_icon = QIcon()
-        sc_ll_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc_ll.setIcon(sc_ll_icon)
-        sc_ll.setCheckable(True)
-        sc_ll.setChecked(self.sc_enabled[2])
-        sc_ll.triggered.connect(self.enable_disable_sc_ll)
+        add_menu_entry(menu=sc,
+                       text="Line-Ground (x)" if self.sc_enabled[1] else "Line-Ground",
+                       icon_path=":/Icons/icons/short_circuit.svg",
+                       function_ptr=self.enable_disable_sc_lg,
+                       checkeable=True,
+                       checked_value=self.sc_enabled[1])
 
-        sc_llg = sc.addAction('Line-Line-Ground')
-        sc_llg_icon = QIcon()
-        sc_llg_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc_llg.setIcon(sc_llg_icon)
-        sc_llg.setCheckable(True)
-        sc_llg.setChecked(self.sc_enabled[3])
-        sc_llg.triggered.connect(self.enable_disable_sc_llg)
+        add_menu_entry(menu=sc,
+                       text="Line-Line (x)" if self.sc_enabled[2] else "Line-Line",
+                       icon_path=":/Icons/icons/short_circuit.svg",
+                       function_ptr=self.enable_disable_sc_ll,
+                       checkeable=True,
+                       checked_value=self.sc_enabled[2])
 
-        sc_no = sc.addAction('Disable')
-        sc_no.triggered.connect(self.disable_sc)
+        add_menu_entry(menu=sc,
+                       text="Line-Line-Ground (x)" if self.sc_enabled[3] else "Line-Line-Ground",
+                       icon_path=":/Icons/icons/short_circuit.svg",
+                       function_ptr=self.enable_disable_sc_llg,
+                       checkeable=True,
+                       checked_value=self.sc_enabled[3])
+
+        add_menu_entry(menu=sc,
+                       text="Disable",
+                       function_ptr=self.disable_sc)
 
         # types
         # ph3 = '3x'
@@ -681,10 +683,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Determine if there are short circuits enabled
         :return:
         """
-        for t in self.sc_enabled:
-            if t:
-                return True
-        return False
+        return np.sum(self.sc_enabled) > 0
 
     def enable_sc(self) -> None:
         """
@@ -697,13 +696,14 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Disable short circuit
         """
         self.tile.setPen(QPen(TRANSPARENT, self.pen_width))
-        self.sc_enabled = [False, False, False, False]
+        self.sc_enabled[:] = 0  # set all to zero
 
     def enable_disable_sc_3p(self):
         """
         Enable 3-phase short circuit
         """
-        self.sc_enabled = [True, False, False, False]
+        self.sc_enabled[:] = 0  # set all to zero
+        self.sc_enabled[0] = True
         self.sc_type = FaultType.ph3
         self.enable_sc()
 
@@ -711,7 +711,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Enable line ground short circuit
         """
-        self.sc_enabled = [False, True, False, False]
+        self.sc_enabled[:] = 0  # set all to zero
+        self.sc_enabled[1] = True
         self.sc_type = FaultType.LG
         self.enable_sc()
 
@@ -719,7 +720,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Enable line-line short circuit
         """
-        self.sc_enabled = [False, False, True, False]
+        self.sc_enabled[:] = 0  # set all to zero
+        self.sc_enabled[2] = True
         self.sc_type = FaultType.LL
         self.enable_sc()
 
@@ -727,7 +729,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Enable line-line-ground short circuit
         """
-        self.sc_enabled = [False, False, False, True]
+        self.sc_enabled[:] = 0  # set all to zero
+        self.sc_enabled[3] = True
         self.sc_type = FaultType.LLG
         self.enable_sc()
 
