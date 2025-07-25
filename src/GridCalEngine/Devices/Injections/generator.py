@@ -510,8 +510,13 @@ class Generator(GeneratorParent):
             t_e = Var("t_e")
             P_g = Var("Pg")
             Q_g = Var("Qg")
+            et = Var("et")
+            tm = Var("tm")
+            vf = Var("vf")
+            rot = Var("rot")
             Vm = self.bus.rms_model.model.E(DynamicVarType.Vm)
             Va = self.bus.rms_model.model.E(DynamicVarType.Va)
+            I = self.bus.rms_model.model.E(DynamicVarType.I)
 
             # # Current from power and voltage
             # i = np.conj(Sb1 / v1)  # ī = (p - jq) / v̄*
@@ -531,27 +536,45 @@ class Generator(GeneratorParent):
 
             self.rms_model.model = Block(
                 state_eqs=[
-                    # delta - (2 * pi * fn) * (omega - 1),
-                    # omega - (-tm / M + t_e / M - D / M * (omega - 1))
-                    (2 * np.pi * self.freq) * (omega - self.omega_ref),  # dδ/dt
-                    (self.m_torque - t_e - self.D * (omega - self.omega_ref)) / self.M,  # dω/dt
+                    (2 * np.pi * self.freq) * (omega - self.omega_ref),
+                    (tm - t_e - self.D * (omega - self.omega_ref)) / self.M,
+                    (omega - self.omega_ref),
+                    # (tm_ref_1 - tm_1) / T_1
                 ],
-                state_vars=[delta, omega],
+                state_vars=[delta, omega, et],
                 algebraic_eqs=[
-                    # tm + Kw * (omega - omega_ref) ,
-                    psid - (-self.R1 * i_q + v_q),
-                    psiq - (-self.R1 * i_d + v_d),
-                    i_d - (psid + self.X1 * i_d - self.Vset),
-                    i_q - (psiq + self.X1 * i_q),
+                    psid - (self.R1 * i_q + v_q),
+                    psiq + (self.R1 * i_d + v_d),
+                    0 - (psid + self.X1 * i_d - vf),
+                    0 - (psiq + self.X1 * i_q),
                     v_d - (Vm * sin(delta - Va)),
                     v_q - (Vm * cos(delta - Va)),
                     t_e - (psid * i_q - psiq * i_d),
-                    (v_d * i_d + v_q * i_q) - P_g,
-                    (v_q * i_d - v_d * i_q) - Q_g
+                    P_g - (v_d * i_d + v_q * i_q),
+                    Q_g - (v_q * i_d - v_d * i_q),
+                    tm - (self.m_torque + self.Kp * (omega - self.omega_ref) + self.Ki * et)
                 ],
-                algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g],
-                init_eqs=[],
-                init_vars=[],
+                algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g, tm],
+                init_eqs={
+                    delta: np.angle(Vm + (self.R1 + 1j * self.X1) * I),
+                    omega: self.omega_ref,
+                    rot: np.exp(-1j * (delta - np.pi / 2)),
+                    v_d: np.real(Vm * rot),
+                    v_q: np.imag(Vm * rot),
+                    i_d: np.real(I * rot),
+                    i_q: np.imag(I * rot),
+                    psid: self.R1 * i_q + v_q,
+                    psiq: -self.R1 * i_d - v_d,
+                    vf: psid + self.X1 * i_d,
+                    t_e: psid * i_q - psiq * i_d,
+
+
+
+
+
+
+
+                },
                 parameters=[],
 
                 external_mapping={
