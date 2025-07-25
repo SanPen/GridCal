@@ -1557,12 +1557,17 @@ def add_linear_branches_formulation(t_idx: int,
             if branch_vars.monitor_logic[t_idx, m]:
 
                 if loading[m] > 1.0:
-                    logger.add_error("Base overload",
+                    logger.add_error("Base overload on sensitive branch, rates extended",
                                      device=f"{m}: {branch_data_t.names[m]}",
                                      value=f"{loading[m] * 100} %")
 
-                # here flows is always a variable
-                set_var_bounds(branch_vars.flows[t_idx, m], lb=-rate_pu, ub=rate_pu)
+                    # here flows is always a variable
+                    set_var_bounds(branch_vars.flows[t_idx, m],
+                                   lb=-rate_pu * (loading[m] + 0.1),
+                                   ub=rate_pu * (loading[m] + 0.1))
+                else:
+                    # here flows is always a variable
+                    set_var_bounds(branch_vars.flows[t_idx, m], lb=-rate_pu, ub=rate_pu)
 
     # add the inter-area flows to the objective function with the correct sign
     for k, sense in branch_vars.inter_space_branches:
@@ -1585,7 +1590,9 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                                                   structural_ntc: float,
                                                   ntc_load_rule: float,
                                                   alpha_threshold: float,
-                                                  alpha_n1: Mat):
+                                                  alpha_n1: Mat,
+                                                  loading: Vec,
+                                                  logger: Logger):
     """
     Formulate the branches
     :param t_idx: time index
@@ -1603,6 +1610,8 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
     :param ntc_load_rule:
     :param alpha_threshold:
     :param alpha_n1:
+    :param loading:
+    :param logger
     :return objective function
     """
     f_obj = 0.0
@@ -1616,6 +1625,8 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
         )
 
         for m in changed_idx:
+
+
 
             if isinstance(contingency_flows[m], LpExp):
 
@@ -1653,29 +1664,38 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                     monitor_by_sensitivity_n1 = True
 
                 if monitor_by_load_rule_n1 and monitor_by_sensitivity_n1:
-                    # declare slack variables
-                    pos_slack = prob.add_var(0, 1e20, join("br_cst_flow_pos_sl_", [t_idx, m, c]))
-                    neg_slack = prob.add_var(0, 1e20, join("br_cst_flow_neg_sl_", [t_idx, m, c]))
 
-                    # register the contingency data to evaluate the result at the end
-                    branch_vars.add_contingency_flow(t=t_idx, m=m, c=c,
-                                                     flow_var=contingency_flows[m],
-                                                     neg_slack=neg_slack,
-                                                     pos_slack=pos_slack)
+                    if loading[m] < 1.0:
+                        # declare slack variables
+                        pos_slack = prob.add_var(0, 1e20, join("br_cst_flow_pos_sl_", [t_idx, m, c]))
+                        neg_slack = prob.add_var(0, 1e20, join("br_cst_flow_neg_sl_", [t_idx, m, c]))
 
-                    # add upper rate constraint
-                    prob.add_cst(
-                        cst=contingency_flows[m] + pos_slack <= branch_data_t.contingency_rates[m] / Sbase,
-                        name=join("br_cst_flow_upper_lim_", [t_idx, m, c])
-                    )
+                        # register the contingency data to evaluate the result at the end
+                        branch_vars.add_contingency_flow(t=t_idx, m=m, c=c,
+                                                         flow_var=contingency_flows[m],
+                                                         neg_slack=neg_slack,
+                                                         pos_slack=pos_slack)
 
-                    # add lower rate constraint
-                    prob.add_cst(
-                        cst=contingency_flows[m] - neg_slack >= -branch_data_t.contingency_rates[m] / Sbase,
-                        name=join("br_cst_flow_lower_lim_", [t_idx, m, c])
-                    )
+                        # add upper rate constraint
+                        prob.add_cst(
+                            cst=contingency_flows[m] + pos_slack <= branch_data_t.contingency_rates[m] / Sbase,
+                            name=join("br_cst_flow_upper_lim_", [t_idx, m, c])
+                        )
 
-                    f_obj += pos_slack + neg_slack
+                        # add lower rate constraint
+                        prob.add_cst(
+                            cst=contingency_flows[m] - neg_slack >= -branch_data_t.contingency_rates[m] / Sbase,
+                            name=join("br_cst_flow_lower_lim_", [t_idx, m, c])
+                        )
+
+                        f_obj += pos_slack + neg_slack
+                    else:
+                        logger.add_error("Base overload on sensitive branch, contingency skipped",
+                                         device=branch_data_t.names[m])
+                else:
+                    pass
+            else:
+                pass
 
     # copy the contingency rates
     branch_vars.contingency_rates[t_idx, :] = branch_data_t.contingency_rates
@@ -2323,7 +2343,9 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                     structural_ntc=structural_ntc,
                     ntc_load_rule=ntc_load_rule,
                     alpha_threshold=alpha_threshold,
-                    alpha_n1=alpha_n1
+                    alpha_n1=alpha_n1,
+                    loading=branch_loading,
+                    logger=logger
                 )
 
             else:
