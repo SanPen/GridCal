@@ -1317,8 +1317,9 @@ def add_linear_injections_formulation_proper(t: Union[int, None],
                 margin_up = (gen_data_t.pmax[k] - gen_data_t.p[k]) / Sbase
 
             ntc_vars.gen_vars.p_inc[t, k] = prob.add_var(lb=0, ub=margin_up, name=join("gen_p_inc_", [t, k]))
-            ntc_vars.gen_vars.p[t, k] += ntc_vars.gen_vars.p_inc[t, k]
+            ntc_vars.gen_vars.p[t, k] = gen_data_t.p[k] / Sbase + ntc_vars.gen_vars.p_inc[t, k]
             ntc_vars.delta_1[t] += ntc_vars.gen_vars.p_inc[t, k]
+            f_obj -= ntc_vars.gen_vars.p_inc[t, k] * gen_data_t.shift_key[k]
         else:
             # the generator is maxed out
             pass
@@ -1333,6 +1334,7 @@ def add_linear_injections_formulation_proper(t: Union[int, None],
             ntc_vars.batt_vars.p_inc[t, k] = prob.add_var(lb=0, ub=margin_up, name=join("batt_p_inc_", [t, k]))
             ntc_vars.batt_vars.p[t, k] += ntc_vars.batt_vars.p_inc[t, k]
             ntc_vars.delta_1[t] += ntc_vars.batt_vars.p_inc[t, k]
+            f_obj -= ntc_vars.batt_vars.p_inc[t, k] * batt_data_t.shift_key[k]
         else:
             # the battery is maxed out
             pass
@@ -1341,12 +1343,13 @@ def add_linear_injections_formulation_proper(t: Union[int, None],
         if gen_data_t.p[k] > gen_data_t.pmin[k] and gen_data_t.active[k]:
 
             if skip_generation_limits:
-                margin_dwn = 9999.0
+                margin_dwn = gen_data_t.p[k] / Sbase
             else:
                 margin_dwn = (gen_data_t.p[k] - gen_data_t.pmin[k]) / Sbase
             ntc_vars.gen_vars.p_inc[t, k] = prob.add_var(lb=0, ub=margin_dwn, name=join("gen_n_inc_", [t, k]))
-            ntc_vars.gen_vars.p[t, k] -= ntc_vars.gen_vars.p_inc[t, k]
+            ntc_vars.gen_vars.p[t, k] = (gen_data_t.p[k] / Sbase) - ntc_vars.gen_vars.p_inc[t, k]
             ntc_vars.delta_2[t] += ntc_vars.gen_vars.p_inc[t, k]
+            f_obj -= ntc_vars.gen_vars.p_inc[t, k] * gen_data_t.shift_key[k]
         else:
             # the generator cannot go lower
             pass
@@ -1354,12 +1357,13 @@ def add_linear_injections_formulation_proper(t: Union[int, None],
     for k in batt_idx_2:
         if batt_data_t.p[k] > batt_data_t.pmin[k]:
             if skip_generation_limits:
-                margin_dwn = 9999.0
+                margin_dwn = batt_data_t.p[k] / Sbase
             else:
                 margin_dwn = (batt_data_t.p[k] - batt_data_t.pmin[k]) / Sbase
             ntc_vars.batt_vars.p_inc[t, k] = prob.add_var(lb=0, ub=margin_dwn, name=join("batt_n_inc_", [t, k]))
             ntc_vars.batt_vars.p[t, k] -= ntc_vars.batt_vars.p_inc[t, k]
             ntc_vars.delta_2[t] += ntc_vars.batt_vars.p_inc[t, k]
+            f_obj -= ntc_vars.batt_vars.p_inc[t, k] * batt_data_t.shift_key[k]
         else:
             # the battery cannot go lower
             pass
@@ -1390,7 +1394,8 @@ def add_linear_injections_formulation_proper(t: Union[int, None],
 
     # minimize the power at area 2 (receiving area), maximize at area 1 (sending area)
     # minimize the slacks
-    f_obj += ntc_vars.delta_2[t] - ntc_vars.delta_1[t] + ntc_vars.delta_sl_1[t] + ntc_vars.delta_sl_2[t]
+    # f_obj += ntc_vars.delta_2[t] - ntc_vars.delta_1[t] + ntc_vars.delta_sl_1[t] + ntc_vars.delta_sl_2[t]
+    f_obj += ntc_vars.delta_sl_1[t] + ntc_vars.delta_sl_2[t]
 
     return f_obj, base_power
 

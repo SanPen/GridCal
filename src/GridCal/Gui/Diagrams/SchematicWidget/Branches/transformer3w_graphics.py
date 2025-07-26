@@ -463,7 +463,7 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         Remove this element
         @return:
         """
-        deleted, delete_from_db_final = self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
+        self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
 
     def edit(self):
         """
