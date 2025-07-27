@@ -1,12 +1,15 @@
 # 🔥 Power flow
 
-
-
+GridCal has the most power flow features in any open-source software.
+This is the power flow settings page:
 
 ![](figures/settings-pf.png)
 
-Solver
-    The power flow solver to use.
+Below, a list of the parameters and solvers available.
+
+Settings:
+
+- **Solver**: The power flow solver to use.
 
     - Newton-Raphson in power:
     - Newton-Raphson in current:
@@ -14,56 +17,10 @@ Solver
     - Levenberg-Marquardt:
     - Fast-Decoupled:
     - Holomorphic-Embedding:
-    - Linear AC approximation:
-    - DC approximation:
+    - Linear "AC" approximation:
+    - "DC" approximation
 
-    All these solvers are covered in the theory section.
-
-Retry with other methods is failed:
-    This option tries other numerical solvers to try to find a power flow solution.
-    This option is relevant because different numerical algorithms may be more suited to certain grid configurations.
-    In general the Newton-Raphson implementation in GridCal includes back-tracing and other innovations that make it
-    a very competitive method to consider by default.
-
-Automatic precision
-    The precision to use for the numerical solvers depends on the magnitude of the power injections.
-    If we are dealing with hundreds of MW, the precision may be `1e-3`, but if we are dealing with Watts, the precision has
-    to be greater. The automatic precision checks the loading for a suitable precision such that the results are fine.
-
-Precision
-    Exponent of the numerical precision. i.e. `4` corresponds to `1e-4` MW in p.u. of precision
-
-Numerical method max. iterations
-    Number of "inner" iterations of the numerical method before terminating.
-
-Outer loop max. iterations
-    Number of "outer loop" iterations to figure out the values of the set controls.
-
-Reactive power control mode
-    This is the mode of reactive power control for the generators that are set in PV mode.
-
-    - No control: The reactive power limits are not enforced.
-    - Direct: The classic pq-pv switching algorithm.
-    - Iterative: An iterative algorithm that uses the power flow as objective function to
-      find suitable reactive power limits.
-
-Q steepness factor (iterative ctrl.)
-    Steepness factor for the iterative reactive power control.
-
-Transformer taps control mode
-
-    - No control: The transformer voltage taps control is not enforced.
-    - Direct:
-    - Iterative:
-
-Apply temperature correction
-    When selected the branches apply the correction of the resistance due to the temperature.
-
-Apply impedance tolerances
-    ???
-
-GridCal has the most power flow features in any open-source software.
-The following table shows the features present in each solver:
+The following table relates which power flow controls are available in each solver:
 
 |                                                                     | Newton Raphson  |Powell Dog-leg|Levenberg-Marquardt|Iwamoto|Fast-decoupled|Gauss-seidel|Holomorphic embedding|Linear without voltage modules|Linear with voltage modules|
 |---------------------------------------------------------------------|---|---|---|---|---|---|---|---|---|
@@ -77,6 +34,47 @@ The following table shows the features present in each solver:
 | Local AC and DC active power control using converter.               |✅   | ✅  |  ✅ |   |   |   |   |   |   |
 | Local AC reactive power control using a converter.                  | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
 | 3-phase unbalanced.                                                 | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
+
+
+
+- **Tolerance**: per-unit error tolerance to use in the solver. Exponent of the numerical precision. i.e. `4` corresponds to `1e-4` MW in p.u. of precision
+
+- **Automatic precision (find)**:
+    The precision to use for the numerical solvers depends on the magnitude of the power injections.
+    If we are dealing with hundreds of MW, the precision may be `1e-3`, but if we are dealing with Watts, the precision has
+    to be greater. The automatic precision checks the loading for a suitable precision such that the results are fine.
+
+- **Trust radius**: For newton-like methods this is the solution trust radius to use
+- **Max. Iterations**: Maximum number of iterations in the solver.
+- **Verbosity**: Level of verbosity (0: none, 1: some, >=2: all)
+
+Flags:
+
+- **Retry with other methods is failed**:
+    This option tries other numerical solvers to try to find a power flow solution.
+    This option is relevant because different numerical algorithms may be more suited to certain grid configurations.
+    In general the Newton-Raphson implementation in GridCal includes back-tracing and other innovations that make it
+    a very competitive method to consider by default.
+
+- **Use initial guess**: In the buses there are two properties `Vm0`and `Va0` both serve to 
+specify the initial voltage guess. If selected those values are used to initialize the power flow solution.
+- **Ignore single island nodes**: If selected, the islands of 1 one are considered in blackout and not calculated.
+- **3-phase**: If selected a three phase power flow is run. For now only supporting simple local voltage controls.
+- **Distributed slack**: If selected, the slack power is distributed simply among the existing generators.
+- **Control Q limits**: This is the mode of reactive power control for the generators that are set in PV mode. 
+This is a node-level control, so for this to work, there must not be more than one generator per bus. Otherwise a 
+per-node repartition will be made, but the limits respecting cannot be ensured. For that use the AC-OPF.
+- **Control tap module**: If selected the tap module controls are possible, if active at device level.
+- **Control tap phase**: If selected the tap phase controls are possible, if active at device level.
+- **Control remote voltages**: If selected, the remote voltage controls are possible if set at device level.
+- **Orthogonalize controls**: If selected, the controls are "orthogonalized" to their device specified steps. 
+This applies to transformer tap changers and non-linear shunts.
+
+- **Initialize angles**: If selected the power flow angles are initialized with a linear power flow. 
+For Holomorphic embedding this is not necessary.
+- **Apply temperature correction**: When selected the branches apply the correction of the resistance due to the temperature.
+- **Apply impedance tolerances**:
+- **Add report**: Inspect the results looking for violations to report in the power flow logger.
 
 
 

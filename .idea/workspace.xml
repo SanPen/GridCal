@@ -28,15 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="improved docs">
-      <change afterPath="$PROJECT_DIR$/doc/img/GridCal3_icon.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/n_buses_vs_time.png" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="changes in the docs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/doc/conf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/development.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/development.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/figures/settings-pf.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/figures/settings-pf.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/md_source/power_flow.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/power_flow.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/state_estimation.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/state_estimation.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/structure.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/structure.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1099,9 +1094,9 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.make" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.auto_document_models" />
         <item itemvalue="Shell Script.make.sh" />
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.pytest in test_gslv_conversion.py" />
       </list>
     </recent_temporary>
@@ -2315,7 +2310,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="693" />
+    <option name="localTasksCounter" value="694" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2361,7 +2356,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.3.28" />
     <MESSAGE value="Fixed Code scanning alert #4" />
     <MESSAGE value="Fixed cgmes export reporting in get_cgmes_cn_nodes_from_tp_nodes" />
     <MESSAGE value="5.3.29" />
@@ -2386,7 +2380,8 @@
     <MESSAGE value="wip" />
     <MESSAGE value="Added InvestmentsWhenToMakePlot" />
     <MESSAGE value="improved docs" />
-    <option name="LAST_COMMIT_MESSAGE" value="improved docs" />
+    <MESSAGE value="changes in the docs" />
+    <option name="LAST_COMMIT_MESSAGE" value="changes in the docs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
