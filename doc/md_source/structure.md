@@ -1,8 +1,14 @@
 # 🌁 Structure of GridCal
 
-GridCal structure is composed by objects arranged in a "database" and  by "structs" at a deeper level.
+GridCal is arranged in three packages: `GridCal` that includes the GUI code, 
+`GridCalEngine` that handles all the simulation code and `GridCalServer` that handles
+the remote execution of GridCal:
 
-All simulations in GridCal are handled by the simulation drivers. The structure is as follows:
+![](figures/Packages.png)
+
+The information in GridCal is stored in objects, arranged in a database (`MultiCircuit`) that gets compiled into
+simpler  structures (`NumericalCircuit`) that contains arrays ready for calculation.
+All simulations in GridCalEngine are managed by simulation "drivers". The structure is as follows:
 
 ![](figures/DataModelSimulation.png)
 
@@ -13,7 +19,7 @@ Although this may seem overly complicated, it has proven to be maintainable and 
 
 ## Snapshot vs. time series
 
-GridCal has dual structure to handle legacy cases (snapshot), as well as cases with many variations (time series)
+GridCal has a dual structure to handle legacy cases (snapshot), as well as cases with many variations (time series)
 
 - A **snapshot** is the grid for a particular moment in time.
   This includes the infrastructure plus the variable values of that infrastructure

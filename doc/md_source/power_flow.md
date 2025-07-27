@@ -175,6 +175,8 @@ Branch results:
 
 ### Running Matpower grids
 
+![GridCal](figures/n_buses_vs_time.png)
+
 Matpower's excellent formulations and consistency has allowed this and other
 projects to develop, relying on its sound math. That is why GridCal reads Matpower
 cases out of the box, without you having to do anything special.
