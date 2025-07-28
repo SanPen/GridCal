@@ -99,7 +99,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                 self.logger.add_warning("Overload",
                                         device=name,
                                         value=val * 100,
-                                        expected_value=100.0)
+                                        expected_value=0.0)
 
         va = np.angle(self.results.voltage)
         for i, bus in enumerate(self.grid.buses):

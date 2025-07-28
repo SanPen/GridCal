@@ -245,7 +245,6 @@ class Profile:
         except ValueError:
             self._sparse_array = SparseArray(data_type=self.dtype, default_value=self._sparse_array.default_value)
 
-
         if map_data is None:
             self._sparse_array.create(size=size, default_value=default_value)
         else:
@@ -386,9 +385,12 @@ class Profile:
         else:
 
             if self._dense_array is None:
-                # WTF, initialize sparse
+                # Signal of a bug: initialize sparse
                 self._is_sparse = True
-                self._sparse_array = SparseArray(data_type=self.dtype, default_value = self.default_value)
+                self._sparse_array = SparseArray(data_type=self.dtype, default_value=self.default_value)
+
+                # NOTE: This may appear because you declared a profile but
+                #       did not associate it with the snapshot property when registering
                 print("Initializing sparse when querying, this signals a mis initialization")
                 return self.default_value
             else:
@@ -561,7 +563,6 @@ class Profile:
             if not self._is_sparse:
                 if self._dense_array is not None:
                     np.nan_to_num(self._dense_array, nan=default_value)  # this is supposed to happen in-place
-
 
     def copy(self):
         """

@@ -18,6 +18,7 @@ try:
     from GridCalEngine.IO.gridcal.remote import (gather_model_as_jsons_for_communication, RemoteInstruction,
                                                  SimulationTypes, send_json_data, get_certificate_path, get_certificate)
     from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at, NumericalCircuit
+
     PROPERLY_LOADED_API = True
 except ModuleNotFoundError as e:
     print("Modules not found :/", e)
@@ -276,7 +277,7 @@ if PROPERLY_LOADED_API:
         :param pf_options: Power Flow Options instance (optional)
         :param opf_options: Optimal Power Flow Options instance (optional)
         :param plot_error: Boolean that selects to plot error
-        :param pf_init: Boolean that selects a powerflow initialization of the problem
+        :param pf_init: Boolean that selects a power-flow initialization of the problem
         :return: AC Optimal Power Flow results
         """
 
@@ -303,6 +304,87 @@ if PROPERLY_LOADED_API:
         opf_driver.run()
 
         return opf_driver.results
+
+
+    def simple_opf(grid: MultiCircuit,
+                   options: OptimalPowerFlowOptions = OptimalPowerFlowOptions(
+                       solver=SolverType.SIMPLE_OPF,
+                   )) -> OptimalPowerFlowResults:
+        """
+        Run Linear Optimal Power Flow
+        :param grid: MultiCircuit instance
+        :param options: Optimal Power Flow Options instance (optional)
+        :return: Linear Optimal Power Flow results
+        """
+
+        # declare the snapshot opf
+        opf_driver = OptimalPowerFlowDriver(grid=grid, options=options)
+        opf_driver.run()
+
+        return opf_driver.results
+
+
+    def balanced_pf(grid: MultiCircuit,
+                    options: PowerFlowOptions = None,
+                    opf_options: OptimalPowerFlowOptions = None,
+                    engine=EngineType.GridCal) -> OptimalPowerFlowResults:
+        """
+        Run Linear Optimal Power Flow
+        :param engine:
+        :param options:
+        :param grid: MultiCircuit instance
+        :param opf_options: Optimal Power Flow Options instance (optional)
+        :return: PowerFlowResults instance
+        """
+        if opf_options is None:
+            opf_options = OptimalPowerFlowOptions(solver=SolverType.SIMPLE_OPF)
+
+        # declare the snapshot opf
+        opf_driver = OptimalPowerFlowDriver(grid=grid, options=opf_options)
+        opf_driver.run()
+
+        if options is None:
+            options = PowerFlowOptions()
+
+        driver = PowerFlowDriver(grid=grid,
+                                 options=options,
+                                 opf_results=opf_driver.results,
+                                 engine=engine)
+
+        driver.run()
+
+        return driver.results
+
+    def balanced_pf(grid: MultiCircuit,
+                    options: PowerFlowOptions = None,
+                    opf_options: OptimalPowerFlowOptions = None,
+                    engine=EngineType.GridCal) -> OptimalPowerFlowResults:
+        """
+        Run Linear Optimal Power Flow and feed that to a power flow
+        :param grid: MultiCircuit instance
+        :param options: PowerFlowOptions (optional)
+        :param opf_options: Optimal Power Flow Options instance (optional)
+        :param engine: EngineType (optional)
+        :return: PowerFlowResults instance
+        """
+        if opf_options is None:
+            opf_options = OptimalPowerFlowOptions(solver=SolverType.SIMPLE_OPF)
+
+        # declare the snapshot opf
+        opf_driver = OptimalPowerFlowDriver(grid=grid, options=opf_options)
+        opf_driver.run()
+
+        if options is None:
+            options = PowerFlowOptions()
+
+        driver = PowerFlowDriver(grid=grid,
+                                 options=options,
+                                 opf_results=opf_driver.results,
+                                 engine=engine)
+
+        driver.run()
+
+        return driver.results
 
 
     def contingencies_ts(circuit: MultiCircuit,

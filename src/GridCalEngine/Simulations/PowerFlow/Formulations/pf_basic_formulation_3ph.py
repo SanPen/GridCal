@@ -663,14 +663,14 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                                                V=V,
                                                                bus_lookup=self.bus_lookup)
 
-        self.I0, self.Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
+        I0, Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
                                                                bus_lookup=self.bus_lookup,
                                                                V=self.V,
                                                                Istar=self.nc.load_data.I3_star,
                                                                Idelta=self.nc.load_data.I3_delta)
 
-        self.I0 = self.I0 / (self.nc.Sbase / 3)
-        self.Y_current_linear = self.Y_current_linear / (self.nc.Sbase / 3)
+        self.I0 = I0 / (self.nc.Sbase / 3)
+        self.Y_current_linear = Y_current_linear / (self.nc.Sbase / 3)
 
         Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (
                 self.nc.Sbase / 3)
@@ -709,14 +709,14 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                                                V=V,
                                                                bus_lookup=self.bus_lookup)
 
-        self.I0, self.Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
+        I0, Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
                                                                bus_lookup=self.bus_lookup,
                                                                V=self.V,
                                                                Istar=self.nc.load_data.I3_star,
                                                                Idelta=self.nc.load_data.I3_delta)
 
-        self.I0 = self.I0 / (self.nc.Sbase / 3)
-        self.Y_current_linear = self.Y_current_linear / (self.nc.Sbase / 3)
+        self.I0 = I0 / (self.nc.Sbase / 3)
+        self.Y_current_linear = Y_current_linear / (self.nc.Sbase / 3)
 
         Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (
                 self.nc.Sbase / 3)
@@ -751,14 +751,14 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                                                V=self.V,
                                                                bus_lookup=self.bus_lookup)
 
-        self.I0, self.Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
+        I0, Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
                                                                bus_lookup=self.bus_lookup,
                                                                V=self.V,
                                                                Istar=self.nc.load_data.I3_star,
                                                                Idelta=self.nc.load_data.I3_delta)
 
-        self.I0 = self.I0 / (self.nc.Sbase / 3)
-        self.Y_current_linear = self.Y_current_linear / (self.nc.Sbase / 3)
+        self.I0 = I0 / (self.nc.Sbase / 3)
+        self.Y_current_linear = Y_current_linear / (self.nc.Sbase / 3)
 
         Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (
                 self.nc.Sbase / 3)
@@ -838,14 +838,14 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                                                V=self.V,
                                                                bus_lookup=self.bus_lookup)
 
-        self.I0, self.Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
+        I0, Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
                                                                bus_lookup=self.bus_lookup,
                                                                V=self.V,
                                                                Istar=self.nc.load_data.I3_star,
                                                                Idelta=self.nc.load_data.I3_delta)
 
-        self.I0 = self.I0 / (self.nc.Sbase / 3)
-        self.Y_current_linear = self.Y_current_linear / (self.nc.Sbase / 3)
+        self.I0 = I0 / (self.nc.Sbase / 3)
+        self.Y_current_linear = Y_current_linear / (self.nc.Sbase / 3)
 
         Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (
                 self.nc.Sbase / 3)

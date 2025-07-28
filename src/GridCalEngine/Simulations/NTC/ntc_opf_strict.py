@@ -1326,10 +1326,12 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
     f_obj = 0.0
     for c, contingency in enumerate(linear_multi_contingencies.multi_contingencies):
 
-        contingency_flows, mask = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
-                                                                       injections=bus_vars.Pinj[t_idx, :],
-                                                                       hvdc_flow=hvdc_vars.flows[t_idx, :],
-                                                                       vsc_flow=vsc_vars.flows[t_idx, :])
+        contingency_flows, mask, changed_idx = contingency.get_lp_contingency_flows(
+            base_flow=branch_vars.flows[t_idx, :],
+            injections=bus_vars.Pinj[t_idx, :],
+            hvdc_flow=hvdc_vars.flows[t_idx, :],
+            vsc_flow=vsc_vars.flows[t_idx, :]
+        )
 
         for m, contingency_flow in enumerate(contingency_flows):
 

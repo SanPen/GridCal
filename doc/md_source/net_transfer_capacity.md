@@ -4,6 +4,8 @@ The net transfer capacity optimization is an optimization routine that
 tries to move as much power between two given areas as possible.
 This optimization is done using linear programming.
 
+![](figures/settings-ntc.png)
+
 ## API
 
 ```python

@@ -601,7 +601,7 @@ class LinearMultiContingency:
                                  base_flow: ObjVec,
                                  injections: ObjVec,
                                  hvdc_flow: ObjVec | None = None,
-                                 vsc_flow: ObjVec | None = None) -> Tuple[ObjVec, BoolVec]:
+                                 vsc_flow: ObjVec | None = None) -> Tuple[ObjVec, BoolVec, IntVec]:
         """
         Get contingency flows using the LP interface equations
         :param base_flow: Base branch flows (nbranch)
@@ -612,6 +612,7 @@ class LinearMultiContingency:
         """
         mask = np.zeros(len(base_flow), dtype=bool)
         flow = base_flow.copy()
+        changed_idx = np.zeros(0, dtype=int)
 
         if len(self.branch_indices) > 0:
             inc, changed_idx = lpDot1D_changes(self.mlodf_factors, base_flow[self.branch_indices])
@@ -634,7 +635,7 @@ class LinearMultiContingency:
             mask[changed_idx] = True
             flow[changed_idx] += inc[changed_idx]
 
-        return flow, mask
+        return flow, mask, changed_idx
 
     def get_alpha_n1(self, dP: Vec, dT: float):
         """
