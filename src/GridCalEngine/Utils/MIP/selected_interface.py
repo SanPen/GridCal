@@ -12,15 +12,15 @@ from scipy.sparse import csc_matrix
 from GridCalEngine.basic_structures import ObjVec, ObjMat, Vec
 
 # from GridCalEngine.Utils.MIP.SimpleMip import LpExp, LpVar, LpModel, get_available_mip_solvers, set_var_bounds
-# from GridCalEngine.Utils.MIP.pulp_interface import LpExp, LpVar, LpModel, get_available_mip_solvers, set_var_bounds
+from GridCalEngine.Utils.MIP.pulp_interface import LpExp, LpVar, LpModel, get_available_mip_solvers, set_var_bounds
 
-try:
-    from GridCalEngine.Utils.MIP.ortools_interface import (LpExp, LpVar, LpModel, get_available_mip_solvers,
-                                                           set_var_bounds)
-    print("Using ortools")
-except ImportError:
-    from GridCalEngine.Utils.MIP.pulp_interface import LpExp, LpVar, LpModel, get_available_mip_solvers, set_var_bounds
-    print("Using pulp")
+# try:
+#     from GridCalEngine.Utils.MIP.ortools_interface import (LpExp, LpVar, LpModel, get_available_mip_solvers,
+#                                                            set_var_bounds)
+#     print("Using ortools")
+# except ImportError:
+#     from GridCalEngine.Utils.MIP.pulp_interface import LpExp, LpVar, LpModel, get_available_mip_solvers, set_var_bounds
+#     print("Using pulp")
 
 
 def join(init: str, vals: List[int], sep="_"):

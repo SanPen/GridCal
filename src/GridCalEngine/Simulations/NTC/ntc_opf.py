@@ -1225,10 +1225,22 @@ def add_linear_injections_formulation(t: Union[int, None],
         if bus_data_t.active[k] and proportions[k] != 0:
             ntc_vars.bus_vars.delta_p[t, k] = ntc_vars.delta_1[t] * proportions[k]
 
+            if not skip_generation_limits:
+                prob.add_cst(
+                    cst=ntc_vars.bus_vars.delta_p[t, k] <= bus_pmax_t[k],
+                    name=join(f'delta_p_up', [t, k], "_")
+                )
+
     for k in bus_a2_idx:
         if bus_data_t.active[k] and proportions[k] != 0:
             # the proportion already has the sign
             ntc_vars.bus_vars.delta_p[t, k] = ntc_vars.delta_2[t] * proportions[k]
+
+            if not skip_generation_limits:
+                prob.add_cst(
+                    cst=-ntc_vars.bus_vars.delta_p[t, k] >= bus_pmin_t[k],
+                    name=join(f'delta_p_dwn', [t, k], "_")
+                )
 
     # the increase in area 1 must be equal to the decrease in area 2, since
     # we have declared the deltas positive for the sending and receiving areas
@@ -1319,6 +1331,10 @@ def add_linear_injections_formulation_proper(t: Union[int, None],
             ntc_vars.gen_vars.p_inc[t, k] = prob.add_var(lb=0, ub=margin_up, name=join("gen_p_inc_", [t, k]))
             ntc_vars.gen_vars.p[t, k] = gen_data_t.p[k] / Sbase + ntc_vars.gen_vars.p_inc[t, k]
             ntc_vars.delta_1[t] += ntc_vars.gen_vars.p_inc[t, k]
+
+            i = gen_data_t.bus_idx[k]
+            ntc_vars.bus_vars.delta_p[t, i] += ntc_vars.gen_vars.p_inc[t, k]
+
             f_obj -= ntc_vars.gen_vars.p_inc[t, k] * gen_data_t.shift_key[k]
         else:
             # the generator is maxed out
@@ -1334,6 +1350,10 @@ def add_linear_injections_formulation_proper(t: Union[int, None],
             ntc_vars.batt_vars.p_inc[t, k] = prob.add_var(lb=0, ub=margin_up, name=join("batt_p_inc_", [t, k]))
             ntc_vars.batt_vars.p[t, k] += ntc_vars.batt_vars.p_inc[t, k]
             ntc_vars.delta_1[t] += ntc_vars.batt_vars.p_inc[t, k]
+
+            i = batt_data_t.bus_idx[k]
+            ntc_vars.bus_vars.delta_p[t, i] += ntc_vars.batt_vars.p_inc[t, k]
+
             f_obj -= ntc_vars.batt_vars.p_inc[t, k] * batt_data_t.shift_key[k]
         else:
             # the battery is maxed out
@@ -1349,6 +1369,10 @@ def add_linear_injections_formulation_proper(t: Union[int, None],
             ntc_vars.gen_vars.p_inc[t, k] = prob.add_var(lb=0, ub=margin_dwn, name=join("gen_n_inc_", [t, k]))
             ntc_vars.gen_vars.p[t, k] = (gen_data_t.p[k] / Sbase) - ntc_vars.gen_vars.p_inc[t, k]
             ntc_vars.delta_2[t] += ntc_vars.gen_vars.p_inc[t, k]
+
+            i = gen_data_t.bus_idx[k]
+            ntc_vars.bus_vars.delta_p[t, i] -= ntc_vars.gen_vars.p_inc[t, k]
+
             f_obj -= ntc_vars.gen_vars.p_inc[t, k] * gen_data_t.shift_key[k]
         else:
             # the generator cannot go lower
@@ -1363,6 +1387,10 @@ def add_linear_injections_formulation_proper(t: Union[int, None],
             ntc_vars.batt_vars.p_inc[t, k] = prob.add_var(lb=0, ub=margin_dwn, name=join("batt_n_inc_", [t, k]))
             ntc_vars.batt_vars.p[t, k] -= ntc_vars.batt_vars.p_inc[t, k]
             ntc_vars.delta_2[t] += ntc_vars.batt_vars.p_inc[t, k]
+
+            i = batt_data_t.bus_idx[k]
+            ntc_vars.bus_vars.delta_p[t, i] -= ntc_vars.batt_vars.p_inc[t, k]
+
             f_obj -= ntc_vars.batt_vars.p_inc[t, k] * batt_data_t.shift_key[k]
         else:
             # the battery cannot go lower
@@ -1415,7 +1443,7 @@ def add_linear_branches_formulation(t_idx: int,
                                     ntc_load_rule: float,
                                     loading: Vec,
                                     logger: Logger,
-                                    inf=1e20,) -> LpExp:
+                                    inf=1e20, ) -> LpExp:
     """
     Formulate the branches
     :param t_idx: time index
@@ -1630,8 +1658,6 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
         )
 
         for m in changed_idx:
-
-
 
             if isinstance(contingency_flows[m], LpExp):
 
@@ -2187,25 +2213,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     # formulate injections -------------------------------------------------------------------------------------
     indices = nc.get_simulation_indices()
 
-    # inj_f_obj, Pbus = add_linear_injections_formulation(
-    #     t=t_idx,
-    #     Sbase=nc.Sbase,
-    #     gen_data_t=nc.generator_data,
-    #     batt_data_t=nc.battery_data,
-    #     load_data_t=nc.load_data,
-    #     bus_data_t=nc.bus_data,
-    #     branch_data_t=nc.passive_branch_data,
-    #     active_branch_data_t=nc.active_branch_data,
-    #     hvdc_data_t=nc.hvdc_data,
-    #     bus_a1_idx=bus_a1_idx,
-    #     bus_a2_idx=bus_a2_idx,
-    #     transfer_method=transfer_method,
-    #     skip_generation_limits=skip_generation_limits,
-    #     ntc_vars=mip_vars,
-    #     prob=lp_model,
-    #     logger=logger
-    # )
-    inj_f_obj, Pbus = add_linear_injections_formulation_proper(
+    inj_f_obj, Pbus = add_linear_injections_formulation(
         t=t_idx,
         Sbase=nc.Sbase,
         gen_data_t=nc.generator_data,
@@ -2223,6 +2231,24 @@ def run_linear_ntc_opf(grid: MultiCircuit,
         prob=lp_model,
         logger=logger
     )
+    # inj_f_obj, Pbus = add_linear_injections_formulation_proper(
+    #     t=t_idx,
+    #     Sbase=nc.Sbase,
+    #     gen_data_t=nc.generator_data,
+    #     batt_data_t=nc.battery_data,
+    #     load_data_t=nc.load_data,
+    #     bus_data_t=nc.bus_data,
+    #     branch_data_t=nc.passive_branch_data,
+    #     active_branch_data_t=nc.active_branch_data,
+    #     hvdc_data_t=nc.hvdc_data,
+    #     bus_a1_idx=bus_a1_idx,
+    #     bus_a2_idx=bus_a2_idx,
+    #     transfer_method=transfer_method,
+    #     skip_generation_limits=skip_generation_limits,
+    #     ntc_vars=mip_vars,
+    #     prob=lp_model,
+    #     logger=logger
+    # )
     f_obj += inj_f_obj
 
     # formulate hvdc -------------------------------------------------------------------------------------------
@@ -2401,18 +2427,18 @@ def run_linear_ntc_opf(grid: MultiCircuit,
 
     # register the slacks
     if vars_v.delta_sl_1[t_idx] > 1e-6:
-        logger.add_warning(msg="Inter area equality not fulfilled for area 1",
-                           value=vars_v.delta_sl_1[t_idx])
+        logger.add_error(msg="Inter area equality not fulfilled for area 1",
+                         value=vars_v.delta_sl_1[t_idx])
 
     if vars_v.delta_sl_2[t_idx] > 1e-6:
-        logger.add_warning(msg="Inter area equality not fulfilled for area 2",
-                           value=vars_v.delta_sl_2[t_idx])
+        logger.add_error(msg="Inter area equality not fulfilled for area 2",
+                         value=vars_v.delta_sl_2[t_idx])
 
     for i in range(nb):
         if abs(vars_v.bus_vars.Pbalance[t_idx, i]) > 1e-8:
-            logger.add_warning(msg="Inter area equality not fulfilled for area 2",
-                               device=f"Bus {i}",
-                               value=vars_v.bus_vars.Pbalance[t_idx, i])
+            logger.add_error(msg="Inter area equality not fulfilled for area 2",
+                             device=f"Bus {i}",
+                             value=vars_v.bus_vars.Pbalance[t_idx, i])
 
     # add the model logger to the main logger
     logger += lp_model.logger
