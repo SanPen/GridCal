@@ -1,8 +1,11 @@
 # 🌁 Structure of GridCal
 
-GridCal is arranged in three packages: `GridCal` that includes the GUI code, 
-`GridCalEngine` that handles all the simulation code and `GridCalServer` that handles
-the remote execution of GridCal:
+GridCal is arranged in three packages: 
+
+- GridCalEngine: A package with the database and calculations logic.
+- GridCalServer: A package that serves an API-rest to use GridCalEngine remotely.
+- GridCal: A package that contains the Graphical User Interface (GUI) and operates with `GridCalEngine` and
+  `GridCalServer` seamlessly.
 
 ![](figures/Packages.png)
 

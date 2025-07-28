@@ -1,6 +1,15 @@
 # 💾 File loading and saving
 
-GridCal supports a great deal of file formats
+
+To load a grid, just drag & drop the file (or files) into the user interface.
+Alternatively, use the open dialogue and select the file or files.
+You may be presented with a logs dialogue, and in the case of CGMES a 
+new window showing the CGMES information.
+Regardless of the file format, whenever you load a file into GridCal it gets converted to the
+native internal object structures (MultiCircuit). 
+From there you may further edit or export in any of the supported formats.
+
+GridCal supports a great deal of file formats. 
 
 |                    |read   |write  |
 |--------------------|-------|-------|
@@ -21,7 +30,7 @@ Some additional file settings are found at the Settings>File tab:
 
 ![img](figures/settings-file.png)
 
-
+These are specially relevant for CGMES and raw/rawx formats.
 
 ## API
 
