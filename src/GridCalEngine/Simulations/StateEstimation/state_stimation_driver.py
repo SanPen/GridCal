@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
-from typing import Union, Tuple
-from GridCalEngine.basic_structures import Vec, ConvergenceReport
+from typing import Union
+from GridCalEngine.basic_structures import ConvergenceReport
 from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults
