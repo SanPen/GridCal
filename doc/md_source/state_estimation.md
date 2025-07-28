@@ -1,8 +1,8 @@
 # 🌀 State estimation
 
 GridCal has the ability to run state estimation simulations, however not 
-from the interface since GridCal since it is not a SCADA capable software.
-Hence the simulation will only be available through the API.
+from the interface since GridCal is not (yet) made to be coupled to SCADA measurements.
+Hence, the state estimation calculations will only be available through the API.
 
 ## API
 

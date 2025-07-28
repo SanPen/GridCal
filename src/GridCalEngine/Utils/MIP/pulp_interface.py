@@ -228,7 +228,7 @@ class LpModel:
                 bringing it to optimality.
                 """
 
-                self.logger.add_error(msg="Base probrem could not be solved", value=self.status2string(status))
+                self.logger.add_error(msg="Base problem could not be solved", value=self.status2string(status))
 
                 # deep copy of the original model
                 debug_model = self.model.deepcopy()

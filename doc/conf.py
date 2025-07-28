@@ -57,6 +57,7 @@ extensions.append('sphinx.ext.mathjax')
 extensions.append('sphinx.ext.viewcode')
 extensions.append('sphinx.ext.graphviz')
 extensions.append('sphinx_rtd_theme')
+#extensions.append("sphinxawesome_theme")
 # extensions.append('sphinx_build_compatibility.extension')
 extensions.append('myst_parser')  # markdown
 
@@ -116,6 +117,24 @@ pygments_style = None
 #
 # html_theme = 'nature'
 html_theme = 'sphinx_rtd_theme'
+# html_theme = 'sphinxawesome_theme'
+
+html_theme_options = {
+    "show_prev_next": False,
+    "show_breadcrumbs": False,
+    "breadcrumbs_separator": "·",
+    "awesome_headerlinks": False,
+    "show_scrolltop": True,
+    "show_permalinks": False,
+    "awesome_external_links": True,
+    "main_nav_links": { "GitHub": "https://github.com/SanPen/GridCal"},
+    "extra_header_link_icons": {
+        "Discord": {"link": "https://discord.gg/xxx", "icon": "<svg>...</svg>"}
+    },
+    "logo_light": "img/GridCal3_icon.svg",
+    "logo_dark": "img/GridCal3_icon.svg",
+    "globaltoc_includehidden": False,
+}
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

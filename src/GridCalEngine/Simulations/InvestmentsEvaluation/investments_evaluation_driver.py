@@ -44,14 +44,22 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.problem: BlackBoxProblemTemplate = problem
 
         # results object
-        self.results = InvestmentsEvaluationResults(
-            f_names=self.problem.get_objectives_names(),
-            x_names=self.problem.get_vars_names(),
-            plot_x_idx=self.problem.plot_x_idx,
-            plot_y_idx=self.problem.plot_y_idx,
-            max_eval=self.options.max_eval
-        )
-
+        if problem is not None:
+            self.results = InvestmentsEvaluationResults(
+                f_names=self.problem.get_objectives_names(),
+                x_names=self.problem.get_vars_names(),
+                plot_x_idx=self.problem.plot_x_idx,
+                plot_y_idx=self.problem.plot_y_idx,
+                max_eval=self.options.max_eval
+            )
+        else:
+            self.results = InvestmentsEvaluationResults(
+                f_names=np.array([]),
+                x_names=np.array([]),
+                plot_x_idx=0,
+                plot_y_idx=0,
+                max_eval=self.options.max_eval
+            )
     def initialize(self, max_iter):
         """
         Initialize the results
@@ -125,7 +133,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         Sort investments in order and then evaluate cumulative combinations of increasingly expensive investments
         """
 
-        self.initialize(max_iter = (self.problem.n_vars() + 1) * 2)
+        self.initialize(max_iter=(self.problem.n_vars() + 1) * 2)
 
         # Add baseline evaluation
         self.objective_function(x=np.zeros(self.problem.n_vars(), dtype=int))
@@ -188,7 +196,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.results.set_best_combination(combination=sorted_x_[0, :])
 
-
     def optimized_evaluation_nsga3(self) -> None:
         """
         Run an optimized investment evaluation with NSGA3
@@ -221,7 +228,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.results.set_best_combination(combination=X[:, 0])
 
-
     def randomized_evaluation(self) -> None:
         """
         Run purely random evaluations, without any optimization
@@ -246,7 +252,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         )
 
         self.results.set_best_combination(combination=X[:, 0])
-
 
     def optimized_evaluation_mixed_nsga2(self) -> None:
         """
@@ -283,7 +288,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                 res_x.append(v)
 
         self.results.set_best_combination(combination=np.array(res_x))
-
 
     def run(self) -> None:
         """

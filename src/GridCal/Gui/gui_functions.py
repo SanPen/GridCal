@@ -974,6 +974,28 @@ def get_cim_tree_model(cim_model: CgmesCircuit):
     return model
 
 
+def add_sub_menu(menu: QtWidgets.QMenu,
+                 text: str,
+                 icon_path: str = "",
+                 icon_pixmap: QtGui.QPixmap = None, ):
+
+    entry = menu.addMenu(text)
+
+    if icon_pixmap is None:
+        if len(icon_path) > 0:
+            edit_icon = QtGui.QIcon()
+            edit_icon.addPixmap(QtGui.QPixmap(icon_path))
+            entry.setIcon(edit_icon)
+    else:
+        # prefer the icon pixmap if provided
+        edit_icon = QtGui.QIcon()
+        edit_icon.addPixmap(icon_pixmap)
+        entry.setIcon(edit_icon)
+
+
+    return entry
+
+
 def add_menu_entry(menu: QtWidgets.QMenu,
                    text: str,
                    icon_path: str = "",

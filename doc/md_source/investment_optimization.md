@@ -21,6 +21,7 @@ the curse of dimensionality. The methodology we have adopted here consists of:
 - Building a machine-learning model that captures the behavior of the grid under diverse scenarios.
 - Optimizing such a model in a matter of a few seconds.
 
+![](figures/settings-ml.png)
 
 ## API
 

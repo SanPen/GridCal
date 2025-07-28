@@ -3,6 +3,9 @@
 The hosting capacity on GridCal is just a modification that lives in the respective
 linear and non-linear optimal power flow routines.
 
+![](figures/settings-opf.png)
+![](figures/settings-nhc.png)
+
 ## API
 
 ### Linear hosting capacity

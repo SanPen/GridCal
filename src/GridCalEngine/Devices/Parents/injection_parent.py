@@ -136,7 +136,8 @@ class InjectionParent(PhysicalDevice):
 
         self.register(key='scalable', units='', tpe=bool, definition='Is the injection scalable?')
 
-        self.register(key='shift_key', units='', tpe=float, definition='Shift key for net transfer capacity')
+        self.register(key='shift_key', units='', tpe=float, definition='Shift key for net transfer capacity',
+                      profile_name="shift_key_prof")
 
         self.register(key='use_kw', units='', tpe=bool, definition='Consider the injections in kW and kVAr?')
 
