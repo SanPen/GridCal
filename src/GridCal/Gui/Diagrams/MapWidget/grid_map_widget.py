@@ -979,7 +979,7 @@ class GridMapWidget(BaseDiagramWidget):
             for vl_template in dlg.get_voltage_levels():
 
                 if vl_template.vl_type == SubstationTypes.SingleBar:
-                    vl, offset_inc_x, offset_inc_y = substation_wizards.create_single_bar(
+                    vl, offset_total_x, offset_total_y = substation_wizards.create_single_bar(
                         name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
                         grid=self.circuit,
                         n_lines=vl_template.n_line_positions,
@@ -991,8 +991,103 @@ class GridMapWidget(BaseDiagramWidget):
                         offset_x=offset_x,
                         offset_y=offset_y,
                     )
-                    offset_x += offset_inc_x
-                    offset_y += offset_inc_y
+                    offset_x = offset_total_x
+                    offset_y = offset_total_y
+
+                    # add the vl graphics
+                    self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+
+                elif vl_template.vl_type == SubstationTypes.SingleBarWithBypass:
+                    vl, offset_total_x, offset_total_y = substation_wizards.create_single_bar_with_bypass(
+                        name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
+                        grid=self.circuit,
+                        n_lines=vl_template.n_line_positions,
+                        n_trafos=vl_template.n_transformer_positions,
+                        v_nom=vl_template.voltage,
+                        substation=se_object,
+                        # country: Country = None,
+                        include_disconnectors=vl_template.add_disconnectors,
+                        offset_x=offset_x,
+                        offset_y=offset_y,
+                    )
+                    offset_x = offset_total_x
+                    offset_y = offset_total_y
+
+                    # add the vl graphics
+                    self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+
+                elif vl_template.vl_type == SubstationTypes.SingleBarWithSplitter:
+                    vl, offset_total_x, offset_total_y = substation_wizards.create_single_bar_with_splitter(
+                        name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
+                        grid=self.circuit,
+                        n_lines=vl_template.n_line_positions,
+                        n_trafos=vl_template.n_transformer_positions,
+                        v_nom=vl_template.voltage,
+                        substation=se_object,
+                        # country: Country = None,
+                        include_disconnectors=vl_template.add_disconnectors,
+                        offset_x=offset_x,
+                        offset_y=offset_y,
+                    )
+                    offset_x = offset_total_x
+                    offset_y = offset_total_y
+
+                    # add the vl graphics
+                    self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+
+                elif vl_template.vl_type == SubstationTypes.DoubleBar:
+                    vl, offset_total_x, offset_total_y = substation_wizards.create_double_bar(
+                        name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
+                        grid=self.circuit,
+                        n_lines=vl_template.n_line_positions,
+                        n_trafos=vl_template.n_transformer_positions,
+                        v_nom=vl_template.voltage,
+                        substation=se_object,
+                        # country: Country = None,
+                        include_disconnectors=vl_template.add_disconnectors,
+                        offset_x=offset_x,
+                        offset_y=offset_y,
+                    )
+                    offset_x = offset_total_x
+                    offset_y = offset_total_y
+
+                    # add the vl graphics
+                    self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+
+                elif vl_template.vl_type == SubstationTypes.DoubleBarWithTransference:
+                    vl, offset_total_x, offset_total_y = substation_wizards.create_double_bar_with_transference_bar(
+                        name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
+                        grid=self.circuit,
+                        n_lines=vl_template.n_line_positions,
+                        n_trafos=vl_template.n_transformer_positions,
+                        v_nom=vl_template.voltage,
+                        substation=se_object,
+                        # country: Country = None,
+                        include_disconnectors=vl_template.add_disconnectors,
+                        offset_x=offset_x,
+                        offset_y=offset_y,
+                    )
+                    offset_x = offset_total_x
+                    offset_y = offset_total_y
+
+                    # add the vl graphics
+                    self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+
+                elif vl_template.vl_type == SubstationTypes.BreakerAndAHalf:
+                    vl, offset_total_x, offset_total_y = substation_wizards.create_breaker_and_a_half(
+                        name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
+                        grid=self.circuit,
+                        n_lines=vl_template.n_line_positions,
+                        n_trafos=vl_template.n_transformer_positions,
+                        v_nom=vl_template.voltage,
+                        substation=se_object,
+                        # country: Country = None,
+                        include_disconnectors=vl_template.add_disconnectors,
+                        offset_x=offset_x,
+                        offset_y=offset_y,
+                    )
+                    offset_x = offset_total_x
+                    offset_y = offset_total_y
 
                     # add the vl graphics
                     self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
