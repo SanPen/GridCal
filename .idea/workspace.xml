@@ -28,10 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="fixed miss initialization for shift_key profiles">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="fixed measurements import">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/profile.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/profile.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/numerical_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/numerical_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/topology.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/topology.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -233,7 +235,7 @@
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Substation" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in tests">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -724,10 +726,10 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest in test_ntc.py" />
         <item itemvalue="Python tests.pytest for test_ntc.test_activs_2000_acdc_ts" />
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.pytest in test_ntc_strict_formulation.py" />
       </list>
     </recent_temporary>
@@ -1858,7 +1860,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="603" />
+    <option name="localTasksCounter" value="605" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1904,8 +1906,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added threshold in the compare property of EditableDevice to avoid numerical issues." />
-    <MESSAGE value="Fix comparison numerical issues + fix tests" />
     <MESSAGE value="Fixen unversioned files." />
     <MESSAGE value="Updated smart_compare in editable devices." />
     <MESSAGE value="Small changes solving datatable BUG." />
@@ -1929,7 +1929,9 @@
     <MESSAGE value="ntc tests passing for pulp" />
     <MESSAGE value="ntc improvements" />
     <MESSAGE value="fixed miss initialization for shift_key profiles" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed miss initialization for shift_key profiles" />
+    <MESSAGE value="minimal se refactors" />
+    <MESSAGE value="fixed measurements import" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed measurements import" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2262,6 +2264,11 @@
           <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
           <line>554</line>
           <option name="timeStamp" value="2636" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py</url>
+          <line>320</line>
+          <option name="timeStamp" value="2638" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

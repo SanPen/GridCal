@@ -13,7 +13,7 @@ from typing import List, Dict, Tuple, Union, Set, TYPE_CHECKING
 from uuid import getnode as get_mac, uuid4
 import networkx as nx
 from matplotlib import pyplot as plt
-from scipy.sparse import csc_matrix, lil_matrix
+from scipy.sparse import csc_matrix, lil_matrix, coo_matrix
 
 from GridCalEngine.Devices.assets import Assets
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
@@ -22,7 +22,7 @@ from GridCalEngine.basic_structures import IntVec, Vec, Mat, CxVec, IntMat, CxMa
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, AREA_TYPES
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Topology.topology import find_different_states
+import GridCalEngine.Topology.topology as tp
 from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType
 
 if TYPE_CHECKING:
@@ -292,7 +292,7 @@ class MultiCircuit(Assets):
                  and that [5, 6, 7, 8] are represented by the topology of 5
         """
 
-        return find_different_states(states_array=self.get_branch_active_time_array())
+        return tp.find_different_states(states_array=self.get_branch_active_time_array())
 
     def copy(self) -> "MultiCircuit":
         """
@@ -2735,7 +2735,6 @@ class MultiCircuit(Assets):
 
         return external, boundary, internal, boundary_branches
 
-
     def get_buses_from_objects(self, elements: List[ALL_DEV_TYPES]) -> Set[dev.Bus]:
         """
         Returns set of buses belonging to the list elements
@@ -2803,3 +2802,49 @@ class MultiCircuit(Assets):
                 buses.add(root_bus)
 
         return buses
+
+    def get_topology_data(self, t_idx: int | None = None):
+        """
+        Get the topology data
+        :param t_idx: time_index (None for the snapshot)
+        :return:
+        """
+        nbus = self.get_bus_number()
+        nbr = self.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=True)
+        nhvdc = self.get_hvdc_number()
+        nvsc = self.get_vsc_number()
+
+        bus_active = np.zeros(nbus, dtype=int)
+        bus_dict: Dict[dev.Bus, int] = dict()
+        for i, elm in enumerate(self.buses):
+            bus_active[i] = elm.active if t_idx is None else elm.active_prof[t_idx]
+            bus_dict[elm] = i
+
+        branch_active = np.zeros(nbr, dtype=int)
+        branch_F = np.zeros(nbr, dtype=int)
+        branch_T = np.zeros(nbr, dtype=int)
+        for i, elm in enumerate(self.get_branches(add_vsc=False, add_hvdc=False, add_switch=True)):
+            branch_active[i] = elm.active if t_idx is None else elm.active_prof[t_idx]
+            branch_F[i] = bus_dict[elm.bus_from]
+            branch_T[i] = bus_dict[elm.bus_to]
+
+        hvdc_active = np.zeros(nhvdc, dtype=int)
+        hvdc_F = np.zeros(nhvdc, dtype=int)
+        hvdc_T = np.zeros(nhvdc, dtype=int)
+        for i, elm in enumerate(self.hvdc_lines):
+            hvdc_active[i] = elm.active if t_idx is None else elm.active_prof[t_idx]
+            hvdc_F[i] = bus_dict[elm.bus_from]
+            hvdc_T[i] = bus_dict[elm.bus_to]
+
+        vsc_active = np.zeros(nvsc, dtype=int)
+        vsc_F = np.zeros(nvsc, dtype=int)
+        vsc_T = np.zeros(nvsc, dtype=int)
+        for i, elm in enumerate(self.vsc_devices):
+            vsc_active[i] = elm.active if t_idx is None else elm.active_prof[t_idx]
+            vsc_F[i] = bus_dict[elm.bus_from]
+            vsc_T[i] = bus_dict[elm.bus_to]
+
+        return (bus_active,
+                branch_active, branch_F, branch_T,
+                hvdc_active, hvdc_F, hvdc_T,
+                vsc_active, vsc_F, vsc_T)
