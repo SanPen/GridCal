@@ -1589,15 +1589,15 @@ def add_linear_branches_formulation(t_idx: int,
             # add the rate constraint if the branch is monitored
             if branch_vars.monitor_logic[t_idx, m]:
 
-                if loading[m] > 1.0:
+                if abs(loading[m]) > 1.0:
                     logger.add_error("Base overload on sensitive branch, rates extended",
                                      device=f"{m}: {branch_data_t.names[m]}",
                                      value=f"{loading[m] * 100} %")
 
                     # here flows is always a variable
                     set_var_bounds(branch_vars.flows[t_idx, m],
-                                   lb=-rate_pu * (loading[m] + 0.1),
-                                   ub=rate_pu * (loading[m] + 0.1))
+                                   lb=-rate_pu * (abs(loading[m]) + 0.1),
+                                   ub=rate_pu * (abs(loading[m]) + 0.1))
                 else:
                     # here flows is always a variable
                     set_var_bounds(branch_vars.flows[t_idx, m], lb=-rate_pu, ub=rate_pu)
@@ -1624,7 +1624,8 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                                                   ntc_load_rule: float,
                                                   alpha_threshold: float,
                                                   alpha_n1: Mat,
-                                                  loading: Vec,
+                                                  base_loading: Vec,
+                                                  con_loading: Vec,
                                                   logger: Logger):
     """
     Formulate the branches
@@ -1643,7 +1644,8 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
     :param ntc_load_rule:
     :param alpha_threshold:
     :param alpha_n1:
-    :param loading:
+    :param base_loading: loading w.r.t the normal ratings
+    :param con_loading: Loading w.r.t the contingency rates
     :param logger
     :return objective function
     """
@@ -1696,7 +1698,7 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
 
                 if monitor_by_load_rule_n1 and monitor_by_sensitivity_n1:
 
-                    if loading[m] < 1.0:
+                    if con_loading[m] < 1.0:
                         # declare slack variables
                         pos_slack = prob.add_var(0, 1e20, join("br_cst_flow_pos_sl_", [t_idx, m, c]))
                         neg_slack = prob.add_var(0, 1e20, join("br_cst_flow_neg_sl_", [t_idx, m, c]))
@@ -1721,8 +1723,9 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
 
                         f_obj += pos_slack + neg_slack
                     else:
-                        logger.add_error("Base overload on sensitive branch, contingency skipped",
-                                         device=branch_data_t.names[m])
+                        logger.add_error("Contingency overload on sensitive branch, contingency skipped",
+                                         device=branch_data_t.names[m],
+                                         value=f"{base_loading[m] * 100} %")
                 else:
                     pass
             else:
@@ -2358,6 +2361,8 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                     dT=1.0
                 )
 
+                branch_loading_con = np.abs(branch_flows / (nc.passive_branch_data.contingency_rates / nc.Sbase + 1e-20))
+
                 # formulate the contingencies
                 f_obj += add_linear_branches_contingencies_formulation(
                     t_idx=t_idx,
@@ -2375,7 +2380,8 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                     ntc_load_rule=ntc_load_rule,
                     alpha_threshold=alpha_threshold,
                     alpha_n1=alpha_n1,
-                    loading=branch_loading,
+                    base_loading=branch_loading,
+                    con_loading=branch_loading_con,
                     logger=logger
                 )
 
