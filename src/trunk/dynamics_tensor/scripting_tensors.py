@@ -209,14 +209,31 @@ Vg = Var("Vg")
 dg = Var("dg")
 tm = Var("tm")
 et = Var("et")
+delta_dt = Var('delta_dt')
+
+
+
+u_sin = Var('u_sin')
+v_sin = Var('v_sin')
+u_cos = Var('u_cos')
+v_cos = Var('v_cos')
+sin4x = Var('sin4x')
+int_sin2 = Var('int_sin2')
+int_xcosx = Var('int_xcosx')
+int_xsinx = Var('int_xsinx')
+int_sin2cos2 = Var('int_sin2cos2')
+
 
 generator_block = Block(
     state_eqs=[
-        (2 * pi * fn) * (omega - omega_ref),  # dδ/dt
+        delta_dt,  # dδ/dt
         (tm  - t_e - D * (omega - omega_ref)) / M,  # dω/dt
-        (omega - omega_ref)
+        (omega - omega_ref),
+        u_cos*(delta_dt),
+        -u_sin*(delta_dt),
+
     ],
-    state_vars=[delta, omega, et],
+    state_vars=[delta, omega, et, u_sin, u_cos],
     algebraic_eqs=[
         psid - (ra * i_q + v_q),
         psiq + (ra * i_d + v_d),
@@ -228,26 +245,21 @@ generator_block = Block(
         P_g - (v_d * i_d + v_q * i_q),
         Q_g - (v_q * i_d - v_d * i_q),
         (tm - tm0) + (Kp * (omega - omega_ref) + Ki * et),
+        (2 * pi * fn) * (omega - omega_ref) - delta_dt
     ],
-    algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g, tm],
+    algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g, tm, delta_dt],
     parameters=[]
 )
 
-u_sin = Var('u_sin')
-v_sin = Var('v_sin')
-u_cos = Var('u_cos')
-v_cos = Var('v_cos')
-delta_dt = Var('delta_dt')
-sin4x = Var('sin4x')
-int_sin2 = Var('int_sin2')
-int_sin2cos2 = Var('int_sin2cos2')
 
 generator_block_ML = Block(
     state_eqs=[
-        (2 * pi * fn) * (omega - omega_ref) ,  # dδ/dt
+        delta_dt,  # dδ/dt
         (tm  - t_e - D * (omega - omega_ref)) / M,  # dω/dt
         (omega - omega_ref),
-        (delta-dg)*u_cos
+        u_cos*(delta_dt),
+    #    -v_sin*(delta_dt),
+
     ],
     state_vars=[delta, omega, et, u_sin],
     algebraic_eqs=[
@@ -255,17 +267,18 @@ generator_block_ML = Block(
         psiq + (ra * i_d + v_d),
         0 - (psid + xd * i_d - vf),
         0 - (psiq + xd * i_q),
-        v_d - (Vg * u_sin),
-        v_q - (Vg * u_cos),
+        v_d - (Vg * sin(delta - dg)),
+        v_q - (Vg * cos(delta - dg)),
         t_e - (psid * i_q - psiq * i_d),
         P_g - (v_d * i_d + v_q * i_q),
         Q_g - (v_q * i_d - v_d * i_q),
         (tm - tm0) + (Kp * (omega - omega_ref) + Ki * et),
-        u_sin*v_sin + u_cos*v_cos - 1,
-        u_sin - v_sin,
-        u_cos - v_cos,
+        (2 * pi * fn) * (omega - omega_ref) - delta_dt,
+        v_sin - u_sin,
+        v_cos - u_cos,
+        u_cos*u_cos  - u_sin*u_sin -1,
     ],
-    algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g, tm, v_sin, u_cos, v_cos], 
+    algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g, tm, v_sin, v_cos, u_cos, delta_dt],
     parameters=[]
 )
 
@@ -290,7 +303,6 @@ generator_block_ML_1 = Block(
         Q_g - (v_q * i_d - v_d * i_q),
         (tm - tm0) + (Kp * (omega - omega_ref) + Ki * et),
         (2 * pi * fn) * (omega - omega_ref) - delta_dt,
-        u_sin**2 + u_cos**2 - 1,
         int_sin2 - 0.5*((delta-dg)-u_sin*u_cos), 
         int_sin2cos2 - 1/32*(4*(delta-dg) - (4*u_cos**3*u_sin - 4*u_sin**3*u_cos))
     ],
@@ -298,7 +310,33 @@ generator_block_ML_1 = Block(
     parameters=[]
 )
 
-
+generator_block_ML_2 = Block(
+    state_eqs=[
+        delta_dt,  # dδ/dt
+        (tm  - t_e - D * (omega - omega_ref)) / M,  # dω/dt
+        (omega - omega_ref),
+        delta_dt*(delta-dg)*u_cos,
+        delta_dt*(delta-dg)*u_sin,
+    ],
+    state_vars=[delta, omega, et, int_xcosx, int_xsinx],
+    algebraic_eqs=[
+        psid - (ra * i_q + v_q),
+        psiq + (ra * i_d + v_d),
+        0 - (psid + xd * i_d - vf),
+        0 - (psiq + xd * i_q),
+        v_d - (Vg * u_sin),
+        v_q - (Vg * u_cos),
+        t_e - (psid * i_q - psiq * i_d),
+        P_g - (v_d * i_d + v_q * i_q),
+        Q_g - (v_q * i_d - v_d * i_q),
+        (tm - tm0) + (Kp * (omega - omega_ref) + Ki * et),
+        (2 * pi * fn) * (omega - omega_ref) - delta_dt,
+        (delta-dg)*u_sin + u_cos,
+        -(delta-dg)*u_cos + u_sin,
+    ],
+    algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g, tm, u_sin, u_cos, delta_dt], 
+    parameters=[]
+)
 
 # psid - (-ra * i_q + v_q),
 # psiq - (-ra * i_d + v_d),
@@ -398,7 +436,7 @@ psiq0 = -ra.value * i_d0 - v_d0
 
 vf0 = psid0 + xd.value * i_d0
 dg0 = np.angle(v1)
-delta_dt0 = (2 * pi * fn) * (omega - omega_ref)
+delta_dt0 = 0
 u_cos0 = np.cos(delta0 -dg0)
 u_sin0 = np.sin(delta0 -dg0)
 print(f"vf = {vf0}")
@@ -435,13 +473,15 @@ vars_mapping = {
     P_g: Sb1.real,
     Q_g: Sb1.imag,
     tm: te0,
-    u_sin: np.sin(delta0 -dg0),
-    u_cos: np.cos(delta0 -dg0),
-    v_sin: np.sin(delta0 -dg0),
-    v_cos: np.cos(delta0 -dg0),
+    u_sin: u_sin0,
+    u_cos: u_cos0,
+    v_sin: u_sin0,
+    v_cos: u_cos0,
     #int_sin2: 0.5*((delta0-dg0)-u_sin0*u_cos0),
     #int_sin2cos2:  1/32*(4*(delta0-dg0) - (4*u_cos0**3*u_sin0 - 4*u_sin0**3*u_cos)),
-    #delta_dt: 0
+    #int_xcosx:  (delta0 -dg0)*(u_sin0)+ u_cos0,
+    #int_xsinx: -(delta0 -dg0)*(u_cos0)+ u_sin0,
+    delta_dt: 0
 }
 
 # Consistency check 
@@ -523,9 +563,16 @@ fig = plt.figure(figsize=(14, 10))
 
 #Generator state variables
 plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)", color='red')
-plt.plot(t, y[:, slv.get_var_idx(u_cos)], label="cos (pu)", color='blue')
-plt.plot(t, y[:, slv.get_var_idx(u_sin)], label="sin (pu)", color='yellow')
-plt.plot(t, y[:, slv.get_var_idx(delta)], label="delta", color='black')
+
+plt.plot(t, y[:, slv.get_var_idx(u_cos)], label="u cos (pu)", color='blue')
+plt.plot(t, y[:, slv.get_var_idx(u_sin)], label="u sin (pu)", color='yellow')
+
+delta_idx = slv.get_var_idx(delta)  
+cos_delta_real = np.cos(y[:, delta_idx]) 
+sin_delta_real = np.sin(y[:, delta_idx]) 
+#plt.plot(t, cos_delta_real, label="cos delta real (pu)", color='gray')
+#plt.plot(t, sin_delta_real, label="sin delta real (pu)", color='teal')
+#plt.plot(t, y[:, slv.get_var_idx(delta)], label="delta", color='black')
 # plt.plot(t, y[:, slv.get_var_idx(t_e)], label="Te (pu)")
 #plt.plot(t, y[:, slv.get_var_idx(delta)], label="δ (rad)")
 #plt.plot(t, y[:, slv.get_var_idx(et)], label="et (pu)")
@@ -562,8 +609,9 @@ plt.legend(loc='upper right', ncol=2)
 plt.xlabel("Time (s)")
 plt.ylabel("Values (pu)")
 plt.title("Small System: Control Proof")
-plt.xlim(0, 10)
-plt.ylim(0.85, 1.15)
+#plt.xlim(0, 10)
+#plt.ylim(0.85, 1.15)
+plt.tight_layout()
 plt.grid(True)
 plt.tight_layout()
 plt.show()

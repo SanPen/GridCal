@@ -10,7 +10,7 @@ from typing import Tuple
 import pandas as pd
 import numpy as np
 import numba as nb
-import math
+import math, itertools
 import warnings
 
 import scipy.sparse as sp
@@ -20,11 +20,51 @@ from scipy.sparse.linalg import spsolve
 from scipy.sparse import csr_matrix, identity
 from scipy.sparse.linalg import gmres, spilu, LinearOperator, MatrixRankWarning
 from typing import Dict, List, Literal, Any, Callable, Sequence
+from scipy.linalg import LinAlgError, LinAlgWarning
+from scipy.sparse.linalg._dsolve import MatrixRankWarning
+
+# Turn MatrixRankWarning into an exception
+warnings.simplefilter('error', category=MatrixRankWarning)
 
 from GridCalEngine.Devices.Dynamic.events import RmsEvents
 from GridCalEngine.Utils.Symbolic.symbolic import Var, Expr, Const, _emit
 from GridCalEngine.Utils.Symbolic.block import Block
 from GridCalEngine.Utils.Sparse.csc import pack_4_by_4_scipy
+
+def _find_singular_column_combinations(matrix, threshold=1e-10):
+    n_cols = matrix.shape[1]
+    dependent_combinations = []
+
+    for r in range(1, n_cols + 1):
+        for combo in itertools.combinations(range(n_cols), r):
+            submatrix = matrix[:, combo]
+            if np.linalg.matrix_rank(submatrix) < r:
+                dependent_combinations.append(combo)
+
+    return dependent_combinations
+
+def _check_singular_columns(Jf, new_row_idx, threshold=1e-10):
+    """
+    Given the Jacobian matrix and the index of the new equation (row),
+    this function checks which columns are contributing to the singularity.
+    """
+    # Extract the row corresponding to the newly added equation
+    new_row = Jf[new_row_idx, :]
+    
+    # Find the columns that interact with the new equation
+    # These are the columns where the row has non-zero entries
+    non_zero_columns = np.nonzero(new_row)[0]
+    
+    # Now check for dependencies among these columns
+    dependent_columns = []
+    for col_idx in non_zero_columns:
+        submatrix = Jf[:, col_idx]
+        
+        # Compute the rank of the submatrix formed by the current column and the rest
+        if np.linalg.matrix_rank(Jf[:, non_zero_columns]) < len(non_zero_columns):
+            dependent_columns.append(col_idx)
+    
+    return dependent_columns
 
 
 def _fully_substitute(expr: Expr, mapping: Dict[Var, Expr], max_iter: int = 10) -> Expr:
@@ -838,11 +878,14 @@ class BlockSolver:
         steps = int(np.ceil((t_end - t0) / h))
         t = np.empty(steps + 1)
         y = np.empty((steps + 1, self._n_vars))
+        self.y = y
+        self.t = t 
         params_current = params0
         diff_params_matrix = diff_params_matrix
         t[0] = t0
         y[0] = x0.copy()
         for step_idx in range(steps):
+            self.step_idx
             params_current += diff_params_matrix[step_idx, :].toarray().ravel()
             xn = y[step_idx]
             x_new = xn.copy()  # initial guess
@@ -861,16 +904,40 @@ class BlockSolver:
                 Jf = self.jacobian_implicit(x_new, params_current, h)  # sparse matrix
 
                 reg_attempts = 0
-                solved = False
-                while not solved and reg_attempts <= max_reg_tries:
-                    try:
-                        delta = sp.linalg.spsolve(Jf, -rhs)
-                        solved = True
-                    except:
-                        print('[Run] lsqr')
-                        delta = np.linalg.pinv(Jf.toarray()) @ (-rhs)
-                        solved = True
-                if not solved:
+                iter_is_solved = False
+                try:
+                    print('First Step')
+                    delta = sp.linalg.spsolve(Jf, -rhs)
+                    iter_is_solved = True
+                    
+                #except (LinAlgError, MatrixRankWarning, ValueError) as e:
+                except (LinAlgError, MatrixRankWarning, ValueError) as e:
+                    rank_Jf = np.linalg.matrix_rank(Jf.toarray())
+                    print(f"Rank of Jacobian: {rank_Jf}, size is {Jf.toarray().size}")
+                    print(Jf)
+                    idxs = [5, 6, 7, 22, 23, 26, 27]
+                    eqs = [3,16,20,22]
+                    all_vars = self._state_vars + self._algebraic_vars
+                    all_eq = self._state_eqs + self._algebraic_eqs
+
+                    for idx in idxs:
+                        uid = next(key for key, value in self.uid2idx_vars.items() if value == idx)
+                        for var in all_vars:
+                            if var.uid == uid:
+                                print(var)
+
+                    for eq in eqs:
+                        print(f"eq is {all_eq[eq]}") 
+                    singular_combos = _check_singular_columns(Jf.toarray(), new_row_idx = 3,threshold = 1e-8)
+                    print(f"Combinations of dependent columns: {singular_combos}")
+                    print('[Run] lsqr')
+                    # Compute the condition number
+                    cond_number = np.linalg.cond(Jf.toarray())  # If Jf is sparse, convert it to dense
+                    print(f"Condition number: {cond_number}")
+                    delta = np.linalg.pinv(Jf.toarray()) @ (-rhs)
+
+                    iter_is_solved = True
+                if not iter_is_solved:
                     raise RuntimeError("Failed to solve linear system even with regularization.")
 
                 x_new += delta
