@@ -491,21 +491,22 @@ class Bus(PhysicalDevice):
     def initialize_rms(self):
 
         if self.rms_model.empty():
-
             Vm = Var("Vm")
             Va = Var("Va")
-
-            Vm0 = Var("Vm0")
-            Va0 = Var("Va0")
+            P = Var("P")
+            Q = Var("Q")
 
             self.rms_model.model = Block(
+                state_eqs=[],
+                state_vars=[],
                 algebraic_eqs=[
                 ],
                 algebraic_vars=[Vm, Va],
-                init_eqs=[],
-                init_vars=[Vm0, Va0],
+                init_eqs={},
                 external_mapping={
                     DynamicVarType.Vm: Vm,
-                    DynamicVarType.Va: Va
+                    DynamicVarType.Va: Va,
+                    DynamicVarType.P: P,
+                    DynamicVarType.Q: Q
                 }
             )

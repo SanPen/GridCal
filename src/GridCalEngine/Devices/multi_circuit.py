@@ -27,7 +27,7 @@ from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, F
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Topology.topology import find_different_states
 from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType, DynamicVarType
-from GridCalEngine.Utils.Symbolic.symbolic import _emit
+from GridCalEngine.Utils.Symbolic.symbolic import _emit, _emit_one
 from GridCalEngine.Utils.Symbolic.block import Block, Expr
 
 if TYPE_CHECKING:
@@ -128,7 +128,7 @@ def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names:
 
 def _compile_equation(eqs: Sequence[Expr],
                        uid2sym_vars: Dict[int, str],
-                       add_doc_string: bool = True) -> Callable[[np.ndarray, np.ndarray], np.ndarray]:
+                       add_doc_string: bool = True) -> Callable[[np.ndarray], np.ndarray]:
     """
     Compile the array of expressions to a function that returns an array of values for those expressions
     :param eqs: Iterable of expressions (Expr)
@@ -140,7 +140,7 @@ def _compile_equation(eqs: Sequence[Expr],
     # Build source
     src = f"def _f(vars):\n"
     src += f"    out = np.zeros({len(eqs)})\n"
-    src += "\n".join([f"    out[{i}] = {_emit(e, uid2sym_vars)}" for i, e in enumerate(eqs)]) + "\n"
+    src += "\n".join([f"    out[{i}] = {_emit_one(e, uid2sym_vars)}" for i, e in enumerate(eqs)]) + "\n"
     src += f"    return out"
     ns: Dict[str, Any] = {"math": math, "np": np}
     exec(src, ns)
@@ -2904,13 +2904,15 @@ class MultiCircuit(Assets):
 
 
 
-    def compose_system_block(grid: MultiCircuit, power_flow_results) -> Block:
+    def compose_system_block(self, power_flow_results):
         """
         Compose all RMS models
         :return: System block
         """
         # already computed grid power flow
         res = power_flow_results
+        Sf = res.Sf / self.Sbase
+        St = res.St / self.Sbase
 
         # create the system block
         sys_block = Block(children=[], in_vars=[])
@@ -2918,50 +2920,105 @@ class MultiCircuit(Assets):
         # initialize initial guess dict
         init_guess: Dict[int, float] = dict()
 
-        # buses
-        for i, elm in enumerate(grid.buses):
-            mdl = elm.rms_model.model
-            #mdl.compute_init_guess
-            # set already computed values
-            Vm0 = res.voltage[i]
+        # initialize system vars list
+        sys_vars = list()
 
-            init_eqs = mdl.init_eqs
+        uid2sym_vars: Dict[int, str] = dict()
+        uid2idx_vars: Dict[int, int] = dict()
+
+        # buses
+        for i, elm in enumerate(self.buses):
+            mdl = elm.rms_model.model
+            mdl_vars = mdl.state_vars + mdl.algebraic_vars
+
+            i = 0
+            for v in sys_vars:
+                uid2sym_vars[v.uid] = f"vars[{i}]"
+                uid2idx_vars[v.uid] = i
+                i += 1
+            array_index = i
+
+            for var in mdl.algebraic_vars:
+                sys_vars.append(var)
+            for var in mdl.state_vars:
+                sys_vars.append(var)
+
+            init_guess[mdl.external_mapping[DynamicVarType.Vm].uid] = float(res.voltage[i])
+            init_guess[mdl.external_mapping[DynamicVarType.Va].uid] = float(np.angle(res.voltage[i]))
+            init_guess[mdl.external_mapping[DynamicVarType.P].uid] = float(np.real(res.Sbus[i] / self.Sbase))
+            init_guess[mdl.external_mapping[DynamicVarType.Q].uid] = float(np.real(res.Sbus[i] / self.Sbase))
+
             sys_block.children.append(mdl)
 
         # branches
-        for elm in grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
+        for elm in self.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
+            i = array_index
+
+            mdl_vars = mdl.state_vars + mdl.algebraic_vars
+
+            for v in sys_vars:
+                uid2sym_vars[v.uid] = f"vars[{i}]"
+                uid2idx_vars[v.uid] = i
+                i += 1
+            array_index = i
+
             mdl = elm.rms_model.model
-            #mdl.compute_init_guess
-            init_eqs = mdl.init_eqs
+
+            for var in mdl.algebraic_vars:
+                sys_vars.append(var)
+            for var in mdl.state_vars:
+                sys_vars.append(var)
+
+            init_guess[mdl.external_mapping[DynamicVarType.Pf].uid] = Sf[i].real
+            init_guess[mdl.external_mapping[DynamicVarType.Qf].uid] = Sf[i].imag
+            init_guess[mdl.external_mapping[DynamicVarType.Pt].uid] = Sf[i].real
+            init_guess[mdl.external_mapping[DynamicVarType.Qt].uid] = Sf[i].imag
+
             sys_block.children.append(mdl)
 
+            i+=1
+
         # initialize injections
-        for elm in grid.get_injection_devices_iter():
+        for elm in self.get_injection_devices_iter():
+            bus = elm.bus
             mdl = elm.rms_model.model
             mdl_vars = mdl.state_vars + mdl.algebraic_vars
             mdl_vars_n = len(mdl_vars)
 
-            # initialize array containing values for model variables
-            x = np.zeros(mdl_vars_n)
 
-            uid2sym_vars: Dict[int, str] = dict()
-            uid2sym_params: Dict[int, str] = dict()
-            uid2idx_vars: Dict[int, int] = dict()
-            uid2idx_params: Dict[int, int] = dict()
-            i = 0
+
+            i = array_index
             for v in mdl_vars:
                 uid2sym_vars[v.uid] = f"vars[{i}]"
                 uid2idx_vars[v.uid] = i
                 i += 1
+
+            for var in mdl.algebraic_vars:
+                sys_vars.append(var)
+            for var in mdl.state_vars:
+                sys_vars.append(var)
+
+
+            # initialize array containing values for model variables
+            x = np.zeros(len(sys_vars))
+
+            init_guess[mdl.external_mapping[DynamicVarType.P].uid] = init_guess[bus.rms_model.model.external_mapping[DynamicVarType.P].uid]
+            init_guess[mdl.external_mapping[DynamicVarType.Q].uid] = init_guess[bus.rms_model.model.external_mapping[DynamicVarType.Q].uid]
+
+
+
+            for var in sys_vars:
+                x[uid2idx_vars[var.uid]] = init_guess[var.uid]
 
             for var in mdl_vars:
                 if var.uid in init_guess.keys():
                     x[uid2idx_vars[var.uid]] = init_guess[var.uid]
                 else:
                     eq = mdl.init_eqs[var]
-                    eq_fn = _compile_equation([eq],
-                       uid2sym_vars)
-                    init_val = eq_fn(x)
+                    eq_fn = _compile_equation([eq], uid2sym_vars)
+                    init_val = float(eq_fn(x)[0])
+                    init_guess[var.uid] = init_val
+                    x[uid2idx_vars[var.uid]] = init_val
 
 
 
@@ -2969,4 +3026,4 @@ class MultiCircuit(Assets):
             init_eqs = mdl.init_eqs
             sys_block.children.append(mdl)
 
-        return sys_block
+        return sys_block, init_guess

@@ -498,7 +498,6 @@ class Generator(GeneratorParent):
             # Kp = 1.0
             # Ki = 10.0
             # Kw = 10.0
-
             delta = Var("delta")
             omega = Var("omega")
             psid = Var("psid")
@@ -513,26 +512,8 @@ class Generator(GeneratorParent):
             et = Var("et")
             tm = Var("tm")
             vf = Var("vf")
-            rot = Var("rot")
             Vm = self.bus.rms_model.model.E(DynamicVarType.Vm)
             Va = self.bus.rms_model.model.E(DynamicVarType.Va)
-            I = self.bus.rms_model.model.E(DynamicVarType.I)
-
-            # # Current from power and voltage
-            # i = np.conj(Sb1 / v1)  # ī = (p - jq) / v̄*
-            # # Delta angle
-            # delta0 = np.angle(v1 + gen.R1 + 1j * gen.X1 * i)
-            # # dq0 rotation
-            # rot = np.exp(-1j * (delta0 - np.pi / 2))
-            # # dq voltages and currents
-            # v_d0 = np.real(v1 * rot)
-            # v_q0 = np.imag(v1 * rot)
-            # i_d0 = np.real(i * rot)
-            # i_q0 = np.imag(i * rot)
-            # # inductances
-            # psid0 = -gen.ra * i_q0 + v_q0
-            # psiq0 = -gen.ra * i_d0 + v_d0
-            # vf0 = - i_d0 + psid0 + gen.xd * i_d0
 
             self.rms_model.model = Block(
                 state_eqs=[
@@ -547,6 +528,7 @@ class Generator(GeneratorParent):
                     psiq + (self.R1 * i_d + v_d),
                     0 - (psid + self.X1 * i_d - vf),
                     0 - (psiq + self.X1 * i_q),
+                    vf - psid + self.X1 * i_d,
                     v_d - (Vm * sin(delta - Va)),
                     v_q - (Vm * cos(delta - Va)),
                     t_e - (psid * i_q - psiq * i_d),
@@ -554,26 +536,25 @@ class Generator(GeneratorParent):
                     Q_g - (v_q * i_d - v_d * i_q),
                     tm - (self.m_torque + self.Kp * (omega - self.omega_ref) + self.Ki * et)
                 ],
-                algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g, tm],
+                algebraic_vars=[P_g, Q_g, v_d, v_q, i_d, i_q, psid, psiq, t_e, vf, tm],
                 init_eqs={
-                    delta: np.angle(Vm + (self.R1 + 1j * self.X1) * I),
+                    #delta: np.angle(Vm + (self.R1 + 1j * self.X1) * ((P_g - Q_g)/ Vm)),
+                    #delta: Vm + (self.R1 + 1j * self.X1) * ((P_g - Q_g) / Vm),
+                    delta: Vm + (self.R1 * self.X1) * ((P_g - Q_g)),
                     omega: self.omega_ref,
-                    rot: np.exp(-1j * (delta - np.pi / 2)),
-                    v_d: np.real(Vm * rot),
-                    v_q: np.imag(Vm * rot),
-                    i_d: np.real(I * rot),
-                    i_q: np.imag(I * rot),
+                    # v_d: np.real(Vm * np.exp(-1j * (delta - np.pi / 2))),
+                    # v_q: np.imag(Vm *np.exp(-1j * (delta - np.pi / 2))),
+                    # i_d: np.real(np.exp(-1j * (delta - np.pi / 2)) * np.exp(-1j * (delta - np.pi / 2))),
+                    # i_q: np.imag(np.exp(-1j * (delta - np.pi / 2)) * np.exp(-1j * (delta - np.pi / 2))),
+                    v_d: Vm * (delta - np.pi / 2),
+                    v_q: Vm * (delta - np.pi / 2),
+                    i_d: ((delta - np.pi / 2) * (delta - np.pi / 2)),
+                    i_q: ((delta - np.pi / 2) * (delta - np.pi / 2)),
                     psid: self.R1 * i_q + v_q,
                     psiq: -self.R1 * i_d - v_d,
                     vf: psid + self.X1 * i_d,
                     t_e: psid * i_q - psiq * i_d,
-
-
-
-
-
-
-
+                    tm: t_e
                 },
                 parameters=[],
 

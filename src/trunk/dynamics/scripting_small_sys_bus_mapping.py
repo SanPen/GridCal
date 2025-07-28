@@ -8,7 +8,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
-from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver, compose_system_block
+from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
 import GridCalEngine.api as gce
 
 grid = gce.MultiCircuit()
@@ -38,9 +38,6 @@ grid.add_load(bus=bus2, api_obj=load)
 
 res = gce.power_flow(grid)
 
-res.voltage  # voltage in p.u.
-res.Sf / grid.Sbase  # from power of the branches
-res.St / grid.Sbase  # to power of the branches
 
 print(res.get_bus_df())
 print(res.get_branch_df())
@@ -48,7 +45,7 @@ print(f"Converged: {res.converged}")
 
 logger = gce.Logger()
 grid.initialize_rms(logger=logger)
-sys = compose_system_block(grid=grid)
+sys, mapping = grid.compose_system_block(res)
 
 # sys = grid.initialize_rms(res, logger=logger)
 

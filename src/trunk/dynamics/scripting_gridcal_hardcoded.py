@@ -224,12 +224,16 @@ v8 = res.voltage[7]
 v9 = res.voltage[8]
 v10 = res.voltage[9]
 
+# buses
+
 Sb1 = res.Sbus[0] / grid.Sbase
 Sb2 = res.Sbus[1] / grid.Sbase
 Sb3 = res.Sbus[2] / grid.Sbase
 Sb4 = res.Sbus[3] / grid.Sbase
 Sb7 = res.Sbus[6] / grid.Sbase
 Sb8 = res.Sbus[7] / grid.Sbase
+
+# grid
 
 Sf = res.Sf / grid.Sbase
 St = res.St / grid.Sbase
