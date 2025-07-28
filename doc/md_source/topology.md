@@ -1,10 +1,12 @@
 # 🌵 Topology
 
-The topology processing in GridCal is handled automatically and you need to do nothing for it to work.
+The topology processing in GridCal is handled automatically, and you need to do nothing for it to work.
 
 Branches with the `reducible` flag enabled are candidates for disappearing at the 
 `NumericalCircuit level when computing any simulation. Typically, switches will be reduced, but if not they will
 use their declared impedance, which is not advised.
+
+![](figures/settings-tplgy.png)
 
 ## Other topology functions
 

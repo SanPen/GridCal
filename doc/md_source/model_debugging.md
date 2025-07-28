@@ -1,5 +1,7 @@
 # 🪲 Model debugging
 
+![](figures/model-debug.png)
+
 ## API
 
 ### Inputs analysis

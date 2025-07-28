@@ -1,5 +1,27 @@
 # 💾 File loading and saving
 
+GridCal supports a great deal of file formats
+
+|                    |read   |write  |
+|--------------------|-------|-------|
+| GridCal            |✅      |✅      |
+| Json               |✅      |✅      |
+| CIM                |✅      |✅      |
+| CGMES 2.4.15       |✅      |✅      |
+| CGMES 3.0          |✅      |✅      |
+| ucte (UCTE)        |✅      |      |
+| m (Matpower)       |✅      |✅      |
+| p (Pandapower)     |✅      |      |
+| nc (PyPSA)         |✅      |      |
+| raw/rawx (PSS/e)   |✅      |✅      |
+| epc (PSLF)         |✅      |      |
+| dgs (PowerFactory) |✅      |      |
+
+Some additional file settings are found at the Settings>File tab:
+
+![img](figures/settings-file.png)
+
+
 
 ## API
 
