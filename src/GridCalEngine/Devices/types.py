@@ -69,25 +69,24 @@ SUBSTATION_TYPES = Union[
     VoltageLevel
 ]
 
-MEASUREMENT_TYPES = Union[
-    IfMeasurement,
-    QfMeasurement,
-    PfMeasurement,
-    QtMeasurement,
-    PtMeasurement,
-    QiMeasurement,
-    PiMeasurement,
-    VmMeasurement
-]
+# MEASUREMENT_TYPES = Union[
+#     IfMeasurement,
+#     QfMeasurement,
+#     PfMeasurement,
+#     QtMeasurement,
+#     PtMeasurement,
+#     QiMeasurement,
+#     PiMeasurement,
+#     VmMeasurement
+# ]
 
-MEASURABLE_OBJECT = Union[Bus, BRANCH_TYPES]
 
 ALL_DEV_TYPES = Union[
     INJECTION_DEVICE_TYPES,
     BRANCH_TYPES,
     FLUID_TYPES,
     SUBSTATION_TYPES,
-    MEASUREMENT_TYPES,
+        # MEASUREMENT_TYPES,
     AREA_TYPES,
     Transformer3W,
     OverheadLineType,
