@@ -12,6 +12,7 @@ from GridCal.Gui.associations_model import AssociationsModel
 from GridCal.Gui.table_view_header_wrap import HeaderViewWithWordWrap
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.Topology import substation_wizards as substation_wizards
 import GridCalEngine.basic_structures as bs
 import GridCalEngine.Devices as dev
 import GridCal.Gui.gui_functions as gf
@@ -30,6 +31,7 @@ from GridCal.Gui.SystemScaler.system_scaler import SystemScaler
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, make_diagram_from_substations
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget, make_diagram_from_buses
 from GridCal.Gui.GridReduce.grid_reduce import GridReduceDialogue
+from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
 
 
 class DataBaseTableMain(DiagramsMain):
@@ -70,7 +72,7 @@ class DataBaseTableMain(DiagramsMain):
         self.ui.actionDetect_substations.triggered.connect(self.detect_substations)
         self.ui.actionDetect_facilities.triggered.connect(self.detect_facilities)
         self.ui.actionGrid_reduction.triggered.connect(self.grid_reduction_from_schematic_selection)
-
+        self.ui.actionSubstation_wizard.triggered.connect(self.add_substation_with_wizard)
 
         # tree click
         self.ui.dataStructuresTreeView.clicked.connect(self.view_objects_data)
@@ -655,13 +657,12 @@ class DataBaseTableMain(DiagramsMain):
         selected_buses, selected_objects = self.get_selected_table_buses()
 
         if len(selected_buses):
-
             # get the previous power flow
             _, pf_res = self.session.power_flow
 
             self.grid_reduction_dialogue = GridReduceDialogue(grid=self.circuit,
-                                     session=self.session,
-                                     selected_buses_set=selected_buses)
+                                                              session=self.session,
+                                                              selected_buses_set=selected_buses)
 
             self.grid_reduction_dialogue.show()
 
@@ -1331,3 +1332,30 @@ class DataBaseTableMain(DiagramsMain):
         # Convert global position to local position of the list widget
         mapped_pos = self.ui.dataStructureTableView.viewport().mapToGlobal(pos)
         context_menu.exec(mapped_pos)
+
+    def add_substation_with_wizard(self):
+        """
+        Add substation with all its objects using a wizard
+        :return:
+        """
+
+        kv = self.get_default_voltage()
+        dlg = SubstationDesigner(grid=self.circuit, default_voltage=kv)
+        dlg.exec()
+        if dlg.was_ok():
+
+            se_object, voltage_levels = substation_wizards.create_substation(
+                grid=self.circuit,
+                se_name=dlg.get_name(),
+                se_code=dlg.get_code(),
+                lat=dlg.get_latitude(),
+                lon=dlg.get_longitude(),
+                vl_templates=dlg.get_voltage_levels()
+            )
+
+            # ask to create a se diagram
+            ok = yes_no_question(title="create substation diagram",
+                                 text="Do you want to finalize the editing of the substation in the schematic?")
+
+            if ok:
+                self.new_bus_branch_diagram_from_substation(substations=[se_object])

@@ -20,7 +20,10 @@ class SubstationDesigner(QtWidgets.QDialog):
     SubstationDesigner
     """
 
-    def __init__(self, grid: MultiCircuit, default_voltage: float = 10.0, parent=None):
+    def __init__(self, grid: MultiCircuit,
+                 default_voltage: float = 10.0,
+                 lat: float = 0.0, lon: float = 0.0,
+                 parent=None):
         """
 
         :param parent:
@@ -33,6 +36,9 @@ class SubstationDesigner(QtWidgets.QDialog):
         self.grid = grid
 
         self.default_voltage = default_voltage
+
+        self.ui.latdoubleSpinBox.setValue(lat)
+        self.ui.londoubleSpinBox.setValue(lon)
 
         self._accepted = False
 
@@ -125,6 +131,12 @@ class SubstationDesigner(QtWidgets.QDialog):
         :return:
         """
         return self.mdl.objects
+
+    def get_latitude(self):
+        return self.ui.latdoubleSpinBox.value()
+
+    def get_longitude(self):
+        return self.ui.londoubleSpinBox.value()
 
     def was_ok(self) -> bool:
         """

@@ -10565,6 +10565,7 @@ QProgressBar::chunk{
     <addaction name="actionInitialize_contingencies"/>
     <addaction name="actionAdd_selected_to_contingency"/>
     <addaction name="actionAdd_selected_as_remedial_action"/>
+    <addaction name="actionSubstation_wizard"/>
     <addaction name="actionFix_generators_active_based_on_the_power"/>
     <addaction name="actionFix_loads_active_based_on_the_power"/>
     <addaction name="actionDelete_inconsistencies"/>
@@ -12317,6 +12318,24 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Grid reduction</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionSubstation_wizard">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/substation.svg</normaloff>:/Icons/icons/substation.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Substation wizard</string>
+   </property>
+   <property name="toolTip">
+    <string>Add substation with a wizard form</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A, Ctrl+S</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
