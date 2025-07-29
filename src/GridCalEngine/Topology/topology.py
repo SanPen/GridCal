@@ -9,7 +9,7 @@ import numpy as np
 import numba as nb
 import scipy.sparse as sp
 from scipy.sparse import csc_matrix, diags, csr_matrix
-from GridCalEngine.basic_structures import IntVec, Vec, BoolVec, CxVec
+from GridCalEngine.basic_structures import IntVec, Vec, BoolVec, CxVec, IntMat
 
 
 @nb.njit(cache=True)
@@ -458,7 +458,7 @@ def get_adjacency_matrix(C_branch_bus_f: csc_matrix, C_branch_bus_t: csc_matrix,
     return C_bus_bus
 
 
-def find_different_states(states_array: IntVec, force_all=False) -> Dict[int, List[int]]:
+def find_different_states(states_array: IntMat, force_all=False) -> Dict[int, List[int]]:
     """
     Find the different branch states in time that may lead to different islands
     :param states_array: bool array indicating the different grid states (time, device)
@@ -468,17 +468,17 @@ def find_different_states(states_array: IntVec, force_all=False) -> Dict[int, Li
              This means that [0, 1, 2, 3, 4] are represented by the topology of 0
              and that [5, 6, 7, 8] are represented by the topology of 5
     """
-    ntime = states_array.shape[0]
+    n_time = states_array.shape[0]
 
     if force_all:
-        return {i: [i] for i in range(ntime)}  # force all states
+        return {i: [i] for i in range(n_time)}  # force all states
 
     else:
 
         # initialize
         states = dict()  # type: Dict[int, List[int]]
         k = 1
-        for t in range(ntime):
+        for t in range(n_time):
 
             # search this state in the already existing states
             keys = list(states.keys())

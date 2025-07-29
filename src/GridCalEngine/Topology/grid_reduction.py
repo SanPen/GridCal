@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 
 
-def war_reduction_non_linear(nc: NumericalCircuit, e_buses, b_buses, i_buses, voltage: CxVec, Sbus: CxVec):
+def ward_reduction_non_linear(nc: NumericalCircuit, e_buses, b_buses, i_buses, voltage: CxVec, Sbus: CxVec):
     """
 
     :param nc:
@@ -73,12 +73,10 @@ def war_reduction_non_linear(nc: NumericalCircuit, e_buses, b_buses, i_buses, vo
 
     Seq = VB * np.conj(IB)
 
-    n_boundary = len(b_buses)
-
     return Seq, Ieq, Yeq, YBBp, adm.Ybus.tocsc()
 
 
-def war_reduction_linear(nc: NumericalCircuit, e_buses, b_buses, i_buses):
+def ward_reduction_linear(nc: NumericalCircuit, e_buses, b_buses, i_buses):
     """
 
     :param nc:
@@ -93,6 +91,7 @@ def war_reduction_linear(nc: NumericalCircuit, e_buses, b_buses, i_buses):
     # slice matrices
     Bii = adm.Bbus[np.ix_(i_buses, i_buses)]
     Bib = adm.Bbus[np.ix_(i_buses, b_buses)]
+    Bie = adm.Bbus[np.ix_(i_buses, e_buses)]
 
     Bbi = adm.Bbus[np.ix_(b_buses, i_buses)]
     Bbb = adm.Bbus[np.ix_(b_buses, b_buses)]
@@ -115,6 +114,9 @@ def war_reduction_linear(nc: NumericalCircuit, e_buses, b_buses, i_buses):
 
     # these are the power to be added ar every boundary bus
     Pb_eq = - Bbe @ Bee_fact(Pe)  # 2.17
+
+    # ΔP = −B_ie B_ee⁻¹ P_e
+    Pe = -Bie @ Bee_fact(Pe)
 
     return Pb_eq, Pb_eq, Beq, Bbbp, adm.Bbus.tocsc()
 
@@ -159,19 +161,19 @@ def ward_reduction(grid: MultiCircuit,
         use_linear = True
 
     if use_linear:
-        Seq, Ieq, Yeq, YBBp, Bbus = war_reduction_linear(nc=nc,
-                                                         e_buses=e_buses,
-                                                         b_buses=b_buses,
-                                                         i_buses=i_buses)
+        Seq, Ieq, Yeq, YBBp, Bbus = ward_reduction_linear(nc=nc,
+                                                          e_buses=e_buses,
+                                                          b_buses=b_buses,
+                                                          i_buses=i_buses)
         A_csc = Bbus.copy()
         A_csc.data = np.abs(A_csc.data)
     else:
-        Seq, Ieq, Yeq, YBBp, Ybus = war_reduction_non_linear(nc=nc,
-                                                             e_buses=e_buses,
-                                                             b_buses=b_buses,
-                                                             i_buses=i_buses,
-                                                             voltage=pf_res.voltage,
-                                                             Sbus=pf_res.Sbus)
+        Seq, Ieq, Yeq, YBBp, Ybus = ward_reduction_non_linear(nc=nc,
+                                                              e_buses=e_buses,
+                                                              b_buses=b_buses,
+                                                              i_buses=i_buses,
+                                                              voltage=pf_res.voltage,
+                                                              Sbus=pf_res.Sbus)
         A_csc = Ybus.copy()
         A_csc.data = np.abs(A_csc.data)
 
@@ -208,9 +210,12 @@ def ward_reduction(grid: MultiCircuit,
 
     boundary_buses = [grid.buses[b_buses[i]] for i in range(n_boundary)]
 
-    # add boundary equivalent sub-grid
+    # arbitrary criteria: only keep branches which x is less than 10 * max(branches.x)
+    max_x = np.max(nc.passive_branch_data.X) * 10
+
+    # add boundary equivalent sub-grid: traverse only the triangular
     for i in range(n_boundary):
-        for j in range(n_boundary):
+        for j in range(i):
             if abs(Yeq[i, j]) > tol:
 
                 if i == j:
@@ -230,14 +235,16 @@ def ward_reduction(grid: MultiCircuit,
                     bus_to = boundary_buses[j]
 
                     z = - 1.0 / Yeq[i, j]
-                    series_reactance = dev.SeriesReactance(
-                        name=f"Equivalent boundary impedance {i}-{j}",
-                        bus_from=bus_from,
-                        bus_to=bus_to,
-                        r=z.real,
-                        x=z.imag
-                    )
-                    grid.add_series_reactance(series_reactance)
+
+                    if z.imag <= max_x:
+                        series_reactance = dev.SeriesReactance(
+                            name=f"Equivalent boundary impedance {b_buses[i]}-{b_buses[j]}",
+                            bus_from=bus_from,
+                            bus_to=bus_to,
+                            r=z.real,
+                            x=z.imag
+                        )
+                        grid.add_series_reactance(series_reactance)
 
     # Add loads at the boundary buses
     for i in range(n_boundary):
@@ -493,7 +500,11 @@ def ptdf_reduction_with_islands(grid: MultiCircuit,
 if __name__ == '__main__':
     import GridCalEngine as gce
 
-    fname = '/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids/grid_reduction_example.gridcal'
+    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids/grid_reduction_example.gridcal'
+    # reduction_bus_indices = np.array([0, 1, 2, 3, 7])
+    fname = '/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids/Matpower/case9.m'
+    reduction_bus_indices = np.array([0, 4, 7])
+
     grid_ = gce.open_file(fname)
     ptdf = gce.linear_power_flow(grid=grid_).PTDF
 
@@ -502,13 +513,11 @@ if __name__ == '__main__':
     #                             PTDF=ptdf,
     #                             tol=1e-8)
 
-    pf_res = gce.power_flow(grid_)
-
     logger_ = ward_reduction(grid=grid_,
-                             reduction_bus_indices=np.array([0, 1, 2, 3, 7]),
-                             pf_res=pf_res,
+                             reduction_bus_indices=reduction_bus_indices,
+                             pf_res=gce.power_flow(grid_),
                              add_power_loads=True,
-                             use_linear=False,
+                             use_linear=True,
                              tol=1e-8)
 
     logger_.print()

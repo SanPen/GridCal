@@ -1944,9 +1944,6 @@ def create_substation(grid: MultiCircuit,
             offset_y = offset_total_y
             voltage_levels.append(vl)
 
-            # add the vl graphics
-            # self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
-
         elif vl_template.vl_type == SubstationTypes.SingleBarWithBypass:
             vl, offset_total_x, offset_total_y = create_single_bar_with_bypass(
                 name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
@@ -1963,9 +1960,6 @@ def create_substation(grid: MultiCircuit,
             offset_x = offset_total_x
             offset_y = offset_total_y
             voltage_levels.append(vl)
-
-            # add the vl graphics
-            # self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
 
         elif vl_template.vl_type == SubstationTypes.SingleBarWithSplitter:
             vl, offset_total_x, offset_total_y = create_single_bar_with_splitter(
@@ -1984,9 +1978,6 @@ def create_substation(grid: MultiCircuit,
             offset_y = offset_total_y
             voltage_levels.append(vl)
 
-            # add the vl graphics
-            # self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
-
         elif vl_template.vl_type == SubstationTypes.DoubleBar:
             vl, offset_total_x, offset_total_y = create_double_bar(
                 name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
@@ -2004,8 +1995,9 @@ def create_substation(grid: MultiCircuit,
             offset_y = offset_total_y
             voltage_levels.append(vl)
 
-            # add the vl graphics
-            # self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+        elif vl_template.vl_type == SubstationTypes.DoubleBarWithBypass:
+            # TODO: Implement
+            pass
 
         elif vl_template.vl_type == SubstationTypes.DoubleBarWithTransference:
             vl, offset_total_x, offset_total_y = create_double_bar_with_transference_bar(
@@ -2024,28 +2016,9 @@ def create_substation(grid: MultiCircuit,
             offset_y = offset_total_y
             voltage_levels.append(vl)
 
-            # add the vl graphics
-            # self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
-
-        elif vl_template.vl_type == SubstationTypes.BreakerAndAHalf:
-            vl, offset_total_x, offset_total_y = create_breaker_and_a_half(
-                name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
-                grid=grid,
-                n_lines=vl_template.n_line_positions,
-                n_trafos=vl_template.n_transformer_positions,
-                v_nom=vl_template.voltage,
-                substation=se_object,
-                # country: Country = None,
-                include_disconnectors=vl_template.add_disconnectors,
-                offset_x=offset_x,
-                offset_y=offset_y,
-            )
-            offset_x = offset_total_x
-            offset_y = offset_total_y
-            voltage_levels.append(vl)
-
-            # add the vl graphics
-            # self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+        elif vl_template.vl_type == SubstationTypes.DoubleBarDuplex:
+            # TODO: Implement
+            pass
 
         elif vl_template.vl_type == SubstationTypes.Ring:
             vl, offset_total_x, offset_total_y = create_ring(
@@ -2064,7 +2037,24 @@ def create_substation(grid: MultiCircuit,
             offset_y = offset_total_y
             voltage_levels.append(vl)
 
-            # add the vl graphics
-            # self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+        elif vl_template.vl_type == SubstationTypes.BreakerAndAHalf:
+            vl, offset_total_x, offset_total_y = create_breaker_and_a_half(
+                name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
+                grid=grid,
+                n_lines=vl_template.n_line_positions,
+                n_trafos=vl_template.n_transformer_positions,
+                v_nom=vl_template.voltage,
+                substation=se_object,
+                # country: Country = None,
+                include_disconnectors=vl_template.add_disconnectors,
+                offset_x=offset_x,
+                offset_y=offset_y,
+            )
+            offset_x = offset_total_x
+            offset_y = offset_total_y
+            voltage_levels.append(vl)
+
+        else:
+            print(f"{vl_template.vl_type} not implemented :/")
 
     return se_object, voltage_levels

@@ -2727,6 +2727,15 @@ class MultiCircuit(Assets):
                     internal_set.add(f)
                     internal_set.add(t)
 
+        # buses cannot be in both the internal and boundary set
+        elms_to_remove = list()
+        for i in internal_set:
+            if i in boundary_set:
+                elms_to_remove.append(i)
+
+        for i in elms_to_remove:
+            internal_set.remove(i)
+
         # convert to arrays and sort
         external = np.sort(np.array(list(external_set)))
         boundary = np.sort(np.array(list(boundary_set)))
