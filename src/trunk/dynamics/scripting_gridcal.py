@@ -258,8 +258,8 @@ print(f"Converged: {res.converged}")
 print(res.get_bus_df())
 print(res.get_branch_df())
 
-grid.initialize_rms()
-pdb.set_trace()
+# grid.initialize_rms()
+
 #sys_block = compose_system_block(grid=grid, power_flow_results=res)  # after all the blocks changes
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -282,6 +282,7 @@ Sb3 = res.Sbus[2] / grid.Sbase
 Sb4 = res.Sbus[3] / grid.Sbase
 Sb7 = res.Sbus[6] / grid.Sbase
 Sb8 = res.Sbus[7] / grid.Sbase
+
 
 Sf = res.Sf / grid.Sbase
 St = res.St / grid.Sbase
@@ -1474,7 +1475,6 @@ for eq, val in residuals.items():
 # ---------------------------------------------------------------------------------------
 # Events
 # ---------------------------------------------------------------------------------------
-
 
 event1 = RmsEvent('Load', Pl0_7, 2500, Sb7.real - 0.05)
 # event2 = Event(Ql0, 5000, 0.3)

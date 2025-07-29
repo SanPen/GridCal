@@ -765,7 +765,7 @@ class BlockSolver:
         # build diff sparse matrix
         for time_step in range(n_steps):
             if time_step in rows:  # TODO: very expensive
-                for position in np.where(rows == time_step)[0]:
+                for position in np.where(rows == time_step):
                     prop_idx = self.uid2idx_params[cols[position][0].uid]
                     value = values[position]
                     diff_val = value - params_matrix_current[prop_idx]

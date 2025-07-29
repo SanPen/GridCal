@@ -55,17 +55,21 @@ comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulat
 # Load merged CSV
 i = 1
 merged_df = comparison
-merged_df['Pl_7_Gridcal'] = merged_df['Pl_7_Gridcal'] * (-100)
-merged_df[f"tm_{i}_Gridcal"] = merged_df[f"tm_{i}_Gridcal"] * (100)
-merged_df[f"t_e_{i}_Gridcal"] = merged_df[f"t_e_{i}_Gridcal"] * (100)
+# merged_df['Pl_7_Gridcal'] = merged_df['Pl_7_Gridcal'] * (-100)
+# merged_df[f"tm_{i}_Gridcal"] = merged_df[f"tm_{i}_Gridcal"] * (100)
+# merged_df[f"t_e_{i}_Gridcal"] = merged_df[f"t_e_{i}_Gridcal"] * (100)
+
+merged_df['Pl_Gridcal'] = merged_df['Pl_Gridcal'] * (-100)
+# merged_df[f"tm_Gridcal"] = merged_df[f"tm_Gridcal"] * (100)
+# merged_df[f"t_e_Gridcal"] = merged_df[f"t_e_Gridcal"] * (100)
 # Define variable pairs to compare (each pair goes into one subplot)
 
 
-variable_pairs = [
-     [f"omega_{i}_Gridcal", f"omega_andes_gen_{i}"],
-     ['Pl_7_Gridcal', 'Ppf_andes_load_0'],
-     [f"tm_{i}_Gridcal", f"tm_andes_gen_{i}"],
-     [f"t_e_{i}_Gridcal", f"te_andes_gen_{i}"]
+# variable_pairs = [
+#      [f"omega_{i}_Gridcal", f"omega_andes_gen_{i}"],
+#      ['Pl_7_Gridcal', 'Ppf_andes_load_0'],
+#      [f"tm_{i}_Gridcal", f"tm_andes_gen_{i}"],
+#      [f"t_e_{i}_Gridcal", f"te_andes_gen_{i}"]
 
     #  ['tm_2_Gridcal', 'tm_andes_gen_2'],
     #  ['tm_3_Gridcal', 'tm_andes_gen_3'],
@@ -80,7 +84,14 @@ variable_pairs = [
     #  ['Vline_from_11_Gridcal', 'v_andes_Bus_1'],
     #  ['Vline_from_14_Gridcal', 'v_andes_Bus_4'],
     #  ['Vline_from_13_Gridcal', 'v_andes_Bus_3'],
-]
+# ]
+
+variable_pairs = [
+     [f"omega_Gridcal", f"omega_andes_gen_1"],
+     ['Pl_Gridcal', 'Ppf_andes_load_0'],
+     # [f"tm_Gridcal", f"tm_andes_gen_1"],
+     # [f"t_e_Gridcal", f"te_andes_gen_1"]
+    ]
 
 # Automatically detect time columns
 time_column = merged_df['Time [s]']
@@ -106,15 +117,16 @@ for idx, (var1, var2) in enumerate(variable_pairs):
         ax.set_title(f"{var1} vs {var2}", fontsize=9)
         ax.set_xlabel("Time (s)", fontsize=8)
         ax.set_ylabel("Value (pu)", fontsize=8)
+        # ax.set_ylim([0.85, 1.15])
         ax.tick_params(axis='both', labelsize=7)
         ax.legend(fontsize=7, loc='best')
         ax.grid(True)
-        if idx == 0:
-            ax.set_ylim(0.998, 1.002)
-        if idx == 2 or idx == 3:
-            ax.set_ylim(6, 8)
-    else:
-        ax.set_visible(False)  # hide empty subplot
+    #     if idx == 0:
+    #         ax.set_ylim(0.85, 1.15)
+    #     if idx == 2 or idx == 3:
+    #         ax.set_ylim(6, 8)
+    # else:
+    #     ax.set_visible(False)  # hide empty subplot
 
 axes[-1].set_xlabel("Time (s)")
 plt.tight_layout(rect=[0, 0, 1, 0.97])

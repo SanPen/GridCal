@@ -35,7 +35,7 @@ andes.config_logger(stream_level=20)
 #ss = andes.run('Gen_Load/Gen_load_2.json', default_config=True)
 def main():
     andes.config_logger(stream_level=20)
-    ss = andes.load('Gen_Load/kundur_full_compare_orig.json', default_config=True)
+    ss = andes.load('Gen_Load/small_system_for_andes.json', default_config=True)
 
     ss.files.no_output = True
 
@@ -49,6 +49,8 @@ def main():
     ss.PQ.config.q2z = 0
     
     ss.PFlow.run()
+
+
 
     print(ss.Bus.v.v)
     print(ss.Bus.name.v)
@@ -122,7 +124,7 @@ def main():
     # Combine all into a single DataFrame
     df = pd.DataFrame({'Time [s]': time_history})
     df = pd.concat([df, omega_df, tm_df, te_df, Ppf_df, v_df], axis=1)
-    df.to_csv("simulation_andes_output_gridcal_powerflow.csv", index=False)
+    df.to_csv("simulation_andes_output.csv", index=False)
     print('simulation results saved in simulation_andes_output.csv')
 
 
