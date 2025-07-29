@@ -541,7 +541,7 @@ class Generator(GeneratorParent):
                     #delta: np.angle(Vm + (self.R1 + 1j * self.X1) * ((P_g - Q_g)/ Vm)),
                     #delta: Vm + (self.R1 + 1j * self.X1) * ((P_g - Q_g) / Vm),
                     delta: Vm + (self.R1 * self.X1) * ((P_g - Q_g)),
-                    omega: self.omega_ref,
+                    omega: Const(self.omega_ref),
                     # v_d: np.real(Vm * np.exp(-1j * (delta - np.pi / 2))),
                     # v_q: np.imag(Vm *np.exp(-1j * (delta - np.pi / 2))),
                     # i_d: np.real(np.exp(-1j * (delta - np.pi / 2)) * np.exp(-1j * (delta - np.pi / 2))),
@@ -554,7 +554,8 @@ class Generator(GeneratorParent):
                     psiq: -self.R1 * i_d - v_d,
                     vf: psid + self.X1 * i_d,
                     t_e: psid * i_q - psiq * i_d,
-                    tm: t_e
+                    tm: t_e,
+                    et: Const(0)
                 },
                 parameters=[],
 

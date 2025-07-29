@@ -274,6 +274,20 @@ class BlockSolver:
 
         return x
 
+    def sort_vars_from_uid(self, mapping: dict[int, float]) -> np.ndarray:
+        """
+        Helper function to build the initial vector
+        :param mapping: var->initial value mapping
+        :return: array matching with the mapping, matching the solver ordering
+        """
+        x = np.zeros(len(self._state_vars) + len(self._algebraic_vars), dtype=object)
+
+        for key, val in mapping.items():
+            i = self.uid2idx_vars[key]
+            x[i] = key
+
+        return x
+
     def build_init_vars_vector(self, mapping: dict[Var, float]) -> np.ndarray:
         """
         Helper function to build the initial vector
@@ -290,6 +304,24 @@ class BlockSolver:
                 raise ValueError(f"Missing variable {key} definition")
 
         return x
+
+    def build_init_vars_vector_from_uid(self, mapping: dict[int, float]) -> np.ndarray:
+        """
+        Helper function to build the initial vector
+        :param mapping: var->initial value mapping
+        :return: array matching with the mapping, matching the solver ordering
+        """
+        x = np.zeros(len(self._state_vars) + len(self._algebraic_vars))
+
+        for key, val in mapping.items():
+            if key in self.uid2idx_vars.keys():
+                i = self.uid2idx_vars[key]
+                x[i] = val
+            else:
+                raise ValueError(f"Missing uid {key} definition")
+
+        return x
+
 
     def build_init_params_vector(self, mapping: dict[Var, float]) -> np.ndarray:
         """
