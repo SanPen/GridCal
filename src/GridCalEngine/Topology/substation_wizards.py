@@ -3,10 +3,11 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-from typing import Tuple
+from typing import Tuple, List
 import GridCalEngine.Devices as dev
 from GridCalEngine import Country, BusGraphicType, SwitchGraphicType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.enumerations import SubstationTypes
 
 
 def create_single_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_nom: float,
@@ -41,7 +42,7 @@ def create_single_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_n
 
         bar = dev.Bus(f"{name} bar", substation=substation, Vnom=v_nom, voltage_level=vl,
                       width=max(n_lines, n_trafos) * bus_width + bus_width * 2 + (x_dist - bus_width) * (
-                          max(n_lines, n_trafos) - 1),
+                              max(n_lines, n_trafos) - 1),
                       xpos=offset_x - bus_width, ypos=offset_y + y_dist * 3, country=country,
                       graphic_type=BusGraphicType.BusBar)
         grid.add_bus(bar)
@@ -103,7 +104,7 @@ def create_single_bar(name, grid: MultiCircuit, n_lines: int, n_trafos: int, v_n
 
         bar = dev.Bus(f"{name} bar", substation=substation, Vnom=v_nom, voltage_level=vl,
                       width=max(n_lines, n_trafos) * bus_width + bus_width * 2 + (x_dist - bus_width) * (
-                          max(n_lines, n_trafos) - 1),
+                              max(n_lines, n_trafos) - 1),
                       xpos=offset_x - bus_width, ypos=offset_y + y_dist, country=country,
                       graphic_type=BusGraphicType.BusBar)
         grid.add_bus(bar)
@@ -172,7 +173,7 @@ def create_single_bar_with_bypass(name, grid: MultiCircuit, n_lines: int, n_traf
 
         bar = dev.Bus(f"{name} bar", substation=substation, Vnom=v_nom, voltage_level=vl,
                       width=max(n_lines, n_trafos) * bus_width + bus_width * 2 + (x_dist - bus_width) * (
-                          max(n_lines, n_trafos) - 1),
+                              max(n_lines, n_trafos) - 1),
                       xpos=offset_x - bus_width, ypos=offset_y + y_dist * 3, country=country,
                       graphic_type=BusGraphicType.BusBar)
         grid.add_bus(bar)
@@ -239,7 +240,7 @@ def create_single_bar_with_bypass(name, grid: MultiCircuit, n_lines: int, n_traf
 
         bar = dev.Bus(f"{name} bar", substation=substation, Vnom=v_nom, voltage_level=vl,
                       width=max(n_lines, n_trafos) * bus_width + bus_width * 2 + (x_dist - bus_width) * (
-                          max(n_lines, n_trafos) - 1),
+                              max(n_lines, n_trafos) - 1),
                       xpos=offset_x - bus_width, ypos=offset_y + y_dist * 1, country=country,
                       graphic_type=BusGraphicType.BusBar)
         grid.add_bus(bar)
@@ -318,9 +319,9 @@ def create_single_bar_with_splitter(name, grid: MultiCircuit, n_lines: int, n_tr
     n_trafos_bar_2 = n_trafos - n_trafos_bar_1
 
     width_bar_1 = max(n_lines_bar_1, n_trafos_bar_1) * bus_width + bus_width * 2 + (x_dist - bus_width) * (
-        max(n_lines_bar_1, n_trafos_bar_1) - 1)
+            max(n_lines_bar_1, n_trafos_bar_1) - 1)
     width_bar_2 = max(n_lines_bar_2, n_trafos_bar_2) * bus_width + bus_width * 2 + (x_dist - bus_width) * (
-        max(n_lines_bar_2, n_trafos_bar_2) - 1)
+            max(n_lines_bar_2, n_trafos_bar_2) - 1)
 
     if include_disconnectors:
 
@@ -746,7 +747,7 @@ def create_double_bar_with_transference_bar(name, grid: MultiCircuit, n_lines: i
 
         transfer_bar = dev.Bus(f"{name} transfer bar", substation=substation, Vnom=v_nom, voltage_level=vl,
                                width=(max(n_lines, n_trafos) + 1) * bus_width + bus_width * 3 + (
-                                   x_dist - bus_width) * max(
+                                       x_dist - bus_width) * max(
                                    n_lines,
                                    n_trafos),
                                xpos=offset_x - bus_width, ypos=offset_y + y_dist * 5, country=country,
@@ -881,7 +882,7 @@ def create_double_bar_with_transference_bar(name, grid: MultiCircuit, n_lines: i
 
         transfer_bar = dev.Bus(f"{name} transfer bar", substation=substation, Vnom=v_nom, voltage_level=vl,
                                width=(max(n_lines, n_trafos) + 1) * bus_width + bus_width * 3 + (
-                                   x_dist - bus_width) * max(
+                                       x_dist - bus_width) * max(
                                    n_lines,
                                    n_trafos),
                                xpos=offset_x - bus_width, ypos=offset_y + y_dist * 4, country=country,
@@ -1176,3 +1177,157 @@ def create_breaker_and_a_half(name, grid: MultiCircuit, n_lines: int, n_trafos: 
     offset_total_y = max(l_y_pos, default=0) + y_dist
 
     return vl, offset_total_x, offset_total_y
+
+
+def create_substation(grid: MultiCircuit,
+                      se_name: str,
+                      se_code: str,
+                      lat: float,
+                      lon: float,
+                      vl_templates: List[dev.VoltageLevelTemplate]) -> Tuple[dev.Substation, List[dev.VoltageLevel]]:
+    """
+
+    :param grid:
+    :param se_name:
+    :param se_code:
+    :param lat:
+    :param lon:
+    :param vl_templates:
+    :return: se_object, [vl list]
+    """
+    # create the SE
+    se_object = dev.Substation(name=se_name,
+                               code=se_code,
+                               latitude=lat,
+                               longitude=lon)
+
+    grid.add_substation(obj=se_object)
+    # substation_graphics = self.add_api_substation(api_object=se_object, lat=lat, lon=lon)
+
+    voltage_levels = list()
+
+    offset_x = 0
+    offset_y = 0
+    for vl_template in vl_templates:
+
+        if vl_template.vl_type == SubstationTypes.SingleBar:
+            vl, offset_total_x, offset_total_y = create_single_bar(
+                name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
+                grid=grid,
+                n_lines=vl_template.n_line_positions,
+                n_trafos=vl_template.n_transformer_positions,
+                v_nom=vl_template.voltage,
+                substation=se_object,
+                # country: Country = None,
+                include_disconnectors=vl_template.add_disconnectors,
+                offset_x=offset_x,
+                offset_y=offset_y,
+            )
+            offset_x = offset_total_x
+            offset_y = offset_total_y
+            voltage_levels.append(vl)
+
+            # add the vl graphics
+            # self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+
+        elif vl_template.vl_type == SubstationTypes.SingleBarWithBypass:
+            vl, offset_total_x, offset_total_y = create_single_bar_with_bypass(
+                name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
+                grid=grid,
+                n_lines=vl_template.n_line_positions,
+                n_trafos=vl_template.n_transformer_positions,
+                v_nom=vl_template.voltage,
+                substation=se_object,
+                # country: Country = None,
+                include_disconnectors=vl_template.add_disconnectors,
+                offset_x=offset_x,
+                offset_y=offset_y,
+            )
+            offset_x = offset_total_x
+            offset_y = offset_total_y
+            voltage_levels.append(vl)
+
+            # add the vl graphics
+            # self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+
+        elif vl_template.vl_type == SubstationTypes.SingleBarWithSplitter:
+            vl, offset_total_x, offset_total_y = create_single_bar_with_splitter(
+                name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
+                grid=grid,
+                n_lines=vl_template.n_line_positions,
+                n_trafos=vl_template.n_transformer_positions,
+                v_nom=vl_template.voltage,
+                substation=se_object,
+                # country: Country = None,
+                include_disconnectors=vl_template.add_disconnectors,
+                offset_x=offset_x,
+                offset_y=offset_y,
+            )
+            offset_x = offset_total_x
+            offset_y = offset_total_y
+            voltage_levels.append(vl)
+
+            # add the vl graphics
+            # self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+
+        elif vl_template.vl_type == SubstationTypes.DoubleBar:
+            vl, offset_total_x, offset_total_y = create_double_bar(
+                name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
+                grid=grid,
+                n_lines=vl_template.n_line_positions,
+                n_trafos=vl_template.n_transformer_positions,
+                v_nom=vl_template.voltage,
+                substation=se_object,
+                # country: Country = None,
+                include_disconnectors=vl_template.add_disconnectors,
+                offset_x=offset_x,
+                offset_y=offset_y,
+            )
+            offset_x = offset_total_x
+            offset_y = offset_total_y
+            voltage_levels.append(vl)
+
+            # add the vl graphics
+            # self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+
+        elif vl_template.vl_type == SubstationTypes.DoubleBarWithTransference:
+            vl, offset_total_x, offset_total_y = create_double_bar_with_transference_bar(
+                name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
+                grid=grid,
+                n_lines=vl_template.n_line_positions,
+                n_trafos=vl_template.n_transformer_positions,
+                v_nom=vl_template.voltage,
+                substation=se_object,
+                # country: Country = None,
+                include_disconnectors=vl_template.add_disconnectors,
+                offset_x=offset_x,
+                offset_y=offset_y,
+            )
+            offset_x = offset_total_x
+            offset_y = offset_total_y
+            voltage_levels.append(vl)
+
+            # add the vl graphics
+            # self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+
+        elif vl_template.vl_type == SubstationTypes.BreakerAndAHalf:
+            vl, offset_total_x, offset_total_y = create_breaker_and_a_half(
+                name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
+                grid=grid,
+                n_lines=vl_template.n_line_positions,
+                n_trafos=vl_template.n_transformer_positions,
+                v_nom=vl_template.voltage,
+                substation=se_object,
+                # country: Country = None,
+                include_disconnectors=vl_template.add_disconnectors,
+                offset_x=offset_x,
+                offset_y=offset_y,
+            )
+            offset_x = offset_total_x
+            offset_y = offset_total_y
+            voltage_levels.append(vl)
+
+            # add the vl graphics
+            # self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+
+    return se_object, voltage_levels

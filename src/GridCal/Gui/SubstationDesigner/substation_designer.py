@@ -11,47 +11,8 @@ from GridCal.Gui.SubstationDesigner.substation_designer_gui import Ui_Dialog
 from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice
-from GridCalEngine.enumerations import DeviceType, SubstationTypes
-import GridCalEngine.Devices as dev
-
-
-class VoltageLevelTemplate(EditableDevice):
-
-    def __init__(self, name='', code='', idtag: str | None = None,
-                 device_type=DeviceType.GenericArea, voltage: float = 10):
-        """
-
-        :param name:
-        :param code:
-        :param idtag:
-        :param device_type:
-        :param voltage:
-        """
-        EditableDevice.__init__(self,
-                                name=name,
-                                code=code,
-                                idtag=idtag,
-                                device_type=device_type)
-
-        self.vl_type: SubstationTypes = SubstationTypes.SingleBar
-        self.voltage: float = voltage
-        self.n_line_positions: int = 0
-        self.n_transformer_positions: int = 0
-        self.add_disconnectors: bool = False
-
-        self.register(key='vl_type', units='', tpe=SubstationTypes, definition='Voltage level type', editable=True)
-
-        self.register(key='voltage', units='KV', tpe=float, definition='Voltage.', editable=True)
-
-        self.register(key='n_line_positions', units='', tpe=int,
-                      definition='Number of line positions to add.', editable=True)
-
-        self.register(key='n_transformer_positions', units='', tpe=int,
-                      definition='Number of transformer positions to add.', editable=True)
-
-        self.register(key='add_disconnectors', units='', tpe=bool,
-                      definition='Add disconnectors additionally to the circuit breakers', editable=True)
+from GridCalEngine.Devices.Substation.voltage_level_template import VoltageLevelTemplate
+from GridCalEngine.enumerations import DeviceType
 
 
 class SubstationDesigner(QtWidgets.QDialog):
