@@ -40,7 +40,7 @@
 |facility                |Facility                |       |False    |         |Facility where this is located                                            |False      |       |
 |technologies            |AssociationsList        |p.u.   |False    |         |List of technologies                                                      |False      |       |
 |scalable                |bool                    |       |False    |         |Is the injection scalable?                                                |False      |       |
-|shift_key               |float                   |       |False    |         |Shift key for net transfer capacity                                       |False      |       |
+|shift_key               |float                   |       |False    |         |Shift key for net transfer capacity                                       |True       |       |
 |use_kw                  |bool                    |       |False    |         |Consider the injections in kW and kVAr?                                   |False      |       |
 |conn                    |enum ShuntConnectionType|       |False    |         |Connection type for 3-phase studies                                       |False      |       |
 |control_bus             |Bus                     |       |False    |         |Control bus                                                               |True       |       |
@@ -275,7 +275,7 @@
 |facility           |Facility                |            |False    |         |Facility where this is located                                       |False      |       |
 |technologies       |AssociationsList        |p.u.        |False    |         |List of technologies                                                 |False      |       |
 |scalable           |bool                    |            |False    |         |Is the injection scalable?                                           |False      |       |
-|shift_key          |float                   |            |False    |         |Shift key for net transfer capacity                                  |False      |       |
+|shift_key          |float                   |            |False    |         |Shift key for net transfer capacity                                  |True       |       |
 |use_kw             |bool                    |            |False    |         |Consider the injections in kW and kVAr?                              |False      |       |
 |conn               |enum ShuntConnectionType|            |False    |         |Connection type for 3-phase studies                                  |False      |       |
 |G                  |float                   |MW          |False    |         |Active power                                                         |True       |       |
@@ -340,7 +340,7 @@
 |facility           |Facility                |     |False    |         |Facility where this is located                        |False      |       |
 |technologies       |AssociationsList        |p.u. |False    |         |List of technologies                                  |False      |       |
 |scalable           |bool                    |     |False    |         |Is the injection scalable?                            |False      |       |
-|shift_key          |float                   |     |False    |         |Shift key for net transfer capacity                   |False      |       |
+|shift_key          |float                   |     |False    |         |Shift key for net transfer capacity                   |True       |       |
 |use_kw             |bool                    |     |False    |         |Consider the injections in kW and kVAr?               |False      |       |
 |conn               |enum ShuntConnectionType|     |False    |         |Connection type for 3-phase studies                   |False      |       |
 |Ir                 |float                   |MW   |False    |         |Active power of the current component at V=1.0 p.u.   |True       |       |
@@ -428,7 +428,7 @@
 |facility             |Facility                |       |False    |         |Facility where this is located                                           |False      |       |
 |technologies         |AssociationsList        |p.u.   |False    |         |List of technologies                                                     |False      |       |
 |scalable             |bool                    |       |False    |         |Is the injection scalable?                                               |False      |       |
-|shift_key            |float                   |       |False    |         |Shift key for net transfer capacity                                      |False      |       |
+|shift_key            |float                   |       |False    |         |Shift key for net transfer capacity                                      |True       |       |
 |use_kw               |bool                    |       |False    |         |Consider the injections in kW and kVAr?                                  |False      |       |
 |conn                 |enum ShuntConnectionType|       |False    |         |Connection type for 3-phase studies                                      |False      |       |
 |P                    |float                   |MW     |False    |         |Active power                                                             |True       |       |
@@ -610,7 +610,7 @@
 |facility                |Facility                |       |False    |         |Facility where this is located                                            |False      |       |
 |technologies            |AssociationsList        |p.u.   |False    |         |List of technologies                                                      |False      |       |
 |scalable                |bool                    |       |False    |         |Is the injection scalable?                                                |False      |       |
-|shift_key               |float                   |       |False    |         |Shift key for net transfer capacity                                       |False      |       |
+|shift_key               |float                   |       |False    |         |Shift key for net transfer capacity                                       |True       |       |
 |use_kw                  |bool                    |       |False    |         |Consider the injections in kW and kVAr?                                   |False      |       |
 |conn                    |enum ShuntConnectionType|       |False    |         |Connection type for 3-phase studies                                       |False      |       |
 |control_bus             |Bus                     |       |False    |         |Control bus                                                               |True       |       |
@@ -802,7 +802,7 @@
 |facility           |Facility                |     |False    |         |Facility where this is located                                 |False      |       |
 |technologies       |AssociationsList        |p.u. |False    |         |List of technologies                                           |False      |       |
 |scalable           |bool                    |     |False    |         |Is the injection scalable?                                     |False      |       |
-|shift_key          |float                   |     |False    |         |Shift key for net transfer capacity                            |False      |       |
+|shift_key          |float                   |     |False    |         |Shift key for net transfer capacity                            |True       |       |
 |use_kw             |bool                    |     |False    |         |Consider the injections in kW and kVAr?                        |False      |       |
 |conn               |enum ShuntConnectionType|     |False    |         |Connection type for 3-phase studies                            |False      |       |
 |P                  |float                   |MW   |False    |         |Active power                                                   |True       |       |
@@ -1015,7 +1015,7 @@
 |facility           |Facility                |     |False    |         |Facility where this is located                                       |False      |       |
 |technologies       |AssociationsList        |p.u. |False    |         |List of technologies                                                 |False      |       |
 |scalable           |bool                    |     |False    |         |Is the injection scalable?                                           |False      |       |
-|shift_key          |float                   |     |False    |         |Shift key for net transfer capacity                                  |False      |       |
+|shift_key          |float                   |     |False    |         |Shift key for net transfer capacity                                  |True       |       |
 |use_kw             |bool                    |     |False    |         |Consider the injections in kW and kVAr?                              |False      |       |
 |conn               |enum ShuntConnectionType|     |False    |         |Connection type for 3-phase studies                                  |False      |       |
 |G                  |float                   |MW   |False    |         |Active power                                                         |True       |       |
@@ -1055,7 +1055,7 @@
 |facility           |Facility                |     |False    |         |Facility where this is located                        |False      |       |
 |technologies       |AssociationsList        |p.u. |False    |         |List of technologies                                  |False      |       |
 |scalable           |bool                    |     |False    |         |Is the injection scalable?                            |False      |       |
-|shift_key          |float                   |     |False    |         |Shift key for net transfer capacity                   |False      |       |
+|shift_key          |float                   |     |False    |         |Shift key for net transfer capacity                   |True       |       |
 |use_kw             |bool                    |     |False    |         |Consider the injections in kW and kVAr?               |False      |       |
 |conn               |enum ShuntConnectionType|     |False    |         |Connection type for 3-phase studies                   |False      |       |
 |P                  |float                   |MW   |False    |         |Active power                                          |True       |       |
