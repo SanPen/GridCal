@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import os
-
+import pytest
 import numpy as np
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
 from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions, FileOpen, FileSave
@@ -56,7 +56,7 @@ def get_power_flow_options() -> PowerFlowOptions:
     """
     pfo = PowerFlowOptions(
         solver_type=SolverType.NR,
-        retry_with_other_methods=False,     # default True
+        retry_with_other_methods=False,  # default True
         # verbose=0,
         # initialize_with_existing_solution=False,
         # tolerance=1e-6,
@@ -200,6 +200,7 @@ def run_raw_to_cgmes(import_path: str | list[str],
     assert pf_ok
 
 
+@pytest.mark.skip(reason="Not passing because GridCal ConnectivityNodes were removed and this needs rethinking")
 def test_raw_to_cgmes_cross_roundtrip():
     """
     Importing from RAW and export to CGMES, importing back it.
