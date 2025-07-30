@@ -191,14 +191,14 @@ def test_ieee_13_bus_feeder():
     load_646 = gce.Load(G1=0.0,
                         B1=0.0,
                         G2=0.230,
-                        B2=-0.132,
+                        B2=0.132,
                         G3=0.0,
                         B3=0.0)
     load_646.conn = ShuntConnectionType.Delta
     grid.add_load(bus=bus_646, api_obj=load_646)
 
     load_652 = gce.Load(G1=0.128,
-                        B1=-0.086,
+                        B1=0.086,
                         G2=0.0,
                         B2=0.0,
                         G3=0.0,
