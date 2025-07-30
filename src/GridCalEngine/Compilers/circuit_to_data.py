@@ -58,28 +58,10 @@ def delta2StarAdmittance(Yab: complex,
     :return: Ya, Yb, Yc
     """
     return np.array([
-        (Yab * Ybc + Ybc * Yca + Yca * Yab) / (Ybc + 1e-20),
-        (Yab * Ybc + Ybc * Yca + Yca * Yab) / (Yca + 1e-20),
-        (Yab * Ybc + Ybc * Yca + Yca * Yab) / (Yab + 1e-20)
+        [Yab + Yca, -Yab, -Yca],
+        [-Yab, Yab + Ybc, -Ybc],
+        [-Yca, -Ybc, Ybc + Yca]
     ])
-
-
-# def delta2StarCurrent(Iab: complex,
-#                       Ibc: complex,
-#                       Ica: complex):
-#     """
-#     Converts delta to star in currents
-#     :param Iab:
-#     :param Ibc:
-#     :param Ica:
-#     :return: Ia, Ib, Ic
-#     """
-#     return np.array([
-#         Iab - Ica,
-#         Ibc - Iab,
-#         Ica - Ibc
-#     ])
-
 
 def set_bus_control_voltage(i: int,
                             j: int,
@@ -356,9 +338,9 @@ def get_load_data(data: LoadData,
                         data.I3_star[3 * ii + 1] = complex(elm.Ir2_prof[t_idx], elm.Ii2_prof[t_idx])
                         data.I3_star[3 * ii + 2] = complex(elm.Ir3_prof[t_idx], elm.Ii3_prof[t_idx])
 
-                        data.Y3_star[3 * ii + 0] = complex(elm.G1_prof[t_idx], elm.B1_prof[t_idx])
-                        data.Y3_star[3 * ii + 1] = complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx])
-                        data.Y3_star[3 * ii + 2] = complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
+                        data.Y3_star[3 * ii + 0,3 * ii + 0] = complex(elm.G1_prof[t_idx], elm.B1_prof[t_idx])
+                        data.Y3_star[3 * ii + 1,3 * ii + 1] = complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx])
+                        data.Y3_star[3 * ii + 2,3 * ii + 2] = complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
 
                     elif elm.conn == ShuntConnectionType.Delta:
                         data.S3_delta[3 * ii + 0] = complex(elm.Pa_prof[t_idx], elm.Qa_prof[t_idx])
@@ -400,9 +382,9 @@ def get_load_data(data: LoadData,
                             data.I3_star[3 * ii + 1] = complex(elm.Ir2, elm.Ii2)
                             data.I3_star[3 * ii + 2] = complex(elm.Ir3, elm.Ii3)
 
-                            data.Y3_star[3 * ii + 0] = complex(elm.G1, -elm.B1) * 3
-                            data.Y3_star[3 * ii + 1] = complex(elm.G2, -elm.B2) * 3
-                            data.Y3_star[3 * ii + 2] = complex(elm.G3, -elm.B3) * 3
+                            data.Y3_star[3 * ii + 0, 3 * ii + 0] = complex(elm.G1, -elm.B1) * 3
+                            data.Y3_star[3 * ii + 1,3 * ii + 1] = complex(elm.G2, -elm.B2) * 3
+                            data.Y3_star[3 * ii + 2,3 * ii + 2] = complex(elm.G3, -elm.B3) * 3
 
                         elif elm.conn == ShuntConnectionType.Delta:
                             data.S3_delta[3 * ii + 0] = complex(elm.Pa, elm.Qa)
@@ -410,7 +392,7 @@ def get_load_data(data: LoadData,
                             data.S3_delta[3 * ii + 2] = complex(elm.Pc, elm.Qc)
 
                             if elm.G1 > 0 and elm.G2 > 0 and elm.G3 > 0:
-                                data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
+                                data.Y3_star[3*ii:3*ii+3, 3*ii:3*ii+3] = delta2StarAdmittance(
                                     Yab=complex(elm.G1, -elm.B1),
                                     Ybc=complex(elm.G2, -elm.B2),
                                     Yca=complex(elm.G3, -elm.B3)
@@ -746,13 +728,13 @@ def get_shunt_data(
                 if fill_three_phase:
                     if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
 
-                        data.Y3_star[3 * ii + 0] = complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx])
-                        data.Y3_star[3 * ii + 1] = complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx])
-                        data.Y3_star[3 * ii + 2] = complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
+                        data.Y3_star[3 * ii + 0,3 * ii + 0] = complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx])
+                        data.Y3_star[3 * ii + 1,3 * ii + 1] = complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx])
+                        data.Y3_star[3 * ii + 2,3 * ii + 2] = complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
+                        data.Y3_star[3 * ii + idx3, 3 * ii + idx3] = delta2StarAdmittance(
                             Yab=complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx]),
                             Ybc=complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx]),
                             Yca=complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
@@ -769,17 +751,18 @@ def get_shunt_data(
 
                     if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
 
-                        data.Y3_star[3 * ii + 0] = complex(elm.Ga, elm.Ba)
-                        data.Y3_star[3 * ii + 1] = complex(elm.Gb, elm.Bb)
-                        data.Y3_star[3 * ii + 2] = complex(elm.Gc, elm.Bc)
+                        data.Y3_star[3 * ii + 0,3 * ii + 0] = complex(elm.Ga, elm.Ba)
+                        data.Y3_star[3 * ii + 1,3 * ii + 1] = complex(elm.Gb, elm.Bb)
+                        data.Y3_star[3 * ii + 2,3 * ii + 2] = complex(elm.Gc, elm.Bc)
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
+                        data.Y3_star[3 * ii + idx3, 3 * ii + idx3] = delta2StarAdmittance(
                             Yab=complex(elm.Ga, elm.Ba),
                             Ybc=complex(elm.Gb, elm.Bb),
                             Yca=complex(elm.Gc, elm.Bc)
                         )
+                        print()
 
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")
@@ -822,13 +805,13 @@ def get_shunt_data(
                 if fill_three_phase:
                     if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
 
-                        data.Y3_star[3 * ii + 0] = complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx])
-                        data.Y3_star[3 * ii + 1] = complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx])
-                        data.Y3_star[3 * ii + 2] = complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
+                        data.Y3_star[3 * ii + 0,3 * ii + 0] = complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx])
+                        data.Y3_star[3 * ii + 1,3 * ii + 1] = complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx])
+                        data.Y3_star[3 * ii + 2,3 * ii + 2] = complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
+                        data.Y3_star[3 * ii + idx3, 3 * ii + idx3] = delta2StarAdmittance(
                             Yab=complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx]),
                             Ybc=complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx]),
                             Yca=complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
@@ -867,13 +850,13 @@ def get_shunt_data(
 
                     if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
 
-                        data.Y3_star[3 * ii + 0] = complex(elm.Ga, elm.Ba)
-                        data.Y3_star[3 * ii + 1] = complex(elm.Gb, elm.Bb)
-                        data.Y3_star[3 * ii + 2] = complex(elm.Gc, elm.Bc)
+                        data.Y3_star[3 * ii + 0,3 * ii + 0] = complex(elm.Ga, elm.Ba)
+                        data.Y3_star[3 * ii + 1,3 * ii + 1] = complex(elm.Gb, elm.Bb)
+                        data.Y3_star[3 * ii + 2,3 * ii + 2] = complex(elm.Gc, elm.Bc)
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
+                        data.Y3_star[3 * ii + idx3, 3 * ii + idx3] = delta2StarAdmittance(
                             Yab=complex(elm.Ga, elm.Ba),
                             Ybc=complex(elm.Gb, elm.Bb),
                             Yca=complex(elm.Gc, elm.Bc)

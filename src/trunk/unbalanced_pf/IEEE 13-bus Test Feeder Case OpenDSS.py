@@ -143,7 +143,7 @@ Loads
 # load_634.conn = ShuntConnectionType.GroundedStar
 # grid.add_load(bus=bus_634, api_obj=load_634)
 
-# Three-phase Star Current Load
+# Three-phase Star Current Load (Validated with OpenDSS)
 # load_634 = gce.Load(Ir1=0.160,
 #                     Ii1=0.110,
 #                     Ir2=0.120,
@@ -173,7 +173,7 @@ Loads
 # load_634.conn = ShuntConnectionType.Delta
 # grid.add_load(bus=bus_634, api_obj=load_634)
 
-# Three-phase Delta Current Load
+# Three-phase Delta Current Load (Validated with OpenDSS)
 # load_634 = gce.Load(Ir1=0.160,
 #                     Ii1=0.110,
 #                     Ir2=0.120,
