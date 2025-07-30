@@ -43,15 +43,23 @@ def main():
 
 
 
-    print(ss.Bus.v.v)
-    print(ss.Bus.name.v)
+    voltages = ss.Bus.v.v
+    angles = ss.Bus.a.v
+    names = ss.Bus.name.v
+    for i, (v, a) in enumerate(zip(voltages,angles)):
+        print(f"Bus {names[i]}: {v:.4f} pu")
+        # print(f"Bus {names[i]}: {a:.4f} pu")
 
-    # config TDS
-    # total_time = 10
-    # tstep = 0.001
-    # ss.TDS.config.tf = total_time
-    # ss.TDS.config.tstep = tstep
-    # ss.TDS.config.shrinkt = 0
+
+     # # to make PQ behave as constant power load
+    # ss.PQ.config.p2p = 1.0
+    # ss.PQ.config.p2i = 0
+    # ss.PQ.config.p2z = 0
+    # ss.PQ.pq2z = 0
+    # ss.PQ.config.q2q = 1.0
+    # ss.PQ.config.q2i = 0
+    # ss.PQ.config.q2z = 0
+    
 
     tds = ss.TDS
     tds.config.fixt = 1
