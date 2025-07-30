@@ -49,6 +49,7 @@ bus2 = gce.Bus(name="Bus2", Vnom=10)
 grid.add_bus(bus1)
 grid.add_bus(bus2)
 
+
 line = gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2,
                 r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
 grid.add_line(line)
@@ -119,6 +120,8 @@ line_block = Block(
     algebraic_vars=[dline_from, Vline_from, dline_to, Vline_to],
     parameters=[]
 )
+
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Load
@@ -265,7 +268,6 @@ psid0 = ra.value * i_q0 + v_q0
 psiq0 = -ra.value * i_d0 - v_d0
 
 vf0 = psid0 + xd.value * i_d0
-print(f"vf = {vf0}")
 
 params_mapping = {
     Pl0: Sb2.real

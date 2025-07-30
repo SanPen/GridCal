@@ -551,6 +551,10 @@ class Load(LoadParent):
         if self.rms_model.empty():
             Ql = Var("Ql")
             Pl = Var("Pl")
+            Vm = self.bus.rms_model.model.E(DynamicVarType.Vm)
+            Va = self.bus.rms_model.model.E(DynamicVarType.Va)
+
+
 
             self.rms_model.model = Block(
                 algebraic_eqs=[
@@ -558,6 +562,8 @@ class Load(LoadParent):
                     Ql - (self.Q / Sbase)
                 ],
                 algebraic_vars=[Ql, Pl],
+                init_eqs= {
+                },
                 parameters=[],
                 external_mapping={
                     DynamicVarType.P: Pl,

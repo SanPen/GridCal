@@ -18,7 +18,8 @@ from typing import Any, Callable, ClassVar, Dict, Mapping, Union, List, Sequence
 
 # from GridCalEngine.Utils.Symbolic.events import EventParam
 
-NUMBER = Union[int, float]
+NUMBER = NUMBER = Union[int, float, complex]
+
 NAME = 'name'
 
 
@@ -38,7 +39,7 @@ def _new_uid() -> int:
 def _to_expr(val: Any) -> "Expr":
     if isinstance(val, Expr):
         return val
-    if isinstance(val, (int, float)):
+    if isinstance(val, (int, float, complex)):
         return Const(val)
     raise TypeError(f"Cannot convert {val!r} to Expr")
 
@@ -462,6 +463,8 @@ class Func(Expr):
         "atan": math.atan,
         "sinh": math.sinh,
         "cosh": math.cosh,
+        "conj": np.conj,
+
         "stepwise": _stepwise,
         "heaviside": _heaviside
     })
@@ -554,6 +557,7 @@ acos = _make_unary("acos")
 atan = _make_unary("atan")
 sinh = _make_unary("sinh")
 cosh = _make_unary("cosh")
+conj = _make_unary("conj")
 stepwise = _make_unary("stepwise")
 heaviside = _make_unary("heaviside")
 
@@ -705,14 +709,41 @@ def _emit(expr: Expr, uid_map_vars: Dict[int, str], uid_map_params: Dict[int, st
     if isinstance(expr, Var):
         if expr.uid in uid_map_vars.keys():
             return uid_map_vars[expr.uid]  # positional variable
-        else: 
+        else:
             return uid_map_params[expr.uid]
     if isinstance(expr, UnOp):
         return f"-({_emit(expr.operand, uid_map_vars, uid_map_params)})"
     if isinstance(expr, BinOp):
         return f"({_emit(expr.left, uid_map_vars, uid_map_params)} {expr.op} {_emit(expr.right, uid_map_vars, uid_map_params)})"
     if isinstance(expr, Func):
-        return f"math.{expr.name}({_emit(expr.arg, uid_map_vars, uid_map_params)})"
+        if expr.name == "conj":
+            return f"np.conj({_emit(expr.arg, uid_map_vars, uid_map_params)})"
+        else:
+            return f"math.{expr.name}({_emit(expr.arg, uid_map_vars, uid_map_params)})"
+
+    raise TypeError(type(expr))
+
+def _emit_one(expr: Expr, uid_map_vars: Dict[int, str]) -> str:
+    """
+    Emit a pure-Python (Numba-friendly) expression string
+    :param expr: Expr (expression)
+    :param uid_map:
+    :return:
+    """
+    if isinstance(expr, Const):
+        return repr(expr.value)
+    if isinstance(expr, Var):
+        return uid_map_vars[expr.uid]  # positional variable
+    if isinstance(expr, UnOp):
+        return f"-({_emit_one(expr.operand, uid_map_vars)})"
+    if isinstance(expr, BinOp):
+        return f"({_emit_one(expr.left, uid_map_vars)} {expr.op} {_emit_one(expr.right, uid_map_vars)})"
+    if isinstance(expr, Func):
+        if expr.name == "conj":
+            return f"np.conj({_emit_one(expr.arg, uid_map_vars)})"
+        else:
+            return f"math.{expr.name}({_emit_one(expr.arg, uid_map_vars)})"
+
     raise TypeError(type(expr))
 
 
@@ -768,7 +799,7 @@ def _compile(expressions: Sequence[Expr],
     src += f"    out = np.zeros({len(expressions)})\n"
     src += "\n".join([f"    out[{i}] = {_emit(e, uid2sym, uid_map_params)}" for i, e in enumerate(expressions)]) + "\n"
     src += f"    return out"
-    ns: Dict[str, Any] = {"math": math}
+    ns: Dict[str, Any] = {"math": math, "np": np}
     exec(src, ns)
     fn = nb.njit(ns["_f"], fastmath=True)
 
@@ -789,6 +820,7 @@ __all__ = [
     "asin", "acos", "atan", "sinh", "cosh",
     "diff", "eval_uid",
     "find_vars_order",
+    "conj",
     "stepwise",
     "heaviside"
 ]

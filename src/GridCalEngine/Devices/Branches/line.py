@@ -724,15 +724,13 @@ class Line(BranchParent):
             Vaf = self.bus_from.rms_model.model.E(DynamicVarType.Va)
             Vmt = self.bus_to.rms_model.model.E(DynamicVarType.Vm)
             Vat = self.bus_to.rms_model.model.E(DynamicVarType.Va)
-            daft = Vaf - Vat
-            datf = Vat - Vaf
 
             self.rms_model.model = Block(
                 algebraic_eqs=[
-                    Pf - ((Vmf ** 2 * g) - g * Vmf * Vmt * cos(daft) + b * Vmf * Vmt * cos(daft + np.pi / 2)),
-                    Qf - (Vmf ** 2 * (-bsh / 2 - b) - g * Vmf * Vmt * sin(daft) + b * Vmf * Vmt * sin(daft + np.pi / 2)),
-                    Pt - ((Vmt ** 2 * g) - g * Vmt * Vmf * cos(datf) + b * Vmt * Vmf * cos(datf + np.pi / 2)),
-                    Qt - (Vmt ** 2 * (-bsh / 2 - b) - g * Vmt * Vmf * sin(datf) + b * Vmt * Vmf * sin(datf + np.pi / 2)),
+                    Pf - ((Vmf ** 2 * g) - g * Vmf * Vmt * cos(Vaf - Vat) + b * Vmf * Vmt * cos(Vaf - Vat + np.pi / 2)),
+                    Qf - (Vmf ** 2 * (-bsh / 2 - b) - g * Vmf * Vmt * sin(Vaf - Vat) + b * Vmf * Vmt * sin(Vaf - Vat + np.pi / 2)),
+                    Pt - ((Vmt ** 2 * g) - g * Vmt * Vmf * cos(Vat - Vaf) + b * Vmt * Vmf * cos(Vat - Vaf + np.pi / 2)),
+                    Qt - (Vmt ** 2 * (-bsh / 2 - b) - g * Vmt * Vmf * sin(Vat - Vaf) + b * Vmt * Vmf * sin(Vat - Vaf + np.pi / 2)),
                 ],
                 algebraic_vars=[Pf, Pt, Qf, Qt],
                 parameters=[],

@@ -6,6 +6,11 @@
 
 from __future__ import annotations
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../..", "src")))
+
+
 from typing import Tuple
 import pandas as pd
 import numpy as np
@@ -269,6 +274,20 @@ class BlockSolver:
 
         return x
 
+    def sort_vars_from_uid(self, mapping: dict[int, float]) -> np.ndarray:
+        """
+        Helper function to build the initial vector
+        :param mapping: var->initial value mapping
+        :return: array matching with the mapping, matching the solver ordering
+        """
+        x = np.zeros(len(self._state_vars) + len(self._algebraic_vars), dtype=object)
+
+        for key, val in mapping.items():
+            i = self.uid2idx_vars[key]
+            x[i] = key
+
+        return x
+
     def build_init_vars_vector(self, mapping: dict[Var, float]) -> np.ndarray:
         """
         Helper function to build the initial vector
@@ -285,6 +304,24 @@ class BlockSolver:
                 raise ValueError(f"Missing variable {key} definition")
 
         return x
+
+    def build_init_vars_vector_from_uid(self, mapping: dict[int, float]) -> np.ndarray:
+        """
+        Helper function to build the initial vector
+        :param mapping: var->initial value mapping
+        :return: array matching with the mapping, matching the solver ordering
+        """
+        x = np.zeros(len(self._state_vars) + len(self._algebraic_vars))
+
+        for key, val in mapping.items():
+            if key in self.uid2idx_vars.keys():
+                i = self.uid2idx_vars[key]
+                x[i] = val
+            else:
+                raise ValueError(f"Missing uid {key} definition")
+
+        return x
+
 
     def build_init_params_vector(self, mapping: dict[Var, float]) -> np.ndarray:
         """
@@ -728,7 +765,7 @@ class BlockSolver:
         # build diff sparse matrix
         for time_step in range(n_steps):
             if time_step in rows:  # TODO: very expensive
-                for position in np.where(rows == time_step)[0]:
+                for position in np.where(rows == time_step):
                     prop_idx = self.uid2idx_params[cols[position][0].uid]
                     value = values[position]
                     diff_val = value - params_matrix_current[prop_idx]

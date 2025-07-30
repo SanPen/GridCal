@@ -35,17 +35,39 @@ andes.config_logger(stream_level=20)
 #ss = andes.run('Gen_Load/Gen_load_2.json', default_config=True)
 def main():
     andes.config_logger(stream_level=20)
-    ss = andes.load('src/trunk/dynamics/Gen_Load/kundur_ieee.json', default_config=True) #Gen_Load/kundur_ieee.json
+    ss = andes.load('Gen_Load/small_system_for_andes.json', default_config=True)
+
     ss.files.no_output = True
 
     ss.PFlow.run()
 
-    voltages = ss.Bus.v.v
-    angles = ss.Bus.a.v
-    names = ss.Bus.name.v
-    for i, (v, a) in enumerate(zip(voltages,angles)):
-        print(f"Bus {names[i]}: {v:.4f} pu")
-        # print(f"Bus {names[i]}: {a:.4f} pu")
+
+
+    print(ss.Bus.v.v)
+    print(ss.Bus.name.v)
+
+    # config TDS
+    # total_time = 10
+    # tstep = 0.001
+    # ss.TDS.config.tf = total_time
+    # ss.TDS.config.tstep = tstep
+    # ss.TDS.config.shrinkt = 0
+
+    tds = ss.TDS
+    tds.config.fixt = 1
+    tds.config.shrinkt = 0
+    tds.config.tstep = 0.001
+    tds.config.tf = 20.0
+    tds.t = 0.0
+    tds.init()
+
+    # Logging
+    time_history = []
+    omega_history = [[] for _ in range(len(ss.GENCLS))]
+    Ppf_history = [[] for _ in range(len(ss.PQ))]
+    tm_history = [[] for _ in range(len(ss.GENCLS))]
+    te_history = [[] for _ in range(len(ss.GENCLS))]
+    v_history = [[] for _ in range(len(ss.Bus))]
 
 
      # # to make PQ behave as constant power load
@@ -122,6 +144,11 @@ def main():
     # df = pd.concat([df, omega_df, tm_df, te_df, Ppf_df, v_df], axis=1)
     # df.to_csv("simulation_andes_output_gridcal_powerflow.csv", index=False)
     # print('simulation results saved in simulation_andes_output.csv')
+    # Combine all into a single DataFrame
+    df = pd.DataFrame({'Time [s]': time_history})
+    df = pd.concat([df, omega_df, tm_df, te_df, Ppf_df, v_df], axis=1)
+    df.to_csv("simulation_andes_output.csv", index=False)
+    print('simulation results saved in simulation_andes_output.csv')
 
 
 # # Plot
