@@ -1,9 +1,12 @@
 import GridCalEngine.api as gce
 from GridCalEngine import WindingType, ShuntConnectionType, AdmittanceMatrix
 import numpy as np
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import (PfBasicFormulation3Ph,
+                                                                                       expand3ph,
+                                                                                       expandVoltage3ph)
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 import pandas as pd
+from GridCalEngine.basic_structures import Vec
 
 logger = gce.Logger()
 
@@ -223,17 +226,17 @@ grid.add_load(bus=bus_675, api_obj=load_675)
 """
 Capacitors
 """
-# cap_675 = gce.Shunt(B1=0.2,
-#                     B2=0.2,
-#                     B3=0.2)
-# cap_675.conn = ShuntConnectionType.GroundedStar
-# grid.add_shunt(bus=bus_675, api_obj=cap_675)
+cap_675 = gce.Shunt(B1=0.2,
+                    B2=0.2,
+                    B3=0.2)
+cap_675.conn = ShuntConnectionType.GroundedStar
+grid.add_shunt(bus=bus_675, api_obj=cap_675)
 
-# cap_611 = gce.Shunt(B1=0.0,
-#                     B2=0.0,
-#                     B3=0.1)
-# cap_611.conn = ShuntConnectionType.GroundedStar
-# grid.add_shunt(bus=bus_611, api_obj=cap_611)
+cap_611 = gce.Shunt(B1=0.0,
+                    B2=0.0,
+                    B3=0.1)
+cap_611.conn = ShuntConnectionType.GroundedStar
+grid.add_shunt(bus=bus_611, api_obj=cap_611)
 
 """
 Line Configurations
@@ -376,13 +379,59 @@ grid.add_line(obj=line_671_675)
 # ----------------------------------------------------------------------------------------------------------------------
 # Run power flow
 # ----------------------------------------------------------------------------------------------------------------------
+def power_flow_3ph(grid: gce.MultiCircuit, V0_3ph: Vec):
+    """
 
-res = gce.power_flow(grid=grid, options=gce.PowerFlowOptions(three_phase_unbalanced=True))
+    :param grid:
+    :param V0_3ph: Voltage vector expanded for 3N (no need for masks to be applied)
+    :return:
+    """
+    nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx=None)
 
-df = res.get_bus_df()
-print(df.round(5))
+    S0 = nc.get_power_injections_pu()
+    Qmax, Qmin = nc.get_reactive_power_limits()
 
-df2 = res.get_branch_df()
-print(df2.round(5))
+    options = gce.PowerFlowOptions(tolerance=1e-10, max_iter=1000)
+
+    problem = PfBasicFormulation3Ph(
+        V0=V0_3ph,
+        S0=expand3ph(S0),
+        Qmin=Qmin * 100.0,
+        Qmax=Qmax * 100.0,
+        nc=nc,
+        options=options,
+        logger=gce.Logger()
+    )
+
+    res = newton_raphson_fx(problem=problem, verbose=1, max_iter=1000)
+
+    return res
+
+nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx=None)
+V0 = expandVoltage3ph(nc.bus_data.Vbus)
+V0[0] = 1.0210 * np.exp(1j * (-2.49 * np.pi / 180))
+V0[1] = 1.0420 * np.exp(1j * (-121.72 * np.pi / 180))
+V0[2] = 1.0174 * np.exp(1j * (117.83 * np.pi / 180))
+res = power_flow_3ph(grid, V0_3ph=V0)
+
+bus_numbers = [632, 633, 634, 645, 646, 652, 671, 675, 611, 680, 684]
+
+# Separar magnitudes y ángulos por fases
+U_A = abs(res.V)[0::3]
+U_B = abs(res.V)[1::3]
+U_C = abs(res.V)[2::3]
+
+def format_column(mags):
+    return [f"{m:.4f}" for m in mags]
+
+df = pd.DataFrame({
+    'Buses': bus_numbers,
+    'Ua': format_column(U_A),
+    'Ub': format_column(U_B),
+    'Uc': format_column(U_C),
+})
+
+print(df)
+print()
 
 gce.save_file(grid, "IEEE 13 bus (3-phase).gridcal")
