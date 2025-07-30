@@ -38,7 +38,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                                         ],
 
             ResultTypes.SpecialPlots: [ResultTypes.InvestmentsParetoPlot,
-                                       ResultTypes.InvestmentsIterationsPlot],
+                                       ResultTypes.InvestmentsIterationsPlot,
+                                       ResultTypes.InvestmentsWhenToMakePlot],
         }
 
         ResultsTemplate.__init__(self,
@@ -63,14 +64,16 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._sorting_indices = np.zeros(max_eval, dtype=int)
 
         self.__eval_index: int = 0
-        
+
+        self.register(name='max_eval', tpe=int)
         self.register(name='f_names', tpe=StrVec)
         self.register(name='x_names', tpe=StrVec)
+        self.register(name='plot_x_idx', tpe=int)
+        self.register(name='plot_y_idx', tpe=int)
         self.register(name='x', tpe=Mat)
         self.register(name='f', tpe=Mat)
         self.register(name='f_best', tpe=Vec)
-        self.register(name='plot_x_idx', tpe=int)
-        self.register(name='plot_y_idx', tpe=int)
+        self.register(name='sorting_indices', tpe=IntVec)
 
     @property
     def max_eval(self) -> int:
@@ -84,13 +87,34 @@ class InvestmentsEvaluationResults(ResultsTemplate):
     def x(self) -> Mat:
         return self._x
 
+    @x.setter
+    def x(self, val: Vec):
+        if isinstance(val, np.ndarray):
+            self._x = val
+        else:
+            raise ValueError("X must be a numpy array")
+
     @property
     def f(self) -> Mat:
         return self._f
 
+    @f.setter
+    def f(self, val: Vec):
+        if isinstance(val, np.ndarray):
+            self._f = val
+        else:
+            raise ValueError("f must be a numpy array")
+
     @property
     def f_best(self) -> IntVec:
         return self._f_best
+
+    @f_best.setter
+    def f_best(self, val: Vec):
+        if isinstance(val, np.ndarray):
+            self._f_best = val
+        else:
+            raise ValueError("f_best must be a numpy array")
 
     @property
     def current_evaluation(self) -> int:
@@ -99,6 +123,13 @@ class InvestmentsEvaluationResults(ResultsTemplate):
     @property
     def sorting_indices(self) -> IntVec:
         return self._sorting_indices
+
+    @sorting_indices.setter
+    def sorting_indices(self, val: IntVec):
+        if isinstance(val, np.ndarray):
+            self._sorting_indices = val.astype(int)
+        else:
+            raise ValueError("sorting indices must be an array of integer")
 
     def get_index(self) -> StrVec:
         return np.array([f"Eval {i + 1}" for i in range(self.x.shape[0])])
@@ -366,6 +397,41 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                                 xlabel='',
                                 units=y_label)
 
+        elif result_type == ResultTypes.InvestmentsWhenToMakePlot:
 
+            # Create subplots
+            fig, ax = plt.subplots(1, 1, figsize=(16, 6), sharey=False)
+
+            X = self._x[self.sorting_indices, :].astype(int)
+
+            max_years = np.max(X)
+            mat = np.zeros((X.shape[1], max_years))
+            for i in range(X.shape[0]):  # evaluation index
+                for j in range(X.shape[1]):  # investment index
+                    year = X[i, j]
+                    if year > 0:
+                        mat[j, year - 1] += 1
+
+            ax.imshow(mat)
+            ax.set_title("When to make the investments", fontsize=14)
+            ax.set_xlabel("", fontsize=12)
+            ax.set_xticks(np.arange(max_years), np.arange(1, max_years + 1))
+            ax.set_yticks(np.arange(len(self.x_names)))
+            ax.set_yticklabels(self.x_names)
+            ax.tick_params(axis='x', labelsize=11)
+            ax.tick_params(axis='y', labelsize=11)
+            ax.set_xlabel("Year", fontsize=12)
+            fig.tight_layout()
+            plt.show()
+
+            return ResultsTable(data=X,
+                                index=index[self.sorting_indices],
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=self.f_names,
+                                cols_device_type=DeviceType.NoDevice.NoDevice,
+                                title=str(result_type.value),
+                                ylabel="",
+                                xlabel="",
+                                units="")
         else:
             raise Exception('Result type not understood:' + str(result_type))

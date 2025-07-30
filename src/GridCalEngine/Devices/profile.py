@@ -86,6 +86,15 @@ class Profile:
     Profile
     """
 
+    __slots__ = (
+        '_is_sparse',
+        '_sparse_array',
+        '_dense_array',
+        '_sparsity_threshold',
+        '_dtype',
+        '_initialized',
+    )
+
     def __init__(self,
                  default_value,
                  data_type: PROFILE_TYPES,
@@ -236,7 +245,6 @@ class Profile:
         except ValueError:
             self._sparse_array = SparseArray(data_type=self.dtype, default_value=self._sparse_array.default_value)
 
-
         if map_data is None:
             self._sparse_array.create(size=size, default_value=default_value)
         else:
@@ -258,7 +266,7 @@ class Profile:
     def sparsity(self) -> float:
         """
         Get the profile sparsity
-        :return: floar value (0 for fully dense, almos 1 for fully sparse)
+        :return: value (0 for fully dense, almost 1 for fully sparse)
         """
         if self._is_sparse:
             return self._sparse_array.get_sparsity()
@@ -268,24 +276,43 @@ class Profile:
     def set(self, arr: NumericVec) -> bool:
         """
         Set array value
-        :param arr:
+        :param arr: numpy array to set
         :return:
         """
+
+        if not isinstance(arr, np.ndarray):
+            print("You can only set numpy arrays")
+
+        if arr.ndim != 1:
+            print("You can only set 1D numpy arrays")
+
+        if not check_type(dtype=self.dtype, value=arr[0]):
+            try:
+                # try casting
+                arr_mod = arr.astype(self.dtype)
+            except ValueError:
+                print("Cannot set dense array because the type cast failed")
+                return False
+            except:
+                print("Cannot set dense array because the type check crashed")
+                return False
+        else:
+            arr_mod = arr
+
         if self.size() > 0:
-            if len(arr) != self.size():
+            if len(arr_mod) != self.size():
                 raise ValueError("The array must have the same size as the profile")
 
-
-        if len(arr) > 0:
+        if len(arr_mod) > 0:
 
             # Count occurrences of each element in the array
-            counts = Counter(arr)
+            counts = Counter(arr_mod)
 
             # Find the most frequent element
             most_common_element, most_common_count = counts.most_common(1)[0]
 
             # compute the sparsity factor
-            sparsity_factor = most_common_count / len(arr)
+            sparsity_factor = most_common_count / len(arr_mod)
 
             # if the sparsity is sufficient...
             if sparsity_factor >= self._sparsity_threshold:
@@ -293,35 +320,28 @@ class Profile:
                 if isinstance(base, np.bool_):
                     base = bool(base)
 
-                if check_type(dtype=self.dtype, value=base):
-                    self._is_sparse = True
-                    self._sparse_array = SparseArray(data_type=self.dtype, default_value=base)
+                self._is_sparse = True
+                self._sparse_array = SparseArray(data_type=self.dtype, default_value=base)
 
-                    if most_common_count > 1:
-                        if isinstance(arr, np.ndarray):
-                            data, indptr = compress_array_numba(arr, base)
-                            data_map = {i: x for i, x in zip(indptr, data)}  # this is to use a native python dict
-                        else:
-                            raise Exception('Unknown profile type' + str(type(arr)))
+                if most_common_count > 1:
+                    if isinstance(arr_mod, np.ndarray):
+                        data, indptr = compress_array_numba(arr_mod, base)
+                        data_map = {i: x for i, x in zip(indptr, data)}  # this is to use a native python dict
                     else:
-                        data_map = dict()
+                        raise Exception('Unknown profile type' + str(type(arr_mod)))
+                else:
+                    data_map = dict()
 
-                    self._sparse_array.create(size=len(arr),
-                                              default_value=base,
-                                              data=data_map)
-                else:
-                    print("Cannot set sparse array because the type check failed")
-                    return False
+                self._sparse_array.create(size=len(arr_mod),
+                                          default_value=base,
+                                          data=data_map)
             else:
-                if check_type(dtype=self.dtype, value=arr[0]):
-                    self._is_sparse = False
-                    self._dense_array = arr
-                else:
-                    print("Cannot set dense array because the type check failed")
-                    return False
+                self._is_sparse = False
+                self._dense_array = arr_mod
+
         else:
             self._is_sparse = False
-            self._dense_array = arr
+            self._dense_array = arr_mod
 
         self._initialized = True
         return True
@@ -365,9 +385,12 @@ class Profile:
         else:
 
             if self._dense_array is None:
-                # WTF, initialize sparse
+                # Signal of a bug: initialize sparse
                 self._is_sparse = True
-                self._sparse_array = SparseArray(data_type=self.dtype, default_value = self.default_value)
+                self._sparse_array = SparseArray(data_type=self.dtype, default_value=self.default_value)
+
+                # NOTE: This may appear because you declared a profile but
+                #       did not associate it with the snapshot property when registering
                 print("Initializing sparse when querying, this signals a mis initialization")
                 return self.default_value
             else:
@@ -540,3 +563,24 @@ class Profile:
             if not self._is_sparse:
                 if self._dense_array is not None:
                     np.nan_to_num(self._dense_array, nan=default_value)  # this is supposed to happen in-place
+
+    def copy(self):
+        """
+        Deep copy
+        :return:
+        """
+        new_prof = Profile(
+            default_value=self.default_value,
+            data_type=self.dtype,
+            arr=None,
+            sparsity_threshold=self._sparsity_threshold,
+            is_sparse=self.is_sparse
+        )
+
+        if self._sparse_array is not None:
+            new_prof._sparse_array = self._sparse_array.copy()
+
+        if self._dense_array is not None:
+            new_prof._dense_array = self._dense_array.copy()
+
+        return new_prof

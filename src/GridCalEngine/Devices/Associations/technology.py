@@ -9,6 +9,7 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice, Device
 
 
 class Technology(EditableDevice):
+    __slots__ = ('name2', 'name3', 'name4', 'color')
 
     def __init__(self, name: str = '',
                  code: str = '',

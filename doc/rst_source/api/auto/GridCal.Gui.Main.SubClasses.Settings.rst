@@ -9,13 +9,13 @@ GridCal.Gui.Main.SubClasses.Settings.configuration module
 
 .. automodule:: GridCal.Gui.Main.SubClasses.Settings.configuration
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCal.Gui.Main.SubClasses.Settings
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

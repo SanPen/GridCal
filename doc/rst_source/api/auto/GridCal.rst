@@ -20,45 +20,45 @@ GridCal.ExecuteGridCal module
 
 .. automodule:: GridCal.ExecuteGridCal
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.plugins module
 ----------------------
 
 .. automodule:: GridCal.plugins
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.setup module
 --------------------
 
 .. automodule:: GridCal.setup
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.templates module
 ------------------------
 
 .. automodule:: GridCal.templates
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.update module
 ---------------------
 
 .. automodule:: GridCal.update
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCal
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

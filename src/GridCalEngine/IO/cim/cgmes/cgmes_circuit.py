@@ -3,37 +3,30 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
-
-import pandas as pd
-from collections.abc import Callable
-from typing import Dict, List, Union, Tuple
+from typing import Dict, List, Union, Tuple, Callable
 from enum import Enum, EnumMeta
-
-from numba.core.cgutils import false_bit
-
-from GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_2_4_15_assets import Cgmes_2_4_15_Assets
-from GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_3_0_0_assets import Cgmes_3_0_0_Assets
-# from GridCalEngine.IO.cim.cgmes.cgmes_utils import check_load_response_characteristic, check
+import pandas as pd
+import GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_2_4_15_assets as cgmes24
+import GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_3_0_0_assets as cgmes30
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_property import CgmesProperty
 from GridCalEngine.IO.base.base_circuit import BaseCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
+from GridCalEngine.IO.cim.cgmes.cgmes_typing import CGMES_ASSETS
 from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
-from GridCalEngine.IO.cim.cgmes.base import Base
 from GridCalEngine.enumerations import CGMESVersions
 
 
-def find_attribute(obj: Base,
+def find_attribute(obj: CGMES_ASSETS,
                    property_name: str,
                    association_inverse_dict: Dict[Tuple[str, str], str]):
     return association_inverse_dict.get((obj.tpe, property_name))
 
 
-def find_references(elements_by_type: Dict[str, List[Base]],
-                    all_objects_dict: Dict[str, Base],
-                    all_objects_dict_boundary: Union[Dict[str, Base], None],
+def find_references(elements_by_type: Dict[str, List[CGMES_ASSETS]],
+                    all_objects_dict: Dict[str, CGMES_ASSETS],
+                    all_objects_dict_boundary: Union[Dict[str, CGMES_ASSETS], None],
                     association_inverse_dict: Dict[Tuple[str, str], str],
-                    class_dict: Dict[str, Base],
                     logger: DataLogger,
                     mark_used: bool) -> None:
     """
@@ -45,7 +38,6 @@ def find_references(elements_by_type: Dict[str, List[Base]],
     :param logger: DataLogger
     :param mark_used: mark objects as used?
     :return: Nothing, it is done in place
-    :param class_dict: Dictionary containing the class name in key and type of the objects in value.
     :param association_inverse_dict: Containing the name of the attributes which associate with each other.
     """
     added_from_the_boundary_set = list()
@@ -63,7 +55,7 @@ def find_references(elements_by_type: Dict[str, List[Base]],
                 # try to get the property value, else, fill with None
                 # at this point val is always the string that came in the XML
                 value = getattr(element, property_name)
-                if value is not None and isinstance(value, Base):
+                if value is not None and isinstance(value, CGMES_ASSETS):
                     continue
 
                 if value is not None:  # if the value is something...
@@ -149,7 +141,7 @@ def find_references(elements_by_type: Dict[str, List[Base]],
                         else:
                             referenced_object_list = set()
                             for v in value:
-                                if isinstance(v, Base):
+                                if isinstance(v, CGMES_ASSETS):
                                     continue
 
                                 referenced_object = all_objects_dict.get(v, None)
@@ -231,10 +223,10 @@ def find_references(elements_by_type: Dict[str, List[Base]],
 
 
 def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
-                            all_objects_dict: Dict[str, Base],
-                            all_objects_dict_boundary: Union[Dict[str, Base], None],
-                            elements_by_type: Dict[str, List[Base]],
-                            class_dict: Dict[str, Base],
+                            all_objects_dict: Dict[str, CGMES_ASSETS],
+                            all_objects_dict_boundary: Union[Dict[str, CGMES_ASSETS], None],
+                            elements_by_type: Dict[str, List[CGMES_ASSETS]],
+                            class_dict: Dict[str, CGMES_ASSETS],
                             association_inverse_dict,
                             logger: DataLogger) -> None:
     """
@@ -245,6 +237,7 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                                       add Parsed objects used to find references
     :param elements_by_type: Dictionary of elements by type to fill in (same as all_objects_dict but by categories)
     :param class_dict: CgmesCircuit or None
+    :param association_inverse_dict:
     :param logger:DataLogger
     :return: None
     """
@@ -276,12 +269,12 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                 logger.add_error("Class not recognized", device_class=class_name)
 
         elements_by_type[class_name] = objects_list
-    # replace refferences by actual objects
+
+    # replace references by actual objects
     find_references(elements_by_type=elements_by_type,
                     all_objects_dict=all_objects_dict,
                     all_objects_dict_boundary=all_objects_dict_boundary,
                     association_inverse_dict=association_inverse_dict,
-                    class_dict=class_dict,
                     logger=logger,
                     mark_used=True)
 
@@ -306,13 +299,18 @@ class CgmesCircuit(BaseCircuit):
     """
 
     def __init__(self,
-                 cgmes_version: Union[None, CGMESVersions] = None,
+                 cgmes_version: CGMESVersions = CGMESVersions.v2_4_15,
                  cgmes_map_areas_like_raw: bool = False,
                  text_func: Union[Callable, None] = None,
                  progress_func: Union[Callable, None] = None,
                  logger=DataLogger()):
         """
         CIM circuit constructor
+        :param cgmes_version:
+        :param cgmes_map_areas_like_raw:
+        :param text_func:
+        :param progress_func:
+        :param logger:
         """
         BaseCircuit.__init__(self)
 
@@ -324,27 +322,40 @@ class CgmesCircuit(BaseCircuit):
         self.progress_func = progress_func
 
         if cgmes_version == CGMESVersions.v2_4_15:
-            self.cgmes_assets = Cgmes_2_4_15_Assets()
+            self.cgmes_assets = cgmes24.Cgmes_2_4_15_Assets()
         elif cgmes_version == CGMESVersions.v3_0_0:
-            self.cgmes_assets = Cgmes_3_0_0_Assets()
+            self.cgmes_assets = cgmes30.Cgmes_3_0_0_Assets()
         else:
             logger.add_error(msg=f"Unrecognized CGMES version {cgmes_version}")
-            raise ValueError(f"Unrecognized CGMES version {cgmes_version}")
+            raise NotImplemented(f"Unrecognized CGMES version {cgmes_version}")
 
             # classes to read, theo others are ignored
         self.classes = [key for key, va in self.cgmes_assets.class_dict.items()]
 
-        # dictionary with all objects, usefull to find repeated ID's
-        self.all_objects_dict: Dict[str, Base] = dict()
-        self.all_objects_dict_boundary: Dict[str, Base] = dict()
+        # dictionary with all objects, useful to find repeated ID's
+        self.all_objects_dict: Dict[str, CGMES_ASSETS] = dict()
+        self.all_objects_dict_boundary: Dict[str, CGMES_ASSETS] = dict()
 
         # dictionary with elements by type
-        self.elements_by_type: Dict[str, List[Base]] = dict()
-        self.elements_by_type_boundary: Dict[str, List[Base]] = dict()
+        self.elements_by_type: Dict[str, List[CGMES_ASSETS]] = dict()
+        self.elements_by_type_boundary: Dict[str, List[CGMES_ASSETS]] = dict()
 
         # dictionary representation of the xml data
         self.data: Dict[str, Dict[str, Dict[str, str]]] = dict()
         self.boundary_set: Dict[str, Dict[str, Dict[str, str]]] = dict()
+
+    @property
+    def assets(self):
+        """
+
+        :return:
+        """
+        if self.cgmes_version == CGMESVersions.v2_4_15:
+            return cgmes24
+        elif self.cgmes_version == CGMESVersions.v3_0_0:
+            return cgmes30
+        else:
+            raise NotImplementedError()
 
     def get_cn_to_bb_dict(self) -> Tuple[dict, dict]:
         """
@@ -388,7 +399,7 @@ class CgmesCircuit(BaseCircuit):
         self.emit_progress(20)
         # set the data
         self.set_data(data=data_parser.data,
-                      boundary_set=data_parser.boudary_set)
+                      boundary_set=data_parser.boundary_set)
         self.emit_progress(25)
         # convert the dictionaries to the internal class model for the boundary set
         # do not mark the boundary set objects as used
@@ -459,7 +470,7 @@ class CgmesCircuit(BaseCircuit):
             if not hasattr(self, key + '_list'):
                 print('self.{0}_list: List[{0}] = list()'.format(key))
 
-    def add(self, elm: Base):
+    def add(self, elm: CGMES_ASSETS):
         """
         Add generic object to the circuit
         :param elm: any CGMES object
@@ -498,14 +509,6 @@ class CgmesCircuit(BaseCircuit):
             print('Missing list:', list_name)
 
         return True
-
-    def get_class_type(self, class_name: str) -> Base:
-        class_type = self.cgmes_assets.class_dict.get(class_name)
-        if class_type is None:
-            raise NotImplementedError(
-                f"Class type missing from CGMES assets! ({class_name})"
-            )
-        return class_type
 
     def get_properties(self) -> List[CgmesProperty]:
         """
@@ -556,7 +559,7 @@ class CgmesCircuit(BaseCircuit):
         self.elements_by_type = dict()
 
     @staticmethod
-    def check_type(xml, class_types, starters=['<cim:', '<md:'], enders=['</cim:', '</md:']):
+    def check_type(xml, class_types, starters=None, enders=None):
         """
         Checks if we are starting an object of the predefined types
         :param xml: some text
@@ -567,6 +570,12 @@ class CgmesCircuit(BaseCircuit):
         """
 
         # for each type
+        if starters is None:
+            starters = ['<cim:', '<md:']
+
+        if enders is None:
+            enders = ['</cim:', '</md:']
+
         for tpe in class_types:
 
             for starter, ender in zip(starters, enders):
@@ -587,7 +596,7 @@ class CgmesCircuit(BaseCircuit):
 
     def delete_unused(self) -> None:
         """
-        Delete elements that have no refferences to them
+        Delete elements that have no references to them
         """
         elements_by_type = dict()
         all_objects_dict = dict()
@@ -794,9 +803,9 @@ class CgmesCircuit(BaseCircuit):
                 self.logger.add_warning(msg="Linking loop",
                                         device=elm.rdfid,
                                         device_class=elm.tpe,
-                                        value=len(visited))
+                                        value=str(len(visited)))
 
-    def get_circular_references(self) -> List[List[Base]]:
+    def get_circular_references(self) -> List[List[CGMES_ASSETS]]:
         """
         Detect circular references
         """
@@ -810,19 +819,15 @@ class CgmesCircuit(BaseCircuit):
 
         return res
 
-    # def get_base_voltages(self) -> List[BaseVoltage]:
-    #     """
-    #
-    #     :return:
-    #     """
-    #     return self.elements_by_type.get('BaseVoltage', [])
-
-    def get_model_xml(self, profiles: List[cgmesProfile] = [cgmesProfile.EQ]) -> Dict[cgmesProfile, str]:
+    def get_model_xml(self, profiles=None) -> Dict[CgmesProfileType, str]:
         """
         Get a dictionary of xml per CGMES profile
         :param profiles: list of profiles to acquire
         :returns Dictionary  Dict[cgmesProfile, str]
         """
+        if profiles is None:
+            profiles = [CgmesProfileType.EQ]
+
         data = dict()
         for tpe, elm_list in self.elements_by_type.items():
 
@@ -837,11 +842,3 @@ class CgmesCircuit(BaseCircuit):
                     else:
                         data[profile] = txt
         return data
-
-    # def get_boundary_voltages_dict(self) -> Dict[float, BaseVoltage]:
-    #     """
-    #     Get the BaseVoltage objects from the boundary set as
-    #     a dictionary with the nominal voltage as key
-    #     :return: Dict[float, BaseVoltage]
-    #     """
-    #     return {e.nominalVoltage: e for e in self.elements_by_type_boundary['BaseVoltage']}

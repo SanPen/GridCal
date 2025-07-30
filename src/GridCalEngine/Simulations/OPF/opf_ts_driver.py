@@ -111,7 +111,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          zonal_grouping=self.options.zonal_grouping,
                                          skip_generation_limits=self.options.skip_generation_limits,
                                          consider_contingencies=self.options.consider_contingencies,
-                                         contingency_groups_used=self.options.contingency_groups_used,
+                                         contingency_groups_used=self.grid.contingency_groups,
                                          unit_commitment=self.options.unit_commitment,
                                          ramp_constraints=self.options.unit_commitment,
                                          generation_expansion_planning=self.options.generation_expansion_planning,

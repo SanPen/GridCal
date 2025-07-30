@@ -16,6 +16,14 @@ if TYPE_CHECKING:
 
 
 class FluidPath(PhysicalDevice):
+    __slots__ = (
+        'source',
+        'target',
+        'min_flow',
+        'max_flow',
+        'color',
+        '_locations',
+    )
 
     def __init__(self,
                  name: str = '',
@@ -94,16 +102,9 @@ class FluidPath(PhysicalDevice):
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a locations')
 
-    def get_from_and_to_objects(self,
-                                t_idx: Union[int, None] = None,
-                                logger: Logger = Logger(),
-                                prefer_node_breaker: bool = True) -> Tuple[CONNECTION_TYPE, CONNECTION_TYPE, bool]:
+    def get_from_and_to_objects(self) -> Tuple[CONNECTION_TYPE, CONNECTION_TYPE, bool]:
         """
         Get the from and to connection objects of the branch
-        :param t_idx: Time index (optional)
-        :param logger: Logger object
-        :param prefer_node_breaker: If true the connectivity nodes are examined first,
-                                    otherwise the buses are returned right away
         :return: Object from, Object to, is it ok?
         """
 

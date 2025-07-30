@@ -6,36 +6,17 @@ from __future__ import annotations
 import numpy as np
 from typing import Tuple, Union, TYPE_CHECKING
 
-from GridCalEngine import SubObjectType
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Aggregation.branch_group import BranchGroup
 from GridCalEngine.Devices.profile import Profile
-from GridCalEngine.Devices.admittance_matrix import AdmittanceMatrix
 
 if TYPE_CHECKING:
     from GridCalEngine.Devices.types import CONNECTION_TYPE
-
-
-def set_bus(bus: Bus, cn: ConnectivityNode) -> Tuple[Bus | None, ConnectivityNode | None]:
-    """
-
-    :param bus:
-    :param cn:
-    :return:
-    """
-    if bus is None:
-        if cn is None:
-            return None, None
-        else:
-            return cn.bus, cn
-    else:
-        return bus, cn
 
 
 class BranchParent(PhysicalDevice):
@@ -44,14 +25,37 @@ class BranchParent(PhysicalDevice):
     All other branches inherit from this one
     """
 
+    __slots__ = (
+        '_bus_from',
+        '_bus_to',
+        'active',
+        '_active_prof',
+        'reducible',
+        'contingency_enabled',
+        'monitor_loading',
+        'mttf',
+        'mttr',
+        'Cost',
+        '_Cost_prof',
+        'capex',
+        'opex',
+        'build_status',
+        '_rate',
+        '_rate_prof',
+        '_contingency_factor',
+        '_contingency_factor_prof',
+        '_protection_rating_factor',
+        '_protection_rating_factor_prof',
+        'color',
+        'group',
+    )
+
     def __init__(self,
                  name: str,
                  idtag: Union[str, None],
                  code: str,
                  bus_from: Union[Bus, None],
                  bus_to: Union[Bus, None],
-                 cn_from: Union[ConnectivityNode, None],
-                 cn_to: Union[ConnectivityNode, None],
                  active: bool,
                  reducible: bool,
                  rate: float,
@@ -74,8 +78,6 @@ class BranchParent(PhysicalDevice):
         :param code: secondary id
         :param bus_from: Name of the bus at the "from" side
         :param bus_to: Name of the bus at the "to" side
-        :param cn_from: Name of the connectivity node at the "from" side
-        :param cn_to: Name of the connectivity node at the "to" side
         :param active: Is active?
         :param rate: Branch rating (MVA)
         :param contingency_factor: Factor to multiply the rating in case of contingency
@@ -98,8 +100,8 @@ class BranchParent(PhysicalDevice):
                                 device_type=device_type)
 
         # connectivity
-        self._bus_from, self._cn_from = set_bus(bus_from, cn_from)
-        self._bus_to, self._cn_to = set_bus(bus_to, cn_to)
+        self._bus_from = bus_from
+        self._bus_to = bus_to
 
         self.active = bool(active)
         self._active_prof = Profile(default_value=self.active, data_type=bool)
@@ -124,16 +126,11 @@ class BranchParent(PhysicalDevice):
 
         self.build_status = build_status
 
-        self._ys = AdmittanceMatrix()
-        self._ysh = AdmittanceMatrix()
-
         # line rating in MVA
         if not isinstance(rate, Union[float, int]):
             raise ValueError("Rate must be a float")
         self._rate = float(rate)
         self._rate_prof = Profile(default_value=rate, data_type=float)
-
-        # TODO define additional rates if needed, plus register property (only here, not in init)
 
         if not isinstance(contingency_factor, Union[float, int]):
             raise ValueError("contingency_factor must be a float")
@@ -145,7 +142,7 @@ class BranchParent(PhysicalDevice):
         self._protection_rating_factor = float(protection_rating_factor)
         self._protection_rating_factor_prof = Profile(default_value=protection_rating_factor, data_type=float)
 
-        self.color = color if color is not None else "#909090" # light gray
+        self.color = color if color is not None else "#909090"  # light gray
 
         # group of this branch
         self.group: Union[BranchGroup, None] = None
@@ -155,12 +152,6 @@ class BranchParent(PhysicalDevice):
 
         self.register('bus_to', units="", tpe=DeviceType.BusDevice,
                       definition='Name of the bus at the "to" side', editable=False)
-
-        self.register('cn_from', units="", tpe=DeviceType.ConnectivityNodeDevice,
-                      definition='Name of the connectivity node at the "from" side', editable=False)
-
-        self.register('cn_to', units="", tpe=DeviceType.ConnectivityNodeDevice,
-                      definition='Name of the connectivity node at the "to" side', editable=False)
 
         self.register('active', units="", tpe=bool, definition='Is active?', profile_name="active_prof")
 
@@ -189,11 +180,7 @@ class BranchParent(PhysicalDevice):
         self.register('opex', units="e/MWh", tpe=float, definition="Cost of operation. Used in expansion planning.")
         self.register('group', units="", tpe=DeviceType.BranchGroupDevice,
                       definition="Group where this branch belongs")
-        self.register('ys', units="p.u.", tpe=SubObjectType.AdmittanceMatrix,
-                      definition='Series admittance matrix of the branch', editable=False, display=False)
 
-        self.register('ysh', units="p.u.", tpe=SubObjectType.AdmittanceMatrix,
-                      definition='Shunt admittance matrix of the branch', editable=False, display=False)
         self.register(key='color', units='', tpe=str, definition='Color to paint the element in the map diagram',
                       is_color=True)
 
@@ -232,48 +219,6 @@ class BranchParent(PhysicalDevice):
                 self._bus_to = val
             else:
                 raise Exception(str(type(val)) + 'not supported to be set into a _bus_to')
-
-    @property
-    def cn_from(self) -> ConnectivityNode:
-        """
-        Bus
-        :return: Bus
-        """
-        return self._cn_from
-
-    @cn_from.setter
-    def cn_from(self, val: ConnectivityNode):
-        if val is None:
-            self._cn_from = val
-        else:
-            if isinstance(val, ConnectivityNode):
-                self._cn_from = val
-
-                if self.bus_from is None:
-                    self.bus_from = self._cn_from.bus
-            else:
-                raise Exception(str(type(val)) + 'not supported to be set into a connectivity node from')
-
-    @property
-    def cn_to(self) -> ConnectivityNode:
-        """
-        Bus
-        :return: Bus
-        """
-        return self._cn_to
-
-    @cn_to.setter
-    def cn_to(self, val: ConnectivityNode):
-        if val is None:
-            self._cn_to = val
-        else:
-            if isinstance(val, ConnectivityNode):
-                self._cn_to = val
-
-                if self.bus_to is None:
-                    self.bus_to = self._cn_to.bus
-            else:
-                raise Exception(str(type(val)) + 'not supported to be set into a connectivity node to')
 
     @property
     def active_prof(self) -> Profile:
@@ -404,28 +349,6 @@ class BranchParent(PhysicalDevice):
             self._protection_rating_factor = val
         else:
             raise ValueError(f'{val} is not a float')
-
-    @property
-    def ys(self) -> AdmittanceMatrix:
-        return self._ys
-
-    @ys.setter
-    def ys(self, val: AdmittanceMatrix):
-        if isinstance(val, AdmittanceMatrix):
-            self._ys = val
-        else:
-            raise ValueError(f'{val} is not a AdmittanceMatrix')
-
-    @property
-    def ysh(self) -> AdmittanceMatrix:
-        return self._ysh
-
-    @ysh.setter
-    def ysh(self, val: AdmittanceMatrix):
-        if isinstance(val, AdmittanceMatrix):
-            self._ysh = val
-        else:
-            raise ValueError(f'{val} is not a AdmittanceMatrix')
 
     def get_max_bus_nominal_voltage(self):
         """
@@ -582,66 +505,17 @@ class BranchParent(PhysicalDevice):
         else:
             return None
 
-    def get_from_and_to_objects(self,
-                                logger: Logger = Logger(),
-                                prefer_node_breaker: bool = True) -> Tuple[CONNECTION_TYPE, CONNECTION_TYPE, bool]:
+    def get_from_and_to_objects(self) -> Tuple[CONNECTION_TYPE, CONNECTION_TYPE, bool]:
         """
         Get the from and to connection objects of the branch
-        :param logger: Logger object
-        :param prefer_node_breaker: If true the connectivity nodes are examined first,
-                                    otherwise the buses are returned right away
         :return: Object from, Object to, is it ok?
         """
 
         # Pick the right bus
         bus_from = self.bus_from
         bus_to = self.bus_to
-
-        if not prefer_node_breaker:
-            # if we're not preferrig node breaker, return the bus-branch buses whatever they may be
-            ok = bus_from is not None and bus_to is not None
-            return bus_from, bus_to, ok
-
-        else:
-            # Helper function to handle errors and return consistent output
-            def handle_error(message: str) -> Tuple[CONNECTION_TYPE, CONNECTION_TYPE, bool]:
-                """
-
-                :param message:
-                :return:
-                """
-                logger.add_error(msg=message, device=self.name)
-                return None, None, False
-
-            # Both cn_from and cn_to are provided
-            if self.cn_from is not None and self.cn_to is not None:
-                f = self.cn_from
-                t = self.cn_to
-                return f, t, True
-
-            # cn_from is provided, cn_to is not
-            if self.cn_from is not None:
-                f = self.cn_from
-                if bus_to is not None:
-                    t = bus_to
-                    return f, t, True
-                return handle_error("No to connection provided!")
-
-            # cn_to is provided, cn_from is not
-            if self.cn_to is not None:
-                t = self.cn_to
-                if bus_from is not None:
-                    f = bus_from
-                    return f, t, True
-                return handle_error("No from connection provided!")
-
-            # Both cn_from and cn_to are not provided
-            if bus_from is not None and bus_to is not None:
-                f = bus_from
-                t = bus_to
-                return f, t, True
-
-            return handle_error("Isolated branch!")
+        ok = bus_from is not None and bus_to is not None
+        return bus_from, bus_to, ok
 
     def get_weight(self) -> float:
         """

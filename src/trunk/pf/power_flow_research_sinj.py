@@ -6,7 +6,7 @@ from typing import Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
+import scipy.sparse as sp
 import GridCalEngine.api as gce
 
 from GridCalEngine.basic_structures import Vec, CscMat, CxVec, IntVec
@@ -18,7 +18,7 @@ from GridCalEngine.Utils.NumericalMethods.powell import powell_dog_leg
 from GridCalEngine.Utils.NumericalMethods.levenberg_marquadt import levenberg_marquardt
 from GridCalEngine.Utils.NumericalMethods.autodiff import calc_autodiff_jacobian
 from GridCalEngine.enumerations import SolverType
-from GridCalEngine.Topology.admittance_matrices import compute_passive_admittances
+from GridCalEngine.Topology.admittance_matrices import AdmittanceMatrices
 from GridCalEngine.Utils.Sparse.csc import diags
 
 
@@ -252,6 +252,100 @@ def pf_function(x: Vec,
 
     return ConvexFunctionResult(f=g, J=Gx)
 
+
+def compute_passive_admittances(R: Vec,
+                                X: Vec,
+                                G: Vec,
+                                B: Vec,
+                                vtap_f: Vec,
+                                vtap_t: Vec,
+                                Cf: sp.csc_matrix,
+                                Ct: sp.csc_matrix,
+                                Yshunt_bus: CxVec,
+                                conn: Union[List[WindingsConnection], ObjVec],
+                                seq: int,
+                                add_windings_phase: bool = False) -> AdmittanceMatrices:
+    """
+    Compute the complete admittance matrices only using passive elements
+
+    :param R: array of branch resistance (p.u.)
+    :param X: array of branch reactance (p.u.)
+    :param G: array of branch conductance (p.u.)
+    :param B: array of branch susceptance (p.u.)
+    :param vtap_f: array of virtual taps at the "from" side
+    :param vtap_t: array of virtual taps at the "to" side
+    :param Cf: Connectivity branch-bus "from" with the branch states computed
+    :param Ct: Connectivity branch-bus "to" with the branch states computed
+    :param Yshunt_bus: array of shunts equivalent power per bus, from the shunt devices (p.u.)
+    :param seq: Sequence [0, 1, 2]
+    :param conn: array of windings connections (numpy array of WindingsConnection)
+    :param add_windings_phase: Add the phases of the transformer windings (for short circuits mainly)
+    :return: Admittance instance
+    """
+
+    # form the admittance matrices
+    ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
+    bc2 = (G + 1j * B) / 2.0  # shunt admittance
+
+    # compose the primitives
+    if add_windings_phase:
+        r30_deg = np.exp(1.0j * np.pi / 6.0)
+
+        if seq == 0:  # zero sequence
+            # add always the shunt term, the series depends on the connection
+            # one ys vector for the from side, another for the to side, and the shared one
+            ysf = np.zeros(len(ys), dtype=complex)
+            yst = np.zeros(len(ys), dtype=complex)
+            ysft = np.zeros(len(ys), dtype=complex)
+
+            for i, con in enumerate(conn):
+                if con == WindingsConnection.GG:
+                    ysf[i] = ys[i]
+                    yst[i] = ys[i]
+                    ysft[i] = ys[i]
+                elif con == WindingsConnection.GD:
+                    ysf[i] = ys[i]
+
+            yff = (ysf + bc2) / (vtap_f * vtap_f)
+            yft = -ysft / (vtap_f * vtap_t)
+            ytf = -ysft / (vtap_t * vtap_f)
+            ytt = (yst + bc2) / (vtap_t * vtap_t)
+
+        elif seq == 2:  # negative sequence
+            # only need to include the phase shift of +-30 degrees
+            factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1
+                                   for con in conn])
+
+            yff = (ys + bc2) / (vtap_f * vtap_f)
+            yft = -ys / (vtap_f * vtap_t) * factor_psh
+            ytf = -ys / (vtap_t * vtap_f) * np.conj(factor_psh)
+            ytt = (ys + bc2) / (vtap_t * vtap_t)
+
+        elif seq == 1:  # positive sequence
+
+            # only need to include the phase shift of +-30 degrees
+            factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1.0
+                                   for con in conn])
+
+            yff = (ys + bc2) / (vtap_f * vtap_f)
+            yft = -ys / (vtap_f * vtap_t) * factor_psh
+            ytf = -ys / (vtap_t * vtap_f) * np.conj(factor_psh)
+            ytt = (ys + bc2) / (vtap_t * vtap_t)
+        else:
+            raise Exception('Unsupported sequence when computing the admittance matrix sequence={}'.format(seq))
+
+    else:  # original
+        yff = (ys + bc2) / (vtap_f * vtap_f)
+        yft = -ys / (vtap_f * vtap_t)
+        ytf = -ys / (vtap_t * vtap_f)
+        ytt = (ys + bc2) / (vtap_t * vtap_t)
+
+    # compose the matrices
+    Yf = sp.diags(yff) * Cf + sp.diags(yft) * Ct
+    Yt = sp.diags(ytf) * Cf + sp.diags(ytt) * Ct
+    Ybus = Cf.T * Yf + Ct.T * Yt + sp.diags(Yshunt_bus)
+
+    return AdmittanceMatrices(Ybus, Yf, Yt, Cf, Ct, yff, yft, ytf, ytt, Yshunt_bus)
 
 def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     """

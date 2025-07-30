@@ -48,6 +48,15 @@ class PassiveBranchData(BranchParentData):
         self.virtual_tap_t: Vec = np.ones(self.nelm, dtype=float)
         self.virtual_tap_f: Vec = np.ones(self.nelm, dtype=float)
 
+        self.Yff3 = np.zeros((self.nelm * 3, 3), dtype=complex)
+        self.Yft3 = np.zeros((self.nelm * 3, 3), dtype=complex)
+        self.Ytf3 = np.zeros((self.nelm * 3, 3), dtype=complex)
+        self.Ytt3 = np.zeros((self.nelm * 3, 3), dtype=complex)
+
+        self.phA: IntVec = np.zeros(self.nelm, dtype=int)
+        self.phB: IntVec = np.zeros(self.nelm, dtype=int)
+        self.phC: IntVec = np.zeros(self.nelm, dtype=int)
+
     def size(self) -> int:
         """
         Get size of the structure
@@ -93,6 +102,17 @@ class PassiveBranchData(BranchParentData):
         data.virtual_tap_f = self.virtual_tap_f[elm_idx]
         data.virtual_tap_t = self.virtual_tap_t[elm_idx]
 
+        elm_idx_3 = ((elm_idx * 3)[:, np.newaxis] + np.arange(3)).flatten()
+        
+        data.Yff3 = self.Yff3[elm_idx_3, :]
+        data.Yft3 = self.Yft3[elm_idx_3, :]
+        data.Ytt3 = self.Ytt3[elm_idx_3, :]
+        data.Ytf3 = self.Ytf3[elm_idx_3, :]
+
+        data.phA = self.phA[elm_idx]
+        data.phB = self.phB[elm_idx]
+        data.phC = self.phC[elm_idx]
+
         return data
 
     def copy(self) -> "PassiveBranchData":
@@ -125,6 +145,10 @@ class PassiveBranchData(BranchParentData):
         data.virtual_tap_f = self.virtual_tap_f.copy()
         data.virtual_tap_t = self.virtual_tap_t.copy()
 
+        data.phA = self.phA.copy()
+        data.phB = self.phB.copy()
+        data.phC = self.phC.copy()
+
         return data
 
     def get_series_admittance(self) -> CxVec:
@@ -133,50 +157,6 @@ class PassiveBranchData(BranchParentData):
         :return: complex vector
         """
         return 1.0 / (self.R + 1.0j * self.X + 1e-20)
-
-    def get_ac_indices(self) -> IntVec:
-        """
-        Get ac branch indices
-        :return:
-        """
-        return np.where(self.dc == 0)[0]
-
-    def get_dc_indices(self) -> IntVec:
-        """
-        Get dc branch indices
-        :return:
-        """
-        return np.where(self.dc != 0)[0]
-
-    def get_monitor_enabled_indices(self) -> IntVec:
-        """
-        Get monitored branch indices
-        :return:
-        """
-        return np.where(self.monitor_loading == 1)[0]
-
-    def get_contingency_enabled_indices(self) -> IntVec:
-        """
-        Get contingency branch indices
-        :return:
-        """
-        return np.where(self.contingency_enabled == 1)[0]
-
-    def get_inter_areas(self, bus_idx_from: IntVec | Set[int], bus_idx_to: IntVec | Set[int]):
-        """
-        Get the Branches that join two areas
-        :param bus_idx_from: Area from
-        :param bus_idx_to: Area to
-        :return: List of (branch index, flow sense w.r.t the area exchange)
-        """
-
-        lst: List[Tuple[int, float]] = list()
-        for k in range(self.nelm):
-            if self.F[k] in bus_idx_from and self.T[k] in bus_idx_to:
-                lst.append((k, 1.0))
-            elif self.F[k] in bus_idx_to and self.T[k] in bus_idx_from:
-                lst.append((k, -1.0))
-        return lst
 
     def detect_superconductor_at(self, k) -> None:
         """

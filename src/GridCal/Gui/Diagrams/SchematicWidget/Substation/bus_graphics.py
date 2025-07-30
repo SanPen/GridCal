@@ -13,10 +13,10 @@ from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.messages import yes_no_question, warning_msg
-from GridCal.Gui.gui_functions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry, add_sub_menu
 from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, DEACTIVATED,
                                                    FONT_SCALE, EMERGENCY, TRANSPARENT)
-from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, HandleItem
+from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, HandleItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.load_graphics import LoadGraphicItem, Load
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_graphics import GeneratorGraphicItem, Generator
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.static_generator_graphics import (StaticGeneratorGraphicItem,
@@ -32,14 +32,14 @@ from GridCal.Gui.Diagrams.SchematicWidget.Injections.controllable_shunt_graphics
     ControllableShuntGraphicItem,
     ControllableShunt)
 
-from GridCalEngine.enumerations import DeviceType, FaultType
+from GridCalEngine.enumerations import DeviceType, FaultType, BusGraphicType
 from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 from GridCalEngine.Devices.Substation import Bus
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 
-SHUNT_GRAPHICS = Union[
+INJECTION_GRAPHICS = Union[
     BatteryGraphicItem,
     ShuntGraphicItem,
     ExternalGridGraphicItem,
@@ -89,8 +89,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                  index=0,
                  editor: SchematicWidget = None,
                  bus: Bus = None,
-                 h: int = 40,
-                 w: int = 80,
+                 h: float = 40,
+                 w: float = 80,
                  x: float = 0,
                  y: float = 0,
                  draw_labels: bool = True,
@@ -109,44 +109,89 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         GenericDiagramWidget.__init__(self, parent=parent, api_object=bus, editor=editor, draw_labels=draw_labels)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
-        self.min_w = 180.0
-        self.min_h = 40.0
-        self.offset = 20
-        self.h = h if h >= self.min_h else self.min_h
-        self.w = w if w >= self.min_w else self.min_w
-        self.r = r
-
-        # loads, shunts, generators, etc...
-        self._child_graphics: List[SHUNT_GRAPHICS] = list()
-
-        # Enabled for short circuit
-        self.sc_enabled = [False, False, False, False]
-        self.sc_type = FaultType.ph3
-        self.pen_width = 4
-
-        # index
-        self.index = index
-
         # Label:
         self.label = QtWidgets.QGraphicsTextItem(self.api_object.name if self.api_object is not None else "", self)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
 
-        # square
-        self.tile = QtWidgets.QGraphicsRectItem(0, 0, 20, 20, self)
-        self.tile.setOpacity(0.7)
+        # loads, shunts, generators, etc...
+        self._child_graphics: List[INJECTION_GRAPHICS] = list()
 
-        # connection terminals the block
-        self._terminal = BarTerminalItem('s', parent=self, editor=self._editor)  # , h=self.h))
-        self._terminal.setPen(QPen(TRANSPARENT, self.pen_width, self.style,
-                                   Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
-
-        # Create corner for resize:
-        self.sizer = HandleItem(self._terminal, callback=self.change_size)
-        self.sizer.setPos(self.w, self.h)
-        self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
+        # index
+        self.index = index
 
         self.big_marker = None
+
+        self.connectivity_graph = False
+
+        # connection terminals the block
+        if self.api_object.graphic_type == BusGraphicType.BusBar:
+            self._terminal = BarTerminalItem('s', parent=self, editor=self.editor)
+            self.min_w = 180.0
+            self.min_h = 40.0
+            self.offset = 20
+
+            self.h = h if h >= self.min_h else self.min_h
+            self.w = w if w >= self.min_w else self.min_w
+            self.r = r
+
+            # square
+            self.tile = QtWidgets.QGraphicsRectItem(0, 0, 20, 20, self)
+            self.tile.setOpacity(0.7)
+
+            # Create corner for resize:
+            self.sizer = HandleItem(self._terminal, callback=self.change_size)
+            self.sizer.setPos(self.w, self.h)
+            self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
+
+        elif self.api_object.graphic_type == BusGraphicType.Connectivity:
+            self._terminal = RoundTerminalItem('s', parent=self, editor=self.editor, h=20, w=20)  # , h=self.h))
+            self.min_w = 50.0
+            self.min_h = 50.0
+            self.offset = 20
+
+            self.h = h if h >= self.min_h else self.min_h
+            self.w = w if w >= self.min_w else self.min_w
+            self.r = r
+
+            self._terminal.setPos(self.w / 2 - self._terminal.w / 2, self.h / 2 - self._terminal.h / 2)
+            # self._terminal.setPos(self.w / 2 + 10, self.h / 2 + 10)
+
+            # square
+            self.tile = QtWidgets.QGraphicsRectItem(0, 0, 5, 5, self)
+            self.tile.setOpacity(1.0)
+
+            # Create corner for resize:
+            self.sizer = None
+
+            self.connectivity_graph = True
+
+        else:
+            self._terminal = BarTerminalItem('s', parent=self, editor=self._editor)
+            self.min_w = 180.0
+            self.min_h = 40.0
+            self.offset = 20
+
+            self.h = h if h >= self.min_h else self.min_h
+            self.w = w if w >= self.min_w else self.min_w
+            self.r = r
+
+            # square
+            self.tile = QtWidgets.QGraphicsRectItem(0, 0, 20, 20, self)
+            self.tile.setOpacity(0.7)
+
+            # Create corner for resize:
+            self.sizer = HandleItem(self._terminal, callback=self.change_size)
+            self.sizer.setPos(self.w, self.h)
+            self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
+
+        # Enabled for short circuit
+        self.sc_enabled = np.zeros(4, dtype=bool)
+        self.sc_type = FaultType.ph3
+        self.pen_width = 4
+
+        self._terminal.setPen(QPen(TRANSPARENT, self.pen_width, self.style,
+                                   Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
 
         self.set_tile_color(self.color)
 
@@ -173,16 +218,16 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Get a list of all associated branch graphics
         :return:
         """
-        conn: List[GenericDiagramWidget | SHUNT_GRAPHICS] = self._terminal.get_hosted_graphics()
+        conn: List[GenericDiagramWidget | INJECTION_GRAPHICS] = self._terminal.get_hosted_graphics()
 
         return conn
 
-    def get_associated_widgets(self) -> List[GenericDiagramWidget | SHUNT_GRAPHICS]:
+    def get_associated_widgets(self) -> List[GenericDiagramWidget | INJECTION_GRAPHICS]:
         """
         Get a list of all associated graphics
         :return:
         """
-        conn: List[GenericDiagramWidget | SHUNT_GRAPHICS] = self.get_associated_branch_graphics()
+        conn: List[GenericDiagramWidget | INJECTION_GRAPHICS] = self.get_associated_branch_graphics()
 
         for graphics in self._child_graphics:
             conn.append(graphics)
@@ -192,6 +237,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
     def get_nexus_point(self) -> QPointF:
         """
         Get the connection point for the children nexus line
+        (connection points for loads, shunts, generators, etc.)
         :return: QPointF
         """
         return QPointF(self.x() + self.rect().width() / 2.0,
@@ -260,13 +306,14 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             y = 0.0
         self.setPos(QPointF(x, y))
 
-    def set_tile_color(self, brush: QBrush) -> None:
+    def set_tile_color(self, brush: QBrush | QColor) -> None:
         """
-        Set the color of the title
+        Set the color of the bus
         Args:
             brush:  Qt Color
         """
-        self.tile.setBrush(brush)
+        if self.tile is not None:
+            self.tile.setBrush(brush)
         self._terminal.setBrush(brush)
 
     def merge(self, other_bus_graphic: "BusGraphicItem") -> None:
@@ -292,7 +339,15 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.setRect(0.0, 0.0, self.w, h)
         self.h = h
 
-    def change_size(self, w: int, dummy: float = 0.0):
+    def get_terminal_center(self, val: QPointF) -> QPointF:
+        """
+        Get the center of the terminal
+        :param val: position of a branch point
+        :return:
+        """
+        return self._terminal.get_center_pos(val)
+
+    def change_size(self, w: int | float, dummy: float = 0.0):
         """
         Resize block function
         :param w:
@@ -309,8 +364,9 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.label.setPos(self.w + 5, -20)
 
         # lower
-        self._terminal.setPos(x0, y0)
-        self._terminal.setRect(0, 20, self.w, 10)
+        if not self.connectivity_graph:
+            self._terminal.setPos(x0, y0)
+            self._terminal.setRect(0, 20, self.w, 10)
 
         # rearrange children
         self.arrange_children()
@@ -412,45 +468,46 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                        checkeable=True,
                        checked_value=self.draw_labels)
 
-        sc = menu.addMenu('Short circuit')
-        sc_icon = QIcon()
-        sc_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc.setIcon(sc_icon)
+        # sc = menu.addMenu('Short circuit')
+        # sc_icon = QIcon()
+        # sc_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
+        # sc.setIcon(sc_icon)
 
-        sc_3p = sc.addAction('3-phase')
-        sc_3p_icon = QIcon()
-        sc_3p_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc_3p.setIcon(sc_3p_icon)
-        sc_3p.setCheckable(True)
-        sc_3p.setChecked(self.sc_enabled[0])
-        sc_3p.triggered.connect(self.enable_disable_sc_3p)
+        sc = add_sub_menu(menu=menu,
+                          text="Short circuit",
+                          icon_path=":/Icons/icons/short_circuit.svg")
 
-        sc_lg = sc.addAction('Line-Ground')
-        sc_lg_icon = QIcon()
-        sc_lg_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc_lg.setIcon(sc_lg_icon)
-        sc_lg.setCheckable(True)
-        sc_lg.setChecked(self.sc_enabled[1])
-        sc_lg.triggered.connect(self.enable_disable_sc_lg)
+        add_menu_entry(menu=sc,
+                       text="3-phase (x)" if self.sc_enabled[0] else "3-phase",
+                       icon_path=":/Icons/icons/short_circuit.svg",
+                       function_ptr=self.enable_disable_sc_3p,
+                       checkeable=True,
+                       checked_value=self.sc_enabled[0])
 
-        sc_ll = sc.addAction('Line-Line')
-        sc_ll_icon = QIcon()
-        sc_ll_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc_ll.setIcon(sc_ll_icon)
-        sc_ll.setCheckable(True)
-        sc_ll.setChecked(self.sc_enabled[2])
-        sc_ll.triggered.connect(self.enable_disable_sc_ll)
+        add_menu_entry(menu=sc,
+                       text="Line-Ground (x)" if self.sc_enabled[1] else "Line-Ground",
+                       icon_path=":/Icons/icons/short_circuit.svg",
+                       function_ptr=self.enable_disable_sc_lg,
+                       checkeable=True,
+                       checked_value=self.sc_enabled[1])
 
-        sc_llg = sc.addAction('Line-Line-Ground')
-        sc_llg_icon = QIcon()
-        sc_llg_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc_llg.setIcon(sc_llg_icon)
-        sc_llg.setCheckable(True)
-        sc_llg.setChecked(self.sc_enabled[3])
-        sc_llg.triggered.connect(self.enable_disable_sc_llg)
+        add_menu_entry(menu=sc,
+                       text="Line-Line (x)" if self.sc_enabled[2] else "Line-Line",
+                       icon_path=":/Icons/icons/short_circuit.svg",
+                       function_ptr=self.enable_disable_sc_ll,
+                       checkeable=True,
+                       checked_value=self.sc_enabled[2])
 
-        sc_no = sc.addAction('Disable')
-        sc_no.triggered.connect(self.disable_sc)
+        add_menu_entry(menu=sc,
+                       text="Line-Line-Ground (x)" if self.sc_enabled[3] else "Line-Line-Ground",
+                       icon_path=":/Icons/icons/short_circuit.svg",
+                       function_ptr=self.enable_disable_sc_llg,
+                       checkeable=True,
+                       checked_value=self.sc_enabled[3])
+
+        add_menu_entry(menu=sc,
+                       text="Disable",
+                       function_ptr=self.disable_sc)
 
         # types
         # ph3 = '3x'
@@ -547,12 +604,6 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         self._editor.set_active_status_to_profile(self.api_object)
 
-    # def delete_all_connections(self, delete_from_db: bool) -> None:
-    #     """
-    #     Delete all bus connections
-    #     """
-    #     self._terminal.remove_all_connections(delete_from_db=delete_from_db)
-
     def delete(self) -> None:
         """
         Remove this element
@@ -562,7 +613,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         if deleted:
             self._terminal.clear()
 
-    def delete_child(self, obj: SHUNT_GRAPHICS | InjectionTemplateGraphicItem):
+    def delete_child(self, obj: INJECTION_GRAPHICS | InjectionTemplateGraphicItem):
         """
         Delete a child object
         :param obj:
@@ -609,6 +660,9 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                 if host.api_object is not None:
                     host.set_enable(val=self.api_object.active)
 
+            if not self.api_object.active:
+                self.clear_label()
+
             self.update_color()
 
             if self._editor.circuit.has_time_series:
@@ -629,10 +683,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Determine if there are short circuits enabled
         :return:
         """
-        for t in self.sc_enabled:
-            if t:
-                return True
-        return False
+        return np.sum(self.sc_enabled) > 0
 
     def enable_sc(self) -> None:
         """
@@ -645,13 +696,14 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Disable short circuit
         """
         self.tile.setPen(QPen(TRANSPARENT, self.pen_width))
-        self.sc_enabled = [False, False, False, False]
+        self.sc_enabled[:] = 0  # set all to zero
 
     def enable_disable_sc_3p(self):
         """
         Enable 3-phase short circuit
         """
-        self.sc_enabled = [True, False, False, False]
+        self.sc_enabled[:] = 0  # set all to zero
+        self.sc_enabled[0] = True
         self.sc_type = FaultType.ph3
         self.enable_sc()
 
@@ -659,7 +711,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Enable line ground short circuit
         """
-        self.sc_enabled = [False, True, False, False]
+        self.sc_enabled[:] = 0  # set all to zero
+        self.sc_enabled[1] = True
         self.sc_type = FaultType.LG
         self.enable_sc()
 
@@ -667,7 +720,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Enable line-line short circuit
         """
-        self.sc_enabled = [False, False, True, False]
+        self.sc_enabled[:] = 0  # set all to zero
+        self.sc_enabled[2] = True
         self.sc_type = FaultType.LL
         self.enable_sc()
 
@@ -675,7 +729,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Enable line-line-ground short circuit
         """
-        self.sc_enabled = [False, False, False, True]
+        self.sc_enabled[:] = 0  # set all to zero
+        self.sc_enabled[3] = True
         self.sc_type = FaultType.LLG
         self.enable_sc()
 
@@ -773,6 +828,17 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         else:
             raise Exception("Cannot add device of type {}".format(api_obj.device_type.value))
 
+    def add_child_graphic(self, elm: INJECTION_DEVICE_TYPES, graphic: INJECTION_GRAPHICS):
+        """
+        Add a api object and its graphic to this bus graphics domain
+        :param elm:
+        :param graphic:
+        :return:
+        """
+        self._child_graphics.append(graphic)
+        self.arrange_children()
+        self.editor.graphics_manager.add_device(elm=elm, graphic=graphic)
+
     def add_load(self, api_obj: Union[Load, None] = None):
         """
         Add load object to bus
@@ -783,8 +849,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_load(bus=self._api_object)
 
         _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
         return _grph
 
     def add_shunt(self, api_obj: Union[Shunt, None] = None):
@@ -796,8 +861,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_shunt(bus=self._api_object)
 
         _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
         return _grph
 
     def add_generator(self, api_obj: Union[Generator, None] = None):
@@ -809,8 +873,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_generator(bus=self._api_object)
 
         _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
         return _grph
 
     def add_static_generator(self, api_obj: Union[StaticGenerator, None] = None):
@@ -823,8 +886,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_static_generator(bus=self._api_object)
 
         _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
 
         return _grph
 
@@ -838,8 +900,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_battery(bus=self._api_object)
 
         _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
 
         return _grph
 
@@ -853,9 +914,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_external_grid(bus=self._api_object)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
-
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
         return _grph
 
     def add_current_injection(self, api_obj: Union[CurrentInjection, None] = None):
@@ -868,9 +927,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_current_injection(bus=self._api_object)
 
         _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
-
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
         return _grph
 
     def add_controllable_shunt(self, api_obj: Union[ControllableShunt, None] = None):
@@ -883,8 +940,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_controllable_shunt(bus=self._api_object)
 
         _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self._child_graphics.append(_grph)
-        self.arrange_children()
+        self.add_child_graphic(elm=api_obj, graphic=_grph)
 
         return _grph
 
@@ -901,22 +957,50 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if self.draw_labels:
-            vm = format_str.format(Vm)
-            vm_kv = format_str.format(Vm * self._api_object.Vnom)
-            va = format_str.format(Va)
+
             msg = f"Bus {i}"
             if tpe is not None:
                 msg += f" [{tpe}]"
             msg += "<br>"
-            msg += f"v={vm}&lt;{va}º pu<br>"
-            msg += f"V={vm_kv} KV<br>"
+
+            if isinstance(Vm, float) and isinstance(Va, float):
+                vm = format_str.format(Vm)
+                vm_kv = format_str.format(Vm * self._api_object.Vnom)
+                va = format_str.format(Va)
+                msg += f"V={vm_kv} KV<br>  {vm}&lt;{va}º p.u.<br>"
+                # msg += f"V={vm_kv} KV<br>"
+
+            elif isinstance(Vm, np.ndarray) and isinstance(Va, np.ndarray):
+                for Vm_i, Va_i, ph in zip(Vm, Va, ["a", "b", "c"]):
+                    if not (Vm_i == 0.0 and Va_i == 0.0):
+                        vm = format_str.format(Vm_i)
+                        vm_kv = format_str.format(Vm_i * self._api_object.Vnom)
+                        va = format_str.format(Va_i)
+                        msg += f"V{ph}={vm_kv} KV / {vm}&lt;{va}º p.u.<br>"
+
             if P is not None:
-                p = format_str.format(P)
-                q = format_str.format(Q)
-                msg += f"P={p} MW<br>Q={q} MVAr"
+                if isinstance(P, float) and isinstance(Q, float):
+                    p = format_str.format(P)
+                    q = format_str.format(Q)
+                    msg += f"P={p} MW<br>Q={q} MVAr"
+                elif isinstance(P, np.ndarray) and isinstance(Q, np.ndarray):
+                    for P_i, Q_i, ph in zip(P, Q, ["a", "b", "c"]):
+                        if not (P_i == 0.0 and Q_i == 0.0):
+                            p = format_str.format(P_i)
+                            q = format_str.format(Q_i)
+                            msg += f"P{ph}={p} MW<br>Q{ph}={q} MVAr<br>"
+
         else:
             msg = ""
 
+        title = self._api_object.name if self._api_object is not None else ""
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
+                           f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
+
+        self.setToolTip(msg)
+
+    def clear_label(self):
+        msg = ""
         title = self._api_object.name if self._api_object is not None else ""
         self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
                            f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')

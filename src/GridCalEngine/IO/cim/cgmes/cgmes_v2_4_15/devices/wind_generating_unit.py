@@ -5,7 +5,7 @@
 
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.generating_unit import GeneratingUnit
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, WindGenUnitKind
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType, WindGenUnitKind
 
 
 class WindGeneratingUnit(GeneratingUnit):

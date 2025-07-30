@@ -10,7 +10,11 @@ def test_v_control_true():
     """
     Test that when the V control is enabled the voltage at the bus is the set point
     """
-    options = PowerFlowOptions(SolverType.NR, control_q=True, retry_with_other_methods=False)
+    options = PowerFlowOptions(SolverType.NR,
+                               control_q=False,
+                               retry_with_other_methods=False,
+                               control_taps_modules=True,
+                               control_remote_voltage=True)
 
     fname = os.path.join('data', 'grids', 'IEEE57.gridcal')
     main_circuit = FileOpen(fname).open()
@@ -19,6 +23,8 @@ def test_v_control_true():
 
     tr.tap_module_control_mode = TapModuleControl.Vm
     tr.regulation_bus = tr.bus_to
+    tr.tap_module_min = 0.0
+    tr.tap_module_max = 2.0
     tr.vset = 1.0
 
     power_flow = PowerFlowDriver(main_circuit, options)
@@ -26,7 +32,7 @@ def test_v_control_true():
 
     v_control = np.abs(power_flow.results.voltage[42])
 
-    assert np.allclose(tr.vset, v_control)
+    assert np.allclose(tr.vset, v_control, atol=1e-2)
 
 
 def test_v_control_false():

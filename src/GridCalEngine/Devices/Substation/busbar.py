@@ -7,24 +7,24 @@ from typing import Union
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 
 
 class BusBar(PhysicalDevice):
+    __slots__ = (
+        '_voltage_level',
+    )
 
     def __init__(self,
                  name='BusBar',
                  idtag: Union[None, str] = None,
                  code: str = '',
-                 voltage_level: Union[None, VoltageLevel] = None,
-                 cn: Union[None, ConnectivityNode] = None) -> None:
+                 voltage_level: VoltageLevel | None = None) -> None:
         """
         Constructor
         :param name: Name of the bus bar
         :param idtag: unique identifier of the device
         :param code: secondary identifier
-        :param voltage_level: VoltageLevel of this bus bar (optional)
-        :param cn: internal Connectivity node, if none a new one is created
+        :param voltage_level: VoltageLevel (optional)
         """
         PhysicalDevice.__init__(self,
                                 name=name,
@@ -32,31 +32,25 @@ class BusBar(PhysicalDevice):
                                 idtag=idtag,
                                 device_type=DeviceType.BusBarDevice)
 
-        self.voltage_level: Union[None, VoltageLevel] = voltage_level
-
-        self._cn: ConnectivityNode = cn if cn is not None else ConnectivityNode(name=name,
-                                                                                voltage_level=voltage_level,
-                                                                                internal=True)
-        self._cn.internal = True  # always
-
-        self.register(key="voltage_level", tpe=DeviceType.VoltageLevelDevice,
-                      definition="Substation voltage level (optional)")
-
-        self.register(key="cn", tpe=DeviceType.ConnectivityNodeDevice,
-                      definition="Internal connectivity node")
+        self._voltage_level: VoltageLevel = voltage_level
+        self.register(key="voltage_level", tpe=DeviceType.BusDevice,
+                      definition="Voltage level of this BusBar")
 
     @property
-    def cn(self) -> ConnectivityNode:
+    def voltage_level(self) -> VoltageLevel:
         """
         Connectivity node getter
         :return: ConnectivityNode
         """
-        return self._cn
+        return self._voltage_level
 
-    @cn.setter
-    def cn(self, val: ConnectivityNode):
+    @voltage_level.setter
+    def voltage_level(self, val: VoltageLevel):
         """
         Connectivity node setter
         :param val: ConnectivityNode
         """
-        self._cn: ConnectivityNode = val
+        if isinstance(val, VoltageLevel):
+            self._voltage_level: VoltageLevel = val
+        else:
+            raise ValueError("Must be a VoltageLevel object")

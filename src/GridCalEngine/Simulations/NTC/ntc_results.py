@@ -79,6 +79,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.bus_names = bus_names
         self.branch_names = branch_names
         self.hvdc_names = hvdc_names
+        self.vsc_names = vsc_names
         self.contingency_group_names = contingency_group_names
         self.bus_types = np.ones(n, dtype=int)
 
@@ -87,6 +88,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.dSbus = np.zeros(n, dtype=complex)
         self.bus_shadow_prices = np.zeros(n, dtype=float)
         self.load_shedding = np.zeros(n, dtype=float)
+        self.nodal_balance = np.zeros(n, dtype=float)
 
         self.Sf = np.zeros(m, dtype=float)
         self.St = np.zeros(m, dtype=float)
@@ -112,15 +114,20 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.receiving_bus_idx: List[int] = list()
         self.inter_space_branches: List[tuple[int, float]] = list()  # index, sense
         self.inter_space_hvdc: List[tuple[int, float]] = list()  # index, sense
+        self.inter_space_vsc: List[tuple[int, float]] = list()  # index, sense
 
         # t, m, c, contingency, negative_slack, positive_slack
         self.contingency_flows_list = list()
 
         self.converged = False
 
+        self.inter_area_flows = 0
+        self.structural_inter_area_flows = 0
+
         self.register(name='bus_names', tpe=StrVec)
         self.register(name='branch_names', tpe=StrVec)
         self.register(name='hvdc_names', tpe=StrVec)
+        self.register(name='vsc_names', tpe=StrVec)
         self.register(name='contingency_group_names', tpe=StrVec)
         self.register(name='bus_types', tpe=IntVec)
 
@@ -150,12 +157,17 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.register(name='vsc_losses', tpe=Vec)
 
         self.register(name='converged', tpe=bool)
+
+        self.register(name='inter_area_flows', tpe=float)
+        self.register(name='structural_inter_area_flows', tpe=float)
+
         self.register(name='contingency_flows_list', tpe=list)
 
         self.register(name='sending_bus_idx', tpe=list)
         self.register(name='receiving_bus_idx', tpe=list)
         self.register(name='inter_space_branches', tpe=list)
         self.register(name='inter_space_hvdc', tpe=list)
+        self.register(name='inter_space_vsc', tpe=list)
 
     def get_bus_df(self) -> pd.DataFrame:
         """
@@ -329,6 +341,13 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 index.append(self.hvdc_names[k])
                 data.append(self.hvdc_Pf[k])
 
+            for k, sense in self.inter_space_vsc:
+                index.append(self.vsc_names[k])
+                data.append(self.vsc_Pf[k])
+
+            index.append("Total")
+            data.append(self.inter_area_flows)
+
             return ResultsTable(
                 data=np.array(data),
                 index=np.array(index),
@@ -351,6 +370,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             for k, sense in self.inter_space_hvdc:
                 index.append(self.hvdc_names[k])
                 data.append(self.hvdc_loading[k])
+
+            for k, sense in self.inter_space_vsc:
+                index.append(self.vsc_names[k])
+                data.append(self.vsc_loading[k])
 
             return ResultsTable(
                 data=np.array(data) * 100.0,

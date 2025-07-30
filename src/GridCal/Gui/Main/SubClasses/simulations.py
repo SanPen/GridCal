@@ -103,6 +103,8 @@ class SimulationsMain(TimeEventsMain):
         self.mip_solvers_dict[MIPSolvers.CPLEX.value] = MIPSolvers.CPLEX
         self.mip_solvers_dict[MIPSolvers.GUROBI.value] = MIPSolvers.GUROBI
         self.mip_solvers_dict[MIPSolvers.XPRESS.value] = MIPSolvers.XPRESS
+        self.mip_solvers_dict[MIPSolvers.CBC.value] = MIPSolvers.CBC
+        self.mip_solvers_dict[MIPSolvers.PDLP.value] = MIPSolvers.PDLP
 
         # opf solvers dictionary
         self.nodal_capacity_methods_dict = OrderedDict()
@@ -564,11 +566,10 @@ class SimulationsMain(TimeEventsMain):
         :return:
         """
         model = QtGui.QStandardItemModel()
-        model.setHorizontalHeaderLabels(["Combination"] + list(drv.problem.get_objectives_names()))
+        model.setHorizontalHeaderLabels(["Combination"] + list(drv.results.f_names))
 
-        results = drv.results
-        for i in range(results.max_eval):
-            idx = np.where(results.x[i, :] != 0)[0]
+        for i in range(drv.results.max_eval):
+            idx = np.where(drv.results.x[i, :] != 0)[0]
             if len(idx):
                 row_items = [QtGui.QStandardItem(f"Combination {i}")] + [
                     QtGui.QStandardItem(f"{fi:.2f}") for fi in drv.results.f[i, :]
@@ -578,7 +579,7 @@ class SimulationsMain(TimeEventsMain):
                 # Add names as child nodes under this combination
                 names_parent_item = row_items[0]  # Use the first column (Combination) as parent
                 for k in idx:
-                    name_item = QtGui.QStandardItem(results.x_names[k])
+                    name_item = QtGui.QStandardItem(drv.results.x_names[k])
                     names_parent_item.appendRow([name_item])
 
         return model
@@ -687,15 +688,23 @@ class SimulationsMain(TimeEventsMain):
         Get the lists that help defining the inter area objects
         :return: InterAggregationInfo
         """
-        dev_tpe_from = self.exchange_places_dict[self.ui.fromComboBox.currentText()]
-        devs_from = self.circuit.get_elements_by_type(dev_tpe_from)
-        from_idx = gf.get_checked_indices(self.ui.fromListView.model())
-        objects_from = [devs_from[i] for i in from_idx]
+        if self.ui.fromListView.model() is not None:
+            dev_tpe_from = self.exchange_places_dict[self.ui.fromComboBox.currentText()]
+            devs_from = self.circuit.get_elements_by_type(dev_tpe_from)
+            from_idx = gf.get_checked_indices(self.ui.fromListView.model())
+            objects_from = [devs_from[i] for i in from_idx]
+        else:
+            objects_from = []
+            self.show_error_toast("No from areas!")
 
-        dev_tpe_to = self.exchange_places_dict[self.ui.toComboBox.currentText()]
-        devs_to = self.circuit.get_elements_by_type(dev_tpe_to)
-        to_idx = gf.get_checked_indices(self.ui.toListView.model())
-        objects_to = [devs_to[i] for i in to_idx]
+        if self.ui.toListView.model() is not None:
+            dev_tpe_to = self.exchange_places_dict[self.ui.toComboBox.currentText()]
+            devs_to = self.circuit.get_elements_by_type(dev_tpe_to)
+            to_idx = gf.get_checked_indices(self.ui.toListView.model())
+            objects_to = [devs_to[i] for i in to_idx]
+        else:
+            objects_to = []
+            self.show_error_toast("No to areas!")
 
         info: dev.InterAggregationInfo = self.circuit.get_inter_aggregation_info(objects_from=objects_from,
                                                                                  objects_to=objects_to)
@@ -739,7 +748,8 @@ class SimulationsMain(TimeEventsMain):
             trust_radius=self.ui.muSpinBox.value(),
             use_stored_guess=self.ui.use_voltage_guess_checkBox.isChecked(),
             initialize_angles=self.ui.initialize_pf_angles_checkBox.isChecked(),
-            generate_report=self.ui.addPowerFlowReportCheckBox.isChecked()
+            generate_report=self.ui.addPowerFlowReportCheckBox.isChecked(),
+            three_phase_unbalanced=self.ui.pf_three_phase_checkBox.isChecked()
         )
 
         return ops
@@ -1552,10 +1562,12 @@ class SimulationsMain(TimeEventsMain):
                                                                    use_clustering=use_clustering,
                                                                    cluster_number=cluster_number)
 
-                    drv = sim.AvailableTransferCapacityTimeSeriesDriver(grid=self.circuit,
-                                                                        options=options,
-                                                                        time_indices=self.get_time_indices(),
-                                                                        clustering_results=self.get_clustering_results())
+                    drv = sim.AvailableTransferCapacityTimeSeriesDriver(
+                        grid=self.circuit,
+                        options=options,
+                        time_indices=self.get_time_indices(),
+                        clustering_results=self.get_clustering_results()
+                    )
 
                     self.session.run(drv,
                                      post_func=self.post_available_transfer_capacity_ts,
@@ -1955,7 +1967,7 @@ class SimulationsMain(TimeEventsMain):
         """
         # get the power flow options from the GUI
         solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
-        mip_solver = self.mip_solvers_dict.get(self.ui.mip_solver_comboBox.currentText(), MIPSolvers.HIGHS.value)
+        mip_solver = self.mip_solvers_dict.get(self.ui.mip_solver_comboBox.currentText(), MIPSolvers.HIGHS)
         time_grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
         zonal_grouping = self.opf_zonal_groups[self.ui.opfZonalGroupByComboBox.currentText()]
         pf_options = self.get_selected_power_flow_options()
@@ -2107,10 +2119,12 @@ class SimulationsMain(TimeEventsMain):
                         if options is not None:
                             # create the OPF time series instance
                             # if non_sequential:
-                            drv = sim.OptimalPowerFlowTimeSeriesDriver(grid=self.circuit,
-                                                                       options=options,
-                                                                       time_indices=self.get_time_indices(),
-                                                                       clustering_results=self.get_clustering_results())
+                            drv = sim.OptimalPowerFlowTimeSeriesDriver(
+                                grid=self.circuit,
+                                options=options,
+                                time_indices=self.get_time_indices(),
+                                clustering_results=self.get_clustering_results()
+                            )
 
                             drv.engine = self.get_preferred_engine()
 
@@ -2232,8 +2246,9 @@ class SimulationsMain(TimeEventsMain):
             branch_exchange_sensitivity=self.ui.ntcAlphaSpinBox.value() / 100.0,
             use_branch_exchange_sensitivity=self.ui.ntcSelectBasedOnExchangeSensitivityCheckBox.isChecked(),
             branch_rating_contribution=self.ui.ntcLoadRuleSpinBox.value() / 100.0,
-            use_branch_rating_contribution=self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked(),
+            monitor_only_ntc_load_rule_branches=self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked(),
             consider_contingencies=self.ui.consider_ntc_contingencies_checkBox.isChecked(),
+            strict_formulation=self.ui.strict_ntc_formulation_checkBox.isChecked(),
             opf_options=self.get_opf_options(),
             lin_options=self.get_linear_options()
         )
@@ -2300,35 +2315,39 @@ class SimulationsMain(TimeEventsMain):
         Run OPF NTC time series simulation
         """
         if self.circuit.valid_for_simulation():
+            if self.circuit.has_time_series:
+                if not self.session.is_this_running(SimulationTypes.OPF_NTC_TS_run):
 
-            if not self.session.is_this_running(SimulationTypes.OPF_NTC_TS_run):
+                    self.remove_simulation(SimulationTypes.OPF_NTC_TS_run)
 
-                self.remove_simulation(SimulationTypes.OPF_NTC_TS_run)
+                    options = self.get_opf_ntc_options()
 
-                options = self.get_opf_ntc_options()
+                    if options is None:
+                        return
 
-                if options is None:
-                    return
+                    else:
+
+                        self.ui.progress_label.setText('Running optimal net transfer capacity time series...')
+                        QtGui.QGuiApplication.processEvents()
+
+                        # set optimal net transfer capacity driver instance
+                        drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(
+                            grid=self.circuit,
+                            options=options,
+                            time_indices=self.get_time_indices(),
+                            clustering_results=self.get_clustering_results()
+                        )
+
+                        self.LOCK()
+                        self.session.run(drv,
+                                         post_func=self.post_opf_ntc_ts,
+                                         prog_func=self.ui.progressBar.setValue,
+                                         text_func=self.ui.progress_label.setText)
 
                 else:
-
-                    self.ui.progress_label.setText('Running optimal net transfer capacity time series...')
-                    QtGui.QGuiApplication.processEvents()
-
-                    # set optimal net transfer capacity driver instance
-                    drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(grid=self.circuit,
-                                                                         options=options,
-                                                                         time_indices=self.get_time_indices(),
-                                                                         clustering_results=self.get_clustering_results())
-
-                    self.LOCK()
-                    self.session.run(drv,
-                                     post_func=self.post_opf_ntc_ts,
-                                     prog_func=self.ui.progressBar.setValue,
-                                     text_func=self.ui.progress_label.setText)
-
+                    self.show_warning_toast('Another Optimal NCT time series is being run...')
             else:
-                self.show_warning_toast('Another Optimal NCT time series is being run...')
+                self.show_error_toast("The grid doesn't have time series :/")
         else:
             pass
 

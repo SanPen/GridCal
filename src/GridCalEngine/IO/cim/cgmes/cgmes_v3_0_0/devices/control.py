@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.io_point import IOPoint
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitMultiplier, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType, UnitMultiplier, UnitSymbol
 
 
 class Control(IOPoint):

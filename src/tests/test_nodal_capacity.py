@@ -36,7 +36,6 @@ def test_linear_vs_nonlinear_ncap():
                             pf_options=pf_options,
                             opf_options=opf_options,
                             plot_error=False,
-                            pf_init=True,
                             optimize_nodal_capacity=True,
                             nodal_capacity_sign=-1.0,
                             capacity_nodes_idx=np.array([10, 11]))

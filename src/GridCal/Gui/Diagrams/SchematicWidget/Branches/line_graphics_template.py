@@ -13,13 +13,10 @@ from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsPo
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, GenericDiagramWidget, TRANSPARENT, WHITE
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
-from GridCal.Gui.Diagrams.SchematicWidget.Substation.cn_graphics import CnGraphicItem
-from GridCal.Gui.Diagrams.SchematicWidget.Substation.busbar_graphics import BusBarGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 from GridCal.Gui.messages import yes_no_question
 
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.Devices.Substation.busbar import BusBar
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
@@ -33,12 +30,13 @@ from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.enumerations import SwitchGraphicType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
 
-NODE_GRAPHIC = BusGraphicItem | CnGraphicItem | BusBarGraphicItem | FluidNodeGraphicItem
+NODE_GRAPHIC = BusGraphicItem | FluidNodeGraphicItem
 
 
 class TransformerSymbol(QGraphicsRectItem):
@@ -224,13 +222,22 @@ class SeriesReactanceSymbol(VscSymbol):
 
 class SwitchSymbol(VscSymbol):
     """
-    UpfcSymbol
+    SwitchSymbol
     """
 
     def __init__(self, parent, pen_width, h=30, w=30):
         VscSymbol.__init__(self, parent=parent, pen_width=pen_width, h=h, w=w,
                            icon_route=":/Icons/icons/switch.svg")
 
+
+class DisconnectorSymbol(VscSymbol):
+    """
+    DisconnectorSymbol
+    """
+
+    def __init__(self, parent, pen_width, h=30, w=30):
+        VscSymbol.__init__(self, parent=parent, pen_width=pen_width, h=h, w=w,
+                           icon_route=":/Icons/icons/disconnector.svg")
 
 class HvdcSymbol(QGraphicsRectItem):
     """
@@ -483,7 +490,12 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         elif isinstance(api_object, SeriesReactance):
             self.symbol = SeriesReactanceSymbol(parent=self, pen_width=width, h=30, w=30)
         elif isinstance(api_object, Switch):
-            self.symbol = SwitchSymbol(parent=self, pen_width=width, h=30, w=30)
+            if api_object.graphic_type == SwitchGraphicType.CircuitBreaker:
+                self.symbol = SwitchSymbol(parent=self, pen_width=width, h=30, w=30)
+            elif api_object.graphic_type == SwitchGraphicType.Disconnector:
+                self.symbol = DisconnectorSymbol(parent=self, pen_width=width, h=30, w=30)
+            else:
+                self.symbol = DisconnectorSymbol(parent=self, pen_width=width, h=30, w=30)
         else:
             self.symbol = None
 
@@ -685,6 +697,11 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         # Set pen for everyone
         self.set_pen(QPen(self.color, self.width, self.style))
 
+        self.arrow_p_from.setVisible(val)
+        self.arrow_q_from.setVisible(val)
+        self.arrow_p_to.setVisible(val)
+        self.arrow_q_to.setVisible(val)
+
     def plot_profiles(self):
         """
         Plot the time series profiles
@@ -816,7 +833,7 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         self._editor.set_active_status_to_profile(self.api_object)
 
-    def set_arrows_with_power(self, Sf: complex, St: complex) -> None:
+    def set_arrows_with_power(self, Sf: complex | None, St: complex | None) -> None:
         """
         Set the arrow directions
         :param Sf: Complex power from
@@ -835,6 +852,12 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
             self.arrow_q_from.set_value(Qf, True, Qf < 0, name="Qf", units="MVAr", draw_label=self.draw_labels)
             self.arrow_p_to.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
             self.arrow_q_to.set_value(Qt_, True, Qt_ > 0, name="Qt", units="MVAr", draw_label=self.draw_labels)
+        else:
+            if St is None:
+                self.arrow_p_from.setVisible(False)
+                self.arrow_q_from.setVisible(False)
+                self.arrow_p_to.setVisible(False)
+                self.arrow_q_to.setVisible(False)
 
     def set_arrows_with_hvdc_power(self, Pf: float, Pt: float) -> None:
         """
@@ -903,46 +926,6 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         else:
             return False
 
-    def is_from_port_a_cn(self) -> bool:
-        """
-
-        :return:
-        """
-        if self._from_port:
-            return isinstance(self.get_terminal_from_parent(), CnGraphicItem)
-        else:
-            return False
-
-    def is_to_port_a_cn(self) -> bool:
-        """
-
-        :return:
-        """
-        if self._to_port:
-            return isinstance(self.get_terminal_to_parent(), CnGraphicItem)
-        else:
-            return False
-
-    def is_from_port_a_busbar(self) -> bool:
-        """
-
-        :return:
-        """
-        if self._from_port:
-            return isinstance(self.get_terminal_from_parent(), BusBarGraphicItem)
-        else:
-            return False
-
-    def is_to_port_a_busbar(self) -> bool:
-        """
-
-        :return:
-        """
-        if self._to_port:
-            return isinstance(self.get_terminal_to_parent(), BusBarGraphicItem)
-        else:
-            return False
-
     def is_from_port_a_tr3(self) -> bool:
         """
 
@@ -1005,14 +988,14 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         return self.get_to_graphic_object().api_object
 
-    def get_cn_from(self) -> ConnectivityNode:
+    def get_cn_from(self) -> Bus:
         """
 
         :return:
         """
         return self.get_from_graphic_object().api_object
 
-    def get_cn_to(self) -> ConnectivityNode:
+    def get_cn_to(self) -> Bus:
         """
 
         :return:
@@ -1103,61 +1086,6 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         return self.is_from_port_a_bus() and self.is_to_port_a_fluid_node()
 
-    def connected_between_cn_and_bus(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_cn() and self.is_to_port_a_bus()
-
-    def connected_between_bus_and_cn(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_bus() and self.is_to_port_a_cn()
-
-    def connected_between_cn(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_cn() and self.is_to_port_a_cn()
-
-    def connected_between_busbar_and_bus(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_busbar() and self.is_to_port_a_bus()
-
-    def connected_between_bus_and_busbar(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_bus() and self.is_to_port_a_busbar()
-
-    def connected_between_busbar(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_busbar() and self.is_to_port_a_busbar()
-
-    def connected_between_busbar_and_cn(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_busbar() and self.is_to_port_a_cn()
-
-    def connected_between_cn_and_busbar(self):
-        """
-
-        :return:
-        """
-        return self.is_from_port_a_cn() and self.is_to_port_a_busbar()
 
     def should_be_a_converter(self) -> bool:
         """

@@ -70,6 +70,7 @@ class RawSubstation(RawObject):
                 self.IS, self.NAME, self.LATI, self.LONG = data[0]
             else:
                 logger.add_warning('Substation line length could not be identified :/', value=",".join(data[0]))
+                self.try_parse(values=data[0])
 
         elif version == 35:
 
@@ -79,6 +80,7 @@ class RawSubstation(RawObject):
                 self.IS, self.NAME, self.LATI, self.LONG = data[0]
             else:
                 logger.add_warning('Substation line length could not be identified :/', value=",".join(data[0]))
+                self.try_parse(values=data[0])
 
         else:
             logger.add_warning('Substation not defined for version', str(version))

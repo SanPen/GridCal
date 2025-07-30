@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   GridCal.ThirdParty.darkdetect
    GridCal.ThirdParty.qdarktheme
 
 Module contents
@@ -14,5 +15,5 @@ Module contents
 
 .. automodule:: GridCal.ThirdParty
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

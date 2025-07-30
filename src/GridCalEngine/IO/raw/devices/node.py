@@ -76,12 +76,20 @@ class RawNode(RawObject):
         :param logger:
         """
         if version == 34:
-            # I, ISW, PDES, PTOL, 'ARNAME'
-            self.NI, self.NAME, self.I, self.STATUS = data[0]
+
+            if len(data[0]) == 4:
+                self.NI, self.NAME, self.I, self.STATUS = data[0]
+            else:
+                self.try_parse(values=data[0])
+
             self.NAME = self.NAME.replace("'", "").strip()
-        elif version == 35:
-            # I, ISW, PDES, PTOL, 'ARNAME'
-            self.ISUB, self.NI, self.NAME, self.I, self.STATUS, self.VM, self.VA = data[0]
+
+        elif version >= 35:
+
+            if len(data[0]) == 7:
+                self.ISUB, self.NI, self.NAME, self.I, self.STATUS, self.VM, self.VA = data[0]
+            else:
+                self.try_parse(values=data[0])
 
             self.NAME = self.NAME.replace("'", "").strip()
         else:

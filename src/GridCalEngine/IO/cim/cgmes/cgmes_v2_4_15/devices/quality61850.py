@@ -5,7 +5,7 @@
 
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.base import Base
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, Source, Validity
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType, Source, Validity
 
 
 class Quality61850(Base):

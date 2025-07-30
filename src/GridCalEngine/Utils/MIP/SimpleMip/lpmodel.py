@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import warnings
-from typing import List, Union, Tuple, Iterable
+from typing import List, Union, Tuple, Iterable, Callable
 import numpy as np
 from uuid import uuid4
 
@@ -369,7 +369,7 @@ class LpModel:
 
     def get_coefficients_data(self) -> Tuple[np.ndarray, csc_matrix, np.ndarray]:
         """
-        Returns the coefficients matrix
+        Returns the coefficient matrix
         :return:
         """
 
@@ -381,6 +381,8 @@ class LpModel:
         n = len(self.constraints)
         lower = np.empty(n)
         upper = np.empty(n)
+
+        var_idx_dict = {v: i for i, v in enumerate(self.variables)}
 
         # Iterate through each constraint, populating the lists
         for i, constraint in enumerate(self.constraints):
@@ -394,7 +396,7 @@ class LpModel:
                     row_indices.append(i)
 
                     # Column index is the variable's index
-                    col_indices.append(self.variables.index(var))
+                    col_indices.append(var_idx_dict[var])
 
                     # Coefficient is the data
                     data.append(coeff)
@@ -441,11 +443,12 @@ class LpModel:
         else:
             raise Exception(f"Unsupported solver {self.solver_type.value}")
 
-    def solve(self, robust=True, show_logs=False) -> int:
+    def solve(self, robust=True, show_logs=False, progress_text: Callable[[str], None] | None = None) -> int:
         """
         Solve the model
         :param robust: Relax the problem if infeasible
         :param show_logs: Show logs
+        :param progress_text: Function pointer to print the status
         :return: integer value matching OPTIMAL or not
         """
 
@@ -550,6 +553,15 @@ class LpModel:
 
         return self.OPTIMAL if self.is_optimal() else 0
 
+    def status2string(self, status: int) -> str:
+        if status == self.OPTIMAL:
+            return "Optimal"
+        elif status == self.INFINITY:
+            return "Infinity"
+        else:
+            return "infeasible"
+
+
     def set_solution(self, col_values: Vec, col_duals: Vec,
                      row_values: Vec, row_duals: Vec,
                      f_obj: float, is_optimal: bool):
@@ -592,7 +604,7 @@ class LpModel:
 
         return self._objective_value
 
-    def get_value(self, var: LpVar) -> float:
+    def get_value(self, var: LpVar | LpCst | LpExp | float | int) -> float:
         """
         Get the value of a variable
         :param var: LpVar object
@@ -604,15 +616,15 @@ class LpModel:
             return self._row_value[var.get_index()]
         elif isinstance(var, LpExp):
             val = var.offset
-            for var2, coeff in var.terms.items():
-                val += coeff * self._col_value[var2.get_index()]
+            for var2, _coef in var.terms.items():
+                val += _coef * self._col_value[var2.get_index()]
             return val
         elif isinstance(var, int) or isinstance(var, float):
             return var
         else:
             raise TypeError("Unsupported variable type {0}".format(type(var)))
 
-    def get_dual_value(self, var: LpVar) -> float:
+    def get_dual_value(self, var: LpVar | LpCst | LpExp | float | int) -> float:
         """
         Get the dual value of a variable
         :param var: LpVar object

@@ -60,7 +60,7 @@ class PfBasicFormulation(PfFormulationTemplate):
 
     def x2var(self, x: Vec):
         """
-        Convert X to decission variables
+        Convert X to decision variables
         :param x: solution vector
         """
         a = len(self.idx_dVa)

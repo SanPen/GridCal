@@ -1,0 +1,52 @@
+code,r_phase,x_phase,r_neutral,x_neutral,description,kind,sectionphase,sectionneutral,true,material,rizado,threephasecable
+C250,0.21,0.075,0.21,0.075,BT - Desconocido BT,Aéreo,150,150,false,Al,false,true
+C350,0.21,0.075,0.21,0.075,BT - Desconocido BT,Subterráneo,150,150,false,Al,false,true
+C201,1.23,0.08,1.23,0.08,BT - MANGUERA,Aéreo,16,16,false,Al,false,true
+C301,1.23,0.08,1.23,0.08,BT - MANGUERA,Subterráneo,16,16,false,Al,false,true
+C202,2.14,0.09,2.14,0.09,"BT - RV 0,6/1 KV 2*16 KAL",Aéreo,16,16,false,Al,false,false
+C302,2.14,0.09,2.14,0.09,"BT - RV 0,6/1 KV 2*16 KAL",Subterráneo,16,16,false,Al,false,false
+C203,1.34,0.097,1.34,0.097,"BT - RV 0,6/1 KV 2*25 KAL",Aéreo,25,25,false,Al,false,false
+C303,1.538,0.095,1.538,0.095,"BT - RV 0,6/1 KV 2*25 KAL",Subterráneo,25,25,false,Al,false,false
+C204,0.230905,0.085,0.358688,0.089,"BT - RV 0,6/1 KV 3(1*150 KAL) + 1*95 KAL",Aéreo,150,95,false,Al,false,true
+C304,0.264113,0.082,0.410272,0.083,"BT - RV 0,6/1 KV 3(1*150 KAL) + 1*95 KAL",Subterráneo,150,95,false,Al,false,true
+C205,0.160263,0.079,0.230905,0.085,"BT - RV 0,6/1 KV 3(1*240 KAL) + 1*150 KAL",Aéreo,240,150,false,Al,false,true
+C305,0.160263,0.079,0.264113,0.082,"BT - RV 0,6/1 KV 3(1*240 KAL) + 1*150 KAL",Subterráneo,240,150,false,Al,false,true
+C206,0.160263,0.079,0.358688,0.089,"BT - RV 0,6/1 KV 3(1*240 KAL) + 1*95 KAL",Aéreo,240,95,false,Al,false,true
+C306,0.160263,0.079,0.410272,0.083,"BT - RV 0,6/1 KV 3(1*240 KAL) + 1*95 KAL",Subterráneo,240,95,false,Al,false,true
+C207,1.34,0.097,1.34,0.097,"BT - RV 0,6/1 KV 4*25 KAL",Aéreo,25,25,false,Al,false,true
+C307,1.538,0.095,1.538,0.095,"BT - RV 0,6/1 KV 4*25 KAL",Subterráneo,25,25,false,Al,false,true
+C208,0.718497,0.093,0.718497,0.093,"BT - RV 0,6/1 KV 4*50 KAL",Aéreo,50,50,false,Al,false,true
+C308,0.718497,0.093,0.718497,0.093,"BT - RV 0,6/1 KV 4*50 KAL",Subterráneo,50,50,false,Al,false,true
+C209,0.358688,0.089,0.358688,0.089,"BT - RV 0,6/1 KV 4*95 KAL",Aéreo,95,95,false,Al,false,true
+C309,0.410272,0.083,0.410272,0.083,"BT - RV 0,6/1 KV 4*95 KAL",Subterráneo,95,95,false,Al,false,true
+C210,1.23,0.08,1.23,0.08,"BT - RX 0,6/1 KV 2*16 Cu",Aéreo,16,16,false,Cu,false,false
+C310,1.23,0.08,1.23,0.08,"BT - RX 0,6/1 KV 2*16 Cu",Subterráneo,16,16,false,Cu,false,false
+C211,9.9,0.075,9.9,0.075,"BT - RX 0,6/1 KV 2*2 Cu",Aéreo,2,2,false,Cu,false,false
+C311,9.9,0.075,9.9,0.075,"BT - RX 0,6/1 KV 2*2 Cu",Subterráneo,2,2,false,Cu,false,false
+C211,9.9,0.075,9.9,0.075,"BT - RX 0,6/1 KV 2*2 Cu00",Aéreo,2,2,false,Cu,false,false
+C311,9.9,0.075,9.9,0.075,"BT - RX 0,6/1 KV 2*2 Cu00",Subterráneo,2,2,false,Cu,false,false
+C212,4.95,0.075,4.95,0.075,"BT - RX 0,6/1 KV 2*4 Cu",Aéreo,4,4,false,Cu,false,false
+C312,4.95,0.075,4.95,0.075,"BT - RX 0,6/1 KV 2*4 Cu",Subterráneo,4,4,false,Cu,false,false
+C213,3.30,0.075,3.30,0.075,"BT - RX 0,6/1 KV 2*6 Cu",Aéreo,6,6,false,Cu,false,false
+C213,3.30,0.075,3.30,0.075,"BT - RX 0,6/1 KV 2*6 Cu",Subterráneo,6,6,false,Cu,false,false
+C313,3.30,0.075,3.30,0.075,"BT - RX 0,6/1 KV 2*4 Cu",Subterráneo,4,4,false,Cu,false,false
+C214,2.14,0.09,2.14,0.09,"BT - RZ 0,6/1 KV 2*16 AL",Aéreo,16,16,false,Al,true,false
+C314,2.14,0.09,2.14,0.09,"BT - RZ 0,6/1 KV 2*16 AL",Subterráneo,16,16,false,Al,true,false
+C215,0.230905,0.085,0.39,0.090,"BT - RZ 0,6/1 KV 3*150 AL/80 ALM0",Aéreo,150,80,true,Al,true,true
+C315,0.264113,0.082,0.4506,0.084,"BT - RZ 0,6/1 KV 3*150 AL/80 ALM0",Subterráneo,150,80,true,Al,true,true
+C215,0.230905,0.085,0.39,0.090,"BT - RZ 0,6/1 KV 3*150 AL/80 ALM",Aéreo,150,80,true,Al,true,true
+C315,0.264113,0.082,0.4506,0.084,"BT - RZ 0,6/1 KV 3*150 AL/80 ALM",Subterráneo,150,80,true,Al,true,true
+C216,0.230905,0.085,0.358688,0.089,"BT - RZ 0,6/1 KV 3*150 AL/95 ALM",Aéreo,95,150,true,Al,true,true
+C316,0.264113,0.082,0.410272,0.083,"BT - RZ 0,6/1 KV 3*150 AL/95 ALM",Subterráneo,95,150,true,Al,true,true
+C217,1.34,0.097,0.6579,0.09,"BT - RZ 0,6/1 KV 3*25 AL/54,6 ALM",Aéreo,25,54.6,true,Al,true,true
+C317,1.538,0.095,0.6579,0.09,"BT - RZ 0,6/1 KV 3*25 AL/54,6 ALM",Subterráneo,25,54.6,true,Al,true,true
+C218,0.9073,0.095,0.6579,0.09,"BT - RZ 0,6/1 KV 3*35 AL/54,6 ALM",Aéreo,35,54.6,true,Al,true,true
+C318,0.9073,0.095,0.6579,0.09,"BT - RZ 0,6/1 KV 3*35 AL/54,6 ALM",Subterráneo,35,54.6,true,Al,true,true
+C219,0.718497,0.093,0.6579,0.09,"BT - RZ 0,6/1 KV 3*50 AL/54,6 ALM",Aéreo,50,54.6,true,Al,true,true
+C319,0.718497,0.093,0.6579,0.09,"BT - RZ 0,6/1 KV 3*35 AL/54,6 ALM",Subterráneo,35,54.6,true,Al,true,true
+C220,0.4539,0.091,0.6579,0.09,"BT - RZ 0,6/1 KV 3*70 ALM/54,6 AL",Aéreo,70,54.6,true,Al,true,true
+C320,0.515,0.085,0.6579,0.09,"BT - RZ 0,6/1 KV 3*70 ALM/54,6 AL",Subterráneo,70,54.6,true,Al,true,true
+C221,0.358688,0.089,0.6579,0.09,"BT - RZ 0,6/1 KV 3*95 AL/54,6 ALM",Aéreo,95,54.6,true,Al,true,true
+C321,0.410272,0.083,0.6579,0.09,"BT - RZ 0,6/1 KV 3*95 AL/54,6 ALM",Subterráneo,95,54.6,true,Al,true,true
+C222,2.14,0.09,2.14,0.09,"BT - RZ 0,6/1 KV 4*16 AL",Aéreo,16,16,false,Al,true,true
+C322,2.14,0.09,2.14,0.09,"BT - RZ 0,6/1 KV 4*16 AL",Subterráneo,16,16,false,Al,true,true

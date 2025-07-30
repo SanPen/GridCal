@@ -39,13 +39,15 @@ class ClusteringDriver(DriverTemplate):
         self.report_text("Clustering")
         self.report_progress(0.0)
 
-        time_indices, sampled_probabilities, sample_idx = kmeans_sampling(x_input=self.grid.get_Pbus_prof(),
-                                                                          n_points=self.options.n_points)
+        (time_indices,
+         sampled_probabilities,
+         original_sample_idx) = kmeans_sampling(x_input=self.grid.get_Pbus_prof(),
+                                                n_points=self.options.n_points)
         self.results = ClusteringResults(
             time_indices=time_indices,
             sampled_probabilities=sampled_probabilities,
             time_array=self.grid.time_profile,
-            original_sample_idx=sample_idx
+            original_sample_idx=original_sample_idx
         )
 
         self.toc()

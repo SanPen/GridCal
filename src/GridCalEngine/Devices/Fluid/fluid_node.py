@@ -14,6 +14,22 @@ from GridCalEngine.Devices.profile import Profile
 
 
 class FluidNode(PhysicalDevice):
+    __slots__ = (
+        'min_level',
+        'max_level',
+        'max_soc',
+        'min_soc',
+        'initial_level',
+        'spillage_cost',
+        'inflow',
+        '_bus',
+        'build_status',
+        'color',
+        '_inflow_prof',
+        '_spillage_cost_prof',
+        '_max_soc_prof',
+        '_min_soc_prof',
+    )
 
     def __init__(self,
                  name: str = '',

@@ -66,7 +66,7 @@ class ResultsTemplate:
 
         self.available_results: Dict[ResultTypes, List[ResultTypes]] = available_results
 
-        self.data_variables: Dict[str, ResultsProperty] = dict()
+        self._data_variables: Dict[str, ResultsProperty] = dict()
 
         self._time_array: Union[DateVec, None] = time_array
 
@@ -92,6 +92,10 @@ class ResultsTemplate:
         self.area_names: StrVec | None = None
 
         self.__show_plot = True
+
+    @property
+    def data_variables(self):
+        return self._data_variables
 
     @property
     def time_array(self) -> DateVec:
@@ -136,9 +140,9 @@ class ResultsTemplate:
 
         assert (hasattr(self, name))  # the property must exist, this avoids bugs when registering
 
-        self.data_variables[name] = ResultsProperty(name=name,
-                                                    tpe=tpe,
-                                                    old_names=list() if old_names is None else old_names)
+        self._data_variables[name] = ResultsProperty(name=name,
+                                                     tpe=tpe,
+                                                     old_names=list() if old_names is None else old_names)
 
     def consolidate_after_loading(self):
         """
@@ -154,7 +158,7 @@ class ResultsTemplate:
         data = dict()
 
         # traverse the registered results
-        for arr_name, arr_prop in self.data_variables.items():
+        for arr_name, arr_prop in self._data_variables.items():
 
             # get the array
             arr: np.ndarray = getattr(self, arr_name)
@@ -192,7 +196,7 @@ class ResultsTemplate:
         :return:
         """
 
-        for arr_name, arr_prop in self.data_variables.items():
+        for arr_name, arr_prop in self._data_variables.items():
 
             arr_data = data.get(arr_name, None)
 
@@ -391,12 +395,16 @@ class ResultsTemplate:
 
     def expand_clustered_results(self):
         """
-        Expand all arrays to their
+        Expand all arrays using the clustering info
         """
+
         if self.using_clusters:
 
             self.time_array = self.clustering_results.time_array
 
+            # NOTE: You might be tempted to change this loop to use the registered properties.
+            #       Don't do it, there may be unregistered properties that will fail if this doesn't
+            #       traverse all te actual properties of the class... this may be a future topic
             for prop, value in self.__dict__.items():
 
                 if isinstance(value, np.ndarray):
@@ -421,6 +429,7 @@ class ResultsTemplate:
                         pass
                         # print(prop, value.ndim, value.dtype)
 
+
     def parse_saved_data(self, grid: MultiCircuit,
                          data_dict: Dict[str, pd.DataFrame],
                          logger: Logger = Logger()) -> None:
@@ -439,7 +448,7 @@ class ResultsTemplate:
             arr_name = arr_name.replace('__complex__', '')
 
             # try to get the property of the saved file
-            res_prop: ResultsProperty = self.data_variables.get(arr_name, None)
+            res_prop: ResultsProperty = self._data_variables.get(arr_name, None)
 
             if df is not None and res_prop is not None:
 
@@ -465,7 +474,11 @@ class ResultsTemplate:
                 curr_value = getattr(self, res_prop.name)
 
                 if isinstance(curr_value, np.ndarray):
-                    if curr_value.shape == array.shape:
+
+                    # if results arrays are exactly 0, don't check
+                    dont_check = sum(curr_value.shape) == 0
+
+                    if curr_value.shape == array.shape or dont_check:
                         setattr(self, res_prop.name, array)
                     else:
                         logger.add_error(msg="Wrong array shape",

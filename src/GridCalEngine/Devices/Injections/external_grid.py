@@ -12,9 +12,18 @@ from GridCalEngine.Devices.profile import Profile
 
 
 class ExternalGrid(LoadParent):
+    __slots__ = (
+        'mode',
+        'substituted_device_id',
+        'Vm',
+        'Va',
+        '_Vm_prof',
+        '_Va_prof',
+    )
 
     def __init__(self, name='External grid', idtag=None, code='', active=True, substituted_device_id: str = '',
                  Vm=1.0, Va=0.0, P=0.0, Q=0.0,
+                 P1=0.0, P2=0.0, P3=0.0, Q1=0.0, Q2=0.0, Q3=0.0,
                  mttf=0.0, mttr=0.0, mode: ExternalGridMode = ExternalGridMode.PQ,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
@@ -42,10 +51,15 @@ class ExternalGrid(LoadParent):
                             idtag=idtag,
                             code=code,
                             bus=None,
-                            cn=None,
                             active=active,
                             P=P,
+                            P1=P1,
+                            P2=P2,
+                            P3=P3,
                             Q=Q,
+                            Q1=Q1,
+                            Q2=Q2,
+                            Q3=Q3,
                             Cost=0,
                             mttf=mttf,
                             mttr=mttr,

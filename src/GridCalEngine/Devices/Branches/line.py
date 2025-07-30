@@ -9,7 +9,6 @@ from typing import Union, List
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, SubObjectType, DeviceType
 from GridCalEngine.Devices.Branches.underground_line_type import UndergroundLineType
 from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType
@@ -19,6 +18,7 @@ from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
+from GridCalEngine.Devices.admittance_matrix import AdmittanceMatrix
 
 
 def accept_line_connection(V1: float, V2: float, branch_connection_voltage_tolerance=0.1) -> float:
@@ -41,12 +41,38 @@ def accept_line_connection(V1: float, V2: float, branch_connection_voltage_toler
 
 
 class Line(BranchParent):
+    __slots__ = (
+        '_length',
+        'tolerance',
+        'r_fault',
+        'x_fault',
+        'fault_pos',
+        '_R',
+        '_X',
+        '_B',
+        '_R0',
+        '_X0',
+        '_B0',
+        '_R2',
+        '_X2',
+        '_B2',
+        '_ys',
+        '_ysh',
+        'temp_base',
+        'temp_oper',
+        '_temp_oper_prof',
+        'alpha',
+        '_circuit_idx',
+        'template',
+        'possible_tower_types',
+        'possible_underground_line_types',
+        'possible_sequence_line_types',
+        '_locations',
+    )
 
     def __init__(self,
                  bus_from: Bus = None,
                  bus_to: Bus = None,
-                 cn_from: ConnectivityNode = None,
-                 cn_to: ConnectivityNode = None,
                  name='Line',
                  idtag=None,
                  code='',
@@ -73,7 +99,7 @@ class Line(BranchParent):
                  r2=1e-20, x2=1e-20, b2=1e-20,
                  capex=0,
                  opex=0,
-                 circuit_idx: int = 0,
+                 circuit_idx: int = 1,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
         AC current Line
@@ -120,8 +146,6 @@ class Line(BranchParent):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=cn_from,
-                              cn_to=cn_to,
                               active=active,
                               reducible=False,
                               rate=rate,
@@ -161,6 +185,9 @@ class Line(BranchParent):
         self._X2 = float(x2)
         self._B2 = float(b2)
 
+        self._ys = AdmittanceMatrix()
+        self._ysh = AdmittanceMatrix()
+
         # Conductor base and operating temperatures in ºC
         self.temp_base = float(temp_base)
         self.temp_oper = float(temp_oper)
@@ -191,6 +218,13 @@ class Line(BranchParent):
         self.register(key='R2', units='p.u.', tpe=float, definition='Total negative sequence resistance.')
         self.register(key='X2', units='p.u.', tpe=float, definition='Total negative sequence reactance.')
         self.register(key='B2', units='p.u.', tpe=float, definition='Total negative sequence shunt susceptance.')
+
+        self.register('ys', units="p.u.", tpe=SubObjectType.AdmittanceMatrix,
+                      definition='Series admittance matrix of the branch', editable=False, display=False)
+
+        self.register('ysh', units="p.u.", tpe=SubObjectType.AdmittanceMatrix,
+                      definition='Shunt admittance matrix of the branch', editable=False, display=False)
+
         self.register(key='tolerance', units='%', tpe=float,
                       definition='Tolerance expected for the impedance values % is expected '
                                  'for transformers0% for lines.')
@@ -313,19 +347,21 @@ class Line(BranchParent):
             self._circuit_idx = int(value)
 
             if self.auto_update_enabled:
-                print("No impedance updates are being done, use the apply_template method to update the impedance values")
-
+                print(
+                    "No impedance updates are being done, use the apply_template method to update the impedance values")
 
     def set_circuit_idx(self, val: int, obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType]):
         """
         Set the circuit_idx with additional behavior based on the is_user_action flag. Ensure that the template exists and is valid.
-        :param value: The value to set
+        :param val: The value to set
+        :param obj: Template
         """
         # If the user is setting the circuit index, ensure that the template exists and is valid
         if obj is None:
             raise Exception("Template must be set before changing the circuit index.")
         if not isinstance(obj, (OverheadLineType, UndergroundLineType, SequenceLineType)):
-            raise Exception("Invalid template type. Must be OverheadLineType, UndergroundLineType, or SequenceLineType.")
+            raise Exception(
+                "Invalid template type. Must be OverheadLineType, UndergroundLineType, or SequenceLineType.")
         if isinstance(obj, OverheadLineType):
             if val > obj.n_circuits:
                 raise Exception("Circuit index exceeds the number of circuits in the template.")
@@ -375,7 +411,8 @@ class Line(BranchParent):
                 # set the value
                 self._length = val
             else:
-                print('The length cannot be zero, ignoring value')
+                # print('The length cannot be zero, ignoring value')
+                pass
         else:
             raise Exception('The length must be a float value')
 
@@ -423,6 +460,35 @@ class Line(BranchParent):
         """
         return self.R * (1 + self.alpha * (self.temp_oper - self.temp_base))
 
+    @property
+    def ys(self) -> AdmittanceMatrix:
+
+        if self._ys.size == 0:
+            self.fill_3_phase_from_sequence()
+
+        return self._ys
+
+    @ys.setter
+    def ys(self, val: AdmittanceMatrix):
+        if isinstance(val, AdmittanceMatrix):
+            self._ys = val
+        else:
+            raise ValueError(f'{val} is not a AdmittanceMatrix')
+
+    @property
+    def ysh(self) -> AdmittanceMatrix:
+        if self._ysh.size == 0:
+            self.fill_3_phase_from_sequence()
+
+        return self._ysh
+
+    @ysh.setter
+    def ysh(self, val: AdmittanceMatrix):
+        if isinstance(val, AdmittanceMatrix):
+            self._ysh = val
+        else:
+            raise ValueError(f'{val} is not a AdmittanceMatrix')
+
     def change_base(self, Sbase_old: float, Sbase_new: float):
         """
         Change the impedance base
@@ -459,6 +525,7 @@ class Line(BranchParent):
             if not obj.is_computed():
                 obj.compute()
                 if not obj.is_computed():
+                    logger.add_error("No admittance data", device=obj.name)
                     return
             else:
                 pass
@@ -469,15 +536,18 @@ class Line(BranchParent):
             if not accept_line_connection(template_vn, vn, 0.1):
                 raise Exception('Template voltage differs too much from the line nominal voltage')
 
-            (self.R, self.X, self.B,
-             self.R0, self.X0, self.B0,
-             self.rate) = obj.get_values(Sbase=Sbase,
-                                         length=self.length,
-                                         circuit_index=self.circuit_idx,
-                                         Vnom=vn)
+            if obj.has_sequence_data():
+                (self.R, self.X, self.B,
+                 self.R0, self.X0, self.B0,
+                 self.rate) = obj.get_values(Sbase=Sbase,
+                                             length=self.length,
+                                             circuit_index=self.circuit_idx,
+                                             Vnom=vn)
+            else:
+                logger.add_info("No sequence data", device=obj.name)
 
-            self.ys.values = obj.get_ys(circuit_idx=self.circuit_idx, Sbase=Sbase, length=self.length, Vnom=vn)
-            self.ysh.values = obj.get_ysh(circuit_idx=self.circuit_idx, Sbase=Sbase, length=self.length, Vnom=vn)
+            self.ys = obj.get_ys(circuit_idx=self.circuit_idx, Sbase=Sbase, length=self.length, Vnom=vn)
+            self.ysh = obj.get_ysh(circuit_idx=self.circuit_idx, Sbase=Sbase, length=self.length, Vnom=vn)
 
             self.template = obj
 
@@ -495,6 +565,9 @@ class Line(BranchParent):
                                          freq=freq,
                                          length=self.length,
                                          line_Vnom=self.get_max_bus_nominal_voltage())
+
+            self.ys = obj.get_ys_abc()
+            self.ysh = obj.get_ysh_abc()
 
             self.template = obj
 
@@ -557,7 +630,7 @@ class Line(BranchParent):
 
         return errors
 
-    def get_equivalent_transformer(self, index:  pd.DatetimeIndex | None = None) -> Transformer2W:
+    def get_equivalent_transformer(self, index: pd.DatetimeIndex | None = None) -> Transformer2W:
         """
         Convert this line into a transformer
         This is necessary if the buses' voltage differ too much
@@ -584,7 +657,7 @@ class Line(BranchParent):
             elm.rate_prof = self.rate_prof
             elm.contingency_factor_prof = self.contingency_factor_prof
             elm.protection_rating_factor_prof = self.protection_rating_factor_prof
-            elm.temperature_prof = self.temp_oper_prof
+            elm.temp_oper_prof = self.temp_oper_prof
             elm.Cost_prof = self.Cost_prof
 
         return elm
@@ -622,3 +695,14 @@ class Line(BranchParent):
             self.rate_prof.set(prof_old * new_rate / old_rate)
 
         return self
+
+    def fill_3_phase_from_sequence(self):
+        """
+        Fill the 3x3 from the sequence values
+        """
+        if self.R0 > 1e-10 and self.X0 > 1e-10:
+            obj = SequenceLineType(R=self.R, R0=self.R0, X=self.X, X0=self.X0)
+        else:
+            obj = SequenceLineType(R=self.R, R0=2.0 * self.R, X=self.X, X0=2.0 * self.X)
+        self.ys = obj.get_ys_abc()
+        self.ysh = obj.get_ysh_abc()

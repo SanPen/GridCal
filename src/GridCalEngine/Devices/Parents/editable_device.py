@@ -14,7 +14,9 @@ from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, Wind
                                         CpfParametrization, CpfStopAt, InvestmentEvaluationMethod, SolverType,
                                         InvestmentsEvaluationObjectives, NodalCapacityMethod, TimeGrouping,
                                         ZonalGrouping, MIPSolvers, AcOpfMode, SubstationTypes, BranchGroupTypes,
-                                        BranchImpedanceMode, FaultType, TapChangerTypes, ContingencyOperationTypes)
+                                        BranchImpedanceMode, FaultType, TapChangerTypes, ContingencyOperationTypes,
+                                        WindingType, MethodShortCircuit, PhasesShortCircuit, ShuntConnectionType,
+                                        BusGraphicType, SwitchGraphicType)
 
 # types that can be assigned to a GridCal property
 GCPROP_TYPES = Union[
@@ -49,7 +51,13 @@ GCPROP_TYPES = Union[
     Type[ContingencyOperationTypes],
     Type[BranchGroupTypes],
     Type[ConverterControlType],
-    Type[DeviceType]
+    Type[WindingType],
+    Type[MethodShortCircuit],
+    Type[PhasesShortCircuit],
+    Type[DeviceType],
+    Type[ShuntConnectionType],
+    Type[BusGraphicType],
+    Type[SwitchGraphicType]
 ]
 
 
@@ -84,7 +92,7 @@ def parse_idtag(val: Union[str, None]) -> str:
         return str(val)
 
 
-def smart_compare(a, b, atol = 1.e-10):
+def smart_compare(a, b, atol=1.e-10):
     """
     Compares two Python objects with tolerance for numerical values.
 
@@ -219,6 +227,21 @@ class EditableDevice:
     """
     This is the main device class from which all inherit
     """
+    __slots__ = (
+        '_idtag',
+        '_name',
+        '_code',
+        '_rdfid',
+        'device_type',
+        'comment',
+        'action',
+        'selected_to_merge',
+        'property_list',
+        'registered_properties',
+        'non_editable_properties',
+        'properties_with_profile',
+        '__auto_update_enabled',
+    )
 
     def __init__(self,
                  name: str,
@@ -428,6 +451,8 @@ class EditableDevice:
         :param display: display this property?
         :param editable: is this editable?
         :param old_names: List of old names
+        :param is_color: is this a color property?
+        :param is_date: Is this a date property?
         """
         assert (hasattr(self, key))  # the property must exist, this avoids bugs when registering
 
@@ -841,8 +866,13 @@ class EditableDevice:
         except TypeError:
             new_obj = tpe()
 
-        for prop_name, value in self.__dict__.items():
+        for prop_name, gc_prop in self.registered_properties.items():
+            value = getattr(self, prop_name)
             setattr(new_obj, prop_name, value)
+
+            if gc_prop.has_profile():
+                my_prof = getattr(self, gc_prop.profile_name)
+                setattr(new_obj, gc_prop.profile_name, my_prof.copy())
 
         if forced_new_idtag:
             new_obj.idtag = uuid.uuid4().hex
@@ -902,7 +932,7 @@ class EditableDevice:
                                 device=self.idtag + ":" + self.name,
                                 device_property=prop.name,
                                 value=str(new_obj))
-                
+
     def compare(self, other: Any,
                 logger: Logger,
                 detailed_profile_comparison=False,

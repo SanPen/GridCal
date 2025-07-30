@@ -2,8 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
-from __future__ import annotations
 
+from __future__ import annotations
 import os
 import sys
 import importlib
@@ -290,6 +290,8 @@ def load_function_from_file_path(file_path: str, function_name: str):
 
     # Create a new module based on the spec
     module = importlib.util.module_from_spec(spec)
+
+    spec.loader.exec_module(module)
 
     try:
         # Execute the module to populate its namespace

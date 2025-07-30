@@ -54,8 +54,6 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
 
         'bus_bar': dev.BusBar(),
 
-        'connectivity node': dev.ConnectivityNode(),
-
         'load': dev.Load(),
 
         'static_generator': dev.StaticGenerator(),
@@ -361,11 +359,12 @@ def get_profile_from_dict(profile: Profile,
             default_value = collection.get(data['default'], default_value)
             map_data = {int(key): collection.get(val, default_value) for key, val in sp_data['map'].items()}
 
-        if profile.dtype == DeviceType.BusDevice:  # manual correction for buses profile incorrect value
+        if isinstance(profile.dtype, DeviceType):  # manual correction for buses profile incorrect value
             if default_value == "None":
                 default_value = profile.default_value
 
-        profile.create_sparse(default_value=default_value, size=data['size'], map_data=map_data)
+        profile.create_sparse(default_value=default_value,
+                              size=data['size'], map_data=map_data)
     else:
 
         if collection is None:
@@ -656,14 +655,14 @@ class CreatedOnTheFly:
         elm.technologies.add_object(api_object=tech, val=1.0)
 
 
-def parse_object_type_from_dataframe(main_df: pd.DataFrame,
-                                     template_elm: ALL_DEV_TYPES,
-                                     elements_dict_by_type: Dict[DeviceType, Dict[str, ALL_DEV_TYPES]],
-                                     time_profile: pd.DatetimeIndex,
-                                     object_type_key: str,
-                                     data: Dict[str, Union[float, str, pd.DataFrame]],
-                                     logger: Logger) -> Tuple[
-    List[ALL_DEV_TYPES], Dict[str, ALL_DEV_TYPES], CreatedOnTheFly]:
+def parse_object_type_from_dataframe(
+        main_df: pd.DataFrame,
+        template_elm: ALL_DEV_TYPES,
+        elements_dict_by_type: Dict[DeviceType, Dict[str, ALL_DEV_TYPES]],
+        time_profile: pd.DatetimeIndex,
+        object_type_key: str,
+        data: Dict[str, Union[float, str, pd.DataFrame]],
+        logger: Logger) -> Tuple[List[ALL_DEV_TYPES], Dict[str, ALL_DEV_TYPES], CreatedOnTheFly]:
     """
     Convert a DataFrame to a list of GridCal devices
     :param main_df: DataFrame to convert
@@ -874,41 +873,41 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                         if property_name in ['is_controlled', 'Bmin', 'Bmax', 'Vset']:
                             skip = True
 
-                    if template_elm.device_type == DeviceType.VscDevice:
-                        if property_name == 'control_mode':
-                            if "Pdc" in property_value:
-                                elm.tap_phase_control_mode = TapPhaseControl.Pf
-                                skip = True
-                            if "Qac" in property_value:
-                                elm.tap_phase_module_mode = TapModuleControl.Qf
-                                skip = True
-                            if "Vac" in property_value:
-                                elm.tap_module_control_mode = TapModuleControl.Vm
-                                elm.regulation_bus = elm.bus_to
-                                skip = True
-                            if "Vdc" in property_value:
-                                elm.tap_module_control_mode = TapModuleControl.Vm
-                                elm.regulation_bus = elm.bus_from
-                                skip = True
-
-                            if "fixed" in property_value:
-                                elm.tap_module_control_mode = TapModuleControl.fixed
-                                elm.tap_phase_control_mode = TapPhaseControl.fixed
-                                skip = True
-
-                        elif property_name == 'Vac_set':
-                            if property_value > 0.0:
-                                elm.vset = property_value
-                            skip = True
-
-                        elif property_name == 'Vdc_set':
-                            if property_value > 0.0:
-                                elm.vset = property_value
-                            skip = True
-
-                        elif property_name == 'Qac_set':
-                            elm.Qset = property_value
-                            skip = True
+                    # if template_elm.device_type == DeviceType.VscDevice:
+                    #     if property_name == 'control_mode':
+                    #         if "Pdc" in property_value:
+                    #             elm.tap_phase_control_mode = TapPhaseControl.Pf
+                    #             skip = True
+                    #         if "Qac" in property_value:
+                    #             elm.tap_phase_module_mode = TapModuleControl.Qf
+                    #             skip = True
+                    #         if "Vac" in property_value:
+                    #             elm.tap_module_control_mode = TapModuleControl.Vm
+                    #             elm.regulation_bus = elm.bus_to
+                    #             skip = True
+                    #         if "Vdc" in property_value:
+                    #             elm.tap_module_control_mode = TapModuleControl.Vm
+                    #             elm.regulation_bus = elm.bus_from
+                    #             skip = True
+                    #
+                    #         if "fixed" in property_value:
+                    #             elm.tap_module_control_mode = TapModuleControl.fixed
+                    #             elm.tap_phase_control_mode = TapPhaseControl.fixed
+                    #             skip = True
+                    #
+                    #     elif property_name == 'Vac_set':
+                    #         if property_value > 0.0:
+                    #             elm.vset = property_value
+                    #         skip = True
+                    #
+                    #     elif property_name == 'Vdc_set':
+                    #         if property_value > 0.0:
+                    #             elm.vset = property_value
+                    #         skip = True
+                    #
+                    #     elif property_name == 'Qac_set':
+                    #         elm.Qset = property_value
+                    #         skip = True
 
                     if template_elm.device_type == DeviceType.Transformer2WDevice:
                         if property_name == 'control_mode':
@@ -955,7 +954,7 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
     return devices, devices_dict, on_the_fly
 
 
-def searc_property_into_json(json_entry: dict, prop: GCProp):
+def search_property_into_json(json_entry: dict, prop: GCProp):
     """
     Find property in Json entry
     :param json_entry: json of an object
@@ -1043,7 +1042,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
         for property_name, gc_prop in template_elm.registered_properties.items():
 
             # search for the property in the json
-            property_value = searc_property_into_json(json_entry=json_entry, prop=gc_prop)
+            property_value = search_property_into_json(json_entry=json_entry, prop=gc_prop)
 
             if property_value is not None:
 
@@ -1063,6 +1062,19 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                     oh_templates = elements_dict_by_type.get(DeviceType.SequenceLineDevice, dict())
                                     ug_templates = elements_dict_by_type.get(DeviceType.UnderGroundLineDevice, dict())
                                     collection = {**seq_templates, **oh_templates, **ug_templates}
+
+                                elif gc_prop.tpe == DeviceType.BusOrBranch:
+                                    bus_dic = elements_dict_by_type.get(DeviceType.BusDevice, None)
+                                    lines_dict = elements_dict_by_type.get(DeviceType.LineDevice, None)
+
+                                    if bus_dic is not None and lines_dict is not None:
+                                        collection = bus_dic | lines_dict
+                                    elif bus_dic is not None and lines_dict is None:
+                                        collection = bus_dic
+                                    elif bus_dic is None and lines_dict is not None:
+                                        collection = bus_dic
+                                    else:
+                                        collection = None
                                 else:
                                     # this is a hyperlink to another object
                                     # we must look for the reference in elements_dict
@@ -1102,7 +1114,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                     if isinstance(property_value, str):
                                         q_curve.parse(json.loads(property_value))
                                     else:
-                                        q_curve.parse(property_value)
+                                        q_curve.parse(data=property_value)
 
                                 elif gc_prop.tpe == SubObjectType.LineLocations:
 

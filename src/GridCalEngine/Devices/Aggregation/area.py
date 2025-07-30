@@ -8,6 +8,11 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice, Device
 
 
 class GenericAreaGroup(EditableDevice):
+    __slots__ = (
+        'latitude',
+        'longitude',
+        'color',
+    )
 
     def __init__(self, name='', code='', idtag: Union[str, None] = None,
                  device_type=DeviceType.GenericArea, latitude=0.0, longitude=0.0, color: str | None = None):

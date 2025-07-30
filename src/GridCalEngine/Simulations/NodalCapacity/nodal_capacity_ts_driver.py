@@ -135,7 +135,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                      zonal_grouping=self.opf_options.zonal_grouping,
                                      skip_generation_limits=self.opf_options.skip_generation_limits,
                                      consider_contingencies=self.opf_options.consider_contingencies,
-                                     contingency_groups_used=self.opf_options.contingency_groups_used,
+                                     contingency_groups_used=self.grid.contingency_groups,
                                      unit_commitment=self.opf_options.unit_commitment,
                                      ramp_constraints=self.opf_options.unit_commitment,
                                      all_generators_fixed=False,
@@ -175,6 +175,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.results.Sf = opf_vars.branch_vars.flows
         self.results.St = -opf_vars.branch_vars.flows
         self.results.overloads = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
+
         self.results.loading = opf_vars.branch_vars.loading
         self.results.phase_shift = opf_vars.branch_vars.tap_angles
 

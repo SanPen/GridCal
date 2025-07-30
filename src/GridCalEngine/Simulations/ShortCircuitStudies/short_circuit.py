@@ -121,3 +121,7 @@ def short_circuit_unbalance(bus_idx: int,
     SCC[bus_idx] = baseMVA * V1_fin[bus_idx] * V1_fin[bus_idx] / Zth1
 
     return V0_fin, V1_fin, V2_fin, SCC, ICC
+
+
+# def short_circuit_phases():
+#

@@ -11,6 +11,7 @@ from GridCalEngine.Devices.profile import Profile
 
 
 class EmissionGas(EditableDevice):
+    __slots__ = ('cost', '_cost_prof', 'color')
 
     def __init__(self,
                  name: str = '',

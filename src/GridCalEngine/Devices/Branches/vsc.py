@@ -10,7 +10,6 @@ from matplotlib import pyplot as plt
 from typing import List, Tuple, TYPE_CHECKING
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, ConverterControlType
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -20,12 +19,28 @@ if TYPE_CHECKING:
 
 
 class VSC(BranchParent):
+    __slots__ = (
+        'kdp',
+        'alpha1',
+        'alpha2',
+        'alpha3',
+        '_control1',
+        '_control1_prof',
+        '_control2',
+        '_control2_prof',
+        '_control1_dev',
+        '_control1_dev_prof',
+        '_control2_dev',
+        '_control2_dev_prof',
+        '_control1_val',
+        '_control1_val_prof',
+        '_control2_val',
+        '_control2_val_prof',
+    )
 
     def __init__(self,
                  bus_from: Bus | None = None,
                  bus_to: Bus | None = None,
-                 cn_from: ConnectivityNode | None = None,
-                 cn_to: ConnectivityNode | None = None,
                  name='VSC',
                  idtag: str | None = None,
                  code='',
@@ -55,8 +70,6 @@ class VSC(BranchParent):
         Voltage source converter (VSC)
         :param bus_from:
         :param bus_to:
-        :param cn_from:
-        :param cn_to:
         :param name:
         :param idtag:
         :param code:
@@ -87,8 +100,6 @@ class VSC(BranchParent):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=cn_from,
-                              cn_to=cn_to,
                               active=active,
                               reducible=False,
                               rate=rate,

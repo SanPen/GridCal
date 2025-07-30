@@ -10,7 +10,7 @@ from GridCalEngine import TapModuleControl, TapPhaseControl, BusMode
 from GridCalEngine.enumerations import (HvdcControlType, SolverType, TimeGrouping,
                                         ZonalGrouping, MIPSolvers, ContingencyMethod, ContingencyOperationTypes,
                                         BuildStatus, BranchGroupTypes, ConverterControlType)
-GSLV_RECOMMENDED_VERSION = "0.2.0"
+GSLV_RECOMMENDED_VERSION = "0.4.1"
 GSLV_VERSION = ''
 GSLV_AVAILABLE = False
 try:

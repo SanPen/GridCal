@@ -58,7 +58,11 @@ class LpSolver:
 
     name = "LpSolver"
 
-    def __init__(self, mip=True, msg=True, options=None, timeLimit=None, *args, **kwargs):
+    def __init__(self,
+                 mip: bool = True,
+                 msg: bool = True,
+                 options=None,
+                 timeLimit=None, *args, **kwargs):
         """
         :param bool mip: if False, assume LP even if integer variables
         :param bool msg: if False, no log is shown
@@ -129,9 +133,8 @@ class LpSolver:
 
     # TODO: Not sure if this code should be here or in a child class
     def getCplexStyleArrays(self, lp: LpProblem, senseDict=None, LpVarCategories=None, LpObjSenses=None, infBound=1e20):
-        """returns the arrays suitable to pass to a cdll Cplex
-        or other solvers that are similar
-
+        """
+        returns the arrays suitable to pass to a cdll Cplex or other solvers that are similar
         Copyright (c) Stuart Mitchell 2007
         """
         if senseDict is None:

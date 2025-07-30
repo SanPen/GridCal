@@ -151,9 +151,10 @@ class RawBus(RawObject):
             (self.I, self.NAME, self.BASKV, self.IDE, self.GL, self.BL,
              self.AREA, self.ZONE, self.VM, self.VA, self.OWNER) = self.extend_or_curtail(data[0], 11)
 
-
         else:
             logger.add_warning('Bus not implemented for version', str(version))
+
+        self.NAME = str(self.NAME)
 
     def get_raw_line(self, version: int):
         """

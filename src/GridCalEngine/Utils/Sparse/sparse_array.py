@@ -44,6 +44,13 @@ class SparseArray:
     SparseArray
     """
 
+    __slots__ = (
+        '_dtype',
+        '_default_value',
+        '_size',
+        '_map',
+    )
+
     def __init__(self, data_type: PROFILE_TYPES, default_value: Any, size: int = 0) -> None:
         """
 

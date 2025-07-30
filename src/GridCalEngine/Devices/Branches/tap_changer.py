@@ -15,6 +15,21 @@ class TapChanger:
     """
     Tap changer
     """
+    __slots__ = (
+        '_asymmetry_angle',
+        '_total_positions',
+        '_dV',
+        '_neutral_position',
+        '_normal_position',
+        '_tap_position',
+        '_tc_type',
+        '_negative_low',
+        '_ndv',
+        '_tau_array',
+        '_m_array',
+        '_k_re_array',
+        '_k_im_array',
+    )
 
     def __init__(self,
                  total_positions: int = 5,

@@ -9,6 +9,7 @@ from GridCalEngine.Devices.Aggregation.area import GenericAreaGroup, Area
 
 
 class Zone(GenericAreaGroup):
+    __slots__ = ('area',)
 
     def __init__(self, name='Zone',
                  idtag: Union[str, None] = None,

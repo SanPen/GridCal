@@ -2,28 +2,31 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 
 import numpy as np
 import numba as nb
 import warnings
 import scipy.sparse as sp
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Tuple, TYPE_CHECKING
 
 from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import spsolve as scipy_spsolve
 
 from GridCalEngine import DeviceType
-from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec, CxMat
+from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec, CxMat, BoolVec
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
 from GridCalEngine.Devices.Aggregation.contingency import Contingency
 from GridCalEngine.Simulations.Derivatives.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.Derivatives.csc_derivatives import dSf_dV_csc
 from GridCalEngine.Utils.Sparse.csc import dense_to_csc
 import GridCalEngine.Utils.Sparse.csc2 as csc
-from GridCalEngine.Utils.MIP.selected_interface import lpDot
+from GridCalEngine.Utils.MIP.selected_interface import lpDot1D_changes
 from GridCalEngine.enumerations import ContingencyOperationTypes
+
+if TYPE_CHECKING:
+    from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
 @nb.njit()
@@ -598,7 +601,7 @@ class LinearMultiContingency:
                                  base_flow: ObjVec,
                                  injections: ObjVec,
                                  hvdc_flow: ObjVec | None = None,
-                                 vsc_flow: ObjVec | None = None) -> ObjVec:
+                                 vsc_flow: ObjVec | None = None) -> Tuple[ObjVec, BoolVec, IntVec]:
         """
         Get contingency flows using the LP interface equations
         :param base_flow: Base branch flows (nbranch)
@@ -607,23 +610,52 @@ class LinearMultiContingency:
         :param vsc_flow: Base Vsc flows (n_vsc)
         :return: New flows (nbranch)
         """
-
+        mask = np.zeros(len(base_flow), dtype=bool)
         flow = base_flow.copy()
+        changed_idx = np.zeros(0, dtype=int)
 
-        if len(self.branch_indices):
-            flow += lpDot(self.mlodf_factors, base_flow[self.branch_indices])
+        if len(self.branch_indices) > 0:
+            inc, changed_idx = lpDot1D_changes(self.mlodf_factors, base_flow[self.branch_indices])
+            mask[changed_idx] = True
+            flow[changed_idx] += inc[changed_idx]
 
-        if len(self.hvdc_indices) and hvdc_flow is not None:
-            flow += lpDot(self.hvdc_odf, hvdc_flow[self.hvdc_indices])
+        if len(self.hvdc_indices) > 0 and hvdc_flow is not None:
+            inc, changed_idx = lpDot1D_changes(self.hvdc_odf, hvdc_flow[self.hvdc_indices])
+            mask[changed_idx] = True
+            flow[changed_idx] += inc[changed_idx]
 
-        if len(self.vsc_indices) and vsc_flow is not None:
-            flow += lpDot(self.vsc_odf, vsc_flow[self.vsc_indices])
+        if len(self.vsc_indices) > 0 and vsc_flow is not None:
+            inc, changed_idx = lpDot1D_changes(self.vsc_odf, vsc_flow[self.vsc_indices])
+            mask[changed_idx] = True
+            flow[changed_idx] += inc[changed_idx]
 
-        if len(self.bus_indices):
+        if len(self.bus_indices) > 0:
             injection_delta = self.injections_factor * injections[self.bus_indices]
-            flow += lpDot(self.compensated_ptdf_factors, injection_delta[self.bus_indices])
+            inc, changed_idx = lpDot1D_changes(self.compensated_ptdf_factors, injection_delta[self.bus_indices])
+            mask[changed_idx] = True
+            flow[changed_idx] += inc[changed_idx]
 
-        return flow
+        return flow, mask, changed_idx
+
+    def get_alpha_n1(self, dP: Vec, dT: float):
+        """
+        Compute the N-1 sensitivities to the inter-area exchange
+        :param dP: Inter-area power exchanges computed with (compute_dP)
+        :param dT: Exchange amount (MW) usually a unitary increment is sufficient (use the value used to compute dP)
+        :return: N-1 branch exchange sensitivities
+        """
+
+        # (MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]) x ΔP[i]
+        dflow = self.compensated_ptdf_factors @ dP[self.bus_indices]
+
+        # dflow_n1 = dflow[m] + lodf[m, c] * dflow[c]
+
+        # MLODF[k, βδ] x Pf0[βδ]
+        dflow_n1 = self.mlodf_factors @ dflow[self.branch_indices]
+
+        alpha_n1 = dflow_n1 / dT
+
+        return alpha_n1
 
 
 class ContingencyIndices:
@@ -760,8 +792,7 @@ class LinearMultiContingencies:
 
         # lodf: Mat = lin.LODF
         # ptdf: Mat = lin.PTDF
-
-        self.multi_contingencies = list()
+        self.multi_contingencies.clear()
 
         # for each contingency group
         for ic, contingency_group in enumerate(self.contingency_groups_used):

@@ -5,7 +5,7 @@
 
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType, UnitSymbol
 
 
 class MutualCoupling(IdentifiedObject):

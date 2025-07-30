@@ -4,8 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import BuildStatus
+from GridCalEngine.enumerations import BuildStatus, SwitchGraphicType
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
 
@@ -15,12 +14,18 @@ class Switch(BranchParent):
     The **Switch** class represents the connections between nodes (i.e.
     :ref:`buses<bus>`) in **GridCal**. A Switch is a devices that cuts or allows the flow.
     """
+    __slots__ = (
+        'R',
+        'X',
+        'retained',
+        'normal_open',
+        'rated_current',
+        'graphic_type'
+    )
 
     def __init__(self,
                  bus_from: Bus = None,
                  bus_to: Bus = None,
-                 cn_from: ConnectivityNode = None,
-                 cn_to: ConnectivityNode = None,
                  name='Switch',
                  idtag=None,
                  code='',
@@ -32,7 +37,8 @@ class Switch(BranchParent):
                  protection_rating_factor: float = 1.4,
                  retained=False,
                  normal_open=False,
-                 rated_current=0.0):
+                 rated_current=0.0,
+                 graphic_type: SwitchGraphicType = SwitchGraphicType.CircuitBreaker):
         """
         Switch device
         :param bus_from: Bus from
@@ -45,6 +51,7 @@ class Switch(BranchParent):
         :param rate: Branch rating (MW)
         :param active: is it active?
         :param contingency_factor: Rating factor in case of contingency
+        :param graphic_type: SwitchGraphicType to represent the switch in the schematic
         """
         BranchParent.__init__(self,
                               name=name,
@@ -52,8 +59,6 @@ class Switch(BranchParent):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=cn_from,
-                              cn_to=cn_to,
                               active=active,
                               reducible=not retained,
                               rate=rate,
@@ -79,6 +84,8 @@ class Switch(BranchParent):
         self.normal_open = bool(normal_open)
         self.rated_current = float(rated_current)
 
+        self.graphic_type: SwitchGraphicType = graphic_type
+
         self.register(key='R', units='pu', tpe=float, definition='Positive-sequence resistance')
         self.register(key='X', units='pu', tpe=float, definition='Positive-sequence reactance')
 
@@ -91,3 +98,4 @@ class Switch(BranchParent):
                       definition='Normal position of the switch')
         self.register(key='rated_current', units="kA", tpe=float,
                       definition='Rated current of the switch device.')
+        self.register(key='graphic_type', units='', tpe=SwitchGraphicType, definition='Graphic to use in the schematic.')

@@ -7,7 +7,7 @@ import numba as nb
 import numpy as np
 from scipy.sparse import csc_matrix
 from typing import Tuple, Union
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, CscMat
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, CscMat, CxMat
 
 
 # @nb.njit(cache=True)
@@ -68,13 +68,13 @@ def expand(n, arr: Vec, idx: IntVec, default: float) -> Vec:
 
 
 @nb.njit(cache=True, fastmath=True)
-def compute_zip_power(S0: CxVec, I0: CxVec, Y0: CxVec, Vm: Vec) -> CxVec:
+def compute_zip_power(S0: CxVec, I0: CxVec, Y0: CxVec, Vm: CxVec) -> CxVec:
     """
     Compute the equivalent power injection
     :param S0: Base power (P + jQ)
     :param I0: Base current (Ir + jIi)
     :param Y0: Base admittance (G + jB)
-    :param Vm: voltage module
+    :param Vm: voltage module, for the 3ph power flow the complete voltage phasor is used (Vm + Va)
     :return: complex power injection
     """
     return S0 + np.conj(I0 + Y0 * Vm) * Vm
@@ -88,6 +88,28 @@ def compute_power(Ybus: csc_matrix, V: CxVec) -> CxVec:
     :return: Calculated power injections
     """
     return V * np.conj(Ybus @ V)
+
+
+def fortescue_012_to_abc(z0: complex, z1: complex, z2: complex) -> CxMat:
+    """
+    Convert 012 to abc
+    :param Z012: 012 impedance matrix
+    :return: abc impedance matrix
+    """
+    a = 1.0 * np.exp(1j * 2 * np.pi / 3)
+    Zabc = 1/3 * np.array([
+        [z0 + z1 + z2, z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2],
+        [z0 + a**2 * z1 + a * z2, z0 + z1 + z2, z0 + a * z1 + a**2 * z2],
+        [z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2, z0 + z1 + z2]
+    ])
+
+    # fort1 = np.array([[1.0, 1.0, 1.0], [1.0, a**2, a], [1.0, a, a**2]])
+    # fort2 = np.array([[1.0, 1.0, 1.0], [1.0, a, a**2], [1.0, a**2, a]]) / 3
+    # Z012 = np.array([[z0, 0, 0], [0, z1, 0], [0, 0, z2]])
+    #
+    # Zabc = fort1 @ Z012 @ fort2
+
+    return Zabc
 
 
 @nb.njit(cache=True, fastmath=True)
@@ -203,6 +225,80 @@ def get_It(k: IntVec, V: CxVec, ytf: CxVec, ytt: CxVec, F: IntVec, T: IntVec):
     t = T[k]
     return np.conj(V[t]) * np.conj(ytt[k]) + np.conj(V[f]) * np.conj(ytf[k])
 
+def expand_magnitudes(magnitude: CxVec, lookup: IntVec):
+    """
+    :param magnitude:
+    :param lookup:
+    :return:
+    """
+    n_buses_total = len(lookup)
+    magnitude_expanded = np.zeros(n_buses_total, dtype=complex)
+    for i, value in enumerate(lookup):
+        if value < 0:
+            magnitude_expanded[i] = 0.0 + 0.0j
+        else:
+            magnitude_expanded[i] = magnitude[value]
+
+    return magnitude_expanded
+
+def threephase_power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVec,
+                                      pv: IntVec, vd: IntVec, Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
+                                      branch_rates: Vec, Sbase: float, bus_lookup: IntVec, branch_lookup: IntVec):
+    """
+    :param Sbus:
+    :param V:
+    :param F:
+    :param T:
+    :param pv:
+    :param vd:
+    :param Ybus:
+    :param Yf:
+    :param Yt:
+    :param Yshunt_bus:
+    :param branch_rates:
+    :param Sbase:
+    :param Lookup:
+    :return:
+    """
+
+    V_expanded = expand_magnitudes(V, bus_lookup)
+
+    # power at the slack nodes
+    Sbus[vd] = V[vd] * np.conj(Ybus[vd, :] @ V)
+
+    # Reactive power at the pv nodes
+    P_pv = Sbus[pv].real
+    Q_pv = (V[pv] * np.conj(Ybus[pv, :] @ V)).imag
+    Sbus[pv] = P_pv + 1j * Q_pv  # keep the original P injection and set the calculated reactive power for PV nodes
+
+    # Add the shunt power V^2 x Y^*
+    Vm = np.abs(V)
+    Sbus += Vm * Vm * np.conj(Yshunt_bus)
+
+    # Branches current, loading, etc
+    Vf_expanded = V_expanded[F]
+    Vt_expanded = V_expanded[T]
+
+    If = Yf @ V
+    It = Yt @ V
+    If_expanded = expand_magnitudes(If, branch_lookup)
+    It_expanded = expand_magnitudes(It, branch_lookup)
+
+    Sf_expanded = Vf_expanded * np.conj(If_expanded) * Sbase
+    St_expanded = Vt_expanded * np.conj(It_expanded) * Sbase
+
+    # Branch losses in MVA
+    losses = (Sf_expanded + St_expanded)
+
+    # branch voltage increment
+    Vbranch = Vf_expanded - Vt_expanded
+
+    # Branch loading in p.u.
+    loading = Sf_expanded / (branch_rates + 1e-9)
+
+    Sbus_expanded = expand_magnitudes(Sbus, bus_lookup)
+
+    return Sf_expanded, St_expanded, If_expanded, It_expanded, Vbranch, loading, losses, Sbus_expanded, V_expanded
 
 def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVec,
                                       pv: IntVec, vd: IntVec, Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,

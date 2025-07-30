@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from typing import Union, Tuple
+from typing import Union
 import numpy as np
 
 from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
@@ -16,6 +16,25 @@ class ControllableShunt(ShuntParent):
     """
     Controllable Shunt
     """
+    __slots__ = (
+        'is_controlled',
+        'is_nonlinear',
+        'Bmin',
+        'Bmax',
+        'Gmin',
+        'Gmax',
+        'g_per_step',
+        'b_per_step',
+        '_active_steps',
+        '_g_steps',
+        '_b_steps',
+        '_step',
+        '_step_prof',
+        'control_bus',
+        '_control_bus_prof',
+        'Vset',
+        '_Vset_prof',
+    )
 
     def __init__(self,
                  name='Controllable Shunt',
@@ -33,7 +52,13 @@ class ControllableShunt(ShuntParent):
                  Cost: float = 1200.0,
                  active: bool = True,
                  G: float = 1e-20,
+                 G1: float = 1e-20,
+                 G2: float = 1e-20,
+                 G3: float = 1e-20,
                  B: float = 1e-20,
+                 B1: float = 1e-20,
+                 B2: float = 1e-20,
+                 B3: float = 1e-20,
                  G0: float = 1e-20,
                  B0: float = 1e-20,
                  vset: float = 1.0,
@@ -61,10 +86,15 @@ class ControllableShunt(ShuntParent):
                              idtag=idtag,
                              code=code,
                              bus=None,
-                             cn=None,
                              active=active,
                              G=G,
+                             G1=G1,
+                             G2=G2,
+                             G3=G3,
                              B=B,
+                             B1=B1,
+                             B2=B2,
+                             B3=B3,
                              G0=G0,
                              B0=B0,
                              Cost=Cost,

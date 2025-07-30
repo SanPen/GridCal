@@ -11,7 +11,7 @@ from collections import defaultdict
 
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, Base
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, CGMES_ASSETS
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
@@ -852,7 +852,7 @@ def get_tree_item_path(item: QtGui.QStandardItem) -> List[str]:
 
 
 def add_cim_object_node(class_tag,
-                        device: Base,
+                        device: CGMES_ASSETS,
                         editable=False,
                         already_visited: Union[List, None] = None):
     """
@@ -972,6 +972,28 @@ def get_cim_tree_model(cim_model: CgmesCircuit):
         root_node.appendRow(class_child)
 
     return model
+
+
+def add_sub_menu(menu: QtWidgets.QMenu,
+                 text: str,
+                 icon_path: str = "",
+                 icon_pixmap: QtGui.QPixmap = None, ):
+
+    entry = menu.addMenu(text)
+
+    if icon_pixmap is None:
+        if len(icon_path) > 0:
+            edit_icon = QtGui.QIcon()
+            edit_icon.addPixmap(QtGui.QPixmap(icon_path))
+            entry.setIcon(edit_icon)
+    else:
+        # prefer the icon pixmap if provided
+        edit_icon = QtGui.QIcon()
+        edit_icon.addPixmap(icon_pixmap)
+        entry.setIcon(edit_icon)
+
+
+    return entry
 
 
 def add_menu_entry(menu: QtWidgets.QMenu,

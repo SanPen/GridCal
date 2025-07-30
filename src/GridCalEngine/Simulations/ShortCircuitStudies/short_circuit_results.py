@@ -35,44 +35,94 @@ class ShortCircuitResults(ResultsTemplate):
                                                               ResultTypes.BusVoltageModule1,
                                                               ResultTypes.BusVoltageModule2,
 
+                                                              ResultTypes.BusVoltageModuleA,
+                                                              ResultTypes.BusVoltageModuleB,
+                                                              ResultTypes.BusVoltageModuleC,
+
                                                               ResultTypes.BusVoltageAngle0,
                                                               ResultTypes.BusVoltageAngle1,
                                                               ResultTypes.BusVoltageAngle2,
 
+                                                              ResultTypes.BusVoltageAngleA,
+                                                              ResultTypes.BusVoltageAngleB,
+                                                              ResultTypes.BusVoltageAngleC,
+
                                                               ResultTypes.BusShortCircuitActivePower,
+                                                              ResultTypes.BusShortCircuitActivePowerA,
+                                                              ResultTypes.BusShortCircuitActivePowerB,
+                                                              ResultTypes.BusShortCircuitActivePowerC,
+
                                                               ResultTypes.BusShortCircuitReactivePower,
+                                                              ResultTypes.BusShortCircuitReactivePowerA,
+                                                              ResultTypes.BusShortCircuitReactivePowerB,
+                                                              ResultTypes.BusShortCircuitReactivePowerC,
 
                                                               ResultTypes.BusShortCircuitActiveCurrent,
-                                                              ResultTypes.BusShortCircuitReactiveCurrent
+                                                              ResultTypes.BusShortCircuitActiveCurrentA,
+                                                              ResultTypes.BusShortCircuitActiveCurrentB,
+                                                              ResultTypes.BusShortCircuitActiveCurrentC,
+
+                                                              ResultTypes.BusShortCircuitReactiveCurrent,
+                                                              ResultTypes.BusShortCircuitReactiveCurrentA,
+                                                              ResultTypes.BusShortCircuitReactiveCurrentB,
+                                                              ResultTypes.BusShortCircuitReactiveCurrentC
                                                               ],
 
                                      ResultTypes.BranchResults: [ResultTypes.BranchActivePowerFrom0,
                                                                  ResultTypes.BranchActivePowerFrom1,
                                                                  ResultTypes.BranchActivePowerFrom2,
 
+                                                                 ResultTypes.BranchActivePowerFromA,
+                                                                 ResultTypes.BranchActivePowerFromB,
+                                                                 ResultTypes.BranchActivePowerFromC,
+
                                                                  ResultTypes.BranchReactivePowerFrom0,
                                                                  ResultTypes.BranchReactivePowerFrom1,
                                                                  ResultTypes.BranchReactivePowerFrom2,
+
+                                                                 ResultTypes.BranchReactivePowerFromA,
+                                                                 ResultTypes.BranchReactivePowerFromB,
+                                                                 ResultTypes.BranchReactivePowerFromC,
 
                                                                  ResultTypes.BranchActiveCurrentFrom0,
                                                                  ResultTypes.BranchActiveCurrentFrom1,
                                                                  ResultTypes.BranchActiveCurrentFrom2,
 
+                                                                 ResultTypes.BranchActiveCurrentFromA,
+                                                                 ResultTypes.BranchActiveCurrentFromB,
+                                                                 ResultTypes.BranchActiveCurrentFromC,
+
                                                                  ResultTypes.BranchReactiveCurrentFrom0,
                                                                  ResultTypes.BranchReactiveCurrentFrom1,
                                                                  ResultTypes.BranchReactiveCurrentFrom2,
+
+                                                                 ResultTypes.BranchReactiveCurrentFromA,
+                                                                 ResultTypes.BranchReactiveCurrentFromB,
+                                                                 ResultTypes.BranchReactiveCurrentFromC,
 
                                                                  ResultTypes.BranchLoading0,
                                                                  ResultTypes.BranchLoading1,
                                                                  ResultTypes.BranchLoading2,
 
+                                                                 ResultTypes.BranchLoadingA,
+                                                                 ResultTypes.BranchLoadingB,
+                                                                 ResultTypes.BranchLoadingC,
+
                                                                  ResultTypes.BranchActiveLosses0,
                                                                  ResultTypes.BranchActiveLosses1,
                                                                  ResultTypes.BranchActiveLosses2,
 
+                                                                 ResultTypes.BranchActiveLossesA,
+                                                                 ResultTypes.BranchActiveLossesB,
+                                                                 ResultTypes.BranchActiveLossesC,
+
                                                                  ResultTypes.BranchReactiveLosses0,
                                                                  ResultTypes.BranchReactiveLosses1,
-                                                                 ResultTypes.BranchReactiveLosses2],
+                                                                 ResultTypes.BranchReactiveLosses2,
+
+                                                                 ResultTypes.BranchReactiveLossesA,
+                                                                 ResultTypes.BranchReactiveLossesB,
+                                                                 ResultTypes.BranchReactiveLossesC],
 
                                      ResultTypes.InfoResults: [ResultTypes.ShortCircuitInfo],
                                  },
@@ -124,6 +174,36 @@ class ShortCircuitResults(ResultsTemplate):
         self.loading2 = np.zeros(m, dtype=complex)
         self.losses2 = np.zeros(m, dtype=complex)
 
+        self.SbusA = np.zeros(n, dtype=complex)
+        self.voltageA = np.zeros(n, dtype=complex)
+        self.SfA = np.zeros(m, dtype=complex)
+        self.StA = np.zeros(m, dtype=complex)
+        self.IfA = np.zeros(m, dtype=complex)
+        self.ItA = np.zeros(m, dtype=complex)
+        self.VbranchA = np.zeros(m, dtype=complex)
+        self.loadingA = np.zeros(m, dtype=complex)
+        self.lossesA = np.zeros(m, dtype=complex)
+
+        self.SbusB = np.zeros(n, dtype=complex)
+        self.voltageB = np.zeros(n, dtype=complex)
+        self.SfB = np.zeros(m, dtype=complex)
+        self.StB = np.zeros(m, dtype=complex)
+        self.IfB = np.zeros(m, dtype=complex)
+        self.ItB = np.zeros(m, dtype=complex)
+        self.VbranchB = np.zeros(m, dtype=complex)
+        self.loadingB = np.zeros(m, dtype=complex)
+        self.lossesB = np.zeros(m, dtype=complex)
+
+        self.SbusC = np.zeros(n, dtype=complex)
+        self.voltageC = np.zeros(n, dtype=complex)
+        self.SfC = np.zeros(m, dtype=complex)
+        self.StC = np.zeros(m, dtype=complex)
+        self.IfC = np.zeros(m, dtype=complex)
+        self.ItC = np.zeros(m, dtype=complex)
+        self.VbranchC = np.zeros(m, dtype=complex)
+        self.loadingC = np.zeros(m, dtype=complex)
+        self.lossesC = np.zeros(m, dtype=complex)
+
         self.hvdc_losses = np.zeros(n_hvdc)
         self.hvdc_Pf = np.zeros(n_hvdc)
         self.hvdc_Pt = np.zeros(n_hvdc)
@@ -131,8 +211,16 @@ class ShortCircuitResults(ResultsTemplate):
 
         self.sc_bus_index = 0
         self.sc_type = FaultType.ph3
+
         self.SCpower = np.zeros(n, dtype=complex)
+        self.SCpowerA = np.zeros(n, dtype=complex)
+        self.SCpowerB = np.zeros(n, dtype=complex)
+        self.SCpowerC = np.zeros(n, dtype=complex)
+
         self.ICurrent = np.zeros(n, dtype=complex)
+        self.ICurrentA = np.zeros(n, dtype=complex)
+        self.ICurrentB = np.zeros(n, dtype=complex)
+        self.ICurrentC = np.zeros(n, dtype=complex)
 
         # Register results
         self.register(name='bus_names', tpe=StrVec)
@@ -177,6 +265,36 @@ class ShortCircuitResults(ResultsTemplate):
         self.register(name='loading2', tpe=CxVec)
         self.register(name='losses2', tpe=CxVec)
 
+        self.register(name='SbusA', tpe=CxVec)
+        self.register(name='voltageA', tpe=CxVec)
+        self.register(name='SfA', tpe=CxVec)
+        self.register(name='StA', tpe=CxVec)
+        self.register(name='IfA', tpe=CxVec)
+        self.register(name='ItA', tpe=CxVec)
+        self.register(name='VbranchA', tpe=CxVec)
+        self.register(name='loadingA', tpe=CxVec)
+        self.register(name='lossesA', tpe=CxVec)
+
+        self.register(name='SbusB', tpe=CxVec)
+        self.register(name='voltageB', tpe=CxVec)
+        self.register(name='SfB', tpe=CxVec)
+        self.register(name='StB', tpe=CxVec)
+        self.register(name='IfB', tpe=CxVec)
+        self.register(name='ItB', tpe=CxVec)
+        self.register(name='VbranchB', tpe=CxVec)
+        self.register(name='loadingB', tpe=CxVec)
+        self.register(name='lossesB', tpe=CxVec)
+
+        self.register(name='SbusC', tpe=CxVec)
+        self.register(name='voltageC', tpe=CxVec)
+        self.register(name='SfC', tpe=CxVec)
+        self.register(name='StC', tpe=CxVec)
+        self.register(name='IfC', tpe=CxVec)
+        self.register(name='ItC', tpe=CxVec)
+        self.register(name='VbranchC', tpe=CxVec)
+        self.register(name='loadingC', tpe=CxVec)
+        self.register(name='lossesC', tpe=CxVec)
+
         self.register(name='hvdc_losses', tpe=Vec)
         self.register(name='hvdc_Pf', tpe=Vec)
         self.register(name='hvdc_Pt', tpe=Vec)
@@ -184,8 +302,16 @@ class ShortCircuitResults(ResultsTemplate):
 
         self.register(name='sc_bus_index', tpe=int)
         self.register(name='sc_type', tpe=FaultType)
+
         self.register(name='SCpower', tpe=CxVec)
+        self.register(name='SCpowerA', tpe=CxVec)
+        self.register(name='SCpowerB', tpe=CxVec)
+        self.register(name='SCpowerC', tpe=CxVec)
+
         self.register(name='ICurrent', tpe=CxVec)
+        self.register(name='ICurrentA', tpe=CxVec)
+        self.register(name='ICurrentB', tpe=CxVec)
+        self.register(name='ICurrentC', tpe=CxVec)
 
 
     @property
@@ -243,40 +369,35 @@ class ShortCircuitResults(ResultsTemplate):
         self.loading2[br_idx] = results.loading2
         self.losses2[br_idx] = results.losses2
 
-    def get_inter_area_sequence_flows(self, sequence: int = 1):
-        """
-        Get the inter are flows per sequence
-        :param sequence: Sequence number 0, 1, 2
-        :return:
-        """
-        assert sequence in [0, 1, 2]
-        na = len(self.area_names)
-        x = np.zeros((na, na), dtype=complex)
+        self.SbusA[b_idx] = results.SbusA
+        self.voltageA[b_idx] = results.voltageA
+        self.SfA[br_idx] = results.SfA
+        self.StA[br_idx] = results.StA
+        self.IfA[br_idx] = results.IfA
+        self.ItA[br_idx] = results.ItA
+        self.VbranchA[br_idx] = results.VbranchA
+        self.loadingA[br_idx] = results.loadingA
+        self.lossesA[br_idx] = results.lossesA
 
-        if sequence == 0:
-            Sf = self.Sf0
-        elif sequence == 1:
-            Sf = self.Sf1
-        elif sequence == 2:
-            Sf = self.Sf2
-        else:
-            Sf = self.Sf1
+        self.SbusB[b_idx] = results.SbusB
+        self.voltageB[b_idx] = results.voltageB
+        self.SfB[br_idx] = results.SfB
+        self.StB[br_idx] = results.StB
+        self.IfB[br_idx] = results.IfB
+        self.ItB[br_idx] = results.ItB
+        self.VbranchB[br_idx] = results.VbranchB
+        self.loadingB[br_idx] = results.loadingB
+        self.lossesB[br_idx] = results.lossesB
 
-        for f, t, flow in zip(self.F, self.T, Sf):
-            a1 = self.bus_area_indices[f]
-            a2 = self.bus_area_indices[t]
-            if a1 != a2:
-                x[a1, a2] += flow
-                x[a2, a1] -= flow
-
-        for f, t, flow in zip(self.hvdc_F, self.hvdc_T, self.hvdc_Pf):
-            a1 = self.bus_area_indices[f]
-            a2 = self.bus_area_indices[t]
-            if a1 != a2:
-                x[a1, a2] += flow
-                x[a2, a1] -= flow
-
-        return x
+        self.SbusC[b_idx] = results.SbusC
+        self.voltageC[b_idx] = results.voltageC
+        self.SfC[br_idx] = results.SfC
+        self.StC[br_idx] = results.StC
+        self.IfC[br_idx] = results.IfC
+        self.ItC[br_idx] = results.ItC
+        self.VbranchC[br_idx] = results.VbranchC
+        self.loadingC[br_idx] = results.loadingC
+        self.lossesC[br_idx] = results.lossesC
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
@@ -288,37 +409,51 @@ class ShortCircuitResults(ResultsTemplate):
         columns = np.array([result_type.value])
         title = result_type.value
 
-        if result_type == ResultTypes.BusVoltageModule0:
-            labels = self.bus_names
-            y = np.abs(self.voltage0)
-            y_label = '(p.u.)'
-
-            return ResultsTable(data=y,
-                                index=labels,
-                                idx_device_type=DeviceType.BusDevice,
-                                columns=columns,
-                                cols_device_type=DeviceType.NoDevice,
-                                title=title,
-                                ylabel=y_label,
-                                units=y_label)
-
-        elif result_type == ResultTypes.BusVoltageAngle0:
-            labels = self.bus_names
-            y = np.angle(self.voltage0)
-            y_label = '(p.u.)'
-
-            return ResultsTable(data=y,
-                                index=labels,
-                                idx_device_type=DeviceType.BusDevice,
-                                columns=columns,
-                                cols_device_type=DeviceType.NoDevice,
-                                title=title,
-                                ylabel=y_label,
-                                units=y_label)
-
-        elif result_type == ResultTypes.BusShortCircuitActivePower:
+        if result_type == ResultTypes.BusShortCircuitActivePower:
             labels = self.bus_names
             y = np.real(self.SCpower)
+            y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusShortCircuitActivePowerA:
+            labels = self.bus_names
+            y = np.real(self.SCpowerA)
+            y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusShortCircuitActivePowerB:
+            labels = self.bus_names
+            y = np.real(self.SCpowerB)
+            y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusShortCircuitActivePowerC:
+            labels = self.bus_names
+            y = np.real(self.SCpowerC)
             y_label = '(MW)'
 
             return ResultsTable(data=y,
@@ -344,9 +479,93 @@ class ShortCircuitResults(ResultsTemplate):
                                 ylabel=y_label,
                                 units=y_label)
 
+        elif result_type == ResultTypes.BusShortCircuitReactivePowerA:
+            labels = self.bus_names
+            y = np.imag(self.SCpowerA)
+            y_label = '(MVAr)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusShortCircuitReactivePowerB:
+            labels = self.bus_names
+            y = np.imag(self.SCpowerB)
+            y_label = '(MVAr)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusShortCircuitReactivePowerC:
+            labels = self.bus_names
+            y = np.imag(self.SCpowerC)
+            y_label = '(MVAr)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BusShortCircuitActiveCurrent:
             labels = self.bus_names
             y = np.real(self.ICurrent)
+            y_label = '(kA)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusShortCircuitActiveCurrentA:
+            labels = self.bus_names
+            y = np.real(self.ICurrentA)
+            y_label = '(kA)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusShortCircuitActiveCurrentB:
+            labels = self.bus_names
+            y = np.real(self.ICurrentB)
+            y_label = '(kA)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusShortCircuitActiveCurrentC:
+            labels = self.bus_names
+            y = np.real(self.ICurrentC)
             y_label = '(kA)'
 
             return ResultsTable(data=y,
@@ -362,6 +581,76 @@ class ShortCircuitResults(ResultsTemplate):
             labels = self.bus_names
             y = np.imag(self.ICurrent)
             y_label = '(kAr)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusShortCircuitReactiveCurrentA:
+            labels = self.bus_names
+            y = np.imag(self.ICurrentA)
+            y_label = '(kAr)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusShortCircuitReactiveCurrentB:
+            labels = self.bus_names
+            y = np.imag(self.ICurrentB)
+            y_label = '(kAr)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusShortCircuitReactiveCurrentC:
+            labels = self.bus_names
+            y = np.imag(self.ICurrentC)
+            y_label = '(kAr)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusVoltageModule0:
+            labels = self.bus_names
+            y = np.abs(self.voltage0)
+            y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusVoltageAngle0:
+            labels = self.bus_names
+            y = np.angle(self.voltage0)
+            y_label = '(p.u.)'
 
             return ResultsTable(data=y,
                                 index=labels,
@@ -722,6 +1011,384 @@ class ShortCircuitResults(ResultsTemplate):
                                 ylabel=y_label,
                                 units=y_label)
 
+        elif result_type == ResultTypes.BusVoltageModuleA:
+            labels = self.bus_names
+            y = np.abs(self.voltageA)
+            y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusVoltageAngleA:
+            labels = self.bus_names
+            y = np.angle(self.voltageA)
+            y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchActivePowerFromA:
+            labels = self.branch_names
+            y = self.SfA.real
+            y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchReactivePowerFromA:
+            labels = self.branch_names
+            y = self.SfA.imag
+            y_label = '(MVAr)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchActiveCurrentFromA:
+            labels = self.branch_names
+            y = self.IfA.real
+            y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchReactiveCurrentFromA:
+            labels = self.branch_names
+            y = self.IfA.imag
+            y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchLoadingA:
+            labels = self.branch_names
+            y = self.loadingA.real * 100.0
+            y_label = '(%)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchActiveLossesA:
+            labels = self.branch_names
+            y = self.lossesA.real
+            y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchReactiveLossesA:
+            labels = self.branch_names
+            y = self.lossesA.imag
+            y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusVoltageModuleB:
+            labels = self.bus_names
+            y = np.abs(self.voltageB)
+            y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusVoltageAngleB:
+            labels = self.bus_names
+            y = np.angle(self.voltageB)
+            y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchActivePowerFromB:
+            labels = self.branch_names
+            y = self.SfB.real
+            y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchReactivePowerFromB:
+            labels = self.branch_names
+            y = self.SfB.imag
+            y_label = '(MVAr)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchActiveCurrentFromB:
+            labels = self.branch_names
+            y = self.IfB.real
+            y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchReactiveCurrentFromB:
+            labels = self.branch_names
+            y = self.IfB.imag
+            y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchLoadingB:
+            labels = self.branch_names
+            y = self.loadingB.real * 100.0
+            y_label = '(%)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchActiveLossesB:
+            labels = self.branch_names
+            y = self.lossesB.real
+            y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchReactiveLossesB:
+            labels = self.branch_names
+            y = self.lossesB.imag
+            y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusVoltageModuleC:
+            labels = self.bus_names
+            y = np.abs(self.voltageC)
+            y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusVoltageAngleC:
+            labels = self.bus_names
+            y = np.angle(self.voltageC)
+            y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchActivePowerFromC:
+            labels = self.branch_names
+            y = self.SfC.real
+            y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchReactivePowerFromC:
+            labels = self.branch_names
+            y = self.SfC.imag
+            y_label = '(MVAr)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchActiveCurrentFromC:
+            labels = self.branch_names
+            y = self.IfC.real
+            y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchReactiveCurrentFromC:
+            labels = self.branch_names
+            y = self.IfC.imag
+            y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchLoadingC:
+            labels = self.branch_names
+            y = self.loadingC.real * 100.0
+            y_label = '(%)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchActiveLossesC:
+            labels = self.branch_names
+            y = self.lossesC.real
+            y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BranchReactiveLossesC:
+            labels = self.branch_names
+            y = self.lossesC.imag
+            y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.ShortCircuitInfo:
             labels = np.array(['Type', 'Bus name'])
             y = np.array([self.sc_type.value, self.bus_names[self.sc_bus_index]])
@@ -779,4 +1446,21 @@ class ShortCircuitResults(ResultsTemplate):
                        'Losses (MVA)']
         df_branch = pd.DataFrame(data=branch_data, columns=branch_cols)
 
-        return df_bus, df_branch
+        # phase buses results
+        vm_a = np.abs(self.voltageA)
+        vm_b = np.abs(self.voltageB)
+        vm_c = np.abs(self.voltageB)
+        va_a = np.angle(self.voltageA)
+        va_b = np.angle(self.voltageB)
+        va_c = np.angle(self.voltageC)
+        phases_data = np.c_[vm_a, va_a, vm_b, va_b, vm_c, va_c]
+        phases_cols = ['Voltage module A (p.u.)',
+                    'Voltage angle A (rad)',
+                    'Voltage module B (p.u.)',
+                    'Voltage angle B (rad)',
+                    'Voltage module C (p.u.)',
+                    'Voltage angle C (rad)',
+                    ]
+        df_phases = pd.DataFrame(data=phases_data, columns=phases_cols)
+
+        return df_bus, df_branch, df_phases

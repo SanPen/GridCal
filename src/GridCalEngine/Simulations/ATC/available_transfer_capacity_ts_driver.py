@@ -13,7 +13,7 @@ from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
-from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_atc_list, compute_alpha
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_atc_list, compute_alpha, compute_dP
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_options import AvailableTransferCapacityOptions
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
@@ -294,14 +294,22 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 flows_t: Vec = linear_analysis.get_flows(P)
 
             # compute the branch exchange sensitivity (alpha)
-            alpha = compute_alpha(ptdf=linear_analysis.PTDF,
-                                  P0=P,  # no problem that there are in p.u., are only used for the sensitivity
-                                  Pinstalled=nc.bus_data.installed_power,
-                                  Pgen=nc.generator_data.get_injections_per_bus().real,
-                                  Pload=nc.load_data.get_injections_per_bus().real,
-                                  bus_a1_idx=self.options.bus_idx_from,
-                                  bus_a2_idx=self.options.bus_idx_to,
-                                  mode=mode_2_int[self.options.mode])
+            dP = compute_dP(
+                P0=P,
+                P_installed=nc.bus_data.installed_power,
+                Pgen=nc.generator_data.get_injections_per_bus().real,
+                Pload=nc.load_data.get_injections_per_bus().real,
+                bus_a1_idx=self.options.bus_idx_from,
+                bus_a2_idx=self.options.bus_idx_to,
+                mode=mode_2_int[self.options.mode],
+                dT=1.0
+            )
+
+            alpha = compute_alpha(
+                ptdf=linear_analysis.PTDF,
+                dP=dP,
+                dT=1.0
+            )
 
             # base exchange
             base_exchange = (self.options.inter_area_branch_sense * flows_t[self.options.inter_area_branch_idx]).sum()

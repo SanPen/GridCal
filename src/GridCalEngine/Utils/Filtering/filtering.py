@@ -71,7 +71,7 @@ class CompOps(Enum):
 
 class FilterOps(Enum):
     """
-    Enumeration of filter oprations
+    Enumeration of filter operations
     """
     AND = "and"
     OR = "or"
@@ -105,7 +105,7 @@ class FilterOps(Enum):
 
 class FilterSubject(Enum):
     """
-    Enumeration of filter oprations
+    Enumeration of filter operations
     """
     COL = "col"
     IDX = "idx"
@@ -337,17 +337,17 @@ class MasterFilter:
 
     def size(self) -> int:
         """
-        Get size of the stack
+        Get the size of the stack
         :return: int
         """
         return len(self.stack)
 
-    def correct_size(self) -> bool:
+    def is_correct_size(self) -> bool:
         """
-        Returs if the stack has the right size: an odd number
+        Returns if the stack has the right size: an odd number
         :return:
         """
-        return is_odd(self.size())
+        return is_odd(self.size()) and self.size() > 0
 
 
 def parse_single(token: str) -> Union[Filter, None]:
@@ -356,7 +356,17 @@ def parse_single(token: str) -> Union[Filter, None]:
     :param token: Token
     :return: Filter or None if the token is not valid
     """
-    elms = re.split(r'(?<=\s)([<>=!]=?|in|starts|ends|like|notlike)(?=\s)', token)
+
+    #  old: r'(?<=\s)([<>=!]=?|in|starts|ends|like|notlike)(?=\s)'
+    # elms = re.split(r'(?<!\S)([<>=!]=?|in|starts|ends|like|notlike)(?!\S)', token)
+
+    TOKEN_SPLIT_RE = re.compile(
+        r'\s*('  # optional whitespace to discard
+        r'\b(?:in|starts|ends|like|notlike)\b'  # alphabetic operators – whole words
+        r'|!=|>=|<=|[<>]|='  # symbolic operators
+        r')\s*'  # optional whitespace to discard
+    )
+    elms = TOKEN_SPLIT_RE.split(token)
 
     if len(elms) == 3:
 
@@ -369,7 +379,16 @@ def parse_single(token: str) -> Union[Filter, None]:
             element = elms[0].strip()
             element_args = list()
 
-        return Filter(element=FilterSubject(element),
+        try:
+            filter_subject = FilterSubject(element)
+        except ValueError as e:
+            try:
+                filter_subject = FilterSubject("idxobj")
+                element_args = [element]
+            except ValueError as e:
+                return None
+
+        return Filter(element=filter_subject,
                       element_args=element_args,
                       op=CompOps(elms[1].strip()),
                       value=elms[2].strip())

@@ -13,14 +13,15 @@ from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
 from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_worker import (short_circuit_ph3,
-                                                                                short_circuit_unbalanced)
+                                                                                short_circuit_unbalanced,
+                                                                                short_circuit_abc)
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices import Line, Bus
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_options import ShortCircuitOptions
-from GridCalEngine.enumerations import FaultType, SimulationTypes
+from GridCalEngine.enumerations import FaultType, SimulationTypes, MethodShortCircuit, PhasesShortCircuit
 from GridCalEngine.Devices.types import BRANCH_TYPES
 
 
@@ -41,6 +42,7 @@ class ShortCircuitDriver(DriverTemplate):
         :param pf_results: PowerFlowResults
         :param opf_results: OptimalPowerFlowResults
         """
+        assert isinstance(pf_results, PowerFlowResults)
         DriverTemplate.__init__(self, grid=grid)
 
         self.pf_results: PowerFlowResults | None = pf_results
@@ -139,7 +141,10 @@ class ShortCircuitDriver(DriverTemplate):
                              Vpf: CxVec,
                              Zf: complex,
                              island_bus_index: int,
-                             fault_type: FaultType) -> ShortCircuitResults:
+                             fault_type: FaultType,
+                             method: MethodShortCircuit,
+                             phases: PhasesShortCircuit,
+                             Spf: CxVec) -> ShortCircuitResults:
         """
         Run a short circuit simulation for a single island
         :param calculation_inputs:
@@ -153,21 +158,36 @@ class ShortCircuitDriver(DriverTemplate):
         # compute Zbus
         # is dense, so no need to store it as sparse
         if adm.Ybus.shape[0] > 1:
-            if fault_type == FaultType.ph3:
-                return short_circuit_ph3(nc=nc,
-                                         Vpf=Vpf[nc.bus_data.original_idx],
-                                         Zf=Zf,
-                                         bus_index=island_bus_index)
+            if method == MethodShortCircuit.sequences:
+                if fault_type == FaultType.ph3:
+                    return short_circuit_ph3(nc=nc,
+                                             Vpf=Vpf[nc.bus_data.original_idx],
+                                             Zf=Zf,
+                                             bus_index=island_bus_index)
 
-            elif fault_type in [FaultType.LG, FaultType.LL, FaultType.LLG]:
-                return short_circuit_unbalanced(nc=nc,
-                                                Vpf=Vpf[nc.bus_data.original_idx],
-                                                Zf=Zf,
-                                                bus_index=island_bus_index,
-                                                fault_type=fault_type)
+                elif fault_type in [FaultType.LG, FaultType.LL, FaultType.LLG]:
+                    return short_circuit_unbalanced(nc=nc,
+                                                    Vpf=Vpf[nc.bus_data.original_idx],
+                                                    Zf=Zf,
+                                                    bus_index=island_bus_index,
+                                                    fault_type=fault_type)
+
+                else:
+                    raise Exception('Unknown fault type!')
+
+            elif method == MethodShortCircuit.phases:
+                return short_circuit_abc(nc=nc,
+                                          Vpf=Vpf,
+                                          Zf=Zf,
+                                          bus_index=island_bus_index,
+                                          fault_type=fault_type,
+                                          method = method,
+                                          phases = phases,
+                                          Spf=Spf)
 
             else:
-                raise Exception('Unknown fault type!')
+                raise Exception('Short-circuit calculation method is unknown!')
+
 
         # if we get here, no short circuit was done, so declare empty results and exit --------------------------------
         nbus = adm.Ybus.shape[0]
@@ -223,12 +243,24 @@ class ShortCircuitDriver(DriverTemplate):
             grid = self.grid
 
         # Compile the grid
-        nc = compile_numerical_circuit_at(circuit=grid,
-                                          t_idx=None,
-                                          apply_temperature=self.pf_options.apply_temperature_correction,
-                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                          opf_results=self.opf_results,
-                                          logger=self.logger)
+        if self.options.method == MethodShortCircuit.phases:
+            nc = compile_numerical_circuit_at(circuit=grid,
+                                              t_idx=None,
+                                              apply_temperature=self.pf_options.apply_temperature_correction,
+                                              branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                              opf_results=self.opf_results,
+                                              logger=self.logger,
+                                              fill_three_phase=True
+                                              )
+        else:
+            nc = compile_numerical_circuit_at(circuit=grid,
+                                              t_idx=None,
+                                              apply_temperature=self.pf_options.apply_temperature_correction,
+                                              branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                              opf_results=self.opf_results,
+                                              logger=self.logger,
+                                              fill_three_phase=False
+                                              )
 
         calculation_inputs = nc.split_into_islands(
             ignore_single_node_islands=self.pf_options.ignore_single_node_islands
@@ -261,7 +293,7 @@ class ShortCircuitDriver(DriverTemplate):
                                                     Vpf=self.pf_results.voltage[island.bus_data.original_idx],
                                                     Zf=Zf[island.bus_data.original_idx],
                                                     island_bus_index=island_bus_index,
-                                                    fault_type=self.options.fault_type)
+                                                    fault_type=self.options.fault_type)  # TODO fill missing arguments
 
                     # merge results
                     results.apply_from_island(res, island.bus_data.original_idx,
@@ -273,7 +305,11 @@ class ShortCircuitDriver(DriverTemplate):
                                             Vpf=self.pf_results.voltage,
                                             Zf=Zf,
                                             island_bus_index=self.options.bus_index,
-                                            fault_type=self.options.fault_type)
+                                            fault_type=self.options.fault_type,
+                                            method=self.options.method,
+                                            phases=self.options.phases,
+                                            Spf=self.pf_results.Sbus
+                                            )
 
             # merge results
             results.apply_from_island(res, calculation_inputs[0].bus_data.original_idx,
@@ -290,6 +326,5 @@ class ShortCircuitDriver(DriverTemplate):
             results.voltage2 = nc.propagate_bus_result(results.voltage2)
 
         self.results = results
-        self.grid.short_circuit_results = results
         self._is_running = False
         self.toc()

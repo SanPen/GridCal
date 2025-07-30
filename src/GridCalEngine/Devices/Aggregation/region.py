@@ -10,6 +10,7 @@ from GridCalEngine.Devices.Aggregation.community import Community
 
 
 class Region(GenericAreaGroup):
+    __slots__ = ('community',)
 
     def __init__(self, name='Region', idtag: Union[str, None] = None, code='', latitude=0.0, longitude=0.0,
                  community: Union[Community, None] = None):

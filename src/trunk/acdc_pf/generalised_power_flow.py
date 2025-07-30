@@ -92,7 +92,7 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
 
-    admittances.modify_taps(m=alltapm0, m2=alltapm, tau=alltapt0, tau2=alltapt)
+    admittances.modify_taps_all(m=alltapm0, m2=alltapm, tau=alltapt0, tau2=alltapt)
 
     Ybus = admittances.Ybus
     Yf = admittances.Yf
@@ -222,7 +222,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
 
-    admittances.modify_taps(m=alltapm0, m2=alltapm, tau=alltapt0, tau2=alltapt)
+    admittances.modify_taps_all(m=alltapm0, m2=alltapm, tau=alltapt0, tau2=alltapt)
 
     Ybus = admittances.Ybus
     Yf = admittances.Yf
@@ -241,8 +241,10 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
                        rates=rates, il=il, ig=ig, tanmax=tanmax, ctQ=ctQ, acopf_mode=acopf_mode)
 
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, c_s=c_s, c_v=c_v, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf,
-                                                       Yt=Yt, Ybus=Ybus, Sbase=Sbase, mon_br_idx=il, ig=ig, slack=slack, pq=pq,
-                                                       pv=pv, tanmax=tanmax, alltapm=alltapm, alltapt=alltapt, F_hvdc=fdc,
+                                                       Yt=Yt, Ybus=Ybus, Sbase=Sbase, mon_br_idx=il, ig=ig, slack=slack,
+                                                       pq=pq,
+                                                       pv=pv, tanmax=tanmax, alltapm=alltapm, alltapt=alltapt,
+                                                       F_hvdc=fdc,
                                                        T_hvdc=tdc, k_m=k_m, k_tau=k_tau, mu=mu, lmbda=lmbda, R=R, X=X,
                                                        F=from_idx, T=to_idx, ctQ=ctQ, acopf_mode=acopf_mode,
                                                        compute_jac=compute_jac, compute_hess=compute_hess)
@@ -544,7 +546,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
-        c_s = 1 * np.power(nc.passive_branch_data.overload_cost[br_mon_idx] + 0.1, 1.0)  # Cost squared since the slack is also squared
+        c_s = 1 * np.power(nc.passive_branch_data.overload_cost[br_mon_idx] + 0.1,
+                           1.0)  # Cost squared since the slack is also squared
         c_v = 1 * (nc.bus_data.cost_v[pq] + 0.1)
         sl_sf0 = np.ones(n_br_mon)
         sl_st0 = np.ones(n_br_mon)
@@ -559,7 +562,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         sl_st0 = np.array([])
         sl_vmax0 = np.array([])
         sl_vmin0 = np.array([])
-
 
     # Number of equalities: Nodal power balances, the voltage module of slack and pv buses and the slack reference
     NE = 2 * nbus + n_slack + npv
@@ -618,7 +620,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                        arg=(admittances, Cg, Sd, slack, from_idx, to_idx,
                                             pq, pv, Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min,
                                             Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
-                                            k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx, gen_nondisp_idx,
+                                            k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx,
+                                            gen_nondisp_idx,
                                             Sg_undis, pf_options.control_Q, opf_options.acopf_mode),
                                        verbose=opf_options.verbose,
                                        max_iter=opf_options.ips_iterations,
@@ -633,7 +636,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            arg=(admittances, Cg, Sd, slack, from_idx, to_idx, pq, pv,
                                                 Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
                                                 tapm_max, tapm_min, tapt_max, tapt_min, k_m, k_tau, k_mtau,
-                                                c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx, gen_nondisp_idx, Sg_undis,
+                                                c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx, gen_nondisp_idx,
+                                                Sg_undis,
                                                 opf_options.acopf_mode, 1e-5),
                                            verbose=opf_options.verbose,
                                            max_iter=opf_options.ips_iterations,
@@ -643,11 +647,15 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
             # run the solver with the analytic derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                            func=compute_analytic_structures,
-                                           arg=(admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_hvdc, t_nd_hvdc,
-                                                f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, pq, pv, Pf_nondisp, P_hvdc_max, Vm_max, Vm_min, Pg_max,
+                                           arg=(admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_hvdc,
+                                                t_nd_hvdc,
+                                                f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, pq, pv, Pf_nondisp, P_hvdc_max,
+                                                Vm_max, Vm_min, Pg_max,
                                                 Pg_min, tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
-                                                alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, br_mon_idx,
-                                                n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis, pf_options.control_Q, opf_options.acopf_mode),
+                                                alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates,
+                                                br_mon_idx,
+                                                n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis, pf_options.control_Q,
+                                                opf_options.acopf_mode),
                                            verbose=opf_options.verbose,
                                            max_iter=opf_options.ips_iterations,
                                            tol=opf_options.ips_tolerance,
@@ -660,10 +668,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                                  acopf_mode=opf_options.acopf_mode)
 
     # Save Results DataFrame for tests
-    #pd.DataFrame(Va).transpose().to_csv('REEresth.csv')
-    #pd.DataFrame(Vm).transpose().to_csv('REEresV.csv')
-    #pd.DataFrame(Pg_dis).transpose().to_csv('REEresP.csv')
-    #pd.DataFrame(Qg_dis).transpose().to_csv('REEresQ.csv')
+    # pd.DataFrame(Va).transpose().to_csv('REEresth.csv')
+    # pd.DataFrame(Vm).transpose().to_csv('REEresV.csv')
+    # pd.DataFrame(Pg_dis).transpose().to_csv('REEresP.csv')
+    # pd.DataFrame(Qg_dis).transpose().to_csv('REEresQ.csv')
 
     Pg = np.zeros(len(ind_gens))
     Qg = np.zeros(len(ind_gens))

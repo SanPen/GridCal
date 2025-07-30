@@ -49,21 +49,26 @@ import warnings
 import math
 from collections import OrderedDict
 from collections.abc import Iterable
+from typing import Any
+
 from GridCalEngine.Utils.ThirdParty.pulp.utilities import value
 import GridCalEngine.Utils.ThirdParty.pulp.constants as const
+
+_ILLEGAL_CHARS = "-+[] ->/"
 
 
 class LpElement:
     """Base class for LpVariable and LpConstraintVar"""
+
+    __slots__ = ("expression", "trans", "__name", "hash", "modified")
 
     def __init__(self, name):
         """
 
         :param name:
         """
-        illegal_chars = "-+[] ->/"
-        self.expression = re.compile(f"[{re.escape(illegal_chars)}]")
-        self.trans = str.maketrans(illegal_chars, "________")
+        self.expression = re.compile(f"[{re.escape(_ILLEGAL_CHARS)}]")
+        self.trans = str.maketrans(_ILLEGAL_CHARS, "________")
 
         self.__name = name
         # self.hash MUST be different for each variable
@@ -169,20 +174,25 @@ class LpVariable(LpElement):
     :param e: Used for column based modelling: relates to the variable's
         existence in the objective function and constraints
     """
+    __slots__ = ("_lowbound_original", "_upbound_original", "cat", "varValue", "dj", "lowBound", "upBound", "index")
 
     def __init__(self, name, lowBound=None, upBound=None, cat=const.LpContinuous, e=None):
         LpElement.__init__(self, name)
-        self._lowbound_original = self.lowBound = lowBound
-        self._upbound_original = self.upBound = upBound
+        self.lowBound = lowBound
+        self.upBound = upBound
+        self._lowbound_original = lowBound
+        self._upbound_original = upBound
         self.cat = cat
         self.varValue = None
         self.dj = None
+        self.index: int = -1
         if cat == const.LpBinary:
-            self._lowbound_original = self.lowBound = 0
-            self._upbound_original = self.upBound = 1
+            self.lowBound = 0
+            self.upBound = 1
+            self._lowbound_original = 0
+            self._upbound_original = 1
             self.cat = const.LpInteger
-        # Code to add a variable to constraints for column based
-        # modelling.
+        # Code to add a variable to constraints for column based modeling.
         if e:
             self.add_expression(e)
 
@@ -635,6 +645,7 @@ class LpAffineExpression(OrderedDict):
        >>> c
        1*x_0 + -3*x_1 + 4*x_2 + 0
     """
+    __slots__ = ("expression", "trans", "__name", "constant")
 
     def __init__(self, e=None, constant: float = 0.0, name: str | None = None):
         """
@@ -644,8 +655,7 @@ class LpAffineExpression(OrderedDict):
         :param name:
         """
         # to delete illegal characters from the names
-        illegal_chars = "-+[] ->/"
-        self.expression = re.compile(f"[{re.escape(illegal_chars)}]")
+        self.expression = re.compile(f"[{re.escape(_ILLEGAL_CHARS)}]")
         self.trans = str.maketrans("-+[] ", "_____")
 
         self.__name = name
@@ -1039,6 +1049,8 @@ class LpAffineExpression(OrderedDict):
 class LpConstraint(LpAffineExpression):
     """An LP constraint"""
 
+    __slots__ = ("constant", "sense", "pi", "slack", "modified")
+
     def __init__(self, e=None, sense=const.LpConstraintEQ, name=None, rhs=None):
         """
         :param e: an instance of :class:`LpAffineExpression`
@@ -1196,14 +1208,6 @@ class LpConstraint(LpAffineExpression):
         else:
             return val * self.sense >= -eps
 
-    def makeElasticSubProblem(self, *args, **kwargs):
-        """
-        Builds an elastic subproblem by adding variables to a hard constraint
-
-        uses FixedElasticSubProblem
-        """
-        return FixedElasticSubProblem(self, *args, **kwargs)
-
     def toDict(self):
         """
         exports constraint information into a dictionary
@@ -1223,6 +1227,7 @@ class LpFractionConstraint(LpConstraint):
     """
     Creates a constraint that enforces a fraction requirement a/b = c
     """
+    __slots__ = ("numerator", "denominator", "complement", "RHS")
 
     def __init__(self,
                  numerator,
@@ -1270,21 +1275,13 @@ class LpFractionConstraint(LpConstraint):
             else:
                 raise ZeroDivisionError
 
-    def makeElasticSubProblem(self, *args, **kwargs):
-        """
-        Builds an elastic subproblem by adding variables and splitting the
-        hard constraint
-
-        uses FractionElasticSubProblem
-        """
-        return FractionElasticSubProblem(self, *args, **kwargs)
-
 
 class LpConstraintVar(LpElement):
     """
     A Constraint that can be treated as a variable when constructing
     a LpProblem by columns
     """
+    __slots__ = ("constraint")
 
     def __init__(self, name=None, sense=None, rhs=None, e=None):
         LpElement.__init__(self, name)

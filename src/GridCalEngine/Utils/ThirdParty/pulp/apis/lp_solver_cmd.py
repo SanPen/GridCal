@@ -172,7 +172,11 @@ class LpSolver_CMD(LpSolver):
 
     name = "LpSolver_CMD"
 
-    def __init__(self, path=None, keepFiles=False, *args, **kwargs):
+    def __init__(self,
+                 path: str | None = None,
+                 keepFiles: bool = False,
+                 *args,
+                 **kwargs):
         """
 
         :param bool mip: if False, assume LP even if integer variables
@@ -203,7 +207,7 @@ class LpSolver_CMD(LpSolver):
         return aCopy
 
     def setTmpDir(self):
-        """Set the tmpDir attribute to a reasonnable location for a temporary
+        """Set the tmpDir attribute to a reasonable location for a temporary
         directory"""
         if os.name != "nt":
             # On unix use /tmp by default

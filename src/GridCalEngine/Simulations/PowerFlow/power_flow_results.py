@@ -255,6 +255,8 @@ class PowerFlowResults(ResultsTemplate):
         self.plot_bars_limit: int = 100
         self.convergence_reports: List[ConvergenceReport] = list()
 
+        self.three_phase: bool = False
+
         self.register(name='bus_names', tpe=StrVec)
         self.register(name='branch_names', tpe=StrVec)
         self.register(name='hvdc_names', tpe=StrVec)
@@ -301,7 +303,7 @@ class PowerFlowResults(ResultsTemplate):
         self.register(name='battery_q', tpe=Vec)
         self.register(name='shunt_q', tpe=Vec)
 
-        # self.register(name='island_number', tpe=int)
+        self.register(name='three_phase', tpe=bool)
 
     def apply_new_rates(self, nc: NumericalCircuit):
         """
@@ -386,6 +388,53 @@ class PowerFlowResults(ResultsTemplate):
         # self.Vbranch[br_idx] = results.Vbranch
         self.loading[br_idx] = results.loading
         self.losses[br_idx] = results.losses
+
+        # Hvdc
+        self.Pf_hvdc[hvdc_idx] = results.Sf_hvdc.real
+        self.Pt_hvdc[hvdc_idx] = results.St_hvdc.real
+        self.losses_hvdc[hvdc_idx] = results.losses_hvdc.real
+        self.loading_hvdc[hvdc_idx] = results.loading_hvdc.real
+
+        # VSC
+        self.Pf_vsc[vsc_idx] = results.Pf_vsc
+        self.St_vsc[vsc_idx] = results.St_vsc
+        self.If_vsc[vsc_idx] = results.If_vsc
+        self.It_vsc[vsc_idx] = results.It_vsc
+        self.losses_vsc[vsc_idx] = results.losses_vsc
+        self.loading_vsc[vsc_idx] = results.loading_vsc
+
+    def apply_from_island_3phase(self,
+                                 results: NumericPowerFlowResults,
+                                 b_idx: np.ndarray,
+                                 b_idx3: np.ndarray,
+                                 br_idx: np.ndarray,
+                                 br_idx3: np.ndarray,
+                                 hvdc_idx: np.ndarray,
+                                 vsc_idx: np.ndarray) -> None:
+        """
+        Apply results from another island circuit to the circuit results represented
+        here.
+        :param results: NumericPowerFlowResults from an island circuit
+        :param b_idx: bus original indices
+        :param b_idx3: bus original indices expanded to 3-phase
+        :param br_idx: branch original indices
+        :param br_idx3: branch original indices expanded to 3-phase
+        :param hvdc_idx: hvdc original indices
+        :param vsc_idx: vsc original indices
+        :return: None
+        """
+        self.voltage[b_idx3] = results.V
+        self.Sbus[b_idx3] = results.Scalc
+
+        self.tap_module[br_idx3] = results.tap_module
+        self.tap_angle[br_idx3] = results.tap_angle
+
+        self.Sf[br_idx3] = results.Sf
+        self.St[br_idx3] = results.St
+        self.If[br_idx3] = results.If
+        self.It[br_idx3] = results.It
+        self.loading[br_idx3] = results.loading
+        self.losses[br_idx3] = results.losses
 
         # Hvdc
         self.Pf_hvdc[hvdc_idx] = results.Sf_hvdc.real
@@ -959,7 +1008,6 @@ class PowerFlowResults(ResultsTemplate):
         df_branch = pd.DataFrame(data=branch_data, columns=branch_cols)
 
         return df_bus, df_branch
-
 
     def compare(self, other: "PowerFlowResults", tol=1e-6) -> Tuple[bool, Logger]:
         """

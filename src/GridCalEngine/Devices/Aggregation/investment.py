@@ -15,6 +15,11 @@ class Investment(PointerDeviceParent):
     """
     Investment
     """
+    __slots__ = (
+        'CAPEX',
+        '_group',
+        'status',
+    )
 
     def __init__(self,
                  device: EditableDevice | None = None,

@@ -3,21 +3,28 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from typing import List
+import bz2
 import xml.etree.ElementTree as ET
-from GridCalEngine.IO.iidm.devices.substation import Substation
-from GridCalEngine.IO.iidm.devices.voltage_level import VoltageLevel
-from GridCalEngine.IO.iidm.devices.bus import Bus
+from GridCalEngine.IO.iidm.devices.rtesubstation import RteSubstation
+from GridCalEngine.IO.iidm.devices.voltage_level import RteVoltageLevel
+from GridCalEngine.IO.iidm.devices.rte_area import RteArea
+from GridCalEngine.IO.iidm.devices.rte_bus import RteBus
 from GridCalEngine.IO.iidm.devices.generator import Generator
 from GridCalEngine.IO.iidm.devices.load import Load
 from GridCalEngine.IO.iidm.devices.line import Line
 from GridCalEngine.IO.iidm.devices.two_winding_transformer import TwoWindingsTransformer
-from GridCalEngine.IO.iidm.devices.dangling_line import DanglingLine
+from GridCalEngine.IO.iidm.devices.rte_dangling_line import RteDanglingLine
 from GridCalEngine.IO.iidm.devices.shunt import Shunt
 from GridCalEngine.IO.iidm.devices.switch import Switch
-from GridCalEngine.IO.iidm.devices.busbar_section import BusbarSection
+from GridCalEngine.IO.iidm.devices.rte_busbar_section import RteBusbarSection
 from GridCalEngine.IO.iidm.devices.static_var_compensator import StaticVarCompensator
 from GridCalEngine.IO.iidm.devices.iidm_circuit import IidmCircuit
 
+"""
+# See: 
+    https://powsybl.readthedocs.io/projects/pypowsybl/en/latest/reference/network.html
+    https://powsybl.readthedocs.io/projects/powsybl-core/en/stable/grid_model/network_subnetwork.html
+"""
 
 def strip_ns(tag: str) -> str:
     """
@@ -28,8 +35,20 @@ def strip_ns(tag: str) -> str:
     return tag.split("}")[-1] if "}" in tag else tag
 
 
-def parse_xiidm_file_to_circuit_non_recursive(file_path: str) -> IidmCircuit:
-    tree = ET.parse(file_path)
+def parse_xiidm_file(file_path: str) -> IidmCircuit:
+    """
+    Parse Xiidm to IidmCircuit
+    :param file_path: xiidm file path
+    :return: IidmCircuit
+    """
+
+    # Read as a text file (assuming UTF-8 encoding)
+    if file_path.endswith(".bz2"):
+        with bz2.open(file_path, mode='rt', encoding='utf-8') as file:
+            tree = ET.parse(file)
+    else:
+        tree = ET.parse(file_path)
+
     root = tree.getroot()
     circuit = IidmCircuit()
 
@@ -37,7 +56,7 @@ def parse_xiidm_file_to_circuit_non_recursive(file_path: str) -> IidmCircuit:
         tag = strip_ns(elem.tag)
 
         if tag == "substation":
-            circuit.substations.append(Substation(
+            circuit.substations.append(RteSubstation(
                 id=elem.attrib.get("id", ""),
                 country=elem.attrib.get("country", ""),
                 tso=elem.attrib.get("tso", ""),
@@ -45,14 +64,28 @@ def parse_xiidm_file_to_circuit_non_recursive(file_path: str) -> IidmCircuit:
             ))
 
         elif tag == "voltageLevel":
-            circuit.voltage_levels.append(VoltageLevel(
-                id=elem.attrib.get("id", ""),
+            circuit.voltage_levels.append(RteVoltageLevel(
+                _id=elem.attrib.get("id", ""),
+                name=elem.attrib.get("name", ""),
                 nominalV=float(elem.attrib.get("nominalV", 0)),
                 topologyKind=elem.attrib.get("topologyKind", "")
             ))
 
+        elif tag == "area":
+            circuit.areas.append(RteArea(
+                _id=elem.attrib.get("id", ""),
+                name=elem.attrib.get("Name", ""),
+                area_type=elem.attrib.get("AreaType", ""),
+                interchange_target=float(elem.attrib.get("interchangeTarget", 0)),
+            ))
+
         elif tag == "bus":
-            circuit.buses.append(Bus(id=elem.attrib.get("id", "")))
+            circuit.buses.append(RteBus(
+                _id=elem.attrib.get("id", ""),
+                area_number=elem.attrib.get("areaNumber", -1),
+                status=elem.attrib.get("status", ""),
+                nodes=[int(e) for e in elem.attrib.get("nodes", []).split(",")],
+            ))
 
         elif tag == "generator":
             circuit.generators.append(Generator(
@@ -102,8 +135,8 @@ def parse_xiidm_file_to_circuit_non_recursive(file_path: str) -> IidmCircuit:
             ))
 
         elif tag == "danglingLine":
-            circuit.dangling_lines.append(DanglingLine(
-                id=elem.attrib.get("id", ""),
+            circuit.dangling_lines.append(RteDanglingLine(
+                _id=elem.attrib.get("id", ""),
                 bus=elem.attrib.get("bus", ""),
                 p0=float(elem.attrib.get("p0", 0)),
                 q0=float(elem.attrib.get("q0", 0)),
@@ -133,8 +166,8 @@ def parse_xiidm_file_to_circuit_non_recursive(file_path: str) -> IidmCircuit:
             ))
 
         elif tag == "busbarSection":
-            circuit.busbar_sections.append(BusbarSection(
-                id=elem.attrib.get("id", "")
+            circuit.busbar_sections.append(RteBusbarSection(
+                _id=elem.attrib.get("id", "")
             ))
 
         elif tag == "staticVarCompensator":
@@ -151,15 +184,16 @@ def parse_xiidm_file_to_circuit_non_recursive(file_path: str) -> IidmCircuit:
 
 if __name__ == "__main__":
 
-    # See: https://powsybl.readthedocs.io/projects/pypowsybl/en/latest/reference/network.html
 
-    fname = "/home/santi/Documentos/Git/GitHub/RTE7000/2021/01/01/recollement-auto-20210101-0000-enrichi.xiidm"
-    # parse_xiidm_file_to_circuit_non_recursive(fname)
-    import pypowsybl as pp
 
-    grid = pp.network.load(fname)
+    # fname = "/home/santi/Documentos/Git/GitHub/RTE7000/2021/01/01/recollement-auto-20210101-0000-enrichi.xiidm"
+    fname = "/home/santi/Documentos/Git/GitHub/RTE7000/2021/01/01/recollement-auto-20210101-0000-enrichi.xiidm.bz2"
 
-    res = pp.loadflow.run_dc(grid, pp.loadflow.Parameters(distributed_slack=False))
+    # import pypowsybl as pp
+    # grid = pp.network.load(fname)
+    # res = pp.loadflow.run_dc(grid, pp.loadflow.Parameters(distributed_slack=False))
+
+    iidm_circuit = parse_xiidm_file(fname)
 
     print()
 

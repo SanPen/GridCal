@@ -6,5 +6,5 @@ Module contents
 
 .. automodule:: GridCal.ThirdParty.qdarktheme.qtpy.QtSvg
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

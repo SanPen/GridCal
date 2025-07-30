@@ -140,7 +140,7 @@ class FilterTimeSeries:
         if len(self.master_filter.stack):
             idx_mask = compute_timeseries_masks(objects=self.objects, flt=self.master_filter.stack[0])
 
-            if self.master_filter.correct_size():
+            if self.master_filter.is_correct_size():
 
                 for st_idx in range(1, self.master_filter.size(), 2):
 

@@ -13,6 +13,7 @@ class GeneratorQCurve:
     """
     GeneratorQCurve
     """
+    __slots__ = ("_q_points")
 
     def __init__(self) -> None:
 

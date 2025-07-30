@@ -411,7 +411,6 @@ class ObjectsModel(WrappableTableModel):
         """
         Copy the value pointed by the index to all the other cells in the column
         :param index: QModelIndex instance
-        :return:
         """
         value = self.data_with_type(index=index)
         col = index.column()

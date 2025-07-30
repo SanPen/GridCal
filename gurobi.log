@@ -1,9 +1,24 @@
 
-Gurobi 10.0.3 (win64, gurobi_cl) logging started Wed Nov 20 15:11:14 2024
+Gurobi 10.0.0 (win64, gurobi_cl) logging started Wed Oct 23 11:46:51 2024
 
-Set parameter WLSAccessID
-Set parameter WLSSecret
-Set parameter LicenseID to value 2412665
 Set parameter LogFile to value "gurobi.log"
-Academic license 2412665 - for non-commercial use only - registered to le___@estudiantat.upc.edu
-Using license file C:\Users\raiya\gurobi.lic
+
+Gurobi 10.0.0 (win64, gurobi_cl) logging started Wed Oct 23 11:48:12 2024
+
+Set parameter LogFile to value "gurobi.log"
+
+Gurobi 10.0.0 (win64, gurobi_cl) logging started Wed Oct 23 11:51:39 2024
+
+Set parameter LogFile to value "gurobi.log"
+
+Gurobi 10.0.0 (win64, gurobi_cl) logging started Wed Oct 23 12:00:42 2024
+
+Set parameter LogFile to value "gurobi.log"
+
+Gurobi 10.0.0 (win64, gurobi_cl) logging started Mon Dec 16 12:40:34 2024
+
+Set parameter LogFile to value "gurobi.log"
+
+Gurobi 10.0.0 (win64, gurobi_cl) logging started Mon Jan 13 11:24:59 2025
+
+Set parameter LogFile to value "gurobi.log"

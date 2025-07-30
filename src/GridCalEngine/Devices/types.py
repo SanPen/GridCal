@@ -65,28 +65,28 @@ AREA_TYPES = Union[
 SUBSTATION_TYPES = Union[
     Substation,
     Bus,
-    ConnectivityNode,
     BusBar,
     VoltageLevel
 ]
 
-MEASUREMENT_TYPES = Union[
-    IfMeasurement,
-    QfMeasurement,
-    PfMeasurement,
-    QtMeasurement,
-    PtMeasurement,
-    QiMeasurement,
-    PiMeasurement,
-    VmMeasurement
-]
+# MEASUREMENT_TYPES = Union[
+#     IfMeasurement,
+#     QfMeasurement,
+#     PfMeasurement,
+#     QtMeasurement,
+#     PtMeasurement,
+#     QiMeasurement,
+#     PiMeasurement,
+#     VmMeasurement
+# ]
+
 
 ALL_DEV_TYPES = Union[
     INJECTION_DEVICE_TYPES,
     BRANCH_TYPES,
     FLUID_TYPES,
     SUBSTATION_TYPES,
-    MEASUREMENT_TYPES,
+        # MEASUREMENT_TYPES,
     AREA_TYPES,
     Transformer3W,
     OverheadLineType,
@@ -112,7 +112,7 @@ ALL_DEV_TYPES = Union[
     SequenceLineType
 ]
 
-CONNECTION_TYPE = Union[ConnectivityNode, Bus, None]
+CONNECTION_TYPE = Union[Bus, None]
 
 ASSOCIATION_TYPES = Union[Fuel, Technology, EmissionGas]
 

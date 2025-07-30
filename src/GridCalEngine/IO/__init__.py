@@ -3,8 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
-
-
 from GridCalEngine.IO.cim import *
 from GridCalEngine.IO.gridcal import *
 from GridCalEngine.IO.matpower import *
