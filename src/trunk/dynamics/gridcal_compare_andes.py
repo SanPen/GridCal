@@ -87,7 +87,7 @@ merged_df['Pl_Gridcal'] = merged_df['Pl_Gridcal'] * (-100)
 # ]
 
 variable_pairs = [
-     [f"omega_Gridcal", f"omega_andes_gen_1"],
+     [f"omega_1_Gridcal", f"omega_andes_gen_2"],
      ['Pl_Gridcal', 'Ppf_andes_load_0'],
      # [f"tm_Gridcal", f"tm_andes_gen_1"],
      # [f"t_e_Gridcal", f"te_andes_gen_1"]
@@ -117,7 +117,7 @@ for idx, (var1, var2) in enumerate(variable_pairs):
         ax.set_title(f"{var1} vs {var2}", fontsize=9)
         ax.set_xlabel("Time (s)", fontsize=8)
         ax.set_ylabel("Value (pu)", fontsize=8)
-        # ax.set_ylim([0.85, 1.15])
+        # ax.set_ylim([0.999, 1.0001])
         ax.tick_params(axis='both', labelsize=7)
         ax.legend(fontsize=7, loc='best')
         ax.grid(True)

@@ -40,27 +40,27 @@ pi = Const(math.pi)
 
 # Generator 0
 fn_0 = Const(50.0)
-M_0 = Const(1.0)
+M_0 = Const(10.0)
 D_0 = Const(1.0)
 ra_0 = Const(0.3)
 xd_0 = Const(0.86138701)
 
 omega_ref_0 = Const(1.0)
-Kp_0 = Const(1.0)
-Ki_0 = Const(10.0)
-Kw_0 = Const(10.0)
+Kp_0 = Const(0.05)
+Ki_0 = Const(0.0)
+
 
 # Generator 1
 fn_1 = Const(50.0)
-M_1 = Const(1.0)
+M_1 = Const(10.0)
 D_1 = Const(1.0)
 ra_1 = Const(0.3)
 xd_1 = Const(0.86138701)
 
 omega_ref_1 = Const(1.0)
-Kp_1 = Const(1.0)
-Ki_1 = Const(10.0)
-Kw_1 = Const(10.0)
+Kp_1 = Const(0.05)
+Ki_1 = Const(0.0)
+
 
 
 
@@ -79,8 +79,8 @@ grid.add_bus(bus1)
 grid.add_bus(bus2)
 
 # Line
-line0 = grid.add_line(gce.Line(name="line 0-2", bus_from=bus0, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0))
-line1 = grid.add_line(gce.Line(name="line 2-1", bus_from=bus2, bus_to=bus1, r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0))
+line0 = grid.add_line(gce.Line(name="line 0-2", bus_from=bus0, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=900.0))
+line1 = grid.add_line(gce.Line(name="line 2-1", bus_from=bus2, bus_to=bus1, r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=900.0))
 
 # load
 load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P= 10, Q= 10))
@@ -175,7 +175,7 @@ t_e0_0 = psid0_0 * i_q0_0 - psiq0_0 * i_d0_0
 # ----------------------------------------------------------------------------------------------------------------------
 tm0_0 = Const(t_e0_0)
 vf_0 = Const(vf0_0)
-tm_0 = Const(t_e0_0)
+# tm_0 = Const(t_e0_0)
 # ----------------------------------------------------------------------------------------------------------------------
 
 # Generator 1
@@ -205,7 +205,7 @@ t_e0_1 = psid0_1 * i_q0_1 - psiq0_1 * i_d0_1
 # ----------------------------------------------------------------------------------------------------------------------
 tm0_1 = Const(t_e0_1)
 vf_1 = Const(vf0_1)
-tm_1 = Const(t_e0_1)
+# tm_1 = Const(t_e0_1)
 # --------------------------------------------------------------------------------------------------------------------
 
 
@@ -243,6 +243,8 @@ P_g_0 = Var("P_e_0")
 Q_g_0 = Var("Q_e_0")
 dg_0 = Var("dg_0")
 Vg_0 = Var("Vg_0")
+et_0 = Var("et_0")
+tm_0 = Var("tm_0")
 
 # Gencls 1
 delta_1 = Var("delta_1")
@@ -258,6 +260,8 @@ P_g_1 = Var("P_e_1")
 Q_g_1 = Var("Q_e_1")
 dg_1 = Var("dg_1")
 Vg_1 = Var("Vg_1")
+et_1 = Var("et_1")
+tm_1 = Var("tm_1")
 
 # Load
 Pl = Var("Pl")
@@ -341,8 +345,9 @@ generator0_block = Block(
     state_eqs=[
         (2 * pi * fn_0) * (omega_0 - omega_ref_0),
         (tm_0 - t_e_0 - D_0 * (omega_0 - omega_ref_0)) / M_0,
+        (omega_0 - omega_ref_0)
     ],
-    state_vars=[delta_0, omega_0],
+    state_vars=[delta_0, omega_0, et_0],
     algebraic_eqs=[
         psid_0 - (ra_0 * i_q_0 + v_q_0),
         psiq_0 + (ra_0 * i_d_0 + v_d_0),
@@ -353,8 +358,9 @@ generator0_block = Block(
         t_e_0 - (psid_0 * i_q_0 - psiq_0 * i_d_0),
         P_g_0 - (v_d_0 * i_d_0 + v_q_0 * i_q_0),
         Q_g_0 - (v_q_0 * i_d_0 - v_d_0 * i_q_0),
+        (tm_0 - tm0_0) + (Kp_0 * (omega_0 - omega_ref_0) + Ki_0 * et_0),
     ],
-    algebraic_vars=[psid_0, psiq_0, i_d_0, i_q_0, v_d_0, v_q_0, t_e_0, P_g_0, Q_g_0],
+    algebraic_vars=[psid_0, psiq_0, i_d_0, i_q_0, v_d_0, v_q_0, t_e_0, P_g_0, Q_g_0, tm_0],
     parameters=[]
 )
 
@@ -362,8 +368,9 @@ generator1_block = Block(
     state_eqs=[
         (2 * pi * fn_1) * (omega_1 - omega_ref_1),
         (tm_1 - t_e_1 - D_1 * (omega_1 - omega_ref_1)) / M_1,
+        (omega_1 - omega_ref_1)
     ],
-    state_vars=[delta_1, omega_1],
+    state_vars=[delta_1, omega_1, et_1],
     algebraic_eqs=[
         psid_1 - (ra_1 * i_q_1 + v_q_1),
         psiq_1 + (ra_1 * i_d_1 + v_d_1),
@@ -374,8 +381,9 @@ generator1_block = Block(
         t_e_1 - (psid_1 * i_q_1 - psiq_1 * i_d_1),
         P_g_1 - (v_d_1 * i_d_1 + v_q_1 * i_q_1),
         Q_g_1 - (v_q_1 * i_d_1 - v_d_1 * i_q_1),
+        (tm_1 - tm0_1) + (Kp_1 * (omega_1 - omega_ref_1) + Ki_1 * et_1),
     ],
-    algebraic_vars=[psid_1, psiq_1, i_d_1, i_q_1, v_d_1, v_q_1, t_e_1, P_g_1, Q_g_1],
+    algebraic_vars=[psid_1, psiq_1, i_d_1, i_q_1, v_d_1, v_q_1, t_e_1, P_g_1, Q_g_1, tm_1],
     parameters=[]
 )
 
@@ -384,7 +392,7 @@ generator1_block = Block(
 # -------------------------------------------------------------
 # Load
 # -------------------------------------------------------------
-Pl0 = Const(Sb2.real)
+Pl0 = Var("Pl0")
 Ql0 = Const(Sb2.imag)
 
 load = Block(
@@ -393,7 +401,7 @@ load = Block(
         Ql - Ql0
     ],
     algebraic_vars=[Ql, Pl],
-    parameters=[]
+    parameters=[Pl0]
 )
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -410,9 +418,10 @@ sys = Block(
 slv = BlockSolver(sys)
 
 params_mapping = {
-    #Pl0_7: Sb7.real,
+    Pl0: Sb2.real,
     # Ql0: 0.1
 }
+
 
 vars_mapping = {
     dline_from_0: np.angle(v0),
@@ -512,8 +521,8 @@ for eq, val in residuals.items():
 # ---------------------------------------------------------------------------------------
 # Events
 # ---------------------------------------------------------------------------------------
-
-my_events = RmsEvents([])
+event1 = RmsEvent('Load', Pl0, 2500, Sb2.real - 0.015)
+my_events = RmsEvents([event1])
 
 params0 = slv.build_init_params_vector(params_mapping)
 x0 = slv.build_init_vars_vector(vars_mapping)
@@ -545,7 +554,7 @@ vars_in_order = slv.sort_vars(vars_mapping)
 
 t, y = slv.simulate(
     t0=0,
-    t_end=20.0,
+    t_end=50.0,
     h=0.001,
     x0=x0,
     params0=params0,

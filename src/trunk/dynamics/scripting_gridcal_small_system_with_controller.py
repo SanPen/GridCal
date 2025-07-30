@@ -340,7 +340,7 @@ for eq, val in residuals.items():
 print("Sb2")
 print(Sb2.real)
 
-event1 = RmsEvent('Load', Pl0, 2500, Sb2.real - 0.15)
+event1 = RmsEvent('Load', Pl0, 2500, Sb2.real - 0.0015)
 
 my_events = RmsEvents([event1])
 # my_events = RmsEvents([])
@@ -392,7 +392,7 @@ plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(et)], label="et (pu)")
 
 
-# plt.plot(t, y[:, slv.get_var_idx(Pl)], label="Pl7(pu)")
+plt.plot(t, y[:, slv.get_var_idx(Pl)], label="Pl(pu)")
 #
 # plt.plot(t, y[:, slv.get_var_idx(Vline_from_12)], label="Vline_from (pu)")
 # plt.plot(t, y[:, slv.get_var_idx(Vline_to_11)], label="Vline_to (pu)")
