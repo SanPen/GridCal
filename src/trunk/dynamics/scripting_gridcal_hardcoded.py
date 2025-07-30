@@ -564,9 +564,9 @@ Qload_9 = Var("Qload_9")
 Pshunt_7 = Var("Pshunt_7")
 Qshunt_7 = Var("Qshunt_7")
 
-# Shunt 9
-Pshunt_9 = Var("Pshunt_9")
-Qshunt_9 = Var("Qshunt_9")
+# # Shunt 9
+# Pshunt_9 = Var("Pshunt_9")
+# Qshunt_9 = Var("Qshunt_9")
 
 # -----------------------------------------------------
 # Buses
@@ -619,7 +619,6 @@ bus5_block = Block(
         Vline_to_G1 - Vline_from_1,
         dline_to_G1 - dline_from_0,
         dline_to_G1 - dline_from_1
-
     ],
     algebraic_vars=[Pline_from_0, Pline_from_1, Pline_to_G1, Qline_from_0, Qline_from_1, Qline_to_G1]
 )
@@ -644,8 +643,8 @@ bus6_block = Block(
 
 bus7_block = Block(
     algebraic_eqs=[
-        - Pline_to_2 - Pline_to_3 - Pline_to_4 - Pline_from_5 - Pline_from_6 - Pshunt_7 + Pload_7,
-        - Qline_to_2 - Qline_to_3 - Qline_to_4 - Qline_from_5 - Qline_from_6 + Qshunt_7 + Qload_7,
+        - Pline_to_2 - Pline_to_3 - Pline_to_4 - Pline_from_5 - Pline_from_6 + Pload_7, #  + Pshunt_7
+        - Qline_to_2 - Qline_to_3 - Qline_to_4 - Qline_from_5 - Qline_from_6 + Qload_7, #  + Qshunt_7
         Vline_to_2 - Vline_from_5,
         Vline_to_2 - Vline_from_6,
         Vline_to_2 - Vline_to_3,
@@ -674,8 +673,8 @@ bus8_block = Block(
 
 bus9_block = Block(
     algebraic_eqs=[
-        - Pline_to_7 - Pline_to_8 - Pline_from_9 - Pline_from_10 - Pline_from_11 - Pshunt_9 + Pload_9,
-        - Qline_to_7 - Qline_to_8 - Qline_from_9 - Qline_from_10 - Qline_from_11 + Qshunt_9 + Qload_9,
+        - Pline_to_7 - Pline_to_8 - Pline_from_9 - Pline_from_10 - Pline_from_11 + Pload_9, #+ Pshunt_9
+        - Qline_to_7 - Qline_to_8 - Qline_from_9 - Qline_from_10 - Qline_from_11 + Qload_9, #+ Qshunt_9
         Vline_to_7 - Vline_from_9,
         Vline_to_7 - Vline_from_10,
         Vline_to_7 - Vline_from_11,
@@ -1097,44 +1096,44 @@ generator_block_4 = Block(
     parameters=[]
 )
 
-# ------
-# Shunt
-# ------
-g_s7 = Const(0.0)
-b_s7 = Const(2.0)
-g_s9 = Const(0.0)
-b_s9 = Const(3.5)
-Ps0_7 = Const(np.abs(v7)**2 * g_s7.value)
-Qs0_7 = Const(np.abs(v7)**2 * b_s7.value)
-Ps0_9 = Const(np.abs(v9)**2 * g_s9.value)
-Qs0_9 = Const(np.abs(v9)**2 * b_s9.value)
+# # ------
+# # Shunt
+# # ------
+# g_s7 = Const(0.0)
+# b_s7 = Const(2.0)
+# g_s9 = Const(0.0)
+# b_s9 = Const(3.5)
+# Ps0_7 = Const(np.abs(v7)**2 * g_s7.value)
+# Qs0_7 = Const(np.abs(v7)**2 * b_s7.value)
+# Ps0_9 = Const(np.abs(v9)**2 * g_s9.value)
+# Qs0_9 = Const(np.abs(v9)**2 * b_s9.value)
 
-shunt_7 = Block(
-    algebraic_eqs=[
-        Pshunt_7 - g_s7 * Vline_to_2 ** 2,
-        Qshunt_7 - b_s7 * Vline_to_2 ** 2
-    ],
-    algebraic_vars=[Pshunt_7, Qshunt_7],
-    parameters=[]
-)
+# shunt_7 = Block(
+#     algebraic_eqs=[
+#         Pshunt_7 - g_s7 * Vline_to_2 ** 2,
+#         Qshunt_7 - b_s7 * Vline_to_2 ** 2
+#     ],
+#     algebraic_vars=[Pshunt_7, Qshunt_7],
+#     parameters=[]
+# )
 
-shunt_9 = Block(
-    algebraic_eqs=[
-        Pshunt_9 - g_s9 * Vline_to_7 ** 2,
-        Qshunt_9 - b_s9 * Vline_to_7 ** 2
-    ],
-    algebraic_vars=[Pshunt_9, Qshunt_9],
-    parameters=[]
-)
+# shunt_9 = Block(
+#     algebraic_eqs=[
+#         Pshunt_9 - g_s9 * Vline_to_7 ** 2,
+#         Qshunt_9 - b_s9 * Vline_to_7 ** 2
+#     ],
+#     algebraic_vars=[Pshunt_9, Qshunt_9],
+#     parameters=[]
+# )
 
 # -----
 # Load
 # -----
 # Pl0_7 = Var('Pl0_7')
-Pl0_7 = Const(Sb7.real + Ps0_7)
-Ql0_7 = Const(Sb7.imag + Qs0_7)
-Pl0_9 = Const(Sb9.real + Ps0_9)
-Ql0_9 = Const(Sb9.imag + Qs0_9)
+Pl0_7 = Const(Sb7.real) #+ Ps0_7.value
+Ql0_7 = Const(Sb7.imag) #+ Qs0_7.value
+Pl0_9 = Const(Sb9.real) #+ Ps0_9.value
+Ql0_9 = Const(Sb9.imag) #+ Qs0_9.value
 
 load_7 = Block(
     algebraic_eqs=[
@@ -1161,7 +1160,11 @@ load_9 = Block(
 # System
 # ----------------------------------------------------------------------------------------------------------------------
 sys = Block(
-    children=[line_0_block, line_1_block, line_2_block, line_3_block, line_4_block, line_5_block, line_6_block, line_7_block, line_8_block, line_9_block, line_10_block, line_11_block, line_12_block, line_13_block, line_G1_block, line_G2_block, line_G3_block, line_G4_block, load_7, load_9, generator_block_1, generator_block_2, generator_block_3, generator_block_4, bus1_block, bus2_block, bus3_block, bus4_block, bus5_block, bus6_block, bus7_block, bus8_block, bus9_block, bus10_block, bus11_block, shunt_7, shunt_9],
+    children=[line_0_block, line_1_block, line_2_block, line_3_block, line_4_block, line_5_block, line_6_block, line_7_block, line_8_block, line_9_block, line_10_block, line_11_block, line_12_block, line_13_block, 
+              line_G1_block, line_G2_block, line_G3_block, line_G4_block, 
+              load_7, load_9, 
+              generator_block_1, generator_block_2, generator_block_3, generator_block_4, 
+              bus1_block, bus2_block, bus3_block, bus4_block, bus5_block, bus6_block, bus7_block, bus8_block, bus9_block, bus10_block, bus11_block], #shunt_7, shunt_9
     in_vars=[]
 )
 
@@ -1403,15 +1406,15 @@ vars_mapping = {
     Q_G4: Sb4.imag,
     et_4: 0.0,
 
-    Pload_7: Sb7.real + Ps0_7.value,
-    Qload_7: Sb7.imag + Qs0_7.value,
-    Pload_9: Sb9.real + Ps0_9.value,
-    Qload_9: Sb9.imag + Qs0_9.value,
+    Pload_7: Sb7.real, #+ Ps0_7.value
+    Qload_7: Sb7.imag, #+ Qs0_7.value
+    Pload_9: Sb9.real, #+ Ps0_9.value
+    Qload_9: Sb9.imag, #+ Qs0_9.value
 
-    Pshunt_7: Ps0_7.value,
-    Qshunt_7: Qs0_7.value,
-    Pshunt_9: Ps0_9.value, 
-    Qshunt_9: Qs0_9.value
+    # Pshunt_7: Ps0_7.value,
+    # Qshunt_7: Qs0_7.value,
+    # Pshunt_9: Ps0_9.value, 
+    # Qshunt_9: Qs0_9.value
 }
 
 
@@ -1472,16 +1475,24 @@ residuals = {
     "bus 5 Q":  - Qf0_0 - Qf0_1 - Qt0_G1,
     "bus 6 P":  - Pf0_2 - Pf0_3 - Pf0_4 - Pt0_G2 - Pt0_0 - Pt0_1,
     "bus 6 Q":  - Qf0_2 - Qf0_3 - Qf0_4 - Qt0_G2 - Qt0_0 - Qt0_1,
-    "bus 7 P":  - Pt0_2 - Pt0_3 - Pt0_4 - Pf0_5 - Pf0_6 + (Sb7.real + Ps0_7.value) + Ps0_7.value,
-    "bus 7 Q":  - Qt0_2 - Qt0_3 - Qt0_4 - Qf0_5 - Qf0_6 + (Sb7.imag + Qs0_7.value) + Qs0_7.value,
+    "bus 7 P":  - Pt0_2 - Pt0_3 - Pt0_4 - Pf0_5 - Pf0_6 + Sb7.real, #+ Ps0_7.value) + Ps0_7.value
+    "bus 7 Q":  - Qt0_2 - Qt0_3 - Qt0_4 - Qf0_5 - Qf0_6 + Sb7.imag, #+ Qs0_7.value) + Qs0_7.value
     "bus 8 P":  - Pt0_5 - Pt0_6 - Pf0_7 - Pf0_8,
     "bus 8 Q":  - Qt0_5 - Qt0_6 - Qf0_7 - Qf0_8,
-    "bus 9 P":  - Pt0_7 - Pt0_8 - Pf0_9 - Pf0_10 - Pf0_11 + (Sb9.real + Ps0_9.value) + Ps0_9.value,
-    "bus 9 Q":  - Qt0_7 - Qt0_8 - Qf0_9 - Qf0_10 - Qf0_11 + (Sb9.imag + Qs0_9.value) + Qs0_9.value,
+    "bus 9 P":  - Pt0_7 - Pt0_8 - Pf0_9 - Pf0_10 - Pf0_11 + Sb9.real, #+ Ps0_9.value) + Ps0_9.value,
+    "bus 9 Q":  - Qt0_7 - Qt0_8 - Qf0_9 - Qf0_10 - Qf0_11 + Sb9.imag, #+ Qs0_9.value) + Qs0_9.value,
     "bus 10 P": - Pt0_9 - Pt0_10 - Pt0_11 - Pf0_12 - Pf0_13 - Pt0_G4,
     "bus 10 Q": - Qt0_9 - Qt0_10 - Qt0_11 - Qf0_12 - Qf0_13 - Qt0_G4,
     "bus 11 P": - Pt0_12 - Pt0_13 - Pt0_G3,
-    "bus 11 Q": - Qt0_12 - Qt0_13 - Qt0_G3
+    "bus 11 Q": - Qt0_12 - Qt0_13 - Qt0_G3,
+    "load 7 P": Sb7.real - Pl0_7.value, #+ Ps0_7.value
+    "load 7 Q": Sb7.imag - Ql0_7.value, #+ Qs0_7.value
+    "load 9 P": Sb9.real - Pl0_9.value, #+ Ps0_9.value
+    "load 9 Q": Sb9.imag - Ql0_9.value, #+ Qs0_9.value
+    # "shunt 7 P": Ps0_7.value - g_s7.value * np.abs(v7) ** 2,
+    # "shunt 7 Q": Qs0_7.value - b_s7.value * np.abs(v7) ** 2,
+    # "shunt 9 P": Ps0_9.value - g_s9.value * np.abs(v9) ** 2,
+    # "shunt 9 Q": Qs0_9.value - b_s9.value * np.abs(v9) ** 2,
 }
 
 
