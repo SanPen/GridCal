@@ -243,7 +243,21 @@ def compute_current_loads(bus_idx: IntVec, bus_lookup: IntVec, V: CxVec, Istar: 
         b_connected = (Istar[bc] != zero_load)
         c_connected = (Istar[ca] != zero_load)
 
-        if delta and ab_connected:
+        if delta and ab_connected and bc_connected and ca_connected:
+            voltage_angle_ab = np.angle(V[a2] - V[b2])
+            voltage_angle_bc = np.angle(V[b2] - V[c2])
+            voltage_angle_ca = np.angle(V[c2] - V[a2])
+
+            I[a2] += -np.conj(Idelta[ab]) / (np.sqrt(3)) * 1 * np.exp(1j * voltage_angle_ab)
+            I[b2] += np.conj(Idelta[ab]) / (np.sqrt(3)) * 1 * np.exp(1j * voltage_angle_ab)
+
+            I[b2] += -np.conj(Idelta[bc]) / (np.sqrt(3)) * 1 * np.exp(1j * voltage_angle_bc)
+            I[c2] += np.conj(Idelta[bc]) / (np.sqrt(3)) * 1 * np.exp(1j * voltage_angle_bc)
+
+            I[c2] += -np.conj(Idelta[ca]) / (np.sqrt(3)) * 1 * np.exp(1j * voltage_angle_ca)
+            I[a2] += np.conj(Idelta[ca]) / (np.sqrt(3)) * 1 * np.exp(1j * voltage_angle_ca)
+
+        elif delta and ab_connected:
             voltage_angle = np.angle(V[a2] - V[b2])
             I[a2] += -np.conj(Idelta[ab]) / (np.sqrt(3)) * 1 * np.exp(1j * voltage_angle)
             I[b2] += np.conj(Idelta[ab]) / (np.sqrt(3)) * 1 * np.exp(1j * voltage_angle)
@@ -257,6 +271,14 @@ def compute_current_loads(bus_idx: IntVec, bus_lookup: IntVec, V: CxVec, Istar: 
             voltage_angle = np.angle(V[c2] - V[a2])
             I[c2] += -np.conj(Idelta[ca]) / (np.sqrt(3)) * 1 * np.exp(1j * voltage_angle)
             I[a2] += np.conj(Idelta[ca]) / (np.sqrt(3)) * 1 * np.exp(1j * voltage_angle)
+
+        elif star and a_connected and b_connected and c_connected:
+            voltage_angle_a = np.angle(V[a2])
+            voltage_angle_b = np.angle(V[b2])
+            voltage_angle_c = np.angle(V[c2])
+            I[a2] += -np.conj(Istar[ab]) * 1 * np.exp(1j * voltage_angle_a)
+            I[b2] += -np.conj(Istar[bc]) * 1 * np.exp(1j * voltage_angle_b)
+            I[c2] += -np.conj(Istar[ca]) * 1 * np.exp(1j * voltage_angle_c)
 
         elif star and a_connected:
             voltage_angle = np.angle(V[a2])

@@ -133,6 +133,26 @@ y_607 = np.array([
 """
 Loads
 """
+# Three-phase Star Impedance Load (Validated with OpenDSS)
+# load_634 = gce.Load(G1=0.160,
+#                     B1=0.110,
+#                     G2=0.120,
+#                     B2=0.090,
+#                     G3=0.120,
+#                     B3=0.090)
+# load_634.conn = ShuntConnectionType.GroundedStar
+# grid.add_load(bus=bus_634, api_obj=load_634)
+
+# Three-phase Star Current Load
+# load_634 = gce.Load(Ir1=0.160,
+#                     Ii1=0.110,
+#                     Ir2=0.120,
+#                     Ii2=0.090,
+#                     Ir3=0.120,
+#                     Ii3=0.090)
+# load_634.conn = ShuntConnectionType.GroundedStar
+# grid.add_load(bus=bus_634, api_obj=load_634)
+
 # Three-phase Star Power Load (13 Node Test Feeder)
 # load_634 = gce.Load(P1=0.160,
 #                     Q1=0.110,
@@ -141,6 +161,26 @@ Loads
 #                     P3=0.120,
 #                     Q3=0.090)
 # load_634.conn = ShuntConnectionType.GroundedStar
+# grid.add_load(bus=bus_634, api_obj=load_634)
+
+# Three-phase Delta Impedance Load
+# load_634 = gce.Load(G1=0.160,
+#                     B1=0.110,
+#                     G2=0.120,
+#                     B2=0.090,
+#                     G3=0.120,
+#                     B3=0.090)
+# load_634.conn = ShuntConnectionType.Delta
+# grid.add_load(bus=bus_634, api_obj=load_634)
+
+# Three-phase Delta Current Load
+# load_634 = gce.Load(Ir1=0.160,
+#                     Ii1=0.110,
+#                     Ir2=0.120,
+#                     Ii2=0.090,
+#                     Ir3=0.120,
+#                     Ii3=0.090)
+# load_634.conn = ShuntConnectionType.Delta
 # grid.add_load(bus=bus_634, api_obj=load_634)
 
 # Three-phase Delta Power Load (13 Node Test Feeder)
@@ -159,7 +199,7 @@ Loads
 #                     G2=0.0,
 #                     B2=0.0,
 #                     G3=0.160,
-#                     B3=-0.110)
+#                     B3=0.110)
 # load_634.conn = ShuntConnectionType.Delta
 # grid.add_load(bus=bus_634, api_obj=load_634)
 
@@ -185,7 +225,7 @@ Loads
 
 # Single-phase Star Impedance Load (13 Node Test Feeder)
 # load_634 = gce.Load(G1=0.160,
-#                     B1=-0.110,
+#                     B1=0.110,
 #                     G2=0.0,
 #                     B2=0.0,
 #                     G3=0.0,
@@ -495,7 +535,7 @@ U_B = abs(res.V)[1::3]
 U_C = abs(res.V)[2::3]
 
 def format_column(mags):
-    return [f"{m:.4f}" for m in mags]
+    return [f"{m:.5f}" for m in mags]
 
 df = pd.DataFrame({
     'Buses': bus_numbers,
