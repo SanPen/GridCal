@@ -295,15 +295,23 @@ def Jacobian_SE(Ybus, Yf, Yt, V, f, t, inputs, pvpq):
 
 
 def solve_se_lm(nc: NumericalCircuit,
-                Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
-                F: IntVec, T: IntVec, se_input: StateEstimationInput,
-                vd: IntVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
+                Ybus: CscMat,
+                Yf: CscMat,
+                Yt: CscMat,
+                Yshunt_bus: CxVec,
+                F: IntVec,
+                T: IntVec,
+                se_input: StateEstimationInput,
+                vd: IntVec,
+                pq: IntVec,
+                pv: IntVec) -> NumericPowerFlowResults:
     """
     Solve the state estimation problem using the Levenberg-Marquadt method
     :param nc: instance of NumericalCircuit
     :param Ybus: Admittance matrix
     :param Yf: Admittance matrix of the from Branches
     :param Yt: Admittance matrix of the to Branches
+    :param Yshunt_bus: Array of shunt admittances
     :param F: array with the from bus indices of all the Branches
     :param T: array with the to bus indices of all the Branches
     :param se_input: state estimation input instance (contains the measurements)

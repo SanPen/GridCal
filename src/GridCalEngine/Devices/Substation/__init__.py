@@ -7,3 +7,4 @@ from GridCalEngine.Devices.Substation.bus import Bus, BusMode
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.busbar import BusBar
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
+from GridCalEngine.Devices.Substation.voltage_level_template import VoltageLevelTemplate

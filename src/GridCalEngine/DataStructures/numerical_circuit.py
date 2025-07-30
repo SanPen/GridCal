@@ -53,222 +53,6 @@ ALL_STRUCTS = Union[
 ]
 
 
-@nb.njit(cache=True)
-def build_reducible_branches_C_coo(F: IntVec, T: IntVec, reducible: IntVec, active: IntVec):
-    """
-    Build the COO coordinates of the C matrix
-    :param F: branches From indices
-    :param T: branches To indices
-    :param reducible: branches reducible array
-    :param active: branches active array
-    :return: i, j, data, n_red
-    """
-
-    """
-    
-    C = sp.lil_matrix((self.passive_branch_data.nelm, self.bus_data.nbus))
-        n_red = 0
-        for k in range(self.passive_branch_data.nelm):
-            if self.passive_branch_data.reducible[k] and self.passive_branch_data.active[k]:
-                f = self.passive_branch_data.F[k]
-                t = self.passive_branch_data.T[k]
-                C[k, f] = 1
-                C[k, t] = 1
-                n_red += 1 
-    """
-    nelm = len(F)
-    i = np.empty(nelm * 2, dtype=np.int64)
-    j = np.empty(nelm * 2, dtype=np.int64)
-    data = np.empty(nelm * 2, dtype=np.int64)
-    ii = 0
-    n_red = 0
-    for k in range(nelm):
-        if reducible[k] and active[k]:
-            # C[k, f] = 1
-            i[ii] = k
-            j[ii] = F[k]
-            data[ii] = 1
-            ii += 1
-
-            # C[k, t] = 1
-            i[ii] = k
-            j[ii] = T[k]
-            data[ii] = 1
-            ii += 1
-
-            n_red += 1
-
-    return i[:ii], j[:ii], data[:ii], n_red
-
-
-@nb.njit(cache=True)
-def build_branches_C_coo_2(bus_active: IntVec,
-                           F1: IntVec, T1: IntVec, active1: BoolVec,
-                           F2: IntVec, T2: IntVec, active2: BoolVec):
-    """
-    Build the COO coordinates of the C matrix
-    :param bus_active: array of bus active values
-    :param F1: Passive branches from bus indices array
-    :param T1: Passive branches to bus indices array
-    :param active1: Passive branches active array
-    :param F2: VSC from buses indices array
-    :param T2: VSC to buses indices array
-    :param active2: VSC active array
-    :return:
-    """
-
-    """
-
-    C = sp.lil_matrix((n_elm, self.bus_data.nbus), dtype=int)
-        for struct in structs:
-            for k in range(struct.nelm):
-                f = struct.F[k]
-                t = struct.T[k]
-                if struct.active[k] and self.bus_data.active[f] and self.bus_data.active[t]:
-                    C[k, f] = 1
-                    C[k, t] = 1
-    """
-    nelm = len(F1) + len(F2)
-    i = np.empty(nelm * 2, dtype=np.int64)
-    j = np.empty(nelm * 2, dtype=np.int64)
-    data = np.empty(nelm * 2, dtype=np.int64)
-
-    ii = 0
-    br_count = 0
-
-    for k in range(len(F1)):
-        if active1[k]:
-            f = F1[k]
-            t = T1[k]
-            if bus_active[f] and bus_active[t]:
-                # C[k, f] = 1
-                i[ii] = br_count
-                j[ii] = f
-                data[ii] = 1
-                ii += 1
-
-                # C[k, t] = 1
-                i[ii] = br_count
-                j[ii] = t
-                data[ii] = 1
-                ii += 1
-        br_count += 1
-
-    for k in range(len(F2)):
-        if active2[k]:
-            f = F2[k]
-            t = T2[k]
-            if bus_active[f] and bus_active[t]:
-                # C[k, f] = 1
-                i[ii] = br_count
-                j[ii] = f
-                data[ii] = 1
-                ii += 1
-
-                # C[k, t] = 1
-                i[ii] = br_count
-                j[ii] = t
-                data[ii] = 1
-                ii += 1
-        br_count += 1
-
-    return i[:ii], j[:ii], data[:ii], nelm
-
-
-@nb.njit(cache=True)
-def build_branches_C_coo_3(bus_active: IntVec,
-                           F1: IntVec, T1: IntVec, active1: BoolVec,
-                           F2: IntVec, T2: IntVec, active2: BoolVec,
-                           F3: IntVec, T3: IntVec, active3: BoolVec):
-    """
-    Build the COO coordinates of the C matrix
-    :param bus_active: array of bus active values
-    :param F1: Passive branches from bus indices array
-    :param T1: Passive branches to bus indices array
-    :param active1: Passive branches active array
-    :param F2: VSC from buses indices array
-    :param T2: VSC to buses indices array
-    :param active2: VSC active array
-    :param F3: HVDC from bus indices array
-    :param T3: HVDC to bus indices array
-    :param active3: HVDC active array
-    :return: i, j, data, nelm to build C(nelm, nbus)
-    """
-
-    """
-
-    C = sp.lil_matrix((n_elm, self.bus_data.nbus), dtype=int)
-        for struct in structs:
-            for k in range(struct.nelm):
-                f = struct.F[k]
-                t = struct.T[k]
-                if struct.active[k] and self.bus_data.active[f] and self.bus_data.active[t]:
-                    C[k, f] = 1
-                    C[k, t] = 1
-    """
-    nelm = len(F1) + len(F2) + len(F3)
-    i = np.empty(nelm * 2, dtype=np.int64)
-    j = np.empty(nelm * 2, dtype=np.int64)
-    data = np.empty(nelm * 2, dtype=np.int64)
-
-    ii = 0
-    br_count = 0
-
-    for k in range(len(F1)):
-        if active1[k]:
-            f = F1[k]
-            t = T1[k]
-            if bus_active[f] and bus_active[t]:
-                # C[k, f] = 1
-                i[ii] = br_count
-                j[ii] = f
-                data[ii] = 1
-                ii += 1
-
-                # C[k, t] = 1
-                i[ii] = br_count
-                j[ii] = t
-                data[ii] = 1
-                ii += 1
-        br_count += 1
-
-    for k in range(len(F2)):
-        if active2[k]:
-            f = F2[k]
-            t = T2[k]
-            if bus_active[f] and bus_active[t]:
-                # C[k, f] = 1
-                i[ii] = br_count
-                j[ii] = f
-                data[ii] = 1
-                ii += 1
-
-                # C[k, t] = 1
-                i[ii] = br_count
-                j[ii] = t
-                data[ii] = 1
-                ii += 1
-        br_count += 1
-
-    for k in range(len(F3)):
-        if active3[k]:
-            f = F3[k]
-            t = T3[k]
-            if bus_active[f] and bus_active[t]:
-                # C[k, f] = 1
-                i[ii] = br_count
-                j[ii] = f
-                data[ii] = 1
-                ii += 1
-
-                # C[k, t] = 1
-                i[ii] = br_count
-                j[ii] = t
-                data[ii] = 1
-                ii += 1
-        br_count += 1
-
-    return i[:ii], j[:ii], data[:ii], nelm
 
 
 @nb.njit(cache=True)
@@ -1539,14 +1323,14 @@ class NumericalCircuit:
         """
 
         if consider_hvdc_as_island_links:
-            i, j, data, n_elm = build_branches_C_coo_3(
+            i, j, data, n_elm = tp.build_branches_C_coo_3(
                 bus_active=self.bus_data.active,
                 F1=self.passive_branch_data.F, T1=self.passive_branch_data.T, active1=self.passive_branch_data.active,
                 F2=self.vsc_data.F, T2=self.vsc_data.T, active2=self.vsc_data.active,
                 F3=self.hvdc_data.F, T3=self.hvdc_data.T, active3=self.hvdc_data.active,
             )
         else:
-            i, j, data, n_elm = build_branches_C_coo_2(
+            i, j, data, n_elm = tp.build_branches_C_coo_2(
                 bus_active=self.bus_data.active,
                 F1=self.passive_branch_data.F, T1=self.passive_branch_data.T, active1=self.passive_branch_data.active,
                 F2=self.vsc_data.F, T2=self.vsc_data.T, active2=self.vsc_data.active,
@@ -1561,7 +1345,7 @@ class NumericalCircuit:
         Process the reducible branches (i.e. reduce branches like the switches) in-place
         :return: Number of reduced branches
         """
-        i, j, data, n_red = build_reducible_branches_C_coo(
+        i, j, data, n_red = tp.build_reducible_branches_C_coo(
             F=self.passive_branch_data.F,
             T=self.passive_branch_data.T,
             reducible=self.passive_branch_data.reducible,

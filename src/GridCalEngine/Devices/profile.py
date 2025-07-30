@@ -385,9 +385,12 @@ class Profile:
         else:
 
             if self._dense_array is None:
-                # WTF, initialize sparse
+                # Signal of a bug: initialize sparse
                 self._is_sparse = True
                 self._sparse_array = SparseArray(data_type=self.dtype, default_value=self.default_value)
+
+                # NOTE: This may appear because you declared a profile but
+                #       did not associate it with the snapshot property when registering
                 print("Initializing sparse when querying, this signals a mis initialization")
                 return self.default_value
             else:

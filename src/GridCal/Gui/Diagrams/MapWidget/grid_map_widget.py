@@ -961,41 +961,25 @@ class GridMapWidget(BaseDiagramWidget):
         :return:
         """
         kv = self.gui.get_default_voltage()
-        dlg = SubstationDesigner(grid=self.circuit, default_voltage=kv)
+        dlg = SubstationDesigner(grid=self.circuit, default_voltage=kv, lat=lat, lon=lon)
         dlg.exec()
         if dlg.was_ok():
 
-            # create the SE
-            se_object = Substation(name=dlg.get_name(),
-                                   code=dlg.get_code(),
-                                   latitude=lat,
-                                   longitude=lon)
+            se_object, voltage_levels = substation_wizards.create_substation(
+                grid=self.circuit,
+                se_name=dlg.get_name(),
+                se_code=dlg.get_code(),
+                lat=dlg.get_latitude(),
+                lon=dlg.get_longitude(),
+                vl_templates=dlg.get_voltage_levels()
+            )
 
-            self.circuit.add_substation(obj=se_object)
+            # create SE graphic
             substation_graphics = self.add_api_substation(api_object=se_object, lat=lat, lon=lon)
 
-            offset_x = 0
-            offset_y = 0
-            for vl_template in dlg.get_voltage_levels():
-
-                if vl_template.vl_type == SubstationTypes.SingleBar:
-                    vl, offset_inc_x, offset_inc_y = substation_wizards.create_single_bar(
-                        name=f"{se_object.name}-@{vl_template.name} @{vl_template.voltage} kV VL",
-                        grid=self.circuit,
-                        n_lines=vl_template.n_line_positions,
-                        n_trafos=vl_template.n_transformer_positions,
-                        v_nom=vl_template.voltage,
-                        substation=se_object,
-                        # country: Country = None,
-                        include_disconnectors=vl_template.add_disconnectors,
-                        offset_x=offset_x,
-                        offset_y=offset_y,
-                    )
-                    offset_x += offset_inc_x
-                    offset_y += offset_inc_y
-
-                    # add the vl graphics
-                    self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+            # add voltage level graphics
+            for vl in voltage_levels:
+                self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
 
             # sort voltage levels
             substation_graphics.sort_voltage_levels()
