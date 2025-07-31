@@ -133,7 +133,7 @@ y_607 = np.array([
 """
 Loads
 """
-# Three-phase Star Impedance Load (Validated with OpenDSS)
+# Three-phase Star Impedance Load (NO Validated with OpenDSS)
 # load_634 = gce.Load(G1=0.160,
 #                     B1=0.110,
 #                     G2=0.120,
@@ -163,7 +163,7 @@ Loads
 # load_634.conn = ShuntConnectionType.GroundedStar
 # grid.add_load(bus=bus_634, api_obj=load_634)
 
-# Three-phase Delta Impedance Load
+# Three-phase Delta Impedance Load (Validated with OpenDSS)
 # load_634 = gce.Load(G1=0.160,
 #                     B1=0.110,
 #                     G2=0.120,

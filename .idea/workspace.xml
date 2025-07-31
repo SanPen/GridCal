@@ -28,13 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Three-phase current loads validated for both star and delta connections.">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Load and shunt admittance vector transformed to a matrix. Shunt elements seems to be working, but loads doesn't.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/load_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/load_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/shunt_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/shunt_data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case OpenDSS.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case OpenDSS.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -193,6 +190,7 @@
     "Python.impedance_delta.executor": "Run",
     "Python.multi_circuit.executor": "Debug",
     "Python.new_circuit_objects.executor": "Run",
+    "Python.pf_basic_formulation_3ph.executor": "Debug",
     "Python.profile.executor": "Debug",
     "Python.pymoo_example.executor": "Debug",
     "Python.python_console.executor": "Run",
@@ -1897,7 +1895,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="595" />
+    <option name="localTasksCounter" value="596" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1943,7 +1941,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Handle that requests may fail loading" />
     <MESSAGE value="Refactored the transformers short-circuit definition to system per-unit" />
     <MESSAGE value="Improved docs" />
     <MESSAGE value="1e6 factor update" />
@@ -1968,7 +1965,8 @@
     <MESSAGE value="Adding three-phase loads defined as constant impedance" />
     <MESSAGE value="Building the 13 Node Test Feeder in OpenDSS and corrected the negative sign of the susceptance B in the definition of impedance loads." />
     <MESSAGE value="Three-phase current loads validated for both star and delta connections." />
-    <option name="LAST_COMMIT_MESSAGE" value="Three-phase current loads validated for both star and delta connections." />
+    <MESSAGE value="Load and shunt admittance vector transformed to a matrix. Shunt elements seems to be working, but loads doesn't." />
+    <option name="LAST_COMMIT_MESSAGE" value="Load and shunt admittance vector transformed to a matrix. Shunt elements seems to be working, but loads doesn't." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2298,9 +2296,9 @@
           <option name="timeStamp" value="2894" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py</url>
-          <line>764</line>
-          <option name="timeStamp" value="2895" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
+          <line>157</line>
+          <option name="timeStamp" value="2903" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -2314,6 +2312,7 @@
     <watches-manager>
       <configuration name="PythonConfigurationType">
         <watch expression="Ybuses.to_array()" language="Python" />
+        <watch expression="nc" />
       </configuration>
     </watches-manager>
   </component>
