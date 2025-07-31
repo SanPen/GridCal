@@ -200,7 +200,6 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                     opf_options=self.options,
                                     pf_options=self.pf_options,
                                     t_idx=None,
-                                    pf_init=self.options.ips_init_with_pf,
                                     logger=self.logger)
             Sbase = self.grid.Sbase
             self.results.voltage = res.V
