@@ -134,222 +134,55 @@ y_607 = np.array([
 Loads
 """
 # Three-phase Star Impedance Load (Validated with OpenDSS)
-# load_634 = gce.Load(G1=0.160,
-#                     B1=0.110,
-#                     G2=0.120,
-#                     B2=0.090,
-#                     G3=0.120,
-#                     B3=0.090)
-# load_634.conn = ShuntConnectionType.GroundedStar
-# grid.add_load(bus=bus_634, api_obj=load_634)
+load_634 = gce.Load(G1=0.160,
+                    B1=0.110,
+                    G2=0.120,
+                    B2=0.090,
+                    G3=0.120,
+                    B3=0.090)
+load_634.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus_634, api_obj=load_634)
 
 # Three-phase Star Current Load (Validated with OpenDSS)
-load_634 = gce.Load(Ir1=0.160,
+load_633 = gce.Load(Ir1=0.160,
                     Ii1=0.110,
                     Ir2=0.120,
                     Ii2=0.090,
                     Ir3=0.120,
                     Ii3=0.090)
-load_634.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_634, api_obj=load_634)
-
-# Three-phase Star Power Load (13 Node Test Feeder)
-# load_634 = gce.Load(P1=0.160,
-#                     Q1=0.110,
-#                     P2=0.120,
-#                     Q2=0.090,
-#                     P3=0.120,
-#                     Q3=0.090)
-# load_634.conn = ShuntConnectionType.GroundedStar
-# grid.add_load(bus=bus_634, api_obj=load_634)
+load_633.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus_633, api_obj=load_633)
 
 # Three-phase Delta Impedance Load (Validated with OpenDSS)
-# load_634 = gce.Load(G1=0.160,
-#                     B1=0.110,
-#                     G2=0.120,
-#                     B2=0.090,
-#                     G3=0.120,
-#                     B3=0.090)
-# load_634.conn = ShuntConnectionType.Delta
-# grid.add_load(bus=bus_634, api_obj=load_634)
-
-# Three-phase Delta Current Load (Validated with OpenDSS)
-# load_634 = gce.Load(Ir1=0.160,
-#                     Ii1=0.110,
-#                     Ir2=0.120,
-#                     Ii2=0.090,
-#                     Ir3=0.120,
-#                     Ii3=0.090)
-# load_634.conn = ShuntConnectionType.Delta
-# grid.add_load(bus=bus_634, api_obj=load_634)
-
-# Three-phase Delta Power Load (13 Node Test Feeder)
-# load_634 = gce.Load(P1=0.160,
-#                     Q1=0.110,
-#                     P2=0.120,
-#                     Q2=0.090,
-#                     P3=0.120,
-#                     Q3=0.090)
-# load_634.conn = ShuntConnectionType.Delta
-# grid.add_load(bus=bus_634, api_obj=load_634)
-
-# Two-phase Delta Impedance Load (13 Node Test Feeder)
-# load_634 = gce.Load(G1=0.0,
-#                     B1=0.0,
-#                     G2=0.0,
-#                     B2=0.0,
-#                     G3=0.160,
-#                     B3=0.110)
-# load_634.conn = ShuntConnectionType.Delta
-# grid.add_load(bus=bus_634, api_obj=load_634)
-
-# Two-phase Delta Current Load (13 Node Test Feeder)
-# load_634 = gce.Load(Ir1=0.160,
-#                     Ii1=0.110,
-#                     Ir2=0.0,
-#                     Ii2=0.0,
-#                     Ir3=0.0,
-#                     Ii3=0.0)
-# load_634.conn = ShuntConnectionType.Delta
-# grid.add_load(bus=bus_634, api_obj=load_634)
-
-# Two-phase Delta Power Load (Validated with OpenDSS)
-# load_634 = gce.Load(P1=0.0,
-#                     Q1=0.0,
-#                     P2=0.0,
-#                     Q2=0.0,
-#                     P3=0.160,
-#                     Q3=0.110)
-# load_634.conn = ShuntConnectionType.Delta
-# grid.add_load(bus=bus_634, api_obj=load_634)
-
-# Single-phase Star Impedance Load (13 Node Test Feeder)
-# load_634 = gce.Load(G1=0.160,
-#                     B1=0.110,
-#                     G2=0.0,
-#                     B2=0.0,
-#                     G3=0.0,
-#                     B3=0.0)
-# load_634.conn = ShuntConnectionType.GroundedStar
-# grid.add_load(bus=bus_634, api_obj=load_634)
-
-# Single-phase Star Current Load (13 Node Test Feeder)
-# load_634 = gce.Load(Ir1=0.160,
-#                     Ii1=0.110,
-#                     Ir2=0.0,
-#                     Ii2=0.0,
-#                     Ir3=0.0,
-#                     Ii3=0.0)
-# load_634.conn = ShuntConnectionType.GroundedStar
-# grid.add_load(bus=bus_634, api_obj=load_634)
-
-# Single-phase Star Power Load (13 Node Test Feeder)
-# load_634 = gce.Load(P1=0.160,
-#                     Q1=0.110,
-#                     P2=0.0,
-#                     Q2=0.0,
-#                     P3=0.0,
-#                     Q3=0.0)
-# load_634.conn = ShuntConnectionType.GroundedStar
-# grid.add_load(bus=bus_634, api_obj=load_634)
-"""
-Loads
-"""
-load_645 = gce.Load(P1=0.0,
-                    Q1=0.0,
-                    P2=0.170,
-                    Q2=0.125,
-                    P3=0.0,
-                    Q3=0.0)
-load_645.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_645, api_obj=load_645)
-
-load_646 = gce.Load(G1=0.0,
-                    B1=0.0,
-                    G2=0.230,
-                    B2=0.132,
-                    G3=0.0,
-                    B3=0.0)
-load_646.conn = ShuntConnectionType.Delta
-grid.add_load(bus=bus_646, api_obj=load_646)
-
-load_652 = gce.Load(G1=0.128,
-                    B1=0.086,
-                    G2=0.0,
-                    B2=0.0,
-                    G3=0.0,
-                    B3=0.0)
-load_652.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_652, api_obj=load_652)
-
-load_671 = gce.Load(P1=0.385,
-                    Q1=0.220,
-                    P2=0.385,
-                    Q2=0.220,
-                    P3=0.385,
-                    Q3=0.220)
-load_671.conn = ShuntConnectionType.Delta
-grid.add_load(bus=bus_671, api_obj=load_671)
-
-load_671_692 = gce.Load(Ir1=0.0,
-                        Ii1=0.0,
-                        Ir2=0.0,
-                        Ii2=0.0,
-                        Ir3=0.170,
-                        Ii3=0.151)
-load_671_692.conn = ShuntConnectionType.Delta
-grid.add_load(bus=bus_671, api_obj=load_671_692)
-
-load_611 = gce.Load(Ir1=0.0,
-                    Ii1=0.0,
-                    Ir2=0.0,
-                    Ii2=0.0,
-                    Ir3=0.170,
-                    Ii3=0.080)
-load_611.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_611, api_obj=load_611)
-
-load_632_distrib = gce.Load(P1=0.017/2,
-                            Q1=0.010/2,
-                            P2=0.066/2,
-                            Q2=0.038/2,
-                            P3=0.117/2,
-                            Q3=0.068/2)
-load_632_distrib.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_632, api_obj=load_632_distrib)
-
-load_671_distrib = gce.Load(P1=0.017/2,
-                            Q1=0.010/2,
-                            P2=0.066/2,
-                            Q2=0.038/2,
-                            P3=0.117/2,
-                            Q3=0.068/2)
-load_671_distrib.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_671, api_obj=load_671_distrib)
-
-load_675 = gce.Load(P1=0.485,
-                    Q1=0.190,
-                    P2=0.068,
-                    Q2=0.060,
-                    P3=0.290,
-                    Q3=0.212)
-load_675.conn = ShuntConnectionType.GroundedStar
+load_675 = gce.Load(G1=0.160,
+                    B1=0.110,
+                    G2=0.120,
+                    B2=0.090,
+                    G3=0.120,
+                    B3=0.090)
+load_675.conn = ShuntConnectionType.Delta
 grid.add_load(bus=bus_675, api_obj=load_675)
 
-"""
-Capacitors
-"""
-cap_675 = gce.Shunt(B1=0.2,
-                    B2=0.2,
-                    B3=0.2)
-cap_675.conn = ShuntConnectionType.GroundedStar
-grid.add_shunt(bus=bus_675, api_obj=cap_675)
+# Three-phase Delta Current Load (Validated with OpenDSS)
+load_680 = gce.Load(Ir1=0.160,
+                    Ii1=0.110,
+                    Ir2=0.120,
+                    Ii2=0.090,
+                    Ir3=0.120,
+                    Ii3=0.090)
+load_680.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus_680, api_obj=load_680)
 
-cap_611 = gce.Shunt(B1=0.0,
-                    B2=0.0,
-                    B3=0.1)
-cap_611.conn = ShuntConnectionType.GroundedStar
-grid.add_shunt(bus=bus_611, api_obj=cap_611)
+
+# Two-phase Delta Power Load (Validated with OpenDSS)
+load_684 = gce.Load(P1=0.0,
+                    Q1=0.0,
+                    P2=0.0,
+                    Q2=0.0,
+                    P3=0.160,
+                    Q3=0.110)
+load_684.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus_684, api_obj=load_684)
 
 """
 Line Configurations
@@ -526,6 +359,10 @@ V0[0] = 1.0210 * np.exp(1j * (-2.49 * np.pi / 180))
 V0[1] = 1.0420 * np.exp(1j * (-121.72 * np.pi / 180))
 V0[2] = 1.0174 * np.exp(1j * (117.83 * np.pi / 180))
 res = power_flow_3ph(grid, V0_3ph=V0)
+
+print(abs(res.V))
+
+print(np.angle(res.V)*(180/np.pi))
 
 bus_numbers = [632, 633, 634, 645, 646, 652, 671, 675, 611, 680, 684]
 
