@@ -131,76 +131,6 @@ y_607 = np.array([
 ], dtype=complex) / 10**6 / 1.60934
 
 """
-Loads
-"""
-# Three-phase Star Impedance Load (Validated with OpenDSS)
-load_634 = gce.Load(G1=0.160,
-                    B1=0.110,
-                    G2=0.120,
-                    B2=0.090,
-                    G3=0.120,
-                    B3=0.090)
-load_634.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_634, api_obj=load_634)
-
-# Three-phase Star Current Load (Validated with OpenDSS)
-load_633 = gce.Load(Ir1=0.160,
-                    Ii1=0.110,
-                    Ir2=0.120,
-                    Ii2=0.090,
-                    Ir3=0.120,
-                    Ii3=0.090)
-load_633.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_633, api_obj=load_633)
-
-# Three-phase Delta Impedance Load (Validated with OpenDSS)
-load_675 = gce.Load(G1=0.160,
-                    B1=0.110,
-                    G2=0.120,
-                    B2=0.090,
-                    G3=0.120,
-                    B3=0.090)
-load_675.conn = ShuntConnectionType.Delta
-grid.add_load(bus=bus_675, api_obj=load_675)
-
-# Three-phase Delta Current Load (Validated with OpenDSS)
-load_680 = gce.Load(Ir1=0.160,
-                    Ii1=0.110,
-                    Ir2=0.120,
-                    Ii2=0.090,
-                    Ir3=0.120,
-                    Ii3=0.090)
-load_680.conn = ShuntConnectionType.Delta
-grid.add_load(bus=bus_680, api_obj=load_680)
-
-# Two-phase Delta Power Load (Validated with OpenDSS)
-load_684 = gce.Load(P1=0.0,
-                    Q1=0.0,
-                    P2=0.0,
-                    Q2=0.0,
-                    P3=0.160,
-                    Q3=0.110)
-load_684.conn = ShuntConnectionType.Delta
-grid.add_load(bus=bus_684, api_obj=load_684)
-
-"""
-Capacitors
-"""
-# Three-phase Delta (Validated with OpenDSS)
-cap_671 = gce.Shunt(B1=0.2,
-                    B2=0.2,
-                    B3=0.2)
-cap_671.conn = ShuntConnectionType.Delta
-grid.add_shunt(bus=bus_671, api_obj=cap_671)
-
-# Two-phase Delta (Validated with OpenDSS)
-cap_646 = gce.Shunt(B1=0.0,
-                    B2=0.2,
-                    B3=0.0)
-cap_646.conn = ShuntConnectionType.Delta
-grid.add_shunt(bus=bus_646, api_obj=cap_646)
-
-"""
 Line Configurations
 """
 config_601 = gce.create_known_abc_overhead_template(name='Config. 601',
@@ -338,6 +268,37 @@ line_671_675 = gce.Line(bus_from=bus_671,
 line_671_675.apply_template(config_606, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_671_675)
 
+"""
+Capacitors
+"""
+# Three-phase Star
+# cap_675 = gce.Shunt(B1=0.2,
+#                     B2=0.2,
+#                     B3=0.2)
+# cap_675.conn = ShuntConnectionType.GroundedStar
+# grid.add_shunt(bus=bus_675, api_obj=cap_675)
+
+# Three-phase Delta
+# cap_675 = gce.Shunt(B1=0.2,
+#                     B2=0.2,
+#                     B3=0.2)
+# cap_675.conn = ShuntConnectionType.Delta
+# grid.add_shunt(bus=bus_675, api_obj=cap_675)
+
+# Two-phase Delta
+cap_675 = gce.Shunt(B1=0.0,
+                    B2=0.2,
+                    B3=0.0)
+cap_675.conn = ShuntConnectionType.Delta
+grid.add_shunt(bus=bus_675, api_obj=cap_675)
+
+# Single-phase Star
+# cap_675 = gce.Shunt(B1=0.0,
+#                     B2=0.0,
+#                     B3=0.2)
+# cap_675.conn = ShuntConnectionType.GroundedStar
+# grid.add_shunt(bus=bus_675, api_obj=cap_675)
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Run power flow
 # ----------------------------------------------------------------------------------------------------------------------
@@ -376,10 +337,6 @@ V0[1] = 1.0420 * np.exp(1j * (-121.72 * np.pi / 180))
 V0[2] = 1.0174 * np.exp(1j * (117.83 * np.pi / 180))
 res = power_flow_3ph(grid, V0_3ph=V0)
 
-print(np.round(np.abs(res.V), 4))
-
-print(np.round(np.angle(res.V)*(180/np.pi), 2))
-
 bus_numbers = [632, 633, 634, 645, 646, 652, 671, 675, 611, 680, 684]
 
 # Separar magnitudes y ángulos por fases
@@ -388,7 +345,7 @@ U_B = abs(res.V)[1::3]
 U_C = abs(res.V)[2::3]
 
 def format_column(mags):
-    return [f"{m:.5f}" for m in mags]
+    return [f"{m:.4f}" for m in mags]
 
 df = pd.DataFrame({
     'Buses': bus_numbers,

@@ -445,11 +445,15 @@ def test_ieee_13_bus_feeder_modified():
     """
     This test builds a modified version of the IEEE 13-Bus Test Feeder and compares the obtained results with the
     reference values. In this case, it includes only the load types that doesn't appear in the original test case:
+
     - Three-phase Star Impedance Load
     - Three-phase Star Current Load
     - Three-phase Delta Impedance Load
     - Three-phase Delta Current Load
     - Two-phase Delta Power Load
+
+    The results have been validated using the software OpenDSS.
+
     :return:
     """
     logger = gce.Logger()
@@ -630,7 +634,19 @@ def test_ieee_13_bus_feeder_modified():
     """
     Capacitors
     """
+    # Three-phase Delta (Validated with OpenDSS)
+    cap_671 = gce.Shunt(B1=0.2,
+                        B2=0.2,
+                        B3=0.2)
+    cap_671.conn = ShuntConnectionType.Delta
+    grid.add_shunt(bus=bus_671, api_obj=cap_671)
 
+    # Two-phase Delta (Validated with OpenDSS)
+    cap_646 = gce.Shunt(B1=0.0,
+                        B2=0.2,
+                        B3=0.0)
+    cap_646.conn = ShuntConnectionType.Delta
+    grid.add_shunt(bus=bus_646, api_obj=cap_646)
 
     """
     Line Configurations
@@ -788,14 +804,13 @@ def test_ieee_13_bus_feeder_modified():
     print(U_obtained)
 
     U_reference = np.array(
-        [1.021, 1.042, 1.0174, 1.01502324, 1.03799022, 1.01227952, 0.99139859, 1.01888097, 0.99364361, 0.0, 1.04200006,
-         1.01740005, 0.0, 1.04200007, 1.01740006, 1.00390444, 0.0, 0.0, 1.0053238, 1.03211383, 1.00456189, 1.00346522,
-         1.03036477, 1.0029699, 0.0, 0.0, 1.00325304, 1.00255383, 1.02950183, 1.00181414, 1.00390391, 0.0, 1.00325303])
+        [1.021, 1.042, 1.0174, 1.015, 1.038, 1.0123, 0.9914, 1.0189, 0.9936, 0.0, 1.0446, 1.0178, 0.0, 1.0462, 1.0181,
+         1.0113, 0.0, 0.0, 1.0127, 1.0403, 1.0129, 1.0109, 1.0385, 1.0113, 0.0, 0.0, 1.0116, 1.01, 1.0376, 1.0101,
+         1.0113, 0.0, 1.0116])
     angle_reference = np.array(
-        [-2.49, -121.72, 117.83, -2.61504779, -121.81550349, 117.81786637, -3.28325185, -122.29130758, 117.34206227,
-         0.0, -121.72000394, 117.82999702, 0.0, -121.72000459, 117.82999653, -2.91415677, 0.0, 0.0, -2.95297149,
-         -122.25138963, 117.17868545, -2.96532963, -122.24873431, 117.16378601, 0.0, 0.0, 117.12868205, -3.06097106,
-         -122.37755996, 117.07613435, -2.91407819, 0.0, 117.1286826 ])
+        [-2.49, -121.72, 117.83, -2.62, -121.82, 117.82, -3.28, -122.29, 117.34, 0.0, -121.78, 117.67, 0.0, -121.81,
+         117.58, -3.1, 0.0, 0.0, -3.14, -122.32, 117.01, -3.16, -122.31, 117.0, 0.0, 0.0, 116.96, -3.25, -122.44,
+         116.91, -3.1, 0.0, 116.96])
 
     assert np.allclose(U_obtained, U_reference, atol=1e-4)
     assert np.allclose(angle_obtained, angle_reference, atol=1e-2)

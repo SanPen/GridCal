@@ -28,12 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="All possible combinations of loads has been validated with OpenDSS.">
-      <change afterPath="$PROJECT_DIR$/src/tests/test_3_phase_pf_13bus_modified.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Modified IEEE 13-bus Test Feeder Case OpenDSS.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="New three-phase power flow test, created for the loads that doesn't appear in the original IEEE 13 Node Test Feeder.">
+      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Shunts Validation OpenDSS.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_3_phase_pf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_3_phase_pf_13bus.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case OpenDSS.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case OpenDSS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_3_phase_pf_13bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_3_phase_pf_13bus.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Modified IEEE 13-bus Test Feeder Case OpenDSS.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Modified IEEE 13-bus Test Feeder Case OpenDSS.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -155,6 +154,7 @@
     "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
     "Python tests.Nosetests in tests.executor": "Run",
     "Python tests.Python tests in test_3_phase_pf.py.executor": "Run",
+    "Python tests.Python tests in test_3_phase_pf_13bus.py.executor": "Run",
     "Python tests.Python tests in test_3_phase_pf_13bus_modified.py.executor": "Run",
     "Python tests.Python tests in tests.executor": "Run",
     "Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor": "Debug",
@@ -182,6 +182,7 @@
     "Python.IEEE 13-bus Test Feeder Case worker.executor": "Run",
     "Python.Modified IEEE 13-bus Test Feeder Case OpenDSS.executor": "Run",
     "Python.ShortCircuit IEEE 13-bus.executor": "Debug",
+    "Python.Shunts Validation OpenDSS.executor": "Run",
     "Python._callers.executor": "Debug",
     "Python.alex.executor": "Debug",
     "Python.cgmes_rdfs_graph.executor": "Run",
@@ -1898,7 +1899,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="597" />
+    <option name="localTasksCounter" value="598" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1944,7 +1945,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved docs" />
     <MESSAGE value="1e6 factor update" />
     <MESSAGE value="Corrected grid.copy() by adding deepcopy method to ListSet object." />
     <MESSAGE value="Added a test for the grid.copy() method" />
@@ -1969,7 +1969,8 @@
     <MESSAGE value="Three-phase current loads validated for both star and delta connections." />
     <MESSAGE value="Load and shunt admittance vector transformed to a matrix. Shunt elements seems to be working, but loads doesn't." />
     <MESSAGE value="All possible combinations of loads has been validated with OpenDSS." />
-    <option name="LAST_COMMIT_MESSAGE" value="All possible combinations of loads has been validated with OpenDSS." />
+    <MESSAGE value="New three-phase power flow test, created for the loads that doesn't appear in the original IEEE 13 Node Test Feeder." />
+    <option name="LAST_COMMIT_MESSAGE" value="New three-phase power flow test, created for the loads that doesn't appear in the original IEEE 13 Node Test Feeder." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2299,9 +2300,14 @@
           <option name="timeStamp" value="2894" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
-          <line>157</line>
-          <option name="timeStamp" value="2903" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_results.py</url>
+          <line>426</line>
+          <option name="timeStamp" value="2904" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
+          <line>926</line>
+          <option name="timeStamp" value="2907" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
