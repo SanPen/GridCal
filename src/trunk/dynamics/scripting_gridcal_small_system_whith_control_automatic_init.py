@@ -86,7 +86,15 @@ line1 = grid.add_line(gce.Line(name="line 2-1", bus_from=bus2, bus_to=bus1, r=0.
 load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P= 10, Q= 10))
 
 # Generators
-gen0 = gce.Generator(name="Gen0", P=10, vset=1.0, Snom = 900)
+gen0 = gce.Generator(name="Gen0", P=10, vset=1.081099313, Snom = 900,
+                    x1=0.86138701, r1=0.3, freq=50.0,
+                    m_torque=0.1,
+                    M=10.0,
+                    D=1.0,
+                    omega_ref=1.0,
+                    Kp=1.0,
+                    Ki=10.0,
+                    Kw=10.0)
 grid.add_generator(bus=bus0, api_obj=gen0)
 
 gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom = 900)

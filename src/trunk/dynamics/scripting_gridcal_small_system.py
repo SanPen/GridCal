@@ -19,8 +19,8 @@ from GridCalEngine.Utils.Symbolic.block import Block
 from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver #compose_system_block
 import GridCalEngine.api as gce
 
-# In this script a small system in build with a Generator a Load and a line. Generator is connected to bus 1 and Load is connected to bus 2.
-# The system is uncontrolled and there are no events applyed.
+# In this script a small system in build with two Generators a Load, two lines and 3 buses.
+# The system is uncontrolled.
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Constants
@@ -40,27 +40,27 @@ pi = Const(math.pi)
 
 # Generator 0
 fn_0 = Const(50.0)
-M_0 = Const(1.0)
+M_0 = Const(10.0)
 D_0 = Const(1.0)
 ra_0 = Const(0.3)
 xd_0 = Const(0.86138701)
 
 omega_ref_0 = Const(1.0)
-Kp_0 = Const(1.0)
-Ki_0 = Const(10.0)
-Kw_0 = Const(10.0)
+Kp_0 = Const(0.0)
+Ki_0 = Const(0.0)
+Kw_0 = Const(0.0)
 
 # Generator 1
 fn_1 = Const(50.0)
-M_1 = Const(1.0)
+M_1 = Const(10.0)
 D_1 = Const(1.0)
 ra_1 = Const(0.3)
 xd_1 = Const(0.86138701)
 
 omega_ref_1 = Const(1.0)
-Kp_1 = Const(1.0)
-Ki_1 = Const(10.0)
-Kw_1 = Const(10.0)
+Kp_1 = Const(0.0)
+Ki_1 = Const(0.0)
+Kw_1 = Const(0.0)
 
 
 
@@ -79,8 +79,8 @@ grid.add_bus(bus1)
 grid.add_bus(bus2)
 
 # Line
-line0 = grid.add_line(gce.Line(name="line 0-2", bus_from=bus0, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0))
-line1 = grid.add_line(gce.Line(name="line 2-1", bus_from=bus2, bus_to=bus1, r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0))
+line0 = grid.add_line(gce.Line(name="line 0-2", bus_from=bus0, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=900.0))
+line1 = grid.add_line(gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=900.0))
 
 # load
 load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P= 10, Q= 10))
@@ -279,23 +279,23 @@ bus0_block = Block(
 
 bus1_block = Block(
     algebraic_eqs=[
-        P_g_1 - Pline_to_1,
-        Q_g_1 - Qline_to_1,
-        Vg_1 - Vline_to_1,
-        dg_1 - dline_to_1
+        P_g_1 - Pline_from_1,
+        Q_g_1 - Qline_from_1,
+        Vg_1 - Vline_from_1,
+        dg_1 - dline_from_1
     ],
-    algebraic_vars=[Pline_to_1, Qline_to_1, Vg_1, dg_1]
+    algebraic_vars=[Pline_from_1, Qline_from_1, Vg_1, dg_1]
 )
 
 bus2_block = Block(
     algebraic_eqs=[
-        - Pline_to_0 - Pline_from_1 + Pl,
-        - Qline_to_0 - Qline_from_1 + Ql,
-        Vline_to_0 - Vline_from_1,
-        dline_to_0 - dline_from_1
+        - Pline_to_0 - Pline_to_1 + Pl,
+        - Qline_to_0 - Qline_to_1 + Ql,
+        Vline_to_0 - Vline_to_1,
+        dline_to_0 - dline_to_1
 
     ],
-    algebraic_vars=[Pline_to_0, Qline_to_0, Pline_from_1, Qline_from_1]
+    algebraic_vars=[Pline_to_0, Qline_to_0, Pline_to_1, Qline_to_1]
 )
 
 # -----------------------------------------------------------------------------------
@@ -495,10 +495,10 @@ residuals = {
     "g9_0: (v_q0_0 * i_d0_0 - v_d0_0 * i_q0_0) - Q_g_0": (v_q0_0 * i_d0_0 - v_d0_0 * i_q0_0) - Sb0.imag,
     "bus 0 P": Sb0.real - Pf0_0,
     "bus 0 Q": Sb0.imag - Qf0_0,
-    "bus 1 P": Sb1.real - Pt0_1,
-    "bus 1 Q": Sb1.imag - Qt0_1,
-    "Bus 2 P": -Pt0_0 - Pf0_1 + Sb2.real,
-    "Bus 2 Q": -Qt0_0 - Qf0_1 + Sb2.imag
+    "bus 1 P": Sb1.real - Pf0_1,
+    "bus 1 Q": Sb1.imag - Qf0_1,
+    "Bus 2 P": -Pt0_0 - Pt0_1 + Sb2.real,
+    "Bus 2 Q": -Qt0_0 - Qt0_1 + Sb2.imag
 }
 
 

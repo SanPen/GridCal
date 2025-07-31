@@ -87,10 +87,14 @@ merged_df['Pl_Gridcal'] = merged_df['Pl_Gridcal'] * (-100)
 # ]
 
 variable_pairs = [
-     [f"omega_1_Gridcal", f"omega_andes_gen_2"],
-     ['Pl_Gridcal', 'Ppf_andes_load_0'],
-     # [f"tm_Gridcal", f"tm_andes_gen_1"],
-     # [f"t_e_Gridcal", f"te_andes_gen_1"]
+     [f"omega_0_Gridcal", f"omega_andes_gen_1"],
+     # ['Pl_Gridcal', 'Ppf_andes_load_0'],
+     # [f"tm_1_Gridcal", f"tm_andes_gen_2"],
+     # [f"t_e_1_Gridcal", f"te_andes_gen_2"],
+     [f"Vline_from_0_Gridcal", f"v_andes_Bus_1"],
+    [f"Vline_to_0_Gridcal", f"v_andes_Bus_2"],
+    [f"Vline_from_1_Gridcal", f"v_andes_Bus_3"]
+
     ]
 
 # Automatically detect time columns
@@ -130,7 +134,7 @@ for idx, (var1, var2) in enumerate(variable_pairs):
 
 axes[-1].set_xlabel("Time (s)")
 plt.tight_layout(rect=[0, 0, 1, 0.97])
-plt.suptitle("Simulation Variable Comparison (GridCal vs GENCLS)", fontsize=16, y=1.02)
+plt.suptitle("Simulation Variable Comparison (GridCal vs Andes)", fontsize=16, y=1.02)
 plt.subplots_adjust(top=0.95)
 plt.show()
 

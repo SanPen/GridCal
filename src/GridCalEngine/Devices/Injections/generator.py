@@ -15,7 +15,7 @@ from GridCalEngine.Devices.Parents.generator_parent import GeneratorParent
 from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Utils.Symbolic.block import Block, Var, Const, DynamicVarType
-from GridCalEngine.Utils.Symbolic.symbolic import cos, sin
+from GridCalEngine.Utils.Symbolic.symbolic import cos, sin, real, imag, conj, angle, exp
 
 
 class Generator(GeneratorParent):
@@ -520,7 +520,6 @@ class Generator(GeneratorParent):
                     (2 * np.pi * self.freq) * (omega - self.omega_ref),
                     (tm - t_e - self.D * (omega - self.omega_ref)) / self.M,
                     (omega - self.omega_ref),
-                    # (tm_ref_1 - tm_1) / T_1
                 ],
                 state_vars=[delta, omega, et],
                 algebraic_eqs=[
@@ -538,18 +537,12 @@ class Generator(GeneratorParent):
                 ],
                 algebraic_vars=[P_g, Q_g, v_d, v_q, i_d, i_q, psid, psiq, t_e, vf, tm],
                 init_eqs={
-                    #delta: np.angle(Vm + (self.R1 + 1j * self.X1) * ((P_g - Q_g)/ Vm)),
-                    #delta: Vm + (self.R1 + 1j * self.X1) * ((P_g - Q_g) / Vm),
-                    delta: Vm + (self.R1 * self.X1) * ((P_g - Q_g)),
+                    delta: angle(Vm + (self.R1 + 1j * self.X1) * ((P_g - Q_g)/ Vm)),
                     omega: Const(self.omega_ref),
-                    # v_d: np.real(Vm * np.exp(-1j * (delta - np.pi / 2))),
-                    # v_q: np.imag(Vm *np.exp(-1j * (delta - np.pi / 2))),
-                    # i_d: np.real(np.exp(-1j * (delta - np.pi / 2)) * np.exp(-1j * (delta - np.pi / 2))),
-                    # i_q: np.imag(np.exp(-1j * (delta - np.pi / 2)) * np.exp(-1j * (delta - np.pi / 2))),
-                    v_d: Vm * (delta - np.pi / 2),
-                    v_q: Vm * (delta - np.pi / 2),
-                    i_d: ((delta - np.pi / 2) * (delta - np.pi / 2)),
-                    i_q: ((delta - np.pi / 2) * (delta - np.pi / 2)),
+                    v_d: real(Vm * exp(-1j * (delta - np.pi / 2))),
+                    v_q: imag(Vm *exp(-1j * (delta - np.pi / 2))),
+                    i_d: real(exp(-1j * (delta - np.pi / 2)) * exp(-1j * (delta - np.pi / 2))),
+                    i_q: imag(exp(-1j * (delta - np.pi / 2)) * exp(-1j * (delta - np.pi / 2))),
                     psid: self.R1 * i_q + v_q,
                     psiq: -self.R1 * i_d - v_d,
                     vf: psid + self.X1 * i_d,
