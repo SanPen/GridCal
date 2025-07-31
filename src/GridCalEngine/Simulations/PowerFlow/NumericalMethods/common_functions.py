@@ -272,8 +272,8 @@ def threephase_power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVe
     Sbus[pv] = P_pv + 1j * Q_pv  # keep the original P injection and set the calculated reactive power for PV nodes
 
     # Add the shunt power V^2 x Y^*
-    Vm = np.abs(V)
-    Sbus += Vm * Vm * np.conj(Yshunt_bus)
+    Vm = np.abs(V_expanded)
+    Sbus_expanded = np.conj(Yshunt_bus) @ (Vm * Vm)
 
     # Branches current, loading, etc
     Vf_expanded = V_expanded[F]
@@ -295,8 +295,6 @@ def threephase_power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVe
 
     # Branch loading in p.u.
     loading = Sf_expanded / (branch_rates + 1e-9)
-
-    Sbus_expanded = expand_magnitudes(Sbus, bus_lookup)
 
     return Sf_expanded, St_expanded, If_expanded, It_expanded, Vbranch, loading, losses, Sbus_expanded, V_expanded
 

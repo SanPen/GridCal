@@ -142,20 +142,20 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
     col_sums = np.array(Ctot.sum(axis=0))[0, :]
     binary_bus_mask = (col_sums > 0).astype(bool)
 
-    Ysh_bus = np.zeros(n * 3, dtype=complex)
+    Ysh_bus = np.zeros((n * 3, n * 3), dtype=complex)
     for k in range(nc.shunt_data.nelm):
         f = nc.shunt_data.bus_idx[k]
         k3 = 3 * k + idx3
         f3 = 3 * f + idx3
-        Ysh_bus[f3] += nc.shunt_data.Y3_star[k3] / (nc.Sbase / 3) * nc.shunt_data.active[k]
+        Ysh_bus[f3, f3] += nc.shunt_data.Y3_star[k3, k3] / (nc.Sbase / 3) * nc.shunt_data.active[k]
 
     for k in range(nc.load_data.nelm):
         f = nc.load_data.bus_idx[k]
         k3 = 3 * k + idx3
         f3 = 3 * f + idx3
-        Ysh_bus[f3] += nc.load_data.Y3_star[k3] / nc.Sbase * nc.load_data.active[k]
+        Ysh_bus[f3, f3] += nc.load_data.Y3_star[k3, k3] / nc.Sbase * nc.load_data.active[k]
 
-    Ybus = Cf.T @ Yf + Ct.T @ Yt + diags(Ysh_bus)
+    Ybus = Cf.T @ Yf + Ct.T @ Yt + Ysh_bus
     Ybus = Ybus[binary_bus_mask, :][:, binary_bus_mask]
     Ysh_bus = Ysh_bus[binary_bus_mask]
     Yf = Yf[R, :][:, binary_bus_mask]
@@ -163,6 +163,8 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
 
     bus_idx_lookup = lookup_from_mask(binary_bus_mask)
     branch_lookup = lookup_from_mask(R)
+
+    Ybus = csc_matrix(Ybus)
 
     return Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Ysh_bus, binary_bus_mask, bus_idx_lookup, branch_lookup
 
