@@ -19,7 +19,7 @@ ipython>=7.16
 ipython-genutils==0.2.0
 jdcal==1.4.1
 jedi==0.18.0
-Jinja2==3.1.5
+Jinja2==3.1.6
 joblib==1.2.0
 jupyter-client==6.1.11
 jupyter-core==4.11.2
@@ -54,7 +54,7 @@ pytz==2021.1
 pyzmq==22.0.3
 qtconsole==5.0.2
 QtPy==1.9.0
-requests==2.32.0
+requests==2.32.4
 scikit-learn==1.5.0
 scipy>=1.5
 shiboken2==5.15.2
@@ -62,7 +62,7 @@ six==1.15.0
 smopy==0.0.7
 threadpoolctl==2.1.0
 toml==0.10.2
-tornado==6.4.2
+tornado==6.5.1
 traitlets>=4.3
 urllib3>=1.26.4
 wcwidth==0.2.5

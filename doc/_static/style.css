@@ -1,0 +1,9 @@
+.wy-nav-content {
+    max-width: 960px !important;
+}
+
+@media screen and (max-width: 256px) {
+  img {
+    width: auto;
+  }
+}

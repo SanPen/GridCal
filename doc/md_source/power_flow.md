@@ -22,18 +22,18 @@ Settings:
 
 The following table relates which power flow controls are available in each solver:
 
-|                                                                     | Newton Raphson  |Powell Dog-leg|Levenberg-Marquardt|Iwamoto|Fast-decoupled|Gauss-seidel|Holomorphic embedding|Linear without voltage modules|Linear with voltage modules|
-|---------------------------------------------------------------------|---|---|---|---|---|---|---|---|---|
-| Local voltage control using a Generator.                            |  ✅ | ✅  | ✅  |  ✅ | ✅  | ✅  |  ✅ | ✅ |  ✅ |
-| Remote voltage control using a Generator.                           | ✅  |  ✅ |  ✅ |  ✅ |  ✅ |   |   |   |   |
-| Generator reactive power limits.                                    | ✅  |  ✅ |  ✅ |  ✅ | ✅  |  ✅ |   |   |   |
-| Local and remote voltage control using a transformer's tap changer. | ✅  |  ✅ |  ✅ |   |   |   |   |   |   |
-| Local active power control using a transformer's tap changer.       |  ✅ | ✅  |  ✅ |   |   |   |   |   |   |
-| Local reactive power control using a transformer's tap changer.     | ✅  | ✅  | ✅  |   |   |   |   |   |   |
-| Local and remote AC and DC voltage control using a converter.       | ✅  | ✅  | ✅  |   |   |   |   |   |   |
-| Local AC and DC active power control using converter.               |✅   | ✅  |  ✅ |   |   |   |   |   |   |
-| Local AC reactive power control using a converter.                  | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
-| 3-phase unbalanced.                                                 | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
+|                                                                                         | Newton <br/>Raphson  |Powell <br/>Dog-leg|Levenberg-<br/>Marquardt|Iwamoto|Fast-<br/>decoupled|Gauss-<br/>seidel|Holomorphic <br/>embedding|Linear <br/>without <br/>voltage modules|Linear <br/>with voltage <br/>modules|
+|-----------------------------------------------------------------------------------------|---|---|---|---|---|---|---|---|---|
+| Local voltage <br/>control using <br/>a Generator.                                      |  ✅ | ✅  | ✅  |  ✅ | ✅  | ✅  |  ✅ | ✅ |  ✅ |
+| Remote voltage <br/>control using <br/>a Generator.                                     | ✅  |  ✅ |  ✅ |  ✅ |  ✅ |   |   |   |   |
+| Generator <br/>reactive power <br/>limits.                                              | ✅  |  ✅ |  ✅ |  ✅ | ✅  |  ✅ |   |   |   |
+| Local and <br/>remote voltage <br/>control using <br/>a transformer's <br/>tap changer. | ✅  |  ✅ |  ✅ |   |   |   |   |   |   |
+| Local active <br/>power control <br/>using a <br/>transformer's <br/>tap changer.       |  ✅ | ✅  |  ✅ |   |   |   |   |   |   |
+| Local reactive <br/>power control <br/>using a <br/>transformer's <br/>tap changer.     | ✅  | ✅  | ✅  |   |   |   |   |   |   |
+| Local and <br/>remote <br/>AC and DC <br/>voltage control <br/>using a <br/>converter.  | ✅  | ✅  | ✅  |   |   |   |   |   |   |
+| Local <br/>AC and DC <br/>active power<br/> control using <br/>a converter.                  |✅   | ✅  |  ✅ |   |   |   |   |   |   |
+| Local AC <br/>reactive power <br/>control using <br/>a converter.                                      | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
+| 3-phase <br/>unbalanced.                                                                     | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
 
 
 
