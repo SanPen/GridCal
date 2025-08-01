@@ -28,11 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="short_circuit_results.py adapted to short-circuit calculations in the phase reference frame.">
-      <change afterPath="$PROJECT_DIR$/src/tests/test_3ph_ShortCircuit_13bus.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="All five short-circuit types validated and implemented in the tests.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/case14_merge1.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/case14_merge1.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/case14_merge2.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/case14_merge2.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ShortCircuit IEEE 13-bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ShortCircuit IEEE 13-bus.py" afterDir="false" />
     </list>
@@ -1883,7 +1881,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="602" />
+    <option name="localTasksCounter" value="603" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1929,7 +1927,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added threshold in the compare property of EditableDevice to avoid numerical issues." />
     <MESSAGE value="Fix comparison numerical issues + fix tests" />
     <MESSAGE value="Fixen unversioned files." />
     <MESSAGE value="Updated smart_compare in editable devices." />
@@ -1954,7 +1951,8 @@
     <MESSAGE value="All shunt types validated and added to the test of the modified IEEE 13 Node Test Feeder." />
     <MESSAGE value="self.Y3_star = np.zeros((self.nelm * 3, 3), dtype=complex)" />
     <MESSAGE value="short_circuit_results.py adapted to short-circuit calculations in the phase reference frame." />
-    <option name="LAST_COMMIT_MESSAGE" value="short_circuit_results.py adapted to short-circuit calculations in the phase reference frame." />
+    <MESSAGE value="All five short-circuit types validated and implemented in the tests." />
+    <option name="LAST_COMMIT_MESSAGE" value="All five short-circuit types validated and implemented in the tests." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

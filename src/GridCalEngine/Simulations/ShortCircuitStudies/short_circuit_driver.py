@@ -176,6 +176,23 @@ class ShortCircuitDriver(DriverTemplate):
                     raise Exception('Unknown fault type!')
 
             elif method == MethodShortCircuit.phases:
+
+                if fault_type in (FaultType.LLL, FaultType.ph3):
+                    if phases != PhasesShortCircuit.abc:
+                        raise Exception(
+                            f"The selected short-circuit type is inconsistent with the phases involved: {fault_type.name} must include all three phases (abc).")
+
+                elif fault_type in (FaultType.LL, FaultType.LLG):
+                    if phases not in (PhasesShortCircuit.ab, PhasesShortCircuit.bc, PhasesShortCircuit.ca):
+                        raise Exception(
+                            f"The selected short-circuit type is inconsistent with the phases involved: {fault_type.name} must be between two valid phases (ab, bc, or ca).")
+
+                elif fault_type == FaultType.LG:
+                    if phases not in (PhasesShortCircuit.a, PhasesShortCircuit.b, PhasesShortCircuit.c):
+                        raise Exception(
+                            f"The selected short-circuit type is inconsistent with the phases involved: {fault_type.name} must be on a single valid phase (a, b or c).")
+
+                # Short-circuit simulation:
                 return short_circuit_abc(nc=nc,
                                           Vpf=Vpf,
                                           Zf=Zf,
