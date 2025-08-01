@@ -504,6 +504,7 @@ class Bus(PhysicalDevice):
                 algebraic_vars=[Vm, Va],
 
                 init_eqs={},
+                init_vars=[],
                 external_mapping={
                     DynamicVarType.Vm: Vm,
                     DynamicVarType.Va: Va,

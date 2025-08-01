@@ -63,7 +63,6 @@ Ki_1 = Const(0.0)
 Kw_1 = Const(0.0)
 
 
-
 # ----------------------------------------------------------------------------------------------------------------------
 # Power flow
 # ----------------------------------------------------------------------------------------------------------------------
@@ -86,10 +85,26 @@ line1 = grid.add_line(gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2, r=0.
 load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P= 10, Q= 10))
 
 # Generators
-gen0 = gce.Generator(name="Gen0", P=10, vset=1.0, Snom = 900)
-grid.add_generator(bus=bus0, api_obj=gen0)
+gen0 = gce.Generator(name="Gen0", P=10, vset=1.0, Snom = 900,
+                    x1=0.86138701, r1=0.3, freq=50.0,
+                    m_torque0=0.1,
+                    M=10.0,
+                    D=1.0,
+                    omega_ref=1.0,
+                    Kp=1.0,
+                    Ki=10.0,
+                    Kw=10.0)
 
-gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom = 900)
+gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom = 900,
+                    x1=0.86138701, r1=0.3, freq=50.0,
+                    m_torque0=0.1,
+                    M=10.0,
+                    D=1.0,
+                    omega_ref=1.0,
+                    Kp=1.0,
+                    Ki=10.0,
+                    Kw=10.0)
+grid.add_generator(bus=bus0, api_obj=gen0)
 grid.add_generator(bus=bus1, api_obj=gen1)
 
 
@@ -173,7 +188,7 @@ vf0_0 = psid0_0 + xd_0.value * i_d0_0
 t_e0_0 = psid0_0 * i_q0_0 - psiq0_0 * i_d0_0
 
 # ----------------------------------------------------------------------------------------------------------------------
-tm0_0 = Const(t_e0_0)
+tm0_0 = Const(0.1)
 vf_0 = Const(vf0_0)
 tm_0 = Const(t_e0_0)
 # ----------------------------------------------------------------------------------------------------------------------
@@ -203,7 +218,7 @@ vf0_1 = psid0_1 + xd_1.value * i_d0_1
 t_e0_1 = psid0_1 * i_q0_1 - psiq0_1 * i_d0_1
 
 # ----------------------------------------------------------------------------------------------------------------------
-tm0_1 = Const(t_e0_1)
+tm0_1 = Const(0.1)
 vf_1 = Const(vf0_1)
 tm_1 = Const(t_e0_1)
 # --------------------------------------------------------------------------------------------------------------------
@@ -467,7 +482,7 @@ vars_mapping = {
     Q_g_1: Sb1.imag,
 
 }
-
+print(vars_mapping)
 residuals = {
     "f1: (2 * pi * fn) * (omega - omega_ref)": (2 * pi.value * fn_1.value) * (1.0 - omega_ref_1.value),
     "f2: (tm - t_e - D * (omega - omega_ref)) / M": (t_e0_1 - t_e0_1 - D_1.value * (

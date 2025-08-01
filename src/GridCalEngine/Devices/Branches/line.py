@@ -733,6 +733,8 @@ class Line(BranchParent):
                     Qt - (Vmt ** 2 * (-bsh / 2 - b) - g * Vmt * Vmf * sin(Vat - Vaf) + b * Vmt * Vmf * sin(Vat - Vaf + np.pi / 2)),
                 ],
                 algebraic_vars=[Pf, Pt, Qf, Qt],
+                init_eqs={},
+                init_vars=[],
                 parameters=[],
                 external_mapping={
                     DynamicVarType.Pf: Pf,

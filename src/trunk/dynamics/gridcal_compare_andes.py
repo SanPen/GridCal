@@ -50,16 +50,17 @@ def merge_simulation_results_by_time(csv1, csv2, output_csv= 'merged_data.csv', 
 
     return merged_df
 
-comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_andes_output.csv')
-
+comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_results_automatic_init.csv')
+# andes is automatic
 # Load merged CSV
 i = 1
 merged_df = comparison
+print(merged_df)
 # merged_df['Pl_7_Gridcal'] = merged_df['Pl_7_Gridcal'] * (-100)
 # merged_df[f"tm_{i}_Gridcal"] = merged_df[f"tm_{i}_Gridcal"] * (100)
 # merged_df[f"t_e_{i}_Gridcal"] = merged_df[f"t_e_{i}_Gridcal"] * (100)
 
-merged_df['Pl_Gridcal'] = merged_df['Pl_Gridcal'] * (-100)
+# merged_df['Pl_Gridcal'] = merged_df['Pl_Gridcal'] * (-100)
 # merged_df[f"tm_Gridcal"] = merged_df[f"tm_Gridcal"] * (100)
 # merged_df[f"t_e_Gridcal"] = merged_df[f"t_e_Gridcal"] * (100)
 # Define variable pairs to compare (each pair goes into one subplot)
@@ -87,13 +88,13 @@ merged_df['Pl_Gridcal'] = merged_df['Pl_Gridcal'] * (-100)
 # ]
 
 variable_pairs = [
-     [f"omega_0_Gridcal", f"omega_andes_gen_1"],
+     [f"omega_1_Gridcal_sim1", f"omega_1_Gridcal_sim2"],
      # ['Pl_Gridcal', 'Ppf_andes_load_0'],
      # [f"tm_1_Gridcal", f"tm_andes_gen_2"],
      # [f"t_e_1_Gridcal", f"te_andes_gen_2"],
-     [f"Vline_from_0_Gridcal", f"v_andes_Bus_1"],
-    [f"Vline_to_0_Gridcal", f"v_andes_Bus_2"],
-    [f"Vline_from_1_Gridcal", f"v_andes_Bus_3"]
+    #  [f"Vline_from_0_Gridcal", f"v_andes_Bus_1"],
+    # [f"Vline_to_0_Gridcal", f"v_andes_Bus_2"],
+    # [f"Vline_from_1_Gridcal", f"v_andes_Bus_3"]
 
     ]
 
@@ -129,8 +130,9 @@ for idx, (var1, var2) in enumerate(variable_pairs):
     #         ax.set_ylim(0.85, 1.15)
     #     if idx == 2 or idx == 3:
     #         ax.set_ylim(6, 8)
-    # else:
-    #     ax.set_visible(False)  # hide empty subplot
+    else:
+        print("no matches")
+        ax.set_visible(False)  # hide empty subplot
 
 axes[-1].set_xlabel("Time (s)")
 plt.tight_layout(rect=[0, 0, 1, 0.97])

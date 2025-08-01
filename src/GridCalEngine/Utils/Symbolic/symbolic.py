@@ -455,7 +455,7 @@ class Func(Expr):
         "sin": math.sin,
         "cos": math.cos,
         "tan": math.tan,
-        "exp": math.exp,
+        "exp": np.exp,
         "log": math.log,
         "sqrt": math.sqrt,
         "asin": math.asin,
@@ -717,6 +717,7 @@ def _emit(expr: Expr, uid_map_vars: Dict[int, str], uid_map_params: Dict[int, st
         if expr.uid in uid_map_vars.keys():
             return uid_map_vars[expr.uid]  # positional variable
         else:
+            # pdb.set_trace()
             return uid_map_params[expr.uid]
     if isinstance(expr, UnOp):
         return f"-({_emit(expr.operand, uid_map_vars, uid_map_params)})"
@@ -767,6 +768,7 @@ def find_vars_order(expressions: Union[Expr, Sequence[Expr]],
     """
 
     if isinstance(expressions, Expr):
+
         vars_list = _all_vars([expressions])
     else:
         vars_list = _all_vars(expressions)

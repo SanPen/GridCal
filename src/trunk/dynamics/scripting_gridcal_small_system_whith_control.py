@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
 from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
 from GridCalEngine.Utils.Symbolic.block import Block
-from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver #compose_system_block
+from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver  # compose_system_block
 import GridCalEngine.api as gce
 
 # In this script a small system in build with a Generator a Load and a line. Generator is connected to bus 1 and Load is connected to bus 2.
@@ -35,7 +35,6 @@ g_1 = Const(5)
 b_1 = Const(-12)
 bsh_1 = Const(0.03)
 
-
 pi = Const(math.pi)
 
 # Generator 0
@@ -49,8 +48,8 @@ omega_ref_0 = Const(1.0)
 Kp_0 = Const(0.0)
 Ki_0 = Const(0.0)
 
-
 # Generator 1
+
 fn_1 = Const(50.0)
 M_1 = Const(10.0)
 D_1 = Const(1.0)
@@ -60,9 +59,6 @@ xd_1 = Const(0.86138701)
 omega_ref_1 = Const(1.0)
 Kp_1 = Const(0.0)
 Ki_1 = Const(0.0)
-
-
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Power flow
@@ -79,20 +75,38 @@ grid.add_bus(bus1)
 grid.add_bus(bus2)
 
 # Line
-line0 = grid.add_line(gce.Line(name="line 0-2", bus_from=bus0, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=900.0))
-line1 = grid.add_line(gce.Line(name="line 2-1", bus_from=bus2, bus_to=bus1, r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=900.0))
+line0 = grid.add_line(
+    gce.Line(name="line 0-2", bus_from=bus0, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03,
+             rate=900.0))
+line1 = grid.add_line(
+    gce.Line(name="line 2-1", bus_from=bus2, bus_to=bus1, r=0.029585798816568046, x=0.07100591715976332, b=0.03,
+             rate=900.0))
 
 # load
-load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P= 10, Q= 10))
+load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P=10, Q=10))
 
 # Generators
-gen0 = gce.Generator(name="Gen0", P=10, vset=1.0, Snom = 900)
+gen0 = gce.Generator(name="Gen0", P=10, vset=1.0, Snom=900,
+                     x1=0.86138701, r1=0.3, freq=50.0,
+                     m_torque0=0.1,
+                     M=10.0,
+                     D=1.0,
+                     omega_ref=1.0,
+                     Kp=1.0,
+                     Ki=10.0,
+                     Kw=10.0)
+
+gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom=900,
+                     x1=0.86138701, r1=0.3, freq=50.0,
+                     m_torque0=0.1,
+                     M=10.0,
+                     D=1.0,
+                     omega_ref=1.0,
+                     Kp=1.0,
+                     Ki=10.0,
+                     Kw=10.0)
 grid.add_generator(bus=bus0, api_obj=gen0)
-
-gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom = 900)
 grid.add_generator(bus=bus1, api_obj=gen1)
-
-
 
 options = gce.PowerFlowOptions(
     solver_type=gce.SolverType.NR,
@@ -122,7 +136,6 @@ res = gce.power_flow(grid, options=options)
 print(f"Converged: {res.converged}")
 print(res.get_bus_df())
 print(res.get_branch_df())
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Intialization
@@ -336,7 +349,6 @@ line1_block = Block(
     parameters=[]
 )
 
-
 # --------------------------------------------------------------------------
 # Generators
 # --------------------------------------------------------------------------
@@ -387,8 +399,6 @@ generator1_block = Block(
     parameters=[]
 )
 
-
-
 # -------------------------------------------------------------
 # Load
 # -------------------------------------------------------------
@@ -421,7 +431,6 @@ params_mapping = {
     Pl0: Sb2.real,
     # Ql0: 0.1
 }
-
 
 vars_mapping = {
     dline_from_0: np.angle(v0),
@@ -492,7 +501,8 @@ residuals = {
     "g9: (v_q * i_d - v_d * i_q) - Q_g": (v_q0_1 * i_d0_1 - v_d0_1 * i_q0_1) - Sb1.imag,
 
     "f1_0: (2 * pi * fn_0) * (omega_0 - omega_ref_0)": (2 * pi.value * fn_0.value) * (1.0 - omega_ref_0.value),
-    "f2_0: (tm - t_e_0 - D_0 * (omega_0 - omega_ref_0)) / M_0": (t_e0_0 - t_e0_0 - D_0.value * (1.0 - omega_ref_0.value)) / M_0.value,
+    "f2_0: (tm - t_e_0 - D_0 * (omega_0 - omega_ref_0)) / M_0": (t_e0_0 - t_e0_0 - D_0.value * (
+                1.0 - omega_ref_0.value)) / M_0.value,
     "g1_0: psid_0 - (-ra_0 * i_q0_0 + v_q0_0)": psid0_0 - (ra_0.value * i_q0_0 + v_q0_0),
     "g2_0: psiq_0 - (-ra_0 * i_d0_0 + v_d0_0)": psiq0_0 + (ra_0.value * i_d0_0 + v_d0_0),
     "g3_0: 0 - (psid0_0 + xd_0 * i_d0_0 - vf0_0)": 0 - (psid0_0 + xd_0.value * i_d0_0 - vf0_0),
@@ -510,9 +520,6 @@ residuals = {
     "Bus 2 Q": -Qt0_0 - Qf0_1 + Sb2.imag
 }
 
-
-
-
 # Print results
 print("\n🔍 Residuals of generator algebraic equations:\n")
 for eq, val in residuals.items():
@@ -521,8 +528,10 @@ for eq, val in residuals.items():
 # ---------------------------------------------------------------------------------------
 # Events
 # ---------------------------------------------------------------------------------------
-event1 = RmsEvent('Load', Pl0, 2500, Sb2.real - 0.015)
-my_events = RmsEvents([event1])
+# event1 = RmsEvent('Load', Pl0, 2500, Sb2.real - 0.015)
+# my_events = RmsEvents([event1])
+
+my_events = RmsEvents([])
 
 params0 = slv.build_init_params_vector(params_mapping)
 x0 = slv.build_init_vars_vector(vars_mapping)
@@ -554,7 +563,7 @@ vars_in_order = slv.sort_vars(vars_mapping)
 
 t, y = slv.simulate(
     t0=0,
-    t_end=80.0,
+    t_end=20.0,
     h=0.001,
     x0=x0,
     params0=params0,
