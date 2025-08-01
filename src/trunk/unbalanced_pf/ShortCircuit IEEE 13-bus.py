@@ -8,6 +8,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx impo
 import pandas as pd
 from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
 from GridCalEngine.basic_structures import Vec
+from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 
 logger = gce.Logger()
 
@@ -20,7 +21,7 @@ grid.fBase = 60
 bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=0)
 bus_632.is_slack = True
 grid.add_bus(obj=bus_632)
-gen = gce.Generator(vset=1.0, r1=0.004*10**(-10), x1=0.5*10**(-10), r2=0.02*10**(-10), x2=0.5*10**(-10), r0=0.01*10**(-10), x0=0.08*10**(-10))
+gen = gce.Generator(vset=1.0, r1=1e-10, x1=1e-10, r2=1e-10, x2=1e-10, r0=1e-10, x0=1e-10)
 grid.add_generator(bus=bus_632, api_obj=gen)
 
 bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100 * 5, ypos=0)
@@ -413,7 +414,7 @@ def power_flow_3ph(grid: gce.MultiCircuit, V0_3ph: Vec):
 """
 Short Circuit
 """
-def short_circuit_3ph(grid, t_idx=None):
+def short_circuit_3ph(grid, t_idx=None) -> ShortCircuitResults:
     """
     Short Circuit
     :param grid:
@@ -454,13 +455,13 @@ def short_circuit_3ph(grid, t_idx=None):
     pf_res.Sbus = res_3ph.Scalc
 
     sc_options = gce.ShortCircuitOptions(bus_index=4,
-                                         fault_type=FaultType.LG,
+                                         fault_type=FaultType.ph3,
                                          mid_line_fault=False,
                                          branch_index=0,
                                          branch_fault_locations=0.5,
                                          verbose=0,
                                          method=MethodShortCircuit.phases,
-                                         phases=PhasesShortCircuit.a)
+                                         phases=PhasesShortCircuit.abc)
 
     sc_driver = gce.ShortCircuitDriver(grid=grid,
                                        options=sc_options,
@@ -468,9 +469,43 @@ def short_circuit_3ph(grid, t_idx=None):
                                        pf_results=pf_res)
     sc_driver.run()
 
-    return None
+    return sc_driver.results
 
-
-res_3ph = short_circuit_3ph(grid)
+res_SC = short_circuit_3ph(grid)
 
 print('Done')
+
+bus_numbers = [632, 645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
+
+nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx=None)
+
+print(res_SC.get_voltage_3ph_df())
+
+df_U = pd.DataFrame({
+        'Buses': bus_numbers,
+        'UA': abs(res_SC.voltageA),
+        'deltaA': np.angle(res_SC.voltageA)*(180/np.pi),
+        'UB': abs(res_SC.voltageB),
+        'deltaB': np.angle(res_SC.voltageB)*(180/np.pi),
+        'UC': abs(res_SC.voltageC),
+        'deltaC': np.angle(res_SC.voltageC)*(180/np.pi),
+    })
+
+df_U[['UA', 'deltaA', 'UB', 'deltaB', 'UC', 'deltaC']] = df_U[['UA', 'deltaA', 'UB', 'deltaB', 'UC', 'deltaC']].round(4)
+pd.set_option("display.precision", 6)
+print(df_U)
+
+
+bus_numbers = [645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
+df_I = pd.DataFrame({
+        'Buses': bus_numbers,
+        'ItA': (res_SC.ItA),
+        'IfA': (res_SC.IfA),
+        'ItB': (res_SC.ItB),
+        'IfB': (res_SC.IfB),
+        'ItC': (res_SC.ItA),
+        'IfC': (res_SC.IfC),
+    })
+
+print(df_I)
+print()

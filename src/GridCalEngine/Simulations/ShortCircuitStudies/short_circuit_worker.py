@@ -13,13 +13,15 @@ from GridCalEngine.Topology.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import polar_to_rect
 from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
-from GridCalEngine.basic_structures import CxVec, Vec
+from GridCalEngine.basic_structures import CxVec, Vec, IntVec
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import (compute_ybus,
                                                                                        compute_Sbus_delta,
                                                                                        compute_current_loads,
                                                                                        compute_Sbus_star,
                                                                                        compute_ybus_generator,
-                                                                                       expand_magnitudes)
+                                                                                       expand_magnitudes,
+                                                                                       expand_indices_3ph,
+                                                                                       expand3ph)
 from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
 import pandas as pd
@@ -65,7 +67,91 @@ def short_circuit_post_process(
     # Branch loading in p.u.
     loading = Sfb / (branch_rates + 1e-9)
 
+
+
     return Sfb, Stb, If, It, Vbranch, loading, losses
+
+# def expand3ph(x: np.ndarray):
+#     """
+#     Expands a numpy array to 3-pase copying the same values
+#     :param x:
+#     :return:
+#     """
+#     n = len(x)
+#     idx3 = np.array([0, 1, 2])
+#     x3 = np.zeros(3 * n, dtype=x.dtype)
+#
+#     for k in range(n):
+#         x3[3 * k + idx3] = x[k]
+#     return x3
+#
+# def expand_indices_3ph(x: np.ndarray) -> np.ndarray:
+#     """
+#     Expands a numpy array to 3-pase copying the same values
+#     :param x:
+#     :return:
+#     """
+#     n = len(x)
+#     idx3 = np.array([0, 1, 2])
+#     x3 = np.zeros(3 * n, dtype=x.dtype)
+#
+#     for k in range(n):
+#         x3[3 * k + idx3] = 3 * x[k] + idx3
+#
+#     return x3
+
+def short_circuit_post_process_phases_abc(
+        calculation_inputs: NumericalCircuit,
+        V_expanded: CxVec,
+        branch_rates_expanded: Vec,
+        Yf: sp.csc_matrix,
+        Yt: sp.csc_matrix,
+        F_expanded: IntVec,
+        T_expanded: IntVec,
+        mask,
+        branch_lookup
+) -> Tuple[CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec]:
+    """
+    Compute the important results for short-circuits
+    :param calculation_inputs: instance of Circuit
+    :param V: Voltage solution array for the circuit buses
+    :param branch_rates: Array of branch ratings
+    :param Yf: From admittance matrix
+    :param Yt: To admittance matrix
+    :param F_expanded:
+    :param T_expanded:
+    :return: Sf (MVA), If (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
+    """
+
+    Vf_expanded = V_expanded[F_expanded]
+    Vt_expanded = V_expanded[T_expanded]
+
+    V = V_expanded[mask]
+
+    # Branches current, loading, etc
+    If = Yf @ V
+    It = Yt @ V
+
+    If_expanded  = expand_magnitudes(If, branch_lookup)
+    It_expanded  = expand_magnitudes(It, branch_lookup)
+
+    Sf_expanded  = Vf_expanded * np.conj(If_expanded )
+    St_expanded  = Vt_expanded  * np.conj(It_expanded )
+
+    # Branch losses in MVA (not really important for short-circuits)
+    losses_expanded = (Sf_expanded  + St_expanded) * calculation_inputs.Sbase
+
+    # branch voltage increment
+    Vbranch_expanded  = Vf_expanded  - Vt_expanded
+
+    # Branch power in MVA
+    Sfb_expanded  = Sf_expanded  * calculation_inputs.Sbase
+    Stb_expanded  = St_expanded  * calculation_inputs.Sbase
+
+    # Branch loading in p.u.
+    loading_expanded  = Sfb_expanded / (branch_rates_expanded + 1e-9)
+
+    return Sfb_expanded, Stb_expanded, If_expanded, It_expanded, Vbranch_expanded, loading_expanded, losses_expanded
 
 def short_circuit_post_process_phases(
         calculation_inputs: NumericalCircuit,
@@ -511,9 +597,10 @@ def short_circuit_abc(nc: NumericalCircuit,
     Yloads = diags(Y_power_star_linear) + diags(Y_power_delta_linear) + diags(Y_current_linear)
     Ylinear = Ybus - Yloads + Yfault_masked + Ybus_gen_masked_csc
 
-    Yloads_expanded = Y_power_star_linear + Y_power_delta_linear + Y_current_linear
-    Yloads_expanded = expand_magnitudes(Yloads_expanded, bus_lookup)
-    S = (Spf / (nc.Sbase/3) ) - Vpf * np.conj(Yloads_expanded * Vpf)
+    Yloads = Y_power_star_linear + Y_power_delta_linear + Y_current_linear
+    Yloads_expanded = expand_magnitudes(Yloads, bus_lookup)
+    Spf_expanded = expand_magnitudes(Spf, bus_lookup)
+    S = (Spf_expanded / (nc.Sbase/3) ) - Vpf * np.conj(Yloads_expanded * Vpf)
     idx3 = np.array([0, 1, 2])
     gen_idx = nc.generator_data.bus_idx
     n_buses = len(nc.generator_data.bus_idx)
@@ -530,31 +617,6 @@ def short_circuit_abc(nc: NumericalCircuit,
     Usc_expanded = expand_magnitudes(Usc, bus_lookup)
 
     """
-    Data Frame
-    """
-    Usc_expanded_abs = abs(Usc_expanded)
-
-    bus_numbers = [632, 645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
-
-    # Separar magnitudes y ángulos por fases
-    U_A = Usc_expanded_abs[0::3]
-    U_B = Usc_expanded_abs[1::3]
-    U_C = Usc_expanded_abs[2::3]
-
-    def format_column(mags):
-        return [f"{m:.4f}" for m in mags]
-
-    df = pd.DataFrame({
-        'Buses': bus_numbers,
-        'Ua': format_column(U_A),
-        'Ub': format_column(U_B),
-        'Uc': format_column(U_C),
-    })
-
-    print(df)
-    print()
-
-    """
     Results
     """
     # voltage, Sf, loading, losses, error, converged, Qpv
@@ -567,40 +629,42 @@ def short_circuit_abc(nc: NumericalCircuit,
                                   bus_types=nc.bus_data.bus_types,
                                   area_names=None)
 
-    Isc = Yfault_masked @ Usc
-    results.ICurrent = expand_magnitudes(Isc, bus_lookup)
-
-    Ssc = nc.Sbase * (Yfault_masked @ Usc**2)
-    results.SCpower = expand_magnitudes(Ssc, bus_lookup)
+    Sfb, Stb, If, It, Vbranch, loading, losses = short_circuit_post_process_phases_abc(calculation_inputs=nc,
+                                                                                    V_expanded=Usc_expanded,
+                                                                                    branch_rates_expanded=expand3ph(nc.passive_branch_data.rates),
+                                                                                    Yf=Yf,
+                                                                                    Yt=Yt,
+                                                                                    F_expanded=expand_indices_3ph(nc.passive_branch_data.F),
+                                                                                    T_expanded=expand_indices_3ph(nc.passive_branch_data.T),
+                                                                                    mask=mask,
+                                                                                    branch_lookup=branch_lookup
+                                                                                    )
 
     results.voltageA = Usc_expanded[0::3]
-    results.SfA = Sfb0  # in MVA already
-    results.StA = Stb0  # in MVA already
-    results.IfA = If0  # in p.u.
-    results.ItA = It0  # in p.u.
-    results.VbranchA = Vbranch0
-    results.loadingA = loading0
-    results.lossesA = losses0
+    results.SfA = Sfb[0::3]  # in MVA already
+    results.StA = Stb[0::3]  # in MVA already
+    results.IfA = If[0::3]  # in p.u.
+    results.ItA = It[0::3]  # in p.u.
+    results.VbranchA = Vbranch[0::3]
+    results.loadingA = loading[0::3]
+    results.lossesA = losses[0::3]
 
     results.voltageB = Usc_expanded[1::3]
-    results.SfB = Sfb1  # in MVA already
-    results.StB = Stb1  # in MVA already
-    results.IfB = If1  # in p.u.
-    results.ItB = It1  # in p.u.
-    results.VbranchB = Vbranch1
-    results.loadingB = loading1
-    results.lossesB = losses1
+    results.SfB = Sfb[1::3]  # in MVA already
+    results.StB = Stb[1::3]  # in MVA already
+    results.IfB = If[1::3]  # in p.u.
+    results.ItB = It[1::3]  # in p.u.
+    results.VbranchB = Vbranch[1::3]
+    results.loadingB = loading[1::3]
+    results.lossesB = losses[1::3]
 
     results.voltageC = Usc_expanded[2::3]
-    results.SfC = Sfb2  # in MVA already
-    results.StC = Stb2  # in MVA already
-    results.IfC = If2  # in p.u.
-    results.ItC = It2  # in p.u.
-    results.VbranchC = Vbranch2
-    results.loadingC = loading2
-    results.lossesC = losses2
-
-    results.ICurrent = SCC
-    results.SCpower = ICC
+    results.SfC = Sfb[2::3]  # in MVA already
+    results.StC = Stb[2::3]  # in MVA already
+    results.IfC = If[2::3]  # in p.u.
+    results.ItC = It[2::3]  # in p.u.
+    results.VbranchC = Vbranch[2::3]
+    results.loadingC = loading[2::3]
+    results.lossesC = losses[2::3]
 
     return results
