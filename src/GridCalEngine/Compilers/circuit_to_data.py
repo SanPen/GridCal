@@ -57,11 +57,12 @@ def delta2StarAdmittance(Yab: complex,
     :param Yca:
     :return: Ya, Yb, Yc
     """
-    return 1/3 * np.array([
+    return 1 / 3 * np.array([
         [Yab + Yca, -Yab, -Yca],
         [-Yab, Yab + Ybc, -Ybc],
         [-Yca, -Ybc, Ybc + Yca]
     ])
+
 
 def set_bus_control_voltage(i: int,
                             j: int,
@@ -2359,7 +2360,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         opf_results=opf_results,
         use_stored_guess=use_stored_guess,
         control_remote_voltage=control_remote_voltage,
-        fill_three_phase= fill_three_phase
+        fill_three_phase=fill_three_phase
     )
 
     get_battery_data(
