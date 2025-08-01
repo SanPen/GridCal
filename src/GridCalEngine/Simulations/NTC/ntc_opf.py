@@ -26,7 +26,7 @@ from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.vsc_data import VscData
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, CxMat, Mat, ObjVec
-from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, set_var_bounds, join
+from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, join
 from GridCalEngine.enumerations import TapPhaseControl, HvdcControlType, AvailableTransferMode, ConverterControlType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha, compute_alpha_n1, compute_dP
@@ -1595,12 +1595,12 @@ def add_linear_branches_formulation(t_idx: int,
                                      value=f"{loading[m] * 100} %")
 
                     # here flows is always a variable
-                    set_var_bounds(branch_vars.flows[t_idx, m],
+                    prob.set_var_bounds(branch_vars.flows[t_idx, m],
                                    lb=-rate_pu * (abs(loading[m]) + 0.1),
                                    ub=rate_pu * (abs(loading[m]) + 0.1))
                 else:
                     # here flows is always a variable
-                    set_var_bounds(branch_vars.flows[t_idx, m], lb=-rate_pu, ub=rate_pu)
+                    prob.set_var_bounds(branch_vars.flows[t_idx, m], lb=-rate_pu, ub=rate_pu)
 
     # add the inter-area flows to the objective function with the correct sign
     for k, sense in branch_vars.inter_space_branches:
@@ -1866,7 +1866,7 @@ def add_linear_hvdc_formulation(t_idx: int,
                 raise Exception('OPF: Unknown HVDC control mode {}'.format(hvdc_data_t.control_mode[m]))
         else:
             # not active, therefore the flow is exactly zero
-            set_var_bounds(var=hvdc_vars.flows[t_idx, m], ub=0.0, lb=0.0)
+            prob.set_var_bounds(var=hvdc_vars.flows[t_idx, m], ub=0.0, lb=0.0)
 
     # add the flows to the objective function
     for k, sense in hvdc_vars.inter_space_hvdc:
@@ -1960,7 +1960,7 @@ def add_linear_vsc_formulation(t_idx: int,
                 val = vsc_data_t.control1_val[m]
                 if val == 0:
                     val = 1
-                set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
+                prob.set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
                 any_dc_slack = True
 
                 # declare the flow var
@@ -1977,7 +1977,7 @@ def add_linear_vsc_formulation(t_idx: int,
                 val = vsc_data_t.control2_val[m]
                 if val == 0:
                     val = 1
-                set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
+                prob.set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
                 any_dc_slack = True
 
                 # declare the flow var
@@ -1994,7 +1994,7 @@ def add_linear_vsc_formulation(t_idx: int,
                 val = vsc_data_t.control1_val[m]
                 if val == 0:
                     val = 1
-                set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
+                prob.set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
                 any_dc_slack = True
 
                 # declare the flow var
@@ -2011,7 +2011,7 @@ def add_linear_vsc_formulation(t_idx: int,
                 val = vsc_data_t.control2_val[m]
                 if val == 0:
                     val = 1
-                set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
+                prob.set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
                 any_dc_slack = True
 
                 # declare the flow var
@@ -2051,7 +2051,7 @@ def add_linear_vsc_formulation(t_idx: int,
 
         else:
             # not active, therefore the flow is exactly zero
-            set_var_bounds(var=vsc_vars.flows[t_idx, m], ub=0.0, lb=0.0)
+            prob.set_var_bounds(var=vsc_vars.flows[t_idx, m], ub=0.0, lb=0.0)
 
     # add the flows to the objective function
     for k, sense in vsc_vars.inter_space_vsc:
@@ -2100,7 +2100,7 @@ def add_linear_node_balance(t_idx: int,
     # set this to the set value
     Va = np.angle(bus_data.Vbus)
     for i in vd:
-        set_var_bounds(var=bus_vars.Va[t_idx, i], lb=Va[i], ub=Va[i])
+        prob.set_var_bounds(var=bus_vars.Va[t_idx, i], lb=Va[i], ub=Va[i])
 
 
 def run_linear_ntc_opf(grid: MultiCircuit,

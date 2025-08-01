@@ -39,16 +39,7 @@ def get_available_mip_solvers() -> List[str]:
     return res
 
 
-def set_var_bounds(var: LpVar, lb: float, ub: float):
-    """
-    Modify the bounds of a variable
-    :param var: LpVar instance to modify
-    :param lb: lower bound value
-    :param ub: upper bound value
-    """
-    if isinstance(var, LpVar):
-        var.lower_bound = lb
-        var.upper_bound = ub
+
 
 
 class LpModel:
@@ -77,6 +68,18 @@ class LpModel:
         self.relaxed_slacks: List[Tuple[int, LpVar, float]] = list()
 
         self._var_names = set()
+
+    @staticmethod
+    def set_var_bounds(var: LpVar, lb: float, ub: float):
+        """
+        Modify the bounds of a variable
+        :param var: LpVar instance to modify
+        :param lb: lower bound value
+        :param ub: upper bound value
+        """
+        if isinstance(var, LpVar):
+            var.lower_bound = lb
+            var.upper_bound = ub
 
     def save_model(self, file_name="ntc_opf_problem.lp"):
         """

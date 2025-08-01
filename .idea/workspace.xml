@@ -28,11 +28,15 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="New three-phase power flow test, created for the loads that doesn't appear in the original IEEE 13 Node Test Feeder.">
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Shunts Validation OpenDSS.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Small improvements to the docs">
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/gslv_interface.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_3_phase_pf_13bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_3_phase_pf_13bus.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Modified IEEE 13-bus Test Feeder Case OpenDSS.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Modified IEEE 13-bus Test Feeder Case OpenDSS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf_strict.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf_strict.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/ortools_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/ortools_interface.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/pulp_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/pulp_interface.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/selected_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/selected_interface.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,7 +77,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="devel_merge_dynamics" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -96,7 +100,7 @@
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/SanPen/GridCal.git&quot;,
-    &quot;accountId&quot;: &quot;1acef425-303f-45a5-9f13-1a5d8e86b985&quot;
+    &quot;accountId&quot;: &quot;a469100a-0b87-435d-9c54-78aec8f24572&quot;
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
@@ -135,93 +139,84 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Git.Branch.Popup.ShowAllRemotes": "true",
-    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
-    "Python tests.Nosetests for test_power_flow.test_zip.executor": "Debug",
-    "Python tests.Nosetests for test_topology_processor.test_topology_rts.executor": "Debug",
-    "Python tests.Nosetests for tests.test_ac_opf.executor": "Run",
-    "Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor": "Debug",
-    "Python tests.Nosetests for tests.test_hydro.executor": "Run",
-    "Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor": "Run",
-    "Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor": "Run",
-    "Python tests.Nosetests for tests.test_topology_processor.executor": "Run",
-    "Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor": "Run",
-    "Python tests.Nosetests in admittance_matrix_test.py.executor": "Run",
-    "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
-    "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
-    "Python tests.Nosetests in tests.executor": "Run",
-    "Python tests.Python tests in test_3_phase_pf.py.executor": "Run",
-    "Python tests.Python tests in test_3_phase_pf_13bus.py.executor": "Run",
-    "Python tests.Python tests in test_3_phase_pf_13bus_modified.py.executor": "Run",
-    "Python tests.Python tests in tests.executor": "Run",
-    "Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor": "Debug",
-    "Python tests.pytest for src.tests.test_basic.test_gridcal_basic_pi.executor": "Debug",
-    "Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true.executor": "Run",
-    "Python tests.pytest for src.tests.test_load_save_load.test_load_save_load_xlsx.executor": "Debug",
-    "Python tests.pytest for src.tests.test_transformer_type.test_transformer_type.executor": "Debug",
-    "Python tests.pytest for test_ac_opf.test_superconductors_handling.executor": "Run",
-    "Python tests.pytest for test_basic.test_gridcal_basic_pi.executor": "Debug",
-    "Python tests.pytest for test_load_save_load.test_load_save_load2.executor": "Run",
-    "Python tests.pytest for test_transformer_type.test_psse_conversion3.executor": "Debug",
-    "Python tests.pytest for test_transformer_type.test_transformer_type.executor": "Run",
-    "Python tests.pytest in test_ac_opf.py.executor": "Run",
-    "Python tests.pytest in test_admitances.py.executor": "Debug",
-    "Python tests.pytest in test_basic.py.executor": "Run",
-    "Python tests.pytest in test_cgmes_ieeee.py.executor": "Run",
-    "Python tests.pytest in test_copy.py.executor": "Run",
-    "Python tests.pytest in test_load_save_load.py.executor": "Run",
-    "Python tests.pytest in test_transformer_type.py.executor": "Run",
-    "Python tests.pytest in tests.executor": "Run",
-    "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
-    "Python.GridCalMain.executor": "Run",
-    "Python.IEEE 13-bus Test Feeder Case OpenDSS.executor": "Run",
-    "Python.IEEE 13-bus Test Feeder Case worker.executor": "Run",
-    "Python.Modified IEEE 13-bus Test Feeder Case OpenDSS.executor": "Run",
-    "Python.ShortCircuit IEEE 13-bus.executor": "Debug",
-    "Python.Shunts Validation OpenDSS.executor": "Run",
-    "Python._callers.executor": "Debug",
-    "Python.alex.executor": "Debug",
-    "Python.cgmes_rdfs_graph.executor": "Run",
-    "Python.circuit_to_optimods.executor": "Run",
-    "Python.demo_code.executor": "Run",
-    "Python.demo_code2.executor": "Run",
-    "Python.demo_code3.executor": "Debug",
-    "Python.demo_code4.executor": "Run",
-    "Python.impedance_delta.executor": "Run",
-    "Python.multi_circuit.executor": "Debug",
-    "Python.new_circuit_objects.executor": "Run",
-    "Python.pf_basic_formulation_3ph.executor": "Debug",
-    "Python.profile.executor": "Debug",
-    "Python.pymoo_example.executor": "Debug",
-    "Python.python_console.executor": "Run",
-    "Python.raw_imp_exp_test.executor": "Run",
-    "Python.readme_checks.executor": "Run",
-    "Python.substation_wizards.executor": "Run",
-    "Python.substations_types.executor": "Run",
-    "Python.test_power_flow.executor": "Run",
-    "Python.test_raw_cgmes_cross_roundtrip.executor": "Run",
-    "Python.update_gui_file.executor": "Run",
-    "Python.upload_to_pypi.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "devel",
-    "last_opened_file_path": "C:/GridCal/src/trunk/unbalanced_pf",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "preferences.sourceCode.YAML",
-    "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
+    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
+    &quot;Python tests.Nosetests for test_power_flow.test_zip.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for test_topology_processor.test_topology_rts.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for tests.test_ac_opf.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for tests.test_hydro.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_topology_processor.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in deep_copy_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in test_topology_processor.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_basic.test_gridcal_basic_pi.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_load_save_load.test_load_save_load_xlsx.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_transformer_type.test_transformer_type.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_ac_opf.test_superconductors_handling.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_basic.test_gridcal_basic_pi.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_load_save_load.test_load_save_load2.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_transformer_type.test_psse_conversion3.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_transformer_type.test_transformer_type.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_ac_opf.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_admitances.py.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest in test_basic.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_cgmes_ieeee.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_copy.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_load_save_load.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_transformer_type.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
+    &quot;Python.GridCalMain.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ShortCircuit IEEE 13-bus.executor&quot;: &quot;Run&quot;,
+    &quot;Python._callers.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.alex.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
+    &quot;Python.circuit_to_optimods.executor&quot;: &quot;Run&quot;,
+    &quot;Python.demo_code.executor&quot;: &quot;Run&quot;,
+    &quot;Python.demo_code2.executor&quot;: &quot;Run&quot;,
+    &quot;Python.demo_code3.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.demo_code4.executor&quot;: &quot;Run&quot;,
+    &quot;Python.multi_circuit.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
+    &quot;Python.profile.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.python_console.executor&quot;: &quot;Run&quot;,
+    &quot;Python.raw_imp_exp_test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.readme_checks.executor&quot;: &quot;Run&quot;,
+    &quot;Python.substation_wizards.executor&quot;: &quot;Run&quot;,
+    &quot;Python.substations_types.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_power_flow.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_raw_cgmes_cross_roundtrip.executor&quot;: &quot;Run&quot;,
+    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
+    &quot;Python.upload_to_pypi.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;devel&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/GridCalEngine/Utils/MIP&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;two.files.diff.last.used.file&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -229,21 +224,21 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\GridCal\src\trunk\unbalanced_pf" />
-      <recent name="C:\GridCal\src\tests" />
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP" />
+      <recent name="$PROJECT_DIR$/doc/md_source/figures" />
       <recent name="C:\Work\git_local\GridCal\src\tests\data\grids\RAW" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget2" />
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Schema" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/doc/md_source/figures" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Devices/Dynamic" />
       <recent name="C:\Users\eRoots1\PycharmProjects\GridCal\src\tests" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids/RAW" />
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Substation" />
-      <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Branches" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -323,7 +318,6 @@
     </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -374,7 +368,6 @@
     </configuration>
     <configuration default="true" type="Tox" factoryName="Tox">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -387,7 +380,6 @@
     </configuration>
     <configuration default="true" type="docs" factoryName="Docutils task">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -405,7 +397,6 @@
     </configuration>
     <configuration default="true" type="docs" factoryName="Sphinx task">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -423,7 +414,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -443,7 +433,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="Nosetests">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -460,7 +449,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="py.test">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -478,7 +466,6 @@
     </configuration>
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -501,7 +488,6 @@
     </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -522,21 +508,20 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="make" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="grid_reduction" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/doc" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCalEngine/Topology" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/doc/make.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -547,7 +532,6 @@
     </configuration>
     <configuration name="test_power_flow" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -570,7 +554,6 @@
     </configuration>
     <configuration name="test_raw_cgmes_cross_roundtrip" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -593,7 +576,28 @@
     </configuration>
     <configuration name="update_gui_file (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/SubstationDesigner" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/SubstationDesigner/update_gui_file.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="update_gui_file" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -616,7 +620,6 @@
     </configuration>
     <configuration default="true" type="Tox" factoryName="Tox">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -629,7 +632,6 @@
     </configuration>
     <configuration default="true" type="docs" factoryName="Docutils task">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -647,7 +649,6 @@
     </configuration>
     <configuration default="true" type="docs" factoryName="Sphinx task">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -665,7 +666,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -685,7 +685,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="Nosetests">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -702,7 +701,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="py.test">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -718,27 +716,8 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_keywords" value="&quot;&quot;" />
-      <option name="_new_parameters" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
     <configuration name="pytest in tests" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -757,26 +736,26 @@
     <list>
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
-      <item itemvalue="Python.make" />
+      <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.update_gui_file (1)" />
+      <item itemvalue="Python.grid_reduction" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python tests.pytest for src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python tests.pytest for src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap" />
-        <item itemvalue="Python.make" />
+        <item itemvalue="Python.grid_reduction" />
         <item itemvalue="Python.update_gui_file (1)" />
+        <item itemvalue="Python.update_gui_file" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-a5bc9544c897-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.23654.177" />
+        <option value="bundled-python-sdk-14705d77f0bb-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.25659.43" />
       </set>
     </attachedChunks>
   </component>
@@ -1899,7 +1878,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="598" />
+    <option name="localTasksCounter" value="610" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1945,16 +1924,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="1e6 factor update" />
-    <MESSAGE value="Corrected grid.copy() by adding deepcopy method to ListSet object." />
-    <MESSAGE value="Added a test for the grid.copy() method" />
-    <MESSAGE value="Added threshold in the compare property of EditableDevice to avoid numerical issues." />
-    <MESSAGE value="Fix comparison numerical issues + fix tests" />
-    <MESSAGE value="Fixen unversioned files." />
-    <MESSAGE value="Updated smart_compare in editable devices." />
-    <MESSAGE value="Small changes solving datatable BUG." />
-    <MESSAGE value="Solved issue when creating new diagram from selection of substations of a filtered table." />
-    <MESSAGE value="Added more substations configs" />
     <MESSAGE value="Susbtation type configurations updates" />
     <MESSAGE value="Substation type configurations updates v2" />
     <MESSAGE value="Substation type configurations updates v3" />
@@ -1963,14 +1932,24 @@
     <MESSAGE value="Improved rms initialize" />
     <MESSAGE value="Improved rms generator values" />
     <MESSAGE value="All short-circuit types validated." />
-    <MESSAGE value="Starting with the ShortCircuitResults for the short-circuits analysis tool in the phase reference frame." />
-    <MESSAGE value="Adding three-phase loads defined as constant impedance" />
-    <MESSAGE value="Building the 13 Node Test Feeder in OpenDSS and corrected the negative sign of the susceptance B in the definition of impedance loads." />
-    <MESSAGE value="Three-phase current loads validated for both star and delta connections." />
-    <MESSAGE value="Load and shunt admittance vector transformed to a matrix. Shunt elements seems to be working, but loads doesn't." />
-    <MESSAGE value="All possible combinations of loads has been validated with OpenDSS." />
-    <MESSAGE value="New three-phase power flow test, created for the loads that doesn't appear in the original IEEE 13 Node Test Feeder." />
-    <option name="LAST_COMMIT_MESSAGE" value="New three-phase power flow test, created for the loads that doesn't appear in the original IEEE 13 Node Test Feeder." />
+    <MESSAGE value="added ortools as an option (WIP)&#10;Small modifications to handle ortools&#10;Added Dependency map to the license docs" />
+    <MESSAGE value="improved the adequacy problem with the firm capacity limit&#10;Improved the disk saving capabilities of the InvestmentsEvaluationResults" />
+    <MESSAGE value="Improved the substation designer&#10;Added disconnector icon&#10;Modified the switch icon" />
+    <MESSAGE value="Improved the bus short circuit options" />
+    <MESSAGE value="Further improvements to the NTC" />
+    <MESSAGE value="Improved the 3-windings layout" />
+    <MESSAGE value="Improved docs" />
+    <MESSAGE value="ntc tests passing for pulp" />
+    <MESSAGE value="ntc improvements" />
+    <MESSAGE value="fixed miss initialization for shift_key profiles" />
+    <MESSAGE value="minimal se refactors" />
+    <MESSAGE value="fixed measurements import" />
+    <MESSAGE value="Improved ward reduction" />
+    <MESSAGE value="Refactored the substation wizard code to substation_wizards.py" />
+    <MESSAGE value="Added se editor from the model context menu" />
+    <MESSAGE value="Worked on the reduction" />
+    <MESSAGE value="Small improvements to the docs" />
+    <option name="LAST_COMMIT_MESSAGE" value="Small improvements to the docs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2295,35 +2274,32 @@
           <option name="timeStamp" value="2602" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
-          <line>572</line>
-          <option name="timeStamp" value="2894" />
+          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
+          <line>228</line>
+          <option name="timeStamp" value="2635" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_results.py</url>
-          <line>426</line>
-          <option name="timeStamp" value="2904" />
+          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
+          <line>554</line>
+          <option name="timeStamp" value="2636" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
-          <line>926</line>
-          <option name="timeStamp" value="2907" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py</url>
+          <line>430</line>
+          <option name="timeStamp" value="2638" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py</url>
+          <line>522</line>
+          <option name="timeStamp" value="2640" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py</url>
+          <line>274</line>
+          <option name="timeStamp" value="2646" />
         </line-breakpoint>
       </breakpoints>
-      <default-breakpoints>
-        <breakpoint type="python-exception">
-          <properties notifyOnTerminate="true" exception="BaseException">
-            <option name="notifyOnTerminate" value="true" />
-          </properties>
-        </breakpoint>
-      </default-breakpoints>
     </breakpoint-manager>
-    <watches-manager>
-      <configuration name="PythonConfigurationType">
-        <watch expression="Ybuses.to_array()" language="Python" />
-        <watch expression="nc" />
-      </configuration>
-    </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/GridCal$update_gui_common.coverage" NAME="update_gui_common Coverage Results" MODIFIED="1662040207238" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
