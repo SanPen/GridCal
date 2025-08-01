@@ -1416,12 +1416,12 @@ class ShortCircuitResults(ResultsTemplate):
         va_b = np.angle(self.voltageB)
         va_c = np.angle(self.voltageC)
         phases_data = np.c_[vm_a, va_a*(180/np.pi), vm_b, va_b*(180/np.pi), vm_c, va_c*(180/np.pi)]
-        phases_cols = ['Voltage module A (p.u.)',
-                       'Voltage angle A (º)',
-                       'Voltage module B (p.u.)',
-                       'Voltage angle B (º)',
-                       'Voltage module C (p.u.)',
-                       'Voltage angle C (º)',
+        phases_cols = ['U_mod A [p.u.]',
+                       'U_ang A [º]',
+                       'U_mod B [p.u.]',
+                       'U_ang B [º]',
+                       'U_mod C [p.u.]',
+                       'U_ang C [º]',
                        ]
         df_phases = pd.DataFrame(data=phases_data, columns=phases_cols)
 

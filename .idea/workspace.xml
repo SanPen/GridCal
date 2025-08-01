@@ -28,15 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="All shunt types validated and added to the test of the modified IEEE 13 Node Test Feeder.">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="self.Y3_star = np.zeros((self.nelm * 3, 3), dtype=complex)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_formulation_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_formulation_template.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/load_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/load_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/shunt_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/shunt_data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ShortCircuit IEEE 13-bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ShortCircuit IEEE 13-bus.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -157,6 +154,8 @@
     "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
     "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
     "Python tests.Nosetests in tests.executor": "Run",
+    "Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder.executor": "Run",
+    "Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder_modified.executor": "Run",
     "Python tests.Python tests in test_3_phase_pf.py.executor": "Run",
     "Python tests.Python tests in test_3_phase_pf_13bus.py.executor": "Run",
     "Python tests.Python tests in test_3_phase_pf_13bus_modified.py.executor": "Run",
@@ -1889,7 +1888,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="599" />
+    <option name="localTasksCounter" value="600" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1935,7 +1934,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Corrected grid.copy() by adding deepcopy method to ListSet object." />
     <MESSAGE value="Added a test for the grid.copy() method" />
     <MESSAGE value="Added threshold in the compare property of EditableDevice to avoid numerical issues." />
     <MESSAGE value="Fix comparison numerical issues + fix tests" />
@@ -1960,7 +1958,8 @@
     <MESSAGE value="All possible combinations of loads has been validated with OpenDSS." />
     <MESSAGE value="New three-phase power flow test, created for the loads that doesn't appear in the original IEEE 13 Node Test Feeder." />
     <MESSAGE value="All shunt types validated and added to the test of the modified IEEE 13 Node Test Feeder." />
-    <option name="LAST_COMMIT_MESSAGE" value="All shunt types validated and added to the test of the modified IEEE 13 Node Test Feeder." />
+    <MESSAGE value="self.Y3_star = np.zeros((self.nelm * 3, 3), dtype=complex)" />
+    <option name="LAST_COMMIT_MESSAGE" value="self.Y3_star = np.zeros((self.nelm * 3, 3), dtype=complex)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
