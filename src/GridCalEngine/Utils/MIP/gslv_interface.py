@@ -12,12 +12,13 @@ from __future__ import annotations
 
 from typing import List, Union, Callable, Any
 import subprocess
-import GridCalEngine.Utils.ThirdParty.pulp as pulp
-from GridCalEngine.Utils.ThirdParty.pulp.apis.highs_py import HiGHS
-from GridCalEngine.Utils.ThirdParty.pulp.apis.cplex_cmd import CPLEX_CMD
-from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpAffineExpression as LpExp
-from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpConstraint as LpCst
-from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpVariable as LpVar
+# import GridCalEngine.Utils.ThirdParty.pulp as pulp
+# from GridCalEngine.Utils.ThirdParty.pulp.apis.highs_py import HiGHS
+# from GridCalEngine.Utils.ThirdParty.pulp.apis.cplex_cmd import CPLEX_CMD
+# from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpAffineExpression as LpExp
+# from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpConstraint as LpCst
+# from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpVariable as LpVar
+from pygslv import LPModel, LpResult, Constraint as LpCst, Var as LpVar, Expr as LpExp
 from GridCalEngine.enumerations import MIPSolvers
 from GridCalEngine.basic_structures import Logger
 
@@ -43,29 +44,31 @@ def get_available_mip_solvers() -> List[str]:
     Get a list of candidate solvers
     :return:
     """
-    solvers = pulp.listSolvers(onlyAvailable=True)
+    # solvers = pulp.listSolvers(onlyAvailable=True)
+    #
+    # solvers2 = list()
+    # for slv in solvers:
+    #     if slv == 'SCIP_CMD':
+    #         solvers2.append(MIPSolvers.SCIP.value)
+    #     elif slv == 'CPLEX_CMD':
+    #         solvers2.append(MIPSolvers.CPLEX.value)
+    #     elif slv == 'GUROBI':
+    #         solvers2.append(MIPSolvers.GUROBI.value)
+    #     elif slv == 'XPRESS':
+    #         solvers2.append(MIPSolvers.XPRESS.value)
+    #     elif slv == 'HiGHS':
+    #         solvers2.append(MIPSolvers.HIGHS.value)
 
-    solvers2 = list()
-    for slv in solvers:
-        if slv == 'SCIP_CMD':
-            solvers2.append(MIPSolvers.SCIP.value)
-        elif slv == 'CPLEX_CMD':
-            solvers2.append(MIPSolvers.CPLEX.value)
-        elif slv == 'GUROBI':
-            solvers2.append(MIPSolvers.GUROBI.value)
-        elif slv == 'XPRESS':
-            solvers2.append(MIPSolvers.XPRESS.value)
-        elif slv == 'HiGHS':
-            solvers2.append(MIPSolvers.HIGHS.value)
+    return [MIPSolvers.HIGHS.value]
 
-    return solvers2
+
 
 
 class LpModel:
     """
     LPModel implementation for PuLP
     """
-    OPTIMAL = pulp.LpStatusOptimal
+    OPTIMAL = True
     INFINITY = 1e20
     originally_infeasible = False
 
@@ -73,26 +76,16 @@ class LpModel:
 
         self.solver_type: MIPSolvers = solver_type
 
-        self.model = pulp.LpProblem("myProblem", pulp.LpMinimize)
+        self.model = LPModel()
 
         self.relaxed_slacks = list()
+
+        self.result: LpResult | None = None
 
         self.logger = Logger()
 
         if self.model is None:
             raise Exception("{} is not present".format(solver_type.value))
-
-    @staticmethod
-    def set_var_bounds(var: LpVar, lb: float, ub: float):
-        """
-        Modify the bounds of a variable
-        :param var: LpVar instance to modify
-        :param lb: lower bound value
-        :param ub: upper bound value
-        """
-        if isinstance(var, LpVar):
-            var.upBound = ub
-            var.lowBound = lb
 
     def save_model(self, file_name: str = "ntc_opf_problem.lp") -> None:
         """
@@ -118,9 +111,7 @@ class LpModel:
         :param name: name (optional)
         :return: LpVar
         """
-        var = pulp.LpVariable(name=name, lowBound=lb, upBound=ub, cat=pulp.LpInteger)
-        self.model.addVariable(var)
-        return var
+        return self.model.add_var(name=name, low=lb, up=ub, integer=True)
 
     def add_var(self, lb: float, ub: float, name: str = "") -> LpVar:
         """
@@ -130,9 +121,7 @@ class LpModel:
         :param name: name (optional)
         :return: LpVar
         """
-        var = pulp.LpVariable(name=name, lowBound=lb, upBound=ub, cat=pulp.LpContinuous)
-        self.model.addVariable(var)
-        return var
+        return self.model.add_var(name=name, low=lb, up=ub, integer=False)
 
     def add_cst(self, cst: LpCst | bool, name: str = "") -> Union[LpCst, int]:
         """
@@ -144,7 +133,8 @@ class LpModel:
         if isinstance(cst, bool):
             return 0
         else:
-            return self.model.addConstraint(constraint=cst, name=name)
+            self.model.add_constraint(cst=cst, name=name)
+            return self.model.constraints[-1]
 
     @staticmethod
     def sum(cst) -> LpExp:
@@ -153,38 +143,14 @@ class LpModel:
         :param cst: constraint object (or general expression)
         :return: Constraint object
         """
-        return pulp.lpSum(cst)
+        return sum(cst)
 
     def minimize(self, obj_function: LpExp):
         """
         Set the objective function with minimization sense
         :param obj_function: expression to minimize
         """
-        self.model.setObjective(obj=obj_function)
-
-    def get_solver(self, show_logs: bool = False):
-        """
-
-        :param show_logs:
-        :return:
-        """
-        if self.solver_type == MIPSolvers.HIGHS:
-            return HiGHS(mip=self.model.isMIP(), msg=show_logs)
-
-        elif self.solver_type == MIPSolvers.SCIP:
-            return pulp.getSolver('SCIP_CMD')
-
-        elif self.solver_type == MIPSolvers.CPLEX:
-            return CPLEX_CMD(mip=self.model.isMIP(), msg=show_logs)
-
-        elif self.solver_type == MIPSolvers.GUROBI:
-            return pulp.getSolver('GUROBI')
-
-        elif self.solver_type == MIPSolvers.XPRESS:
-            return pulp.getSolver('XPRESS')
-
-        else:
-            raise Exception('PuLP Unsupported MIP solver ' + self.solver_type.value)
+        self.model.minimise(obj_function)
 
     def solve(self, robust: bool = False, show_logs: bool = False,
               progress_text: Callable[[str], None] | None = None) -> int:
@@ -199,19 +165,9 @@ class LpModel:
             progress_text(f"Solving model with {self.solver_type.value}...")
 
         # solve the model
-        try:
-            status = self.model.solve(solver=self.get_solver(show_logs=show_logs))
-        except pulp.PulpSolverError as e:
-            self.logger.add_error(msg=str(e), )
-            # Retry with Highs
-            status = self.model.solve(solver=HiGHS(mip=self.model.isMIP(), msg=show_logs))
+        res = self.model.solve()
 
-        except subprocess.CalledProcessError as e:
-            self.logger.add_error(msg=str(e), )
-            # Retry with Highs
-            status = self.model.solve(solver=HiGHS(mip=self.model.isMIP(), msg=show_logs))
-
-        if status != self.OPTIMAL:
+        if not res.optimal:
             self.originally_infeasible = True
 
             if robust:
@@ -228,18 +184,18 @@ class LpModel:
                 bringing it to optimality.
                 """
 
-                self.logger.add_error(msg="Base problem could not be solved", value=self.status2string(status))
+                # TODO: figure out the status thing in pygslv
+                self.logger.add_error(msg="Base problem could not be solved", value="infeasible")
 
                 # deep copy of the original model
-                debug_model = self.model.deepcopy()
+                debug_model = self.model.copy()
 
                 # modify the original to detect the bad constraints
                 slacks = list()
                 debugging_f_obj = 0
                 for i, (cst_name, cst) in enumerate(debug_model.constraints.items()):
                     # create a new slack var in the problem
-                    sl = pulp.LpVariable(name=f'Relax_{cst_name}', lowBound=0, upBound=1e20, cat=pulp.LpContinuous)
-                    debug_model.addVariable(sl)
+                    sl = debug_model.add_var(name=f'Relax_{cst_name}', low=0, up=1e20)
 
                     # add the variable to the new objective function
                     debugging_f_obj += sl
@@ -257,12 +213,12 @@ class LpModel:
                     progress_text(f"Solving debug model with {self.solver_type.value}...")
 
                 # solve the debug model
-                status_d = debug_model.solve(solver=self.get_solver(show_logs=show_logs))
+                res_d = debug_model.solve()
 
                 # clear the relaxed slacks list
                 self.relaxed_slacks = list()
 
-                if status_d == LpModel.OPTIMAL:
+                if res_d.optimal:
 
                     # pick the original objective function
                     cst_slack_map = list()
@@ -273,11 +229,9 @@ class LpModel:
 
                         if abs(val) > 1e-10:
                             # add the slack in the main model
-                            sl2 = pulp.LpVariable(name=f'Relax_final_{cst_name}',
-                                                  lowBound=0,
-                                                  upBound=1e20,
-                                                  cat=pulp.LpContinuous)
-                            self.model.addVariable(sl2)
+                            sl2 = self.model.add_var(name=f'Relax_final_{cst_name}',
+                                                     low=0,
+                                                     up=1e20, )
                             self.relaxed_slacks.append((i, sl2, 0.0))  # the 0.0 value will be read later
 
                             # add the slack to the original objective function
@@ -299,9 +253,9 @@ class LpModel:
                         progress_text(f"Solving relaxed model with {self.solver_type.value}...")
 
                     # solve the modified (original) model
-                    status = self.model.solve(solver=self.get_solver(show_logs=show_logs))
+                    res = self.model.solve()
 
-                    if status == LpModel.OPTIMAL:
+                    if res.optimal:
 
                         for i in range(len(self.relaxed_slacks)):
                             k, var, _ = self.relaxed_slacks[i]
@@ -317,19 +271,32 @@ class LpModel:
                                 )
 
                     else:
-                        self.logger.add_warning(msg="Relaxed probrem is not optimal :(")
+                        self.logger.add_warning(msg="Relaxed problem is not optimal :(")
 
                 else:
                     self.logger.add_warning("Unable to relax the model, the debug model failed :(")
 
-        return status
+        # assign the result object
+        self.result = res
+
+        return 1 if res.optimal else 0
 
     def fobj_value(self) -> float:
         """
         Get the objective function value
         :return:
         """
-        return self.model.objective.value()
+        return self.result.objective
+
+    def set_var_bounds(self, var: LpVar, lb: float, ub: float):
+        """
+        Modify the bounds of a variable
+        :param var: LpVar instance to modify
+        :param lb: lower bound value
+        :param ub: upper bound value
+        """
+        if isinstance(var, LpVar):
+            self.model.set_bounds(var, lb, ub)
 
     def is_mip(self):
         """
@@ -338,29 +305,22 @@ class LpModel:
         """
         return self.model.isMIP()
 
-    @staticmethod
-    def get_value(x: Union[float, int, LpVar, LpExp, LpCst, Any]) -> float:
+    def get_value(self, x: Union[float, int, LpVar, LpExp, LpCst, Any]) -> float:
         """
         Get the value of a variable stored in a numpy array of objects
         :param x: solver object (it may be a LP var or a number)
         :return: result or zero
         """
         if isinstance(x, LpVar):
-            val = x.value()
-        elif isinstance(x, LpExp):
-            val = x.value()
+            return self.result.col_primal[self.model.col(x)]
         elif isinstance(x, float) or isinstance(x, int):
             return x
         else:
-            raise Exception("Unrecognized type {}".format(x))
+            # raise Exception("Unrecognized type {}".format(x))
+            # TODO: Figure this out
+            return 0
 
-        if isinstance(val, float):
-            return val
-        else:
-            return 0.0
-
-    @staticmethod
-    def get_dual_value(x: LpCst) -> float:
+    def get_dual_value(self, x: LpCst) -> float:
         """
         Get the dual value of a variable stored in a numpy array of objects
         :param x: constraint
@@ -370,16 +330,14 @@ class LpModel:
             return 0.0
 
         if isinstance(x, LpCst):
-            return x.pi
+            # return self.result.row_primal[self.model.row(x)]
+            # TODO: figure this out
+            return 0.0
         elif isinstance(x, float):
             return x
         else:
             return 0.0
 
-    def status2string(self, stat: int) -> str:
-        """
-        Convert the PuLP status to a string
-        :param stat:
-        :return:
-        """
-        return pulp.LpStatus[stat]
+    def status2string(self, val: int):
+        # TODO: figure this out
+        return "optimal" if val == 1 else "not optimal"
