@@ -411,9 +411,6 @@ def power_flow_3ph(grid: gce.MultiCircuit, V0_3ph: Vec):
 
     return res
 
-"""
-Short Circuit
-"""
 def short_circuit_3ph(grid, t_idx=None) -> ShortCircuitResults:
     """
     Short Circuit
@@ -427,9 +424,6 @@ def short_circuit_3ph(grid, t_idx=None) -> ShortCircuitResults:
     V0[0] = 1.0210 * np.exp(1j * (-2.49 * np.pi / 180))
     V0[1] = 1.0420 * np.exp(1j * (-121.72 * np.pi / 180))
     V0[2] = 1.0174 * np.exp(1j * (117.83 * np.pi / 180))
-    # V0[0] = 1.0 * np.exp(1j * (0 * np.pi / 180))
-    # V0[1] = 1.0 * np.exp(1j * (-120 * np.pi / 180))
-    # V0[2] = 1.0 * np.exp(1j * (120 * np.pi / 180))
 
     res_3ph = power_flow_3ph(grid, V0_3ph=V0)
 
@@ -455,7 +449,7 @@ def short_circuit_3ph(grid, t_idx=None) -> ShortCircuitResults:
     pf_res.Sbus = res_3ph.Scalc
 
     sc_options = gce.ShortCircuitOptions(bus_index=4,
-                                         fault_type=FaultType.ph3,
+                                         fault_type=FaultType.LLL,
                                          mid_line_fault=False,
                                          branch_index=0,
                                          branch_fault_locations=0.5,

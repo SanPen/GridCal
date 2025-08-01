@@ -28,8 +28,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="self.Y3_star = np.zeros((self.nelm * 3, 3), dtype=complex)">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="short_circuit_results.py adapted to short-circuit calculations in the phase reference frame.">
+      <change afterPath="$PROJECT_DIR$/src/tests/test_3ph_ShortCircuit_13bus.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/case14_merge1.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/case14_merge1.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/case14_merge2.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/case14_merge2.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ShortCircuit IEEE 13-bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ShortCircuit IEEE 13-bus.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -152,9 +157,14 @@
     "Python tests.Nosetests in tests.executor": "Run",
     "Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder.executor": "Run",
     "Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder_modified.executor": "Run",
+    "Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_double_line_to_ground_fault_DLG.executor": "Run",
+    "Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_line_to_line_fault.executor": "Run",
+    "Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_single_line_to_ground_fault_SLG.executor": "Run",
+    "Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_three_phase_fault.executor": "Run",
     "Python tests.Python tests in test_3_phase_pf.py.executor": "Run",
     "Python tests.Python tests in test_3_phase_pf_13bus.py.executor": "Run",
     "Python tests.Python tests in test_3_phase_pf_13bus_modified.py.executor": "Run",
+    "Python tests.Python tests in test_3ph_ShortCircuit_13bus.py.executor": "Run",
     "Python tests.Python tests in tests.executor": "Run",
     "Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor": "Debug",
     "Python tests.pytest for src.tests.test_basic.test_gridcal_basic_pi.executor": "Debug",
@@ -212,7 +222,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "devel",
-    "last_opened_file_path": "C:/GridCal/src/trunk/unbalanced_pf",
+    "last_opened_file_path": "C:/GridCal/src/tests",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -230,8 +240,8 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\GridCal\src\trunk\unbalanced_pf" />
       <recent name="C:\GridCal\src\tests" />
+      <recent name="C:\GridCal\src\trunk\unbalanced_pf" />
       <recent name="C:\Work\git_local\GridCal\src\tests\data\grids\RAW" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget2" />
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Schema" />
@@ -477,29 +487,6 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -618,7 +605,7 @@
       <option name="docutils_open_in_browser" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Python tests for test_3ph_ShortCircuit_13bus.test_double_line_to_ground_fault_DLG" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -629,11 +616,11 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_3_phase_pf_13bus.test_ieee_13_bus_feeder&quot;" />
+      <option name="_new_target" value="&quot;test_3ph_ShortCircuit_13bus.test_double_line_to_ground_fault_DLG&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder_modified" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Python tests for test_3ph_ShortCircuit_13bus.test_line_to_line_fault" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -644,7 +631,37 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_3_phase_pf_13bus.test_ieee_13_bus_feeder_modified&quot;" />
+      <option name="_new_target" value="&quot;test_3ph_ShortCircuit_13bus.test_line_to_line_fault&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for test_3ph_ShortCircuit_13bus.test_single_line_to_ground_fault_SLG" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_3ph_ShortCircuit_13bus.test_single_line_to_ground_fault_SLG&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for test_3ph_ShortCircuit_13bus.test_three_phase_fault" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_3ph_ShortCircuit_13bus.test_three_phase_fault&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
@@ -703,24 +720,6 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_keywords" value="&quot;&quot;" />
-      <option name="_new_parameters" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
     <configuration name="pytest in tests" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -742,19 +741,19 @@
     <list>
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
-      <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder" />
-      <item itemvalue="Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder_modified" />
-      <item itemvalue="Python tests.pytest for src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap" />
+      <item itemvalue="Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_double_line_to_ground_fault_DLG" />
+      <item itemvalue="Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_line_to_line_fault" />
+      <item itemvalue="Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_single_line_to_ground_fault_SLG" />
+      <item itemvalue="Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_three_phase_fault" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder" />
-        <item itemvalue="Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder_modified" />
-        <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_three_phase_fault" />
+        <item itemvalue="Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_line_to_line_fault" />
+        <item itemvalue="Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_double_line_to_ground_fault_DLG" />
+        <item itemvalue="Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_single_line_to_ground_fault_SLG" />
         <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python tests.pytest for src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap" />
       </list>
     </recent_temporary>
   </component>
@@ -1884,7 +1883,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="601" />
+    <option name="localTasksCounter" value="602" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1930,7 +1929,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added a test for the grid.copy() method" />
     <MESSAGE value="Added threshold in the compare property of EditableDevice to avoid numerical issues." />
     <MESSAGE value="Fix comparison numerical issues + fix tests" />
     <MESSAGE value="Fixen unversioned files." />
@@ -1955,7 +1953,8 @@
     <MESSAGE value="New three-phase power flow test, created for the loads that doesn't appear in the original IEEE 13 Node Test Feeder." />
     <MESSAGE value="All shunt types validated and added to the test of the modified IEEE 13 Node Test Feeder." />
     <MESSAGE value="self.Y3_star = np.zeros((self.nelm * 3, 3), dtype=complex)" />
-    <option name="LAST_COMMIT_MESSAGE" value="self.Y3_star = np.zeros((self.nelm * 3, 3), dtype=complex)" />
+    <MESSAGE value="short_circuit_results.py adapted to short-circuit calculations in the phase reference frame." />
+    <option name="LAST_COMMIT_MESSAGE" value="short_circuit_results.py adapted to short-circuit calculations in the phase reference frame." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
