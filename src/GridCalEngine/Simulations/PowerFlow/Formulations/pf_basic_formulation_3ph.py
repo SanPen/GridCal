@@ -147,15 +147,13 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
         f = nc.shunt_data.bus_idx[k]
         k3 = 3 * k + idx3
         f3 = 3 * f + idx3
-        Ysh_bus[np.ix_(f3, f3)] += nc.shunt_data.Y3_star[np.ix_(k3, k3)] / (nc.Sbase / 3)
-        print()
+        Ysh_bus[np.ix_(f3, f3)] += nc.shunt_data.Y3_star[np.ix_(k3, idx3)] / (nc.Sbase / 3)
 
     for k in range(nc.load_data.nelm):
         f = nc.load_data.bus_idx[k]
         k3 = 3 * k + idx3
         f3 = 3 * f + idx3
-        Ysh_bus[np.ix_(f3, f3)] += nc.load_data.Y3_star[np.ix_(k3, k3)] / (nc.Sbase / 3)
-        print()
+        Ysh_bus[np.ix_(f3, f3)] += nc.load_data.Y3_star[np.ix_(k3, idx3)] / (nc.Sbase / 3)
 
     Ybus = Cf.T @ Yf + Ct.T @ Yt + Ysh_bus
     Ybus = Ybus[binary_bus_mask, :][:, binary_bus_mask]

@@ -28,11 +28,15 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="New three-phase power flow test, created for the loads that doesn't appear in the original IEEE 13 Node Test Feeder.">
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Shunts Validation OpenDSS.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="All shunt types validated and added to the test of the modified IEEE 13 Node Test Feeder.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_3_phase_pf_13bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_3_phase_pf_13bus.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Modified IEEE 13-bus Test Feeder Case OpenDSS.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Modified IEEE 13-bus Test Feeder Case OpenDSS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_formulation_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_formulation_template.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ShortCircuit IEEE 13-bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ShortCircuit IEEE 13-bus.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -180,8 +184,9 @@
     "Python.GridCalMain.executor": "Run",
     "Python.IEEE 13-bus Test Feeder Case OpenDSS.executor": "Run",
     "Python.IEEE 13-bus Test Feeder Case worker.executor": "Run",
+    "Python.IEEE 13-bus Test Feeder Case.executor": "Run",
     "Python.Modified IEEE 13-bus Test Feeder Case OpenDSS.executor": "Run",
-    "Python.ShortCircuit IEEE 13-bus.executor": "Debug",
+    "Python.ShortCircuit IEEE 13-bus.executor": "Run",
     "Python.Shunts Validation OpenDSS.executor": "Run",
     "Python._callers.executor": "Debug",
     "Python.alex.executor": "Debug",
@@ -200,6 +205,7 @@
     "Python.python_console.executor": "Run",
     "Python.raw_imp_exp_test.executor": "Run",
     "Python.readme_checks.executor": "Run",
+    "Python.short_circuit_worker.executor": "Run",
     "Python.substation_wizards.executor": "Run",
     "Python.substations_types.executor": "Run",
     "Python.test_power_flow.executor": "Run",
@@ -243,7 +249,7 @@
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Branches" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder_modified">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -522,29 +528,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="make" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/doc" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/doc/make.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="test_power_flow" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -583,29 +566,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/tests/test_raw_cgmes_cross_roundtrip.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="update_gui_file (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/Main" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -661,6 +621,36 @@
       <option name="docutils_params" value="" />
       <option name="docutils_task" value="" />
       <option name="docutils_open_in_browser" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_3_phase_pf_13bus.test_ieee_13_bus_feeder&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder_modified" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_3_phase_pf_13bus.test_ieee_13_bus_feeder_modified&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
@@ -757,19 +747,19 @@
     <list>
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
-      <item itemvalue="Python.make" />
-      <item itemvalue="Python.update_gui_file (1)" />
       <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder" />
+      <item itemvalue="Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder_modified" />
       <item itemvalue="Python tests.pytest for src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder_modified" />
+        <item itemvalue="Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest for src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap" />
-        <item itemvalue="Python.make" />
-        <item itemvalue="Python.update_gui_file (1)" />
       </list>
     </recent_temporary>
   </component>
@@ -1899,7 +1889,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="598" />
+    <option name="localTasksCounter" value="599" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1945,7 +1935,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="1e6 factor update" />
     <MESSAGE value="Corrected grid.copy() by adding deepcopy method to ListSet object." />
     <MESSAGE value="Added a test for the grid.copy() method" />
     <MESSAGE value="Added threshold in the compare property of EditableDevice to avoid numerical issues." />
@@ -1970,7 +1959,8 @@
     <MESSAGE value="Load and shunt admittance vector transformed to a matrix. Shunt elements seems to be working, but loads doesn't." />
     <MESSAGE value="All possible combinations of loads has been validated with OpenDSS." />
     <MESSAGE value="New three-phase power flow test, created for the loads that doesn't appear in the original IEEE 13 Node Test Feeder." />
-    <option name="LAST_COMMIT_MESSAGE" value="New three-phase power flow test, created for the loads that doesn't appear in the original IEEE 13 Node Test Feeder." />
+    <MESSAGE value="All shunt types validated and added to the test of the modified IEEE 13 Node Test Feeder." />
+    <option name="LAST_COMMIT_MESSAGE" value="All shunt types validated and added to the test of the modified IEEE 13 Node Test Feeder." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2293,11 +2283,6 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_gslv.py</url>
           <line>2434</line>
           <option name="timeStamp" value="2602" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
-          <line>572</line>
-          <option name="timeStamp" value="2894" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_results.py</url>

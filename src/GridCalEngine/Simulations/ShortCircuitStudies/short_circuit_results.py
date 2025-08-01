@@ -10,6 +10,7 @@ from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.enumerations import FaultType
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import (expand_indices_3ph)
 
 
 class ShortCircuitResults(ResultsTemplate):
@@ -1406,6 +1407,26 @@ class ShortCircuitResults(ResultsTemplate):
         else:
             raise Exception('Unsupported result type: ' + str(result_type))
 
+    def get_voltage_3ph_df(self):
+        # phase buses results
+        vm_a = np.abs(self.voltageA)
+        vm_b = np.abs(self.voltageB)
+        vm_c = np.abs(self.voltageC)
+        va_a = np.angle(self.voltageA)
+        va_b = np.angle(self.voltageB)
+        va_c = np.angle(self.voltageC)
+        phases_data = np.c_[vm_a, va_a*(180/np.pi), vm_b, va_b*(180/np.pi), vm_c, va_c*(180/np.pi)]
+        phases_cols = ['Voltage module A (p.u.)',
+                       'Voltage angle A (º)',
+                       'Voltage module B (p.u.)',
+                       'Voltage angle B (º)',
+                       'Voltage module C (p.u.)',
+                       'Voltage angle C (º)',
+                       ]
+        df_phases = pd.DataFrame(data=phases_data, columns=phases_cols)
+
+        return df_phases
+
     def export_all(self):
         """
         Exports all the results to DataFrames.
@@ -1446,21 +1467,4 @@ class ShortCircuitResults(ResultsTemplate):
                        'Losses (MVA)']
         df_branch = pd.DataFrame(data=branch_data, columns=branch_cols)
 
-        # phase buses results
-        vm_a = np.abs(self.voltageA)
-        vm_b = np.abs(self.voltageB)
-        vm_c = np.abs(self.voltageB)
-        va_a = np.angle(self.voltageA)
-        va_b = np.angle(self.voltageB)
-        va_c = np.angle(self.voltageC)
-        phases_data = np.c_[vm_a, va_a, vm_b, va_b, vm_c, va_c]
-        phases_cols = ['Voltage module A (p.u.)',
-                    'Voltage angle A (rad)',
-                    'Voltage module B (p.u.)',
-                    'Voltage angle B (rad)',
-                    'Voltage module C (p.u.)',
-                    'Voltage angle C (rad)',
-                    ]
-        df_phases = pd.DataFrame(data=phases_data, columns=phases_cols)
-
-        return df_bus, df_branch, df_phases
+        return df_bus, df_branch
