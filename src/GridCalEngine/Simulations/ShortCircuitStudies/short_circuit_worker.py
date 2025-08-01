@@ -574,10 +574,6 @@ def short_circuit_abc(nc: NumericalCircuit,
         Yfault[c, a] = -1 / (Zf[bus_index] + 1e-20)
         Yfault[c, b] = -1 / (Zf[bus_index] + 1e-20)
 
-        # Yfault[a, a] = 3 / (Zf[bus_index] + 1e-20)
-        # Yfault[b, b] = 3 / (Zf[bus_index] + 1e-20)
-        # Yfault[c, c] = 3 / (Zf[bus_index] + 1e-20)
-
     # Three-Phase-to-Ground (LLLG)
     elif fault_type == FaultType.ph3:
 

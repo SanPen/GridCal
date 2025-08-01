@@ -473,39 +473,4 @@ def short_circuit_3ph(grid, t_idx=None) -> ShortCircuitResults:
 
 res_SC = short_circuit_3ph(grid)
 
-print('Done')
-
-bus_numbers = [632, 645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
-
-nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx=None)
-
 print(res_SC.get_voltage_3ph_df())
-
-df_U = pd.DataFrame({
-        'Buses': bus_numbers,
-        'UA': abs(res_SC.voltageA),
-        'deltaA': np.angle(res_SC.voltageA)*(180/np.pi),
-        'UB': abs(res_SC.voltageB),
-        'deltaB': np.angle(res_SC.voltageB)*(180/np.pi),
-        'UC': abs(res_SC.voltageC),
-        'deltaC': np.angle(res_SC.voltageC)*(180/np.pi),
-    })
-
-df_U[['UA', 'deltaA', 'UB', 'deltaB', 'UC', 'deltaC']] = df_U[['UA', 'deltaA', 'UB', 'deltaB', 'UC', 'deltaC']].round(4)
-pd.set_option("display.precision", 6)
-print(df_U)
-
-
-bus_numbers = [645, 646, 633, 634, 671, 684, 611, 675, 680, 652]
-df_I = pd.DataFrame({
-        'Buses': bus_numbers,
-        'ItA': (res_SC.ItA),
-        'IfA': (res_SC.IfA),
-        'ItB': (res_SC.ItB),
-        'IfB': (res_SC.IfB),
-        'ItC': (res_SC.ItA),
-        'IfC': (res_SC.IfC),
-    })
-
-print(df_I)
-print()
