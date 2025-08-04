@@ -89,7 +89,7 @@ def main():
     while tds.t < tds.config.tf:
 
         if tds.t > 2.5 and one == True:
-            #ss.PQ.set(src='Ppf', idx='PQ_0', attr='v', value=Ppf_new)
+            ss.PQ.set(src='Ppf', idx='PQ_0', attr='v', value=Ppf_new)
             one = False
             # Log current state
         time_history.append(tds.t)

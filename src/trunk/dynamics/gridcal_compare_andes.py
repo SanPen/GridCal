@@ -50,7 +50,7 @@ def merge_simulation_results_by_time(csv1, csv2, output_csv= 'merged_data.csv', 
 
     return merged_df
 
-comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_results_automatic_init.csv')
+comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_results_andes.csv')
 # andes is automatic
 # Load merged CSV
 i = 1
@@ -88,9 +88,8 @@ print(merged_df)
 # ]
 
 variable_pairs = [
-     [f"omega_1_Gridcal_sim1", f"omega_1_Gridcal_sim2"],
-     # ['Pl_Gridcal', 'Ppf_andes_load_0'],
-     # [f"tm_1_Gridcal", f"tm_andes_gen_2"],
+     ['Pl_Gridcal', 'Ppf_andes_load_0'],
+     [f"tm_1_Gridcal", f"tm_andes_gen_2"],
      # [f"t_e_1_Gridcal", f"te_andes_gen_2"],
     #  [f"Vline_from_0_Gridcal", f"v_andes_Bus_1"],
     # [f"Vline_to_0_Gridcal", f"v_andes_Bus_2"],
