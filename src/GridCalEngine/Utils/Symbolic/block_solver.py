@@ -854,7 +854,7 @@ class BlockSolver:
                                  x0: np.ndarray,
                                  params0: np.ndarray,
                                  diff_params_matrix: csr_matrix,  # TODO: Not sure if a CSR is the best thing here
-                                 tol=1e-8,
+                                 tol=1e-6,
                                  max_iter=1000):
         """
         :param t0:
@@ -881,6 +881,10 @@ class BlockSolver:
             while not converged and n_iter < max_iter:
                 rhs = self.rhs_implicit(x_new, xn, params_current, step_idx, h)
                 converged = np.linalg.norm(rhs, np.inf) < tol
+
+                # NOTE: to check initialization makes sense to use rhs!
+                # if step_idx == 0:
+                #     print(np.linalg.norm(rhs, np.inf))
 
                 if converged:
                     break

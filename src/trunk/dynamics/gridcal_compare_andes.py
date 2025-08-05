@@ -55,58 +55,37 @@ comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulat
 # Load merged CSV
 i = 1
 merged_df = comparison
-# merged_df['Pl_7_Gridcal'] = merged_df['Pl_7_Gridcal'] * (-100)
-# merged_df[f"tm_{i}_Gridcal"] = merged_df[f"tm_{i}_Gridcal"] * (100)
-# merged_df[f"t_e_{i}_Gridcal"] = merged_df[f"t_e_{i}_Gridcal"] * (100)
-
-merged_df['Pl_Gridcal'] = merged_df['Pl_Gridcal'] * (-100)
-# merged_df[f"tm_Gridcal"] = merged_df[f"tm_Gridcal"] * (100)
-# merged_df[f"t_e_Gridcal"] = merged_df[f"t_e_Gridcal"] * (100)
-# Define variable pairs to compare (each pair goes into one subplot)
-
-
-# variable_pairs = [
-#      [f"omega_{i}_Gridcal", f"omega_andes_gen_{i}"],
-#      ['Pl_7_Gridcal', 'Ppf_andes_load_0'],
-#      [f"tm_{i}_Gridcal", f"tm_andes_gen_{i}"],
-#      [f"t_e_{i}_Gridcal", f"te_andes_gen_{i}"]
-
-    #  ['tm_2_Gridcal', 'tm_andes_gen_2'],
-    #  ['tm_3_Gridcal', 'tm_andes_gen_3'],
-    #  ['tm_4_Gridcal', 'tm_andes_gen_4'],
-    #  ['omega_2_Gridcal', 'omega_andes_gen_2'],
-    #  ['omega_3_Gridcal', 'omega_andes_gen_3'],
-    #  ['omega_4_Gridcal', 'omega_andes_gen_4'],
-     #['omega2_Gridcal', 'omega_andes_gen_2'],
-     #['omega3_Gridcal', 'omega_andes_gen_3'],
-     #['omega4_Gridcal', 'omega_andes_gen_4']
-         #  ['Vline_from_12_Gridcal', 'v_andes_Bus_2'],
-    #  ['Vline_from_11_Gridcal', 'v_andes_Bus_1'],
-    #  ['Vline_from_14_Gridcal', 'v_andes_Bus_4'],
-    #  ['Vline_from_13_Gridcal', 'v_andes_Bus_3'],
-# ]
+# merged_df['Pl_Gridcal'] = merged_df['Pl_Gridcal'] * (-100)
 
 variable_pairs = [
-     [f"omega_1_Gridcal", f"omega_andes_gen_2"],
-     ['Pl_Gridcal', 'Ppf_andes_load_0'],
-     # [f"tm_Gridcal", f"tm_andes_gen_1"],
-     # [f"t_e_Gridcal", f"te_andes_gen_1"]
+     [f"Vline_to_G1_Gridcal", f"v_andes_Bus_1"],
+     [f"Vline_to_G2_Gridcal", f"v_andes_Bus_2"],
+     [f"Vline_to_G3_Gridcal", f"v_andes_Bus_3"],
+     [f"Vline_to_G4_Gridcal", f"v_andes_Bus_4"],
+     [f"dline_to_G1_Gridcal", f"a_andes_Bus_1"],
+     [f"dline_to_G2_Gridcal", f"a_andes_Bus_2"],
+     [f"dline_to_G3_Gridcal", f"a_andes_Bus_3"],
+     [f"dline_to_G4_Gridcal", f"a_andes_Bus_4"],
+     [f"omega_1_Gridcal", f"omega_andes_gen_1"],
+     [f"omega_2_Gridcal", f"omega_andes_gen_2"],
+     [f"omega_3_Gridcal", f"omega_andes_gen_3"],
+     [f"omega_4_Gridcal", f"omega_andes_gen_4"]
     ]
+
+
+
 
 # Automatically detect time columns
 time_column = merged_df['Time [s]']
 time_columns = [col for col in merged_df.columns if 'Time [s]' in col.lower()]
 time1 = time_column
 
-#time1 = merged_df[time_columns]
-#time2 = merged_df[time_columns[1]] if len(time_columns) > 1 else time1  # fallback to same time
-
 # Create subplots
 n = len(variable_pairs)
 cols = 2
 rows = (n + 1) // cols
 
-fig, axes = plt.subplots(rows, cols, figsize=(16, 4 * rows), sharex=True)
+fig, axes = plt.subplots(rows, cols, figsize=(10, 2 * rows), sharex=True)
 axes = axes.flatten()
 for idx, (var1, var2) in enumerate(variable_pairs):
     ax = axes[idx]
@@ -117,20 +96,13 @@ for idx, (var1, var2) in enumerate(variable_pairs):
         ax.set_title(f"{var1} vs {var2}", fontsize=9)
         ax.set_xlabel("Time (s)", fontsize=8)
         ax.set_ylabel("Value (pu)", fontsize=8)
-        # ax.set_ylim([0.999, 1.0001])
         ax.tick_params(axis='both', labelsize=7)
         ax.legend(fontsize=7, loc='best')
         ax.grid(True)
-    #     if idx == 0:
-    #         ax.set_ylim(0.85, 1.15)
-    #     if idx == 2 or idx == 3:
-    #         ax.set_ylim(6, 8)
-    # else:
-    #     ax.set_visible(False)  # hide empty subplot
 
 axes[-1].set_xlabel("Time (s)")
 plt.tight_layout(rect=[0, 0, 1, 0.97])
-plt.suptitle("Simulation Variable Comparison (GridCal vs GENCLS)", fontsize=16, y=1.02)
+# plt.suptitle("Simulation Variable Comparison (GridCal vs GENCLS)", fontsize=16, y=1.02)
 plt.subplots_adjust(top=0.95)
 plt.show()
 
