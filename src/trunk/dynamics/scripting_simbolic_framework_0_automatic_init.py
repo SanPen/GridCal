@@ -2,50 +2,114 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-import pdb
+import math
 
 import numpy as np
 from matplotlib import pyplot as plt
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+# from GridCalEngine.Utils.Symbolic.events import Events, Event
 from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
+from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
+from GridCalEngine.Utils.Symbolic.block import Block
 from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
 import GridCalEngine.api as gce
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Constants
+# ----------------------------------------------------------------------------------------------------------------------
+pi = Const(math.pi)
+fn = Const(50)
+M = Const(1.0)
+D = Const(1.0)
+ra = Const(0.3)
+xd = Const(0.86138701)
+vf = Const(1.081099313)
+
+omega_ref = Const(1)
+Kp = Const(1.0)
+Ki = Const(10.0)
+Kw = Const(10.0)
+
+g = Const(5)
+b = Const(-12)
+bsh = Const(0.03)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Power flow
+# ----------------------------------------------------------------------------------------------------------------------
+
 grid = gce.MultiCircuit()
+
+# Buses
 bus1 = gce.Bus(name="Bus1", Vnom=10, is_slack=True)
 bus2 = gce.Bus(name="Bus2", Vnom=10)
 
 grid.add_bus(bus1)
 grid.add_bus(bus2)
 
-line = gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2,
-                r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
-grid.add_line(line)
 
-gen = gce.Generator(name="Gen1", P=10, vset=1.081099313,
+# Line
+line0 = grid.add_line(gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=900.0))
+
+
+# load
+load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P= 10, Q= 10))
+
+# Generators
+gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom = 900,
                     x1=0.86138701, r1=0.3, freq=50.0,
-                    m_torque=0.1,
-                    M=1.0,
-                    D=4.0,
+                    m_torque0=0.10508619605291579,
+                    vf=1.093704253855166,
+                    M=10.0,
+                    D=1.0,
                     omega_ref=1.0,
                     Kp=1.0,
                     Ki=10.0,
                     Kw=10.0)
-grid.add_generator(bus=bus1, api_obj=gen)
 
-load = gce.Load(name="Load1", P=10, Q=10)
-grid.add_load(bus=bus2, api_obj=load)
-
-res = gce.power_flow(grid)
+grid.add_generator(bus=bus1, api_obj=gen1)
 
 
+
+
+options = gce.PowerFlowOptions(
+    solver_type=gce.SolverType.NR,
+    retry_with_other_methods=False,
+    verbose=0,
+    initialize_with_existing_solution=True,
+    tolerance=1e-6,
+    max_iter=25,
+    control_q=False,
+    control_taps_modules=True,
+    control_taps_phase=True,
+    control_remote_voltage=True,
+    orthogonalize_controls=True,
+    apply_temperature_correction=True,
+    branch_impedance_tolerance_mode=gce.BranchImpedanceMode.Specified,
+    distributed_slack=False,
+    ignore_single_node_islands=False,
+    trust_radius=1.0,
+    backtracking_parameter=0.05,
+    use_stored_guess=False,
+    initialize_angles=False,
+    generate_report=False,
+    three_phase_unbalanced=False
+)
+res = gce.power_flow(grid, options=options)
+
+print(f"Converged: {res.converged}")
 print(res.get_bus_df())
 print(res.get_branch_df())
-print(f"Converged: {res.converged}")
+
 
 logger = gce.Logger()
 grid.initialize_rms(logger=logger)
 sys, mapping = grid.compose_system_block(res)
+print(mapping)
 
 
 
@@ -69,10 +133,10 @@ params_mapping = {
 # my_events = RmsEvents([event1])
 my_events = RmsEvents([])
 params0 = slv.build_init_params_vector(params_mapping)
+
 #x0 = slv.build_init_vars_vector(mapping)
 
-x0 = slv.build_init_vars_vector_from_uid(mapping)
-
+# x0 = slv.build_init_vars_vector_from_uid(mapping)
 
 # x0 = slv.initialize_with_newton(x0=slv.build_init_vars_vector(vars_mapping),
 #                                 params0=params0)
@@ -102,7 +166,7 @@ vars_in_order = slv.sort_vars_from_uid(mapping)
 
 t, y = slv.simulate(
     t0=0,
-    t_end=10.0,
+    t_end=20.0,
     h=0.001,
     x0=x0,
     params0=params0,
@@ -111,47 +175,5 @@ t, y = slv.simulate(
 )
 
 # save to csv
-slv.save_simulation_to_csv('simulation_results.csv', t, y)
+slv.save_simulation_to_csv('simulation_results_automatic_init.csv', t, y)
 
-fig = plt.figure(figsize=(14, 10))
-
-# Generator state variables
-plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(delta)], label="δ (rad)")
-# plt.plot(t, y[:, slv.get_var_idx(et)], label="et (pu)")
-
-# Generator algebraic variables
-# plt.plot(t, y[:, slv.get_var_idx(tm)], label="Tm (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(psid)], label="Ψd (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(psiq)], label="Ψq (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(i_d)], label="Id (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(i_q)], label="Iq (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(v_d)], label="Vd (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(v_q)], label="Vq (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(t_e)], label="Te (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(p_g)], label="Pg (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(Q_g)], label="Qg (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(Vg)], label="Vg (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(dg)], label="θg (rad)")
-
-# Line variables
-# plt.plot(t, y[:, slv.get_var_idx(Pline_from)], label="Pline_from (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(Qline_from)], label="Qline_from (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(Pline_to)], label="Pline_to (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(Qline_to)], label="Qline_to (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(Vline_from)], label="Vline_from (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(Vline_to)], label="Vline_to (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(dline_from)], label="δline_from (rad)")
-# plt.plot(t, y[:, slv.get_var_idx(dline_to)], label="δline_to (rad)")
-
-# Load variables
-# plt.plot(t, y[:, slv.get_var_idx(Pl)], label="Pl (pu)")
-# plt.plot(t, y[:, slv.get_var_idx(Ql)], label="Ql (pu)")
-
-plt.legend(loc='upper right', ncol=2)
-plt.xlabel("Time (s)")
-plt.ylabel("Values (pu)")
-plt.title("Time Series of All System Variables")
-plt.grid(True)
-plt.tight_layout()
-plt.show()

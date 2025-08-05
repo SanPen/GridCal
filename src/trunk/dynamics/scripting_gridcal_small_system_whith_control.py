@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
 from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
 from GridCalEngine.Utils.Symbolic.block import Block
-from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver #compose_system_block
+from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver  # compose_system_block
 import GridCalEngine.api as gce
 
 # In this script a small system in build with a Generator a Load and a line. Generator is connected to bus 1 and Load is connected to bus 2.
@@ -56,6 +56,7 @@ ra_0 = Const(0.0)
 xd_0 = Const(0.3)
 omega_ref_0 = Const(1.0)
 Kp_0 = Const(0.0)
+Kp_0 = Const(0.0)
 Ki_0 = Const(0.0)
 
 # Generator 1
@@ -65,6 +66,7 @@ D_1 = Const(1.0)
 ra_1 = Const(0.0)
 xd_1 = Const(0.3)
 omega_ref_1 = Const(1.0)
+Kp_1 = Const(0.0)
 Kp_1 = Const(0.0)
 Ki_1 = Const(0.0)
 
@@ -105,7 +107,6 @@ res = gce.power_flow(grid)
 print(f"Converged: {res.converged}")
 print(res.get_bus_df())
 print(res.get_branch_df())
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Intialization
@@ -306,7 +307,6 @@ line1_block = Block(
     parameters=[]
 )
 
-
 # --------------------------------------------------------------------------
 # Generators
 # --------------------------------------------------------------------------
@@ -495,6 +495,7 @@ vars_in_order = slv.sort_vars(vars_mapping)
 
 t, y = slv.simulate(
     t0=0,
+    t_end=20.0,
     t_end=20.0,
     h=0.001,
     x0=x0,

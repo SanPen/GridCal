@@ -43,10 +43,10 @@ def main():
 
     # Logging
     time_history = []
-    omega_history = [[] for _ in range(len(ss.GENCLS))]
+    omega_history = [[] for _ in range(len(ss.GENROU))]
     Ppf_history = [[] for _ in range(len(ss.PQ))]
-    tm_history = [[] for _ in range(len(ss.GENCLS))]
-    te_history = [[] for _ in range(len(ss.GENCLS))]
+    tm_history = [[] for _ in range(len(ss.GENROU))]
+    te_history = [[] for _ in range(len(ss.GENROU))]
     v_history = [[] for _ in range(len(ss.Bus))]
     a_history = [[] for _ in range(len(ss.Bus))]
     vf_history = [[] for _ in range(len(ss.GENCLS))]
@@ -92,13 +92,21 @@ def main():
 
     tm_df = pd.DataFrame(list(zip(*tm_history)))  # shape: [T, n_generators]
     tm_df.columns = [f"tm_andes_gen_{i+1}" for i in range(len(omega_history))]
+    tm_df = pd.DataFrame(list(zip(*tm_history)))  # shape: [T, n_generators]
+    tm_df.columns = [f"tm_andes_gen_{i+1}" for i in range(len(omega_history))]
 
+    te_df = pd.DataFrame(list(zip(*te_history)))  # shape: [T, n_generators]
+    te_df.columns = [f"te_andes_gen_{i+1}" for i in range(len(omega_history))]
     te_df = pd.DataFrame(list(zip(*te_history)))  # shape: [T, n_generators]
     te_df.columns = [f"te_andes_gen_{i+1}" for i in range(len(omega_history))]
 
     Ppf_df = pd.DataFrame(list(zip(*Ppf_history)))      # shape: [T, n_loads]
     Ppf_df.columns = [f"Ppf_andes_load_{i}" for i in range(len(Ppf_history))]
+    Ppf_df = pd.DataFrame(list(zip(*Ppf_history)))      # shape: [T, n_loads]
+    Ppf_df.columns = [f"Ppf_andes_load_{i}" for i in range(len(Ppf_history))]
 
+    v_df = pd.DataFrame(list(zip(*v_history)))      # shape: [T, n_loads]
+    v_df.columns = [f"v_andes_Bus_{i+1}" for i in range(len(v_history))]
     v_df = pd.DataFrame(list(zip(*v_history)))      # shape: [T, n_loads]
     v_df.columns = [f"v_andes_Bus_{i+1}" for i in range(len(v_history))]
 

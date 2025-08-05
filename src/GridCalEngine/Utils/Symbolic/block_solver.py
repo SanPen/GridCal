@@ -208,17 +208,21 @@ class BlockSolver:
 
         uid2sym_vars: Dict[int, str] = dict()
         uid2sym_params: Dict[int, str] = dict()
+        self.uid2var: Dict[int, Var] = dict()
         self.uid2idx_vars: Dict[int, int] = dict()
         self.uid2idx_params: Dict[int, int] = dict()
         i = 0
         for v in self._state_vars:
             uid2sym_vars[v.uid] = f"vars[{i}]"
+            self.uid2var[v.uid] = v
             self.uid2idx_vars[v.uid] = i
             i += 1
 
         for v in self._algebraic_vars:
             uid2sym_vars[v.uid] = f"vars[{i}]"
+            self.uid2var[v.uid] = v
             self.uid2idx_vars[v.uid] = i
+
             i += 1
 
         j = 0
@@ -226,6 +230,7 @@ class BlockSolver:
             uid2sym_params[ep.uid] = f"params[{j}]"
             self.uid2idx_params[ep.uid] = j
             j += 1
+
 
         # Compile RHS and Jacobian
         """
@@ -333,6 +338,7 @@ class BlockSolver:
 
         for key, val in mapping.items():
             i = self.uid2idx_params[key.uid]
+
             x[i] = val
 
         return x

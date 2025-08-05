@@ -558,12 +558,12 @@ class Load(LoadParent):
 
             self.rms_model.model = Block(
                 algebraic_eqs=[
-                    Pl - (self.P / Sbase),
-                    Ql - (self.Q / Sbase)
+                    Pl - (self.P),
+                    Ql - (self.Q)
                 ],
                 algebraic_vars=[Ql, Pl],
-                init_eqs= {
-                },
+                init_eqs={},
+                init_vars=[],
                 parameters=[],
                 external_mapping={
                     DynamicVarType.P: Pl,

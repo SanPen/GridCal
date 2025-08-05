@@ -2875,10 +2875,10 @@ class MultiCircuit(Assets):
             f = bus_dict[elm.bus_from]
             t = bus_dict[elm.bus_to]
             # add variable to conservation equations of the bus to which the element is connected
-            setP(f, mdl.E(DynamicVarType.Pf))
-            setP(t, mdl.E(DynamicVarType.Pt))
-            setQ(f, mdl.E(DynamicVarType.Qf))
-            setQ(t, mdl.E(DynamicVarType.Qt))
+            setP(f, -mdl.E(DynamicVarType.Pf))
+            setP(t, -mdl.E(DynamicVarType.Pt))
+            setQ(f, -mdl.E(DynamicVarType.Qf))
+            setQ(t, -mdl.E(DynamicVarType.Qt))
 
         # initialize injections
         for elm in self.get_injection_devices_iter():
@@ -2887,8 +2887,8 @@ class MultiCircuit(Assets):
             f = bus_dict[elm.bus]
             if elm.device_type == DeviceType.LoadDevice:
                 # connect element with the corresponding bus
-                setP(f, -mdl.E(DynamicVarType.P))
-                setQ(f, -mdl.E(DynamicVarType.Q))
+                setP(f, mdl.E(DynamicVarType.P))
+                setQ(f, mdl.E(DynamicVarType.Q))
             else:
                 # connect element with the corresponding bus
                 setP(f, mdl.E(DynamicVarType.P))
@@ -2910,8 +2910,10 @@ class MultiCircuit(Assets):
         """
         # already computed grid power flow
         res = power_flow_results
+
         Sf = res.Sf / self.Sbase
         St = res.St / self.Sbase
+
 
         # create the system block
         sys_block = Block(children=[], in_vars=[])
@@ -2927,6 +2929,9 @@ class MultiCircuit(Assets):
 
         # buses
         for i, elm in enumerate(self.buses):
+            bus_df = res.get_bus_df()
+            value = bus_df.loc['Bus1', 'Va']
+
             mdl = elm.rms_model.model
             mdl_vars = mdl.state_vars + mdl.algebraic_vars
 
@@ -2945,9 +2950,10 @@ class MultiCircuit(Assets):
 
             # fill init_guess dict
             init_guess[mdl.external_mapping[DynamicVarType.Vm].uid] = float(res.voltage[i])
+            # init_guess[mdl.external_mapping[DynamicVarType.Va].uid] = float(bus_df.loc[f'Bus{i}' , 'Va'])
             init_guess[mdl.external_mapping[DynamicVarType.Va].uid] = float(np.angle(res.voltage[i]))
             init_guess[mdl.external_mapping[DynamicVarType.P].uid] = float(np.real(res.Sbus[i] / self.Sbase))
-            init_guess[mdl.external_mapping[DynamicVarType.Q].uid] = float(np.real(res.Sbus[i] / self.Sbase))
+            init_guess[mdl.external_mapping[DynamicVarType.Q].uid] = float(np.imag(res.Sbus[i] / self.Sbase))
 
             sys_block.children.append(mdl)
 
@@ -2974,8 +2980,8 @@ class MultiCircuit(Assets):
             # fill init_guess dict
             init_guess[mdl.external_mapping[DynamicVarType.Pf].uid] = Sf[i].real
             init_guess[mdl.external_mapping[DynamicVarType.Qf].uid] = Sf[i].imag
-            init_guess[mdl.external_mapping[DynamicVarType.Pt].uid] = Sf[i].real
-            init_guess[mdl.external_mapping[DynamicVarType.Qt].uid] = Sf[i].imag
+            init_guess[mdl.external_mapping[DynamicVarType.Pt].uid] = St[i].real
+            init_guess[mdl.external_mapping[DynamicVarType.Qt].uid] = St[i].imag
 
             sys_block.children.append(mdl)
 
@@ -3010,6 +3016,10 @@ class MultiCircuit(Assets):
                 if var.uid in init_guess.keys():
                     x[uid2idx_vars[var.uid]] = init_guess[var.uid]
 
+            for var in mdl.init_vars:
+                if var.uid in init_guess.keys():
+                    x[uid2idx_vars[var.uid]] = init_guess[var.uid]
+
                 else:
                     eq = mdl.init_eqs[var]
                     eq_fn = _compile_equation([eq], uid2sym_vars)
@@ -3017,8 +3027,6 @@ class MultiCircuit(Assets):
                     init_guess[var.uid] = init_val
                     x[uid2idx_vars[var.uid]] = init_val
 
-            # mdl.compute_init_guess
-            init_eqs = mdl.init_eqs
             sys_block.children.append(mdl)
 
         for i, elm in enumerate(self.buses):
