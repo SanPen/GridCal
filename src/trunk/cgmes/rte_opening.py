@@ -39,7 +39,7 @@ grid = gce.open_file(filename=fname)
 print("Parsed")
 
 #save file
-gce.save_file(grid=grid, filename="hello.gridcal")
+gce.save_file(grid=grid, filename="../../../../RTE_Short_Circuits/hello.gridcal")
 
 print("Saved")
 
