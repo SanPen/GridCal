@@ -28,9 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="All five short-circuit types validated and implemented in the tests.">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Some checks for short-circuits have been added to prevent the users from selecting a type of short circuit that is incompatible with the phases involved.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/modelling.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/modelling.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/Carson_vs_Dubanton.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/Carson_vs_Dubanton.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ShortCircuit IEEE 13-bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ShortCircuit IEEE 13-bus.py" afterDir="false" />
     </list>
@@ -183,13 +185,15 @@
     "Python tests.pytest in test_transformer_type.py.executor": "Run",
     "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
+    "Python.Carson_vs_Dubanton.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
     "Python.GridCalMain.executor": "Run",
     "Python.IEEE 13-bus Test Feeder Case OpenDSS.executor": "Run",
     "Python.IEEE 13-bus Test Feeder Case worker.executor": "Run",
     "Python.IEEE 13-bus Test Feeder Case.executor": "Run",
     "Python.Modified IEEE 13-bus Test Feeder Case OpenDSS.executor": "Run",
-    "Python.ShortCircuit IEEE 13-bus.executor": "Run",
+    "Python.Panther_Cable.executor": "Run",
+    "Python.ShortCircuit IEEE 13-bus.executor": "Debug",
     "Python.Shunts Validation OpenDSS.executor": "Run",
     "Python._callers.executor": "Debug",
     "Python.alex.executor": "Debug",
@@ -208,7 +212,7 @@
     "Python.python_console.executor": "Run",
     "Python.raw_imp_exp_test.executor": "Run",
     "Python.readme_checks.executor": "Run",
-    "Python.short_circuit_worker.executor": "Run",
+    "Python.short_circuit_worker.executor": "Debug",
     "Python.substation_wizards.executor": "Run",
     "Python.substations_types.executor": "Run",
     "Python.test_power_flow.executor": "Run",
@@ -1881,7 +1885,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="603" />
+    <option name="localTasksCounter" value="604" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1927,7 +1931,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fix comparison numerical issues + fix tests" />
     <MESSAGE value="Fixen unversioned files." />
     <MESSAGE value="Updated smart_compare in editable devices." />
     <MESSAGE value="Small changes solving datatable BUG." />
@@ -1952,7 +1955,8 @@
     <MESSAGE value="self.Y3_star = np.zeros((self.nelm * 3, 3), dtype=complex)" />
     <MESSAGE value="short_circuit_results.py adapted to short-circuit calculations in the phase reference frame." />
     <MESSAGE value="All five short-circuit types validated and implemented in the tests." />
-    <option name="LAST_COMMIT_MESSAGE" value="All five short-circuit types validated and implemented in the tests." />
+    <MESSAGE value="Some checks for short-circuits have been added to prevent the users from selecting a type of short circuit that is incompatible with the phases involved." />
+    <option name="LAST_COMMIT_MESSAGE" value="Some checks for short-circuits have been added to prevent the users from selecting a type of short circuit that is incompatible with the phases involved." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

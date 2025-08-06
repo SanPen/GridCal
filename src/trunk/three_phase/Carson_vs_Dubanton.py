@@ -4,6 +4,7 @@ Overhead Line Constants Calculation Library
 Reference:
     [1] Dommel, H. W., "Electromagnetic Transients Program Reference Manual (EMTP Theory Book)", Chapter 4, "Overhead Transmission Lines".
     [2] Arrillaga, J., and Watson, N. R., "Computer Modelling of Electrical Power Systems", 2nd Edition, Wiley, 2005, Chapter 2.6
+    [3] J. Susanto, “line-constants: Overhead line constants calculation library,” https://github.com/susantoj/line-constants, 2017.
 
 Functions:
     calc_L_int          Calculates internal inductance of solid or tubular conductor
@@ -450,26 +451,9 @@ def calc_kron_Z(Z, n_e):
 
     return kron_Z
 
-
-"""
-# Impedance matrix real values [Ohm/km]
-Z_real = np.array([
-    [0.18255834+0.73040594j, 0.04624189+0.27334251j, 0.04619516+0.22979856j],
-    [0.0462528 +0.27334251j, 0.18255834+0.73040594j, 0.04624189+0.27334251j],
-    [0.04623645+0.22979851j, 0.0462528 +0.27334251j, 0.18255834+0.73040594j]
-])
-
-# Admittance matrix real values [uS/km]
-Y_real = np.array([
-    [0.+2.11654342j, 0.-0.34238869j, 0.-0.15585042j],
-    [0.-0.34238869j, 0.+2.16045495j, 0.-0.34238869j],
-    [0.-0.15585042j, 0.-0.34238869j, 0.+2.11654342j]
-])
-"""
-
-# Overhead line parameters (Single circuit tower with an overhead earth wire)
+# Definition of the overhead line parameters
 line_dict = {
-    'mode': 'dubanton', # carson or dubanton
+    'mode': 'carson', # carson or dubanton
     'f': 50,  # Nominal frequency [Hz]
     'rho': 100,  # Earth resistivity [Ohm.m]
     'phase_h': [27.5, 27.5, 27.5],  # Phase conductor heights [m]
@@ -487,17 +471,7 @@ line_dict = {
 }
 
 # Impedance matrix
-Zdubanton, n_p, n_e = calc_Z_matrix(line_dict)
-
-Zcarson = np.array([
-    [0.18255834+0.73040594j, 0.04624189+0.27334251j, 0.04619516+0.22979856j],
-    [0.0462528 +0.27334251j, 0.18255834+0.73040594j, 0.04624189+0.27334251j],
-    [0.04623645+0.22979851j, 0.0462528 +0.27334251j, 0.18255834+0.73040594j]
-])
+Zcarson, n_p, n_e = calc_Z_matrix(line_dict)
 
 np.set_printoptions(precision=4, suppress=True)
-print('Carson =\n', Zcarson)
-print('\nDubanton =\n', Zdubanton)
-
-Yshunt, n_p, n_e = calc_Y_matrix(line_dict)
-print('Yshunt =\n', Yshunt*1e6)
+print('Carson Series Impedance =\n', Zcarson)

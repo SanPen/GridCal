@@ -1,5 +1,749 @@
 # 📐 Grid Modelling
 
+## Three-phase Modelling
+Three-phase AC systems dominate power transmission and distribution due to efficiency, capacity, and compatibility.
+While ideal systems are balanced and can be analysed using positive-sequence models, real networks often experience
+asymmetries from factors like untransposed lines, uneven loads, single-phase connections, and converter-based resources. 
+Also, the classical method of symmetrical components simplifies unbalanced fault analysis under linear conditions but
+struggles with strong sequence coupling, non-linearities, and complex network topologies.
+
+Direct phase-domain (abc) modelling overcomes these limitations by representing actual phase quantities, naturally
+handling asymmetry, non-linearities, single-phase, two-phase and three-phase systems, as well as symmetrical and
+asymmetrical faults. It is well-suited for transient and time-domain simulations, EMTP-type tools, and control design,
+making it applicable from large power plants, through transmission and distribution, to finally low-voltage networks.
+
+The conventional elements of the electrical power system are generators, loads, transformers, and lines, as well as the
+necessary reactive power compensation equipment. These elements are suitably interconnected to enable the generation,
+transportation and consumption of electricity to meet system demand at any given point in time.
+The electrical power network may then be divided into generation, transmission, distribution, and customer subsystems,
+as represented in figure bellow. Transmission networks operate at high voltages (HV) to minimise
+transport losses. Conversely, electricity is generated at medium voltages (MV), and step-up transformers are employed
+at the generator substation to raise the voltage to transmission levels. In contrast, step-down transformers are used
+to reduce the high transmission voltages to levels suitable for distribution (MV), and eventually for industrial,
+commercial, and residential applications at low voltages (LV).
+
+![Electrical power system network](figures/3ph_PowerSystem.png "Electrical power system network")
+
+Three-phase synchronous generators are used to produce electrical power, which is delivered to demand points via 
+alternating current (AC) three-phase transmission and distribution lines. The geometrical arrangement of these lines
+introduces some impedance unbalance between phases. Often, long-distance transmission circuits consist of more than one
+three-phase circuit and include series and shunt compensation to enable stable operation. It should also be noted that
+the windings of three-phase transformers can be connected in various ways to suit specific requirements, and that
+transformer connections must be modeled in detail when system imbalances cannot be neglected in power system studies.
+Additionally, distribution load points may be highly unbalanced due to the prevalence of individual single-phase loads.
+
+### Three-phase Overhead Lines
+
+Power lines are fundamental components of power systems, responsible for transmitting
+electrical energy from generation sources to loads. They consist of a group of phase conductors
+located at a finite distance from the earth’s surface and may use the ground as a
+return path. Accordingly, it becomes necessary to account for this effect when calculating
+the line parameters. High-voltage transmission lines may contain several conductors
+per phase (known as bundled conductors) and ground wires, while distribution lines may
+include a neutral wire as a return path. Both transmission and distribution circuits may
+introduce considerable geometric unbalances, hence electrical unbalances, depending on
+their layout. The main objective is to develop an overhead power line model that
+enables precise calculation of voltage drops and losses during the power transmission process.
+The basis of power line modelling is to determine the resistance $R$, inductance $L$,
+conductance $G$, and capacitance $C$ per unit length.
+
+#### π model
+
+Lines can be represented using mathematical models that describe their electrical behaviour.
+It is a current practice to model the inductive and resistive effects of multiconductor
+transmission lines as a series impedance matrix, and the capacitive effects as a
+shunt admittance matrix. The overall transmission line model then can be represented by
+the π equivalent model, as shown in the figure bellow.
+
+![Line π equivalent circuit](figures/3ph_pi_model.png "Line π equivalent circuit")
+
+It consists of:
+
+- Series impedance: $Z_{\text{series}} = R + jX$
+
+- Shunt admittance: $Y_{\text{shunt}} = G + jB$
+
+Where $R$ is the series equivalent resistance of the conductors, $X$ is the series self and mutual inductive
+reactances resulting from the magnetic fields surrounding the conductors, $G$ is the shunt conductance through
+insulating materials and $B$ represents the shunt susceptance derived from the line capacitance due to the induced
+electric fields.
+
+The line capacitance is split between the two connection points with the resistance and the reactance in the middle,
+whose shape gives the so-called π-model. Although this single-phase simplification is a widely used technique, when
+modeling unbalanced systems it is needed to consider a 5-wire approach, that later becomes a 3-wire equivalent.
+This 5-wire model is that including the three phases, the neutral and the ground:
+
+- The first three wires are the three-phase $abc$ conductors. These carry the alternating current (AC) electricity and
+are used to distribute power efficiently.
+- The fourth wire is the neutral conductor $n$. It provides a return path for unbalanced current and is often grounded
+at substations to stabilize the system voltage.
+- The fifth wire is typically a ground wire $g$, which is connected to earth to protect equipment and people by providing
+a low-resistance path for fault currents, ensuring safety and system stability.
+
+Not all physical lines will have neutral, and the ”ground return” is certainly not a wire, but it is represented as one
+in order to close the electrical circuit. Each wire has its own impedance, however, other impedances arise from the 
+electromagnetic coupling of the wires, such that it is necessary to use a 5x5 matrix to represent the total line
+impedance or admittance:
+
+$$
+\vec{Z} =
+\begin{bmatrix}
+\vec{Z}_{aa} & \vec{Z}_{ab} & \vec{Z}_{ac} & \vec{Z}_{an} & \vec{Z}_{ag} \\
+\vec{Z}_{ba} & \vec{Z}_{bb} & \vec{Z}_{bc} & \vec{Z}_{bn} & \vec{Z}_{bg} \\
+\vec{Z}_{ca} & \vec{Z}_{cb} & \vec{Z}_{cc} & \vec{Z}_{cn} & \vec{Z}_{cg} \\
+\vec{Z}_{na} & \vec{Z}_{nb} & \vec{Z}_{nc} & \vec{Z}_{nn} & \vec{Z}_{ng} \\
+\vec{Z}_{ga} & \vec{Z}_{gb} & \vec{Z}_{gc} & \vec{Z}_{gn} & \vec{Z}_{gg} \\
+\end{bmatrix}
+$$
+
+Most transmission power lines do not carry the neutral, since that one is normally earthed at both ends of the line.
+Also, the ground return effect can be incorporated into the phase impedance as it will be detailed later. Then, it can
+be simply expressed as a 3x3 matrix:
+
+$$
+\vec{Z} =
+\begin{bmatrix}
+\vec{Z}_{aa} & \vec{Z}_{ab} & \vec{Z}_{ac} \\
+\vec{Z}_{ba} & \vec{Z}_{bb} & \vec{Z}_{bc} \\
+\vec{Z}_{ca} & \vec{Z}_{cb} & \vec{Z}_{cc}
+\end{bmatrix}
+$$
+
+#### Series Impedance
+
+Carson’s equations are used in power system analysis to calculate the series self and mutual impedances of overhead
+transmission lines, taking into account the effects of the ground return path.
+They are based on the following assumptions:
+
+- The conductors are perfectly horizontal above ground and are long enough so that three-dimensional end effects can be
+neglected. This makes the field problem two-dimensional. The sag is taken into account indirectly by using an average 
+height above ground.
+- The free space is homogeneous and lossless, with permeability $\mu_0$ and permittivity $\varepsilon_0$.
+- The earth is homogeneous, with uniform resistivity $\rho$, permeability $\mu_0$, and permittivity $\varepsilon_0$,
+bounded by a flat plane of infinite extent. 
+- The spacing between conductors is at least one order of magnitude larger than the conductor radius, so that proximity
+effects can be ignored.
+
+The elements of the series impedance matrix can then be calculated from the geometry of the tower configuration and
+from characteristics of the conductors:
+
+![Carson’s geometry data of the tower](figures/3ph_carson.png "Carson’s geometry data of the tower")
+
+Then, the following equations are implemented to obtain the self and mutual values:
+
+$$
+    \vec{Z}_{ii} = (R_i+R^c_{ii}) + j \left(\omega \frac{\mu_0}{2\pi} \ln{\frac{2h_i}{r_i}} + X_i + X^c_{ii} \right)
+    \label{eq:Carson_Zii}
+$$
+
+$$
+    \vec{Z}_{ij} = \vec{Z}_{ji} =
+    R^c_{ij} + j \left( \omega \frac{\mu_0}{2\pi} \ln{\frac{D_{ij}}{d_{ij}}} + X^c_{ij} \right)
+    \label{eq:Carson_Zij}
+$$
+
+Where:
+- $R_i$ and $X_i$ are the internal resistance and reactance of conductor $i$ in $\Omega$/km.
+- $R^c$ and $X^c$ are the Carson's correction terms for earth return effects in $\Omega$/km.
+- $\mu_0 = 4\pi\cdot 10^{-4}$ is the permeability of free space in H/km.
+- $\omega = 2\pi f$ is the angular frequency in rad/s.
+- $h_i$ is the average height above ground of conductor $i$ in m.
+- $r_i$ is the radius of conductor $i$ in m.
+- $d_{ij}$ is the distance between conductors $i$ and $j$ in m.
+- $D_{ij}$ is the distance between conductor $i$ and the image of conductor $j$ in m.
+
+The correction terms $R^c$ and $X^c$ are derived from an infinite integral representing the impedance contribution due
+to the earth return path. For a more indepth explanation of the Carson's equations, as well as of its parameters,
+the reader is kindly referred to the bellow example calculation code of the Series impedance, Shunt admittance and
+Kron's reduction.
+
+#### Shunt Admittance
+
+Just as the calculation of the series impedance has accounted for the resistance and inductance, the shunt admittance
+must incorporate the capacitance between the conductor and the ground, as well as between conductors, as previously
+explained. These effects can be mathematically modelled using the following equations, given that the air is lossless,
+the earth is uniformly at zero potential and the conductor radius is at least an order of magnitude smaller that the
+distance among the conductors, which it is reasonable for overhead lines. Therefore, the shunt admittance between a
+conductor and the ground, and the shunt admittance between two conductors, should be calculated using:
+
+$$
+    \vec{Y}_{ii} = j\frac{\omega}{2 \pi \varepsilon_0} \ln{\frac{2 h_i}{r_i}}
+    \label{eq:self_Y}
+$$
+
+$$
+    \vec{Y}_{ij} = j\frac{\omega}{2 \pi \varepsilon_0} \ln{\frac{D_{ij}}{d_{ij}}}
+    \label{eq:mutual_Y}
+$$
+
+Where $\varepsilon_0 = \dfrac{1}{\mu_0 c^2} \approx 8,85 \cdot 10^{-12}$ F/m is the free space permittivity.
+
+#### Kron's reduction
+
+Kron's reduction, or node elimination, is a technique from network theory used to simplify a multi-node electrical
+network by eliminating certain nodes, often called internal or passive nodes, while preserving the electrical
+behaviour at the remaining nodes.
+
+Assuming a set of nodes divided into two groups between ground conductors $g$ (to eliminate) and phase conductors $p$
+(to keep), the impedance matrix is partitioned accordingly:
+
+$$
+    \vec{Z} =
+    \begin{bmatrix}
+        \vec{Z}_{gg} & \vec{Z}_{gp} \\
+        \vec{Z}_{pg} & \vec{Z}_{pp} 
+    \end{bmatrix}
+$$
+
+Where:
+- $\vec{Z}_{gg}$ is the impedance between eliminated nodes.
+- $\vec{Z}_{gp}$ is the mutual impedance between eliminated and preserved nodes.
+- $\vec{Z}_{pg}$ is the mutual impedance between preserved and eliminated nodes.
+- $\vec{Z}_{pp}$ is the impedance between preserved nodes.
+
+Then, the network equations are:
+$$
+    \begin{bmatrix}
+        \vec{U}_{g} \\
+        \vec{U}_{p}
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        \vec{Z}_{gg} & \vec{Z}_{gp} \\
+        \vec{Z}_{pg} & \vec{Z}_{pp} 
+    \end{bmatrix}
+    \begin{bmatrix}
+        \vec{I}_{g} \\
+        \vec{I}_{p}
+    \end{bmatrix}
+$$
+
+Assuming that the eliminated nodes are held at zero voltage because they are grounded, $\vec{U}_{g} = 0$. From the
+first row of the system:
+
+$$
+    \vec{I}_e = -\vec{Z}_{gg}^{-1} \cdot \vec{Z}_{gp} \cdot \vec{I}_{p}
+$$
+
+Then, substituting $\vec{I}_e$ in the second row:
+
+$$
+    \vec{U}_p = (\vec{Z}_{pp} - \vec{Z}_{pg} \cdot \vec{Z}_{gg}^{-1} \cdot \vec{Z}_{gp}) \vec{I}_{p}
+$$
+
+Finally, the Kron-reduced impedance matrix is defined as:
+
+$$
+    \vec{Z}_\text{Kron} = \vec{Z}_{pp} - \vec{Z}_{pg} \cdot \vec{Z}_{gg}^{-1} \cdot \vec{Z}_{gp}
+$$
+
+This new matrix allows to describe the electrical behaviour of the remaining phase nodes $p$, while implicitly
+incorporating the effect of the eliminated ground nodes $g$, which were assumed to be held at 0 V.
+
+####  Example calculation code of the Series impedance, Shunt admittance and Kron's reduction
+
+```python
+"""
+Overhead Line Constants Calculation Library
+
+Reference:
+    [1] Dommel, H. W., "Electromagnetic Transients Program Reference Manual (EMTP Theory Book)",
+    Chapter 4, "Overhead Transmission Lines".
+    
+    [2] Arrillaga, J., and Watson, N. R., "Computer Modelling of Electrical Power Systems",
+    2nd Edition, Wiley, 2005, Chapter 2.6.
+    
+    [3] J. Susanto, “line-constants: Overhead line constants calculation library,”
+    https://github.com/susantoj/line-constants, 2017.
+
+Functions:
+    calc_L_int          Calculates internal inductance of solid or tubular conductor
+    calc_GMR            Calculates geometric mean radius (GMR) of solid or tubular conductor
+    carsons             Calculates Carson's earth return correction factors Rp and Xp for self or mutual terms
+    calc_self_Z         Calculates self impedance term (in Ohm/km)
+    calc_mutual_Z       Calculates mutual impedance term (in Ohm/km)
+    calc_Dubanton_Z     Calculates Dubanton approximation for self or mutual impedance (in Ohm/km)
+    calc_Z_matrix       Calculates primitive impedance matrix
+    calc_Y_matrix       Calculates primitive admittance matrix
+    calc_kron_Z         Calculates Kron reduced matrix
+"""
+
+import numpy as np
+
+def calc_L_int(type, r, q):
+    """
+    Calculates internal inductance of solid or tubular conductor
+    Note that calculations assume uniform current distribution in the conductor,
+    thus conductor stranding is not taken into account.
+
+    Usage:
+        L_int = calc_L_int(type, r, q)
+
+    where:
+       type is 'solid' or 'tube'
+        r is the radius of the conductor [m]
+        q is the radius of the inner tube [m]
+
+    Returns:
+        L_int the internal inductance of the conductor [H/m]
+    """
+    mu_0 = 4 * np.pi * 1e-7 # Permeability of free space [H/m]
+
+    if type == 'solid':
+        L_int = mu_0 / 8 / np.pi # Solid conductor internal inductance [H/m]
+    else:
+        L_int = mu_0 / 2 / np.pi * (q ** 4 / (r ** 2 - q ** 2) ** 2 * np.log(r / q)
+                                    - (3 * q ** 2 - r ** 2) / (4 * (r ** 2 - q ** 2)))
+                                    # Tubular conductor internal inductance [H/m]
+
+    return L_int
+
+
+def calc_GMR(type, r, q):
+    """
+    Calculates geometric mean radius (GMR) of solid or tubular conductor
+    Note that calculations assume uniform current distribution in the conductor,
+    thus conductor stranding is not taken into account.
+
+    Usage:
+        GMR = calc_GMR(type, r, q)
+
+    where   type is 'solid' or 'tube'
+            r is the radius of the conductor [m]
+            q is the radius of the inner tube [m]
+
+    Returns:
+            GMR the geometric mean radius [m]
+    """
+    if type == 'solid':
+        GMR = r * np.exp(-0.25) # Solid conductor GMR [m]
+    else:
+        GMR = r * np.exp((3 * q ** 2 - r ** 2) / (4 * (r ** 2 - q ** 2))
+                         - q ** 4 / (r ** 2 - q ** 2) ** 2 * np.log(r / q)) # Tubular conductor GMR [m]
+
+    return GMR
+
+
+def carsons(type, h_i, h_k, x_ik, f, rho, err_tol=1e-6):
+    """
+    Calculates Carson's earth return correction factors Rp and Xp for both self and mutual terms.
+    The number of terms evaluated in the infinite loop is based on convergence to the desired error tolerance.
+
+    Usage:
+        Rp, Xp = carsons(type, h_i, h_k, x_ik, f, rho, err_tol)
+
+    where   type is 'self' or 'mutual'
+            h_i is the height of conductor i above ground (m)
+            h_k is the height of conductor k above ground (m)
+            x_ik is the horizontal distance between conductors i and k (m)
+            f is the frequency (Hz)
+            rho is the earth resistivity (Ohm.m)
+            err_tol is the error tolerance for the calculation (default = 1e-6)
+
+    Returns:
+            Rp, Xp the Carson earth return correction factors (in Ohm/km)
+    """
+    # Geometrical calculations - See Figure 4.4. of EMTP Theory Book
+    if type == 'self':
+        D = 2 * h_i # Distance between conductor i and its image [m]
+        cos_phi = 1
+        sin_phi = 0
+        phi = 0
+    else:
+        D = np.sqrt((h_i + h_k) ** 2 + x_ik ** 2)  # Distance between conductor i and image of conductor k [m]
+        cos_phi = (h_i + h_k) / D
+        sin_phi = (x_ik) / D
+        phi = np.arccos(cos_phi)
+
+    # Initialise parameters
+    i = 1
+    err = 1
+    sgn = 1
+
+    # Initial values and constants for calculation
+    omega = 2 * np.pi * f
+    a = 4 * np.pi * np.sqrt(5) * 1e-4 * D * np.sqrt(f / rho) # Equation 4.10 EMTP
+    acosphi = a * cos_phi
+    asinphi = a * sin_phi
+    b = np.array([np.sqrt(2) / 6, 1 / 16]) # Equation 4.12 EMTP
+    c = np.array([0, 1.3659315])
+    d = np.pi / 4 * b
+
+    # First two terms of carson correction factor
+    Rp = np.pi / 8 - b[0] * acosphi
+    Xp = 0.5 * (0.6159315 - np.log(a)) + b[0] * acosphi
+
+    # Loop through carson coefficient terms starting with i = 2
+    while (err > err_tol):
+        term = np.mod(i, 4)
+        # Check sign for b term
+        if term == 0:
+            sgn = -1 * sgn
+
+        # Calculate coefficients
+        bi = b[i - 1] * sgn / ((i + 1) * (i + 3))
+        ci = c[i - 1] + 1 / (i + 1) + 1 / (i + 3)
+        di = np.pi / 4 * bi
+        b = np.append(b, bi)
+        c = np.append(c, ci)
+        d = np.append(d, di)
+
+        # Recursively calculate powers of acosphi and asinphi
+        acosphi_prev = acosphi
+        asinphi_prev = asinphi
+        acosphi = (acosphi_prev * cos_phi - asinphi_prev * sin_phi) * a
+        asinphi = (acosphi_prev * sin_phi + asinphi_prev * cos_phi) * a
+
+        Rp_prev = Rp
+        Xp_prev = Xp
+
+        # First term
+        if term == 0:
+            Rp = Rp - bi * acosphi
+            Xp = Xp + bi * acosphi
+
+        # Second term
+        elif term == 1:
+            Rp = Rp + bi * ((ci - np.log(a)) * acosphi + phi * asinphi)
+            Xp = Xp - di * acosphi
+
+        # Third term
+        elif term == 2:
+            Rp = Rp + bi * acosphi
+            Xp = Xp + bi * acosphi
+
+        # Fourth term
+        else:
+            Rp = Rp - di * acosphi
+            Xp = Xp - bi * ((ci - np.log(a)) * acosphi + phi * asinphi)
+
+        i = i = 1
+        err = np.sqrt((Rp - Rp_prev) ** 2 + (Xp - Xp_prev) ** 2)
+
+    Rp = 4 * omega * 1e-04 * Rp
+    Xp = 4 * omega * 1e-04 * Xp
+    return Rp, Xp
+
+
+def calc_self_Z(R_int, cond_type, r, q, h_i, f, rho, err_tol=1e-6):
+    """
+    Calculates self impedance term [Ohm/km]
+    NOTE: No allowance has been made for skin effects
+
+    Usage:
+        self_Z = calc_self_Z(R_int, cond_type, r, q, h_i, f, rho, err_tol=1e-6)
+
+    where   R_int is the AC conductor resistance [Ohm/km]
+            cond_type is the conductor type ('solid' or 'tube')
+            r is the radius of the conductor [m]
+            q is the radius of the inner tube [m]
+            h_i is the height of conductor i above ground [m]
+            f is the frequency [Hz]
+            rho is the earth resistivity [Ohm.m]
+            err_tol is the error tolerance for the calculation (default = 1e-6)
+
+    Returns:
+            self_Z the self impedance term of line impedance matrix [Ohm/km]
+    """
+    # Constants
+    omega = 2 * np.pi * f  # Nominal angular frequency [rad/s]
+    mu_0 = 4 * np.pi * 1e-7  # Permeability of free space [H/m]
+
+    # Calculate internal conductor reactance (in Ohm/km)
+    X_int = 1000 * omega * calc_L_int(cond_type, r, q)
+
+    # Calculate geometrical reactance (in Ohm/km) - Equation 4.15 EMTP
+    X_geo = 1000 * omega * mu_0 / 2 / np.pi * np.log(2 * h_i / r)
+
+    # Calculate Carson's correction factors (in Ohm/km)
+    Rp, Xp = carsons('self', h_i, 0, 0, f, rho, err_tol)
+
+    self_Z = complex(R_int + Rp, X_int + X_geo + Xp)
+
+    return self_Z
+
+
+def calc_mutual_Z(cond_type, r, q, h_i, h_k, x_ik, f, rho, err_tol=1e-6):
+    """
+    Calculates mutual impedance term [Ohm/km]
+
+    Usage:
+        mutual_Z = calc_mutual_Z(cond_type, r, q, h_i, h_k, x_ik, f, rho, err_tol=1e-6)
+
+    where   cond_type is the conductor type ('solid' or 'tube')
+            r is the radius of the conductor [m]
+            q is the radius of the inner tube [m]
+            h_i is the height of conductor i above ground [m]
+            h_k is the height of conductor k above ground [m]
+            x_ik is the horizontal distance between conductors i and k [m]
+            f is the frequency [Hz]
+            rho is the earth resistivity [Ohm.m]
+            err_tol is the error tolerance for the calculation (default = 1e-6)
+
+    Returns:
+            mutual_Z the self impedance term of line impedance matrix (Ohm/km)
+    """
+    # Constants
+    omega = 2 * np.pi * f  # Nominal angular frequency [rad/s]
+    mu_0 = 4 * np.pi * 1e-7  # Permeability of free space [H/m]
+    # See Figure 4.4. EMTP
+    D = np.sqrt((h_i + h_k) ** 2 + x_ik ** 2)  # Distance between conductor i and image of conductor k [m]
+    d = np.sqrt((h_i - h_k) ** 2 + x_ik ** 2)  # Distance between conductors i and k [m]
+
+    # Calculate geometrical mutual reactance (in Ohm/km)
+    X_geo = 1000 * omega * mu_0 / 2 / np.pi * np.log(D / d)
+
+    # Calculate Carson's correction factors (in Ohm/km)
+    Rp, Xp = carsons('mutual', h_i, h_k, x_ik, f, rho, err_tol)
+
+    mutual_Z = complex(Rp, X_geo + Xp)
+
+    return mutual_Z
+
+
+def calc_Dubanton_Z(type, R_int, cond_type, r, q, h_i, h_k, x_ik, f, rho):
+    """
+    Calculates Dubanton approximation for self or mutual impedance (in Ohm/km)
+
+    Usage:
+        Dubanton_Z = calc_Dubanton_Z(type, R_int, cond_type, r, q, h_i, h_k, x_ik, f, rho)
+
+    where   type is 'self' or 'mutual'
+            cond_type is the conductor type ('solid' or 'tube')
+            r is the radius of the conductor [m]
+            q is the radius of the inner tube [m]
+            h_i is the height of conductor i above ground [m]
+            h_k is the height of conductor k above ground [m]
+            x_ik is the horizontal distance between conductors i and k [m]
+            f is the frequency [Hz]
+            rho is the earth resistivity [Ohm.m]
+
+    Returns:
+            Dubanton_Z the self or mutual impedance term of line impedance matrix (Ohm/km)
+    """
+    # Constants
+    omega = 2 * np.pi * f  # Nominal angular frequency [rad/s]
+    mu_0 = 4 * np.pi * 10**(-7)  # Permeability of free space [H/km]
+    p = np.sqrt( rho / (1j * omega * mu_0) )  # Complex depth below earth
+
+    if type == 'self':
+        # Self impedance
+        # Calculate internal conductor reactance (in Ohm/km)
+        X_int = 1000 * omega * calc_L_int(cond_type, r, q)
+
+        # Calculate geometrical reactance (in Ohm/km)
+        X_geo = 1000 * omega * mu_0 / 2 / np.pi * np.log((h_i + p) / r)
+
+        Dubanton_Z = complex(R_int, X_int + X_geo)
+
+    else:
+        # Mutual impedance
+        d = np.sqrt((h_i - h_k) ** 2 + x_ik ** 2)  # Distance between conductors i and k [m]
+        X_geo = 1000 * omega * mu_0 / 2 / np.pi * np.log(np.sqrt((h_i + h_k + 2 * p) ** 2 + x_ik ** 2) / d)
+
+        Dubanton_Z = complex(0, X_geo)
+
+    return Dubanton_Z
+
+
+def calc_Z_matrix(line_dict):
+    """
+    Calculates primitive impedance matrix
+    NOTE: all phase conductor vectors must be the same size. No checks are made to enforce this.
+    Same goes for earth conductor vectors.
+
+    Usage:
+        Z = calc_Z_matrix(line_dict)
+
+    where   line_dict is a dictionary of overhead line parameters:
+                'mode' is the calculate mode ('carson' or 'dubanton')
+                'f' is the nominal frequency (Hz)
+                'rho' is the earth resistivity (Ohm.m)
+                'err_tol' is the error tolerance for the calculation (default = 1e-6)
+                'phase_h' is a vector of phase conductor heights above ground (m)
+                'phase_x' is a vector of phase conductor horizontal spacings with arbitrary reference point (m)
+                'phase_cond' is a vector of phase conductor types ('solid' or 'tube')
+                'phase_R' is a vector of phase conductor AC resistances (Ohm/km)
+                'phase_r' is a vector of phase conductor radii [m]
+                'phase_q' is a vector of phase conductor inner tube radii [m] - use 0 for solid conductors
+                'earth_h' is a vector of earth conductor heights above ground (m)
+                'earth_x' is a vector of earth conductor horizontal spacings with arbitrary reference point (m)
+                'earth_cond' is a vector of earth conductor types ('solid' or 'tube')
+                'earth_R' is a vector of earth conductor AC resistances (Ohm/km)
+                'earth_r' is a vector of earth conductor radii [m]
+                'earth_q' is a vector of earth conductor inner tube radii [m] - use 0 for solid conductors
+
+    Returns:
+            Z is the primitive impedance matrix (with earth conductors shown first)
+            n_p is the number of phase conductors
+            n_e is the number of earth conductors
+    """
+    # Unpack line dictionary
+    mode = line_dict['mode']
+    f = line_dict['f']
+    rho = line_dict['rho']
+    cond_h = line_dict['earth_h'] + line_dict['phase_h']
+    cond_x = line_dict['earth_x'] + line_dict['phase_x']
+    cond_type = line_dict['earth_cond'] + line_dict['phase_cond']
+    cond_R = line_dict['earth_R'] + line_dict['phase_R']
+    cond_r = line_dict['earth_r'] + line_dict['phase_r']
+    cond_q = line_dict['earth_q'] + line_dict['phase_q']
+
+    # Set error tolerance for carsons equations
+    if 'err_tol' in line_dict:
+        err_tol = line_dict['err_tol']
+    else:
+        err_tol = 1e-6
+
+    # Number of phase and earth conductors
+    n_p = len(line_dict['phase_h'])
+    n_e = len(line_dict['earth_h'])
+    n_c = n_p + n_e
+
+    # Set up primitive Z matrix
+    Z = np.asmatrix(np.zeros((n_c, n_c)), dtype='complex') # [Ohm/km]
+    if mode == 'carson':
+        for i in range(n_c):
+            for j in range(n_c):
+                if i == j:
+                    Z[i, j] = calc_self_Z(cond_R[i], cond_type[i], cond_r[i], cond_q[i], cond_h[i],
+                                          f, rho, err_tol)
+                else:
+                    Z[i, j] = calc_mutual_Z(cond_type[i], cond_r[i], cond_q[i], cond_h[i], cond_h[j],
+                                            cond_x[i] - cond_x[j], f, rho, err_tol)
+    else:
+        for i in range(n_c):
+            for j in range(n_c):
+                if i == j:
+                    Z[i, j] = calc_Dubanton_Z('self', cond_R[i], cond_type[i], cond_r[i], cond_q[i],
+                                              cond_h[i], cond_h[j], cond_x[i] - cond_x[j], f, rho)
+                else:
+                    Z[i, j] = calc_Dubanton_Z('mutual', cond_R[i], cond_type[i], cond_r[i], cond_q[i],
+                                              cond_h[i], cond_h[j], cond_x[i] - cond_x[j], f, rho)
+
+    return Z, n_p, n_e
+
+
+def calc_Y_matrix(line_dict):
+    """
+    Calculates primitive admittance matrix
+    Assumes that conductance of air is zero.
+    NOTE: all phase conductor vectors must be the same size. No checks are made to enforce this. Same goes for earth
+    conductor vectors.
+
+    Usage:
+        Y = calc_Y_matrix(line_dict)
+
+    where   line_dict is a dictionary of overhead line parameters:
+                'f' is the nominal frequency [Hz]
+                'rho' is the earth resistivity [Ohm.m]
+                'err_tol' is the error tolerance for the calculation (default = 1e-6)
+                'phase_h' is a vector of phase conductor heights above ground [m]
+                'phase_x' is a vector of phase conductor horizontal spacings with arbitrary reference point [m]
+                'phase_r' is a vector of phase conductor radii [m]
+                'earth_h' is a vector of earth conductor heights above ground [m]
+                'earth_x' is a vector of earth conductor horizontal spacings with arbitrary reference point [m]
+                'earth_r' is a vector of earth conductor radii [m]
+
+    Returns:
+            Y is the primitive admittance matrix (with earth conductors shown first)
+            n_p is the number of phase conductors
+            n_e is the number of earth conductors
+    """
+    # Unpack line dictionary
+    f = line_dict['f']
+    rho = line_dict['rho']
+    cond_h = line_dict['earth_h'] + line_dict['phase_h']
+    cond_x = line_dict['earth_x'] + line_dict['phase_x']
+    cond_r = line_dict['earth_r'] + line_dict['phase_r']
+
+    # Number of phase and earth conductors
+    n_p = len(line_dict['phase_h'])
+    n_e = len(line_dict['earth_h'])
+    n_c = n_p + n_e
+
+    # Constants
+    omega = 2 * np.pi * f  # Nominal angular frequency [rad/s]
+    e_0 = 8.85418782 * 1e-12  # Permittivity of free space [F/m]
+
+    # Set up primitive Y matrix
+    Y = np.asmatrix(np.zeros((n_c, n_c)), dtype='complex')
+    # Build up potential coefficients
+    for i in range(n_c):
+        for j in range(n_c):
+            if i == j:
+                # Self potential coefficient
+                Y[i, j] = (1 / 2 / np.pi / e_0) * np.log(2 * cond_h[i] / cond_r[i])
+            else:
+                # Mutual potential coefficient
+                D = np.sqrt((cond_h[i] + cond_h[j]) ** 2 + (
+                            cond_x[i] - cond_x[j]) ** 2)  # Distance between conductor i and image of conductor k [m]
+                d = np.sqrt(
+                    (cond_h[i] - cond_h[j]) ** 2 + (cond_x[i] - cond_x[j]) ** 2) # Distance between conductors i & k [m]
+                Y[i, j] = (1 / 2 / np.pi / e_0) * np.log(D / d)
+
+    Y = 1000j * omega * Y.I # [S/km]
+
+    return Y, n_p, n_e
+
+
+def calc_kron_Z(Z, n_e):
+    """
+    Calculates Kron reduced matrix
+    Reduction can be used for impedance or admittance matrix reductions
+
+    Usage:
+        kron_Z = calc_kron_Z(Z, n_e)
+
+    where   Z is the primitive matrix (with earth conductors shown first)
+            n_e is the number of earth conductors
+
+    Returns:
+            kron_Z is the kron reduced matrix
+    """
+    # Slice up primtive matrix into constituent parts
+    Zee = Z[0:n_e, 0:n_e]
+    Zep = Z[0:n_e, n_e:]
+    Zpe = Z[n_e:, 0:n_e]
+    Zpp = Z[n_e:, n_e:]
+
+    # Calculate Kron reduced matrix # [ /km]
+    kron_Z = Zpp - Zpe * Zee.I * Zep
+
+    return kron_Z
+
+# Definition of the overhead line parameters
+line_dict = {
+    'mode': 'carson', # carson or dubanton
+    'f': 50,  # Nominal frequency [Hz]
+    'rho': 100,  # Earth resistivity [Ohm.m]
+    'phase_h': [27.5, 27.5, 27.5],  # Phase conductor heights [m]
+    'phase_x': [-12.65, 0, 12.65],  # Phase conductor x-axis coordinates [m]
+    'phase_cond': ['tube', 'tube', 'tube'],  # Phase conductor types ('tube' or 'solid')
+    'phase_R': [0.1363, 0.1363, 0.1363],  # Phase conductor AC resistances [Ohm/km]
+    'phase_r': [0.0105, 0.0105, 0.0105],  # Phase conductor radi [m]
+    'phase_q': [0.0045, 0.0045, 0.0045],  # Phase conductor inner tube radii [m]
+    'earth_h': [],  # Earth conductor heights [m]
+    'earth_x': [],  # Earth conductor x-axis coordinates [m]
+    'earth_cond': [],  # Earth conductor types ('tube' or 'solid')
+    'earth_R': [],  # Earth conductor AC resistances [Ohm/km]
+    'earth_r': [],  # Earth conductor radi [m]
+    'earth_q': []  # Earth conductor inner tube radii [m]
+}
+
+# Impedance matrix
+Zcarson, n_p, n_e = calc_Z_matrix(line_dict)
+
+np.set_printoptions(precision=4, suppress=True)
+print('Carson Series Impedance =\n', Zcarson)
+```
+
+### Three-phase Transformers
+
+### Three-phase Loads and Shunts
+
+### Three-phase Generators
+
 ## AC modelling
 
 ### Universal Branch Model

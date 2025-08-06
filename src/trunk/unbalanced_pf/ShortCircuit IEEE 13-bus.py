@@ -21,7 +21,8 @@ grid.fBase = 60
 bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=0)
 bus_632.is_slack = True
 grid.add_bus(obj=bus_632)
-gen = gce.Generator(vset=1.0, r1=1e-10, x1=1e-10, r2=1e-10, x2=1e-10, r0=1e-10, x0=1e-10)
+# gen = gce.Generator(vset=1.0, r1=1e-10, x1=1e-10, r2=1e-10, x2=1e-10, r0=1e-10, x0=1e-10)
+gen = gce.Generator(vset=1.0, r1=0.004, x1=0.5, r2=0.02, x2=0.5, r0=0.01, x0=0.08)
 grid.add_generator(bus=bus_632, api_obj=gen)
 
 bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100 * 5, ypos=0)
@@ -257,7 +258,6 @@ config_602 = gce.create_known_abc_overhead_template(name='Config. 602',
                                                     phases=np.array([1, 2, 3]),
                                                     Vnom=4.16,
                                                     frequency=60)
-
 grid.add_overhead_line(config_602)
 
 config_603 = gce.create_known_abc_overhead_template(name='Config. 603',
@@ -266,7 +266,6 @@ config_603 = gce.create_known_abc_overhead_template(name='Config. 603',
                                                     phases=np.array([2, 3]),
                                                     Vnom=4.16,
                                                     frequency=60)
-
 grid.add_overhead_line(config_603)
 
 config_604 = gce.create_known_abc_overhead_template(name='Config. 604',
@@ -275,7 +274,6 @@ config_604 = gce.create_known_abc_overhead_template(name='Config. 604',
                                                     phases=np.array([1, 3]),
                                                     Vnom=4.16,
                                                     frequency=60)
-
 grid.add_overhead_line(config_604)
 
 config_605 = gce.create_known_abc_overhead_template(name='Config. 605',
@@ -284,7 +282,6 @@ config_605 = gce.create_known_abc_overhead_template(name='Config. 605',
                                                     phases=np.array([3]),
                                                     Vnom=4.16,
                                                     frequency=60)
-
 grid.add_overhead_line(config_605)
 
 config_606 = gce.create_known_abc_overhead_template(name='Config. 606',
@@ -293,7 +290,6 @@ config_606 = gce.create_known_abc_overhead_template(name='Config. 606',
                                                     phases=np.array([1, 2, 3]),
                                                     Vnom=4.16,
                                                     frequency=60)
-
 grid.add_overhead_line(config_606)
 
 config_607 = gce.create_known_abc_overhead_template(name='Config. 607',
@@ -302,7 +298,6 @@ config_607 = gce.create_known_abc_overhead_template(name='Config. 607',
                                                     phases=np.array([1]),
                                                     Vnom=4.16,
                                                     frequency=60)
-
 grid.add_overhead_line(config_607)
 
 """
@@ -449,13 +444,13 @@ def short_circuit_3ph(grid, t_idx=None) -> ShortCircuitResults:
     pf_res.Sbus = res_3ph.Scalc
 
     sc_options = gce.ShortCircuitOptions(bus_index=4,
-                                         fault_type=FaultType.ph3,
+                                         fault_type=FaultType.LL,
                                          mid_line_fault=False,
                                          branch_index=0,
                                          branch_fault_locations=0.5,
                                          verbose=0,
                                          method=MethodShortCircuit.phases,
-                                         phases=PhasesShortCircuit.a)
+                                         phases=PhasesShortCircuit.ca)
 
     sc_driver = gce.ShortCircuitDriver(grid=grid,
                                        options=sc_options,
@@ -467,4 +462,6 @@ def short_circuit_3ph(grid, t_idx=None) -> ShortCircuitResults:
 
 res_SC = short_circuit_3ph(grid)
 
-print(res_SC.get_voltage_3ph_df())
+dataframe = res_SC.get_voltage_3ph_df()
+print(dataframe)
+

@@ -458,6 +458,31 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
 
     return results
 
+
+def maximum_initial_shortcircuit_current(
+        nc: NumericalCircuit,
+        Zf: complex,
+        faulted_bus: int
+):
+
+    c_max = 1.1 # Voltage factor
+    Un = nc.bus_data.Vnom[faulted_bus] * 1e3 # Nominal voltage [V]
+    Zk = abs(Zf) * Un**2 / (nc.Sbase * 1e6) # Fault impedance [Ohm]
+
+    # Current contribution only from SGs
+    Ik_max_PFO = 1/Zk * c_max * Un / np.sqrt(3)
+
+    # Current contribution only from CIGs
+    # sumatory
+    # Isk_PF = 1/Zk * sumatory
+
+    # Total current contribution
+    Ik_max = Ik_max_PFO + Isk_PF
+
+    return Ik_max
+
+
+
 def short_circuit_abc(nc: NumericalCircuit,
                       Vpf: CxVec,
                       Zf: CxVec,
@@ -611,6 +636,12 @@ def short_circuit_abc(nc: NumericalCircuit,
 
     Usc = spsolve(Ylinear, Inorton)
     Usc_expanded = expand_magnitudes(Usc, bus_lookup)
+
+    Ik_max = maximum_initial_shortcircuit_current(
+        nc = nc,
+        Zf = Zf[bus_index],
+        faulted_bus = bus_index
+    )
 
     """
     Results
