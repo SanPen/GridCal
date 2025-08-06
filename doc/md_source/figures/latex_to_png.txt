@@ -1,0 +1,1 @@
+magick -density 600 figura.pdf -quality 100 -background white -alpha remove -alpha off figura.png
