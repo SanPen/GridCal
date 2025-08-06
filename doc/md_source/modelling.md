@@ -202,6 +202,7 @@ Where:
 - $\vec{Z}_{pp}$ is the impedance between preserved nodes.
 
 Then, the network equations are:
+
 $$
     \begin{bmatrix}
         \vec{U}_{g} \\
@@ -241,6 +242,12 @@ This new matrix allows to describe the electrical behaviour of the remaining pha
 incorporating the effect of the eliminated ground nodes $g$, which were assumed to be held at 0 V.
 
 ####  Example calculation code of the Series impedance, Shunt admittance and Kron's reduction
+
+The following code is provided in order to compute the series impedance and the shunt admittances matrices, by using the
+where the Kron's reduction is also implemented. The calculation process is detailed during the code, as well as the 
+conductor's properties, with the following power line geometry used as an example:
+
+![Power line geometric arrangement](figures/3ph_power_line.png "Power line geometric arrangement")
 
 ```python
 """
@@ -731,16 +738,247 @@ line_dict = {
     'earth_q': []  # Earth conductor inner tube radii [m]
 }
 
-# Impedance matrix
-Zcarson, n_p, n_e = calc_Z_matrix(line_dict)
+# Impedance and admittance matrices
+Zseries, n_p, n_e = calc_Z_matrix(line_dict)
+Yshunt, n_p, n_e = calc_Z_matrix(line_dict)
 
 np.set_printoptions(precision=4, suppress=True)
-print('Carson Series Impedance =\n', Zcarson)
+print('Series Impedance Zs =\n', Zseries)
+print('Shunt Admittance Ysh =\n', Yshunt)
 ```
 
 ### Three-phase Transformers
 
-#### Clock Notation
+Power transformers are essential components of the power system. In general, they provide an interface between sections
+of the network that operate at different rated voltages, for example, between a generating plant and the transmission
+network. In this section, two-winding, three-phase transformers will be modelled. Therefore, it is convenient to treat 
+the electric circuit, formed by the copper windings, separately from the magnetic circuit, formed by the iron core.
+The winding impedance $\vec{Z}_s$ is obtained from a short-circuit test, whereas the iron-core shunt admittance
+$\vec{Y}_{sh}$ is determined from open-circuit tests.
+
+The starting point for developing comprehensive steady-state transformer models is the schematic representation of the
+basic two-winding transformer shown in the following figure:
+
+![Two-winding transformer](figures/3ph_single_phase_transformer.png "Two-winding transformer")
+
+The two transformer windings, termed the primary and secondary, contain $N_p$ and $N_s$ turns, respectively.
+The voltages and currents in both windings are related by a matrix of short-circuit and open-circuit admittance
+parameters, represented in the following electrical equivalent circuit:
+
+![Transformer electrical equivalent circuit](figures/3ph_transformer_electrical_circuit.png "Transformer electrical equivalent circuit")
+
+Representing the transformer parameters in the per-unit system, it converts the original voltage ratio $N_p\!:\!N_s$
+into a unity ratio of $1\!:\!1$. Power transformers are, however, often fitted with a tap-changing mechanism that
+permits a degree of voltage regulation at one of their terminals. This regulation is achieved by injecting a small
+variable voltage of magnitude and phase into the ratio $\vec{m} : 1$. The implemented equivalent circuit also includes
+the tap transformers $m_f$ and $m_t$ in the branch’s $\pi$ model, as in the previous section on power lines.
+These virtual tap transformers arise solely from the per-unit normalisation of the voltages, as they reconcile the
+nominal voltage of a device at a connection point with the nominal voltage of the point itself.
+
+Then, based on the single-phase transformer model shown in the figure above, the corresponding primitive admittance
+matrix is derived and presented bellow, which relates the primary and secondary voltages and currents:
+
+$$
+    \begin{bmatrix}
+        \vec{I_p} \\
+        \vec{I_s}
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        \dfrac{ \vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}} {m^2 \, m_f^2} & \dfrac{-\vec{Y}_s}{\vec{m}^* \, m_f \, m_t} \\
+        \dfrac{-\vec{Y}_s}{\vec{m} \, m_t \, m_f} & \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m_t^2}
+    \end{bmatrix}
+    \begin{bmatrix}
+        \vec{U_p} \\
+        \vec{U_s}
+    \end{bmatrix}
+$$
+
+Using nodal analysis, general models for multi-winding and multi-phase transformers can be derived. The essence of the
+method is to transform the single-phase voltages and currents at each winding, denoted “$1\,2\,3\,4\,5\,6$”, into the
+“$A\,B\,C\,a\,b\,c$” phase reference frame, where consecutive numbers refer to the primary and secondary windings of
+each phase (e.g., $1$ and $2$ correspond to phase $Aa$). The primitive parameters of three identical single-phase
+transformers are arranged as follows:
+
+$$
+    \begin{bmatrix}
+        \vec{I}_1 \\
+        \vec{I}_2 \\
+        \vec{I}_3 \\
+        \vec{I}_4 \\
+        \vec{I}_5 \\
+        \vec{I}_6
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        \dfrac{ \vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}} {m^2m_f^2} & \dfrac{-\vec{Y}_s}{\vec{m}^*m_fm_t} & 0 & 0 & 0 & 0 \\
+        \dfrac{-\vec{Y}_s}{\vec{m}m_tm_f} & \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & 0 & 0 & 0 & 0 \\
+        0 & 0 & \dfrac{ \vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}} {m^2m_f^2} & \dfrac{-\vec{Y}_s}{\vec{m}^*m_fm_t} & 0 & 0 \\
+        0 & 0 & \dfrac{-\vec{Y}_s}{\vec{m}m_tm_f} & \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & 0 & 0 \\
+        0 & 0 & 0 & 0 & \dfrac{ \vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}} {m^2m_f^2} & \dfrac{-\vec{Y}_s}{\vec{m}^*m_fm_t} \\
+        0 & 0 & 0 & 0 & \dfrac{-\vec{Y}_s}{\vec{m}m_tm_f} & \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m_t^2}
+    \end{bmatrix}
+    \begin{bmatrix}
+        \vec{U}_1 \\
+        \vec{U}_2 \\
+        \vec{U}_3 \\
+        \vec{U}_4 \\
+        \vec{U}_5 \\
+        \vec{U}_6
+    \end{bmatrix}
+$$
+
+Expressed in compact form, the resulting expression is:
+
+$$
+    \vec{I}_\text{coils} = \vec{Y}_\text{primitive} \cdot \vec{U}_\text{coils}
+$$
+
+Which can be operated in order to relate phase magnitudes:
+
+$$
+    \vec{I}_\text{phases} = C_I^{-1} \cdot \vec{Y}_\text{primitive} \cdot C_U \cdot \vec{U}_\text{phases}
+    \label{eq:Y_transformer1}
+$$
+
+It follows that the next step is to find the connectivity matrices $C_U$ and $C_I$, which relate the voltages and
+currents at each winding to the phase magnitudes, to obtain the transformer admittance matrix $\vec{Y}$.
+This matrix links the primary and secondary phase voltages and currents:
+
+$$
+    \vec{Y} = C_I^{-1} \cdot \vec{Y}_\text{primitive} \cdot C_U
+\label{eq:Y_transformer}
+$$
+
+The three-phase windings of power transformers may be connected in several ways. In high voltage transmission the most
+popular connections are star and delta, although the zig-zag connection is also used in distribution systems, depicted
+in figure bellow. Consequently, connectivity matrices must be computed for each configuration.
+
+![Zig-zag transformer](figures/3ph_zigzag.png "Zig-zag transformer")
+
+#### Delta-star (Dy) connection
+
+The following shows the three-phase delta-star (Dy) connection:
+
+![Dy connection](figures/3ph_Dy_connection.png "Dy connection")
+
+The transformation matrix $C_U$, which relates the voltages of each winding to the corresponding phase voltages,
+is given explicitly in the following expression:
+
+$$
+    \begin{bmatrix}
+        \vec{U}_1 \\
+        \vec{U}_2 \\
+        \vec{U}_3 \\
+        \vec{U}_4 \\
+        \vec{U}_5 \\
+        \vec{U}_6
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        \dfrac{1}{\sqrt{3}} & -\dfrac{1}{\sqrt{3}} & 0 & 0 & 0 & 0 \\
+        0 & 0 & 0 & 1 & 0 & 0 \\
+        0 & \dfrac{1}{\sqrt{3}} & -\dfrac{1}{\sqrt{3}} & 0 & 0 & 0 \\
+        0 & 0 & 0 & 0 & 1 & 0 \\
+        -\dfrac{1}{\sqrt{3}} & 0 & \dfrac{1}{\sqrt{3}} & 0 & 0 & 0 \\
+        0 & 0 & 0 & 0 & 0 & 1 \\
+    \end{bmatrix}
+    \begin{bmatrix}
+        \vec{U}_A \\
+        \vec{U}_B \\
+        \vec{U}_C \\
+        \vec{U}_a \\
+        \vec{U}_b \\
+        \vec{U}_c
+    \end{bmatrix}
+$$
+
+And in compact form:
+
+$$
+    \vec{U}_\text{coils} = C_U \cdot \vec{U}_\text{phases}
+$$
+
+Similarly, the inverse current connectivity matrix $C_I^{-1}$ is obtained:
+
+$$
+    \begin{bmatrix}
+        \vec{I}_A \\
+        \vec{I}_B \\
+        \vec{I}_C \\
+        \vec{I}_a \\
+        \vec{I}_b \\
+        \vec{I}_c
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        \dfrac{1}{\sqrt{3}} & 0 & 0 & 0 & -\dfrac{1}{\sqrt{3}} & 0 \\
+        -\dfrac{1}{\sqrt{3}} & 0 & \dfrac{1}{\sqrt{3}} & 0 & 0 & 0 \\
+        0 & 0 & -\dfrac{1}{\sqrt{3}} & 0 & \dfrac{1}{\sqrt{3}} & 0 \\
+        0 & 1 & 0 & 0 & 0 & 0 \\
+        0 & 0 & 0 & 1 & 0 & 0 \\
+        0 & 0 & 0 & 0 & 0 & 1 \\
+    \end{bmatrix}
+    \begin{bmatrix}
+        \vec{I}_1 \\
+        \vec{I}_2 \\
+        \vec{I}_3 \\
+        \vec{I}_4 \\
+        \vec{I}_5 \\
+        \vec{I}_6
+    \end{bmatrix}
+$$
+
+And also in compact form:
+
+$$
+    \vec{I}_\text{phases} = C_I^{-1} \cdot \vec{I}_\text{coils}
+$$
+
+The full transformer admittance matrix for the Dy connection is obtained by substituting the connectivity matrices $C_U$
+and $C_I$:
+
+\begin{equation}
+    \vec{Y} = C_I^{-1} \cdot \vec{Y}_\text{primitive} \cdot C_U
+    \label{eq:Dy_Compact}
+\end{equation}
+
+Finally, the transformer admittance matrix for the Dy connection is computed:
+
+$$
+\vec{Y}
+    =
+    \begin{bmatrix}
+        \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{3m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m^2m_f^2} & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & 0 & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} \\
+        \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m^2m_f^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{3m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m^2m_f^2} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & 0 \\
+        \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m^2m_f^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{3m^2m_f^2} & 0 & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} \\
+        \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & 0 & 0 \\
+        0 & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & 0 \\
+        \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & 0 & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} \\
+    \end{bmatrix}
+$$
+
+The admittance matrices for the other eight possible configurations have been obtained using exactly the same procedure.
+The final matrices are shown below.
+
+#### Star-delta (Yd) connection
+
+#### Star-star (Yy) connection
+
+#### Delta-delta (Dd) connection
+
+#### Star-zigzag (Yz) connection
+
+#### Zigzag-star (Zy) connection
+
+#### Zigzag-zigzag (Zz) connection
+
+#### Delta-zigzag (Dz) connection
+
+#### Zigzag-delta (Zd) connection
+
+
+#### Clock notation
 
 ### Three-phase Loads and Shunts
 

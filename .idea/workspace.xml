@@ -28,13 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Some checks for short-circuits have been added to prevent the users from selecting a type of short circuit that is incompatible with the phases involved.">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Three-phase Overhead Lines Documentation.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/md_source/modelling.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/modelling.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/Carson_vs_Dubanton.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/Carson_vs_Dubanton.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ShortCircuit IEEE 13-bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/ShortCircuit IEEE 13-bus.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -137,104 +133,104 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Git.Branch.Popup.ShowAllRemotes": "true",
-    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
-    "Python tests.Nosetests for test_power_flow.test_zip.executor": "Debug",
-    "Python tests.Nosetests for test_topology_processor.test_topology_rts.executor": "Debug",
-    "Python tests.Nosetests for tests.test_ac_opf.executor": "Run",
-    "Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor": "Debug",
-    "Python tests.Nosetests for tests.test_hydro.executor": "Run",
-    "Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor": "Run",
-    "Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor": "Run",
-    "Python tests.Nosetests for tests.test_topology_processor.executor": "Run",
-    "Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor": "Run",
-    "Python tests.Nosetests in admittance_matrix_test.py.executor": "Run",
-    "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
-    "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
-    "Python tests.Nosetests in tests.executor": "Run",
-    "Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder.executor": "Run",
-    "Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder_modified.executor": "Run",
-    "Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_double_line_to_ground_fault_DLG.executor": "Run",
-    "Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_line_to_line_fault.executor": "Run",
-    "Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_single_line_to_ground_fault_SLG.executor": "Run",
-    "Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_three_phase_fault.executor": "Run",
-    "Python tests.Python tests in test_3_phase_pf.py.executor": "Run",
-    "Python tests.Python tests in test_3_phase_pf_13bus.py.executor": "Run",
-    "Python tests.Python tests in test_3_phase_pf_13bus_modified.py.executor": "Run",
-    "Python tests.Python tests in test_3ph_ShortCircuit_13bus.py.executor": "Run",
-    "Python tests.Python tests in tests.executor": "Run",
-    "Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor": "Debug",
-    "Python tests.pytest for src.tests.test_basic.test_gridcal_basic_pi.executor": "Debug",
-    "Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true.executor": "Run",
-    "Python tests.pytest for src.tests.test_load_save_load.test_load_save_load_xlsx.executor": "Debug",
-    "Python tests.pytest for src.tests.test_transformer_type.test_transformer_type.executor": "Debug",
-    "Python tests.pytest for test_ac_opf.test_superconductors_handling.executor": "Run",
-    "Python tests.pytest for test_basic.test_gridcal_basic_pi.executor": "Debug",
-    "Python tests.pytest for test_load_save_load.test_load_save_load2.executor": "Run",
-    "Python tests.pytest for test_transformer_type.test_psse_conversion3.executor": "Debug",
-    "Python tests.pytest for test_transformer_type.test_transformer_type.executor": "Run",
-    "Python tests.pytest in test_ac_opf.py.executor": "Run",
-    "Python tests.pytest in test_admitances.py.executor": "Debug",
-    "Python tests.pytest in test_basic.py.executor": "Run",
-    "Python tests.pytest in test_cgmes_ieeee.py.executor": "Run",
-    "Python tests.pytest in test_copy.py.executor": "Run",
-    "Python tests.pytest in test_load_save_load.py.executor": "Run",
-    "Python tests.pytest in test_transformer_type.py.executor": "Run",
-    "Python tests.pytest in tests.executor": "Run",
-    "Python.AnalysisDialogue.executor": "Run",
-    "Python.Carson_vs_Dubanton.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
-    "Python.GridCalMain.executor": "Run",
-    "Python.IEEE 13-bus Test Feeder Case OpenDSS.executor": "Run",
-    "Python.IEEE 13-bus Test Feeder Case worker.executor": "Run",
-    "Python.IEEE 13-bus Test Feeder Case.executor": "Run",
-    "Python.Modified IEEE 13-bus Test Feeder Case OpenDSS.executor": "Run",
-    "Python.Panther_Cable.executor": "Run",
-    "Python.ShortCircuit IEEE 13-bus.executor": "Debug",
-    "Python.Shunts Validation OpenDSS.executor": "Run",
-    "Python._callers.executor": "Debug",
-    "Python.alex.executor": "Debug",
-    "Python.cgmes_rdfs_graph.executor": "Run",
-    "Python.circuit_to_optimods.executor": "Run",
-    "Python.demo_code.executor": "Run",
-    "Python.demo_code2.executor": "Run",
-    "Python.demo_code3.executor": "Debug",
-    "Python.demo_code4.executor": "Run",
-    "Python.impedance_delta.executor": "Run",
-    "Python.multi_circuit.executor": "Debug",
-    "Python.new_circuit_objects.executor": "Run",
-    "Python.pf_basic_formulation_3ph.executor": "Debug",
-    "Python.profile.executor": "Debug",
-    "Python.pymoo_example.executor": "Debug",
-    "Python.python_console.executor": "Run",
-    "Python.raw_imp_exp_test.executor": "Run",
-    "Python.readme_checks.executor": "Run",
-    "Python.short_circuit_worker.executor": "Debug",
-    "Python.substation_wizards.executor": "Run",
-    "Python.substations_types.executor": "Run",
-    "Python.test_power_flow.executor": "Run",
-    "Python.test_raw_cgmes_cross_roundtrip.executor": "Run",
-    "Python.update_gui_file.executor": "Run",
-    "Python.upload_to_pypi.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "devel",
-    "last_opened_file_path": "C:/GridCal/src/tests",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "preferences.sourceCode.YAML",
-    "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
+    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
+    &quot;Python tests.Nosetests for test_power_flow.test_zip.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for test_topology_processor.test_topology_rts.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for tests.test_ac_opf.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for tests.test_hydro.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_topology_processor.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in deep_copy_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in test_topology_processor.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_3_phase_pf_13bus.test_ieee_13_bus_feeder_modified.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_double_line_to_ground_fault_DLG.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_line_to_line_fault.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_single_line_to_ground_fault_SLG.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_3ph_ShortCircuit_13bus.test_three_phase_fault.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_3_phase_pf.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_3_phase_pf_13bus.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_3_phase_pf_13bus_modified.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_3ph_ShortCircuit_13bus.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_basic.test_gridcal_basic_pi.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_load_save_load.test_load_save_load_xlsx.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_transformer_type.test_transformer_type.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_ac_opf.test_superconductors_handling.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_basic.test_gridcal_basic_pi.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_load_save_load.test_load_save_load2.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_transformer_type.test_psse_conversion3.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_transformer_type.test_transformer_type.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_ac_opf.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_admitances.py.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest in test_basic.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_cgmes_ieeee.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_copy.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_load_save_load.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_transformer_type.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Carson_vs_Dubanton.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
+    &quot;Python.GridCalMain.executor&quot;: &quot;Run&quot;,
+    &quot;Python.IEEE 13-bus Test Feeder Case OpenDSS.executor&quot;: &quot;Run&quot;,
+    &quot;Python.IEEE 13-bus Test Feeder Case worker.executor&quot;: &quot;Run&quot;,
+    &quot;Python.IEEE 13-bus Test Feeder Case.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Modified IEEE 13-bus Test Feeder Case OpenDSS.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Panther_Cable.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ShortCircuit IEEE 13-bus.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.Shunts Validation OpenDSS.executor&quot;: &quot;Run&quot;,
+    &quot;Python._callers.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.alex.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
+    &quot;Python.circuit_to_optimods.executor&quot;: &quot;Run&quot;,
+    &quot;Python.demo_code.executor&quot;: &quot;Run&quot;,
+    &quot;Python.demo_code2.executor&quot;: &quot;Run&quot;,
+    &quot;Python.demo_code3.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.demo_code4.executor&quot;: &quot;Run&quot;,
+    &quot;Python.impedance_delta.executor&quot;: &quot;Run&quot;,
+    &quot;Python.multi_circuit.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pf_basic_formulation_3ph.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.profile.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.python_console.executor&quot;: &quot;Run&quot;,
+    &quot;Python.raw_imp_exp_test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.readme_checks.executor&quot;: &quot;Run&quot;,
+    &quot;Python.short_circuit_worker.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.substation_wizards.executor&quot;: &quot;Run&quot;,
+    &quot;Python.substations_types.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_power_flow.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_raw_cgmes_cross_roundtrip.executor&quot;: &quot;Run&quot;,
+    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
+    &quot;Python.upload_to_pypi.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;devel&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/GridCal/src/tests&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.YAML&quot;,
+    &quot;two.files.diff.last.used.file&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -1885,7 +1881,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="604" />
+    <option name="localTasksCounter" value="606" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1931,7 +1927,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixen unversioned files." />
     <MESSAGE value="Updated smart_compare in editable devices." />
     <MESSAGE value="Small changes solving datatable BUG." />
     <MESSAGE value="Solved issue when creating new diagram from selection of substations of a filtered table." />
@@ -1956,7 +1951,8 @@
     <MESSAGE value="short_circuit_results.py adapted to short-circuit calculations in the phase reference frame." />
     <MESSAGE value="All five short-circuit types validated and implemented in the tests." />
     <MESSAGE value="Some checks for short-circuits have been added to prevent the users from selecting a type of short circuit that is incompatible with the phases involved." />
-    <option name="LAST_COMMIT_MESSAGE" value="Some checks for short-circuits have been added to prevent the users from selecting a type of short circuit that is incompatible with the phases involved." />
+    <MESSAGE value="Three-phase Overhead Lines Documentation." />
+    <option name="LAST_COMMIT_MESSAGE" value="Three-phase Overhead Lines Documentation." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
