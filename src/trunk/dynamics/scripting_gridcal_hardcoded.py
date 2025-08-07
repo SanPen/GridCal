@@ -18,8 +18,6 @@ from GridCalEngine.Utils.Symbolic.block import Block
 from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
 import GridCalEngine.api as gce
 
-start = time.time()
-
 # ----------------------------------------------------------------------------------------------------------------------
 # Power flow
 # ----------------------------------------------------------------------------------------------------------------------
@@ -27,10 +25,10 @@ start = time.time()
 grid = gce.open_file('src/trunk/dynamics/Two_Areas_PSS_E/Benchmark_4ger_33_2015.raw')
 # Run power flow
 res = gce.power_flow(grid)
-# Print results
-print(res.get_bus_df())
-print(res.get_branch_df())
-print(f"Converged: {res.converged}")
+# # Print results
+# print(res.get_bus_df())
+# print(res.get_branch_df())
+# print(f"Converged: {res.converged}")
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Time Domain Simulation
@@ -1473,9 +1471,6 @@ t, y = slv.simulate(
     events_list=my_events,
     method="implicit_euler"
 )
-
-end = time.time()
-print(f"GridCal execution time: {end - start:.6f} seconds")
 
 # save to csv
 slv.save_simulation_to_csv('simulation_results.csv', t, y)

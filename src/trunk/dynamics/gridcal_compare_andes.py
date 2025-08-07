@@ -50,7 +50,7 @@ def merge_simulation_results_by_time(csv1, csv2, output_csv= 'merged_data.csv', 
 
     return merged_df
 
-comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_results_andes.csv')
+comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_andes_output.csv')
 # andes is automatic
 # Load merged CSV
 i = 1
@@ -71,11 +71,6 @@ variable_pairs = [
      [f"omega_3_Gridcal", f"omega_andes_gen_3"],
      [f"omega_4_Gridcal", f"omega_andes_gen_4"]
     ]
-
-
-
-
-
 
 
 # Automatically detect time columns

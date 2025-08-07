@@ -29,8 +29,11 @@ def main():
     # Run PF
     ss.PFlow.run()
 
-    print(f"Bus voltages = {ss.Bus.v.v}")
-    print(f"Bus angles = {ss.Bus.a.v}")
+    # print(f"Bus voltages = {ss.Bus.v.v}")
+    # print(f"Bus angles = {ss.Bus.a.v}")
+
+    end_pf = time.time()
+    print(f"ANDES - PF time = {end_pf-start:.6f} [s]")
 
     # PQ constant power load
     ss.PQ.config.p2p = 1.0
@@ -43,14 +46,15 @@ def main():
 
     # Logging
     time_history = []
-    omega_history = [[] for _ in range(len(ss.GENROU))]
+    omega_history = [[] for _ in range(len(ss.GENCLS))]
     Ppf_history = [[] for _ in range(len(ss.PQ))]
-    tm_history = [[] for _ in range(len(ss.GENROU))]
-    te_history = [[] for _ in range(len(ss.GENROU))]
+    tm_history = [[] for _ in range(len(ss.GENCLS))]
+    te_history = [[] for _ in range(len(ss.GENCLS))]
     v_history = [[] for _ in range(len(ss.Bus))]
     a_history = [[] for _ in range(len(ss.Bus))]
     vf_history = [[] for _ in range(len(ss.GENCLS))]
     
+    start_tds = time.time()
     # Run TDS
     tds = ss.TDS
     tds.config.fixt = 1
@@ -60,8 +64,16 @@ def main():
     tds.t = 0.0
     tds.init()
 
+    print(len(ss.dae.x))
+    print(len(ss.dae.y))
+
+    end_tds = time.time()
+    print(f"ANDES - Compiling time = {end_tds-start_tds:.6f} [s]")
+
     one = True
     # Step-by-step simulation
+    start_sim = time.time()
+
     while tds.t < tds.config.tf:
 
         if tds.t > 2.5 and one == True:
@@ -85,7 +97,7 @@ def main():
         tds.t += tds.config.tstep
 
     end = time.time()
-    print(f"ANDES execution time: {end - start:.6f} seconds")
+    print(f"ANDES - Execution time: {end - start_sim:.6f} [s]")
 
     omega_df = pd.DataFrame(list(zip(*omega_history)))  # shape: [T, n_generators]
     omega_df.columns = [f"omega_andes_gen_{i+1}" for i in range(len(omega_history))]

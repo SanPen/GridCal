@@ -547,26 +547,26 @@ class Load(LoadParent):
             if show_fig:
                 plt.show()
 
-    def initialize_rms(self, Sbase: float = 100):
+    def initialize_rms(self):
         if self.rms_model.empty():
-            Ql = Var("Ql")
-            Pl = Var("Pl")
-            Vm = self.bus.rms_model.model.E(DynamicVarType.Vm)
-            Va = self.bus.rms_model.model.E(DynamicVarType.Va)
 
+            # Ql = Var("Ql")
+            # Pl = Var("Pl")
 
+            Pl = self.bus.rms_model.model.E(DynamicVarType.P)
+            Ql = self.bus.rms_model.model.E(DynamicVarType.Q)
 
             self.rms_model.model = Block(
                 algebraic_eqs=[
-                    Pl - (self.P),
-                    Ql - (self.Q)
+                    Pl - self.P,
+                    Ql - self.Q
                 ],
-                algebraic_vars=[Ql, Pl],
+                algebraic_vars=[Pl, Ql],
                 init_eqs={},
                 init_vars=[],
                 parameters=[],
                 external_mapping={
                     DynamicVarType.P: Pl,
-                    DynamicVarType.Q: Ql,
+                    DynamicVarType.Q: Ql
                 }
             )

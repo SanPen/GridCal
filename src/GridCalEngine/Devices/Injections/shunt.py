@@ -6,7 +6,7 @@
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Devices.Parents.shunt_parent import ShuntParent
-
+from GridCalEngine.Utils.Symbolic.block import Block, Var, Const, DynamicVarType
 
 class Shunt(ShuntParent):
 
@@ -63,3 +63,33 @@ class Shunt(ShuntParent):
                              opex=opex,
                              build_status=build_status,
                              device_type=DeviceType.ShuntDevice)
+        
+        Sbase: float = 100 #NOTE: to remove
+        self.g = self.G / Sbase
+        self.b = self.B / Sbase
+        
+    def initialize_rms(self):
+        if self.rms_model.empty():
+
+            Vm = self.bus.rms_model.model.E(DynamicVarType.Vm) 
+            Pshunt = self.bus.rms_model.model.E(DynamicVarType.P) #NOTE: what if two devices are connected to the same bus? 
+            Qshunt = self.bus.rms_model.model.E(DynamicVarType.Q)
+
+            # Assign Block
+            self.rms_model.model = Block(
+                algebraic_eqs=[
+                    Pshunt - self.g * Vm**2,
+                    Qshunt - self.b * Vm**2
+                ],
+                algebraic_vars=[Pshunt, Qshunt],
+                init_eqs={
+                    Pshunt: self.g * Vm**2,
+                    Qshunt: self.b * Vm**2
+                },
+                init_vars=[Pshunt, Qshunt],
+                parameters=[],
+                external_mapping={
+                    DynamicVarType.P: Pshunt,
+                    DynamicVarType.Q: Qshunt
+                }
+            )
