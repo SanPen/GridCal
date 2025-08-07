@@ -1348,6 +1348,57 @@ $$
 
 ### Three-phase Generators
 
+For the power flow simulations, generators had been modelled as simple power injections into the system, which was
+completely valid. However, this is not sufficient when performing the short-circuit analysis, as the impedance of the
+generator must also be taken into account. GridCal has been programmed to accept a $3 \times 3$ impedance matrix, which
+includes both the self and mutual impedances between the $abc$ phases.
+
+It is also common to encounter generator impedances in the sequence domain. Therefore, Fortescue’s theorem must be
+applied to obtain the equivalent values for the three phases:
+
+$$
+\vec{Z}_{gen_{abc}} =
+\begin{bmatrix}
+\vec{Z}_0 + \vec{Z}_1 + \vec{Z}_2 & \vec{Z}_0 + \vec{a}\vec{Z}_1 + \vec{a}^2\vec{Z}_2 & \vec{Z}_0 + \vec{a}^2\vec{Z}_1 + \vec{a}\vec{Z}_2 \\
+\vec{Z}_0 + \vec{a}^2\vec{Z}_1 + \vec{a}\vec{Z}_2 & \vec{Z}_0 + \vec{Z}_1 + \vec{Z}_2 & \vec{Z}_0 + \vec{a}\vec{Z}_1 + \vec{a}^2\vec{Z}_2 \\
+\vec{Z}_0 + \vec{a}\vec{Z}_1 + \vec{a}^2\vec{Z}_2 & \vec{Z}_0 + \vec{a}^2\vec{Z}_1 + \vec{a}\vec{Z}_2 & \vec{Z}_0 + \vec{Z}_1 + \vec{Z}_2
+\end{bmatrix}
+$$
+
+Where the transformation eigenvector $\vec{a} = e^{j2\pi/3}$ is used.
+
+A key parameter that must be transferred from the power flow to the short-circuit analysis is the induced electromotive
+force (EMF) in the generators $\vec{E}$, as this is the only voltage that will not change during the fault. 
+The electromotive force depends on the flux induced in the machine's rotor, and therefore on the excitation current.
+It can be assumed that the internal voltage $\vec{E}$ of the generator remains constant during the duration of the fault.
+
+The generator could be modelled during the short-circuit using the classic Thévenin equivalent, that is, as an ideal
+voltage source in series with the generator’s impedance, as shown in the electrical circuit of the following figure:
+
+![Thévenin equivalent circuit](figures/3ph_thevenin.png "Thévenin equivalent circuit")
+
+This circuit allows us to obtain the value of the induced electromotive force, given the voltage $\vec{U}_{pf}$ and
+power $\vec{S}_{pf}$ before the fault (power flow results) at the generator’s output bus:
+
+$$
+\vec{E} = \vec{U}_{pf} + \vec{Z}_{gen} \cdot \vec{I}_{pf}
+    = \vec{U}_{pf} + \dfrac{\vec{S}_{pf}^*}{\vec{Y}_{gen} \cdot \vec{U}_{pf}^*}
+$$
+
+However, this would require to add an additional bus to the original system between the generator’s impedance and the
+ideal voltage source. Therefore, the generator is modelled using its Norton equivalent, that is, an ideal current source
+in parallel with the generator’s impedance, as shown in the schematic bellow:
+
+![Norton equivalent circuit](figures/3ph_norton.png "Norton equivalent circuit")
+
+The Norton current source will take the value of the internal voltage multiplied by its admittance:
+
+$$
+\vec{I}_{N} = \vec{Y}_{gen} \cdot \ \vec{E}
+$$
+
+### Three-phase Voltage Source Converters
+
 ## AC modelling
 
 ### Universal Branch Model
