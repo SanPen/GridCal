@@ -273,7 +273,8 @@ def threephase_power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVe
 
     # Add the shunt power V^2 x Y^*
     Vm = np.abs(V_expanded)
-    Sbus_expanded = np.conj(Yshunt_bus) @ (Vm * Vm)
+    Sbus = np.conj(Yshunt_bus) @ (Vm * Vm)
+    Sbus_expanded= expand_magnitudes(Sbus, bus_lookup)
 
     # Branches current, loading, etc
     Vf_expanded = V_expanded[F]

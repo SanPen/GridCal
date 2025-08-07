@@ -28,11 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Three-phase Loads and Shunts Documentation.">
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/3ph_two_phase_power.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/3ph_zip_model.png" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Three-phase Generators Documentation.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/md_source/modelling.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/modelling.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/power_flow.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/power_flow.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/IEEE 13-bus Test Feeder Case worker.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1883,7 +1884,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="609" />
+    <option name="localTasksCounter" value="610" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1929,7 +1930,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Solved issue when creating new diagram from selection of substations of a filtered table." />
     <MESSAGE value="Added more substations configs" />
     <MESSAGE value="Susbtation type configurations updates" />
     <MESSAGE value="Substation type configurations updates v2" />
@@ -1954,7 +1954,8 @@
     <MESSAGE value="Three-phase Overhead Lines Documentation." />
     <MESSAGE value="Three-phase Transformers Documentation." />
     <MESSAGE value="Three-phase Loads and Shunts Documentation." />
-    <option name="LAST_COMMIT_MESSAGE" value="Three-phase Loads and Shunts Documentation." />
+    <MESSAGE value="Three-phase Generators Documentation." />
+    <option name="LAST_COMMIT_MESSAGE" value="Three-phase Generators Documentation." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2279,14 +2280,9 @@
           <option name="timeStamp" value="2602" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_results.py</url>
-          <line>426</line>
-          <option name="timeStamp" value="2904" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
-          <line>926</line>
-          <option name="timeStamp" value="2907" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
+          <line>953</line>
+          <option name="timeStamp" value="2908" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
