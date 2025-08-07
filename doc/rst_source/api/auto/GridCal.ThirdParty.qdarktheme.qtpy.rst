@@ -20,21 +20,21 @@ GridCal.ThirdParty.qdarktheme.qtpy.qt\_compat module
 
 .. automodule:: GridCal.ThirdParty.qdarktheme.qtpy.qt_compat
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.ThirdParty.qdarktheme.qtpy.qt\_version module
 -----------------------------------------------------
 
 .. automodule:: GridCal.ThirdParty.qdarktheme.qtpy.qt_version
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCal.ThirdParty.qdarktheme.qtpy
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

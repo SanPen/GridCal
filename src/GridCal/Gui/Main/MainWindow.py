@@ -2562,6 +2562,7 @@ class Ui_mainWindow(object):
 
         self.pf_three_phase_checkBox = QCheckBox(self.frame_36)
         self.pf_three_phase_checkBox.setObjectName(u"pf_three_phase_checkBox")
+        self.pf_three_phase_checkBox.setFont(font1)
 
         self.verticalLayout_4.addWidget(self.pf_three_phase_checkBox)
 
@@ -5696,7 +5697,7 @@ class Ui_mainWindow(object):
         self.ignore_single_node_islands_checkBox.setText(QCoreApplication.translate("mainWindow", u"Ignore single node islands", None))
         self.label_50.setText("")
 #if QT_CONFIG(tooltip)
-        self.pf_three_phase_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If enabled, GridCal will run a complete 3-wire, unbanced power flow</p></body></html>", None))
+        self.pf_three_phase_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If active, the power flow is run using the three-pahse unbalanced formulation composing 3x3 impedance matrices form the available database data.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.pf_three_phase_checkBox.setText(QCoreApplication.translate("mainWindow", u"3-phase", None))
 #if QT_CONFIG(tooltip)

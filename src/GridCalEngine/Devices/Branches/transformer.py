@@ -14,6 +14,8 @@ from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapPhas
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType, reverse_transformer_short_circuit_study
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
+from GridCalEngine.Utils.Symbolic.block import Block, Var, Const, DynamicVarType
+from GridCalEngine.Utils.Symbolic.symbolic import cos, sin
 
 
 class Transformer2W(ControllableBranchParent):
@@ -782,3 +784,40 @@ class Transformer2W(ControllableBranchParent):
             return zeros, zeros, zeros, zeros
 
         return Yff, Yft, Ytf, Ytt
+    
+    def initialize_rms(self):
+        # NOTE: accurate model considering phase shift and tap change still need to be implemented!
+        if self.rms_model.empty():
+            Qf = Var("Qf")
+            Qt = Var("Qt")
+            Pf = Var("Pf")
+            Pt = Var("Pt")
+
+            ys = 1.0 / complex(self.R, self.X)
+            g = Const(ys.real)
+            b = Const(ys.imag)
+            bsh = Const(self.B)
+
+            Vmf = self.bus_from.rms_model.model.E(DynamicVarType.Vm)
+            Vaf = self.bus_from.rms_model.model.E(DynamicVarType.Va)
+            Vmt = self.bus_to.rms_model.model.E(DynamicVarType.Vm)
+            Vat = self.bus_to.rms_model.model.E(DynamicVarType.Va)
+
+            self.rms_model.model = Block(
+                algebraic_eqs=[
+                    Pf - ((Vmf ** 2 * g) - g * Vmf * Vmt * cos(Vaf - Vat) + b * Vmf * Vmt * cos(Vaf - Vat + np.pi / 2)),
+                    Qf - (Vmf ** 2 * (-bsh / 2 - b) - g * Vmf * Vmt * sin(Vaf - Vat) + b * Vmf * Vmt * sin(Vaf - Vat + np.pi / 2)),
+                    Pt - ((Vmt ** 2 * g) - g * Vmt * Vmf * cos(Vat - Vaf) + b * Vmt * Vmf * cos(Vat - Vaf + np.pi / 2)),
+                    Qt - (Vmt ** 2 * (-bsh / 2 - b) - g * Vmt * Vmf * sin(Vat - Vaf) + b * Vmt * Vmf * sin(Vat - Vaf + np.pi / 2)),
+                ],
+                algebraic_vars=[Pf, Pt, Qf, Qt],
+                init_eqs={},
+                init_vars=[],
+                parameters=[],
+                external_mapping={
+                    DynamicVarType.Pf: Pf,
+                    DynamicVarType.Pt: Pt,
+                    DynamicVarType.Qf: Qf,
+                    DynamicVarType.Qt: Qt,
+                }
+            )

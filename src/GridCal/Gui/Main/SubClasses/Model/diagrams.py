@@ -33,7 +33,8 @@ import GridCal.Gui.gui_functions as gf
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,
                                                                    BusGraphicItem,
                                                                    generate_schematic_diagram,
-                                                                   make_vicinity_diagram)
+                                                                   make_vicinity_diagram,
+                                                                   make_diagram_from_buses)
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, generate_map_diagram
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 from GridCal.Gui.Diagrams.diagrams_model import DiagramsModel
@@ -1811,36 +1812,28 @@ class DiagramsMain(CompiledArraysMain):
         """
 
         if len(substations) == 0:
-            info_msg(text="No substations selected. PLese select some substations",
+            info_msg(text="No substations selected. Please select some substations",
                      title="Substations schematic")
             return
 
-        buses = list()
-        for substation in substations:
-            buses += self.circuit.get_substation_buses(substation=substation)
+        selected_buses = self.circuit.get_buses_from_objects(elements=substations)
 
-        if len(buses):
-            diagram = make_vicinity_diagram(
-                circuit=self.circuit,
-                root_bus=buses[0],
-                max_level=2,
-                prog_func=None,
-                text_func=None,
-                name=substations[0].name if len(substations) == 1 else "substations diagram"
-            )
+        if len(selected_buses):
+            diagram = make_diagram_from_buses(circuit=self.circuit,
+                                              buses=selected_buses,
+                                              name=substations[0].name + " diagram")
 
-            diagram_widget = SchematicWidget(
-                gui=self,
-                circuit=self.circuit,
-                diagram=diagram,
-                default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                time_index=self.get_diagram_slider_index()
-            )
+            diagram_widget = SchematicWidget(gui=self,
+                                             circuit=self.circuit,
+                                             diagram=diagram,
+                                             default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                             time_index=self.get_diagram_slider_index())
 
-            self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
+            self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
+                                                diagram=diagram)
             self.set_diagrams_list_view()
-            self.show_info_toast(f"{diagram.name} added")
 
+            self.show_info_toast(f"{diagram.name} added")
         else:
             if len(substations) == 1:
                 info_msg(text=f"No buses were found associated with the substation {substations[0].name}",
@@ -1848,6 +1841,7 @@ class DiagramsMain(CompiledArraysMain):
             else:
                 info_msg(text=f"No buses were found associated with the substations",
                          title="New schematic from substation")
+
 
     def create_circuit_stored_diagrams(self):
         """

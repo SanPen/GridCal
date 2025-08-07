@@ -78,6 +78,10 @@ class Block:
     algebraic_vars: List[Var] = field(default_factory=list)
     algebraic_eqs: List[Expr] = field(default_factory=list)
 
+    # initialization
+    init_eqs: Dict[Var, Expr] = field(default_factory=dict)
+    init_vars: List[Var] = field(default_factory=list)
+
     external_mapping: Dict[DynamicVarType, Var] = field(default_factory=dict)
     var_mapping: Dict[str, Var] = field(default_factory=dict)
 

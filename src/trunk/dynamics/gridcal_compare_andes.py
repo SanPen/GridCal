@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+import pdb
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -49,67 +50,59 @@ def merge_simulation_results_by_time(csv1, csv2, output_csv= 'merged_data.csv', 
 
     return merged_df
 
-comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_output.csv')
-
+comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_andes_output.csv')
+# andes is automatic
 # Load merged CSV
+i = 1
 merged_df = comparison
-
-# Define variable pairs to compare (each pair goes into one subplot)
-# variable_pairs = [
-#     ['delta_Gridcal', 'delta GENCLS 0'],
-#     ['omega_Gridcal', 'omega GENCLS 0'],
-#     ['tm_Gridcal', 'tm GENCLS'],
-#     ['psid_Gridcal', 'psid GENCLS 0'],
-#     ['psiq_Gridcal', 'psiq GENCLS 0'],
-#     ['i_d_Gridcal', 'Id GENCLS 0'],
-#     ['i_q_Gridcal', 'Iq GENCLS 0'],
-#     ['v_d_Gridcal', 'vd GENCLS 0'],
-#     ['v_q_Gridcal', 'vq GENCLS 0'],
-#     ['t_e_Gridcal', 'te GENCLS 0'],
-#     ['P_e_Gridcal', 'Pe GENCLS 0'],
-#     ['Q_e_Gridcal', 'Qe GENCLS 0'],
-#     ['Pline_from_Gridcal', 'a Bus 0'],
-#     ['Qline_from_Gridcal', 'v Bus 0'],
-#     ['Pline_to_Gridcal', 'a Bus 1'],
-#     ['Qline_to_Gridcal', 'v Bus 1']
-# ]
+# merged_df['Pl_Gridcal'] = merged_df['Pl_Gridcal'] * (-100)
 
 variable_pairs = [
-     ['omega_Gridcal', 'omega_gen_0'],
-]
+     [f"Vline_to_G1_Gridcal", f"v_andes_Bus_1"],
+     [f"Vline_to_G2_Gridcal", f"v_andes_Bus_2"],
+     [f"Vline_to_G3_Gridcal", f"v_andes_Bus_3"],
+     [f"Vline_to_G4_Gridcal", f"v_andes_Bus_4"],
+     [f"dline_to_G1_Gridcal", f"a_andes_Bus_1"],
+     [f"dline_to_G2_Gridcal", f"a_andes_Bus_2"],
+     [f"dline_to_G3_Gridcal", f"a_andes_Bus_3"],
+     [f"dline_to_G4_Gridcal", f"a_andes_Bus_4"],
+     [f"omega_1_Gridcal", f"omega_andes_gen_1"],
+     [f"omega_2_Gridcal", f"omega_andes_gen_2"],
+     [f"omega_3_Gridcal", f"omega_andes_gen_3"],
+     [f"omega_4_Gridcal", f"omega_andes_gen_4"]
+    ]
+
 
 # Automatically detect time columns
-time_columns = [col for col in merged_df.columns if 'time' in col.lower()]
-time1 = merged_df[time_columns[0]]
-time2 = merged_df[time_columns[1]] if len(time_columns) > 1 else time1  # fallback to same time
+time_column = merged_df['Time [s]']
+time_columns = [col for col in merged_df.columns if 'Time [s]' in col.lower()]
+time1 = time_column
 
 # Create subplots
 n = len(variable_pairs)
 cols = 2
 rows = (n + 1) // cols
 
-fig, axes = plt.subplots(rows, cols, figsize=(16, 4 * rows), sharex=True)
+fig, axes = plt.subplots(rows, cols, figsize=(10, 2 * rows), sharex=True)
 axes = axes.flatten()
-
 for idx, (var1, var2) in enumerate(variable_pairs):
     ax = axes[idx]
     if var1 in merged_df and var2 in merged_df:
+
         ax.plot(time1, merged_df[var1], label=var1, linestyle='-')
-        ax.plot(time2, merged_df[var2], label=var2, linestyle='--')
+        ax.plot(time1, merged_df[var2], label=var2, linestyle='--')
         ax.set_title(f"{var1} vs {var2}", fontsize=9)
         ax.set_xlabel("Time (s)", fontsize=8)
         ax.set_ylabel("Value (pu)", fontsize=8)
         ax.tick_params(axis='both', labelsize=7)
         ax.legend(fontsize=7, loc='best')
         ax.grid(True)
-    else:
-        ax.set_visible(False)  # hide empty subplot
 
 axes[-1].set_xlabel("Time (s)")
 plt.tight_layout(rect=[0, 0, 1, 0.97])
-plt.suptitle("Simulation Variable Comparison (GridCal vs GENCLS)", fontsize=16, y=1.02)
+# plt.suptitle("Simulation Variable Comparison (GridCal vs GENCLS)", fontsize=16, y=1.02)
 plt.subplots_adjust(top=0.95)
 plt.show()
 
-plt.savefig('comparison_plots.png', dpi=300)
+# plt.savefig('comparison_plots.png', dpi=300)
 

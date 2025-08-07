@@ -21,29 +21,29 @@ GridCal.Gui.Main.SubClasses.base\_gui module
 
 .. automodule:: GridCal.Gui.Main.SubClasses.base_gui
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.Main.SubClasses.io module
 -------------------------------------
 
 .. automodule:: GridCal.Gui.Main.SubClasses.io
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.Main.SubClasses.simulations module
 ----------------------------------------------
 
 .. automodule:: GridCal.Gui.Main.SubClasses.simulations
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCal.Gui.Main.SubClasses
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

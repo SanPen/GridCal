@@ -9,29 +9,29 @@ GridCalEngine.Utils.MIP.SimpleMip.highs module
 
 .. automodule:: GridCalEngine.Utils.MIP.SimpleMip.highs
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.Utils.MIP.SimpleMip.lpmodel module
 ------------------------------------------------
 
 .. automodule:: GridCalEngine.Utils.MIP.SimpleMip.lpmodel
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.Utils.MIP.SimpleMip.lpobjects module
 --------------------------------------------------
 
 .. automodule:: GridCalEngine.Utils.MIP.SimpleMip.lpobjects
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCalEngine.Utils.MIP.SimpleMip
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

@@ -23,45 +23,45 @@ GridCalEngine.api module
 
 .. automodule:: GridCalEngine.api
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.basic\_structures module
 --------------------------------------
 
 .. automodule:: GridCalEngine.basic_structures
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.data\_logger module
 ---------------------------------
 
 .. automodule:: GridCalEngine.data_logger
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.enumerations module
 ---------------------------------
 
 .. automodule:: GridCalEngine.enumerations
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCalEngine.setup module
 --------------------------
 
 .. automodule:: GridCalEngine.setup
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCalEngine
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

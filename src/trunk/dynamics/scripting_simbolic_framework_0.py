@@ -24,7 +24,7 @@ import GridCalEngine.api as gce
 pi = Const(math.pi)
 fn = Const(50)
 M = Const(1.0)
-D = Const(1)
+D = Const(1.0)
 ra = Const(0.3)
 xd = Const(0.86138701)
 vf = Const(1.081099313)
@@ -44,24 +44,41 @@ bsh = Const(0.03)
 
 grid = gce.MultiCircuit()
 
-bus1 = gce.Bus(name="Bus1", Vnom=10)
+# Buses
+bus1 = gce.Bus(name="Bus1", Vnom=10, is_slack=True)
 bus2 = gce.Bus(name="Bus2", Vnom=10)
+
 grid.add_bus(bus1)
 grid.add_bus(bus2)
 
-line = gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2,
-                r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
-grid.add_line(line)
 
-gen = gce.Generator(name="Gen1", P=10, vset=1.0) # PV
-grid.add_generator(bus=bus1, api_obj=gen)
+# Line
+line0 = grid.add_line(gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=900.0))
 
-load = gce.Load(name="Load1", P=10, Q=10)        # PQ
-grid.add_load(bus=bus2, api_obj=load)
+
+# load
+load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P= 10, Q= 10))
+
+# Generators
+gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom = 900,
+                    x1=0.86138701, r1=0.3, freq=50.0,
+                    m_torque0=0.1,
+                    M=10.0,
+                    D=1.0,
+                    omega_ref=1.0,
+                    Kp=1.0,
+                    Ki=10.0,
+                    Kw=10.0)
+
+grid.add_generator(bus=bus1, api_obj=gen1)
+
 
 res = gce.power_flow(grid)
 
 print(f"Converged: {res.converged}")
+
+print(res.get_bus_df())
+print(res.get_branch_df())
 
 # System
 v1 = res.voltage[0]
@@ -89,10 +106,18 @@ psid0 = ra.value * i_q0 + v_q0
 psiq0 = -ra.value * i_d0 - v_d0
 
 te0 = psid0 * i_q0 - psiq0 * i_d0 
-tm0 = Const(te0)
 vf0 = psid0 + xd.value * i_d0
-print(f"vf = {vf0}")
 
+print("vf0")
+print(vf0)
+
+# ----------------------------------------------------------------------------------------------------------------------
+tm0 = Const(te0)
+print("tm0")
+print(tm0)
+
+Pl0 = Const(Sb2.real)
+Ql0 = Const(Sb2.imag)
 # ----------------------------------------------------------------------------------------------------------------------
 # Line
 # ----------------------------------------------------------------------------------------------------------------------
@@ -120,6 +145,8 @@ line_block = Block(
     parameters=[]
 )
 
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Load
 # ----------------------------------------------------------------------------------------------------------------------
@@ -127,18 +154,13 @@ line_block = Block(
 Ql = Var("Ql")
 Pl = Var("Pl")
 
-coeff_alfa = Const(1.8)
-Pl0 = Var("Pl0")
-Ql0 = Const(Sb2.imag)
-coeff_beta = Const(8.0)
-
 load_block = Block(
     algebraic_eqs=[
         Pl - Pl0,
         Ql - Ql0
     ],
     algebraic_vars=[Ql, Pl],
-    parameters=[Pl0]
+    parameters=[]
 )
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -163,10 +185,10 @@ et = Var("et")
 generator_block = Block(
     state_eqs=[
         (2 * pi * fn) * (omega - omega_ref),  # dδ/dt
-        (tm  - t_e - D * (omega - omega_ref)) / M,  # dω/dt
-        (omega - omega_ref)
+        (tm0  - t_e - D * (omega - omega_ref)) / M,  # dω/dt
+        # (omega - omega_ref)
     ],
-    state_vars=[delta, omega, et],
+    state_vars=[delta, omega], # , et
     algebraic_eqs=[
         psid - (ra * i_q + v_q),
         psiq + (ra * i_d + v_d),
@@ -177,21 +199,11 @@ generator_block = Block(
         t_e - (psid * i_q - psiq * i_d),
         P_g - (v_d * i_d + v_q * i_q),
         Q_g - (v_q * i_d - v_d * i_q),
-        (tm - tm0) + (Kp * (omega - omega_ref) + Ki * et),
+        # (tm - tm0) + (Kp * (omega - omega_ref) + Ki * et),
     ],
-    algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g, tm],
+    algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g], #, tm
     parameters=[]
 )
-
-# psid - (-ra * i_q + v_q),
-# psiq - (-ra * i_d + v_d),
-# i_d - (psid + xd * i_d - vf),
-# i_q - (psiq + xd * i_q),
-# v_d - (Vg * sin(delta - dg)),
-# v_q - (Vg * cos(delta - dg)),
-# t_e - (psid * i_q - psiq * i_d),
-# (v_d * i_d + v_q * i_q) - p_g,
-# (v_q * i_d - v_d * i_q) - Q_g
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Buses
@@ -229,65 +241,8 @@ sys = Block(
 # ----------------------------------------------------------------------------------------------------------------------
 slv = BlockSolver(sys)
 
-# ----------------------------------------------------------------------------------------------------------------------
-# Intialization
-# ----------------------------------------------------------------------------------------------------------------------
-grid = gce.MultiCircuit()
+params_mapping = {}
 
-bus1 = gce.Bus(name="Bus1", Vnom=10)
-bus2 = gce.Bus(name="Bus2", Vnom=10)
-grid.add_bus(bus1)
-grid.add_bus(bus2)
-
-line = gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2,
-                r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=100.0)
-grid.add_line(line)
-
-gen = gce.Generator(name="Gen1", P=10, vset=1.0) # PV
-grid.add_generator(bus=bus1, api_obj=gen)
-
-load = gce.Load(name="Load1", P=10, Q=10)        # PQ
-grid.add_load(bus=bus2, api_obj=load)
-
-res = gce.power_flow(grid)
-
-print(f"Converged: {res.converged}")
-
-# System
-v1 = res.voltage[0]
-v2 = res.voltage[1]
-
-Sb1 = res.Sbus[0] / grid.Sbase
-Sb2 = res.Sbus[1] / grid.Sbase
-Sf = res.Sf / grid.Sbase
-St = res.St / grid.Sbase
-
-# Generator
-# Current from power and voltage
-i = np.conj(Sb1 / v1)          # ī = (p - jq) / v̄*
-# Delta angle
-delta0 = np.angle(v1 + (ra.value + 1j*xd.value) * i)
-# dq0 rotation
-rot = np.exp(-1j * (delta0 - np.pi/2))
-# dq voltages and currents
-v_d0 = np.real(v1*rot)
-v_q0 = np.imag(v1*rot)
-i_d0 = np.real(i*rot)
-i_q0 = np.imag(i*rot)
-# inductances
-psid0 = ra.value * i_q0 + v_q0
-psiq0 = -ra.value * i_d0 - v_d0
-
-vf0 = psid0 + xd.value * i_d0
-print(f"vf = {vf0}")
-
-params_mapping = {
-    Pl0: Sb2.real
-    #Ql0: 0.1
-}
-# ----------------------------------------------------------------------------------------------------------------------
-# Intialization
-# ----------------------------------------------------------------------------------------------------------------------
 vars_mapping = {
     dline_from: np.angle(v1),
     dline_to: np.angle(v2),
@@ -312,7 +267,7 @@ vars_mapping = {
     t_e: te0,  # electromagnetic torque (pu)
     P_g: Sb1.real,
     Q_g: Sb1.imag,
-    tm: te0
+    # tm: te0
 }
 
 # Consistency check 
@@ -347,10 +302,11 @@ for eq, val in residuals.items():
 
 event1 = RmsEvent('Load', Pl0, 2500, 0.15)
 #event2 = Event(Ql0, 5000, 0.3)
-my_events = RmsEvents([event1])
+my_events = RmsEvents([])
 
 params0 = slv.build_init_params_vector(params_mapping)
 x0 = slv.build_init_vars_vector(vars_mapping)
+
 
 
 # x0 = slv.initialize_with_newton(x0=slv.build_init_vars_vector(vars_mapping),
@@ -376,6 +332,7 @@ x0 = slv.build_init_vars_vector(vars_mapping)
 # )
 
 vars_in_order = slv.sort_vars(vars_mapping)
+
 
 t, y = slv.simulate(
     t0=0,

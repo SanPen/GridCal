@@ -15,7 +15,7 @@ from GridCalEngine.Devices.Parents.generator_parent import GeneratorParent
 from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Utils.Symbolic.block import Block, Var, Const, DynamicVarType
-from GridCalEngine.Utils.Symbolic.symbolic import cos, sin
+from GridCalEngine.Utils.Symbolic.symbolic import cos, sin, real, imag, conj, angle, exp
 
 
 class Generator(GeneratorParent):
@@ -49,10 +49,11 @@ class Generator(GeneratorParent):
         'fuels',
         'Sbase',
         'freq',
-        'm_torque',
         'M',
         'D',
+        'tm0',
         'omega_ref',
+        'vf',
         'Kp',
         'Ki',
         'Kw'
@@ -87,14 +88,14 @@ class Generator(GeneratorParent):
                  x0: float = 1e-20,
                  r2: float = 1e-20,
                  x2: float = 1e-20,
-                 freq=50.0,
-                 m_torque=0.1,
-                 M=1.0,
-                 D=4.0,
+                 freq=60.0,
+                 tm0=0.0,
+                 M=1.0 / 100.0 * 900.0, # from Machine to System base
+                 D=4.0 / 100.0 * 900.0, # from Machine to System base
                  omega_ref=1.0,
-                 Kp=1.0,
-                 Ki=10.0,
-                 Kw=10.0,
+                 vf=0.0,
+                 Kp=0.0,
+                 Ki=0.0,
                  capex: float = 0,
                  opex: float = 0,
                  srap_enabled: bool = True,
@@ -230,13 +231,13 @@ class Generator(GeneratorParent):
         self.Sbase = float(Sbase)
 
         self.freq = freq
-        self.m_torque = m_torque
+        self.tm0 = tm0
         self.M = M
         self.D = D
         self.omega_ref = omega_ref
+        self.vf = vf
         self.Kp = Kp
         self.Ki = Ki
-        self.Kw = Kw
 
         self.register(key='is_controlled', units='', tpe=bool, definition='Is this generator voltage-controlled?')
 
@@ -485,19 +486,7 @@ class Generator(GeneratorParent):
         self._Snom = val
 
     def initialize_rms(self):
-
         if self.rms_model.empty():
-            # fn = 50.0
-            # tm = 0.1
-            # M = 1.0
-            # D = 4.0
-            # ra = 0.3
-            # xd = 0.86138701
-            # vset = self.Vset
-            # omega_ref = 1.0
-            # Kp = 1.0
-            # Ki = 10.0
-            # Kw = 10.0
 
             delta = Var("delta")
             omega = Var("omega")
@@ -507,36 +496,55 @@ class Generator(GeneratorParent):
             i_q = Var("i_q")
             v_d = Var("v_d")
             v_q = Var("v_q")
-            t_e = Var("t_e")
-            P_g = Var("Pg")
-            Q_g = Var("Qg")
+            te = Var("te")
+            et = Var("et")
+            tm = Var("tm")
+
             Vm = self.bus.rms_model.model.E(DynamicVarType.Vm)
             Va = self.bus.rms_model.model.E(DynamicVarType.Va)
+            P_g = self.bus.rms_model.model.E(DynamicVarType.P)
+            Q_g = self.bus.rms_model.model.E(DynamicVarType.Q)
 
             self.rms_model.model = Block(
                 state_eqs=[
-                    # delta - (2 * pi * fn) * (omega - 1),
-                    # omega - (-tm / M + t_e / M - D / M * (omega - 1))
-                    (2 * np.pi * self.freq) * (omega - self.omega_ref),  # dδ/dt
-                    (self.m_torque - t_e - self.D * (omega - self.omega_ref)) / self.M,  # dω/dt
+                    (2 * np.pi * self.freq) * (omega - self.omega_ref),
+                    (tm - te - self.D * (omega - self.omega_ref)) / self.M,
+                    (omega - self.omega_ref),
                 ],
-                state_vars=[delta, omega],
+                state_vars=[delta, omega, et],
                 algebraic_eqs=[
-                    # tm + Kw * (omega - omega_ref) ,
-                    psid - (-self.R1 * i_q + v_q),
-                    psiq - (-self.R1 * i_d + v_d),
-                    i_d - (psid + self.X1 * i_d - self.Vset),
-                    i_q - (psiq + self.X1 * i_q),
+                    psid - (self.R1 * i_q + v_q),
+                    psiq + (self.R1 * i_d + v_d),
+                    0 - (psid + self.X1 * i_d - self.vf),
+                    0 - (psiq + self.X1 * i_q),
                     v_d - (Vm * sin(delta - Va)),
                     v_q - (Vm * cos(delta - Va)),
-                    t_e - (psid * i_q - psiq * i_d),
-                    (v_d * i_d + v_q * i_q) - P_g,
-                    (v_q * i_d - v_d * i_q) - Q_g
+                    te - (psid * i_q - psiq * i_d),
+                    P_g - (v_d * i_d + v_q * i_q),
+                    Q_g - (v_q * i_d - v_d * i_q),
+                    tm - (self.tm0 + self.Kp * (omega - self.omega_ref) + self.Ki * et)
                 ],
-                algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g],
+                algebraic_vars=[P_g, Q_g, v_d, v_q, i_d, i_q, psid, psiq, te, tm],
+                init_eqs = {
+                    delta: angle(Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va))))),
+                    omega: Const(self.omega_ref),
+                    v_d: real((Vm * exp(1j * Va)) * exp(-1j * (delta - np.pi / 2))),
+                    v_q: imag((Vm * exp(1j * Va)) * exp(-1j * (delta - np.pi / 2))),
+                    i_d: real(conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va))) * exp(-1j * (delta - np.pi / 2))),
+                    i_q: imag(conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va))) * exp(-1j * (delta - np.pi / 2))),
+                    psid: self.R1 * i_q + v_q,
+                    psiq: -self.R1 * i_d - v_d,
+                    te: psid * i_q - psiq * i_d,
+                    tm: te,
+                    et: Const(0), 
+                    self.tm0 : tm,
+                    self.vf : psid + self.X1 * i_d
+                },
+                init_vars = [delta, omega, et, v_d, v_q, i_d, i_q, psid, psiq, te, tm],
                 parameters=[],
+
                 external_mapping={
                     DynamicVarType.P: P_g,
-                    DynamicVarType.Q: Q_g,
+                    DynamicVarType.Q: Q_g
                 }
             )

@@ -9,13 +9,13 @@ GridCalEngine.IO.epc.epc\_parser module
 
 .. automodule:: GridCalEngine.IO.epc.epc_parser
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCalEngine.IO.epc
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
