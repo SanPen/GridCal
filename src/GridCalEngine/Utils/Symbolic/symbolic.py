@@ -706,6 +706,7 @@ def _emit(expr: Expr, uid_map_vars: Dict[int, str], uid_map_params: Dict[int, st
         if expr.uid in uid_map_vars.keys():
             return uid_map_vars[expr.uid]  # positional variable
         else: 
+            print(expr.name)
             return uid_map_params[expr.uid]
     if isinstance(expr, UnOp):
         return f"-({_emit(expr.operand, uid_map_vars, uid_map_params)})"

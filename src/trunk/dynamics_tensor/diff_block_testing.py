@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-import sys, os, inspect
+import sys, os
 file_directory = os.path.dirname(os.path.abspath(__file__))
 up_two_directories = os.path.join(file_directory, '..', '..')
 up_two_directories = os.path.abspath(up_two_directories)
@@ -21,13 +21,16 @@ from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
 from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
 from GridCalEngine.Utils.Symbolic.block import Block
 from GridCalEngine.Utils.MultiLinear.multilinearize import *
-from GridCalEngine.Utils.MultiLinear.differential_var  import DiffVar, LagVar
-from GridCalEngine.Utils.MultiLinear.diff_blocksolver  import DiffBlock, DiffBlockSolver
+from GridCalEngine.Utils.MultiLinear.differential_var import DiffVar, LagVar
+from GridCalEngine.Utils.MultiLinear.diff_blocksolver import DiffBlock, DiffBlockSolver
 from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
 import GridCalEngine.api as gce
 
+w = Var('w')
 x = Var('x')
 y = Var('y')
+z = Var("z")
+
 dt = Const(0.001)
 #dt = Var('dt')
 dx = DiffVar.get_or_create('dx', base_var = x)
@@ -42,73 +45,33 @@ if dx2.uid == dx3.uid:
 lag1 = LagVar.get_or_create('lag1', base_var= x, lag =1)
 lag2 = LagVar.get_or_create('lag2', base_var= x, lag =2)
 dx_approx, b = dx.approximation_expr(dt)
-print(dx_approx)
-a, b = dx2.approximation_expr(dt)
-print(a)
-a, b = dx3.approximation_expr(dt)
-print(a)
 dy_approx, b = dy.approximation_expr(dt)
 
-diff_block = DiffBlock(
+block1 = DiffBlock(
     algebraic_eqs=[
         dx + y,
-        dy - x,
+        dy - x + z,
     ],
     algebraic_vars=[x,y],
     diff_vars=[dx, dy, dx2, dy2],
 )
 
-slv = DiffBlockSolver(diff_block)
-
-vars_mapping = {
-    x:1,
-    y:0
-}
-
-div_vars_mapping = {
-    dx:0,
-    dy:1
-}
-
-my_events = RmsEvents([])
-params_mapping = {slv.dt: 0.001}
-
-
-x0  = slv.build_init_vars_vector(vars_mapping)
-dx0 = slv.build_init_diffvars_vector(div_vars_mapping)
-params0 = slv.build_init_params_vector(params_mapping)
-
-vars_in_order = slv.sort_vars(vars_mapping)
-
-time_start = time.time()
-t, y = slv.simulate(
-    t0=0,
-    t_end=10.0,
-    h=0.001,
-    x0=x0,
-    dx0 = dx0,
-    params0=params0,
-    events_list= my_events,
-    method="implicit_euler",
-    verbose = False
+block2 = Block(
+    state_eqs=[
+        dx
+    ],
+    state_vars=[w],
+    algebraic_eqs=[
+        z - 2
+    ],
+    algebraic_vars=[z],
+    parameters=[]
 )
-time_end = time.time()
-print(f'time is {time_end - time_start}')
-slv.save_simulation_to_csv('simulation_results.csv', t, y)
 
-fig = plt.figure(figsize=(14, 10))
+big_block = DiffBlock(
+    children=[block1, block2],
+    in_vars=[]
+)
 
-#Generator state variables
-plt.plot(t, y[:, slv.get_var_idx(x)], label="x (pu)", color='red')
-plt.plot(t, np.cos(t), label="cos(t)", linestyle='--', color='blue')
-
-plt.legend(loc='upper right', ncol=2)
-plt.xlabel("Time (s)")
-plt.ylabel("Values (pu)")
-plt.title("Small System: Control Proof")
-#plt.xlim(0, 10)
-#plt.ylim(0.85, 1.15)
-plt.tight_layout()
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+slv = DiffBlockSolver(big_block)
+print(sys)

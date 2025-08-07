@@ -885,7 +885,7 @@ class BlockSolver:
         t[0] = t0
         y[0] = x0.copy()
         for step_idx in range(steps):
-            self.step_idx
+            self.step_idx = step_idx
             params_current += diff_params_matrix[step_idx, :].toarray().ravel()
             xn = y[step_idx]
             x_new = xn.copy()  # initial guess
