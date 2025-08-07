@@ -28,7 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Three-phase Overhead Lines Documentation.">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Three-phase Transformers Documentation.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/md_source/modelling.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/modelling.md" afterDir="false" />
     </list>
@@ -1881,7 +1881,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="606" />
+    <option name="localTasksCounter" value="608" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1927,7 +1927,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Updated smart_compare in editable devices." />
     <MESSAGE value="Small changes solving datatable BUG." />
     <MESSAGE value="Solved issue when creating new diagram from selection of substations of a filtered table." />
     <MESSAGE value="Added more substations configs" />
@@ -1952,7 +1951,8 @@
     <MESSAGE value="All five short-circuit types validated and implemented in the tests." />
     <MESSAGE value="Some checks for short-circuits have been added to prevent the users from selecting a type of short circuit that is incompatible with the phases involved." />
     <MESSAGE value="Three-phase Overhead Lines Documentation." />
-    <option name="LAST_COMMIT_MESSAGE" value="Three-phase Overhead Lines Documentation." />
+    <MESSAGE value="Three-phase Transformers Documentation." />
+    <option name="LAST_COMMIT_MESSAGE" value="Three-phase Transformers Documentation." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

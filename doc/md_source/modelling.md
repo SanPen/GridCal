@@ -963,24 +963,388 @@ The final matrices are shown below.
 
 #### Star-delta (Yd) connection
 
+$$
+\vec{Y}
+=
+\begin{bmatrix}
+    \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & 0 & 0 & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & 0 \\
+    0 & \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & 0 & 0 & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} \\
+    0 & 0 & \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & 0 & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} \\
+    \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{3m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} \\
+    \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & 0 & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{3m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} \\
+    0 & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} &  \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{3m_t^2} \\
+\end{bmatrix}
+$$
+
 #### Star-star (Yy) connection
+
+$$
+\begin{bmatrix}
+    \vec{I}_A \\
+    \vec{I}_B \\
+    \vec{I}_C \\
+    \vec{I}_a \\
+    \vec{I}_b \\
+    \vec{I}_c
+\end{bmatrix}
+=
+\begin{bmatrix}
+    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} & 0 & 0 \\
+    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} & 0 \\
+    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} \\
+    \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
+    0 & \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
+    0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
+\end{bmatrix}
+\begin{bmatrix}
+    \vec{U}_A \\
+    \vec{U}_B \\
+    \vec{U}_C \\
+    \vec{U}_a \\
+    \vec{U}_b \\
+    \vec{U}_c
+\end{bmatrix} \\
+$$
 
 #### Delta-delta (Dd) connection
 
+$$
+\vec{Y}
+= \frac{1}{3}
+\begin{bmatrix}
+    \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{-2\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} \\
+    \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{-2\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} \\
+    \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m^2m_f^2} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{-2\vec{Y_s}}{\vec{m}^*m_fm_t} \\
+    \dfrac{-2\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} \\
+    \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{-2\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} \\
+    \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{-2\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m_t^2} \\
+\end{bmatrix}
+$$
+
 #### Star-zigzag (Yz) connection
+
+$$
+\vec{Y}
+=
+\begin{bmatrix}
+    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} & 0 & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} \\
+    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} & 0 \\
+    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} \\
+    \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
+    0 & \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
+    \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
+\end{bmatrix}
+$$
 
 #### Zigzag-star (Zy) connection
 
+$$
+\vec{Y}
+=
+\begin{bmatrix}
+    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} & 0 \\
+    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} \\
+    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} \\
+    \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
+    \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
+    0 & \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
+\end{bmatrix}
+$$
+
 #### Zigzag-zigzag (Zz) connection
+
+$$
+\vec{Y}
+=
+\begin{bmatrix}
+    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} & 0 & 0 \\
+    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} & 0 \\
+    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} \\
+    \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
+    0 & \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
+    0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
+\end{bmatrix}
+$$
 
 #### Delta-zigzag (Dz) connection
 
+$$
+\vec{Y}
+=
+\begin{bmatrix}
+    \dfrac{2 \vec{Y_s}+\vec{Y_{sh}}} {3m^2m_f^2} & \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} &\dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} \\
+    \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{2 \vec{Y_s}+\vec{Y_{sh}}} {3m^2m_f^2} & \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} \\
+    \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{2 \vec{Y_s}+\vec{Y_{sh}}} {3m^2m_f^2} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} \\
+    \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
+    \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
+    \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
+\end{bmatrix}
+$$
+
 #### Zigzag-delta (Zd) connection
 
+$$
+\vec{Y}
+=
+\begin{bmatrix}
+    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} \\
+    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} \\
+    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} \\
+    \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{2\vec{Y_s}+\vec{Y_{sh}}}{3m_t^2} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} \\
+    \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} & \dfrac{2\vec{Y_s}+\vec{Y_{sh}}}{3m_t^2} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} \\
+    \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} & \dfrac{2\vec{Y_s}+\vec{Y_{sh}}}{3m_t^2}
+\end{bmatrix}
+$$
 
-#### Clock notation
+#### Vector group and clock notation
+
+The vector group and clock notation define the connection type of the high-voltage (HV) and low-voltage (LV) windings
+of a three-phase transformer, as well as the phase displacement between their voltages.
+The HV side connection is indicated first using uppercase letters, followed by the LV side in lowercase.
+The phase displacement is then specified using clock notation:
+
+![Clock notation](figures/3ph_clock_notation.png "Clock notation")
+
+The full circumference of a clock is $360^\circ$, which, divided by its $12$ hours, assigns $30^\circ$ to each hour.
+If the high-voltage (HV) side is taken as the reference, the low-voltage (LV) side indicates the phase displacement
+between the two voltages. For instance, a \textbf{Dy5} transformer connection means that the HV side is delta-connected,
+the LV side is star-connected, and the phase displacement between them is $150^\circ$ ($5 \cdot 30^\circ$), as
+illustrated in the figure above.
 
 ### Three-phase Loads and Shunts
+
+Owing to the large number and diversity of loads present in power networks, it is preferable to group loads and treat
+them as bulk consumption points, rather than employing distinct models for rotating, static, etc.
+The model used for the loads is the ZIP model, meaning it is considered as a combination of impedance, current, and
+power loads, as depicted in the figure bellow.
+
+![ZIP model](figures/3ph_zip_model.png "ZIP model")
+
+In steady-state applications, most system loads can be effectively represented as three-phase power sinks, connected
+either in star or delta configuration depending on system requirements. The following figure illustrates a
+star-connected load with the neutral point solidly grounded, alongside a delta-connected load. As will be shown later,
+the power flow formulation operates using phase-to-neutral voltages and line currents, since the per-unit normalization
+is based on these quantities. For this reason, the developed tool models all loads as star-connected. Consequently, a
+preliminary conversion is required for delta-connected loads. The software must therefore be capable of transforming
+impedance, current, and power injections from delta to star equivalents.
+
+![Star and delta connected loads](figures/3ph_loads_star_delta.png "Star and delta connected loads")
+
+##### Constant impedance (Z) modelling of three-phase star-connected loads and shunts
+
+Constant impedance loads and shunts are defined in terms of conductance G [MW] and susceptance B [MVAr].
+If these elements have the three-phases active, and they are connected in star, the diagonal of the 3x3 admittance
+matrix $\vec{Y}_0$ is simply filled with the values defined for each phase:
+
+$$
+\vec{Y}_0 =
+\begin{bmatrix}
+    \vec{Y}_a & 0 & 0 \\
+    0 & \vec{Y}_b & 0 \\
+    0 & 0 & \vec{Y}_c \\
+\end{bmatrix}
+$$
+
+![Three-phase star impedance loads](figures/3ph_star_impedance.png "Three-phase star impedance loads")
+
+##### Constant impedance (Z) modelling of three-phase delta-connected loads and shunts
+
+However, if the load is defined in delta connection, the 3x3 matrix shown bellow will be used to mathematically
+model the load or the shunt element:
+
+$$
+\vec{Y}_0 = \dfrac{1}{3}
+\begin{bmatrix}
+    \vec{Y}_{ab} + \vec{Y}_{ca} & -\vec{Y}_{ab} & -\vec{Y}_{ca} \\
+    -\vec{Y}_{ab} & \vec{Y}_{ab} + \vec{Y}_{bc} & -\vec{Y}_{bc} \\
+    -\vec{Y}_{ca} & -\vec{Y}_{bc} & \vec{Y}_{bc} + \vec{Y}_{ca} \\
+\end{bmatrix}
+$$
+
+![Three-phase delta impedance loads](figures/3ph_delta_impedance.png "Three-phase delta impedance loads")
+
+##### Constant impedance (Z) modelling of two-phase loads and shunts
+
+Two-phase loads and shunts defined as admittances are converted to their corresponding equivalent power values in star
+configuration. This conversion is carried out using the voltage, and the resulting power values must be updated at each
+iteration of the algorithm. Therefore, in this case, the values are not stored in the admittance matrix $\vec{Y}_0$ but
+rather in the power vector $\vec{S}_0$. The current flowing through this type of load is equal to the voltage difference
+between the phases to which it is connected, multiplied by its admittance, as shown the equation bellow. By multiplying
+the resulting current in each phase by its corresponding voltage, the power value can be obtained.
+
+$$
+\vec{I}_{a} = (\vec{U}_{a} - \vec{U}_{b}) \cdot \dfrac{\vec{Y}_{ab}}{3}
+$$
+
+In the case where the load is connected between phases $a$ and $c$, the conversion is as follows:
+
+$$
+\vec{S}_0 = 
+\begin{bmatrix}
+    \vec{U}_{a} \cdot \left[ (\vec{U}_{a} - \vec{U}_{c}) \cdot \dfrac{\vec{Y}_{ca}}{3} \right]^* \\
+    0 \\
+    \vec{U}_{c} \cdot \left[ (\vec{U}_{c} - \vec{U}_{a}) \cdot \dfrac{\vec{Y}_{ca}}{3} \right]^* \\
+\end{bmatrix}
+$$
+
+![Two-phase impedance loads](figures/3ph_two_phase_impedance.png "Two-phase impedance loads")
+
+##### Constant impedance (Z) modelling of single-phase loads and shunts
+
+Finally, single-phase loads and shunt elements are modelled as in the previous three-phase star case, but only saving
+the admittance value for the active phase, for instance phase $b$:
+
+$$
+\vec{Y}_0 =
+\begin{bmatrix}
+    0 & 0 & 0 \\
+    0 & \vec{Y}_b & 0 \\
+    0 & 0 & 0 \\
+\end{bmatrix}
+$$
+
+![Single-phase impedance loads](figures/3ph_single_phase_impedance.png "Single-phase impedance loads")
+
+##### Constant current (I) modelling of three-phase star-connected loads
+
+Traditionally, in positive sequence power flow analysis, constant current loads are directly stored in the $\vec{I}_0$
+vector. However, since we are performing a three-phase power flow, the voltage angles of phases b and c are not zero,
+so they must be taken into account. For both three-phase current star-connected loads, the defined phase currents are
+stored in the vector $\vec{I}_0$ as follows:
+
+$$
+\vec{I}_0 =
+\begin{bmatrix}
+    \vec{I}_a^* \, e^{j \, \delta_a} \\
+    \vec{I}_b^* \, e^{j \, \delta_b} \\
+    \vec{I}_c^* \, e^{j \, \delta_c} \\
+\end{bmatrix}
+$$
+
+![Three-phase star current loads](figures/3ph_star_current.png "Three-phase star current loads")
+
+##### Constant current (I) modelling of three-phase delta-connected loads
+
+However, if the current load is defined in delta connection, the vector shown bellow will be used to mathematically
+model the element:
+
+$$
+\vec{I}_0 =
+\begin{bmatrix}
+\dfrac{\vec{I}_{ab}^* \, e^{j \, (\delta_a - \delta_b)} - \vec{I}_{ca}^* \, e^{j \, (\delta_c - \delta_a)}}{\sqrt{3}} \\
+\dfrac{\vec{I}_{bc}^* \, e^{j \, (\delta_b - \delta_c)} - \vec{I}_{ab}^* \, e^{j \, (\delta_a - \delta_b)}}{\sqrt{3}} \\
+\dfrac{\vec{I}_{ca}^* \, e^{j \, (\delta_c - \delta_a)} - \vec{I}_{bc}^* \, e^{j \, (\delta_b - \delta_c)}}{\sqrt{3}} \\
+\end{bmatrix}
+$$
+
+Note that for loads connected between phases, the voltage angle to be applied is not that of the
+phase to which the current load will be mapped, but rather the angle of the voltage difference
+between the two phases to which the current-defined load is connected. Then, the angles
+will be updated in each iteration, adding significant complexity compared to the traditional power flow.
+
+![Three-phase delta current loads](figures/3ph_delta_current.png "Three-phase delta current loads")
+
+##### Constant current (I) modelling of two-phase loads
+
+Two-phase current loads, connected for instance between phases $a$ and $c$, are modelled in the same way as three-phase
+delta-connected loads. The only difference is that, in this case, the current is defined solely as $vec{I}_{ca}$, while the
+other phase-to-phase currents remain zero:
+
+$$
+\vec{I}_0 =
+\begin{bmatrix}
+\dfrac{- \vec{I}_{ca}^* \, e^{j \, (\delta_c - \delta_a)}}{\sqrt{3}} \\
+0 \\
+\dfrac{\vec{I}_{ca}^* \, e^{j \, (\delta_c - \delta_a)}}}{\sqrt{3}} \\
+\end{bmatrix}
+$$
+
+![Two-phase current loads](figures/3ph_two_phase_current.png "Two-phase current loads")
+
+##### Constant current (I) modelling of single-phase loads
+
+Finally, single-phase current loads, connected for instance to phase $b$, are modelled in the same way as three-phase
+star-connected loads. The difference lies in the fact that the absent phases are stored with a value of zero.
+
+$$
+\vec{I}_0 =
+\begin{bmatrix}
+    0 \\
+    \vec{I}_b^* \, e^{j \, \delta_b} \\
+    0 \\
+\end{bmatrix}
+$$
+
+![Single-phase current loads](figures/3ph_single_phase_current.png "Single-phase current loads")
+
+##### Constant power (P) modelling of three-phase star-connected loads
+
+Finally, we will address the modelling of constant power loads. In the case of a three-phase power load connected in
+star, the values defined by the user are stored in the $vec{S}_0$ vector for each phase:
+
+$$
+\vec{S}_0 =
+\begin{bmatrix}
+\vec{S}_a \\
+\vec{S}_b \\
+\vec{S}_c \\
+\end{bmatrix}
+$$
+
+![Three-phase star power loads](figures/3ph_star_power.png "Three-phase star power loads")
+
+##### Constant power (P) modelling of three-phase delta-connected loads
+
+In contrast, if the three-phase power load is connected in delta, the developed transformation to its star equivalent
+involves the phase-to-ground voltages. Then, the power transformation vector to star will be
+updated in each iteration, adding significant complexity compared to the traditional power flow.
+
+$$
+\vec{S}_0 = 
+\begin{bmatrix}
+\dfrac{\vec{U}_a \cdot \vec{S}_{ab}}{\vec{U}_a - \vec{U}_b}
+- \dfrac{\vec{U}_a \cdot \vec{S}_{ca}}{\vec{U}_c - \vec{U}_a} \\
+\dfrac{\vec{U}_b \cdot \vec{S}_{bc}}{\vec{U}_b - \vec{U}_c}
+- \dfrac{\vec{U}_b \cdot \vec{S}_{ab}}{\vec{U}_a - \vec{U}_b} \\
+\dfrac{\vec{U}_c \cdot \vec{S}_{ca}}{\vec{U}_c - \vec{U}_a}
+- \dfrac{\vec{U}_c \cdot \vec{S}_{bc}}{\vec{U}_b - \vec{U}_c} \\
+\end{bmatrix}
+$$
+
+![Three-phase delta power loads](figures/3ph_delta_power.png "Three-phase delta power loads")
+
+##### Constant power (P) modelling of two-phase loads
+
+Two-phase power loads, connected for instance between phases $a$ and $c$, are modelled in the same way as three-phase
+delta-connected loads. The only difference is that, in this case, the power is defined solely as $vec{S}_{ca}$, while the
+other phase-to-phase powers remain zero:
+
+$$
+\vec{S}_0 = 
+\begin{bmatrix}
+- \dfrac{\vec{U}_a \cdot \vec{S}_{ca}}{\vec{U}_c - \vec{U}_a} \\
+0 \\
+\dfrac{\vec{U}_c \cdot \vec{S}_{ca}}{\vec{U}_c - \vec{U}_a} \\
+\end{bmatrix}
+$$
+
+![Two-phase power loads](figures/3ph_two_phase_power.png "Two-phase power loads")
+
+##### Constant power (P) modelling of single-phase loads
+
+Finally, single-phase power loads, connected for instance to phase $b$, are modelled in the same way as three-phase
+star-connected loads. The difference lies in the fact that the absent phases are stored with a value of zero:
+
+$$
+\vec{S}_0 =
+\begin{bmatrix}
+0 \\
+\vec{S}_b \\
+0 \\
+\end{bmatrix}
+$$
+
+![Single-phase power loads](figures/3ph_single_phase_power.png "Single-phase power loads")
 
 ### Three-phase Generators
 
