@@ -71,9 +71,10 @@ class Shunt(ShuntParent):
     def initialize_rms(self):
         if self.rms_model.empty():
 
+            Pshunt = Var(Pshunt)
+            Qshunt = Var(Qshunt)
+
             Vm = self.bus.rms_model.model.E(DynamicVarType.Vm) 
-            Pshunt = self.bus.rms_model.model.E(DynamicVarType.P) #NOTE: what if two devices are connected to the same bus? 
-            Qshunt = self.bus.rms_model.model.E(DynamicVarType.Q)
 
             # Assign Block
             self.rms_model.model = Block(

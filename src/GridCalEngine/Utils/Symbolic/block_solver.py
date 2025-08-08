@@ -182,7 +182,7 @@ class BlockSolver:
         :param block_system: BlockSystem
         """
         self.block_system: Block = block_system
-
+        # TODO: uids, system vars,.. have been already processed in block_system and can be retrived from there.
         # Flatten the block lists, preserving declaration order
         self._algebraic_vars: List[Var] = list()
         self._algebraic_eqs: List[Expr] = list()
@@ -886,11 +886,14 @@ class BlockSolver:
             n_iter = 0
             while not converged and n_iter < max_iter:
                 rhs = self.rhs_implicit(x_new, xn, params_current, step_idx, h)
-                converged = np.linalg.norm(rhs, np.inf) < tol
+                residual = np.linalg.norm(rhs, np.inf)
+                converged = residual < tol
 
-                # NOTE: to check initialization makes sense to use rhs!
-                # if step_idx == 0:
-                #     print(np.linalg.norm(rhs, np.inf))
+                if step_idx == 0:
+                    if converged:
+                       print("System well initailzed.")
+                    else: 
+                        print(f"System bad initilaized. DAE resiudal is {residual}.")
 
                 if converged:
                     break

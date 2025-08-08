@@ -499,11 +499,11 @@ class Generator(GeneratorParent):
             te = Var("te")
             et = Var("et")
             tm = Var("tm")
+            P_g = Var("P_g")
+            Q_g = Var("Q_g")
 
             Vm = self.bus.rms_model.model.E(DynamicVarType.Vm)
             Va = self.bus.rms_model.model.E(DynamicVarType.Va)
-            P_g = self.bus.rms_model.model.E(DynamicVarType.P)
-            Q_g = self.bus.rms_model.model.E(DynamicVarType.Q)
 
             self.rms_model.model = Block(
                 state_eqs=[
@@ -525,7 +525,7 @@ class Generator(GeneratorParent):
                     tm - (self.tm0 + self.Kp * (omega - self.omega_ref) + self.Ki * et)
                 ],
                 algebraic_vars=[P_g, Q_g, v_d, v_q, i_d, i_q, psid, psiq, te, tm],
-                init_eqs = {
+                init_eqs = { #TODO: symbolic framworks needs to handle complex numbers. Apparently this is not wokring as expected
                     delta: angle(Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va))))),
                     omega: Const(self.omega_ref),
                     v_d: real((Vm * exp(1j * Va)) * exp(-1j * (delta - np.pi / 2))),

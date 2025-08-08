@@ -550,15 +550,12 @@ class Load(LoadParent):
     def initialize_rms(self):
         if self.rms_model.empty():
 
-            # Ql = Var("Ql")
-            # Pl = Var("Pl")
-
-            Pl = self.bus.rms_model.model.E(DynamicVarType.P)
-            Ql = self.bus.rms_model.model.E(DynamicVarType.Q)
+            Ql = Var("Ql")
+            Pl = Var("Pl")
 
             self.rms_model.model = Block(
                 algebraic_eqs=[
-                    Pl - self.P,
+                    Pl - self.P, #TODO: consider that self.P/Q should be constant variables/objects, in order for us to create events
                     Ql - self.Q
                 ],
                 algebraic_vars=[Pl, Ql],

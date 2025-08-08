@@ -2941,6 +2941,8 @@ class MultiCircuit(Assets):
                 array_index += 1
     
             # fill init_guess
+            # TODO: initialization from power injections of PFlows results needs to be addressed when multiple devices are connected to the same bus. 
+            # (Shunt Load, for the benchmrk case, two generators,...)
             init_guess[(mdl.external_mapping[DynamicVarType.Vm].uid,
                         mdl.external_mapping[DynamicVarType.Vm].name)] = float(np.abs(res.voltage[i]))
             init_guess[(mdl.external_mapping[DynamicVarType.Va].uid,
@@ -3003,12 +3005,15 @@ class MultiCircuit(Assets):
             x = np.zeros(len(sys_vars))
     
             # assign initial guesses for known variables
+            #TODO: isn't there a way of not keep iterating over the same variables? 
             for uid, name in sys_vars:
                 key = (uid, name)
                 if key in init_guess:
                     x[uid2idx_vars[uid]] = init_guess[key]
     
             # compute and assign missing init_vars
+            #TODO: check the result init_val. For the generator didn't wokr properly and I couldn't find out if
+            # it was a problem of the id system, the way we handle complex system or other
             for var in mdl.init_vars:
                 key = (var.uid, var.name)
                 if key in init_guess:
