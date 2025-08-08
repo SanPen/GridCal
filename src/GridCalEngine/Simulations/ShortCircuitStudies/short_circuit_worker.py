@@ -471,6 +471,7 @@ def maximum_initial_shortcircuit_current(
 
     # Current contribution only from SGs
     Ik_max_PFO = 1/Zk * c_max * Un / np.sqrt(3)
+    Isk_PF = 0
 
     # Current contribution only from CIGs
     # sumatory
