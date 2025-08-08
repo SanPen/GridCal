@@ -18,7 +18,7 @@ import subprocess
 # from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpAffineExpression as LpExp
 # from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpConstraint as LpCst
 # from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpVariable as LpVar
-from pygslv import LPModel, LpResult, Constraint as LpCst, Var as LpVar, Expr as LpExp
+from pygslv import LpModel as gslvLpModel, LpResult, LpCst, LpVar, LpExp
 from GridCalEngine.enumerations import MIPSolvers
 from GridCalEngine.basic_structures import Logger
 
@@ -76,7 +76,7 @@ class LpModel:
 
         self.solver_type: MIPSolvers = solver_type
 
-        self.model = LPModel()
+        self.model = gslvLpModel(name="")
 
         self.relaxed_slacks = list()
 
@@ -111,7 +111,7 @@ class LpModel:
         :param name: name (optional)
         :return: LpVar
         """
-        return self.model.add_var(name=name, low=lb, up=ub, integer=True)
+        return self.model.add_var(name=name, lb=lb, ub=ub, is_int=True)
 
     def add_var(self, lb: float, ub: float, name: str = "") -> LpVar:
         """
@@ -121,7 +121,7 @@ class LpModel:
         :param name: name (optional)
         :return: LpVar
         """
-        return self.model.add_var(name=name, low=lb, up=ub, integer=False)
+        return self.model.add_var(name=name, lb=lb, ub=ub, is_int=False)
 
     def add_cst(self, cst: LpCst | bool, name: str = "") -> Union[LpCst, int]:
         """
@@ -133,7 +133,7 @@ class LpModel:
         if isinstance(cst, bool):
             return 0
         else:
-            self.model.add_constraint(cst=cst, name=name)
+            self.model.add_cst(cst, name=name)
             return self.model.constraints[-1]
 
     @staticmethod
@@ -150,7 +150,7 @@ class LpModel:
         Set the objective function with minimization sense
         :param obj_function: expression to minimize
         """
-        self.model.minimise(obj_function)
+        self.model.minimize(obj_function)
 
     def solve(self, robust: bool = False, show_logs: bool = False,
               progress_text: Callable[[str], None] | None = None) -> int:
@@ -164,8 +164,10 @@ class LpModel:
         if progress_text is not None:
             progress_text(f"Solving model with {self.solver_type.value}...")
 
+        self.model.print()
+
         # solve the model
-        res = self.model.solve()
+        res = self.model.solve(solver="highs", verbose=True)
 
         if not res.optimal:
             self.originally_infeasible = True
@@ -296,11 +298,11 @@ class LpModel:
         :param ub: upper bound value
         """
         if isinstance(var, LpVar):
-            self.model.set_bounds(var, lb, ub)
+            self.model.set_var_bounds(var, lb, ub)
 
     def is_mip(self):
         """
-        Is this odel a MIP?
+        Is this model a MIP?
         :return:
         """
         return self.model.isMIP()

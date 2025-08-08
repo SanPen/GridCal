@@ -12,12 +12,15 @@ from __future__ import annotations
 
 from typing import List, Union, Callable, Any
 import subprocess
-import GridCalEngine.Utils.ThirdParty.pulp as pulp
-from GridCalEngine.Utils.ThirdParty.pulp.apis.highs_py import HiGHS
-from GridCalEngine.Utils.ThirdParty.pulp.apis.cplex_cmd import CPLEX_CMD
-from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpAffineExpression as LpExp
-from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpConstraint as LpCst
-from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpVariable as LpVar
+# import GridCalEngine.Utils.ThirdParty.pulp as pulp
+# from GridCalEngine.Utils.ThirdParty.pulp.apis.highs_py import HiGHS
+# from GridCalEngine.Utils.ThirdParty.pulp.apis.cplex_cmd import CPLEX_CMD
+# from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpAffineExpression as LpExp
+# from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpConstraint as LpCst
+# from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpVariable as LpVar
+import pulp
+from pulp import LpVariable as LpVar, LpConstraint as LpCst, LpAffineExpression as LpExp
+from pulp import HiGHS, CPLEX_CMD
 from GridCalEngine.enumerations import MIPSolvers
 from GridCalEngine.basic_structures import Logger
 
@@ -210,6 +213,10 @@ class LpModel:
             self.logger.add_error(msg=str(e), )
             # Retry with Highs
             status = self.model.solve(solver=HiGHS(mip=self.model.isMIP(), msg=show_logs))
+        except IndexError as e:
+            print("Index error:")
+            print(e)
+            status = 1
 
         if status != self.OPTIMAL:
             self.originally_infeasible = True
@@ -348,6 +355,8 @@ class LpModel:
         if isinstance(x, LpVar):
             val = x.value()
         elif isinstance(x, LpExp):
+            val = x.value()
+        elif isinstance(x, LpCst):
             val = x.value()
         elif isinstance(x, float) or isinstance(x, int):
             return x

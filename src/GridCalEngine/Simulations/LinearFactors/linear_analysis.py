@@ -700,7 +700,7 @@ class ContingencyIndices:
                 elif cnt.tpe == DeviceType.VscDevice:
                     vsc_idx = vsc_dict.get(cnt.device_idtag, None)
                     if vsc_idx is not None:
-                        vsc_contingency_indices_list.append((vsc_idx))
+                        vsc_contingency_indices_list.append(vsc_idx)
 
                 else:
                     # search for the contingency in the Branches
