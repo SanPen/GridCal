@@ -357,7 +357,7 @@ class LpModel:
         elif isinstance(x, LpExp):
             val = x.value()
         elif isinstance(x, LpCst):
-            val = x.value()
+            val = x.values()
         elif isinstance(x, float) or isinstance(x, int):
             return x
         else:
