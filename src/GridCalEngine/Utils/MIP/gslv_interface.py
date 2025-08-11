@@ -127,7 +127,7 @@ class LpModel:
             return 0
         else:
             self.model.add_cst(cst, name=name)
-            return self.model.constraints[-1]
+            return cst
 
     @staticmethod
     def sum(cst) -> LpExp:
@@ -307,7 +307,9 @@ class LpModel:
         :return: result or zero
         """
         if isinstance(x, LpVar):
-            return self.result.col_primal[self.model.col(x)]
+            return self.result.getPrimal(x)
+        elif isinstance(x, LpCst):
+            return self.result.getCstPrimal(x)
         elif isinstance(x, float) or isinstance(x, int):
             return x
         else:
@@ -324,15 +326,18 @@ class LpModel:
         if x is None:
             return 0.0
 
-        if isinstance(x, LpCst):
+        if isinstance(x, LpVar):
+            return self.result.getDual(x)
+        elif isinstance(x, LpCst):
             # return self.result.row_primal[self.model.row(x)]
-            # TODO: figure this out
-            return 0.0
+            return self.result.getCstDual(x)
         elif isinstance(x, float):
             return x
         else:
             return 0.0
 
     def status2string(self, val: int):
-        # TODO: figure this out
-        return "optimal" if val == 1 else "not optimal"
+        if self.result is not None:
+            return self.result.status_name
+        else:
+            return "not solved"
