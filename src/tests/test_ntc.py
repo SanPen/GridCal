@@ -21,7 +21,8 @@ def test_ntc_ultra_simple() -> None:
                                            objects_to=[grid.areas[1]])
 
     opf_options = gce.OptimalPowerFlowOptions(
-        # export_model_fname="test_ntc_ultra_simple.lp"
+        # export_model_fname="test_ntc_ultra_simple_gslv.lp",
+
     )
     lin_options = gce.LinearAnalysisOptions()
 
@@ -385,7 +386,7 @@ def test_issue_372_3():
 
     opf_options = gce.OptimalPowerFlowOptions(
         consider_contingencies=False,
-        # export_model_fname="test_issue_372_3.lp"
+        # export_model_fname="test_issue_372_3_pulp.lp"
     )
 
     lin_options = gce.LinearAnalysisOptions()
@@ -1206,7 +1207,9 @@ def test_hvdc_lines_tests():
     info = grid.get_inter_aggregation_info(objects_from=[grid.areas[0]],
                                            objects_to=[grid.areas[1]])
 
-    opf_options = gce.OptimalPowerFlowOptions()
+    opf_options = gce.OptimalPowerFlowOptions(
+        # export_model_fname="test_hvdc_lines_tests_pulp.lp"
+    )
     lin_options = gce.LinearAnalysisOptions()
 
     ntc_options = gce.OptimalNetTransferCapacityOptions(
@@ -1367,7 +1370,8 @@ def test_activs_2000_acdc():
 
     opf_options = gce.OptimalPowerFlowOptions(
         consider_contingencies=True,
-        contingency_groups_used=grid.contingency_groups
+        contingency_groups_used=grid.contingency_groups,
+        export_model_fname="test_activs_2000_acdc_gslv.lp"
     )
     lin_options = gce.LinearAnalysisOptions()
 

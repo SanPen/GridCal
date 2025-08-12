@@ -16,22 +16,6 @@ from GridCalEngine.enumerations import MIPSolvers
 from GridCalEngine.basic_structures import Logger
 
 
-def get_lp_var_value(x: Union[float, LpVar]) -> float:
-    """
-    Get the value of a variable stored in a numpy array of objects
-    :param x: soe object (it may be a LP var or a number)
-    :return: result or previous numeric value
-    """
-    if isinstance(x, LpVar):
-        return x.value()
-    elif isinstance(x, LpExp):
-        return x.value()
-    elif isinstance(x, LpCst):
-        return x.pi
-    else:
-        return x
-
-
 def get_available_mip_solvers() -> List[str]:
     """
     Get a list of candidate solvers
@@ -53,8 +37,6 @@ def get_available_mip_solvers() -> List[str]:
     #         solvers2.append(MIPSolvers.HIGHS.value)
 
     return [MIPSolvers.HIGHS.value]
-
-
 
 
 class LpModel:
@@ -157,7 +139,7 @@ class LpModel:
         if progress_text is not None:
             progress_text(f"Solving model with {self.solver_type.value}...")
 
-        self.model.print()
+        # self.model.print()
 
         # solve the model
         res = self.model.solve(solver="highs", verbose=False)
@@ -308,14 +290,14 @@ class LpModel:
         """
         if isinstance(x, LpVar):
             return self.result.getPrimal(x)
+        elif isinstance(x, LpExp):
+            return self.result.getExpValue(x)
         elif isinstance(x, LpCst):
             return self.result.getCstPrimal(x)
         elif isinstance(x, float) or isinstance(x, int):
             return x
         else:
-            # raise Exception("Unrecognized type {}".format(x))
-            # TODO: Figure this out
-            return 0
+            raise Exception("Unrecognized type {}".format(x))
 
     def get_dual_value(self, x: LpCst) -> float:
         """
@@ -329,12 +311,11 @@ class LpModel:
         if isinstance(x, LpVar):
             return self.result.getDual(x)
         elif isinstance(x, LpCst):
-            # return self.result.row_primal[self.model.row(x)]
             return self.result.getCstDual(x)
-        elif isinstance(x, float):
+        elif isinstance(x, float) or isinstance(x, int):
             return x
         else:
-            return 0.0
+            raise Exception("Unrecognized type {}".format(x))
 
     def status2string(self, val: int):
         if self.result is not None:
