@@ -1,27 +1,19 @@
 import GridCalEngine.api as gce
-from GridCalEngine import WindingType, ShuntConnectionType, AdmittanceMatrix
+from GridCalEngine import WindingType, ShuntConnectionType
 import numpy as np
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import (PfBasicFormulation3Ph,
-                                                                                       expand3ph,
-                                                                                       expandVoltage3ph)
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
-import pandas as pd
 from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
-from GridCalEngine.basic_structures import Vec
-from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 
 logger = gce.Logger()
 
 grid = gce.MultiCircuit()
 grid.fBase = 60
 
-"""
-13 Buses
-"""
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
 bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=0)
 bus_632.is_slack = True
 grid.add_bus(obj=bus_632)
-# gen = gce.Generator(vset=1.0, r1=1e-10, x1=1e-10, r2=1e-10, x2=1e-10, r0=1e-10, x0=1e-10)
 gen = gce.Generator(vset=1.0, r1=0.004, x1=0.5, r2=0.02, x2=0.5, r0=0.01, x0=0.08)
 grid.add_generator(bus=bus_632, api_obj=gen)
 
@@ -55,9 +47,9 @@ grid.add_bus(obj=bus_680)
 bus_652 = gce.Bus(name='652', Vnom=4.16, xpos=-100 * 5, ypos=200 * 5)
 grid.add_bus(obj=bus_652)
 
-"""
-Impedances [Ohm/km]
-"""
+# ----------------------------------------------------------------------------------------------------------------------
+# Impedances [Ohm/km]
+# ----------------------------------------------------------------------------------------------------------------------
 z_601 = np.array([
     [0.3465 + 1j * 1.0179, 0.1560 + 1j * 0.5017, 0.1580 + 1j * 0.4236],
     [0.1560 + 1j * 0.5017, 0.3375 + 1j * 1.0478, 0.1535 + 1j * 0.3849],
@@ -94,9 +86,9 @@ z_607 = np.array([
     [1.3425 + 1j * 0.5124]
 ], dtype=complex) / 1.60934
 
-"""
-Admittances [S/km]
-"""
+# ----------------------------------------------------------------------------------------------------------------------
+# Admittances [S/km]
+# ----------------------------------------------------------------------------------------------------------------------
 y_601 = np.array([
     [1j * 6.2998, 1j * -1.9958, 1j * -1.2595],
     [1j * -1.9958, 1j * 5.9597, 1j * -0.7417],
@@ -133,9 +125,9 @@ y_607 = np.array([
     [1j * 88.9912]
 ], dtype=complex) / 10 ** 6 / 1.60934
 
-"""
-Loads
-"""
+# ----------------------------------------------------------------------------------------------------------------------
+# Loads
+# ----------------------------------------------------------------------------------------------------------------------
 load_634 = gce.Load(P1=0.160,
                     Q1=0.110,
                     P2=0.120,
@@ -226,9 +218,9 @@ load_671_distrib = gce.Load(P1=0.017 / 2,
 load_671_distrib.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_671, api_obj=load_671_distrib)
 
-"""
-Capacitors
-"""
+# ----------------------------------------------------------------------------------------------------------------------
+# Capacitors
+# ----------------------------------------------------------------------------------------------------------------------
 cap_675 = gce.Shunt(B1=0.2,
                     B2=0.2,
                     B3=0.2)
@@ -241,9 +233,9 @@ cap_611 = gce.Shunt(B1=0.0,
 cap_611.conn = ShuntConnectionType.GroundedStar
 grid.add_shunt(bus=bus_611, api_obj=cap_611)
 
-"""
-Line Configurations
-"""
+# ----------------------------------------------------------------------------------------------------------------------
+# Line Configurations
+# ----------------------------------------------------------------------------------------------------------------------
 config_601 = gce.create_known_abc_overhead_template(name='Config. 601',
                                                     z_abc=z_601,
                                                     ysh_abc=y_601,
@@ -300,9 +292,9 @@ config_607 = gce.create_known_abc_overhead_template(name='Config. 607',
                                                     frequency=60)
 grid.add_overhead_line(config_607)
 
-"""
-Lines
-"""
+# ----------------------------------------------------------------------------------------------------------------------
+# Lines and Transformers
+# ----------------------------------------------------------------------------------------------------------------------
 line_632_645 = gce.Line(bus_from=bus_632,
                         bus_to=bus_645,
                         length=500 * 0.0003048)
@@ -321,9 +313,6 @@ line_632_633 = gce.Line(bus_from=bus_632,
 line_632_633.apply_template(config_602, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_632_633)
 
-"""
-Transformer between 633 and 634
-"""
 XFM_1 = gce.Transformer2W(name='XFM-1',
                           bus_from=bus_633,
                           bus_to=bus_634,
@@ -373,95 +362,24 @@ line_671_680 = gce.Line(bus_from=bus_671,
 line_671_680.apply_template(config_601, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_671_680)
 
-"""
-Save Grid
-"""
-gce.save_file(grid=grid, filename='IEEE 13-bus.gridcal')
+# ----------------------------------------------------------------------------------------------------------------------
+# Run power flow
+# ----------------------------------------------------------------------------------------------------------------------
+res_pf = gce.power_flow(grid=grid, options=gce.PowerFlowOptions(three_phase_unbalanced=True))
 
-def power_flow_3ph(grid: gce.MultiCircuit, V0_3ph: Vec):
-    """
+# ----------------------------------------------------------------------------------------------------------------------
+# Short-circuit
+# ----------------------------------------------------------------------------------------------------------------------
+sc_options = gce.ShortCircuitOptions(bus_index=4,
+                                     fault_type=FaultType.LG,
+                                     method=MethodShortCircuit.phases,
+                                     phases=PhasesShortCircuit.a)
 
-    :param grid:
-    :param V0_3ph: Voltage vector expanded for 3N (no need for masks to be applied)
-    :return:
-    """
-    nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx=None)
+sc_driver = gce.ShortCircuitDriver(grid=grid,
+                                   options=sc_options,
+                                   pf_options=gce.PowerFlowOptions(three_phase_unbalanced=True),
+                                   pf_results=res_pf)
+sc_driver.run()
 
-    S0 = nc.get_power_injections_pu()
-    Qmax, Qmin = nc.get_reactive_power_limits()
-
-    options = gce.PowerFlowOptions(tolerance=1e-10, max_iter=1000)
-
-    problem = PfBasicFormulation3Ph(
-        V0=V0_3ph,
-        S0=expand3ph(S0),
-        Qmin=Qmin * 100.0,
-        Qmax=Qmax * 100.0,
-        nc=nc,
-        options=options,
-        logger=gce.Logger()
-    )
-
-    res = newton_raphson_fx(problem=problem, verbose=1, max_iter=1000)
-
-    return res
-
-def short_circuit_3ph(grid, t_idx=None) -> ShortCircuitResults:
-    """
-    Short Circuit
-    :param grid:
-    :param t_idx:
-    :return:
-    """
-    nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx=None)
-
-    V0 = expandVoltage3ph(nc.bus_data.Vbus)
-    V0[0] = 1.0210 * np.exp(1j * (-2.49 * np.pi / 180))
-    V0[1] = 1.0420 * np.exp(1j * (-121.72 * np.pi / 180))
-    V0[2] = 1.0174 * np.exp(1j * (117.83 * np.pi / 180))
-
-    res_3ph = power_flow_3ph(grid, V0_3ph=V0)
-
-    pf_res = gce.PowerFlowResults(
-        n=grid.get_bus_number() * 3,
-        m=grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True) * 3,
-        n_hvdc=grid.get_hvdc_number(),
-        n_vsc=grid.get_vsc_number(),
-        n_gen=grid.get_generators_number(),
-        n_batt=grid.get_batteries_number(),
-        n_sh=grid.get_shunt_like_device_number(),
-        bus_names=grid.get_bus_names(),
-        branch_names=grid.get_branch_names(),
-        hvdc_names=grid.get_hvdc_names(),
-        vsc_names=grid.get_vsc_names(),
-        gen_names=grid.get_generator_names(),
-        batt_names=grid.get_battery_names(),
-        sh_names=grid.get_shunt_like_devices_names(),
-        bus_types=np.ones(grid.get_bus_number())
-    )
-
-    pf_res.voltage = res_3ph.V
-    pf_res.Sbus = res_3ph.Scalc
-
-    sc_options = gce.ShortCircuitOptions(bus_index=4,
-                                         fault_type=FaultType.LG,
-                                         mid_line_fault=False,
-                                         branch_index=0,
-                                         branch_fault_locations=0.5,
-                                         verbose=0,
-                                         method=MethodShortCircuit.phases,
-                                         phases=PhasesShortCircuit.a)
-
-    sc_driver = gce.ShortCircuitDriver(grid=grid,
-                                       options=sc_options,
-                                       pf_options=gce.PowerFlowOptions(three_phase_unbalanced=True),
-                                       pf_results=pf_res)
-    sc_driver.run()
-
-    return sc_driver.results
-
-res_SC = short_circuit_3ph(grid)
-
-dataframe = res_SC.get_voltage_3ph_df()
-print(dataframe)
-
+res_sc = sc_driver.results
+print(res_sc.get_voltage_3ph_df())
