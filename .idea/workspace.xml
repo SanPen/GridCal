@@ -28,12 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="fixed massive performance issue in gslv-lp interface">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="improved cgmes management of not found TopologicalNodes">
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalServer/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalServer/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1878,7 +1876,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="614" />
+    <option name="localTasksCounter" value="615" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1924,7 +1922,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved psse parsing" />
     <MESSAGE value="Improved rms initialize" />
     <MESSAGE value="Improved rms generator values" />
     <MESSAGE value="All short-circuit types validated." />
@@ -1949,7 +1946,8 @@
     <MESSAGE value="merged changes from  63341c58f2c63c4d51ae5041d16d3bc5cd4f6bb2" />
     <MESSAGE value="changed to the pulp 3 pkg" />
     <MESSAGE value="fixed massive performance issue in gslv-lp interface" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed massive performance issue in gslv-lp interface" />
+    <MESSAGE value="improved cgmes management of not found TopologicalNodes" />
+    <option name="LAST_COMMIT_MESSAGE" value="improved cgmes management of not found TopologicalNodes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2336,12 +2334,12 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="isinstance(cgmes_terminal.TopologicalNode, str)" language="Python" />
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py</url>
-          <line>31</line>
+          <line>35</line>
           <option name="timeStamp" value="2665" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py</url>
-          <line>420</line>
+          <line>423</line>
           <option name="timeStamp" value="2666" />
         </line-breakpoint>
       </breakpoints>
