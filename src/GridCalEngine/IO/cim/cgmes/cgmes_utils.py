@@ -15,23 +15,30 @@ from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import LimitTypeKind
 
 
-def find_terminal_bus(cgmes_terminal: CGMES_TERMINAL, bus_dict: Dict[str, gcdev.Bus]) -> gcdev.Bus | None:
+def find_terminal_bus(cgmes_terminal: CGMES_TERMINAL,
+                      bus_dict: Dict[str, gcdev.Bus],
+                      TopologicalNode_tpe,
+                      DCTopologicalNode_tpe) -> gcdev.Bus | None:
     """
     Find the bus associated to a terminal
     :param cgmes_terminal:
     :param bus_dict:
+    :param TopologicalNode_tpe: TopologicalNode type
+                                (might come from different cgmes versions, hence we need to pass the type)
+    :param DCTopologicalNode_tpe: DCTopologicalNode type
+                                  (might come from different cgmes versions, hence we need to pass the type)
     :return:
     """
     if cgmes_terminal is not None:
         if hasattr(cgmes_terminal, "TopologicalNode"):  # Try for AC terminal
             # get the rosetta calculation node if exists
-            if cgmes_terminal.TopologicalNode is not None:
+            if isinstance(cgmes_terminal.TopologicalNode, TopologicalNode_tpe):
                 return bus_dict.get(cgmes_terminal.TopologicalNode.uuid, None)
             else:
                 return None
 
         elif hasattr(cgmes_terminal, "DCTopologicalNode"):  # get the rosetta calculation node if exists
-            if cgmes_terminal.DCTopologicalNode is not None:
+            if isinstance(cgmes_terminal.DCTopologicalNode, DCTopologicalNode_tpe):
                 return bus_dict.get(cgmes_terminal.DCTopologicalNode.uuid, None)
             else:
                 return None
@@ -622,7 +629,20 @@ def base_voltage_to_str(base_voltage):
 def get_regulating_control_params(cgmes_elm,
                                   cgmes_enums,
                                   bus_dict,
+                                  TopologicalNode_tpe,
+                                  DCTopologicalNode_tpe,
                                   logger: DataLogger):
+    """
+
+    :param cgmes_elm:
+    :param cgmes_enums:
+    :param bus_dict:
+    :param TopologicalNode_tpe:
+    :param DCTopologicalNode_tpe:
+    :param logger:
+    :return:
+    """
+
     control_bus = None
     if cgmes_elm.RegulatingControl is not None:
 
@@ -673,7 +693,12 @@ def get_regulating_control_params(cgmes_elm,
             if cgmes_elm.EquipmentContainer.tpe == 'VoltageLevel':
                 # find the control node
                 control_terminal = cgmes_elm.RegulatingControl.Terminal
-                control_bus = find_terminal_bus(cgmes_terminal=control_terminal, bus_dict=bus_dict)
+                control_bus = find_terminal_bus(
+                    cgmes_terminal=control_terminal,
+                    bus_dict=bus_dict,
+                    TopologicalNode_tpe=TopologicalNode_tpe,
+                    DCTopologicalNode_tpe=DCTopologicalNode_tpe
+                )
                 control_node = None
             else:
                 control_node = None
