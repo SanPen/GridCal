@@ -104,8 +104,8 @@ class StateEstimationInput:
         se = StateEstimationInput()
 
         # Map old indices → new indices
-        bus_index_map = {old: new for new, old in enumerate(bus_idx)}
-        branch_index_map = {old: new for new, old in enumerate(branch_idx)}
+        bus_index_map = {main_idx: island_idx for island_idx, main_idx in enumerate(bus_idx)}
+        branch_index_map = {main_idx: island_idx for island_idx, main_idx in enumerate(branch_idx)}
 
         se.p_inj, se.p_idx = slice_pair(self.p_inj, self.p_idx, bus_index_map)
         se.q_inj, se.q_idx = slice_pair(self.q_inj, self.q_idx, bus_index_map)
