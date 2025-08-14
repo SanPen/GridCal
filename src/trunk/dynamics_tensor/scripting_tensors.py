@@ -261,7 +261,6 @@ generator_block_ML_0 = Block(
         (omega - omega_ref),
         u_cos*(delta_dt),
         -u_sin*(delta_dt),
-
     ],
     state_vars=[delta, omega, et, u_sin, u_cos],
     algebraic_eqs=[
@@ -376,7 +375,7 @@ bus2_block = Block(
 # ----------------------------------------------------------------------------------------------------------------------
 
 sys = Block(
-    children=[line_block, load_block, generator_block_ML_2, bus1_block, bus2_block],
+    children=[line_block, load_block, generator_block_ML_0, bus1_block, bus2_block],
     in_vars=[]
 )
 

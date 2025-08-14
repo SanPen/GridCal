@@ -28,24 +28,24 @@ import GridCalEngine.api as gce
 
 x = Var('x')
 y = Var('y')
-dt = Const(0.001)
+dt = Const(0.00001)
 #dt = Var('dt')
 dx = DiffVar.get_or_create('dx', base_var = x)
 dy = DiffVar.get_or_create('dy', base_var = y)
-dx2 = DiffVar.get_or_create('dx2', base_var = dx)
-dy2 = DiffVar.get_or_create('dy2', base_var = dy)
-dx3 = DiffVar.get_or_create('dx3', base_var = dx2)
+d2x = DiffVar.get_or_create('d2x', base_var = dx)
+d2y = DiffVar.get_or_create('d2y', base_var = dy)
+d3x = DiffVar.get_or_create('d3x', base_var = d2x)
 
-if dx2.uid == dx3.uid:
+if d2x.uid == d3x.uid:
     print("They have the same uid given that they have the same base var")
 
 lag1 = LagVar.get_or_create('lag1', base_var= x, lag =1)
 lag2 = LagVar.get_or_create('lag2', base_var= x, lag =2)
 dx_approx, b = dx.approximation_expr(dt)
 print(dx_approx)
-a, b = dx2.approximation_expr(dt)
+a, b = d2x.approximation_expr(dt)
 print(a)
-a, b = dx3.approximation_expr(dt)
+a, b = d3x.approximation_expr(dt)
 print(a)
 dy_approx, b = dy.approximation_expr(dt)
 
@@ -55,7 +55,7 @@ diff_block = DiffBlock(
         dy - x,
     ],
     algebraic_vars=[x,y],
-    diff_vars=[dx, dy, dx2, dy2],
+    diff_vars=[dx, dy, d2x, d2y],
 )
 
 slv = DiffBlockSolver(diff_block)
