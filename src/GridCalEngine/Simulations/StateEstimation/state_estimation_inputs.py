@@ -2,32 +2,35 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 import numpy as np
 from GridCalEngine.basic_structures import Vec, IntVec
 from GridCalEngine.Devices.measurement import (PfMeasurement, QfMeasurement,
                                                PiMeasurement, QiMeasurement,
-                                               VmMeasurement, IfMeasurement)
+                                               VmMeasurement, IfMeasurement, MeasurementTemplate)
 
 
-def slice_pair(bus_measurement_lst, bus_index_lst, index_map):
+def slice_pair(obj_measurements: List[MeasurementTemplate],
+               obj_indices: List[int],
+               index_map: Dict[int, int]):
+    """
+    Slice obj_measurements and obj_indices using an index->island index map
+    :param obj_measurements: list of measurements
+    :param obj_indices: list of device indices where the measurement applies
+    :param index_map: main index -> island index mapping
+    :return: new_obj_measurement, new_obj_index
     """
 
-    :param bus_measurement_lst:
-    :param bus_index_lst:
-    :param index_map:
-    :return:
-    """
-    # Filter and reindex measurement data
-    new_bus_measurement_lst = [
-        meas for old_idx, meas in zip(bus_index_lst, bus_measurement_lst) if old_idx in index_map
-    ]
+    new_obj_measurement = list()
+    new_obj_indices = list()
 
-    new_bus_index_lst = [
-        index_map[old_idx] for old_idx in bus_index_lst if old_idx in index_map
-    ]
+    for main_index, measurement in zip(obj_indices, obj_measurements):
+        island_index = index_map.get(main_index, None)
+        if island_index is not None:
+            new_obj_indices.append(island_index)
+            new_obj_measurement.append(measurement)
 
-    return new_bus_measurement_lst, new_bus_index_lst
+    return new_obj_measurement, new_obj_indices
 
 
 class StateEstimationInput:
