@@ -12,6 +12,7 @@ print(up_two_directories)
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+import pandas as pd
 import math
 import numpy as np
 from matplotlib import pyplot as plt
@@ -224,7 +225,7 @@ int_xsinx = Var('int_xsinx')
 int_sin2cos2 = Var('int_sin2cos2')
 
 
-generator_block_ML = Block(
+generator_block_nonlinear = Block(
     state_eqs=[
         delta_dt,  # dδ/dt
         (tm  - t_e - D * (omega - omega_ref)) / M,  # dω/dt
@@ -253,7 +254,7 @@ generator_block_ML = Block(
 )
 
 
-generator_block_other = Block(
+generator_block_ML_0 = Block(
     state_eqs=[
         delta_dt,  # dδ/dt
         (tm  - t_e - D * (omega - omega_ref)) / M,  # dω/dt
@@ -375,7 +376,7 @@ bus2_block = Block(
 # ----------------------------------------------------------------------------------------------------------------------
 
 sys = Block(
-    children=[line_block, load_block, generator_block_ML, bus1_block, bus2_block],
+    children=[line_block, load_block, generator_block_ML_2, bus1_block, bus2_block],
     in_vars=[]
 )
 
@@ -561,18 +562,18 @@ slv.save_simulation_to_csv('simulation_results.csv', t, y)
 fig = plt.figure(figsize=(14, 10))
 
 #Generator state variables
-plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)", color='red')
-plt.plot(t, y[:, slv.get_var_idx(dg)], label="dg", color='red')
-plt.plot(t, y[:, slv.get_var_idx(delta)], label="delta", color='red')
-plt.plot(t, y[:, slv.get_var_idx(u_cos)], label="u cos (pu)", color='blue')
-plt.plot(t, y[:, slv.get_var_idx(u_sin)], label="u sin (pu)", color='yellow')
+# plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)", color='red')
+# plt.plot(t, y[:, slv.get_var_idx(dg)], label="dg", color='red')
+plt.plot(t, y[:, slv.get_var_idx(delta)], label="delta", color='blue')
+# plt.plot(t, y[:, slv.get_var_idx(u_cos)], label="u cos (pu)", color='blue')
+# plt.plot(t, y[:, slv.get_var_idx(u_sin)], label="u sin (pu)", color='yellow')
 
 delta_idx = slv.get_var_idx(delta)  
 dg_idx = slv.get_var_idx(dg)  
 cos_delta_real = np.cos(y[:, delta_idx] - y[:, dg_idx]) 
 sin_delta_real = np.sin(y[:, delta_idx] - y[:, dg_idx]) 
-plt.plot(t, cos_delta_real, label="cos delta real (pu)", color='gray')
-plt.plot(t, sin_delta_real, label="sin delta real (pu)", color='teal')
+# plt.plot(t, cos_delta_real, label="cos delta real (pu)", color='gray')
+# plt.plot(t, sin_delta_real, label="sin delta real (pu)", color='teal')
 #plt.plot(t, y[:, slv.get_var_idx(delta)], label="delta", color='black')
 # plt.plot(t, y[:, slv.get_var_idx(t_e)], label="Te (pu)")
 #plt.plot(t, y[:, slv.get_var_idx(delta)], label="δ (rad)")
