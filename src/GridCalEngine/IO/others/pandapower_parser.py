@@ -102,27 +102,27 @@ class Panda2GridCal:
         if PANDAPOWER_AVAILABLE:
             if isinstance(file_or_net, str):
                 if file_or_net.endswith(".p"):
-                    self.pandanet: pandapowerNet = from_pickle(file_or_net)
+                    self.panda_net: pandapowerNet = from_pickle(file_or_net)
                 elif file_or_net.endswith(".sqlite"):
-                    self.pandanet: pandapowerNet = from_sqlite(file_or_net)
+                    self.panda_net: pandapowerNet = from_sqlite(file_or_net)
                 elif file_or_net.endswith(".json"):
-                    self.pandanet: pandapowerNet = from_json(file_or_net)
+                    self.panda_net: pandapowerNet = from_json(file_or_net)
                 elif file_or_net.endswith(".xlsx"):
-                    self.pandanet: pandapowerNet = from_excel(file_or_net)
+                    self.panda_net: pandapowerNet = from_excel(file_or_net)
                 else:
                     raise Exception("Don't know what to do with this PandaPower file :/")
 
             elif isinstance(file_or_net, pandapowerNet):
-                self.pandanet: pandapowerNet = file_or_net
+                self.panda_net: pandapowerNet = file_or_net
             else:
                 raise Exception(f"The argument is not recognized as a Pandapower net or file :/ {file_or_net}")
 
             self.logger.add_info("This seems to be a pandapower file")
-            self.fBase = self.pandanet.f_hz
-            self.Sbase = self.pandanet.sn_mva if self.pandanet.sn_mva > 0.0 else 100.0
+            self.fBase = self.panda_net.f_hz
+            self.Sbase = self.panda_net.sn_mva if self.panda_net.sn_mva > 0.0 else 100.0
             self.load_scale = 100.0 / self.Sbase
         else:
-            self.pandanet = None
+            self.panda_net = None
             self.fBase = 50.0
             self.Sbase = 100.0
             self.load_scale = 1.0
@@ -136,7 +136,7 @@ class Panda2GridCal:
         """
 
         bus_dictionary = dict()
-        for _, row in self.pandanet.bus.iterrows():
+        for _, row in self.panda_net.bus.iterrows():
             elm = dev.Bus(
                 name=row['name'],
                 Vnom=row['vn_kv'],
@@ -157,7 +157,7 @@ class Panda2GridCal:
         :return:
         """
 
-        for _, row in self.pandanet.ext_grid.iterrows():
+        for _, row in self.panda_net.ext_grid.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.ExternalGrid(name=row['name'], Vm=row['vm_pu'])
             grid.add_external_grid(bus, elm)
@@ -169,7 +169,7 @@ class Panda2GridCal:
         :param bus_dictionary:
         """
 
-        for _, row in self.pandanet.load.iterrows():
+        for _, row in self.panda_net.load.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.Load(
                 name=row['name'],
@@ -184,7 +184,7 @@ class Panda2GridCal:
         :param grid: MultiCircuit grid
         :param bus_dictionary:
         """
-        for _, row in self.pandanet.shunt.iterrows():
+        for _, row in self.panda_net.shunt.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.Shunt(
                 name=row['name'],
@@ -200,7 +200,7 @@ class Panda2GridCal:
         :param bus_dictionary:
         """
 
-        for _, row in self.pandanet.line.iterrows():
+        for _, row in self.panda_net.line.iterrows():
             bus1 = bus_dictionary[row['from_bus']]
             bus2 = bus_dictionary[row['to_bus']]
 
@@ -237,12 +237,12 @@ class Panda2GridCal:
         mult = 1.6  # Multiplicative factor for impedance
 
         # Add impedance elements to the GridCal grid
-        for _, row in self.pandanet.impedance.iterrows():
+        for _, row in self.panda_net.impedance.iterrows():
             bus1 = bus_dictionary[row['from_bus']]
             bus2 = bus_dictionary[row['to_bus']]
 
             # Calculate base impedance
-            zbase = (self.pandanet.bus.loc[row['from_bus'], 'vn_kv']) ** 2 / self.Sbase
+            zbase = (self.panda_net.bus.loc[row['from_bus'], 'vn_kv']) ** 2 / self.Sbase
             ru = row.rft_pu * row.sn_mva / zbase * mult
             xu = row.xft_pu * row.sn_mva / zbase * mult
 
@@ -264,7 +264,7 @@ class Panda2GridCal:
         :return:
         """
 
-        for _, row in self.pandanet.storage.iterrows():
+        for _, row in self.panda_net.storage.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.Battery(
                 Pmin=row['min_p_mw'],
@@ -287,7 +287,7 @@ class Panda2GridCal:
         :return:
         """
 
-        for _, row in self.pandanet.sgen.iterrows():
+        for _, row in self.panda_net.sgen.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.Generator(
                 name=row['name'],
@@ -305,7 +305,7 @@ class Panda2GridCal:
         :param bus_dictionary:
         """
 
-        for _, row in self.pandanet.trafo.iterrows():
+        for _, row in self.panda_net.trafo.iterrows():
             bus1 = bus_dictionary[row['hv_bus']]
             bus2 = bus_dictionary[row['lv_bus']]
 
@@ -337,7 +337,7 @@ class Panda2GridCal:
         """
 
         # Add switches to the GridCal grid
-        for _, switch_row in self.pandanet.switch.iterrows():
+        for _, switch_row in self.panda_net.switch.iterrows():
 
             # Identify the first bus in the switch
             bus_from = bus_dictionary[switch_row['bus']]
@@ -348,7 +348,7 @@ class Panda2GridCal:
             else:  # Bus-to-element switch
                 # Create or reuse an auxiliary bus for the element
                 aux_bus_name = f"Aux_Bus_{switch_row['et']}_{switch_row['element']}"
-                aux_bus_voltage = self.pandanet.bus.loc[switch_row['bus'], 'vn_kv']
+                aux_bus_voltage = self.panda_net.bus.loc[switch_row['bus'], 'vn_kv']
 
                 # Check if an auxiliary bus with this name exists
                 bus_to = None
@@ -364,7 +364,7 @@ class Panda2GridCal:
 
                 # Link the auxiliary bus to the corresponding element
                 if switch_row['et'] == 'l':  # Line element
-                    line_data = self.pandanet.line.loc[switch_row['element']]
+                    line_data = self.panda_net.line.loc[switch_row['element']]
                     # Update the line's connections to include the auxiliary bus
                     for line in grid.lines:
                         if line.bus_from == bus_dictionary[line_data['from_bus']] and line.bus_to == bus_dictionary[
@@ -376,7 +376,7 @@ class Panda2GridCal:
                             break
 
                 elif switch_row['et'] == 't':  # Transformer element
-                    trafo_data = self.pandanet.trafo.loc[switch_row['element']]
+                    trafo_data = self.panda_net.trafo.loc[switch_row['element']]
 
                     # Update the transformer's connections to include the auxiliary bus
                     for transformer in grid.transformers2w:
@@ -404,7 +404,7 @@ class Panda2GridCal:
         :param grid:
         :return:
         """
-        df: pd.DataFrame | None = self.pandanet.get("measurement", None)
+        df: pd.DataFrame | None = self.panda_net.get("measurement", None)
 
         if df is not None:
             for i, row in df.iterrows():
@@ -462,9 +462,9 @@ class Panda2GridCal:
         """
         grid = dev.MultiCircuit()
 
-        if self.pandanet is not None:
+        if self.panda_net is not None:
             grid.Sbase = 100.0  # always, the pandapower scaling is handled in the conversions
-            grid.fBase = self.pandanet.f_hz
+            grid.fBase = self.panda_net.f_hz
 
             bus_dict = self.parse_buses(grid=grid)
             self.parse_lines(grid=grid, bus_dictionary=bus_dict)

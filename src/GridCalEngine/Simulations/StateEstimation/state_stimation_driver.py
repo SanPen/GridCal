@@ -58,7 +58,7 @@ class StateEstimation(DriverTemplate):
         self.results: Union[StateEstimationResults, None] = None
 
     @staticmethod
-    def collect_measurements(circuit: MultiCircuit, bus_idx, branch_idx):
+    def collect_measurements(circuit: MultiCircuit) -> StateEstimationInput:
         """
         Form the input from the circuit measurements
         :return: nothing, the input object is stored in this class
@@ -119,14 +119,15 @@ class StateEstimation(DriverTemplate):
 
         islands = nc.split_into_islands()
 
+        # collect inputs of the island
+        se_input = self.collect_measurements(circuit=self.grid)
+
         for island in islands:
             idx = island.get_simulation_indices()
             adm = island.get_admittance_matrices()
 
-            # collect inputs of the island
-            se_input = self.collect_measurements(circuit=self.grid,
-                                                 bus_idx=island.bus_data.original_idx,
-                                                 branch_idx=island.passive_branch_data.original_idx)
+            se_input_island = se_input.slice(bus_idx=island.bus_data.original_idx,
+                                             branch_idx=island.passive_branch_data.original_idx)
 
             # run solver
             report = ConvergenceReport()
@@ -137,7 +138,7 @@ class StateEstimation(DriverTemplate):
                                    Yshunt_bus=adm.Yshunt_bus,
                                    F=island.passive_branch_data.F,
                                    T=island.passive_branch_data.T,
-                                   se_input=se_input,
+                                   se_input=se_input_island,
                                    vd=idx.vd,
                                    pq=idx.pq,
                                    pv=idx.pv)

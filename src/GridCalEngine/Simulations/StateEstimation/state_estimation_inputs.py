@@ -4,10 +4,30 @@
 # SPDX-License-Identifier: MPL-2.0
 from typing import Tuple, List
 import numpy as np
-from GridCalEngine.basic_structures import Vec
+from GridCalEngine.basic_structures import Vec, IntVec
 from GridCalEngine.Devices.measurement import (PfMeasurement, QfMeasurement,
                                                PiMeasurement, QiMeasurement,
                                                VmMeasurement, IfMeasurement)
+
+
+def slice_pair(bus_measurement_lst, bus_index_lst, index_map):
+    """
+
+    :param bus_measurement_lst:
+    :param bus_index_lst:
+    :param index_map:
+    :return:
+    """
+    # Filter and reindex measurement data
+    new_bus_measurement_lst = [
+        meas for old_idx, meas in zip(bus_index_lst, bus_measurement_lst) if old_idx in index_map
+    ]
+
+    new_bus_index_lst = [
+        index_map[old_idx] for old_idx in bus_index_lst if old_idx in index_map
+    ]
+
+    return new_bus_measurement_lst, new_bus_index_lst
 
 
 class StateEstimationInput:
@@ -58,9 +78,38 @@ class StateEstimationInput:
 
         # go through the measurements in order and form the vectors
         k = 0
-        for m in self.pf_value + self.p_inj + self.qf_value + self.q_inj + self.i_flow + self.vm_m:
-            magnitudes[k] = m.value
-            sigma[k] = m.sigma
-            k += 1
+        for lst in [self.pf_value,
+                    self.p_inj,
+                    self.qf_value,
+                    self.q_inj,
+                    self.i_flow,
+                    self.vm_m]:
+            for m in lst:
+                magnitudes[k] = m.value
+                sigma[k] = m.sigma
+                k += 1
 
         return magnitudes, sigma
+
+    def slice(self, bus_idx: IntVec, branch_idx: IntVec) -> "StateEstimationInput":
+        """
+        Slice this object given the island branch and bus indices
+        :param bus_idx: array of bus indices of an island
+        :param branch_idx: array of branch indices of an island
+        :return: new sliced StateEstimationInput
+        """
+        se = StateEstimationInput()
+
+        # Map old indices → new indices
+        bus_index_map = {old: new for new, old in enumerate(bus_idx)}
+        branch_index_map = {old: new for new, old in enumerate(branch_idx)}
+
+        se.p_inj, se.p_idx = slice_pair(self.p_inj, self.p_idx, bus_index_map)
+        se.q_inj, se.q_idx = slice_pair(self.q_inj, self.q_idx, bus_index_map)
+        se.vm_m, se.vm_m_idx = slice_pair(self.vm_m, self.vm_m_idx, bus_index_map)
+
+        se.pf_value, se.pf_idx = slice_pair(self.pf_value, self.pf_idx, branch_index_map)
+        se.qf_value, se.qf_idx = slice_pair(self.qf_value, self.qf_idx, branch_index_map)
+        se.i_flow, se.i_flow_idx = slice_pair(self.i_flow, self.i_flow_idx, branch_index_map)
+
+        return se
