@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import Dict
+from typing import Dict, Optional
 import sqlite3
 import json
 
@@ -98,7 +98,6 @@ class Panda2GridCal:
         :param file_or_net: PandaPower file name or pandapowerNet
         """
         self.logger = logger if logger is not None else Logger()
-
         if PANDAPOWER_AVAILABLE:
             if isinstance(file_or_net, str):
                 if file_or_net.endswith(".p"):
@@ -121,6 +120,14 @@ class Panda2GridCal:
             self.fBase = self.panda_net.f_hz
             self.Sbase = self.panda_net.sn_mva if self.panda_net.sn_mva > 0.0 else 100.0
             self.load_scale = 100.0 / self.Sbase
+            self._has_measurements = False
+            # Initialize measurements with zero-copy optimization
+            if "measurement" in self.panda_net and not self.panda_net["measurement"].empty:
+                self._meas_groups = self.panda_net["measurement"].groupby(
+                    ['element_type', 'element'], sort=False
+                )
+
+
         else:
             self.panda_net = None
             self.fBase = 50.0
@@ -128,27 +135,41 @@ class Panda2GridCal:
             self.load_scale = 1.0
             self.logger.add_info("Pandapower not available :/, try pip install pandapower")
 
-    def parse_buses(self, grid: dev.MultiCircuit) -> Dict[str, dev.Bus]:
-        """
-        Add buses to the GridCal grid based on Pandapower data
-        :param grid: MultiCircuit grid
-        :return: PP row name to GridCal row object
-        """
+    def _get_measurements(self, elm_type: str, elm_idx: int) -> Optional[pd.DataFrame]:
+        """Get measurements with O(1) lookup and zero allocations"""
+        if self._meas_groups is None:
+            return None
+        try:
+            return self._meas_groups.get_group((elm_type, elm_idx))
+        except KeyError:
+            return None
 
-        bus_dictionary = dict()
-        for _, row in self.panda_net.bus.iterrows():
-            elm = dev.Bus(
+    def parse_buses(self, grid: dev.MultiCircuit) -> Dict[int, dev.Bus]:
+        bus_dict = {}
+        for idx, row in self.panda_net.bus.iterrows():
+            bus = dev.Bus(
                 name=row['name'],
                 Vnom=row['vn_kv'],
-                vmin=row['min_vm_pu'] if 'min_vm_pu' in row else 0.9,
-                vmax=row['max_vm_pu'] if 'max_vm_pu' in row else 1.1,
+                vmin=row.get('min_vm_pu', 0.9),
+                vmax=row.get('max_vm_pu', 1.1),
                 active=bool(row['in_service'])
             )
-            grid.add_bus(elm)  # Add the row to the GridCal grid
-            bus_dictionary[row.name] = elm
+            grid.add_bus(bus)
+            bus_dict[idx] = bus
 
-        return bus_dictionary
-
+            # Measurement handling - zero allocations
+            if (meas := self._get_measurements('bus', idx)) is not None:
+                for _, m in meas.iterrows():
+                    if m['measurement_type'] == 'v':
+                        grid.add_vm_measurement(
+                            dev.VmMeasurement(
+                                value=m['value'],
+                                uncertainty=m['std_dev'],
+                                api_obj=bus,
+                                name=m['name']
+                            )
+                        )
+        return bus_dict
     def parse_external_grids(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
         Add external grid (slack bus) generators to the GridCal grid
@@ -156,12 +177,48 @@ class Panda2GridCal:
         :param bus_dictionary:
         :return:
         """
-
-        for _, row in self.panda_net.ext_grid.iterrows():
+        # pandapower measurement table element_type(str) - Clarifies
+        # which
+        # element is measured. “bus”, “line”, “trafo”, “trafo3w”, “load”, “gen”, “sgen”, “shunt”, “ward”, “xward”
+        # and “ext_grid” are possible
+        # meas_type(str) - Type
+        # of
+        # measurement. “v”, “p”, “q”, “i”, “va” and “ia” are
+        # possible
+        for idx, row in self.panda_net.ext_grid.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.ExternalGrid(name=row['name'], Vm=row['vm_pu'])
             grid.add_external_grid(bus, elm)
-
+            if (meas := self._get_measurements('ext_grid', idx)) is not None:
+                for _, m in meas.iterrows():
+                    # voltage meas still added to the connected bus
+                    if m['measurement_type'] == 'v':
+                        grid.add_vm_measurement(
+                            dev.VmMeasurement(
+                                value=m['value'],
+                                uncertainty=m['std_dev'],
+                                api_obj=bus,
+                                name=m['name']
+                            )
+                        )
+                    if m['measurement_type'] == 'p':
+                        grid.add_pf_measurement(
+                            dev.PfMeasurement(
+                                value=m['value'] * self.load_scale,
+                                uncertainty=m['std_dev'],
+                                api_obj=elm,# we have a problem here external grid P values cannot be given as meas
+                                name=m['name']
+                            )
+                        )
+                    if m['measurement_type'] == 'q':
+                        grid.add_vm_measurement(
+                            dev.VmMeasurement(
+                                value=m['value'],
+                                uncertainty=m['std_dev'],
+                                api_obj=bus,
+                                name=m['name']
+                            )
+                        )
     def parse_loads(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
         Add loads to the GridCal grid based on Pandapower data
@@ -419,9 +476,13 @@ class Panda2GridCal:
                 if elm_tpe == 'bus':
 
                     if m_tpe == 'v':
-                        grid.add_vm_measurement(
-                            dev.VmMeasurement(value=val, uncertainty=std, api_obj=grid.buses[idx], name=name)
-                        )
+                        try:
+                            grid.add_vm_measurement(
+                                dev.VmMeasurement(value=val, uncertainty=std, api_obj=grid.buses[idx], name=name)
+                            )
+                        except Exception as ex:
+                            breakpoint()
+                            print(f"{val},{idx}")
                     else:
                         self.logger.add_warning(f"PandaPower {m_tpe} measurement not implemented")
 
