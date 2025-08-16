@@ -690,9 +690,9 @@ class Line(BranchParent):
         self.rate = new_rate
         self._length = length
 
-        if apply_to_profile:
-            prof_old = self.rate_prof.toarray()
-            self.rate_prof.set(prof_old * new_rate / old_rate)
+        # if apply_to_profile:
+        #     prof_old = self.rate_prof.toarray()
+        #     self.rate_prof.set(prof_old * new_rate / old_rate)
 
         return self
 
