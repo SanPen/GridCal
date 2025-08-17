@@ -262,7 +262,7 @@ class Panda2GridCal:
         :param grid: MultiCircuit grid
         :param bus_dictionary:
         """
-        for _, row in self.panda_net.shunt.iterrows():
+        for idx, row in self.panda_net.shunt.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.Shunt(
                 name=row['name'],
@@ -270,7 +270,8 @@ class Panda2GridCal:
                 B=row["q_mvar"] * self.load_scale
             )
             grid.add_shunt(bus=bus, api_obj=elm)
-
+            if (meas := self._get_measurements('shunt', idx)) is not None:
+                self.assign_v_p_q_i_measurement_to_connected_bus_and_switches(bus, grid, meas, row)
     def parse_lines(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
         Add lines (conductors) to the GridCal grid
