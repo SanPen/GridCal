@@ -7,6 +7,7 @@ from typing import Dict, Optional
 import sqlite3
 import json
 
+import pandapower
 import pandas as pd
 
 import GridCalEngine.Devices as dev
@@ -190,35 +191,54 @@ class Panda2GridCal:
             elm = dev.ExternalGrid(name=row['name'], Vm=row['vm_pu'])
             grid.add_external_grid(bus, elm)
             if (meas := self._get_measurements('ext_grid', idx)) is not None:
-                for _, m in meas.iterrows():
-                    # voltage meas still added to the connected bus
-                    if m['measurement_type'] == 'v':
-                        grid.add_vm_measurement(
-                            dev.VmMeasurement(
-                                value=m['value'],
-                                uncertainty=m['std_dev'],
-                                api_obj=bus,
-                                name=m['name']
-                            )
-                        )
+                self.assign_v_p_q_i_measurement_to_connected_bus_and_switches(bus, grid, meas, row)
+
+    def assign_v_p_q_i_measurement_to_connected_bus_and_switches(self, bus, grid, meas, row):
+        for _, m in meas.iterrows():
+            # voltage meas still added to the connected bus
+            if m['measurement_type'] == 'v':
+                grid.add_vm_measurement(
+                    dev.VmMeasurement(
+                        value=m['value'],
+                        uncertainty=m['std_dev'],
+                        api_obj=bus,
+                        name=m['name']
+                    )
+                )
+            if m['measurement_type'] in ('p', 'q', 'i'):
+                # GridCal does not support P,Q measurement on single pole element
+                # we need to find connected switch directly to this element
+                sw_set = pandapower.get_connected_switches(self.panda_net, row["bus"])
+                if not sw_set.empty:
+                    api_obj = sw_set.iloc[0]
                     if m['measurement_type'] == 'p':
                         grid.add_pf_measurement(
                             dev.PfMeasurement(
                                 value=m['value'] * self.load_scale,
                                 uncertainty=m['std_dev'],
-                                api_obj=elm,# we have a problem here external grid P values cannot be given as meas
+                                api_obj=api_obj,
                                 name=m['name']
                             )
                         )
                     if m['measurement_type'] == 'q':
-                        grid.add_vm_measurement(
-                            dev.VmMeasurement(
-                                value=m['value'],
+                        grid.add_qf_measurement(
+                            dev.QfMeasurement(
+                                value=m['value'] * self.load_scale,
                                 uncertainty=m['std_dev'],
-                                api_obj=bus,
+                                api_obj=api_obj,
                                 name=m['name']
                             )
                         )
+                    if m['measurement_type'] == 'i':
+                        grid.add_if_measurement(
+                            dev.IfMeasurement(
+                                value=m['value'] * self.load_scale,
+                                uncertainty=m['std_dev'],
+                                api_obj=api_obj,
+                                name=m['name']
+                            )
+                        )
+
     def parse_loads(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
         Add loads to the GridCal grid based on Pandapower data
@@ -226,7 +246,7 @@ class Panda2GridCal:
         :param bus_dictionary:
         """
 
-        for _, row in self.panda_net.load.iterrows():
+        for idx, row in self.panda_net.load.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.Load(
                 name=row['name'],
@@ -234,7 +254,8 @@ class Panda2GridCal:
                 Q=row['q_mvar'] * self.load_scale
             )
             grid.add_load(bus=bus, api_obj=elm)
-
+            if (meas := self._get_measurements('load', idx)) is not None:
+                self.assign_v_p_q_i_measurement_to_connected_bus_and_switches(bus, grid, meas, row)
     def parse_shunts(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
         Add shunts to the GridCal grid based on Pandapower data
