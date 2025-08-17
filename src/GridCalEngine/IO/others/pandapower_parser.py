@@ -3,12 +3,15 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
+
+from math import sqrt
 from typing import Dict, Optional
 import sqlite3
 import json
 
 import pandapower
 import pandas as pd
+from power_grid_model_io.functions.phase_to_phase import reactive_power
 
 import GridCalEngine.Devices as dev
 from GridCalEngine.basic_structures import Logger
@@ -193,52 +196,61 @@ class Panda2GridCal:
             if (meas := self._get_measurements('ext_grid', idx)) is not None:
                 self.assign_v_p_q_i_measurement_to_connected_bus_and_switches(bus, grid, meas, row)
 
-    def assign_v_p_q_i_measurement_to_connected_bus_and_switches(self, bus, grid, meas, row):
-        for _, m in meas.iterrows():
+    def assign_v_p_q_i_measurement_to_connected_bus_and_switches(self, bus, grid, meas_df, row):
+        """Process measurements with proper DataFrame handling"""
+        if meas_df is None or meas_df.empty:
+            return
+
+        for _, meas_row in meas_df.iterrows():
+            m_type = meas_row['measurement_type']
+            m_value = float(meas_row['value'])
+            m_std = float(meas_row['std_dev'])
+            m_name = str(meas_row['name'])
             # voltage meas still added to the connected bus
-            if m['measurement_type'] == 'v':
+            if m_type== 'v':
                 grid.add_vm_measurement(
                     dev.VmMeasurement(
-                        value=m['value'],
-                        uncertainty=m['std_dev'],
+                        value=m_value,
+                        uncertainty=m_std,
                         api_obj=bus,
-                        name=m['name']
+                        name=m_name
                     )
                 )
-            if m['measurement_type'] in ('p', 'q', 'i'):
+            if  m_type in ('p', 'q', 'i'):
                 # GridCal does not support P,Q measurement on single pole element
                 # we need to find connected switch directly to this element
                 sw_set = pandapower.get_connected_switches(self.panda_net, row["bus"])
                 if not sw_set.empty:
                     api_obj = sw_set.iloc[0]
-                    if m['measurement_type'] == 'p':
+                    if m_type == 'p':
                         grid.add_pf_measurement(
                             dev.PfMeasurement(
-                                value=m['value'] * self.load_scale,
-                                uncertainty=m['std_dev'],
+                                value=m_value * self.load_scale,
+                                uncertainty=m_std,
                                 api_obj=api_obj,
-                                name=m['name']
+                                name=m_name
                             )
                         )
-                    if m['measurement_type'] == 'q':
+                    if m_type== 'q':
                         grid.add_qf_measurement(
                             dev.QfMeasurement(
-                                value=m['value'] * self.load_scale,
-                                uncertainty=m['std_dev'],
+                                value=m_value * self.load_scale,
+                                uncertainty=m_std,
                                 api_obj=api_obj,
-                                name=m['name']
+                                name=m_name
                             )
                         )
-                    if m['measurement_type'] == 'i':
+                    if m_type== 'i':
                         grid.add_if_measurement(
                             dev.IfMeasurement(
-                                value=m['value'] * self.load_scale,
-                                uncertainty=m['std_dev'],
+                                value=m_value * self.load_scale,
+                                uncertainty=m_std,
                                 api_obj=api_obj,
-                                name=m['name']
+                                name=m_name
                             )
                         )
-
+                else:
+                    self.logger.add_warning(f"Connecting switch was not found for this measurement {meas_row}")
     def parse_loads(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
         Add loads to the GridCal grid based on Pandapower data
@@ -413,7 +425,7 @@ class Panda2GridCal:
         :return:
         """
 
-        for idx, row in self.panda_net.sgen.iterrows():
+        for idx, row in self.panda_net.gen.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.Generator(
                 name=row['name'],
@@ -423,7 +435,21 @@ class Panda2GridCal:
             )
 
             grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
-            if (meas := self._get_measurements('generator', idx)) is not None:
+            if (meas := self._get_measurements('gen', idx)) is not None:
+                self.assign_v_p_q_i_measurement_to_connected_bus_and_switches(bus, grid, meas, row)
+
+        for idx, row in self.panda_net.sgen.iterrows():
+            bus = bus_dictionary[row['bus']]
+            elm = dev.Generator(
+                name=row['name'],
+                P=row['p_mw'] * self.load_scale,
+                power_factor = row['p_mw']/sqrt((row['q_mvar'])**2+row['p_mw']**2),
+                active=row['in_service'],
+                is_controlled=False,
+            )
+
+            grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
+            if (meas := self._get_measurements('sgen', idx)) is not None:
                 self.assign_v_p_q_i_measurement_to_connected_bus_and_switches(bus, grid, meas, row)
 
     def parse_transformers(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
@@ -436,6 +462,62 @@ class Panda2GridCal:
         self.create_trafo2w_assign_measurements(bus_dictionary, grid)
         # 3W trafo has to be parsed as well
 
+    def process_each_transformer_measurements(self, bus2, elm, grid, meas_row):
+        """Handle individual transformer measurements"""
+        m_type = meas_row['measurement_type']
+        m_value = float(meas_row['value']) * self.load_scale
+        m_std = float(meas_row['std_dev'])
+        m_name = str(meas_row['name'])
+        if m_type == 'p':
+            if meas_row["side"] == "hv_bus":  # hv bus is supported
+                grid.add_pf_measurement(
+                    dev.PfMeasurement(
+                        value=m_value* self.load_scale,
+                        uncertainty=m_std,
+                        api_obj=elm,
+                        name=m_name,
+                    )
+                )
+            else:
+                # For LV side or unspecified, use switch if available
+                # again look for connecting switch to provide this meas there
+                sw_set = pandapower.get_connected_switches(self.panda_net, bus2)
+                if not sw_set.empty:
+                    api_obj = sw_set.iloc[0]
+                    grid.add_pf_measurement(
+                        dev.PfMeasurement(
+                            value=m_value * self.load_scale,
+                            uncertainty=m_std,
+                            api_obj=api_obj,
+                            name=m_name
+                        )
+                    )
+        elif m_type == 'q':
+            if meas_row["side"] == "hv_bus":
+                grid.add_qf_measurement(
+                    dev.QfMeasurement(
+                        value=m_value * self.load_scale,
+                        uncertainty=m_std,
+                        api_obj=elm,
+                        name=m_name,
+                    )
+                )
+            else:
+                # again look for connecting switch to provide this meas there
+                sw_set = pandapower.get_connected_switches(self.panda_net, bus2)
+                if not sw_set.empty:
+                    api_obj = sw_set.iloc[0]
+                    grid.add_pf_measurement(
+                        dev.PfMeasurement(
+                            value=m_value * self.load_scale,
+                            uncertainty=m_std,
+                            api_obj=api_obj,
+                            name=m_name,
+                        )
+                    )
+        else:
+            self.logger.add_warning(f"PandaPower {meas_row['type']} measurement not implemented")
+
     def create_trafo2w_assign_measurements(self, bus_dictionary, grid):
         for idx, row in self.panda_net.trafo.iterrows():
             bus1 = bus_dictionary[row['hv_bus']]
@@ -447,7 +529,8 @@ class Panda2GridCal:
                 name='Transformer 1',
                 HV=row['vn_hv_kv'],
                 LV=row['vn_lv_kv'],
-                nominal_power=row['sn_mva']
+                nominal_power=row['sn_mva'],
+                active=bool(row['in_service'])
             )
 
             elm.fill_design_properties(
@@ -460,54 +543,8 @@ class Panda2GridCal:
 
             grid.add_transformer2w(elm)
             if (meas := self._get_measurements('trafo', idx)) is not None:
-                if meas['measurement_type'] == 'p':
-                    if meas["side"] == "hv_bus":  # from bus is supported
-                        grid.add_pf_measurement(
-                            dev.PfMeasurement(
-                                value=meas['value'] * self.load_scale,
-                                uncertainty=meas['std_dev'],
-                                api_obj=elm,
-                                name=meas['name'],
-                            )
-                        )
-                    else:
-                        # again look for connecting switch to provide this meas there
-                        sw_set = pandapower.get_connected_switches(self.panda_net, bus2)
-                        if not sw_set.empty:
-                            api_obj = sw_set.iloc[0]
-                            grid.add_pf_measurement(
-                                dev.PfMeasurement(
-                                    value=meas['value'] * self.load_scale,
-                                    uncertainty=meas['std_dev'],
-                                    api_obj=api_obj,
-                                    name=meas['name']
-                                )
-                            )
-                elif meas['measurement_type'] == 'q':
-                    if meas["side"] == "hv_bus":
-                        grid.add_qf_measurement(
-                            dev.QfMeasurement(
-                                value=meas['value'] * self.load_scale,
-                                uncertainty=meas['std_dev'],
-                                api_obj=elm,
-                                name=meas['name'],
-                            )
-                        )
-                    else:
-                        # again look for connecting switch to provide this meas there
-                        sw_set = pandapower.get_connected_switches(self.panda_net, bus2)
-                        if not sw_set.empty:
-                            api_obj = sw_set.iloc[0]
-                            grid.add_pf_measurement(
-                                dev.PfMeasurement(
-                                    value=meas['value'] * self.load_scale,
-                                    uncertainty=meas['std_dev'],
-                                    api_obj=api_obj,
-                                    name=meas['name']
-                                )
-                            )
-                else:
-                    self.logger.add_warning(f"PandaPower {meas['type']} measurement not implemented")
+                for _, m_row in meas.iterrows():
+                    self.process_each_transformer_measurements(bus2,elm,grid,m_row)
 
     def parse_switches(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
