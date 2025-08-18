@@ -439,7 +439,7 @@ class Panda2GridCal:
             elm.rdfid = row.get('uuid', elm.idtag)
 
             elm.fill_design_properties(
-                Pcu= row["vkr_percent"]*row["sn_mva"]*10 if "vkr_percent" in row else 0.,
+                Pcu=row["vkr_percent"] * row["sn_mva"] * 10 if "vkr_percent" in row else 0.,
                 Pfe=row['pfe_kw'],
                 I0=row['i0_percent'],
                 Vsc=row['vk_percent'],
@@ -516,7 +516,7 @@ class Panda2GridCal:
                 bus_from=bus_from,
                 bus_to=bus_to,
                 name=f"Switch_{switch_row['et']}_{switch_row['element']}",
-                code= idx,
+                code=idx,
                 active=switch_row['closed'],
                 idtag=switch_row["uuid"] if "uuid" in switch_row else switch_row["name"]
             )
@@ -654,7 +654,7 @@ class Panda2GridCal:
                                     name=name
                                 ))
                         elif m_tpe == "i":
-                            if elm_tpe =='transformer':
+                            if elm_tpe == 'transformer':
                                 if side == 1 or side == "hv":
                                     vnom = api_object.bus1.Vnom if hasattr(api_object.bus1, 'Vnom') else 1.0
                                     ibase = self.Sbase / (vnom * math.sqrt(3))

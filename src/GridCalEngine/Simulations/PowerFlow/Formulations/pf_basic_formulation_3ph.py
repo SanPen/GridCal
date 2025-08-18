@@ -5,14 +5,14 @@
 from typing import Tuple, List, Callable
 import numba as nb
 import numpy as np
-from scipy.sparse import diags, lil_matrix, csc_matrix
+from scipy.sparse import lil_matrix, csc_matrix
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.Derivatives.ac_jacobian import create_J_vc_csc
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_fx_error,
-                                                                                   power_flow_post_process_nonlinear,
-                                                                                   threephase_power_flow_post_process_nonlinear)
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (
+    compute_fx_error, power_flow_post_process_nonlinear_3ph
+)
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import (control_q_inside_method,
                                                                                     compute_slack_distribution)
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -20,13 +20,19 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
                                                                                    compute_fx, polar_to_rect,
                                                                                    fortescue_012_to_abc)
 from GridCalEngine.Topology.simulation_indices import compile_types
-from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec, Logger
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec, CxMat, BoolVec, Logger
 from GridCalEngine.Utils.Sparse.csc2 import (CSC, scipy_to_mat)
-from GridCalEngine.Utils.NumericalMethods.common import make_lookup
 
 
-def lookup_from_mask(mask):
+# @nb.njit(cache=True)
+def lookup_from_mask(mask: BoolVec) -> IntVec:
+    """
+
+    :param mask:
+    :return:
+    """
     lookup = [-1] * len(mask)  # start with all -1
+    # lookup = np.full(len(mask), -1, dtype=int)  # TODO: investigate why this change breaks the code
     counter = 0
     for i, m in enumerate(mask):
         if m:
@@ -36,7 +42,7 @@ def lookup_from_mask(mask):
     return lookup
 
 
-def compute_ybus_generator(nc: NumericalCircuit) -> csc_matrix:
+def compute_ybus_generator(nc: NumericalCircuit) -> Tuple[csc_matrix, CxMat]:
     """
     Compute the Ybus matrix for a generator in a 3-phase system
     :param nc: NumericalCircuit
@@ -188,11 +194,12 @@ def compute_Ibus(nc: NumericalCircuit) -> CxVec:
     return Ibus
 
 
-def compute_Sbus_star(nc: NumericalCircuit, V: CxVec, mask) -> CxVec:
+def compute_Sbus_star(nc: NumericalCircuit, V: CxVec, mask) -> Tuple[CxVec, CxVec]:
     """
     Compute the Ibus vector
     :param nc:
     :param V:
+    :param mask:
     :return:
     """
     n = nc.bus_data.nbus
@@ -205,13 +212,27 @@ def compute_Sbus_star(nc: NumericalCircuit, V: CxVec, mask) -> CxVec:
         f3 = 3 * f + idx3
         Sbus[f3] -= nc.load_data.S3_star[k3] * nc.load_data.active[k]
 
-    Y_power_star_linear = np.conj(Sbus[mask]) / abs(V) ** 2
+    # Y_power_star_linear = np.conj(Sbus[mask]) / np.power(np.abs(V), 2)
+    Y_power_star_linear = np.conj(Sbus[mask]) / np.abs(V) ** 2
 
     return Sbus, Y_power_star_linear
 
 
 @nb.njit(cache=True)
-def compute_current_loads(bus_idx: IntVec, bus_lookup: IntVec, V: CxVec, Istar: CxVec, Idelta: CxVec) -> CxVec:
+def compute_current_loads(bus_idx: IntVec,
+                          bus_lookup: IntVec,
+                          V: CxVec,
+                          Istar: CxVec,
+                          Idelta: CxVec) -> Tuple[CxVec, CxVec]:
+    """
+
+    :param bus_idx:
+    :param bus_lookup:
+    :param V:
+    :param Istar:
+    :param Idelta:
+    :return:
+    """
     n = len(V)
     nelm = len(bus_idx)
     I = np.zeros(n, dtype=nb.complex128)
@@ -304,10 +325,16 @@ def compute_current_loads(bus_idx: IntVec, bus_lookup: IntVec, V: CxVec, Istar: 
 
 
 @nb.njit(cache=True)
-def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, Ydelta: CxVec, V: CxVec, bus_lookup: IntVec) -> CxVec:
+def compute_Sbus_delta(bus_idx: IntVec,
+                       Sdelta: CxVec,
+                       Ydelta: CxVec,
+                       V: CxVec,
+                       bus_lookup: IntVec) -> Tuple[CxVec, CxVec]:
     """
+
     :param bus_idx:
     :param Sdelta:
+    :param Ydelta:
     :param V:
     :param bus_lookup:
     :return:
@@ -487,6 +514,7 @@ def expand_slice_indices_3ph(x: np.ndarray, bus_lookup: IntVec):
     """
     Expands and slices a numpy array to 3-phase copying the same values
     :param x:
+    :param bus_lookup:
     :return:
     """
     x3 = expand_indices_3ph(x)
@@ -688,10 +716,10 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                                                bus_lookup=self.bus_lookup)
 
         I0, Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
-                                                               bus_lookup=self.bus_lookup,
-                                                               V=self.V,
-                                                               Istar=self.nc.load_data.I3_star,
-                                                               Idelta=self.nc.load_data.I3_delta)
+                                                     bus_lookup=self.bus_lookup,
+                                                     V=self.V,
+                                                     Istar=self.nc.load_data.I3_star,
+                                                     Idelta=self.nc.load_data.I3_delta)
 
         self.I0 = I0 / (self.nc.Sbase / 3)
         self.Y_current_linear = Y_current_linear / (self.nc.Sbase / 3)
@@ -734,10 +762,10 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                                                bus_lookup=self.bus_lookup)
 
         I0, Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
-                                                               bus_lookup=self.bus_lookup,
-                                                               V=self.V,
-                                                               Istar=self.nc.load_data.I3_star,
-                                                               Idelta=self.nc.load_data.I3_delta)
+                                                     bus_lookup=self.bus_lookup,
+                                                     V=self.V,
+                                                     Istar=self.nc.load_data.I3_star,
+                                                     Idelta=self.nc.load_data.I3_delta)
 
         self.I0 = I0 / (self.nc.Sbase / 3)
         self.Y_current_linear = Y_current_linear / (self.nc.Sbase / 3)
@@ -776,10 +804,10 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                                                bus_lookup=self.bus_lookup)
 
         I0, Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
-                                                               bus_lookup=self.bus_lookup,
-                                                               V=self.V,
-                                                               Istar=self.nc.load_data.I3_star,
-                                                               Idelta=self.nc.load_data.I3_delta)
+                                                     bus_lookup=self.bus_lookup,
+                                                     V=self.V,
+                                                     Istar=self.nc.load_data.I3_star,
+                                                     Idelta=self.nc.load_data.I3_delta)
 
         self.I0 = I0 / (self.nc.Sbase / 3)
         self.Y_current_linear = Y_current_linear / (self.nc.Sbase / 3)
@@ -863,10 +891,10 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                                                bus_lookup=self.bus_lookup)
 
         I0, Y_current_linear = compute_current_loads(bus_idx=self.nc.load_data.bus_idx,
-                                                               bus_lookup=self.bus_lookup,
-                                                               V=self.V,
-                                                               Istar=self.nc.load_data.I3_star,
-                                                               Idelta=self.nc.load_data.I3_delta)
+                                                     bus_lookup=self.bus_lookup,
+                                                     V=self.V,
+                                                     Istar=self.nc.load_data.I3_star,
+                                                     Idelta=self.nc.load_data.I3_delta)
 
         self.I0 = I0 / (self.nc.Sbase / 3)
         self.Y_current_linear = Y_current_linear / (self.nc.Sbase / 3)
@@ -932,7 +960,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         :return: NumericPowerFlowResults
         """
         # Compute the Branches power and the slack buses power
-        Sf, St, If, It, Vbranch, loading, losses, Sbus, V_expanded = threephase_power_flow_post_process_nonlinear(
+        Sf, St, If, It, Vbranch, loading, losses, Sbus, V_expanded = power_flow_post_process_nonlinear_3ph(
             Sbus=self.Scalc,
             V=self.V,
             F=expand_indices_3ph(self.nc.passive_branch_data.F),
