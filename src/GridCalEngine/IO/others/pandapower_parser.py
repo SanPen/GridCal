@@ -169,13 +169,12 @@ class Panda2GridCal:
         :param grid: MultiCircuit grid
         :return: PP row name to GridCal row object
         """
-
         bus_dictionary = dict()
-        for _, row in self.panda_net.bus.iterrows():
+        for idx, row in self.panda_net.bus.iterrows():
             elm = dev.Bus(
                 name=row['name'],
                 Vnom=row['vn_kv'],
-                code=row['index'],
+                code=row.index,
                 vmin=row['min_vm_pu'] if 'min_vm_pu' in row else 0.9,
                 vmax=row['max_vm_pu'] if 'max_vm_pu' in row else 1.1,
                 active=bool(row['in_service'])
@@ -183,7 +182,7 @@ class Panda2GridCal:
             grid.add_bus(elm)  # Add the row to the GridCal grid
             bus_dictionary[row.name] = elm
 
-            self.register(panda_type="bus", panda_code=row['index'], api_obj=elm)
+            self.register(panda_type="bus", panda_code=idx, api_obj=elm)
 
         return bus_dictionary
 
@@ -195,16 +194,16 @@ class Panda2GridCal:
         :return:
         """
 
-        for _, row in self.panda_net.ext_grid.iterrows():
+        for idx, row in self.panda_net.ext_grid.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.ExternalGrid(
                 name=row['name'],
-                code=row['index'],
+                code=idx,
                 Vm=row['vm_pu']
             )
             grid.add_external_grid(bus, elm)
 
-            self.register(panda_type="ext_grid", panda_code=row['index'], api_obj=elm)
+            self.register(panda_type="ext_grid", panda_code=idx, api_obj=elm)
 
     def parse_loads(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -213,17 +212,17 @@ class Panda2GridCal:
         :param bus_dictionary:
         """
 
-        for _, row in self.panda_net.load.iterrows():
+        for idx, row in self.panda_net.load.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.Load(
                 name=row['name'],
-                code=row['index'],
+                code=idx,
                 P=row['p_mw'] * self.load_scale,
                 Q=row['q_mvar'] * self.load_scale
             )
             grid.add_load(bus=bus, api_obj=elm)
 
-            self.register(panda_type="load", panda_code=row['index'], api_obj=elm)
+            self.register(panda_type="load", panda_code=idx, api_obj=elm)
 
     def parse_shunts(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -231,17 +230,17 @@ class Panda2GridCal:
         :param grid: MultiCircuit grid
         :param bus_dictionary:
         """
-        for _, row in self.panda_net.shunt.iterrows():
+        for idx, row in self.panda_net.shunt.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.Shunt(
                 name=row['name'],
-                code=row['index'],
+                code=idx,
                 G=row["p_mw"] * self.load_scale,
                 B=row["q_mvar"] * self.load_scale
             )
             grid.add_shunt(bus=bus, api_obj=elm)
 
-            self.register(panda_type="shunt", panda_code=row['index'], api_obj=elm)
+            self.register(panda_type="shunt", panda_code=idx, api_obj=elm)
 
     def parse_lines(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -250,7 +249,7 @@ class Panda2GridCal:
         :param bus_dictionary:
         """
 
-        for _, row in self.panda_net.line.iterrows():
+        for idx, row in self.panda_net.line.iterrows():
             bus1 = bus_dictionary[row['from_bus']]
             bus2 = bus_dictionary[row['to_bus']]
 
@@ -258,7 +257,7 @@ class Panda2GridCal:
                 bus_from=bus1,
                 bus_to=bus2,
                 name=row['name'],
-                code=row['index'],
+                code=idx,
                 active=bool(row['in_service'])
             )
 
@@ -270,6 +269,7 @@ class Panda2GridCal:
                 Imax=row['max_i_ka'],
                 freq=self.fBase,
                 Sbase=self.Sbase,
+                apply_to_profile=False
             )
 
             # Uncomment the following lines if line activation status is needed
@@ -277,7 +277,7 @@ class Panda2GridCal:
             #                line.active = False
             grid.add_line(elm)
 
-            self.register(panda_type="line", panda_code=row['index'], api_obj=elm)
+            self.register(panda_type="line", panda_code=idx, api_obj=elm)
 
     def parse_impedances(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -289,7 +289,7 @@ class Panda2GridCal:
         mult = 1.6  # Multiplicative factor for impedance
 
         # Add impedance elements to the GridCal grid
-        for _, row in self.panda_net.impedance.iterrows():
+        for idx, row in self.panda_net.impedance.iterrows():
             bus1 = bus_dictionary[row['from_bus']]
             bus2 = bus_dictionary[row['to_bus']]
 
@@ -302,14 +302,14 @@ class Panda2GridCal:
                 bus_from=bus1,
                 bus_to=bus2,
                 name=row['name'],
-                code=row['index'],
+                code=idx,
                 r=ru,
                 x=xu
             )
 
             grid.add_series_reactance(elm)
 
-            self.register(panda_type="impedance", panda_code=row['index'], api_obj=elm)
+            self.register(panda_type="impedance", panda_code=idx, api_obj=elm)
 
     def parse_storage(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -319,10 +319,10 @@ class Panda2GridCal:
         :return:
         """
 
-        for _, row in self.panda_net.storage.iterrows():
+        for idx, row in self.panda_net.storage.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.Battery(
-                code=row['index'],
+                code=idx,
                 Pmin=row['min_p_mw'],
                 Pmax=row['max_p_mw'],
                 Qmin=row['min_q_mvar'],
@@ -335,7 +335,7 @@ class Panda2GridCal:
 
             grid.add_battery(bus=bus, api_obj=elm)  # Add battery to the grid
 
-            self.register(panda_type="storage", panda_code=row['index'], api_obj=elm)
+            self.register(panda_type="storage", panda_code=idx, api_obj=elm)
 
     def parse_generators(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -345,11 +345,11 @@ class Panda2GridCal:
         :return:
         """
 
-        for _, row in self.panda_net.gen.iterrows():
+        for idx, row in self.panda_net.gen.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.Generator(
                 name=row['name'],
-                code=row['index'],
+                code=idx,
                 P=row['p_mw'] * self.load_scale,
                 active=row['in_service'],
                 is_controlled=True
@@ -357,7 +357,7 @@ class Panda2GridCal:
 
             grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
 
-            self.register(panda_type="gen", panda_code=row['index'], api_obj=elm)
+            self.register(panda_type="gen", panda_code=idx, api_obj=elm)
 
     def parse_static_generators(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -367,18 +367,18 @@ class Panda2GridCal:
         :return:
         """
 
-        for _, row in self.panda_net.sgen.iterrows():
+        for idx, row in self.panda_net.sgen.iterrows():
             bus = bus_dictionary[row['bus']]
             elm = dev.StaticGenerator(
                 name=row['name'],
-                code=row['index'],
+                code=idx,
                 P=row['p_mw'] * self.load_scale,
                 active=row['in_service'],
             )
 
             grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
 
-            self.register(panda_type="sgen", panda_code=row['index'], api_obj=elm)
+            self.register(panda_type="sgen", panda_code=idx, api_obj=elm)
 
     def parse_transformers(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -387,7 +387,7 @@ class Panda2GridCal:
         :param bus_dictionary:
         """
 
-        for _, row in self.panda_net.trafo.iterrows():
+        for idx, row in self.panda_net.trafo.iterrows():
             bus1 = bus_dictionary[row['hv_bus']]
             bus2 = bus_dictionary[row['lv_bus']]
 
@@ -395,7 +395,7 @@ class Panda2GridCal:
                 bus_from=bus1,
                 bus_to=bus2,
                 name='Transformer 1',
-                code=row['index'],
+                code=idx,
                 HV=row['vn_hv_kv'],
                 LV=row['vn_lv_kv'],
                 nominal_power=row['sn_mva']
@@ -411,7 +411,7 @@ class Panda2GridCal:
 
             grid.add_transformer2w(elm)
 
-            self.register(panda_type="trafo", panda_code=row['index'], api_obj=elm)
+            self.register(panda_type="trafo", panda_code=idx, api_obj=elm)
 
     def parse_switches(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -422,7 +422,7 @@ class Panda2GridCal:
         """
 
         # Add switches to the GridCal grid
-        for _, switch_row in self.panda_net.switch.iterrows():
+        for idx, switch_row in self.panda_net.switch.iterrows():
 
             # Identify the first bus in the switch
             bus_from = bus_dictionary[switch_row['bus']]
@@ -479,12 +479,12 @@ class Panda2GridCal:
                 bus_from=bus_from,
                 bus_to=bus_to,
                 name=f"Switch_{switch_row['et']}_{switch_row['element']}",
-                code=switch_row['index'],
+                code= idx,
                 active=switch_row['closed']
             )
             grid.add_switch(switch_branch)
 
-            self.register(panda_type="switch", panda_code=switch_row['index'], api_obj=switch_branch)
+            self.register(panda_type="switch", panda_code=idx, api_obj=switch_branch)
 
     def parse_measurements(self, grid: dev.MultiCircuit):
         """
