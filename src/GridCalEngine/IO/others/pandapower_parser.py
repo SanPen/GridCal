@@ -381,7 +381,8 @@ class Panda2GridCal:
                 P=row['p_mw'] * self.load_scale,
                 active=row['in_service'],
                 is_controlled=True,
-                idtag=row.get('uuid', None)
+                idtag=row.get('uuid', None),
+                vset=row["vm_pu"]
             )
 
             elm.rdfid = row.get('uuid', elm.idtag)
@@ -404,6 +405,7 @@ class Panda2GridCal:
                 name=row['name'],
                 code=idx,
                 P=row['p_mw'] * self.load_scale,
+                Q=row["q_mvar"],
                 active=row['in_service'],
                 idtag=row.get('uuid', None)
             )
