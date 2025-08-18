@@ -27,6 +27,7 @@ def test_state_estimation_pandapower():
 
         pf_res = gce.power_flow(grid)
         print(pf_res.get_bus_df())
+        print(pf_res.get_branch_df())
 
         se = StateEstimation(circuit=grid)
         se.run()
