@@ -3,6 +3,8 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
+
+import math
 from typing import Dict
 import sqlite3
 import json
@@ -178,7 +180,8 @@ class Panda2GridCal:
                 code=row.index,
                 vmin=row['min_vm_pu'] if 'min_vm_pu' in row else 0.9,
                 vmax=row['max_vm_pu'] if 'max_vm_pu' in row else 1.1,
-                active=bool(row['in_service'])
+                active=bool(row['in_service']),
+                idtag=row["uuid"] if "uuid" in row else row["name"]
             )
             grid.add_bus(elm)  # Add the row to the GridCal grid
             bus_dictionary[row.name] = elm
@@ -200,7 +203,8 @@ class Panda2GridCal:
             elm = dev.ExternalGrid(
                 name=row['name'],
                 code=idx,
-                Vm=row['vm_pu']
+                Vm=row['vm_pu'],
+                idtag=row["uuid"] if "uuid" in row else row["name"]
             )
             grid.add_external_grid(bus, elm)
 
@@ -219,7 +223,8 @@ class Panda2GridCal:
                 name=row['name'],
                 code=idx,
                 P=row['p_mw'] * self.load_scale,
-                Q=row['q_mvar'] * self.load_scale
+                Q=row['q_mvar'] * self.load_scale,
+                idtag=row["uuid"] if "uuid" in row else row["name"]
             )
             grid.add_load(bus=bus, api_obj=elm)
 
@@ -237,7 +242,8 @@ class Panda2GridCal:
                 name=row['name'],
                 code=idx,
                 G=row["p_mw"] * self.load_scale,
-                B=row["q_mvar"] * self.load_scale
+                B=row["q_mvar"] * self.load_scale,
+                idtag=row["uuid"] if "uuid" in row else row["name"]
             )
             grid.add_shunt(bus=bus, api_obj=elm)
 
@@ -259,7 +265,8 @@ class Panda2GridCal:
                 bus_to=bus2,
                 name=row['name'],
                 code=idx,
-                active=bool(row['in_service'])
+                active=bool(row['in_service']),
+                idtag=row["uuid"] if "uuid" in row else row["name"]
             )
 
             elm.fill_design_properties(
@@ -305,7 +312,8 @@ class Panda2GridCal:
                 name=row['name'],
                 code=idx,
                 r=ru,
-                x=xu
+                x=xu,
+                idtag=row["uuid"] if "uuid" in row else row["name"]
             )
 
             grid.add_series_reactance(elm)
@@ -331,7 +339,8 @@ class Panda2GridCal:
                 Sbase=row['sn_mva'],
                 Enom=row['max_e_mwh'],
                 active=row['in_service'],
-                soc=row['soc_percent']
+                soc=row['soc_percent'],
+                idtag=row["uuid"] if "uuid" in row else row["name"]
             )
 
             grid.add_battery(bus=bus, api_obj=elm)  # Add battery to the grid
@@ -353,7 +362,9 @@ class Panda2GridCal:
                 code=idx,
                 P=row['p_mw'] * self.load_scale,
                 active=row['in_service'],
-                is_controlled=True
+                is_controlled=True,
+                idtag=row["uuid"] if "uuid" in row else row["name"],
+
             )
 
             grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
@@ -375,6 +386,7 @@ class Panda2GridCal:
                 code=idx,
                 P=row['p_mw'] * self.load_scale,
                 active=row['in_service'],
+                idtag=row["uuid"] if "uuid" in row else row["name"]
             )
 
             grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
@@ -399,7 +411,8 @@ class Panda2GridCal:
                 code=idx,
                 HV=row['vn_hv_kv'],
                 LV=row['vn_lv_kv'],
-                nominal_power=row['sn_mva']
+                nominal_power=row['sn_mva'],
+                idtag=row["uuid"] if "uuid" in row else row["name"],
             )
 
             elm.fill_design_properties(
@@ -481,7 +494,8 @@ class Panda2GridCal:
                 bus_to=bus_to,
                 name=f"Switch_{switch_row['et']}_{switch_row['element']}",
                 code= idx,
-                active=switch_row['closed']
+                active=switch_row['closed'],
+                idtag=switch_row["uuid"] if "uuid" in switch_row else switch_row["name"]
             )
             grid.add_switch(switch_branch)
 
@@ -494,7 +508,6 @@ class Panda2GridCal:
         :return:
         """
         df: pd.DataFrame | None = self.panda_net.get("measurement", None)
-
         if df is not None:
             for i, row in df.iterrows():
                 name = row['name']
@@ -534,6 +547,18 @@ class Panda2GridCal:
                                 api_obj=api_object,
                                 name=name)
                             )
+                        elif m_tpe == 'i':
+                            vnom = api_object.Vnom if hasattr(api_object, 'Vnom') else 1.0
+                            ibase = self.Sbase / (vnom * math.sqrt(3))
+                            value = val / ibase  # Convert kA to pu
+                            grid.add_if_measurement(
+                                dev.IfMeasurement(
+                                    value=value,
+                                    uncertainty=std,
+                                    api_obj=api_object,
+                                    name=name
+                                )
+                            )
                         else:
                             self.logger.add_warning(f"PandaPower {m_tpe} measurement not implemented")
 
@@ -560,6 +585,17 @@ class Panda2GridCal:
                                 api_obj=api_object.bus,
                                 name=name)
                             )
+                        elif m_tpe == 'i':
+                            vnom = api_object.bus.Vnom if hasattr(api_object.bus, 'Vnom') else 1.0
+                            ibase = self.Sbase / (vnom * math.sqrt(3))
+                            value = val / ibase  # Convert kA to pu
+                            grid.add_if_measurement(
+                                dev.IfMeasurement(
+                                    value=value,
+                                    uncertainty=std,
+                                    api_obj=api_object,
+                                    name=name
+                                ))
                         else:
                             self.logger.add_warning(f"PandaPower {m_tpe} measurement not implemented")
 
@@ -594,10 +630,59 @@ class Panda2GridCal:
                                     api_obj=api_object,
                                     name=name
                                 ))
+                        elif m_tpe == "i":
+                            if elm_tpe =='transformer':
+                                if side == 1 or side == "hv":
+                                    vnom = api_object.bus1.Vnom if hasattr(api_object.bus1, 'Vnom') else 1.0
+                                    ibase = self.Sbase / (vnom * math.sqrt(3))
+                                    value = val / ibase  # Convert kA to pu
+                                    grid.add_if_measurement(
+                                        dev.IfMeasurement(
+                                            value=value,
+                                            uncertainty=std,
+                                            api_obj=api_object,
+                                            name=name
+                                        ))
+                                else:
+                                    vnom = api_object.bus2.Vnom if hasattr(api_object.bus2, 'Vnom') else 1.0
+                                    ibase = self.Sbase / (vnom * math.sqrt(3))
+                                    value = val / ibase  # Convert kA to pu
+                                    grid.add_it_measurement(
+                                        dev.ItMeasurement(
+                                            value=value,
+                                            uncertainty=std,
+                                            api_obj=api_object,
+                                            name=name
+                                        ))
+                            else:
+                                if side == 1 or side == 'from':
+                                    vnom = api_object.bus_from.Vnom if hasattr(api_object.bus_from, 'Vnom') else 1.0
+                                    ibase = self.Sbase / (vnom * math.sqrt(3))
+                                    value = val / ibase  # Convert kA to pu
+                                    grid.add_if_measurement(
+                                        dev.IfMeasurement(
+                                            value=value,
+                                            uncertainty=std,
+                                            api_obj=api_object,
+                                            name=name
+                                        ))
+                                else:
+                                    vnom = api_object.bus_from.Vnom if hasattr(api_object.bus_to, 'Vnom') else 1.0
+                                    ibase = self.Sbase / (vnom * math.sqrt(3))
+                                    value = val / ibase  # Convert kA to pu
+                                    grid.add_it_measurement(
+                                        dev.ItMeasurement(
+                                            value=value,
+                                            uncertainty=std,
+                                            api_obj=api_object,
+                                            name=name
+                                        ))
+
                         else:
-                            self.logger.add_warning(f"PandaPower {m_tpe} measurement not implemented")
+                            self.logger.add_warning(f"PandaPower {m_tpe} measurement type not implemented for double "
+                                                    f"pole elements")
                     else:
-                        self.logger.add_warning(f"PandaPower {elm_tpe} measurement not implemented")
+                        self.logger.add_warning(f"PandaPower {elm_tpe} measurement type not implemented")
 
     def get_multicircuit(self) -> dev.MultiCircuit:
         """
