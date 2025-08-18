@@ -28,8 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Extended the SE to have Pt, Qt, It, Va">
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_stimation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_stimation_driver.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved the pandapower measurements parser">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1872,7 +1873,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="620" />
+    <option name="localTasksCounter" value="622" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1918,8 +1919,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="improved the adequacy problem with the firm capacity limit&#10;Improved the disk saving capabilities of the InvestmentsEvaluationResults" />
-    <MESSAGE value="Improved the substation designer&#10;Added disconnector icon&#10;Modified the switch icon" />
     <MESSAGE value="Improved the bus short circuit options" />
     <MESSAGE value="Further improvements to the NTC" />
     <MESSAGE value="Improved the 3-windings layout" />
@@ -1943,7 +1942,9 @@
     <MESSAGE value="fixed the multiple-island handling in the state estimation" />
     <MESSAGE value="improvement to slice_pair" />
     <MESSAGE value="Extended the SE to have Pt, Qt, It, Va" />
-    <option name="LAST_COMMIT_MESSAGE" value="Extended the SE to have Pt, Qt, It, Va" />
+    <MESSAGE value="Extended collect_measurements have Pt, Qt, It, Va" />
+    <MESSAGE value="Improved the pandapower measurements parser" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved the pandapower measurements parser" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2332,11 +2333,6 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py</url>
           <line>35</line>
           <option name="timeStamp" value="2665" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_state_estimation.py</url>
-          <line>64</line>
-          <option name="timeStamp" value="2666" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -230,18 +230,19 @@ def dIbr_dV(Yf, Yt, V):
     return dIf_dVa, dIf_dVm, dIt_dVa, dIt_dVm, If, It
 
 
-def Jacobian_SE(Ybus, Yf, Yt, V, f, t, inputs, pvpq):
+def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
+                f: IntVec, t: IntVec, inputs: StateEstimationInput, pvpq: IntVec):
     """
-    
-    :param Ybus: 
-    :param Yf: 
-    :param Yt: 
-    :param V: 
-    :param f: 
-    :param t: 
+    Get the arrays for calculation
+    :param Ybus: Admittance matrix
+    :param Yf: "from" admittance matrix
+    :param Yt: "to" admittance matrix
+    :param V: Voltages complex vector
+    :param f: array of "from" indices of branches
+    :param t: array of "to" indices of branches
     :param inputs: instance of StateEstimationInput
-    :param pvpq: 
-    :return: 
+    :param pvpq: array of pq|pv bus indices
+    :return: H (jacobian), h (residual), S (power injections)
     """
     n = Ybus.shape[0]
     I = Ybus * V
