@@ -316,7 +316,7 @@ class Panda2GridCal:
             bus2 = bus_dictionary[row['to_bus']]
 
             # Calculate base impedance
-            zbase = (self.panda_net.bus.loc[row['from_bus'], 'vn_kv']) ** 2 / self.Sbase
+            zbase = math.pow((self.panda_net.bus.loc[row['from_bus'], 'vn_kv']), 2) / self.Sbase
             ru = row.rft_pu * row.sn_mva / zbase * mult
             xu = row.xft_pu * row.sn_mva / zbase * mult
 

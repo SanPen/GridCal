@@ -26,6 +26,9 @@ def test_state_estimation_pandapower():
         se_res = se.results
         print(se_res.get_bus_df())
         print(se_res.get_branch_df())
+        print(f"Converged: {se_res.converged}")
+        print(f"Error: {se_res.error}")
+        print(f"Iter: {se_res.iterations}")
 
 
 if __name__ == '__main__':
