@@ -440,7 +440,7 @@ class Panda2GridCal:
             elm.fill_design_properties(
                 Pcu=row["vkr_percent"] * row["sn_mva"] * 10 if "vkr_percent" in row else 0.,
                 Pfe=row['pfe_kw'],
-                I0=row['i0_percent'],
+                I0=row['i0_percent']*row['sn_mva']/(math.sqrt(3)*row['vn_hv_kv']*100),
                 Vsc=row['vk_percent'],
                 Sbase=grid.Sbase
             )
