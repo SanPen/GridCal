@@ -2,9 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from typing import Tuple, List, Dict
-import numpy as np
-from GridCalEngine.basic_structures import Vec, IntVec
+from typing import List, Dict
+from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.Devices.measurement import (PfMeasurement, QfMeasurement,
                                                PtMeasurement, QtMeasurement,
                                                PiMeasurement, QiMeasurement,

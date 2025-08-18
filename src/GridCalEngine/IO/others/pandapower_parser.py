@@ -149,7 +149,7 @@ class Panda2GridCal:
             else:
                 self.logger.add_error("Panda index repeated", device_class=panda_type, value=panda_code)
 
-    def get_api_by_registry(self, panda_type: str, panda_code: int) -> ALL_DEV_TYPES | None:
+    def get_api_object_by_registry(self, panda_type: str, panda_code: int) -> ALL_DEV_TYPES | None:
         """
         Get a previously registered gridcal object from a pandapower table-key
         :param panda_type: table name
@@ -452,8 +452,8 @@ class Panda2GridCal:
                     line_data = self.panda_net.line.loc[switch_row['element']]
                     # Update the line's connections to include the auxiliary bus
                     for line in grid.lines:
-                        if line.bus_from == bus_dictionary[line_data['from_bus']] and line.bus_to == bus_dictionary[
-                            line_data['to_bus']]:
+                        if (line.bus_from == bus_dictionary[line_data['from_bus']]
+                                and line.bus_to == bus_dictionary[line_data['to_bus']]):
                             if line_data['from_bus'] == switch_row['bus']:
                                 line.bus_from = bus_to
                             else:
@@ -506,7 +506,7 @@ class Panda2GridCal:
                 std = row['std_dev']
                 side = row['side']
 
-                api_object = self.get_api_by_registry(panda_type=elm_tpe, panda_code=idx)
+                api_object = self.get_api_object_by_registry(panda_type=elm_tpe, panda_code=idx)
 
                 if api_object is not None:
 
