@@ -20,6 +20,9 @@ def test_state_estimation_pandapower():
         g = Panda2GridCal(net_wns)
         grid = g.get_multicircuit()
 
+        print()
+        g.logger.print("PandaPower conversion logs")
+
         # gce.save_file(grid, 'small_grid_gb_hv_estimate_raw_expected.gridcal')
 
         pf_res = gce.power_flow(grid)

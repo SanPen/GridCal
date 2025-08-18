@@ -28,11 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved pandapower parser">
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/state-estimation/small_grid_gb_hv_estimate_raw_expected.p" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved pandapower base madness">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/others/pandapower_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/others/pandapower_parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -219,11 +217,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/tests/data/grids/state-estimation" />
       <recent name="C:\GridCal\src\trunk\unbalanced_pf" />
       <recent name="$PROJECT_DIR$/src/trunk/mip" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP" />
       <recent name="$PROJECT_DIR$/doc/md_source/figures" />
-      <recent name="C:\Work\git_local\GridCal\src\tests\data\grids\RAW" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/doc/md_source/figures" />
@@ -233,7 +231,7 @@
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Substation" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python tests.pytest in test_state_estimation_from_pandapower_conversion.py">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -1881,7 +1879,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="627" />
+    <option name="localTasksCounter" value="628" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1927,7 +1925,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="ntc improvements" />
     <MESSAGE value="fixed miss initialization for shift_key profiles" />
     <MESSAGE value="minimal se refactors" />
     <MESSAGE value="fixed measurements import" />
@@ -1952,7 +1949,8 @@
     <MESSAGE value="Improved SE numerical method" />
     <MESSAGE value="Improved pandapower parser" />
     <MESSAGE value="minor refactors" />
-    <option name="LAST_COMMIT_MESSAGE" value="minor refactors" />
+    <MESSAGE value="Improved pandapower base madness" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved pandapower base madness" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2383,14 +2381,29 @@
           <option name="timeStamp" value="2704" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/others/pandapower_parser.py</url>
-          <line>229</line>
-          <option name="timeStamp" value="2707" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py</url>
           <line>22</line>
           <option name="timeStamp" value="2709" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/others/pandapower_parser.py</url>
+          <line>584</line>
+          <option name="timeStamp" value="2714" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/others/pandapower_parser.py</url>
+          <line>621</line>
+          <option name="timeStamp" value="2715" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/others/pandapower_parser.py</url>
+          <line>703</line>
+          <option name="timeStamp" value="2716" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/others/pandapower_parser.py</url>
+          <line>706</line>
+          <option name="timeStamp" value="2717" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

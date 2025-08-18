@@ -584,7 +584,7 @@ class Panda2GridCal:
                         else:
                             self.logger.add_warning(f"PandaPower {m_tpe} measurement not implemented")
 
-                    if elm_tpe in ['load', 'gen', 'sgen', 'shunt']:
+                    elif elm_tpe in ['load', 'gen', 'sgen', 'shunt']:
 
                         if m_tpe == 'v':
                             grid.add_vm_measurement(dev.VmMeasurement(
@@ -621,7 +621,7 @@ class Panda2GridCal:
                         else:
                             self.logger.add_warning(f"PandaPower {m_tpe} measurement not implemented")
 
-                    elif elm_tpe in ['line', 'impedance', 'transformer']:
+                    elif elm_tpe in ['line', 'impedance', 'trafo']:
                         if m_tpe == 'p':
                             if side == 1 or side == 'from':
                                 grid.add_pf_measurement(dev.PfMeasurement(
