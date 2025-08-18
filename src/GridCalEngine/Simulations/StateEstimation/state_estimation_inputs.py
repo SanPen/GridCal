@@ -75,15 +75,8 @@ class StateEstimationInput:
         self.va_value: List[VaMeasurement] = list()  # Node voltage angle measurements vector of pointers
         self.va_idx: List[int] = list()  # nodes with voltage angle measurements
 
-    def get_measurements_and_deviations(self) -> Tuple[Vec, Vec]:
-        """
-        get_measurements_and_deviations the measurements into "measurements" and "sigma"
-        ordering: Pinj, Pflow, Qinj, Qflow, Iflow, Vm
-        :return: measurements vector, sigma vector
-        """
-
-        nz = (
-                len(self.p_inj)
+    def size(self):
+        return (len(self.p_inj)
                 + len(self.q_inj)
                 + len(self.pf_value)
                 + len(self.pt_value)
@@ -92,8 +85,17 @@ class StateEstimationInput:
                 + len(self.if_value)
                 + len(self.it_value)
                 + len(self.vm_value)
-                + len(self.va_value)
-        )
+                + len(self.va_value))
+
+    def get_measurements_and_deviations(self, Sbase: float) -> Tuple[Vec, Vec]:
+        """
+        get_measurements_and_deviations the measurements into "measurements" and "sigma"
+        ordering: Pinj, Pflow, Qinj, Qflow, Iflow, Vm
+        :param Sbase: base power in MVA (i.e. 100 MVA)
+        :return: measurements vector in per-unit, sigma vector in per-unit
+        """
+
+        nz = self.size()
 
         magnitudes = np.zeros(nz)
         sigma = np.zeros(nz)
@@ -107,8 +109,13 @@ class StateEstimationInput:
                     self.qf_value,
                     self.qt_value,
                     self.if_value,
-                    self.it_value,
-                    self.vm_value,
+                    self.it_value]:
+            for m in lst:
+                magnitudes[k] = m.value / Sbase
+                sigma[k] = m.sigma / Sbase
+                k += 1
+
+        for lst in [self.vm_value,
                     self.va_value]:
             for m in lst:
                 magnitudes[k] = m.value

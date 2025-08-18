@@ -246,8 +246,6 @@ def Jacobian_SE(Ybus, Yf, Yt, V, f, t, inputs, pvpq):
     n = Ybus.shape[0]
     I = Ybus * V
     S = V * np.conj(I)
-    # If = Yf * V
-    # Sf = (Ct * V) * np.conj(If)
     dS_dVm, dS_dVa = dSbus_dV(Ybus, V)
     dSf_dVa, dSf_dVm, dSt_dVa, dSt_dVm, Sf, St = dSbr_dV(Yf, Yt, V, f, t)
     dIf_dVa, dIf_dVm, dIt_dVa, dIt_dVm, If, It = dIbr_dV(Yf, Yt, V)
@@ -352,24 +350,11 @@ def solve_se_lm(nc: NumericalCircuit,
     V = np.ones(n, dtype=complex)
 
     # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
-    z_phys, sigma_phys = se_input.get_measurements_and_deviations()
+    z_phys, sigma_phys = se_input.get_measurements_and_deviations(Sbase=nc.Sbase)
 
     # Convert power measurements and sigmas to per-unit
     z = np.copy(z_phys)
     sigma = np.copy(sigma_phys)
-    Sbase = nc.Sbase
-
-    # Determine indices for power measurements based on the order in get_measurements_and_deviations
-    pf_end = len(se_input.pf_value)
-    p_end = pf_end + len(se_input.p_idx)
-    qf_end = p_end + len(se_input.qf_value)
-    q_end = qf_end + len(se_input.q_idx)
-
-    # Scale Pf, P, Qf, Q measurements in z
-    z[0:q_end] /= Sbase
-
-    # Scale Pf, P, Qf, Q sigmas
-    sigma[0:q_end] /= Sbase
 
     # compute the weights matrix using per-unit sigma
     W = csc_matrix(np.diag(1.0 / np.power(sigma, 2.0)))
