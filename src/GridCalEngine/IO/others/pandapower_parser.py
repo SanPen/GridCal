@@ -428,7 +428,7 @@ class Panda2GridCal:
             elm = dev.Transformer2W(
                 bus_from=bus1,
                 bus_to=bus2,
-                name='Transformer 1',
+                name=row["name"],
                 code=idx,
                 HV=row['vn_hv_kv'],
                 LV=row['vn_lv_kv'],
@@ -439,7 +439,7 @@ class Panda2GridCal:
             elm.rdfid = row.get('uuid', elm.idtag)
 
             elm.fill_design_properties(
-                Pcu=0.0,  # pandapower has no pcu apparently
+                Pcu= row["vkr_percent"]*row["sn_mva"]*10 if "vkr_percent" in row else 0.,
                 Pfe=row['pfe_kw'],
                 I0=row['i0_percent'],
                 Vsc=row['vk_percent'],
