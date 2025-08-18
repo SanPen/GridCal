@@ -181,8 +181,11 @@ class Panda2GridCal:
                 vmin=row['min_vm_pu'] if 'min_vm_pu' in row else 0.9,
                 vmax=row['max_vm_pu'] if 'max_vm_pu' in row else 1.1,
                 active=bool(row['in_service']),
-                idtag=row["uuid"] if "uuid" in row else row["name"]
+                idtag=row.get('uuid', None)
             )
+
+            elm.rdfid = row.get('uuid', elm.idtag)
+
             grid.add_bus(elm)  # Add the row to the GridCal grid
             bus_dictionary[row.name] = elm
 
@@ -204,8 +207,11 @@ class Panda2GridCal:
                 name=row['name'],
                 code=idx,
                 Vm=row['vm_pu'],
-                idtag=row["uuid"] if "uuid" in row else row["name"]
+                idtag=row.get('uuid', None)
             )
+
+            elm.rdfid = row.get('uuid', elm.idtag)
+
             grid.add_external_grid(bus, elm)
 
             self.register(panda_type="ext_grid", panda_code=idx, api_obj=elm)
@@ -224,8 +230,11 @@ class Panda2GridCal:
                 code=idx,
                 P=row['p_mw'] * self.load_scale,
                 Q=row['q_mvar'] * self.load_scale,
-                idtag=row["uuid"] if "uuid" in row else row["name"]
+                idtag=row.get('uuid', None)
             )
+
+            elm.rdfid = row.get('uuid', elm.idtag)
+
             grid.add_load(bus=bus, api_obj=elm)
 
             self.register(panda_type="load", panda_code=idx, api_obj=elm)
@@ -243,8 +252,11 @@ class Panda2GridCal:
                 code=idx,
                 G=row["p_mw"] * self.load_scale,
                 B=row["q_mvar"] * self.load_scale,
-                idtag=row["uuid"] if "uuid" in row else row["name"]
+                idtag=row.get('uuid', None)
             )
+
+            elm.rdfid = row.get('uuid', elm.idtag)
+
             grid.add_shunt(bus=bus, api_obj=elm)
 
             self.register(panda_type="shunt", panda_code=idx, api_obj=elm)
@@ -266,8 +278,10 @@ class Panda2GridCal:
                 name=row['name'],
                 code=idx,
                 active=bool(row['in_service']),
-                idtag=row["uuid"] if "uuid" in row else row["name"]
+                idtag=row.get('uuid', None)
             )
+
+            elm.rdfid = row.get('uuid', elm.idtag)
 
             elm.fill_design_properties(
                 r_ohm=row['r_ohm_per_km'],
@@ -313,8 +327,10 @@ class Panda2GridCal:
                 code=idx,
                 r=ru,
                 x=xu,
-                idtag=row["uuid"] if "uuid" in row else row["name"]
+                idtag=row.get('uuid', None)
             )
+
+            elm.rdfid = row.get('uuid', elm.idtag)
 
             grid.add_series_reactance(elm)
 
@@ -340,8 +356,10 @@ class Panda2GridCal:
                 Enom=row['max_e_mwh'],
                 active=row['in_service'],
                 soc=row['soc_percent'],
-                idtag=row["uuid"] if "uuid" in row else row["name"]
+                idtag=row.get('uuid', None)
             )
+
+            elm.rdfid = row.get('uuid', elm.idtag)
 
             grid.add_battery(bus=bus, api_obj=elm)  # Add battery to the grid
 
@@ -363,9 +381,10 @@ class Panda2GridCal:
                 P=row['p_mw'] * self.load_scale,
                 active=row['in_service'],
                 is_controlled=True,
-                idtag=row["uuid"] if "uuid" in row else row["name"],
-
+                idtag=row.get('uuid', None)
             )
+
+            elm.rdfid = row.get('uuid', elm.idtag)
 
             grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
 
@@ -386,8 +405,10 @@ class Panda2GridCal:
                 code=idx,
                 P=row['p_mw'] * self.load_scale,
                 active=row['in_service'],
-                idtag=row["uuid"] if "uuid" in row else row["name"]
+                idtag=row.get('uuid', None)
             )
+
+            elm.rdfid = row.get('uuid', elm.idtag)
 
             grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
 
@@ -412,8 +433,10 @@ class Panda2GridCal:
                 HV=row['vn_hv_kv'],
                 LV=row['vn_lv_kv'],
                 nominal_power=row['sn_mva'],
-                idtag=row["uuid"] if "uuid" in row else row["name"],
+                rate=row['sn_mva'],
+                idtag=row.get('uuid', None),
             )
+            elm.rdfid = row.get('uuid', elm.idtag)
 
             elm.fill_design_properties(
                 Pcu=0.0,  # pandapower has no pcu apparently

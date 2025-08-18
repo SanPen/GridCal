@@ -25,7 +25,7 @@ def test_state_estimation_pandapower():
 
         se_res = se.results
         print(se_res.get_bus_df())
-        print()
+        print(se_res.get_branch_df())
 
 
 if __name__ == '__main__':
