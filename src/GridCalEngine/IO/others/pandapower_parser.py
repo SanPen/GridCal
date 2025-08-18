@@ -20,6 +20,7 @@ try:
     PANDAPOWER_AVAILABLE = True
 
 except ImportError:
+    pandapower = None
     PANDAPOWER_AVAILABLE = False
 
 
