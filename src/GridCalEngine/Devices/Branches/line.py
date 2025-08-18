@@ -673,7 +673,7 @@ class Line(BranchParent):
         :param Imax: Maximum current in kA
         :param freq: System frequency in Hz
         :param Sbase: Base power in MVA (take always 100 MVA)
-        :param apply_to_profile: modify the profile is checked
+        :param apply_to_profile: modify the ratings profile if checked
         :return self pointer
         """
         self.R, self.X, self.B, new_rate = get_line_impedances_with_c(r_ohm=r_ohm,
@@ -691,8 +691,11 @@ class Line(BranchParent):
         self._length = length
 
         if apply_to_profile:
-            prof_old = self.rate_prof.toarray()
-            self.rate_prof.set(prof_old * new_rate / old_rate)
+            if old_rate != 0.0:
+                prof_old = self.rate_prof.toarray()
+                self.rate_prof.set(prof_old * new_rate / old_rate)
+            else:
+                self.rate_prof.fill(new_rate)
 
         return self
 

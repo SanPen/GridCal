@@ -14,11 +14,13 @@ def test_state_estimation_pandapower():
         # tests/data/grids/state-estimation /small_grid_gb_hv_estimate_raw_expected.json
         fname = os.path.join("data", "grids", "state-estimation", "small_grid_gb_hv_estimate_raw_expected.json")
         net_wns = pandapower.from_json(fname)
-        net_wns.line.loc[:, "max_i_ka"] = 1 #kA
         g = Panda2GridCal(net_wns)
         grid = g.get_multicircuit()
-        # pf_res = gce.power_flow(grid)
-        # print(pf_res.get_bus_df())
+
+        # gce.save_file(grid, 'small_grid_gb_hv_estimate_raw_expected.gridcal')
+
+        pf_res = gce.power_flow(grid)
+        print(pf_res.get_bus_df())
 
         se = StateEstimation(circuit=grid)
         se.run()
@@ -26,6 +28,9 @@ def test_state_estimation_pandapower():
         se_res = se.results
         print(se_res.get_bus_df())
         print(se_res.get_branch_df())
+        print(f"Converged: {se_res.converged}")
+        print(f"Error: {se_res.error}")
+        print(f"Iter: {se_res.iterations}")
 
 
 if __name__ == '__main__':

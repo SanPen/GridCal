@@ -781,7 +781,7 @@ def parse_object_type_from_dataframe(
                                     pass
                                 else:
 
-                                    logger.add_error("No device of the refferenced type",
+                                    logger.add_error("No device of the referenced type",
                                                      device=row.get('idtag', 'not provided'),
                                                      device_class=template_elm.device_type.value,
                                                      device_property=gc_prop.name,

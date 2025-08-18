@@ -6,39 +6,7 @@
 import numba as nb
 import numpy as np
 from scipy.sparse import csc_matrix
-from typing import Tuple, Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, CscMat, CxMat
-
-
-# @nb.njit(cache=True)
-# def csc_diagonal_from_array(m, array) -> Tuple[IntVec, IntVec, Union[Vec, CxVec, IntVec]]:
-#     """
-#     Generate CSC sparse diagonal matrix from array
-#     :param m: Size of array
-#     :param array: Array
-#     :return: indices, indptr, data
-#     """
-#     indptr = np.empty(m + 1, dtype=nb.int32)
-#     indices = np.empty(m, dtype=nb.int32)
-#     data = np.empty(m, dtype=nb.complex128)
-#     for i in range(m):
-#         indptr[i] = i
-#         indices[i] = i
-#         data[i] = array[i]
-#     indptr[m] = m
-#
-#     return indices, indptr, data
-
-
-# def diag(x) -> csc_matrix:
-#     """
-#     CSC diagonal matrix from array
-#     :param x:
-#     :return: csc_matrix
-#     """
-#     m = x.shape[0]
-#     indices, indptr, data = csc_diagonal_from_array(m, x)
-#     return csc_matrix((data, indices, indptr), shape=(m, m))
 
 
 @nb.njit(cache=True, fastmath=True)
@@ -93,21 +61,18 @@ def compute_power(Ybus: csc_matrix, V: CxVec) -> CxVec:
 def fortescue_012_to_abc(z0: complex, z1: complex, z2: complex) -> CxMat:
     """
     Convert 012 to abc
-    :param Z012: 012 impedance matrix
+    :param z0: zero-sequence impedance
+    :param z1: positive-sequence impedance
+    :param z2: negative-sequence impedance
     :return: abc impedance matrix
     """
-    a = 1.0 * np.exp(1j * 2 * np.pi / 3)
-    Zabc = 1/3 * np.array([
-        [z0 + z1 + z2, z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2],
-        [z0 + a**2 * z1 + a * z2, z0 + z1 + z2, z0 + a * z1 + a**2 * z2],
-        [z0 + a * z1 + a**2 * z2, z0 + a**2 * z1 + a * z2, z0 + z1 + z2]
-    ])
 
-    # fort1 = np.array([[1.0, 1.0, 1.0], [1.0, a**2, a], [1.0, a, a**2]])
-    # fort2 = np.array([[1.0, 1.0, 1.0], [1.0, a, a**2], [1.0, a**2, a]]) / 3
-    # Z012 = np.array([[z0, 0, 0], [0, z1, 0], [0, 0, z2]])
-    #
-    # Zabc = fort1 @ Z012 @ fort2
+    a = 1.0 * np.exp(1j * 2 * np.pi / 3)
+    Zabc = 1 / 3 * np.array([
+        [z0 + z1 + z2, z0 + a * z1 + a ** 2 * z2, z0 + a ** 2 * z1 + a * z2],
+        [z0 + a ** 2 * z1 + a * z2, z0 + z1 + z2, z0 + a * z1 + a ** 2 * z2],
+        [z0 + a * z1 + a ** 2 * z2, z0 + a ** 2 * z1 + a * z2, z0 + z1 + z2]
+    ])
 
     return Zabc
 
@@ -225,6 +190,7 @@ def get_It(k: IntVec, V: CxVec, ytf: CxVec, ytt: CxVec, F: IntVec, T: IntVec):
     t = T[k]
     return np.conj(V[t]) * np.conj(ytt[k]) + np.conj(V[f]) * np.conj(ytf[k])
 
+
 def expand_magnitudes(magnitude: CxVec, lookup: IntVec):
     """
     :param magnitude:
@@ -241,10 +207,19 @@ def expand_magnitudes(magnitude: CxVec, lookup: IntVec):
 
     return magnitude_expanded
 
-def threephase_power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVec,
-                                      pv: IntVec, vd: IntVec, Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
-                                      branch_rates: Vec, Sbase: float, bus_lookup: IntVec, branch_lookup: IntVec):
+
+def power_flow_post_process_nonlinear_3ph(Sbus: CxVec,
+                                          V: CxVec,
+                                          F: IntVec, T: IntVec,
+                                          pv: IntVec, vd: IntVec,
+                                          Ybus: CscMat, Yf: CscMat, Yt: CscMat,
+                                          Yshunt_bus: CxVec,
+                                          branch_rates: Vec,
+                                          Sbase: float,
+                                          bus_lookup: IntVec,
+                                          branch_lookup: IntVec):
     """
+
     :param Sbus:
     :param V:
     :param F:
@@ -257,7 +232,8 @@ def threephase_power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVe
     :param Yshunt_bus:
     :param branch_rates:
     :param Sbase:
-    :param Lookup:
+    :param bus_lookup:
+    :param branch_lookup:
     :return:
     """
 
@@ -274,7 +250,7 @@ def threephase_power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVe
     # Add the shunt power V^2 x Y^*
     Vm = np.abs(V_expanded)
     Sbus = np.conj(Yshunt_bus) @ (Vm * Vm)
-    Sbus_expanded= expand_magnitudes(Sbus, bus_lookup)
+    Sbus_expanded = expand_magnitudes(Sbus, bus_lookup)
 
     # Branches current, loading, etc
     Vf_expanded = V_expanded[F]
@@ -299,9 +275,12 @@ def threephase_power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVe
 
     return Sf_expanded, St_expanded, If_expanded, It_expanded, Vbranch, loading, losses, Sbus_expanded, V_expanded
 
+
 def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVec,
-                                      pv: IntVec, vd: IntVec, Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
-                                      branch_rates: Vec, Sbase: float):
+                                      pv: IntVec, vd: IntVec,
+                                      Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
+                                      branch_rates: Vec,
+                                      Sbase: float):
     """
 
     :param Sbus:
