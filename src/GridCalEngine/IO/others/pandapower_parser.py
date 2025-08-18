@@ -125,12 +125,11 @@ class Panda2GridCal:
 
             self.logger.add_info("This seems to be a pandapower file")
             self.fBase = self.panda_net.f_hz
-            self.Sbase = self.panda_net.sn_mva if self.panda_net.sn_mva > 0.0 else 100.0
-            self.load_scale = 1 / self.Sbase
+            Sbase = self.panda_net.sn_mva if self.panda_net.sn_mva > 0.0 else 100.0
+            self.load_scale = 1 / Sbase  # To handle the terrible practice of pandapower to use Sbase to represent kW
         else:
             self.panda_net = None
             self.fBase = 50.0
-            self.Sbase = 1
             self.load_scale = 1
             self.logger.add_info("Pandapower not available :/, try pip install pandapower")
 
@@ -289,8 +288,8 @@ class Panda2GridCal:
                 c_nf=row['c_nf_per_km'],
                 length=row['length_km'],
                 Imax=row['max_i_ka'],
-                freq=self.fBase,
-                Sbase=self.Sbase,
+                freq=grid.fBase,
+                Sbase=grid.Sbase,
                 apply_to_profile=False
             )
 
@@ -316,7 +315,7 @@ class Panda2GridCal:
             bus2 = bus_dictionary[row['to_bus']]
 
             # Calculate base impedance
-            zbase = math.pow((self.panda_net.bus.loc[row['from_bus'], 'vn_kv']), 2) / self.Sbase
+            zbase = math.pow((self.panda_net.bus.loc[row['from_bus'], 'vn_kv']), 2) / grid.Sbase
             ru = row.rft_pu * row.sn_mva / zbase * mult
             xu = row.xft_pu * row.sn_mva / zbase * mult
 
@@ -443,7 +442,7 @@ class Panda2GridCal:
                 Pfe=row['pfe_kw'],
                 I0=row['i0_percent'],
                 Vsc=row['vk_percent'],
-                Sbase=self.Sbase
+                Sbase=grid.Sbase
             )
 
             grid.add_transformer2w(elm)
@@ -572,7 +571,7 @@ class Panda2GridCal:
                             )
                         elif m_tpe == 'i':
                             vnom = api_object.Vnom if hasattr(api_object, 'Vnom') else 1.0
-                            ibase = self.Sbase / (vnom * math.sqrt(3))
+                            ibase = grid.Sbase / (vnom * math.sqrt(3))
                             value = val / ibase  # Convert kA to pu
                             grid.add_if_measurement(
                                 dev.IfMeasurement(
@@ -610,7 +609,7 @@ class Panda2GridCal:
                             )
                         elif m_tpe == 'i':
                             vnom = api_object.bus.Vnom if hasattr(api_object.bus, 'Vnom') else 1.0
-                            ibase = self.Sbase / (vnom * math.sqrt(3))
+                            ibase = grid.Sbase / (vnom * math.sqrt(3))
                             value = val / ibase  # Convert kA to pu
                             grid.add_if_measurement(
                                 dev.IfMeasurement(
@@ -657,7 +656,7 @@ class Panda2GridCal:
                             if elm_tpe == 'transformer':
                                 if side == 1 or side == "hv":
                                     vnom = api_object.bus1.Vnom if hasattr(api_object.bus1, 'Vnom') else 1.0
-                                    ibase = self.Sbase / (vnom * math.sqrt(3))
+                                    ibase = grid.Sbase / (vnom * math.sqrt(3))
                                     value = val / ibase  # Convert kA to pu
                                     grid.add_if_measurement(
                                         dev.IfMeasurement(
@@ -666,9 +665,9 @@ class Panda2GridCal:
                                             api_obj=api_object,
                                             name=name
                                         ))
-                                else:
+                                if side == 2 or side == "lv":
                                     vnom = api_object.bus2.Vnom if hasattr(api_object.bus2, 'Vnom') else 1.0
-                                    ibase = self.Sbase / (vnom * math.sqrt(3))
+                                    ibase = grid.Sbase / (vnom * math.sqrt(3))
                                     value = val / ibase  # Convert kA to pu
                                     grid.add_it_measurement(
                                         dev.ItMeasurement(
@@ -680,7 +679,7 @@ class Panda2GridCal:
                             else:
                                 if side == 1 or side == 'from':
                                     vnom = api_object.bus_from.Vnom if hasattr(api_object.bus_from, 'Vnom') else 1.0
-                                    ibase = self.Sbase / (vnom * math.sqrt(3))
+                                    ibase = grid.Sbase / (vnom * math.sqrt(3))
                                     value = val / ibase  # Convert kA to pu
                                     grid.add_if_measurement(
                                         dev.IfMeasurement(
@@ -689,9 +688,9 @@ class Panda2GridCal:
                                             api_obj=api_object,
                                             name=name
                                         ))
-                                else:
+                                if side == 2 or side == "to":
                                     vnom = api_object.bus_from.Vnom if hasattr(api_object.bus_to, 'Vnom') else 1.0
-                                    ibase = self.Sbase / (vnom * math.sqrt(3))
+                                    ibase = grid.Sbase / (vnom * math.sqrt(3))
                                     value = val / ibase  # Convert kA to pu
                                     grid.add_it_measurement(
                                         dev.ItMeasurement(
