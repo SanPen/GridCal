@@ -2,9 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from typing import Tuple, List, Dict
-import numpy as np
-from GridCalEngine.basic_structures import Vec, IntVec
+from typing import List, Dict
+from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.Devices.measurement import (PfMeasurement, QfMeasurement,
                                                PtMeasurement, QtMeasurement,
                                                PiMeasurement, QiMeasurement,
@@ -86,43 +85,6 @@ class StateEstimationInput:
                 + len(self.it_value)
                 + len(self.vm_value)
                 + len(self.va_value))
-
-    def get_measurements_and_deviations(self, Sbase: float) -> Tuple[Vec, Vec]:
-        """
-        get_measurements_and_deviations the measurements into "measurements" and "sigma"
-        ordering: Pinj, Pflow, Qinj, Qflow, Iflow, Vm
-        :param Sbase: base power in MVA (i.e. 100 MVA)
-        :return: measurements vector in per-unit, sigma vector in per-unit
-        """
-
-        nz = self.size()
-
-        magnitudes = np.zeros(nz)
-        sigma = np.zeros(nz)
-
-        # go through the measurements in order and form the vectors
-        k = 0
-        for lst in [self.p_inj,
-                    self.q_inj,
-                    self.pf_value,
-                    self.pt_value,
-                    self.qf_value,
-                    self.qt_value,
-                    self.if_value,
-                    self.it_value]:
-            for m in lst:
-                magnitudes[k] = m.value / Sbase
-                sigma[k] = m.sigma / Sbase
-                k += 1
-
-        for lst in [self.vm_value,
-                    self.va_value]:
-            for m in lst:
-                magnitudes[k] = m.value
-                sigma[k] = m.sigma
-                k += 1
-
-        return magnitudes, sigma
 
     def slice(self, bus_idx: IntVec, branch_idx: IntVec) -> "StateEstimationInput":
         """

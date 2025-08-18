@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import time
-
+from typing import Tuple
 from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, csr_matrix
 from scipy.sparse.linalg import spsolve
 import numpy as np
@@ -13,7 +13,7 @@ from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import St
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.basic_structures import CscMat, IntVec, CxVec
+from GridCalEngine.basic_structures import CscMat, IntVec, CxVec, Vec
 
 
 def dSbus_dV(Ybus, V):
@@ -316,6 +316,45 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
     return H, h, S  # Return Sbus in pu
 
 
+def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float) -> Tuple[Vec, Vec]:
+    """
+    get_measurements_and_deviations the measurements into "measurements" and "sigma"
+    ordering: Pinj, Pflow, Qinj, Qflow, Iflow, Vm
+    :param se_input: StateEstimationInput object
+    :param Sbase: base power in MVA (i.e. 100 MVA)
+    :return: measurements vector in per-unit, sigma vector in per-unit
+    """
+
+    nz = se_input.size()
+
+    magnitudes = np.zeros(nz)
+    sigma = np.zeros(nz)
+
+    # go through the measurements in order and form the vectors
+    k = 0
+    for lst in [se_input.p_inj,
+                se_input.q_inj,
+                se_input.pf_value,
+                se_input.pt_value,
+                se_input.qf_value,
+                se_input.qt_value,
+                se_input.if_value,
+                se_input.it_value]:
+        for m in lst:
+            magnitudes[k] = m.value / Sbase
+            sigma[k] = m.sigma / Sbase
+            k += 1
+
+    for lst in [se_input.vm_value,
+                se_input.va_value]:
+        for m in lst:
+            magnitudes[k] = m.value
+            sigma[k] = m.sigma
+            k += 1
+
+    return magnitudes, sigma
+
+
 def solve_se_lm(nc: NumericalCircuit,
                 Ybus: CscMat,
                 Yf: CscMat,
@@ -351,7 +390,7 @@ def solve_se_lm(nc: NumericalCircuit,
     V = np.ones(n, dtype=complex)
 
     # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
-    z_phys, sigma_phys = se_input.get_measurements_and_deviations(Sbase=nc.Sbase)
+    z_phys, sigma_phys = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
 
     # Convert power measurements and sigmas to per-unit
     z = np.copy(z_phys)
