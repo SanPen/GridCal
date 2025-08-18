@@ -997,6 +997,7 @@ class DeviceType(Enum):
     PtMeasurementDevice = 'Pt Measurement'
     QtMeasurementDevice = 'Qt Measurement'
     VmMeasurementDevice = 'Vm Measurement'
+    VaMeasurementDevice = 'Va Measurement'
     IfMeasurementDevice = 'If Measurement'
     ItMeasurementDevice = 'It Measurement'
 

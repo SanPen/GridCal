@@ -15,7 +15,7 @@ from GridCalEngine.Devices.Branches.series_reactance import SeriesReactance
 from GridCalEngine.Devices.Branches.upfc import UPFC
 from GridCalEngine.enumerations import DeviceType
 
-# NOTE: These area here because this object loads first than the typer file with the types aggregations
+# NOTE: These area here because this object loads first than the types file with the types aggregations
 
 SE_BRANCH_TYPES = Union[
     Line,
@@ -65,7 +65,7 @@ class MeasurementTemplate(EditableDevice):
 
         self.register("value", tpe=float, definition="Value of the measurement")
         self.register("sigma", tpe=float, definition="Uncertainty of the measurement")
-        self.register("api_object", tpe=MEASURABLE_OBJECT, definition="Value of the measurement")
+        self.register("api_object", tpe=MEASURABLE_OBJECT, definition="Object where the measurement happens")
 
 
 class PiMeasurement(MeasurementTemplate):
@@ -114,6 +114,22 @@ class VmMeasurement(MeasurementTemplate):
                                      name=name,
                                      idtag=idtag,
                                      device_type=DeviceType.VmMeasurementDevice)
+
+
+class VaMeasurement(MeasurementTemplate):
+    """
+    Measurement class
+    """
+
+    def __init__(self, value: float, uncertainty: float, api_obj: Bus, name="",
+                 idtag: Union[str, None] = None):
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.VaMeasurementDevice)
 
 
 class PfMeasurement(MeasurementTemplate):
@@ -194,3 +210,19 @@ class IfMeasurement(MeasurementTemplate):
                                      name=name,
                                      idtag=idtag,
                                      device_type=DeviceType.IfMeasurementDevice)
+
+
+class ItMeasurement(MeasurementTemplate):
+    """
+    Measurement class
+    """
+
+    def __init__(self, value: float, uncertainty: float, api_obj: SE_BRANCH_TYPES, name="",
+                 idtag: Union[str, None] = None):
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.ItMeasurementDevice)

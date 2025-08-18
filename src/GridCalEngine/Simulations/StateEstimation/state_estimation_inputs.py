@@ -6,8 +6,11 @@ from typing import Tuple, List, Dict
 import numpy as np
 from GridCalEngine.basic_structures import Vec, IntVec
 from GridCalEngine.Devices.measurement import (PfMeasurement, QfMeasurement,
+                                               PtMeasurement, QtMeasurement,
                                                PiMeasurement, QiMeasurement,
-                                               VmMeasurement, IfMeasurement, MeasurementTemplate)
+                                               VmMeasurement, VaMeasurement,
+                                               IfMeasurement, ItMeasurement,
+                                               MeasurementTemplate)
 
 
 def slice_pair(obj_measurements: List[MeasurementTemplate],
@@ -51,14 +54,26 @@ class StateEstimationInput:
         self.pf_value: List[PfMeasurement] = list()  # Branch active power measurements vector of pointers
         self.pf_idx: List[int] = list()  # Branches with power measurements
 
+        self.pt_value: List[PtMeasurement] = list()  # Branch active power measurements vector of pointers
+        self.pt_idx: List[int] = list()  # Branches with power measurements
+
         self.qf_value: List[QfMeasurement] = list()  # Branch reactive power measurements vector of pointers
         self.qf_idx: List[int] = list()  # Branches with reactive power measurements
 
-        self.i_flow: List[IfMeasurement] = list()  # Branch current module measurements vector of pointers
-        self.i_flow_idx: List[int] = list()  # Branches with current measurements
+        self.qt_value: List[QtMeasurement] = list()  # Branch reactive power measurements vector of pointers
+        self.qt_idx: List[int] = list()  # Branches with reactive power measurements
 
-        self.vm_m: List[VmMeasurement] = list()  # Node voltage module measurements vector of pointers
-        self.vm_m_idx: List[int] = list()  # nodes with voltage module measurements
+        self.if_value: List[IfMeasurement] = list()  # Branch current module measurements vector of pointers
+        self.if_idx: List[int] = list()  # Branches with current measurements
+
+        self.it_value: List[ItMeasurement] = list()  # Branch current module measurements vector of pointers
+        self.it_idx: List[int] = list()  # Branches with current measurements
+
+        self.vm_value: List[VmMeasurement] = list()  # Node voltage module measurements vector of pointers
+        self.vm_idx: List[int] = list()  # nodes with voltage module measurements
+
+        self.va_value: List[VaMeasurement] = list()  # Node voltage angle measurements vector of pointers
+        self.va_idx: List[int] = list()  # nodes with voltage angle measurements
 
     def get_measurements_and_deviations(self) -> Tuple[Vec, Vec]:
         """
@@ -69,11 +84,15 @@ class StateEstimationInput:
 
         nz = (
                 len(self.p_inj)
-                + len(self.pf_value)
                 + len(self.q_inj)
+                + len(self.pf_value)
+                + len(self.pt_value)
                 + len(self.qf_value)
-                + len(self.i_flow)
-                + len(self.vm_m)
+                + len(self.qt_value)
+                + len(self.if_value)
+                + len(self.it_value)
+                + len(self.vm_value)
+                + len(self.va_value)
         )
 
         magnitudes = np.zeros(nz)
@@ -81,12 +100,16 @@ class StateEstimationInput:
 
         # go through the measurements in order and form the vectors
         k = 0
-        for lst in [self.pf_value,
-                    self.p_inj,
-                    self.qf_value,
+        for lst in [self.p_inj,
                     self.q_inj,
-                    self.i_flow,
-                    self.vm_m]:
+                    self.pf_value,
+                    self.pt_value,
+                    self.qf_value,
+                    self.qt_value,
+                    self.if_value,
+                    self.it_value,
+                    self.vm_value,
+                    self.va_value]:
             for m in lst:
                 magnitudes[k] = m.value
                 sigma[k] = m.sigma
@@ -109,10 +132,15 @@ class StateEstimationInput:
 
         se.p_inj, se.p_idx = slice_pair(self.p_inj, self.p_idx, bus_index_map)
         se.q_inj, se.q_idx = slice_pair(self.q_inj, self.q_idx, bus_index_map)
-        se.vm_m, se.vm_m_idx = slice_pair(self.vm_m, self.vm_m_idx, bus_index_map)
+        se.vm_value, se.vm_idx = slice_pair(self.vm_value, self.vm_idx, bus_index_map)
+        se.va_value, se.va_idx = slice_pair(self.va_value, self.va_idx, bus_index_map)
 
         se.pf_value, se.pf_idx = slice_pair(self.pf_value, self.pf_idx, branch_index_map)
         se.qf_value, se.qf_idx = slice_pair(self.qf_value, self.qf_idx, branch_index_map)
-        se.i_flow, se.i_flow_idx = slice_pair(self.i_flow, self.i_flow_idx, branch_index_map)
+        se.if_value, se.if_idx = slice_pair(self.if_value, self.if_idx, branch_index_map)
+
+        se.pt_value, se.pt_idx = slice_pair(self.pt_value, self.pt_idx, branch_index_map)
+        se.qt_value, se.qt_idx = slice_pair(self.qt_value, self.qt_idx, branch_index_map)
+        se.it_value, se.it_idx = slice_pair(self.it_value, self.it_idx, branch_index_map)
 
         return se

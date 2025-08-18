@@ -253,45 +253,68 @@ def Jacobian_SE(Ybus, Yf, Yt, V, f, t, inputs, pvpq):
     dIf_dVa, dIf_dVm, dIt_dVa, dIt_dVm, If, It = dIbr_dV(Yf, Yt, V)
 
     # for the sub-jacobians
-    dPf_dVa = dSf_dVa[np.ix_(inputs.pf_idx, pvpq)].real
-    dPf_dVm = dSf_dVm[inputs.pf_idx, :].real
 
     dP_dVa = dS_dVa[np.ix_(inputs.p_idx, pvpq)].real
     dP_dVm = dS_dVm[inputs.p_idx, :].real
 
-    dQf_dVa = dSf_dVa[np.ix_(inputs.qf_idx, pvpq)].imag
-    dQf_dVm = dSf_dVm[inputs.qf_idx, :].imag
-
     dQ_dVa = dS_dVa[np.ix_(inputs.q_idx, pvpq)].imag
     dQ_dVm = dS_dVm[inputs.q_idx, :].imag
 
-    dIf_dVa = np.abs(dIf_dVa[np.ix_(inputs.i_flow_idx, pvpq)])
-    dIf_dVm = np.abs(dIf_dVm[inputs.i_flow_idx, :])
+    dPf_dVa = dSf_dVa[np.ix_(inputs.pf_idx, pvpq)].real
+    dPf_dVm = dSf_dVm[inputs.pf_idx, :].real
 
-    dVm_dVa = csc_matrix(np.zeros((len(inputs.vm_m_idx), len(pvpq))))
-    dVm_dVm = csc_matrix(np.diag(np.ones(n))[inputs.vm_m_idx, :])
+    dPt_dVa = dSt_dVa[np.ix_(inputs.pt_idx, pvpq)].real
+    dPt_dVm = dSt_dVm[inputs.pt_idx, :].real
+
+    dQf_dVa = dSf_dVa[np.ix_(inputs.qf_idx, pvpq)].imag
+    dQf_dVm = dSf_dVm[inputs.qf_idx, :].imag
+
+    dQt_dVa = dSt_dVa[np.ix_(inputs.qt_idx, pvpq)].imag
+    dQt_dVm = dSt_dVm[inputs.qt_idx, :].imag
+
+    dIf_dVa = np.abs(dIf_dVa[np.ix_(inputs.if_idx, pvpq)])
+    dIf_dVm = np.abs(dIf_dVm[inputs.if_idx, :])
+
+    dIt_dVa = np.abs(dIt_dVa[np.ix_(inputs.it_idx, pvpq)])
+    dIt_dVm = np.abs(dIt_dVm[inputs.it_idx, :])
+
+    dVm_dVa = csc_matrix(np.zeros((len(inputs.vm_idx), len(pvpq))))
+    dVm_dVm = csc_matrix(np.diag(np.ones(n))[inputs.vm_idx, :])
+
+    dVa_dVa = csc_matrix(np.diag(np.ones(n))[np.ix_(inputs.va_idx, pvpq)])
+    dVa_dVm = csc_matrix(np.zeros((len(inputs.va_idx), n)))
 
     # pack the Jacobian
-    H = spvs([sphs([dPf_dVa, dPf_dVm]),
-              sphs([dP_dVa, dP_dVm]),
-              sphs([dQf_dVa, dQf_dVm]),
-              sphs([dQ_dVa, dQ_dVm]),
-              sphs([dIf_dVa, dIf_dVm]),
-              sphs([dVm_dVa, dVm_dVm])])
+    H = spvs([
+        sphs([dP_dVa, dP_dVm]),
+        sphs([dQ_dVa, dQ_dVm]),
+        sphs([dPf_dVa, dPf_dVm]),
+        sphs([dPt_dVa, dPt_dVm]),
+        sphs([dQf_dVa, dQf_dVm]),
+        sphs([dQt_dVa, dQt_dVm]),
+        sphs([dIf_dVa, dIf_dVm]),
+        sphs([dIt_dVa, dIt_dVm]),
+        sphs([dVm_dVa, dVm_dVm]),
+        sphs([dVa_dVa, dVa_dVm])
+    ])
 
     # form the sub-mismatch vectors
 
     # pack the mismatch vector (calculated estimates in per-unit)
     h = np.r_[
-        Sf[inputs.pf_idx].real,
-        S[inputs.p_idx].real,
-        Sf[inputs.qf_idx].imag,
-        S[inputs.q_idx].imag,
-        np.abs(If[inputs.i_flow_idx]),
-        np.abs(V[inputs.vm_m_idx])
+        S[inputs.p_idx].real,  # P
+        S[inputs.q_idx].imag,  # Q
+        Sf[inputs.pf_idx].real,  # Pf
+        St[inputs.pt_idx].real,  # Pt
+        Sf[inputs.qf_idx].imag,  # Qf
+        St[inputs.qt_idx].imag,  # Qt
+        np.abs(If[inputs.if_idx]),  # If
+        np.abs(It[inputs.it_idx]),  # It
+        np.abs(V[inputs.vm_idx]),  # Vm
+        np.angle(V[inputs.va_idx]),  # Va
     ]
 
-    return H, h, S # Return Sbus in pu
+    return H, h, S  # Return Sbus in pu
 
 
 def solve_se_lm(nc: NumericalCircuit,
@@ -335,16 +358,16 @@ def solve_se_lm(nc: NumericalCircuit,
     z = np.copy(z_phys)
     sigma = np.copy(sigma_phys)
     Sbase = nc.Sbase
-    
+
     # Determine indices for power measurements based on the order in get_measurements_and_deviations
     pf_end = len(se_input.pf_value)
     p_end = pf_end + len(se_input.p_idx)
     qf_end = p_end + len(se_input.qf_value)
     q_end = qf_end + len(se_input.q_idx)
-    
+
     # Scale Pf, P, Qf, Q measurements in z
     z[0:q_end] /= Sbase
-    
+
     # Scale Pf, P, Qf, Q sigmas
     sigma[0:q_end] /= Sbase
 
