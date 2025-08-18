@@ -14,9 +14,9 @@ def test_state_estimation_pandapower():
         # tests/data/grids/state-estimation /small_grid_gb_hv_estimate_raw_expected.json
         fname = os.path.join("data", "grids", "state-estimation", "small_grid_gb_hv_estimate_raw_expected.json")
         net_wns = pandapower.from_json(fname)
+        net_wns.line.loc[:, "max_i_ka"] = 1 #kA
         g = Panda2GridCal(net_wns)
         grid = g.get_multicircuit()
-
         # pf_res = gce.power_flow(grid)
         # print(pf_res.get_bus_df())
 

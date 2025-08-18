@@ -126,12 +126,12 @@ class Panda2GridCal:
             self.logger.add_info("This seems to be a pandapower file")
             self.fBase = self.panda_net.f_hz
             self.Sbase = self.panda_net.sn_mva if self.panda_net.sn_mva > 0.0 else 100.0
-            self.load_scale = 100.0 / self.Sbase
+            self.load_scale = 1 / self.Sbase
         else:
             self.panda_net = None
             self.fBase = 50.0
-            self.Sbase = 100.0
-            self.load_scale = 1.0
+            self.Sbase = 1
+            self.load_scale = 1
             self.logger.add_info("Pandapower not available :/, try pip install pandapower")
 
     def register(self, panda_type: str, panda_code: int, api_obj: ALL_DEV_TYPES):
@@ -177,7 +177,7 @@ class Panda2GridCal:
             elm = dev.Bus(
                 name=row['name'],
                 Vnom=row['vn_kv'],
-                code=row.index,
+                code=idx,
                 vmin=row['min_vm_pu'] if 'min_vm_pu' in row else 0.9,
                 vmax=row['max_vm_pu'] if 'max_vm_pu' in row else 1.1,
                 active=bool(row['in_service']),
