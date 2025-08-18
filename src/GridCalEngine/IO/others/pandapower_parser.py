@@ -177,7 +177,7 @@ class Panda2GridCal:
             elm = dev.Bus(
                 name=row['name'],
                 Vnom=row['vn_kv'],
-                code=row.index,
+                code=idx,
                 vmin=row['min_vm_pu'] if 'min_vm_pu' in row else 0.9,
                 vmax=row['max_vm_pu'] if 'max_vm_pu' in row else 1.1,
                 active=bool(row['in_service']),
