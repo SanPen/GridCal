@@ -157,7 +157,8 @@ class StateEstimation(DriverTemplate):
                                    se_input=se_input_island,
                                    vd=idx.vd,
                                    pq=idx.pq,
-                                   pv=idx.pv)
+                                   pv=idx.pv,
+                                   verbose=0)
 
             report.add(method=SolverType.LM,
                        converged=solution.converged,

@@ -17,8 +17,8 @@ def test_state_estimation_pandapower():
         g = Panda2GridCal(net_wns)
         grid = g.get_multicircuit()
 
-        pf_res = gce.power_flow(grid)
-        print(pf_res.get_bus_df())
+        # pf_res = gce.power_flow(grid)
+        # print(pf_res.get_bus_df())
 
         se = StateEstimation(circuit=grid)
         se.run()
@@ -29,4 +29,4 @@ def test_state_estimation_pandapower():
 
 
 if __name__ == '__main__':
-    test_state_estimation()
+    test_state_estimation_pandapower()

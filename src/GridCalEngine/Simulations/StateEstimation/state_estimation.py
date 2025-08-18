@@ -365,7 +365,8 @@ def solve_se_lm(nc: NumericalCircuit,
                 se_input: StateEstimationInput,
                 vd: IntVec,
                 pq: IntVec,
-                pv: IntVec) -> NumericPowerFlowResults:
+                pv: IntVec,
+                verbose: int = 0) -> NumericPowerFlowResults:
     """
     Solve the state estimation problem using the Levenberg-Marquadt method
     :param nc: instance of NumericalCircuit
@@ -379,6 +380,7 @@ def solve_se_lm(nc: NumericalCircuit,
     :param vd: array of slack node indices
     :param pq: array of pq node indices
     :param pv: array of pv node indices
+    :param verbose: Verbosity level
     :return: NumericPowerFlowResults instance
     """
     start_time = time.time()
@@ -406,8 +408,6 @@ def solve_se_lm(nc: NumericalCircuit,
     Idn = csc_matrix(np.identity(2 * n - nvd))  # identity matrix
     Va = np.angle(V)
     Vm = np.abs(V)
-    lbmda = 0  # any large number
-    f_obj_prev = 1e9  # very large number
 
     converged = False
     norm_f = 1e20
@@ -416,40 +416,43 @@ def solve_se_lm(nc: NumericalCircuit,
     # first computation of the jacobian and free term
     H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, se_input, pvpq)
 
+    # measurements error (in per-unit)
+    dz = z - h
+
+    # System matrix
+    # H1 = H^t·W
+    H1 = H.transpose() @ W
+
+    # H2 = H1·H
+    H2 = H1 @ H
+
+    # set first value of mu (any large number)
+    mu = 1e-3 * H2.diagonal().max()
+
+    # compute system matrix
+    sys_mat = H2 + mu * Idn
+
+    # right hand side
+    # H^t·W·dz
+    g = H1 @ dz
+
+    # record the previous objective function value
+    obj_val_prev = 1e20
+
+    # objective function
+    obj_val = 0.5 * dz @ (W * dz)
+
     while not converged and iter_ < max_iter:
 
-        # measurements error (in per-unit)
-        dz = z - h
-
-        # System matrix
-        # H1 = H^t·W
-        H1 = H.transpose().dot(W)
-        # H2 = H1·H
-        H2 = H1.dot(H)
-
-        # set first value of lmbda
-        if iter_ == 0:
-            lbmda = 1e-3 * H2.diagonal().max()
-
-        # compute system matrix
-        A = H2 + lbmda * Idn
-
-        # right hand side
-        # H^t·W·dz
-        rhs = H1.dot(dz)
-
         # Solve the increment
-        dx = spsolve(A, rhs)
+        dx = spsolve(sys_mat, g)
 
-        # objective function
-        f_obj = 0.5 * dz.dot(W * dz)
+        dF = obj_val_prev - obj_val
+        dL = 0.5 * dx @ (mu * dx + g)
 
-        # decision function
-        rho = (f_obj_prev - f_obj) / (0.5 * dx.dot(lbmda * dx + rhs))
-
-        # lambda update
-        if rho > 0:
-            lbmda = lbmda * max([1.0 / 3.0, 1 - (2 * rho - 1) ** 3])
+        if (dF != 0.0) and (dL > 0.0):
+            rho = dF / dL
+            mu *= max([1.0 / 3.0, 1.0 - (2 * rho - 1) ** 3.0])
             nu = 2.0
 
             # modify the solution
@@ -459,19 +462,44 @@ def solve_se_lm(nc: NumericalCircuit,
             Vm += dVm  # yes, this is for all the buses
             V = Vm * np.exp(1j * Va)
 
-            # update Jacobian
+            # update system
             H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, se_input, pvpq)
 
+            # measurements error (in per-unit)
+            dz = z - h
+
+            # record the previous objective function value
+            obj_val_prev = obj_val
+
+            # objective function
+            obj_val = 0.5 * dz @ (W * dz)
+
+            # System matrix
+            # H1 = H^t·W
+            H1 = H.transpose() @ W
+
+            # H2 = H1·H
+            H2 = H1 @ H
+
+            # compute system matrix
+            sys_mat = H2 + mu * Idn
+
+            # right hand side
+            # H^t·W·dz
+            g = H1 @ dz
+
         else:
-            lbmda = lbmda * nu
-            nu = nu * 2
+            mu *= nu
+            nu *= 2.0
 
         # compute the convergence
         norm_f = np.linalg.norm(dx, np.inf)
         converged = norm_f < tol
 
+        if verbose > 0:
+            print(f"Norm_f {norm_f}")
+
         # update loops
-        f_obj_prev = f_obj
         iter_ += 1
 
     elapsed = time.time() - start_time
