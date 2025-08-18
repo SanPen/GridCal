@@ -316,11 +316,11 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
     return H, h, S  # Return Sbus in pu
 
 
-
 def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float) -> Tuple[Vec, Vec]:
     """
     get_measurements_and_deviations the measurements into "measurements" and "sigma"
     ordering: Pinj, Pflow, Qinj, Qflow, Iflow, Vm
+    :param se_input: StateEstimationInput object
     :param Sbase: base power in MVA (i.e. 100 MVA)
     :return: measurements vector in per-unit, sigma vector in per-unit
     """
@@ -353,6 +353,7 @@ def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float
             k += 1
 
     return magnitudes, sigma
+
 
 def solve_se_lm(nc: NumericalCircuit,
                 Ybus: CscMat,
