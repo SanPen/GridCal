@@ -194,9 +194,9 @@ class Panda2GridCal:
             elm = dev.ExternalGrid(name=row['name'], Vm=row['vm_pu'])
             grid.add_external_grid(bus, elm)
             if (meas := self._get_measurements('ext_grid', idx)) is not None:
-                self.assign_v_p_q_i_measurement_to_connected_bus_and_switches(bus, grid, meas, row)
+                self.assign_v_p_q_i_measurement_to_connected_bus_and_double_pole_elements(row['bus'], grid, meas, row)
 
-    def assign_v_p_q_i_measurement_to_connected_bus_and_switches(self, bus, grid, meas_df, row):
+    def assign_v_p_q_i_measurement_to_connected_bus_and_double_pole_elements(self, bus, grid, meas_df, row):
         """Process measurements with proper DataFrame handling"""
         if meas_df is None or meas_df.empty:
             return
@@ -219,41 +219,52 @@ class Panda2GridCal:
             if  m_type in ('p', 'q', 'i'):
                 # GridCal does not support P,Q measurement on single pole element
                 # we need to find connected switch directly to this element
-                sw_set = pandapower.get_connected_switches(self.panda_net, row["bus"])
-                if not sw_set.empty:
-                    api_obj = sw_set.iloc[0]
-                    if m_type == 'p':
-                        grid.add_pf_measurement(
-                            dev.PfMeasurement(
-                                value=m_value * self.load_scale,
-                                uncertainty=m_std,
-                                api_obj=api_obj,
-                                name=m_name
-                            )
-                        )
-                    if m_type== 'q':
-                        grid.add_qf_measurement(
-                            dev.QfMeasurement(
-                                value=m_value * self.load_scale,
-                                uncertainty=m_std,
-                                api_obj=api_obj,
-                                name=m_name
-                            )
-                        )
-                    if m_type== 'i':
-                        vnom = bus.Vnom if hasattr(bus, 'Vnom') else 1.0
-                        ibase = self.Sbase / (vnom * math.sqrt(3))
-                        value = m_value / ibase  # Convert kA to pu
-                        grid.add_if_measurement(
-                            dev.IfMeasurement(
-                                value=value,
-                                uncertainty=m_std,
-                                api_obj=api_obj,
-                                name=m_name
-                            )
-                        )
+                # if there are no direct switches connected we need to consider another branch element
+                conn = pandapower.get_connected_elements_dict(self.panda_net,row["bus"])
+                if "switch" in conn.keys():
+                    set_elem = conn["switch"][0]
+                elif "line" in conn.keys():
+                    set_elem = conn["line"][0]
+                elif "trafo" in conn.keys():
+                    set_elem = conn["line"][0]
+                    # activate this when trafo3w will be supported
+                # elif "trafo3w" in conn.keys():
+                #     set_elem = conn["line"][0]
                 else:
-                    self.logger.add_warning(f"Connecting switch was not found for this measurement {meas_row}")
+                    self.logger.add_warning(f"Connecting double pole element was not found for "
+                                            f"this measurement {meas_row}")
+                    continue
+
+                if m_type == 'p':
+                    grid.add_pf_measurement(
+                        dev.PfMeasurement(
+                            value=m_value * self.load_scale,
+                            uncertainty=m_std,
+                            api_obj=set_elem,
+                            name=m_name
+                        )
+                    )
+                if m_type== 'q':
+                    grid.add_qf_measurement(
+                        dev.QfMeasurement(
+                            value=m_value * self.load_scale,
+                            uncertainty=m_std,
+                            api_obj=set_elem,
+                            name=m_name
+                        )
+                    )
+                if m_type== 'i':
+                    vnom = bus.Vnom if hasattr(bus, 'Vnom') else 1.0
+                    ibase = self.Sbase / (vnom * math.sqrt(3))
+                    value = m_value / ibase  # Convert kA to pu
+                    grid.add_if_measurement(
+                        dev.IfMeasurement(
+                            value=value,
+                            uncertainty=m_std,
+                            api_obj=set_elem,
+                            name=m_name
+                        )
+                    )
     def parse_loads(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
         Add loads to the GridCal grid based on Pandapower data
@@ -270,7 +281,7 @@ class Panda2GridCal:
             )
             grid.add_load(bus=bus, api_obj=elm)
             if (meas := self._get_measurements('load', idx)) is not None:
-                self.assign_v_p_q_i_measurement_to_connected_bus_and_switches(bus, grid, meas, row)
+                self.assign_v_p_q_i_measurement_to_connected_bus_and_double_pole_elements(row['bus'], grid, meas, row)
     def parse_shunts(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
         Add shunts to the GridCal grid based on Pandapower data
@@ -286,7 +297,7 @@ class Panda2GridCal:
             )
             grid.add_shunt(bus=bus, api_obj=elm)
             if (meas := self._get_measurements('shunt', idx)) is not None:
-                self.assign_v_p_q_i_measurement_to_connected_bus_and_switches(bus, grid, meas, row)
+                self.assign_v_p_q_i_measurement_to_connected_bus_and_double_pole_elements(row['bus'], grid, meas, row)
     def parse_lines(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
         Add lines (conductors) to the GridCal grid
@@ -338,17 +349,28 @@ class Panda2GridCal:
                             )
                         else:
                             # again look for connecting switch to provide this meas there
-                            sw_set = pandapower.get_connected_switches(self.panda_net, bus2)
-                            if not sw_set.empty:
-                                api_obj = sw_set.iloc[0]
-                                grid.add_pf_measurement(
-                                    dev.PfMeasurement(
-                                        value=m_value,
-                                        uncertainty=m_std,
-                                        api_obj=api_obj,
-                                        name=m_name
-                                    )
+                            conn = pandapower.get_connected_elements_dict(self.panda_net, row['to_bus'])
+                            if "switch" in conn.keys():
+                                set_elem = conn["switch"][0]
+                            elif "line" in conn.keys():
+                                set_elem = conn["line"][0]
+                            elif "trafo" in conn.keys():
+                                set_elem = conn["trafo"][0]
+                                # activate this when trafo3w will be supported
+                            # elif "trafo3w" in conn.keys():
+                            #     set_elem = conn["line"][0]
+                            else:
+                                self.logger.add_warning(f"Connecting double pole element was not found for "
+                                                        f"this measurement {m_row}")
+                                continue
+                            grid.add_pf_measurement(
+                                dev.PfMeasurement(
+                                    value=m_value,
+                                    uncertainty=m_std,
+                                    api_obj=set_elem,
+                                    name=m_name
                                 )
+                            )
                     elif m_row['measurement_type'] == 'q':
                         if m_row["side"] == "from":
                             grid.add_qf_measurement(
@@ -361,19 +383,69 @@ class Panda2GridCal:
                             )
                         else:
                             # again look for connecting switch to provide this meas there
-                            sw_set = pandapower.get_connected_switches(self.panda_net, bus2)
-                            if not sw_set.empty:
-                                api_obj = sw_set.iloc[0]
-                                grid.add_qf_measurement(
-                                    dev.QfMeasurement(
-                                        value=m_value,
-                                        uncertainty=m_std,
-                                        api_obj=api_obj,
-                                        name=m_name
-                                    )
+                            conn = pandapower.get_connected_elements_dict(self.panda_net, row['to_bus'])
+                            if "switch" in conn.keys():
+                                set_elem = conn["switch"][0]
+                            elif "line" in conn.keys():
+                                set_elem = conn["line"][0]
+                            elif "trafo" in conn.keys():
+                                set_elem = conn["trafo"][0]
+                                # activate this when trafo3w will be supported
+                            # elif "trafo3w" in conn.keys():
+                            #     set_elem = conn["line"][0]
+                            else:
+                                self.logger.add_warning(f"Connecting double pole element was not found for "
+                                                        f"this measurement {m_row}")
+                                continue
+                            grid.add_qf_measurement(
+                                dev.QfMeasurement(
+                                    value=m_value,
+                                    uncertainty=m_std,
+                                    api_obj=set_elem,
+                                    name=m_name
                                 )
+                            )
+                    elif m_type=="i":
+                        if m_row["side"] == "from":
+                            vnom = bus1.Vnom if hasattr(bus1, 'Vnom') else 1.0
+                            ibase = self.Sbase / (vnom * math.sqrt(3))
+                            value = m_value / ibase  # Convert kA to pu
+                            grid.add_if_measurement(
+                                dev.IfMeasurement(
+                                    value=value,
+                                    uncertainty=m_std,
+                                    api_obj=elm,
+                                    name=m_name
+                                )
+                            )
+                        else:
+                            conn = pandapower.get_connected_elements_dict(self.panda_net, row['to_bus'])
+                            if "switch" in conn.keys():
+                                set_elem = conn["switch"][0]
+                            elif "line" in conn.keys():
+                                set_elem = conn["line"][0]
+                            elif "trafo" in conn.keys():
+                                set_elem = conn["trafo"][0]
+                                # activate this when trafo3w will be supported
+                            # elif "trafo3w" in conn.keys():
+                            #     set_elem = conn["trafo3w"][0]
+                            else:
+                                self.logger.add_warning(f"Connecting double pole element was not found for "
+                                                        f"this measurement {m_row}")
+                                continue
+                            vnom = bus2.Vnom if hasattr(bus2, 'Vnom') else 1.0
+                            ibase = self.Sbase / (vnom * math.sqrt(3))
+                            value = m_value / ibase  # Convert kA to pu
+                            grid.add_if_measurement(
+                                dev.IfMeasurement(
+                                    value=value,
+                                    uncertainty=m_std,
+                                    api_obj=set_elem,
+                                    name=m_name
+                                )
+                            )
                     else:
-                        self.logger.add_warning(f"PandaPower {m_row['type']} measurement not implemented")
+                        self.logger.add_warning(f"PandaPower {m_row} measurement not implemented")
     def parse_impedances(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
         Add impedances to the GridCal grid
@@ -444,7 +516,7 @@ class Panda2GridCal:
 
             grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
             if (meas := self._get_measurements('gen', idx)) is not None:
-                self.assign_v_p_q_i_measurement_to_connected_bus_and_switches(bus, grid, meas, row)
+                self.assign_v_p_q_i_measurement_to_connected_bus_and_double_pole_elements(row['bus'], grid, meas, row)
 
         for idx, row in self.panda_net.sgen.iterrows():
             bus = bus_dictionary[row['bus']]
@@ -458,7 +530,7 @@ class Panda2GridCal:
 
             grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
             if (meas := self._get_measurements('sgen', idx)) is not None:
-                self.assign_v_p_q_i_measurement_to_connected_bus_and_switches(bus, grid, meas, row)
+                self.assign_v_p_q_i_measurement_to_connected_bus_and_double_pole_elements(row['bus'], grid, meas, row)
 
     def parse_transformers(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -487,16 +559,28 @@ class Panda2GridCal:
                     )
                 )
             else:
+                set_elem = None
                 # For LV side or unspecified, use switch if available
                 # again look for connecting switch to provide this meas there
-                sw_set = pandapower.get_connected_switches(self.panda_net, bus2)
-                if not sw_set.empty:
-                    api_obj = sw_set.iloc[0]
+                conn = pandapower.get_connected_elements_dict(self.panda_net, bus2)
+                if "switch" in conn.keys():
+                    set_elem = conn["switch"][0]
+                elif "line" in conn.keys():
+                    set_elem = conn["line"][0]
+                elif "trafo" in conn.keys():
+                    set_elem = conn["trafo"][0]
+                    # activate this when trafo3w will be supported
+                # elif "trafo3w" in conn.keys():
+                #     set_elem = conn["line"][0]
+                else:
+                    self.logger.add_warning(f"Connecting double pole element was not found for "
+                                            f"this measurement {meas_row}")
+                if set_elem:
                     grid.add_pf_measurement(
                         dev.PfMeasurement(
                             value=m_value,
                             uncertainty=m_std,
-                            api_obj=api_obj,
+                            api_obj=set_elem,
                             name=m_name
                         )
                     )
@@ -512,14 +596,28 @@ class Panda2GridCal:
                 )
             else:
                 # again look for connecting switch to provide this meas there
-                sw_set = pandapower.get_connected_switches(self.panda_net, bus2)
-                if not sw_set.empty:
-                    api_obj = sw_set.iloc[0]
+                set_elem = None
+                # For LV side or unspecified, use switch if available
+                # again look for connecting switch to provide this meas there
+                conn = pandapower.get_connected_elements_dict(self.panda_net, bus2)
+                if "switch" in conn.keys():
+                    set_elem = conn["switch"][0]
+                elif "line" in conn.keys():
+                    set_elem = conn["line"][0]
+                elif "trafo" in conn.keys():
+                    set_elem = conn["trafo"][0]
+                    # activate this when trafo3w will be supported
+                # elif "trafo3w" in conn.keys():
+                #     set_elem = conn["line"][0]
+                else:
+                    self.logger.add_warning(f"Connecting double pole element was not found for "
+                                            f"this measurement {meas_row}")
+                if set_elem:
                     grid.add_pf_measurement(
                         dev.PfMeasurement(
                             value=m_value,
                             uncertainty=m_std,
-                            api_obj=api_obj,
+                            api_obj=set_elem,
                             name=m_name,
                         )
                     )
@@ -552,7 +650,7 @@ class Panda2GridCal:
             grid.add_transformer2w(elm)
             if (meas := self._get_measurements('trafo', idx)) is not None:
                 for _, m_row in meas.iterrows():
-                    self.process_each_transformer_measurements(bus2, elm, grid, m_row)
+                    self.process_each_transformer_measurements(row['lv_bus'], elm, grid, m_row)
 
     def parse_switches(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -705,6 +803,6 @@ class Panda2GridCal:
             self.parse_generators(grid=grid, bus_dictionary=bus_dict)
             self.parse_transformers(grid=grid, bus_dictionary=bus_dict)
             self.parse_switches(grid=grid, bus_dictionary=bus_dict)
-            self.parse_measurements(grid=grid)
+            #self.parse_measurements(grid=grid)
 
         return grid
