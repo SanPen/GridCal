@@ -130,27 +130,21 @@ class StateEstimationInput:
         new_obj = StateEstimationInput()
 
         k = 0
-        for lst in [
-            (self.p_inj, new_obj.p_inj, self.p_idx, new_obj.p_idx),
-            (self.q_inj, new_obj.q_inj, self.q_idx, new_obj.q_idx),
-            (self.pf_value, new_obj.pf_value, self.pf_idx, new_obj.pf_idx),
-            (self.pt_value, new_obj.pt_value, self.pt_idx, new_obj.pt_idx),
-            (self.qf_value, new_obj.qf_value, self.qf_idx, new_obj.qf_idx),
-            (self.qt_value, new_obj.qt_value, self.qt_idx, new_obj.qt_idx),
-            (self.if_value, new_obj.if_value, self.if_idx, new_obj.if_idx),
-            (self.it_value, new_obj.it_value, self.it_idx, new_obj.it_idx),
-            (self.vm_value, new_obj.vm_value, self.vm_idx, new_obj.vm_idx),
-            (self.va_value, new_obj.va_value, self.va_idx, new_obj.va_idx)
-        ]:
-
-            m_here, m_there, idx_here, idx_there = lst
+        for m_here, m_there, idx_here, idx_there in [(self.p_inj,    new_obj.p_inj,    self.p_idx,  new_obj.p_idx),
+                                                     (self.q_inj,    new_obj.q_inj,    self.q_idx,  new_obj.q_idx),
+                                                     (self.pf_value, new_obj.pf_value, self.pf_idx, new_obj.pf_idx),
+                                                     (self.pt_value, new_obj.pt_value, self.pt_idx, new_obj.pt_idx),
+                                                     (self.qf_value, new_obj.qf_value, self.qf_idx, new_obj.qf_idx),
+                                                     (self.qt_value, new_obj.qt_value, self.qt_idx, new_obj.qt_idx),
+                                                     (self.if_value, new_obj.if_value, self.if_idx, new_obj.if_idx),
+                                                     (self.it_value, new_obj.it_value, self.it_idx, new_obj.it_idx),
+                                                     (self.vm_value, new_obj.vm_value, self.vm_idx, new_obj.vm_idx),
+                                                     (self.va_value, new_obj.va_value, self.va_idx, new_obj.va_idx)]:
 
             for m, i in zip(m_here, idx_here):
                 if mask[k]:
                     m_there.append(m)
                     idx_there.append(i)
-                else:
-                    pass
                 k += 1
 
         return new_obj
