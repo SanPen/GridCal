@@ -156,9 +156,9 @@ class StateEstimation(DriverTemplate):
                                    T=island.passive_branch_data.T,
                                    se_input=se_input_island,
                                    vd=idx.vd,
-                                   pq=idx.pq,
                                    pv=idx.pv,
-                                   verbose=0)
+                                   no_slack=idx.no_slack,
+                                   verbose=2)
 
             report.add(method=SolverType.LM,
                        converged=solution.converged,

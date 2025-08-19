@@ -5,7 +5,9 @@
 
 import time
 from typing import Tuple
-from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, csr_matrix
+
+import pandas as pd
+from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, csr_matrix, diags
 from scipy.sparse.linalg import spsolve
 import numpy as np
 from numpy import conj, arange
@@ -364,8 +366,10 @@ def solve_se_lm(nc: NumericalCircuit,
                 T: IntVec,
                 se_input: StateEstimationInput,
                 vd: IntVec,
-                pq: IntVec,
                 pv: IntVec,
+                no_slack: IntVec,
+                tol=1e-9,
+                max_iter=100,
                 verbose: int = 0) -> NumericPowerFlowResults:
     """
     Solve the state estimation problem using the Levenberg-Marquadt method
@@ -378,15 +382,16 @@ def solve_se_lm(nc: NumericalCircuit,
     :param T: array with the to bus indices of all the Branches
     :param se_input: state estimation input instance (contains the measurements)
     :param vd: array of slack node indices
-    :param pq: array of pq node indices
-    :param pv: array of pv node indices
+    :param pv: array of PV node indices
+    :param no_slack: array of non-slack node indices
+    :param tol: Tolerance
+    :param max_iter: Maximum nuber of iterations
     :param verbose: Verbosity level
     :return: NumericPowerFlowResults instance
     """
     start_time = time.time()
-    pvpq = np.r_[pv, pq]
-    npvpq = len(pvpq)
-    npq = len(pq)
+
+    n_no_slack = len(no_slack)
     nvd = len(vd)
     n = Ybus.shape[0]
     V = np.ones(n, dtype=complex)
@@ -399,11 +404,10 @@ def solve_se_lm(nc: NumericalCircuit,
     sigma = np.copy(sigma_phys)
 
     # compute the weights matrix using per-unit sigma
-    W = csc_matrix(np.diag(1.0 / np.power(sigma, 2.0)))
+    W = diags(1.0 / np.power(sigma, 2.0))
 
     # Levenberg-Marquardt method
-    tol = 1e-9
-    max_iter = 100
+
     iter_ = 0
     Idn = csc_matrix(np.identity(2 * n - nvd))  # identity matrix
     Va = np.angle(V)
@@ -414,7 +418,7 @@ def solve_se_lm(nc: NumericalCircuit,
     nu = 2.0
 
     # first computation of the jacobian and free term
-    H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, se_input, pvpq)
+    H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, se_input, no_slack)
 
     # measurements error (in per-unit)
     dz = z - h
@@ -430,13 +434,13 @@ def solve_se_lm(nc: NumericalCircuit,
     mu = 1e-3 * H2.diagonal().max()
 
     # compute system matrix
-    sys_mat = H2 + mu * Idn
+    Gx = H2 + mu * Idn
 
     # right hand side
     # H^t·W·dz
-    g = H1 @ dz
+    gx = - H1 @ dz
 
-    # record the previous objective function value
+    # set the previous objective function value
     obj_val_prev = 1e20
 
     # objective function
@@ -445,25 +449,31 @@ def solve_se_lm(nc: NumericalCircuit,
     while not converged and iter_ < max_iter:
 
         # Solve the increment
-        dx = spsolve(sys_mat, g)
+        dx = spsolve(Gx, -gx)
 
         dF = obj_val_prev - obj_val
-        dL = 0.5 * dx @ (mu * dx + g)
+        dL = 0.5 * dx @ (mu * dx - gx)
 
         if (dF != 0.0) and (dL > 0.0):
             rho = dF / dL
-            mu *= max([1.0 / 3.0, 1.0 - (2 * rho - 1) ** 3.0])
+            mu *= max([1.0 / 3.0, 1.0 - np.power(2 * rho - 1, 3.0)])
             nu = 2.0
 
             # modify the solution
-            dVa = dx[:npvpq]
-            dVm = dx[npvpq:]
-            Va[pvpq] += dVa
+            dVa = dx[:n_no_slack]
+            dVm = dx[n_no_slack:]
+            Va[no_slack] += dVa
             Vm += dVm  # yes, this is for all the buses
             V = Vm * np.exp(1j * Va)
 
+            if verbose > 1:
+                dva = np.zeros(n)
+                dva[: n_no_slack] = dVa
+                df = pd.DataFrame(data={"dVa": dva, "dVm": dVm, "Va": Va, "Vm": Vm})
+                print(df)
+
             # update system
-            H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, se_input, pvpq)
+            H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, se_input, no_slack)
 
             # measurements error (in per-unit)
             dz = z - h
@@ -482,11 +492,11 @@ def solve_se_lm(nc: NumericalCircuit,
             H2 = H1 @ H
 
             # compute system matrix
-            sys_mat = H2 + mu * Idn
+            Gx = H2 + mu * Idn
 
             # right hand side
             # H^t·W·dz
-            g = H1 @ dz
+            gx = - H1 @ dz
 
         else:
             mu *= nu
@@ -501,8 +511,6 @@ def solve_se_lm(nc: NumericalCircuit,
 
         # update loops
         iter_ += 1
-
-    elapsed = time.time() - start_time
 
     # Compute the Branches power and the slack buses power
     Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
@@ -542,4 +550,4 @@ def solve_se_lm(nc: NumericalCircuit,
                                    norm_f=norm_f,
                                    converged=converged,
                                    iterations=iter_,
-                                   elapsed=elapsed)
+                                   elapsed=time.time() - start_time)
