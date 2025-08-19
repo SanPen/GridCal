@@ -1107,7 +1107,7 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions) -> "npa.PowerFlowOptions":
     :return:
     """
     solver_dict = {SolverType.NR: npa.SolverType.NR,
-                   SolverType.DC: npa.SolverType.DC,
+                   SolverType.Linear: npa.SolverType.Linear,
                    SolverType.HELM: npa.SolverType.HELM,
                    SolverType.IWAMOTO: npa.SolverType.IWAMOTO,
                    SolverType.LM: npa.SolverType.LM,

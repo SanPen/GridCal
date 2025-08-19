@@ -218,7 +218,7 @@ class SolverType(Enum):
 
     NR = 'Newton Raphson'
     GAUSS = 'Gauss-Seidel'
-    DC = 'Linear DC'
+    Linear = 'Linear'
     HELM = 'Holomorphic Embedding'
     # ZBUS = 'Z-Gauss-Seidel'
     PowellDogLeg = "Powell's Dog Leg"

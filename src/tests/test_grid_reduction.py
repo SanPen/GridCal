@@ -18,7 +18,7 @@ def test_ward_reduction():
 
     assert np.equal(expected_boundary_idx, boundary).all()
 
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.DC)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.Linear)
 
     pf_res = gce.power_flow(grid=grid, options=pf_options)
 

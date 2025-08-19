@@ -33,7 +33,7 @@ def helm_contingency_analysis(grid: MultiCircuit,
     numerical_circuit = compile_numerical_circuit_at(grid, t_idx=t)
 
     if options.pf_options is None:
-        pf_opts = PowerFlowOptions(solver_type=SolverType.DC,
+        pf_opts = PowerFlowOptions(solver_type=SolverType.Linear,
                                    ignore_single_node_islands=True)
 
     else:

@@ -19,8 +19,9 @@ import networkx as nx
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from GridCalEngine.enumerations import SolverType
 
 
 # -----------------------------
@@ -431,7 +432,6 @@ def build_Y_from_gridcal(circuit):
     return adm.Ybus
 
 
-
 def get_boundary_sets_from_gridcal(grid, reduction_bus_indices: List[int]):
     """
     Thin wrapper over GridCal's built-in reduction set finder.
@@ -652,11 +652,13 @@ def reduce_with_gridcal_by_indices(grid: MultiCircuit,
     # 7) Optional DC inverse-PF redistribution (index-only)
     dc_fit = None
     if do_dc_inverse_pf:
+        options = PowerFlowOptions(solver_type=SolverType.Linear)
+        res = multi_island_pf_nc(nc=nc, options=options)
 
-        theta_full = _dc_theta(B_full, Pinj_pu, slack_idx)
+        theta_full = np.angle(res.voltage)
 
         # boundary angles in Y order restricted to b_buses (this is G1’s ordering)
-        theta_boundary = theta_full[np.asarray(b_buses, dtype=int)]
+        theta_boundary = theta_full[b_buses]
 
         # reduced DC matrix from G1 and target injections
         Bred = _build_B_from_Y(Yeq_G1)
@@ -680,7 +682,7 @@ def reduce_with_gridcal_by_indices(grid: MultiCircuit,
                 Pg_MW = float(Pg_MW)
             except Exception:
                 Pg_MW = 0.0
-            Pg_pu.append((g2_pos, Pg_MW / max(float(Sbase), 1e-6)))
+            Pg_pu.append((g2_pos, Pg_MW / max(float(nc.Sbase), 1e-6)))
 
         Pgen_assigned = np.zeros(len(b_buses), dtype=float)  # G1 boundary order
         # map G2 boundary position -> index in G1 boundary vector
@@ -717,6 +719,18 @@ def reduce_with_gridcal_by_indices(grid: MultiCircuit,
     )
 
 
-import pandapower as pp
+if __name__ == '__main__':
+    import GridCalEngine as gce
 
-pp.grid_equivalents.get_equivalent
+    fname = '/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids/Matpower/case9.m'
+    fname_expected = '/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids/Matpower/ieee9_reduced.m'
+
+    reduction_bus_indices_ = np.array([0, 4, 7])
+
+    grid_ = gce.open_file(fname)
+    grid_expected = gce.open_file(fname_expected)
+
+    reduce_with_gridcal_by_indices(grid=grid_,
+                                   reduction_bus_indices=reduction_bus_indices_,
+                                   relocation_mode="dc",  # 'dc' uses |x|, 'ac' uses |z|
+                                   do_dc_inverse_pf=True)

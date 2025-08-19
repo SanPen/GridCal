@@ -2240,7 +2240,7 @@ def get_gslv_pf_options(opt: PowerFlowOptions) -> "pg.PowerFlowOptions":
     :return:
     """
     solver_dict = {SolverType.NR: pg.SolverType.NR,
-                   SolverType.DC: pg.SolverType.DC,
+                   SolverType.Linear: pg.SolverType.DC,
                    SolverType.HELM: pg.SolverType.HELM,
                    SolverType.IWAMOTO: pg.SolverType.IWAMOTO,
                    SolverType.LM: pg.SolverType.LM,

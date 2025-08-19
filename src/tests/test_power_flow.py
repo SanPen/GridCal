@@ -82,7 +82,7 @@ def test_dc_pf_ieee14():
     Test the DC power flow with tap module
     :return:
     """
-    options = PowerFlowOptions(SolverType.DC,
+    options = PowerFlowOptions(SolverType.Linear,
                                verbose=False,
                                control_q=False,
                                retry_with_other_methods=False)
@@ -123,7 +123,7 @@ def test_dc_pf_ieee14_ps():
     Test the DC power flow with phase shifter and tap module
     :return:
     """
-    options = PowerFlowOptions(SolverType.DC,
+    options = PowerFlowOptions(SolverType.Linear,
                                verbose=False,
                                control_q=False,
                                retry_with_other_methods=False)
@@ -552,7 +552,7 @@ def test_hvdc_all_methods() -> None:
                         SolverType.IWAMOTO,
                         SolverType.FASTDECOUPLED,
                         SolverType.HELM,
-                        SolverType.DC,
+                        SolverType.Linear,
                         SolverType.LACPF, ]:
 
         print(solver_type)
