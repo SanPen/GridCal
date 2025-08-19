@@ -17,10 +17,21 @@ from GridCalEngine.enumerations import SolverType
 
 class StateEstimationOptions:
 
-    def __init__(self, tol: float = 1e-9, max_iter: int = 100, verbose: int = 0):
+    def __init__(self, tol: float = 1e-9, max_iter: int = 100, verbose: int = 0,
+                 prefer_correct: bool = True, c_threshold: int = 4.0):
+        """
+        StateEstimationOptions
+        :param tol: Tolerance
+        :param max_iter: Maximum number of iterations
+        :param verbose: Verbosity level (1 light, 2 heavy)
+        :param prefer_correct: Prefer measurement correction? otherwise measurement deletion is used
+        :param c_threshold: confidence threshold (default 4.0)
+        """
         self.tol = tol
         self.max_iter = max_iter
         self.verbose = verbose
+        self.prefer_correct = prefer_correct
+        self.c_threshold = c_threshold
 
 
 class StateEstimationConvergenceReport(ConvergenceReport):
@@ -185,6 +196,8 @@ class StateEstimation(DriverTemplate):
                                    tol=self.options.tol,
                                    max_iter=self.options.max_iter,
                                    verbose=self.options.verbose,
+                                   prefer_correct=self.options.prefer_correct,
+                                   c_threshold=self.options.c_threshold,
                                    logger=self.logger)
 
             report = StateEstimationConvergenceReport()

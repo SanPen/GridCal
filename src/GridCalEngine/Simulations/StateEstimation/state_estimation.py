@@ -360,33 +360,30 @@ def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float
     return magnitudes, sigma, measurements
 
 
-def b_test(H: csc_matrix,
-           W: csc_matrix,
+def b_test(sigma2: Vec,
+           H: csc_matrix,
            dz: np.ndarray,
            HtWH: csc_matrix,
            c_threshold: float = 4.0):
     """
     From RELIABLE BAD DATA PROCESSING FOR REAL-TIME STATE ESTIMATION, 1983
     Monticelli & Garcia (1983) 'b-test' bad data detection
-    Inputs:
-        H      : Jacobian at the solution (m x k)
-        W      : diagonal weights (m x m) with W_ii = 1/sigma_i^2
-        dz     : residuals r = z - h(x^) (length m)
-        HtWH   : G = H^T W H (k x k)
-        c_threshold: detection threshold 'c' (use 4.0 as in the paper)
-    Returns:
-        dict with:
-          'r'      : residuals r_i
-          'sigma2' : sigma_i^2
-          'Pii'    : residual variances P_ii
-          'rN'     : normalized residuals r_i / sqrt(P_ii)
-          'imax'   : index of largest |rN|
-          'b'      : b at imax
-          'is_bad' : bool
+    :param sigma2: sigma 2
+    :param H: Jacobian at the solution (m x k)
+    :param dz: residuals r = z - h(x^) (length m)
+    :param HtWH: G = H^T W H (k x k)
+    :param c_threshold: detection threshold 'c' (use 4.0 as in the paper)
+    :return:
+        'r'      : residuals r_i
+        'sigma2' : sigma_i^2
+        'Pii'    : residual variances P_ii
+        'rN'     : normalized residuals r_i / sqrt(P_ii)
+        'imax'   : index of largest |rN|
+        'b'      : b at imax
+        'is_bad' : bool
     """
+
     m, k = H.shape
-    # sigma_i^2 from W (W is diagonal)
-    sigma2 = 1.0 / W.diagonal()
 
     # Factorize G once, then solve G y = H_i^T for each i
     # Use LU so we can reuse for many RHS
@@ -395,8 +392,10 @@ def b_test(H: csc_matrix,
     # Compute h_i = H_i G^{-1} H_i^T and then Pii = sigma_i^2 - h_i
     # Do it row-by-row but reusing the factorization
     Pii = np.empty(m, dtype=float)
+
     # iterate efficiently over rows of H
     H_csr = H.tocsr()
+
     for i in range(m):
         # get sparse row i as (data, indices)
         row = H_csr.getrow(i)
@@ -404,11 +403,14 @@ def b_test(H: csc_matrix,
             # no sensitivity: Pii = sigma^2 (critical measurement with no redundancy)
             Pii[i] = sigma2[i]
         else:
+
             # Solve y = G^{-1} H_i^T
             y = lu(row.T.toarray())  # shape (k,1)
+
             # h_i = H_i y
             h_i = float(row.dot(y).ravel()[0])
             Pii[i] = sigma2[i] - h_i
+
             # numerical guard
             if Pii[i] <= 0:
                 # If numerical issues produce tiny negative values, clamp to a small positive eps
@@ -417,7 +419,7 @@ def b_test(H: csc_matrix,
     r = dz
     rN = r / np.sqrt(Pii)
 
-    imax = int(np.argmax(np.abs(rN)))
+    imax = np.argmax(np.abs(rN)).astype(int)
     # b_i = (sigma_i / Pii) * r_i   with sigma_i = sqrt(sigma2_i)
     b = (np.sqrt(sigma2[imax]) / Pii[imax]) * r[imax]
 
@@ -442,6 +444,7 @@ def solve_se_lm(nc: NumericalCircuit,
                 max_iter=100,
                 verbose: int = 0,
                 c_threshold: float = 4.0,
+                prefer_correct: bool = True,
                 logger: Logger | None = None) -> NumericStateEstimationResults:
     """
     Solve the state estimation problem using the Levenberg-Marquadt method
@@ -460,6 +463,7 @@ def solve_se_lm(nc: NumericalCircuit,
     :param max_iter: Maximum nuber of iterations
     :param verbose: Verbosity level
     :param c_threshold: Bad data detection threshold 'c' (4 as default)
+    :param prefer_correct: if true the measurements are corrected instead of deleted
     :param logger: log it out
     :return: NumericPowerFlowResults instance
     """
@@ -474,14 +478,11 @@ def solve_se_lm(nc: NumericalCircuit,
     V = np.ones(n, dtype=complex)
 
     # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
-    z_phys, sigma_phys, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
-
-    # Convert power measurements and sigmas to per-unit
-    z = np.copy(z_phys)
-    sigma = np.copy(sigma_phys)
+    z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
 
     # compute the weights matrix using per-unit sigma
-    cov = 1.0 / np.power(sigma, 2.0)
+    sigma2 = np.power(sigma, 2.0)
+    cov = 1.0 / sigma2
     W = diags(cov).tocsc()
 
     # Levenberg-Marquardt method
@@ -529,10 +530,7 @@ def solve_se_lm(nc: NumericalCircuit,
         # Solve the increment
         dx = spsolve(Gx, gx)
 
-        dF = obj_val_prev - obj_val
-        dL = 0.5 * dx @ (mu * dx + gx)
-
-        if norm_f < (tol * 100.0):
+        if norm_f < (tol * 10.0):
             # bad data detection
             # here we compare the obj func wrt CHI2NV of degree of freedom,
             # degree of freedom is defined as the difference
@@ -545,24 +543,48 @@ def solve_se_lm(nc: NumericalCircuit,
             #     bad_data_detected = True
             #     logger.add_warning(f"Bad data detected")
 
-            r, sigma2, Pii, rN, imax, b, is_bad = b_test(H=H, W=W, dz=dz, HtWH=H2, c_threshold=4.0)
+            r, sigma2, Pii, rN, imax, b, is_bad = b_test(sigma2=sigma2, H=H, dz=dz, HtWH=H2, c_threshold=c_threshold)
 
             if is_bad:
-                z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]
 
-                logger.add_info("Measurement corrected",
-                                device=measurements[imax].api_object.name,
-                                device_class=measurements[imax].device_type.value,
-                                device_property="value",
-                                value=z[imax],
-                                expected_value=z_tilde_imax)
+                if prefer_correct:
+                    z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]
 
-                # correct the bad data index
-                z[imax] = z_tilde_imax
+                    logger.add_info("Measurement corrected",
+                                    device=measurements[imax].api_object.name,
+                                    device_class=measurements[imax].device_type.value,
+                                    device_property="value",
+                                    value=z[imax],
+                                    expected_value=z_tilde_imax)
 
-                # compute the weights matrix using per-unit sigma
-                # cov = 1.0 / np.power(sigma, 2.0)
-                # W = diags(cov).tocsc()
+                    # correct the bad data index
+                    z[imax] = z_tilde_imax
+                else:
+
+                    logger.add_info("Measurement deleted",
+                                    device=measurements[imax].api_object.name,
+                                    device_class=measurements[imax].device_type.value,
+                                    device_property="value",
+                                    value=z[imax],
+                                    expected_value="")
+
+                    # delete measurements
+                    mask = np.ones(len(z), dtype=int)
+                    mask[imax] = 0
+
+                    se_input = se_input.slice_with_mask(mask=mask)
+
+                    # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
+                    z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
+
+                    # compute the weights matrix using per-unit sigma
+                    sigma2 = np.power(sigma, 2.0)
+                    cov = 1.0 / sigma2
+                    W = diags(cov).tocsc()
+
+        # L-M ratios of convergence
+        dF = obj_val_prev - obj_val
+        dL = 0.5 * dx @ (mu * dx + gx)
 
         if (dF != 0.0) and (dL > 0.0):
             rho = dF / dL

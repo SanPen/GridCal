@@ -2,8 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+
+import numpy as np
 from typing import List, Dict
-from GridCalEngine.basic_structures import IntVec
+from GridCalEngine.basic_structures import IntVec, BoolVec
 from GridCalEngine.Devices.measurement import (PfMeasurement, QfMeasurement,
                                                PtMeasurement, QtMeasurement,
                                                PiMeasurement, QiMeasurement,
@@ -74,6 +76,9 @@ class StateEstimationInput:
         self.va_value: List[VaMeasurement] = list()  # Node voltage angle measurements vector of pointers
         self.va_idx: List[int] = list()  # nodes with voltage angle measurements
 
+        nz = self.size()
+        self.flags = np.ones(nz, dtype=int)
+
     def size(self):
         return (len(self.p_inj)
                 + len(self.q_inj)
@@ -113,3 +118,39 @@ class StateEstimationInput:
         se.it_value, se.it_idx = slice_pair(self.it_value, self.it_idx, branch_index_map)
 
         return se
+
+    def slice_with_mask(self, mask: BoolVec) -> "StateEstimationInput":
+        """
+        Get a new StateEstimationInput without the measurements that fall in the mask marked with a 0
+        :param mask: mask of measurements to keep
+        :return: StateEstimationInput
+        """
+        mask = np.asarray(mask, dtype=bool)
+
+        new_obj = StateEstimationInput()
+
+        k = 0
+        for lst in [
+            (self.p_inj, new_obj.p_inj, self.p_idx, new_obj.p_idx),
+            (self.q_inj, new_obj.q_inj, self.q_idx, new_obj.q_idx),
+            (self.pf_value, new_obj.pf_value, self.pf_idx, new_obj.pf_idx),
+            (self.pt_value, new_obj.pt_value, self.pt_idx, new_obj.pt_idx),
+            (self.qf_value, new_obj.qf_value, self.qf_idx, new_obj.qf_idx),
+            (self.qt_value, new_obj.qt_value, self.qt_idx, new_obj.qt_idx),
+            (self.if_value, new_obj.if_value, self.if_idx, new_obj.if_idx),
+            (self.it_value, new_obj.it_value, self.it_idx, new_obj.it_idx),
+            (self.vm_value, new_obj.vm_value, self.vm_idx, new_obj.vm_idx),
+            (self.va_value, new_obj.va_value, self.va_idx, new_obj.va_idx)
+        ]:
+
+            m_here, m_there, idx_here, idx_there = lst
+
+            for m, i in zip(m_here, idx_here):
+                if mask[k]:
+                    m_there.append(m)
+                    idx_there.append(i)
+                else:
+                    pass
+                k += 1
+
+        return new_obj
