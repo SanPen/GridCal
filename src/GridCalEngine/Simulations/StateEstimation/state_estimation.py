@@ -544,7 +544,6 @@ def solve_se_lm(nc: NumericalCircuit,
         Yshunt_bus=Yshunt_bus,
         branch_rates=nc.passive_branch_data.rates,
         Sbase=nc.Sbase)
-    breakpoint()
     return StateEstimationResults(V=V,
                                    Scalc=Scalc,
                                    m=nc.nbr,
