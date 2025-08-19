@@ -195,7 +195,7 @@ class StateEstimation(DriverTemplate):
                           elapsed=solution.elapsed,
                           iterations=solution.iterations,
                           bad_data_detected=solution.bad_data_detected)
-            breakpoint()
+
             self.results.convergence_reports.append(report)
 
             # Scale power results from per-unit to MVA before applying
