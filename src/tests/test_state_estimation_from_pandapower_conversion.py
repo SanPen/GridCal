@@ -41,6 +41,8 @@ def test_state_estimation_pandapower():
         print(f"Error: {se_res.error}")
         print(f"Iter: {se_res.iterations}")
 
+        se.logger.print("SE Logger:")
+
 
 if __name__ == '__main__':
     test_state_estimation_pandapower()
