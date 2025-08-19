@@ -258,7 +258,7 @@ class StateEstimationResults(ResultsTemplate):
         self.plot_bars_limit: int = 100
         self.convergence_reports: List[ConvergenceReport] = list()
 
-        self.three_phase: bool = False
+        self.bad_data_detected = False
 
         self.register(name='bus_names', tpe=StrVec)
         self.register(name='branch_names', tpe=StrVec)
@@ -306,16 +306,7 @@ class StateEstimationResults(ResultsTemplate):
         self.register(name='battery_q', tpe=Vec)
         self.register(name='shunt_q', tpe=Vec)
 
-        self.register(name='three_phase', tpe=bool)
-
-    def apply_new_rates(self, nc: NumericalCircuit):
-        """
-
-        :param nc:
-        :return:
-        """
-        rates = nc.passive_branch_data.rates
-        self.loading = self.Sf / (rates + 1e-9)
+        self.register(name='bad_data_detected', tpe=bool)
 
     @property
     def converged(self):
@@ -405,6 +396,9 @@ class StateEstimationResults(ResultsTemplate):
         self.It_vsc[vsc_idx] = results.It_vsc
         self.losses_vsc[vsc_idx] = results.losses_vsc
         self.loading_vsc[vsc_idx] = results.loading_vsc
+
+        if results.bad_data_detected:
+            self.bad_data_detected = True
 
     def get_report_dataframe(self, island_idx=0):
         """

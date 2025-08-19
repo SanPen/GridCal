@@ -15,7 +15,6 @@ from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import St
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.StateEstimation.state_estimation_results import NumericStateEstimationResults
-from GridCalEngine.Simulations.StateEstimation.state_estimation_results import StateEstimationResults
 from GridCalEngine.basic_structures import CscMat, IntVec, CxVec, Vec, Logger
 from scipy.stats.distributions import chi2
 
