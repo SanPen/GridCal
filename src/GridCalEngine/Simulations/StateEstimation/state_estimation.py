@@ -9,6 +9,7 @@ from typing import Tuple
 import pandas as pd
 from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, csr_matrix, diags
 from scipy.sparse.linalg import spsolve, factorized
+# from scipy.stats.distributions import chi2
 import numpy as np
 from numpy import conj, arange
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
@@ -16,7 +17,6 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.StateEstimation.state_estimation_results import NumericStateEstimationResults
 from GridCalEngine.basic_structures import CscMat, IntVec, CxVec, Vec, ObjVec, Logger
-from scipy.stats.distributions import chi2
 
 
 def dSbus_dV(Ybus, V):
@@ -403,16 +403,16 @@ def b_test(H: csc_matrix,
         if row.nnz == 0:
             # no sensitivity: Pii = sigma^2 (critical measurement with no redundancy)
             Pii[i] = sigma2[i]
-            continue
-        # Solve y = G^{-1} H_i^T
-        y = lu(row.T.toarray())  # shape (k,1)
-        # h_i = H_i y
-        h_i = float(row.dot(y).ravel()[0])
-        Pii[i] = sigma2[i] - h_i
-        # numerical guard
-        if Pii[i] <= 0:
-            # If numerical issues produce tiny negative values, clamp to a small positive eps
-            Pii[i] = max(Pii[i], 1e-14)
+        else:
+            # Solve y = G^{-1} H_i^T
+            y = lu(row.T.toarray())  # shape (k,1)
+            # h_i = H_i y
+            h_i = float(row.dot(y).ravel()[0])
+            Pii[i] = sigma2[i] - h_i
+            # numerical guard
+            if Pii[i] <= 0:
+                # If numerical issues produce tiny negative values, clamp to a small positive eps
+                Pii[i] = max(Pii[i], 1e-14)
 
     r = dz
     rN = r / np.sqrt(Pii)
