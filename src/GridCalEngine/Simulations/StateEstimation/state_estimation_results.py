@@ -11,14 +11,13 @@ from typing import List, Tuple
 
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec, ConvergenceReport, Logger
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
 class NumericStateEstimationResults:
     """
-    NumericPowerFlowResults, used to return values from the numerical methods
+    NumericStateEstimationResults, used to return values from the numerical methods
     """
 
     def __init__(self,
@@ -132,8 +131,7 @@ class StateEstimationResults(ResultsTemplate):
             bus_types: np.ndarray,
             clustering_results=None):
         """
-        A **PowerFlowResults** object is create as an attribute of the
-        :ref:`PowerFlowMP<pf_mp>` (as PowerFlowMP.results) when the power flow is run. It
+        A **StateEstimationResults** object
         provides access to the simulation results through its class attributes.
         :param n: number of nodes
         :param m: number of Branches
