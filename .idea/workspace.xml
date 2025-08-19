@@ -28,9 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved pandapower base madness">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="small refactor">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/modified_ward_equivalent.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/modified_ward_equivalent.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -72,7 +71,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="devel" />
+        <entry key="$PROJECT_DIR$" value="devel_wip" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -232,7 +231,7 @@
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Substation" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in test_state_estimation_from_pandapower_conversion.py">
+  <component name="RunManager" selected="Python.modified_ward_equivalent">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -502,7 +501,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="make_wheels" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="modified_ward_equivalent" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -510,12 +509,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCalEngine/Topology" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/make_wheels.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalEngine/Topology/modified_ward_equivalent.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -737,8 +736,8 @@
     <list>
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
+      <item itemvalue="Python.modified_ward_equivalent" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.make_wheels" />
       <item itemvalue="Python tests.pytest in test_state_estimation_from_pandapower_conversion.py" />
       <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation" />
       <item itemvalue="Python tests.pytest in test_state_estimation.py" />
@@ -746,11 +745,11 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python tests.pytest in test_state_estimation.py" />
-        <item itemvalue="Python tests.pytest in tests" />
+        <item itemvalue="Python.modified_ward_equivalent" />
         <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation" />
-        <item itemvalue="Python.make_wheels" />
+        <item itemvalue="Python tests.pytest in test_state_estimation.py" />
+        <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python tests.pytest in tests" />
       </list>
     </recent_temporary>
   </component>
@@ -1880,7 +1879,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="628" />
+    <option name="localTasksCounter" value="638" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1926,15 +1925,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed miss initialization for shift_key profiles" />
-    <MESSAGE value="minimal se refactors" />
-    <MESSAGE value="fixed measurements import" />
-    <MESSAGE value="Improved ward reduction" />
-    <MESSAGE value="Refactored the substation wizard code to substation_wizards.py" />
-    <MESSAGE value="Added se editor from the model context menu" />
-    <MESSAGE value="Worked on the reduction" />
-    <MESSAGE value="Small improvements to the docs" />
-    <MESSAGE value="added early gslv interface&#10;moved set_var_bounds into the LoModel class" />
     <MESSAGE value="merged changes from  63341c58f2c63c4d51ae5041d16d3bc5cd4f6bb2" />
     <MESSAGE value="changed to the pulp 3 pkg" />
     <MESSAGE value="fixed massive performance issue in gslv-lp interface" />
@@ -1951,7 +1941,16 @@
     <MESSAGE value="Improved pandapower parser" />
     <MESSAGE value="minor refactors" />
     <MESSAGE value="Improved pandapower base madness" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved pandapower base madness" />
+    <MESSAGE value="Renamed SolverTYpe DC to Linear&#10;More work on the ward reduction" />
+    <MESSAGE value="refactored the StateEstimationResults and NumericalStateEstimation" />
+    <MESSAGE value="removed breakpoint" />
+    <MESSAGE value="Small refactors" />
+    <MESSAGE value="Added bad data correction" />
+    <MESSAGE value="Improved SE logger" />
+    <MESSAGE value="Slight improvement in the b_test" />
+    <MESSAGE value="added measurements deletion as an option" />
+    <MESSAGE value="small refactor" />
+    <option name="LAST_COMMIT_MESSAGE" value="small refactor" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2347,13 +2346,8 @@
           <option name="timeStamp" value="2696" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
-          <line>1069</line>
-          <option name="timeStamp" value="2697" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py</url>
-          <line>27</line>
+          <line>28</line>
           <option name="timeStamp" value="2698" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2383,7 +2377,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py</url>
-          <line>22</line>
+          <line>23</line>
           <option name="timeStamp" value="2709" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2405,6 +2399,11 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/others/pandapower_parser.py</url>
           <line>706</line>
           <option name="timeStamp" value="2717" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/modified_ward_equivalent.py</url>
+          <line>664</line>
+          <option name="timeStamp" value="2742" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

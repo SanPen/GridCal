@@ -33,7 +33,7 @@ def ward_reduce(Y: sp.csr_matrix,
     """
     Compute the Ward reduction (Schur complement) of Y onto the retained buses R.
     :param Y: complex sparse matrix
-    :param retain: Array of bus indices to retain
+    :param retain_idx: Array of bus indices to retain
     :return: Yeq
     """
 
@@ -662,7 +662,7 @@ def reduce_with_gridcal_by_indices(grid: MultiCircuit,
 
         # reduced DC matrix from G1 and target injections
         Bred = _build_B_from_Y(Yeq_G1)
-        P_target = (Bred @ theta_boundary).A.ravel() if sp.issparse(Bred) else (Bred @ theta_boundary)
+        P_target = Bred @ theta_full[R1]
 
         # relocate generator P to boundary buses (pu)
         # sum Pg (pu) of each gen at its mapped boundary position
