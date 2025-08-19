@@ -7,9 +7,10 @@ import numpy as np
 from typing import Union
 
 from GridCalEngine.Simulations.StateEstimation.state_estimation_results import StateEstimationResults
-from GridCalEngine.basic_structures import ConvergenceReport
+from GridCalEngine.basic_structures import ConvergenceReport, StateEstimationConverganceReport
 from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_template import DriverTemplate
