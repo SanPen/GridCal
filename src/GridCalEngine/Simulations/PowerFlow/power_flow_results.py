@@ -473,7 +473,7 @@ class PowerFlowResults(ResultsTemplate):
 
         return df
 
-    def get_oveload_score(self, branch_prices: Vec):
+    def get_overload_score(self, branch_prices: Vec):
         """
         Compute the cost of overload
         :param branch_prices: array of branch prices

@@ -28,11 +28,15 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved pandapower base madness">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Renamed SolverTYpe DC to Linear&#10;More work on the ward reduction">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_results.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation_results.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_stimation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_stimation_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/basic_structures.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/basic_structures.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/investments/InvestmentsEvaluation/investments_evaluation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -747,8 +751,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.pytest in test_state_estimation.py" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation" />
         <item itemvalue="Python.make_wheels" />
@@ -1951,8 +1955,8 @@
     <MESSAGE value="Improved pandapower parser" />
     <MESSAGE value="minor refactors" />
     <MESSAGE value="Improved pandapower base madness" />
-    <MESSAGE value="modified ward wip" />
-    <option name="LAST_COMMIT_MESSAGE" value="modified ward wip" />
+    <MESSAGE value="Renamed SolverTYpe DC to Linear&#10;More work on the ward reduction" />
+    <option name="LAST_COMMIT_MESSAGE" value="Renamed SolverTYpe DC to Linear&#10;More work on the ward reduction" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2252,19 +2256,9 @@
           <option name="timeStamp" value="2599" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_gslv.py</url>
-          <line>2361</line>
-          <option name="timeStamp" value="2600" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_driver.py</url>
           <line>181</line>
           <option name="timeStamp" value="2601" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_gslv.py</url>
-          <line>2434</line>
-          <option name="timeStamp" value="2602" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
@@ -2328,21 +2322,6 @@
           <option name="timeStamp" value="2695" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
-          <line>1255</line>
-          <option name="timeStamp" value="2696" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
-          <line>1069</line>
-          <option name="timeStamp" value="2697" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py</url>
-          <line>28</line>
-          <option name="timeStamp" value="2698" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
           <line>783</line>
           <option name="timeStamp" value="2699" />
@@ -2366,11 +2345,6 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/zip_interface.py</url>
           <line>175</line>
           <option name="timeStamp" value="2704" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py</url>
-          <line>23</line>
-          <option name="timeStamp" value="2709" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/others/pandapower_parser.py</url>
