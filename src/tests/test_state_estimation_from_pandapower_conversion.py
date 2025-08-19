@@ -12,7 +12,7 @@ def test_state_estimation_pandapower():
     if PANDAPOWER_AVAILABLE:
         import pandapower
         # tests/data/grids/state-estimation /small_grid_gb_hv_estimate_raw_expected.json
-        #fname = os.path.join("src","tests","data", "grids", "state-estimation", "small_grid_gb_hv_estimate_raw_expected.json")
+        # fname = os.path.join("src", "tests", "data", "grids", "state-estimation", "small_grid_gb_hv_estimate_raw_expected.json")
         fname = os.path.join("data", "grids", "state-estimation", "small_grid_gb_hv_estimate_raw_expected.json")
         net_wns = pandapower.from_json(fname)
 
@@ -36,6 +36,7 @@ def test_state_estimation_pandapower():
         se_res = se.results
         print(se_res.get_bus_df())
         print(se_res.get_branch_df())
+
         print(f"Converged: {se_res.converged}")
         print(f"Error: {se_res.error}")
         print(f"Iter: {se_res.iterations}")

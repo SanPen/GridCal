@@ -14,8 +14,7 @@ from numpy import conj, arange
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.Simulations.StateEstimation.state_estimation_results import StateEstimationResults
+from GridCalEngine.Simulations.StateEstimation.state_estimation_results import NumericStateEstimationResults
 from GridCalEngine.basic_structures import CscMat, IntVec, CxVec, Vec, Logger
 from scipy.stats.distributions import chi2
 
@@ -373,7 +372,7 @@ def solve_se_lm(nc: NumericalCircuit,
                 tol=1e-9,
                 max_iter=100,
                 verbose: int = 0,
-                logger: Logger | None = None) -> StateEstimationResults:
+                logger: Logger | None = None) -> NumericStateEstimationResults:
     """
     Solve the state estimation problem using the Levenberg-Marquadt method
     :param nc: instance of NumericalCircuit
@@ -514,7 +513,8 @@ def solve_se_lm(nc: NumericalCircuit,
         converged = norm_f < tol
         if converged:
             # bad data detection
-            # here we compare the obj func wrt CHI2NV of degree of freedom, degree of freedom is defined as the difference
+            # here we compare the obj func wrt CHI2NV of degree of freedom,
+            # degree of freedom is defined as the difference
             # between all the available measurements and min required measurements for observability.
             deg_of_freedom = len(z_phys) - 2 * n_no_slack
             threshold_chi2 = chi2.ppf(confidence_value, df=deg_of_freedom)
@@ -545,28 +545,28 @@ def solve_se_lm(nc: NumericalCircuit,
         branch_rates=nc.passive_branch_data.rates,
         Sbase=nc.Sbase)
 
-    return StateEstimationResults(V=V,
-                                  Scalc=Scalc,
-                                  m=nc.nbr,
-                                  tau=np.zeros(nc.nbr, dtype=float),
-                                  Sf=Sf,
-                                  St=St,
-                                  If=If,
-                                  It=It,
-                                  loading=loading,
-                                  losses=losses,
-                                  Pf_vsc=np.zeros(nc.nvsc, dtype=float),
-                                  St_vsc=np.zeros(nc.nvsc, dtype=complex),
-                                  If_vsc=np.zeros(nc.nvsc, dtype=float),
-                                  It_vsc=np.zeros(nc.nvsc, dtype=complex),
-                                  losses_vsc=np.zeros(nc.nvsc, dtype=float),
-                                  loading_vsc=np.zeros(nc.nvsc, dtype=float),
-                                  Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                  St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                  losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                  loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                  norm_f=norm_f,
-                                  converged=converged,
-                                  iterations=iter_,
-                                  elapsed=time.time() - start_time,
-                                  bad_data_detected=bad_data_detected)
+    return NumericStateEstimationResults(V=V,
+                                         Scalc=Scalc,
+                                         m=nc.active_branch_data.tap_module,
+                                         tau=nc.active_branch_data.tap_angle,
+                                         Sf=Sf,
+                                         St=St,
+                                         If=If,
+                                         It=It,
+                                         loading=loading,
+                                         losses=losses,
+                                         Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                         If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                         losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         norm_f=norm_f,
+                                         converged=converged,
+                                         iterations=iter_,
+                                         elapsed=time.time() - start_time,
+                                         bad_data_detected=bad_data_detected)

@@ -3,14 +3,12 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-import numpy as np
 from typing import Union
 
 from GridCalEngine.Simulations.StateEstimation.state_estimation_results import StateEstimationResults
-from GridCalEngine.basic_structures import ConvergenceReport, StateEstimationConverganceReport
+from GridCalEngine.basic_structures import ConvergenceReport
 from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_template import DriverTemplate
@@ -56,8 +54,6 @@ class StateEstimationConvergenceReport(ConvergenceReport):
     def get_bad_data_detected(self) -> list:
         """
         Get bad data detection results
-
-        :param method: Optional method name to filter results
         :return: List of bad data detection results
         """
         return self.bad_data_detected
@@ -147,34 +143,19 @@ class StateEstimation(DriverTemplate):
         nc = compile_numerical_circuit_at(self.grid, logger=self.logger)
         self.results = StateEstimationResults(n=n,
                                               m=m,
+                                              n_hvdc=nc.nhvdc,
+                                              n_vsc=nc.nvsc,
+                                              n_gen=nc.ngen,
+                                              n_batt=nc.nbatt,
+                                              n_sh=nc.nshunt,
                                               bus_names=nc.bus_data.names,
                                               branch_names=nc.passive_branch_data.names,
                                               hvdc_names=nc.hvdc_data.names,
-                                              bus_types=nc.bus_data.bus_types,
-                                              V=np.ones(n, dtype=complex), Scalc=nc.Sbase,
-                                              m_values=np.ones(nc.nbr, dtype=float),
-                                              tau=np.zeros(nc.nbr, dtype=float), Sf=np.zeros(nc.nbr, dtype=complex),
-                                              St=np.zeros(nc.nbr, dtype=complex),  # Placeholder branch power flow (to)
-                                              If=np.zeros(nc.nbr, dtype=complex),  # Placeholder branch current (from)
-                                              It=np.zeros(nc.nbr, dtype=complex),  # Placeholder branch current (to)
-                                              loading=np.zeros(nc.nbr, dtype=float),  # Placeholder loading
-                                              losses=np.zeros(nc.nbr, dtype=complex),  # Placeholder losses
-                                              Pf_vsc=np.zeros(nc.nvsc, dtype=float),
-                                              St_vsc=np.zeros(nc.nvsc, dtype=complex),
-                                              If_vsc=np.zeros(nc.nvsc, dtype=float),
-                                              It_vsc=np.zeros(nc.nvsc, dtype=complex),
-                                              losses_vsc=np.zeros(nc.nvsc, dtype=float),
-                                              loading_vsc=np.zeros(nc.nvsc, dtype=float),
-                                              Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                              St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                              losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                              loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                              norm_f=50,
-                                              converged=False,
-                                              iterations=0,
-                                              elapsed=0,
-                                              bad_data_detected=False
-                                              )
+                                              vsc_names=nc.vsc_data.names,
+                                              gen_names=nc.generator_data.names,
+                                              batt_names=nc.battery_data.names,
+                                              sh_names=nc.shunt_data.names,
+                                              bus_types=nc.bus_data.bus_types)
         # self.se_results.initialize(n, m)
 
         islands = nc.split_into_islands()
@@ -214,7 +195,7 @@ class StateEstimation(DriverTemplate):
                           elapsed=solution.elapsed,
                           iterations=solution.iterations,
                           bad_data_detected=solution.bad_data_detected)
-            breakpoint()
+
             self.results.convergence_reports.append(report)
 
             # Scale power results from per-unit to MVA before applying

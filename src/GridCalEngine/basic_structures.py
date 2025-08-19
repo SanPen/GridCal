@@ -706,37 +706,7 @@ class ConvergenceReport:
         return pd.DataFrame(data)
 
 
-class StateEstimationConverganceReport(ConvergenceReport):
-    def __init__(self) -> None:
-        """
-        Constructor
-        """
-        super().__init__()
-        self.bad_data_detected = list()
 
-    def add(self, method, converged: bool, error: float, elapsed: float, iterations: int, bad_data_detected:bool):
-        """
-
-        :param method:
-        :param converged:
-        :param error:
-        :param elapsed:
-        :param iterations:
-        :return:
-        """
-        # Call parent's add method for common parameters
-        super().add(method, converged, error, elapsed, iterations)
-        breakpoint()
-        self.bad_data_detected.append(bad_data_detected)
-
-    def get_bad_data_detected(self) -> list:
-        """
-        Get bad data detection results
-
-        :param method: Optional method name to filter results
-        :return: List of bad data detection results
-        """
-        return self.bad_data_detected
 
 def get_list_dim(a: List[Any]) -> int:
     """
