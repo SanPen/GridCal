@@ -8,14 +8,14 @@ from typing import Tuple
 
 import pandas as pd
 from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, csr_matrix, diags
-from scipy.sparse.linalg import spsolve
+from scipy.sparse.linalg import spsolve, factorized
 import numpy as np
 from numpy import conj, arange
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.StateEstimation.state_estimation_results import NumericStateEstimationResults
-from GridCalEngine.basic_structures import CscMat, IntVec, CxVec, Vec, Logger
+from GridCalEngine.basic_structures import CscMat, IntVec, CxVec, Vec, ObjVec, Logger
 from scipy.stats.distributions import chi2
 
 
@@ -319,7 +319,7 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
     return H, h, S  # Return Sbus in pu
 
 
-def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float) -> Tuple[Vec, Vec]:
+def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float) -> Tuple[Vec, Vec, ObjVec]:
     """
     get_measurements_and_deviations the measurements into "measurements" and "sigma"
     ordering: Pinj, Pflow, Qinj, Qflow, Iflow, Vm
@@ -329,7 +329,7 @@ def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float
     """
 
     nz = se_input.size()
-
+    measurements = np.zeros(nz, dtype=object)
     magnitudes = np.zeros(nz)
     sigma = np.zeros(nz)
 
@@ -346,6 +346,7 @@ def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float
         for m in lst:
             magnitudes[k] = m.value / Sbase
             sigma[k] = m.sigma / Sbase
+            measurements[k] = m
             k += 1
 
     for lst in [se_input.vm_value,
@@ -353,9 +354,77 @@ def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float
         for m in lst:
             magnitudes[k] = m.value
             sigma[k] = m.sigma
+            measurements[k] = m
             k += 1
 
-    return magnitudes, sigma
+    return magnitudes, sigma, measurements
+
+
+def b_test(H: csc_matrix,
+           W: csc_matrix,
+           dz: np.ndarray,
+           HtWH: csc_matrix,
+           c_threshold: float = 4.0):
+    """
+    From RELIABLE BAD DATA PROCESSING FOR REAL-TIME STATE ESTIMATION, 1983
+    Monticelli & Garcia (1983) 'b-test' bad data detection
+    Inputs:
+        H      : Jacobian at the solution (m x k)
+        W      : diagonal weights (m x m) with W_ii = 1/sigma_i^2
+        dz     : residuals r = z - h(x^) (length m)
+        HtWH   : G = H^T W H (k x k)
+        c_threshold: detection threshold 'c' (use 4.0 as in the paper)
+    Returns:
+        dict with:
+          'r'      : residuals r_i
+          'sigma2' : sigma_i^2
+          'Pii'    : residual variances P_ii
+          'rN'     : normalized residuals r_i / sqrt(P_ii)
+          'imax'   : index of largest |rN|
+          'b'      : b at imax
+          'is_bad' : bool
+    """
+    m, k = H.shape
+    # sigma_i^2 from W (W is diagonal)
+    sigma2 = 1.0 / W.diagonal()
+
+    # Factorize G once, then solve G y = H_i^T for each i
+    # Use LU so we can reuse for many RHS
+    lu = factorized(HtWH.tocsc())
+
+    # Compute h_i = H_i G^{-1} H_i^T and then Pii = sigma_i^2 - h_i
+    # Do it row-by-row but reusing the factorization
+    Pii = np.empty(m, dtype=float)
+    # iterate efficiently over rows of H
+    H_csr = H.tocsr()
+    for i in range(m):
+        # get sparse row i as (data, indices)
+        row = H_csr.getrow(i)
+        if row.nnz == 0:
+            # no sensitivity: Pii = sigma^2 (critical measurement with no redundancy)
+            Pii[i] = sigma2[i]
+            continue
+        # Solve y = G^{-1} H_i^T
+        y = lu(row.T.toarray())  # shape (k,1)
+        # h_i = H_i y
+        h_i = float(row.dot(y).ravel()[0])
+        Pii[i] = sigma2[i] - h_i
+        # numerical guard
+        if Pii[i] <= 0:
+            # If numerical issues produce tiny negative values, clamp to a small positive eps
+            Pii[i] = max(Pii[i], 1e-14)
+
+    r = dz
+    rN = r / np.sqrt(Pii)
+
+    imax = int(np.argmax(np.abs(rN)))
+    # b_i = (sigma_i / Pii) * r_i   with sigma_i = sqrt(sigma2_i)
+    b = (np.sqrt(sigma2[imax]) / Pii[imax]) * r[imax]
+
+    # compute where the measurements are bad
+    is_bad = np.abs(b) > c_threshold
+
+    return r, sigma2, Pii, rN, imax, b, is_bad
 
 
 def solve_se_lm(nc: NumericalCircuit,
@@ -372,6 +441,7 @@ def solve_se_lm(nc: NumericalCircuit,
                 tol=1e-9,
                 max_iter=100,
                 verbose: int = 0,
+                c_threshold: float = 4.0,
                 logger: Logger | None = None) -> NumericStateEstimationResults:
     """
     Solve the state estimation problem using the Levenberg-Marquadt method
@@ -389,6 +459,7 @@ def solve_se_lm(nc: NumericalCircuit,
     :param tol: Tolerance
     :param max_iter: Maximum nuber of iterations
     :param verbose: Verbosity level
+    :param c_threshold: Bad data detection threshold 'c' (4 as default)
     :param logger: log it out
     :return: NumericPowerFlowResults instance
     """
@@ -403,14 +474,15 @@ def solve_se_lm(nc: NumericalCircuit,
     V = np.ones(n, dtype=complex)
 
     # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
-    z_phys, sigma_phys = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
+    z_phys, sigma_phys, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
 
     # Convert power measurements and sigmas to per-unit
     z = np.copy(z_phys)
     sigma = np.copy(sigma_phys)
 
     # compute the weights matrix using per-unit sigma
-    W = diags(1.0 / np.power(sigma, 2.0))
+    cov = 1.0 / np.power(sigma, 2.0)
+    W = diags(cov).tocsc()
 
     # Levenberg-Marquardt method
 
@@ -459,6 +531,37 @@ def solve_se_lm(nc: NumericalCircuit,
 
         dF = obj_val_prev - obj_val
         dL = 0.5 * dx @ (mu * dx + gx)
+
+        if norm_f < (tol * 100.0):
+            # bad data detection
+            # here we compare the obj func wrt CHI2NV of degree of freedom,
+            # degree of freedom is defined as the difference
+            # between all the available measurements and min required measurements for observability.
+            # deg_of_freedom = len(z_phys) - 2 * n_no_slack
+            # threshold_chi2 = chi2.ppf(confidence_value, df=deg_of_freedom)
+            # if obj_val <= threshold_chi2:
+            #     logger.add_info(f"No bad data detected")
+            # else:
+            #     bad_data_detected = True
+            #     logger.add_warning(f"Bad data detected")
+
+            r, sigma2, Pii, rN, imax, b, is_bad = b_test(H=H, W=W, dz=dz, HtWH=H2, c_threshold=4.0)
+
+            if is_bad:
+                z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]
+
+                logger.add_info("Measurement corrected",
+                                device=measurements[imax].api_object.name,
+                                device_property=measurements[imax].device_type.value,
+                                value=z[imax],
+                                expected_value=z_tilde_imax)
+
+                # correct the bad data index
+                z[imax] = z_tilde_imax
+
+                # compute the weights matrix using per-unit sigma
+                # cov = 1.0 / np.power(sigma, 2.0)
+                # W = diags(cov).tocsc()
 
         if (dF != 0.0) and (dL > 0.0):
             rho = dF / dL
@@ -511,18 +614,6 @@ def solve_se_lm(nc: NumericalCircuit,
         # compute the convergence
         norm_f = np.linalg.norm(dx, np.inf)
         converged = norm_f < tol
-        if converged:
-            # bad data detection
-            # here we compare the obj func wrt CHI2NV of degree of freedom,
-            # degree of freedom is defined as the difference
-            # between all the available measurements and min required measurements for observability.
-            deg_of_freedom = len(z_phys) - 2 * n_no_slack
-            threshold_chi2 = chi2.ppf(confidence_value, df=deg_of_freedom)
-            if obj_val <= threshold_chi2:
-                logger.add_info(f"No bad data detected")
-            else:
-                bad_data_detected = True
-                logger.add_warning(f"Bad data detected")
 
         if verbose > 0:
             print(f"Norm_f {norm_f}")
