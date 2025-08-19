@@ -45,9 +45,17 @@ class StateEstimationResults(PowerFlowResults):
                                   bus_types=bus_types)
 
 
+class StateEstimationOptions:
+
+    def __init__(self, tol: float = 1e-9, max_iter: int = 100, verbose: int = 0):
+        self.tol = tol
+        self.max_iter = max_iter
+        self.verbose = verbose
+
+
 class StateEstimation(DriverTemplate):
 
-    def __init__(self, circuit: MultiCircuit):
+    def __init__(self, circuit: MultiCircuit, options: StateEstimationOptions | None = None):
         """
         Constructor
         :param circuit: circuit object
@@ -56,6 +64,8 @@ class StateEstimation(DriverTemplate):
         DriverTemplate.__init__(self, grid=circuit)
 
         self.results: Union[StateEstimationResults, None] = None
+
+        self.options = StateEstimationOptions() if options is None else options
 
     @staticmethod
     def collect_measurements(circuit: MultiCircuit) -> StateEstimationInput:
@@ -158,7 +168,9 @@ class StateEstimation(DriverTemplate):
                                    vd=idx.vd,
                                    pv=idx.pv,
                                    no_slack=idx.no_slack,
-                                   verbose=2)
+                                   tol=self.options.tol,
+                                   max_iter=self.options.max_iter,
+                                   verbose=self.options.verbose)
 
             report.add(method=SolverType.LM,
                        converged=solution.converged,

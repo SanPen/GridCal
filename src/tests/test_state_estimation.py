@@ -7,9 +7,11 @@ from GridCalEngine.api import *
 np.set_printoptions(linewidth=10000)
 
 
-def test_3_node() -> None:
+def test_3_node_abur_exposito() -> None:
     """
-    3-bus state estimation test from monticellí's book
+    3-bus state estimation test from
+    Power System State Estimation Theory and Implementation
+    Ali Abur and Antonio Gomez Expósito
     """
     grid = MultiCircuit()
 
@@ -64,3 +66,7 @@ def test_3_node() -> None:
 
     results = np.array([0.99962926+0.j, 0.97392515-0.02120941j, 0.94280676-0.04521561j])
     assert np.allclose(se.results.voltage, results)
+
+
+def test_3_bus_monticelli():
+    pass

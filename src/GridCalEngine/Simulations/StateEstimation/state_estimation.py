@@ -438,7 +438,7 @@ def solve_se_lm(nc: NumericalCircuit,
 
     # right hand side
     # H^t·W·dz
-    gx = - H1 @ dz
+    gx = H1 @ dz
 
     # set the previous objective function value
     obj_val_prev = 1e20
@@ -449,10 +449,10 @@ def solve_se_lm(nc: NumericalCircuit,
     while not converged and iter_ < max_iter:
 
         # Solve the increment
-        dx = spsolve(Gx, -gx)
+        dx = spsolve(Gx, gx)
 
         dF = obj_val_prev - obj_val
-        dL = 0.5 * dx @ (mu * dx - gx)
+        dL = 0.5 * dx @ (mu * dx + gx)
 
         if (dF != 0.0) and (dL > 0.0):
             rho = dF / dL
@@ -496,7 +496,7 @@ def solve_se_lm(nc: NumericalCircuit,
 
             # right hand side
             # H^t·W·dz
-            gx = - H1 @ dz
+            gx = H1 @ dz
 
         else:
             mu *= nu
