@@ -15,8 +15,9 @@ from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import St
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.basic_structures import CscMat, IntVec, CxVec, Vec
-
+from GridCalEngine.Simulations.StateEstimation.state_estimation_results import StateEstimationResults
+from GridCalEngine.basic_structures import CscMat, IntVec, CxVec, Vec, Logger
+from scipy.stats.distributions import chi2
 
 def dSbus_dV(Ybus, V):
     """
@@ -370,7 +371,8 @@ def solve_se_lm(nc: NumericalCircuit,
                 no_slack: IntVec,
                 tol=1e-9,
                 max_iter=100,
-                verbose: int = 0) -> NumericPowerFlowResults:
+                verbose: int = 0,
+                logger:Logger | None = None) -> StateEstimationResults:
     """
     Solve the state estimation problem using the Levenberg-Marquadt method
     :param nc: instance of NumericalCircuit
@@ -387,9 +389,13 @@ def solve_se_lm(nc: NumericalCircuit,
     :param tol: Tolerance
     :param max_iter: Maximum nuber of iterations
     :param verbose: Verbosity level
+    :param logger: log it out
     :return: NumericPowerFlowResults instance
     """
     start_time = time.time()
+    confidence_value = 0.95
+    bad_data_detected= False
+    logger = logger if logger is not None else Logger()
 
     n_no_slack = len(no_slack)
     nvd = len(vd)
@@ -441,11 +447,11 @@ def solve_se_lm(nc: NumericalCircuit,
     gx = H1 @ dz
 
     # set the previous objective function value
-    obj_val_prev = 1e20
+    obj_val_prev = 1e12
 
     # objective function
     obj_val = 0.5 * dz @ (W * dz)
-
+    #breakpoint()
     while not converged and iter_ < max_iter:
 
         # Solve the increment
@@ -505,6 +511,18 @@ def solve_se_lm(nc: NumericalCircuit,
         # compute the convergence
         norm_f = np.linalg.norm(dx, np.inf)
         converged = norm_f < tol
+        if converged:
+            # bad data detection
+            # here we compare the obj func wrt CHI2NV of degree of freedom, degree of freedom is defined as the difference
+            # between all the available measurements and min required measurements for observability.
+            deg_of_freedom = len(z_phys) - 2 * n_no_slack
+            threshold_chi2 = chi2.ppf(confidence_value, df=deg_of_freedom)
+            if obj_val <= threshold_chi2:
+                logger.add_info(f"No bad data detected")
+            else:
+                bad_data_detected=True
+                logger.add_warning(f"Bad data detected")
+
 
         if verbose > 0:
             print(f"Norm_f {norm_f}")
@@ -526,10 +544,10 @@ def solve_se_lm(nc: NumericalCircuit,
         Yshunt_bus=Yshunt_bus,
         branch_rates=nc.passive_branch_data.rates,
         Sbase=nc.Sbase)
-
-    return NumericPowerFlowResults(V=V,
+    breakpoint()
+    return StateEstimationResults(V=V,
                                    Scalc=Scalc,
-                                   m=np.ones(nc.nbr, dtype=float),
+                                   m=nc.nbr,
                                    tau=np.zeros(nc.nbr, dtype=float),
                                    Sf=Sf,
                                    St=St,
@@ -550,4 +568,5 @@ def solve_se_lm(nc: NumericalCircuit,
                                    norm_f=norm_f,
                                    converged=converged,
                                    iterations=iter_,
-                                   elapsed=time.time() - start_time)
+                                   elapsed=time.time() - start_time,
+                                   bad_data_detected=bad_data_detected)

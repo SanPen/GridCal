@@ -5,7 +5,9 @@
 
 import numpy as np
 from typing import Union
-from GridCalEngine.basic_structures import ConvergenceReport
+
+from GridCalEngine.Simulations.StateEstimation.state_estimation_results import StateEstimationResults
+from GridCalEngine.basic_structures import ConvergenceReport, StateEstimationConverganceReport
 from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults
@@ -13,37 +15,6 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.enumerations import SolverType
-
-
-class StateEstimationResults(PowerFlowResults):
-
-    def __init__(self, n, m, bus_names, branch_names, hvdc_names, bus_types):
-        """
-
-        :param n:
-        :param m:
-        :param bus_names:
-        :param branch_names:
-        :param bus_types:
-        """
-        # initialize the
-        PowerFlowResults.__init__(self,
-                                  n=n,
-                                  m=m,
-                                  n_hvdc=0,
-                                  n_vsc=0,
-                                  n_gen=0,
-                                  n_batt=0,
-                                  n_sh=0,
-                                  bus_names=bus_names,
-                                  branch_names=branch_names,
-                                  hvdc_names=hvdc_names,
-                                  vsc_names=np.array([]),
-                                  gen_names=np.empty(0, dtype=object),
-                                  batt_names=np.empty(0, dtype=object),
-                                  sh_names=np.empty(0, dtype=object),
-                                  bus_types=bus_types)
-
 
 class StateEstimationOptions:
 
@@ -140,7 +111,31 @@ class StateEstimation(DriverTemplate):
                                               bus_names=nc.bus_data.names,
                                               branch_names=nc.passive_branch_data.names,
                                               hvdc_names=nc.hvdc_data.names,
-                                              bus_types=nc.bus_data.bus_types)
+                                              bus_types=nc.bus_data.bus_types,
+                                              V=np.ones(n, dtype=complex), Scalc=nc.Sbase,
+                                              m_values=np.ones(nc.nbr, dtype=float),
+                                              tau=np.zeros(nc.nbr, dtype=float), Sf=np.zeros(nc.nbr, dtype=complex),
+                                              St=np.zeros(nc.nbr, dtype=complex),  # Placeholder branch power flow (to)
+                                              If=np.zeros(nc.nbr, dtype=complex),  # Placeholder branch current (from)
+                                              It=np.zeros(nc.nbr, dtype=complex),  # Placeholder branch current (to)
+                                              loading=np.zeros(nc.nbr, dtype=float),  # Placeholder loading
+                                              losses=np.zeros(nc.nbr, dtype=complex),  # Placeholder losses
+                                              Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                              St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                              If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                              It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                              losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                              loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                              Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                              St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                              losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                              loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                              norm_f=50,
+                                              converged=False,
+                                              iterations=0,
+                                              elapsed=0,
+                                              bad_data_detected=False
+                                              )
         # self.se_results.initialize(n, m)
 
         islands = nc.split_into_islands()
@@ -156,7 +151,6 @@ class StateEstimation(DriverTemplate):
                                              branch_idx=island.passive_branch_data.original_idx)
 
             # run solver
-            report = ConvergenceReport()
             solution = solve_se_lm(nc=island,
                                    Ybus=adm.Ybus,
                                    Yf=adm.Yf,
@@ -170,13 +164,15 @@ class StateEstimation(DriverTemplate):
                                    no_slack=idx.no_slack,
                                    tol=self.options.tol,
                                    max_iter=self.options.max_iter,
-                                   verbose=self.options.verbose)
-
+                                   verbose=self.options.verbose,
+                                   logger=self.logger)
+            report = StateEstimationConverganceReport()
             report.add(method=SolverType.LM,
                        converged=solution.converged,
                        error=solution.norm_f,
                        elapsed=solution.elapsed,
-                       iterations=solution.iterations)
+                       iterations=solution.iterations,
+                       bad_data_detected=solution.bad_data_detected)
 
             self.results.convergence_reports.append(report)
 
