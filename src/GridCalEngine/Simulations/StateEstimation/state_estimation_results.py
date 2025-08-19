@@ -11,14 +11,13 @@ from typing import List, Tuple
 
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec, ConvergenceReport, Logger
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
-class NumericPowerFlowResults:
+class NumericStateEstimationResults:
     """
-    NumericPowerFlowResults, used to return values from the numerical methods
+    NumericStateEstimationResults, used to return values from the numerical methods
     """
 
     def __init__(self,
@@ -45,7 +44,8 @@ class NumericPowerFlowResults:
                  norm_f: float,
                  converged: bool,
                  iterations: int,
-                 elapsed: float):
+                 elapsed: float,
+                 bad_data_detected=False):
         """
         Object to store the results returned by a numeric power flow routine
         :param V: Voltage vector
@@ -107,8 +107,10 @@ class NumericPowerFlowResults:
         self.elapsed = elapsed
         self.method = None
 
+        self.bad_data_detected = bad_data_detected
 
-class PowerFlowResults(ResultsTemplate):
+
+class StateEstimationResults(ResultsTemplate):
 
     def __init__(
             self,
@@ -129,8 +131,7 @@ class PowerFlowResults(ResultsTemplate):
             bus_types: np.ndarray,
             clustering_results=None):
         """
-        A **PowerFlowResults** object is create as an attribute of the
-        :ref:`PowerFlowMP<pf_mp>` (as PowerFlowMP.results) when the power flow is run. It
+        A **StateEstimationResults** object
         provides access to the simulation results through its class attributes.
         :param n: number of nodes
         :param m: number of Branches
@@ -255,7 +256,7 @@ class PowerFlowResults(ResultsTemplate):
         self.plot_bars_limit: int = 100
         self.convergence_reports: List[ConvergenceReport] = list()
 
-        self.three_phase: bool = False
+        self.bad_data_detected = False
 
         self.register(name='bus_names', tpe=StrVec)
         self.register(name='branch_names', tpe=StrVec)
@@ -303,16 +304,7 @@ class PowerFlowResults(ResultsTemplate):
         self.register(name='battery_q', tpe=Vec)
         self.register(name='shunt_q', tpe=Vec)
 
-        self.register(name='three_phase', tpe=bool)
-
-    def apply_new_rates(self, nc: NumericalCircuit):
-        """
-
-        :param nc:
-        :return:
-        """
-        rates = nc.passive_branch_data.rates
-        self.loading = self.Sf / (rates + 1e-9)
+        self.register(name='bad_data_detected', tpe=bool)
 
     @property
     def converged(self):
@@ -359,7 +351,7 @@ class PowerFlowResults(ResultsTemplate):
         return val
 
     def apply_from_island(self,
-                          results: NumericPowerFlowResults,
+                          results: NumericStateEstimationResults,
                           b_idx: np.ndarray,
                           br_idx: np.ndarray,
                           hvdc_idx: np.ndarray,
@@ -403,52 +395,8 @@ class PowerFlowResults(ResultsTemplate):
         self.losses_vsc[vsc_idx] = results.losses_vsc
         self.loading_vsc[vsc_idx] = results.loading_vsc
 
-    def apply_from_island_3phase(self,
-                                 results: NumericPowerFlowResults,
-                                 b_idx: np.ndarray,
-                                 b_idx3: np.ndarray,
-                                 br_idx: np.ndarray,
-                                 br_idx3: np.ndarray,
-                                 hvdc_idx: np.ndarray,
-                                 vsc_idx: np.ndarray) -> None:
-        """
-        Apply results from another island circuit to the circuit results represented
-        here.
-        :param results: NumericPowerFlowResults from an island circuit
-        :param b_idx: bus original indices
-        :param b_idx3: bus original indices expanded to 3-phase
-        :param br_idx: branch original indices
-        :param br_idx3: branch original indices expanded to 3-phase
-        :param hvdc_idx: hvdc original indices
-        :param vsc_idx: vsc original indices
-        :return: None
-        """
-        self.voltage[b_idx3] = results.V
-        self.Sbus[b_idx3] = results.Scalc
-
-        self.tap_module[br_idx3] = results.tap_module
-        self.tap_angle[br_idx3] = results.tap_angle
-
-        self.Sf[br_idx3] = results.Sf
-        self.St[br_idx3] = results.St
-        self.If[br_idx3] = results.If
-        self.It[br_idx3] = results.It
-        self.loading[br_idx3] = results.loading
-        self.losses[br_idx3] = results.losses
-
-        # Hvdc
-        self.Pf_hvdc[hvdc_idx] = results.Sf_hvdc.real
-        self.Pt_hvdc[hvdc_idx] = results.St_hvdc.real
-        self.losses_hvdc[hvdc_idx] = results.losses_hvdc.real
-        self.loading_hvdc[hvdc_idx] = results.loading_hvdc.real
-
-        # VSC
-        self.Pf_vsc[vsc_idx] = results.Pf_vsc
-        self.St_vsc[vsc_idx] = results.St_vsc
-        self.If_vsc[vsc_idx] = results.If_vsc
-        self.It_vsc[vsc_idx] = results.It_vsc
-        self.losses_vsc[vsc_idx] = results.losses_vsc
-        self.loading_vsc[vsc_idx] = results.loading_vsc
+        if results.bad_data_detected:
+            self.bad_data_detected = True
 
     def get_report_dataframe(self, island_idx=0):
         """
@@ -971,7 +919,7 @@ class PowerFlowResults(ResultsTemplate):
 
         Returns:
 
-            Bus results, Branch reuslts
+            Bus results, Branch results
         """
 
         # buses results
@@ -1009,7 +957,7 @@ class PowerFlowResults(ResultsTemplate):
 
         return df_bus, df_branch
 
-    def compare(self, other: "PowerFlowResults", tol=1e-6) -> Tuple[bool, Logger]:
+    def compare(self, other: "StateEstimationResults", tol=1e-6) -> Tuple[bool, Logger]:
         """
         Compare this results with another
         :param other: PowerFlowResults

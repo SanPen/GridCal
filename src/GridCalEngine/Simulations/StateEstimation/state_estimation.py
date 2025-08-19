@@ -8,14 +8,15 @@ from typing import Tuple
 
 import pandas as pd
 from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, csr_matrix, diags
-from scipy.sparse.linalg import spsolve
+from scipy.sparse.linalg import spsolve, factorized
+# from scipy.stats.distributions import chi2
 import numpy as np
 from numpy import conj, arange
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.basic_structures import CscMat, IntVec, CxVec, Vec
+from GridCalEngine.Simulations.StateEstimation.state_estimation_results import NumericStateEstimationResults
+from GridCalEngine.basic_structures import CscMat, IntVec, CxVec, Vec, ObjVec, Logger
 
 
 def dSbus_dV(Ybus, V):
@@ -318,7 +319,7 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
     return H, h, S  # Return Sbus in pu
 
 
-def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float) -> Tuple[Vec, Vec]:
+def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float) -> Tuple[Vec, Vec, ObjVec]:
     """
     get_measurements_and_deviations the measurements into "measurements" and "sigma"
     ordering: Pinj, Pflow, Qinj, Qflow, Iflow, Vm
@@ -328,7 +329,7 @@ def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float
     """
 
     nz = se_input.size()
-
+    measurements = np.zeros(nz, dtype=object)
     magnitudes = np.zeros(nz)
     sigma = np.zeros(nz)
 
@@ -345,6 +346,7 @@ def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float
         for m in lst:
             magnitudes[k] = m.value / Sbase
             sigma[k] = m.sigma / Sbase
+            measurements[k] = m
             k += 1
 
     for lst in [se_input.vm_value,
@@ -352,9 +354,79 @@ def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float
         for m in lst:
             magnitudes[k] = m.value
             sigma[k] = m.sigma
+            measurements[k] = m
             k += 1
 
-    return magnitudes, sigma
+    return magnitudes, sigma, measurements
+
+
+def b_test(sigma2: Vec,
+           H: csc_matrix,
+           dz: np.ndarray,
+           HtWH: csc_matrix,
+           c_threshold: float = 4.0):
+    """
+    From RELIABLE BAD DATA PROCESSING FOR REAL-TIME STATE ESTIMATION, 1983
+    Monticelli & Garcia (1983) 'b-test' bad data detection
+    :param sigma2: sigma 2
+    :param H: Jacobian at the solution (m x k)
+    :param dz: residuals r = z - h(x^) (length m)
+    :param HtWH: G = H^T W H (k x k)
+    :param c_threshold: detection threshold 'c' (use 4.0 as in the paper)
+    :return:
+        'r'      : residuals r_i
+        'sigma2' : sigma_i^2
+        'Pii'    : residual variances P_ii
+        'rN'     : normalized residuals r_i / sqrt(P_ii)
+        'imax'   : index of largest |rN|
+        'b'      : b at imax
+        'is_bad' : bool
+    """
+
+    m, k = H.shape
+
+    # Factorize G once, then solve G y = H_i^T for each i
+    # Use LU so we can reuse for many RHS
+    lu = factorized(HtWH.tocsc())
+
+    # Compute h_i = H_i G^{-1} H_i^T and then Pii = sigma_i^2 - h_i
+    # Do it row-by-row but reusing the factorization
+    Pii = np.empty(m, dtype=float)
+
+    # iterate efficiently over rows of H
+    H_csr = H.tocsr()
+
+    for i in range(m):
+        # get sparse row i as (data, indices)
+        row = H_csr.getrow(i)
+        if row.nnz == 0:
+            # no sensitivity: Pii = sigma^2 (critical measurement with no redundancy)
+            Pii[i] = sigma2[i]
+        else:
+
+            # Solve y = G^{-1} H_i^T
+            y = lu(row.T.toarray())  # shape (k,1)
+
+            # h_i = H_i y
+            h_i = float(row.dot(y).ravel()[0])
+            Pii[i] = sigma2[i] - h_i
+
+            # numerical guard
+            if Pii[i] <= 0:
+                # If numerical issues produce tiny negative values, clamp to a small positive eps
+                Pii[i] = max(Pii[i], 1e-14)
+
+    r = dz
+    rN = r / np.sqrt(Pii)
+
+    imax = np.argmax(np.abs(rN)).astype(int)
+    # b_i = (sigma_i / Pii) * r_i   with sigma_i = sqrt(sigma2_i)
+    b = (np.sqrt(sigma2[imax]) / Pii[imax]) * r[imax]
+
+    # compute where the measurements are bad
+    is_bad = np.abs(b) > c_threshold
+
+    return r, sigma2, Pii, rN, imax, b, is_bad
 
 
 def solve_se_lm(nc: NumericalCircuit,
@@ -370,7 +442,10 @@ def solve_se_lm(nc: NumericalCircuit,
                 no_slack: IntVec,
                 tol=1e-9,
                 max_iter=100,
-                verbose: int = 0) -> NumericPowerFlowResults:
+                verbose: int = 0,
+                c_threshold: float = 4.0,
+                prefer_correct: bool = True,
+                logger: Logger | None = None) -> NumericStateEstimationResults:
     """
     Solve the state estimation problem using the Levenberg-Marquadt method
     :param nc: instance of NumericalCircuit
@@ -387,9 +462,15 @@ def solve_se_lm(nc: NumericalCircuit,
     :param tol: Tolerance
     :param max_iter: Maximum nuber of iterations
     :param verbose: Verbosity level
+    :param c_threshold: Bad data detection threshold 'c' (4 as default)
+    :param prefer_correct: if true the measurements are corrected instead of deleted
+    :param logger: log it out
     :return: NumericPowerFlowResults instance
     """
     start_time = time.time()
+    confidence_value = 0.95
+    bad_data_detected = False
+    logger = logger if logger is not None else Logger()
 
     n_no_slack = len(no_slack)
     nvd = len(vd)
@@ -397,14 +478,12 @@ def solve_se_lm(nc: NumericalCircuit,
     V = np.ones(n, dtype=complex)
 
     # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
-    z_phys, sigma_phys = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
-
-    # Convert power measurements and sigmas to per-unit
-    z = np.copy(z_phys)
-    sigma = np.copy(sigma_phys)
+    z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
 
     # compute the weights matrix using per-unit sigma
-    W = diags(1.0 / np.power(sigma, 2.0))
+    sigma2 = np.power(sigma, 2.0)
+    cov = 1.0 / sigma2
+    W = diags(cov).tocsc()
 
     # Levenberg-Marquardt method
 
@@ -441,16 +520,69 @@ def solve_se_lm(nc: NumericalCircuit,
     gx = H1 @ dz
 
     # set the previous objective function value
-    obj_val_prev = 1e20
+    obj_val_prev = 1e12
 
     # objective function
     obj_val = 0.5 * dz @ (W * dz)
-
+    # breakpoint()
     while not converged and iter_ < max_iter:
 
         # Solve the increment
         dx = spsolve(Gx, gx)
 
+        if norm_f < (tol * 10.0):
+            # bad data detection
+            # here we compare the obj func wrt CHI2NV of degree of freedom,
+            # degree of freedom is defined as the difference
+            # between all the available measurements and min required measurements for observability.
+            # deg_of_freedom = len(z_phys) - 2 * n_no_slack
+            # threshold_chi2 = chi2.ppf(confidence_value, df=deg_of_freedom)
+            # if obj_val <= threshold_chi2:
+            #     logger.add_info(f"No bad data detected")
+            # else:
+            #     bad_data_detected = True
+            #     logger.add_warning(f"Bad data detected")
+
+            r, sigma2, Pii, rN, imax, b, is_bad = b_test(sigma2=sigma2, H=H, dz=dz, HtWH=H2, c_threshold=c_threshold)
+
+            if is_bad:
+
+                if prefer_correct:
+                    z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]
+
+                    logger.add_info("Measurement corrected",
+                                    device=measurements[imax].api_object.name,
+                                    device_class=measurements[imax].device_type.value,
+                                    device_property="value",
+                                    value=z[imax],
+                                    expected_value=z_tilde_imax)
+
+                    # correct the bad data index
+                    z[imax] = z_tilde_imax
+                else:
+
+                    logger.add_info("Measurement deleted",
+                                    device=measurements[imax].api_object.name,
+                                    device_class=measurements[imax].device_type.value,
+                                    device_property="value",
+                                    value=z[imax],
+                                    expected_value="")
+
+                    # delete measurements
+                    mask = np.ones(len(z), dtype=int)
+                    mask[imax] = 0
+
+                    se_input = se_input.slice_with_mask(mask=mask)
+
+                    # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
+                    z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
+
+                    # compute the weights matrix using per-unit sigma
+                    sigma2 = np.power(sigma, 2.0)
+                    cov = 1.0 / sigma2
+                    W = diags(cov).tocsc()
+
+        # L-M ratios of convergence
         dF = obj_val_prev - obj_val
         dL = 0.5 * dx @ (mu * dx + gx)
 
@@ -527,27 +659,28 @@ def solve_se_lm(nc: NumericalCircuit,
         branch_rates=nc.passive_branch_data.rates,
         Sbase=nc.Sbase)
 
-    return NumericPowerFlowResults(V=V,
-                                   Scalc=Scalc,
-                                   m=np.ones(nc.nbr, dtype=float),
-                                   tau=np.zeros(nc.nbr, dtype=float),
-                                   Sf=Sf,
-                                   St=St,
-                                   If=If,
-                                   It=It,
-                                   loading=loading,
-                                   losses=losses,
-                                   Pf_vsc=np.zeros(nc.nvsc, dtype=float),
-                                   St_vsc=np.zeros(nc.nvsc, dtype=complex),
-                                   If_vsc=np.zeros(nc.nvsc, dtype=float),
-                                   It_vsc=np.zeros(nc.nvsc, dtype=complex),
-                                   losses_vsc=np.zeros(nc.nvsc, dtype=float),
-                                   loading_vsc=np.zeros(nc.nvsc, dtype=float),
-                                   Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                   St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                   losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                   loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                   norm_f=norm_f,
-                                   converged=converged,
-                                   iterations=iter_,
-                                   elapsed=time.time() - start_time)
+    return NumericStateEstimationResults(V=V,
+                                         Scalc=Scalc,
+                                         m=nc.active_branch_data.tap_module,
+                                         tau=nc.active_branch_data.tap_angle,
+                                         Sf=Sf,
+                                         St=St,
+                                         If=If,
+                                         It=It,
+                                         loading=loading,
+                                         losses=losses,
+                                         Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                         If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                         losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         norm_f=norm_f,
+                                         converged=converged,
+                                         iterations=iter_,
+                                         elapsed=time.time() - start_time,
+                                         bad_data_detected=bad_data_detected)

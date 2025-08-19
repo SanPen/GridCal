@@ -3,54 +3,71 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-import numpy as np
 from typing import Union
+
+from GridCalEngine.Simulations.StateEstimation.state_estimation_results import StateEstimationResults
 from GridCalEngine.basic_structures import ConvergenceReport
 from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.enumerations import SolverType
 
 
-class StateEstimationResults(PowerFlowResults):
-
-    def __init__(self, n, m, bus_names, branch_names, hvdc_names, bus_types):
-        """
-
-        :param n:
-        :param m:
-        :param bus_names:
-        :param branch_names:
-        :param bus_types:
-        """
-        # initialize the
-        PowerFlowResults.__init__(self,
-                                  n=n,
-                                  m=m,
-                                  n_hvdc=0,
-                                  n_vsc=0,
-                                  n_gen=0,
-                                  n_batt=0,
-                                  n_sh=0,
-                                  bus_names=bus_names,
-                                  branch_names=branch_names,
-                                  hvdc_names=hvdc_names,
-                                  vsc_names=np.array([]),
-                                  gen_names=np.empty(0, dtype=object),
-                                  batt_names=np.empty(0, dtype=object),
-                                  sh_names=np.empty(0, dtype=object),
-                                  bus_types=bus_types)
-
-
 class StateEstimationOptions:
 
-    def __init__(self, tol: float = 1e-9, max_iter: int = 100, verbose: int = 0):
+    def __init__(self, tol: float = 1e-9, max_iter: int = 100, verbose: int = 0,
+                 prefer_correct: bool = True, c_threshold: int = 4.0):
+        """
+        StateEstimationOptions
+        :param tol: Tolerance
+        :param max_iter: Maximum number of iterations
+        :param verbose: Verbosity level (1 light, 2 heavy)
+        :param prefer_correct: Prefer measurement correction? otherwise measurement deletion is used
+        :param c_threshold: confidence threshold (default 4.0)
+        """
         self.tol = tol
         self.max_iter = max_iter
         self.verbose = verbose
+        self.prefer_correct = prefer_correct
+        self.c_threshold = c_threshold
+
+
+class StateEstimationConvergenceReport(ConvergenceReport):
+    def __init__(self) -> None:
+        """
+        Constructor
+        """
+        super().__init__()
+        self.bad_data_detected = list()
+
+    def add_se(self, method,
+               converged: bool,
+               error: float,
+               elapsed: float,
+               iterations: int,
+               bad_data_detected: bool):
+        """
+
+        :param method:
+        :param converged:
+        :param error:
+        :param elapsed:
+        :param iterations:
+        :param bad_data_detected:
+        :return:
+        """
+        # Call parent's add method for common parameters
+        self.add(method, converged, error, elapsed, iterations)
+        self.bad_data_detected.append(bad_data_detected)
+
+    def get_bad_data_detected(self) -> list:
+        """
+        Get bad data detection results
+        :return: List of bad data detection results
+        """
+        return self.bad_data_detected
 
 
 class StateEstimation(DriverTemplate):
@@ -137,9 +154,18 @@ class StateEstimation(DriverTemplate):
         nc = compile_numerical_circuit_at(self.grid, logger=self.logger)
         self.results = StateEstimationResults(n=n,
                                               m=m,
+                                              n_hvdc=nc.nhvdc,
+                                              n_vsc=nc.nvsc,
+                                              n_gen=nc.ngen,
+                                              n_batt=nc.nbatt,
+                                              n_sh=nc.nshunt,
                                               bus_names=nc.bus_data.names,
                                               branch_names=nc.passive_branch_data.names,
                                               hvdc_names=nc.hvdc_data.names,
+                                              vsc_names=nc.vsc_data.names,
+                                              gen_names=nc.generator_data.names,
+                                              batt_names=nc.battery_data.names,
+                                              sh_names=nc.shunt_data.names,
                                               bus_types=nc.bus_data.bus_types)
         # self.se_results.initialize(n, m)
 
@@ -156,7 +182,6 @@ class StateEstimation(DriverTemplate):
                                              branch_idx=island.passive_branch_data.original_idx)
 
             # run solver
-            report = ConvergenceReport()
             solution = solve_se_lm(nc=island,
                                    Ybus=adm.Ybus,
                                    Yf=adm.Yf,
@@ -170,13 +195,19 @@ class StateEstimation(DriverTemplate):
                                    no_slack=idx.no_slack,
                                    tol=self.options.tol,
                                    max_iter=self.options.max_iter,
-                                   verbose=self.options.verbose)
+                                   verbose=self.options.verbose,
+                                   prefer_correct=self.options.prefer_correct,
+                                   c_threshold=self.options.c_threshold,
+                                   logger=self.logger)
 
-            report.add(method=SolverType.LM,
-                       converged=solution.converged,
-                       error=solution.norm_f,
-                       elapsed=solution.elapsed,
-                       iterations=solution.iterations)
+            report = StateEstimationConvergenceReport()
+
+            report.add_se(method=SolverType.LM,
+                          converged=solution.converged,
+                          error=solution.norm_f,
+                          elapsed=solution.elapsed,
+                          iterations=solution.iterations,
+                          bad_data_detected=solution.bad_data_detected)
 
             self.results.convergence_reports.append(report)
 
