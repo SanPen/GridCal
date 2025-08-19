@@ -552,7 +552,8 @@ def solve_se_lm(nc: NumericalCircuit,
 
                 logger.add_info("Measurement corrected",
                                 device=measurements[imax].api_object.name,
-                                device_property=measurements[imax].device_type.value,
+                                device_class=measurements[imax].device_type.value,
+                                device_property="value",
                                 value=z[imax],
                                 expected_value=z_tilde_imax)
 
