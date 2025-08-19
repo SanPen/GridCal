@@ -31,7 +31,7 @@ class StateEstimationConvergenceReport(ConvergenceReport):
         Constructor
         """
         super().__init__()
-        self.bad_Data_detected = list()
+        self.bad_data_detected = list()
 
     def add_se(self, method,
                converged: bool,
@@ -51,7 +51,7 @@ class StateEstimationConvergenceReport(ConvergenceReport):
         """
         # Call parent's add method for common parameters
         self.add(method, converged, error, elapsed, iterations)
-        self.bad_Data_detected.append(bad_data_detected)
+        self.bad_data_detected.append(bad_data_detected)
 
     def get_bad_data_detected(self) -> list:
         """
@@ -60,7 +60,7 @@ class StateEstimationConvergenceReport(ConvergenceReport):
         :param method: Optional method name to filter results
         :return: List of bad data detection results
         """
-        return self.bad_Data_detected
+        return self.bad_data_detected
 
 
 class StateEstimation(DriverTemplate):
@@ -214,7 +214,7 @@ class StateEstimation(DriverTemplate):
                           elapsed=solution.elapsed,
                           iterations=solution.iterations,
                           bad_data_detected=solution.bad_data_detected)
-
+            breakpoint()
             self.results.convergence_reports.append(report)
 
             # Scale power results from per-unit to MVA before applying
