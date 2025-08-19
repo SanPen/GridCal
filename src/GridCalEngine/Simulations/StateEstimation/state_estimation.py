@@ -19,6 +19,7 @@ from GridCalEngine.Simulations.StateEstimation.state_estimation_results import S
 from GridCalEngine.basic_structures import CscMat, IntVec, CxVec, Vec, Logger
 from scipy.stats.distributions import chi2
 
+
 def dSbus_dV(Ybus, V):
     """
     
@@ -372,7 +373,7 @@ def solve_se_lm(nc: NumericalCircuit,
                 tol=1e-9,
                 max_iter=100,
                 verbose: int = 0,
-                logger:Logger | None = None) -> StateEstimationResults:
+                logger: Logger | None = None) -> StateEstimationResults:
     """
     Solve the state estimation problem using the Levenberg-Marquadt method
     :param nc: instance of NumericalCircuit
@@ -394,7 +395,7 @@ def solve_se_lm(nc: NumericalCircuit,
     """
     start_time = time.time()
     confidence_value = 0.95
-    bad_data_detected= False
+    bad_data_detected = False
     logger = logger if logger is not None else Logger()
 
     n_no_slack = len(no_slack)
@@ -451,7 +452,7 @@ def solve_se_lm(nc: NumericalCircuit,
 
     # objective function
     obj_val = 0.5 * dz @ (W * dz)
-    #breakpoint()
+    # breakpoint()
     while not converged and iter_ < max_iter:
 
         # Solve the increment
@@ -520,9 +521,8 @@ def solve_se_lm(nc: NumericalCircuit,
             if obj_val <= threshold_chi2:
                 logger.add_info(f"No bad data detected")
             else:
-                bad_data_detected=True
+                bad_data_detected = True
                 logger.add_warning(f"Bad data detected")
-
 
         if verbose > 0:
             print(f"Norm_f {norm_f}")
@@ -544,28 +544,29 @@ def solve_se_lm(nc: NumericalCircuit,
         Yshunt_bus=Yshunt_bus,
         branch_rates=nc.passive_branch_data.rates,
         Sbase=nc.Sbase)
+
     return StateEstimationResults(V=V,
-                                   Scalc=Scalc,
-                                   m=nc.nbr,
-                                   tau=np.zeros(nc.nbr, dtype=float),
-                                   Sf=Sf,
-                                   St=St,
-                                   If=If,
-                                   It=It,
-                                   loading=loading,
-                                   losses=losses,
-                                   Pf_vsc=np.zeros(nc.nvsc, dtype=float),
-                                   St_vsc=np.zeros(nc.nvsc, dtype=complex),
-                                   If_vsc=np.zeros(nc.nvsc, dtype=float),
-                                   It_vsc=np.zeros(nc.nvsc, dtype=complex),
-                                   losses_vsc=np.zeros(nc.nvsc, dtype=float),
-                                   loading_vsc=np.zeros(nc.nvsc, dtype=float),
-                                   Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                   St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                   losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                   loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                   norm_f=norm_f,
-                                   converged=converged,
-                                   iterations=iter_,
-                                   elapsed=time.time() - start_time,
-                                   bad_data_detected=bad_data_detected)
+                                  Scalc=Scalc,
+                                  m=nc.nbr,
+                                  tau=np.zeros(nc.nbr, dtype=float),
+                                  Sf=Sf,
+                                  St=St,
+                                  If=If,
+                                  It=It,
+                                  loading=loading,
+                                  losses=losses,
+                                  Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                  St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                  If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                  It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                  losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                  loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                  Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                  St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                  losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                  loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                  norm_f=norm_f,
+                                  converged=converged,
+                                  iterations=iter_,
+                                  elapsed=time.time() - start_time,
+                                  bad_data_detected=bad_data_detected)

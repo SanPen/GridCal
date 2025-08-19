@@ -7,14 +7,14 @@ import numpy as np
 from typing import Union
 
 from GridCalEngine.Simulations.StateEstimation.state_estimation_results import StateEstimationResults
-from GridCalEngine.basic_structures import ConvergenceReport, StateEstimationConverganceReport
+from GridCalEngine.basic_structures import ConvergenceReport
 from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.enumerations import SolverType
+
 
 class StateEstimationOptions:
 
@@ -22,6 +22,44 @@ class StateEstimationOptions:
         self.tol = tol
         self.max_iter = max_iter
         self.verbose = verbose
+
+
+class StateEstimationConvergenceReport(ConvergenceReport):
+    def __init__(self) -> None:
+        """
+        Constructor
+        """
+        super().__init__()
+        self.bad_Data_detected = list()
+
+    def add_se(self, method,
+               converged: bool,
+               error: float,
+               elapsed: float,
+               iterations: int,
+               bad_data_detected: bool):
+        """
+
+        :param method:
+        :param converged:
+        :param error:
+        :param elapsed:
+        :param iterations:
+        :param bad_data_detected:
+        :return:
+        """
+        # Call parent's add method for common parameters
+        self.add(method, converged, error, elapsed, iterations)
+        self.bad_Data_detected.append(bad_data_detected)
+
+    def get_bad_data_detected(self) -> list:
+        """
+        Get bad data detection results
+
+        :param method: Optional method name to filter results
+        :return: List of bad data detection results
+        """
+        return self.bad_Data_detected
 
 
 class StateEstimation(DriverTemplate):
@@ -166,13 +204,15 @@ class StateEstimation(DriverTemplate):
                                    max_iter=self.options.max_iter,
                                    verbose=self.options.verbose,
                                    logger=self.logger)
-            report = StateEstimationConverganceReport()
-            report.add(method=SolverType.LM,
-                       converged=solution.converged,
-                       error=solution.norm_f,
-                       elapsed=solution.elapsed,
-                       iterations=solution.iterations,
-                       bad_data_detected=solution.bad_data_detected)
+
+            report = StateEstimationConvergenceReport()
+
+            report.add_se(method=SolverType.LM,
+                          converged=solution.converged,
+                          error=solution.norm_f,
+                          elapsed=solution.elapsed,
+                          iterations=solution.iterations,
+                          bad_data_detected=solution.bad_data_detected)
 
             self.results.convergence_reports.append(report)
 
