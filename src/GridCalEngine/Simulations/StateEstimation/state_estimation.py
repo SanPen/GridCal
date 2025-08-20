@@ -388,6 +388,9 @@ def b_test(sigma2: Vec,
     # Factorize G once, then solve G y = H_i^T for each i
     # Use LU so we can reuse for many RHS
     lu = factorized(HtWH.tocsc())
+    # For the system to be observable the eigenvalues should be greater than zero -> matric pos definate
+    eigvals = np.linalg.eigvalsh(HtWH.toarray())
+    assert np.all(eigvals > 0)
 
     # Compute h_i = H_i G^{-1} H_i^T and then Pii = sigma_i^2 - h_i
     # Do it row-by-row but reusing the factorization
@@ -443,7 +446,7 @@ def solve_se_lm(nc: NumericalCircuit,
                 tol=1e-9,
                 max_iter=100,
                 verbose: int = 0,
-                c_threshold: float = 4.0,
+                c_threshold: float = 3.0,
                 prefer_correct: bool = True,
                 logger: Logger | None = None) -> NumericStateEstimationResults:
     """
@@ -468,7 +471,7 @@ def solve_se_lm(nc: NumericalCircuit,
     :return: NumericPowerFlowResults instance
     """
     start_time = time.time()
-    confidence_value = 0.95
+    #confidence_value = 0.95
     bad_data_detected = False
     logger = logger if logger is not None else Logger()
 
@@ -501,30 +504,46 @@ def solve_se_lm(nc: NumericalCircuit,
 
     # measurements error (in per-unit)
     dz = z - h
-
+    mu = None
     # System matrix
     # H1 = H^t·W
-    H1 = H.transpose() @ W
+    # H1 = H.transpose() @ W
+    #
+    # # H2 = H1·H
+    # H2 = H1 @ H
+    #
+    # # set first value of mu (any large number)
+    #mu = 1e-3 * H2.diagonal().max()
+    #
+    # # compute system matrix
+    # Gx = H2 + mu * Idn
+    #
+    # # right hand side
+    # # H^t·W·dz
+    # gx = H1 @ dz
 
-    # H2 = H1·H
-    H2 = H1 @ H
+    # -------------------------------
 
-    # set first value of mu (any large number)
-    mu = 1e-3 * H2.diagonal().max()
+    w_sqrt = 1.0 / np.sqrt(sigma2)  # length m
+    J = H.multiply(w_sqrt[:, None])  # weighted Jacobian
+    r_t = w_sqrt * dz  # weighted residual
 
-    # compute system matrix
-    Gx = H2 + mu * Idn
+    # Normal equations: G = J^T J
+    G = (J.T @ J).tocsc()
 
-    # right hand side
-    # H^t·W·dz
-    gx = H1 @ dz
+    # Levenberg–Marquardt damping
+    if iter_ == 0:  # initialize mu only once
+        mu = 1e-3 * float(G.diagonal().max())
+    Gx = G + mu * Idn
 
+    # RHS
+    gx = J.T @ r_t
     # set the previous objective function value
     obj_val_prev = 1e12
 
     # objective function
     obj_val = 0.5 * dz @ (W * dz)
-    # breakpoint()
+
     while not converged and iter_ < max_iter:
 
         # Solve the increment
@@ -542,10 +561,12 @@ def solve_se_lm(nc: NumericalCircuit,
             # else:
             #     bad_data_detected = True
             #     logger.add_warning(f"Bad data detected")
-
-            r, sigma2, Pii, rN, imax, b, is_bad = b_test(sigma2=sigma2, H=H, dz=dz, HtWH=H2, c_threshold=c_threshold)
-
-            if is_bad:
+            try:
+                r, sigma2, Pii, rN, imax, b, bad_data_detected = b_test(sigma2=sigma2, H=H, dz=dz, HtWH=G,
+                                                             c_threshold=c_threshold)
+            except AssertionError as ae:
+                logger.add_warning(f"The system is not observable while identifying bad data, {ae}")
+            if bad_data_detected:
 
                 if prefer_correct:
                     z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]
@@ -591,7 +612,7 @@ def solve_se_lm(nc: NumericalCircuit,
             mu *= max([1.0 / 3.0, 1.0 - np.power(2 * rho - 1, 3.0)])
             nu = 2.0
 
-            # modify the solution
+            # # modify the solution
             dVa = dx[:n_no_slack]
             dVm = dx[n_no_slack:]
             Va[no_slack] += dVa
@@ -616,19 +637,34 @@ def solve_se_lm(nc: NumericalCircuit,
             # objective function
             obj_val = 0.5 * dz @ (W * dz)
 
-            # System matrix
-            # H1 = H^t·W
-            H1 = H.transpose() @ W
+            # # System matrix
+            # # H1 = H^t·W
+            # H1 = H.transpose() @ W
+            #
+            # # H2 = H1·H
+            # H2 = H1 @ H
+            #
+            # # compute system matrix
+            # Gx = H2 + mu * Idn
+            #
+            # # right hand side
+            # # H^t·W·dz
+            # gx = H1 @ dz
 
-            # H2 = H1·H
-            H2 = H1 @ H
+            w_sqrt = 1.0 / np.sqrt(sigma2)  # length m
+            J = H.multiply(w_sqrt[:, None])  # weighted Jacobian
+            r_t = w_sqrt * dz  # weighted residual
 
-            # compute system matrix
-            Gx = H2 + mu * Idn
+            # Normal equations: G = J^T J
+            G = (J.T @ J).tocsc()
 
-            # right hand side
-            # H^t·W·dz
-            gx = H1 @ dz
+            # Levenberg–Marquardt damping
+            if mu is None or iter_ == 0:  # initialize mu only once
+                mu = 1e-3 * float(G.diagonal().max())
+            Gx = G + mu * Idn
+
+            # RHS
+            gx = J.T @ r_t
 
         else:
             mu *= nu
