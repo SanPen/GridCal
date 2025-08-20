@@ -87,6 +87,9 @@ class ContinuationPowerFlowDriver(DriverTemplate):
 
         islands = nc.split_into_islands(ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
 
+        I0 = nc.get_current_injections_pu()
+        Y0 = nc.get_admittance_injections_pu()
+
         result_series = list()
 
         for is_idx, island in enumerate(islands):
@@ -107,6 +110,8 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                                           branch_rates=island.passive_branch_data.rates,
                                           Sbase=island.Sbase,
                                           Sbus_base=self.inputs.Sbase[island.bus_data.original_idx],
+                                          I0=I0[island.bus_data.original_idx],
+                                          Y0=Y0[island.bus_data.original_idx],
                                           Sbus_target=self.inputs.Starget[island.bus_data.original_idx],
                                           V=self.inputs.Vbase[island.bus_data.original_idx],
                                           distributed_slack=self.pf_options.distributed_slack,

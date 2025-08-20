@@ -9,7 +9,9 @@ from GridCalEngine.enumerations import CpfParametrization, CpfStopAt
 from GridCalEngine.Simulations.Derivatives.ac_jacobian import AC_jacobianVc
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_direct
 from GridCalEngine.Topology.simulation_indices import compile_types
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (polar_to_rect, compute_power)
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (polar_to_rect,
+                                                                                   compute_power,
+                                                                                   compute_zip_power)
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Utils.Sparse.csc2 import spsolve_csc, extend
 
@@ -331,7 +333,7 @@ def predictor(V, lam, Ybus, Sxfr,
         return V, lam, z
 
 
-def corrector(Ybus, Sbus: CxVec, V0: CxVec,
+def corrector(Ybus, S0: CxVec, I0: CxVec, Y0: CxVec, V0: CxVec,
               idx_dtheta: IntVec, idx_dVm: IntVec, idx_dP: IntVec, idx_dQ: IntVec,
               lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it,
               verbose, mu_0=1.0, acceleration_parameter=0.5):
@@ -353,7 +355,9 @@ def corrector(Ybus, Sbus: CxVec, V0: CxVec,
      the number of iterations performed, and the final lambda.
 
     :param Ybus: Admittance matrix (CSC sparse)
-    :param Sbus: Bus power Injections
+    :param S0: Bus power Injections (MVA)
+    :param I0: Bus current Injections (MVA at v=1 p.u.)
+    :param Y0: Bus admittance Injections (MVA at v=1 p.u.)
     :param V0:  Bus initial voltages
     :param idx_dtheta: vector of indices of PV|PQ|PQV|P buses
     :param idx_dVm: vector of indices of PQ|P buses
@@ -397,8 +401,9 @@ def corrector(Ybus, Sbus: CxVec, V0: CxVec,
     j3 = j2 + len(idx_dVm)
 
     # evaluate F(x0, lam0), including Sxfr transfer/loading
-    Scalc = V * np.conj(Ybus * V)
-    mismatch = Scalc - Sbus - lam * Sxfr
+    Scalc = compute_power(Ybus, V)
+    S0 = compute_zip_power(S0=S0, I0=I0, Y0=Y0, Vm=Vm)
+    mismatch = Scalc - S0 - lam * Sxfr
     # F = np.r_[mismatch[pvpq].real, mismatch[pq].imag]
 
     # evaluate P(x0, lambda0)
@@ -484,6 +489,7 @@ def corrector(Ybus, Sbus: CxVec, V0: CxVec,
 
             # evaluate F(x, lam)
             Scalc = compute_power(Ybus, V)
+            Sbus = compute_zip_power(S0=S0, I0=I0, Y0=Y0, Vm=Vm)
             mismatch = Scalc - Sbus - lam * Sxfr
 
             # evaluate the parametrization function P(x, lambda)
@@ -523,14 +529,37 @@ def corrector(Ybus, Sbus: CxVec, V0: CxVec,
     return V, converged, i, lam, normF, Scalc
 
 
-def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_target,
-                    V, distributed_slack, bus_installed_power,
-                    vd: IntVec, pv: IntVec, pq: IntVec, pqv: IntVec, p: IntVec,
-                    step: float, approximation_order: CpfParametrization,
-                    adapt_step, step_min, step_max, error_tol=1e-3, tol=1e-6, max_it=20,
-                    stop_at=CpfStopAt.Nose, control_q=False, control_remote_voltage: bool = True,
-                    qmax_bus=None, qmin_bus=None, original_bus_types=None, base_overload_number=0,
-                    verbose=False, call_back_fx=None) -> CpfNumericResults:
+def continuation_nr(Ybus, Cf, Ct, Yf, Yt,
+                    branch_rates: Vec,
+                    Sbase: float,
+                    Sbus_base: CxVec,
+                    I0: CxVec, Y0: CxVec,
+                    Sbus_target: CxVec,
+                    V: CxVec,
+                    distributed_slack: bool,
+                    bus_installed_power: Vec,
+                    vd: IntVec,
+                    pv: IntVec,
+                    pq: IntVec,
+                    pqv: IntVec,
+                    p: IntVec,
+                    step: float,
+                    approximation_order: CpfParametrization,
+                    adapt_step: bool,
+                    step_min: float,
+                    step_max: float,
+                    error_tol: float = 1e-3,
+                    tol: float = 1e-6,
+                    max_it: int = 20,
+                    stop_at=CpfStopAt.Nose,
+                    control_q=False,
+                    control_remote_voltage: bool = True,
+                    qmax_bus: Vec | None = None,
+                    qmin_bus: Vec | None = None,
+                    original_bus_types: IntVec = None,
+                    base_overload_number: int = 0,
+                    verbose: bool = False,
+                    call_back_fx=None) -> CpfNumericResults:
     """
     Runs a full AC continuation power flow using a normalized tangent
     predictor and selected approximation_order scheme.
@@ -542,6 +571,8 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
     :param branch_rates: array of branch rates to check the overload condition
     :param Sbase:
     :param Sbus_base: Power array of the base solvable case
+    :param I0: Bus current Injections (MVA at v=1 p.u.)
+    :param Y0: Bus admittance Injections (MVA at v=1 p.u.)
     :param Sbus_target: Power array of the case to be solved
     :param V: Voltage array of the base solved case
     :param distributed_slack: Distribute the slack?
@@ -637,7 +668,9 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
 
         # correction ---------------------------------------------------------------------------------------------------
         V, success, i, lam, normF, Scalc = corrector(Ybus=Ybus,
-                                                     Sbus=Sbus_base,
+                                                     S0=Sbus_base,
+                                                     I0=I0,
+                                                     Y0=Y0,
                                                      V0=V0,
                                                      idx_dtheta=idx_dtheta,
                                                      idx_dVm=idx_dVm,
@@ -664,7 +697,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
                 # rerun with the slack distributed and replace the results
                 # also, initialize with the last voltage
                 V, success, i, lam, normF, Scalc = corrector(Ybus=Ybus,
-                                                             Sbus=Sbus_base + delta,
+                                                             S0=Sbus_base + delta,
                                                              V0=V,
                                                              idx_dtheta=idx_dtheta,
                                                              idx_dVm=idx_dVm,
@@ -707,7 +740,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
                 print(V)
 
             # Check controls
-            if control_q == True:
+            if control_q:
 
                 Vm = np.abs(V)
                 (V,
@@ -735,7 +768,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
 
                 Sxfr = Sbus_target - Sbus
 
-                vd, pq, pv, pqv, p, pqpv = compile_types(Pbus=Sbus.real, types=types_new,)
+                vd, pq, pv, pqv, p, pqpv = compile_types(Pbus=Sbus.real, types=types_new, )
             else:
                 if verbose:
                     print('Q controls Ok')
