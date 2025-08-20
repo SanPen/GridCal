@@ -56,6 +56,8 @@ def test_network_objects_consistency():
         fname_pp = os.path.join("data", "grids", "state-estimation", "without_pre_processing_and_meas.json")
         fname = os.path.join("data", "grids", "state-estimation", "20250605T1315Z_RT_SmallGridTestConfiguration_.zip")
         net_wns = pandapower.from_json(fname_pp)
+        if "max_i_ka" not in net_wns.line:
+            net_wns.line.loc[:,"max_i_ka"]=10.
 
         # pandapower.to_pickle(net_wns, "small_grid_gb_hv_estimate_raw_expected.p")
         file_handler = FileOpen(fname)
