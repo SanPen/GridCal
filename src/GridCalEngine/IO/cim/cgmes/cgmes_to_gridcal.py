@@ -16,6 +16,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_typing import (CGMES_TERMINAL, CGMES_TOPOL
                                                      CGMES_CONNECTIVITY_NODE, CGMES_DC_TERMINAL, CGMES_ASSETS)
 
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
+                                                    get_nominal_voltage_for_cn,
                                                     get_pu_values_ac_line_segment,
                                                     get_values_shunt,
                                                     get_pu_values_power_transformer,
@@ -344,23 +345,57 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
     line_tpe = cgmes_model.cgmes_assets.class_dict.get("Line")
 
     # First convert every CN to a bus
-    for cgmes_elm in cgmes_model.cgmes_assets.ConnectivityNode_list:
+    for cn_elm in cgmes_model.cgmes_assets.ConnectivityNode_list:
+
+        voltage = v_dict.get(cn_elm.uuid, None)
+        nominal_voltage = get_nominal_voltage_for_cn(cn=cn_elm, logger=logger)
+        if nominal_voltage == 0:
+            logger.add_error(msg='Nominal voltage is 0. :(',
+                             device=cn_elm.rdfid,
+                             device_class=cn_elm.tpe,
+                             device_property="nominalVoltage")
+        elif nominal_voltage is None:
+            logger.add_error(msg='Nominal voltage is None. Maybe boundary was not attached for import :(',
+                             device=cn_elm.rdfid,
+                             device_class=cn_elm.tpe,
+                             device_property="nominalVoltage")
+            # raise Exception("Nominal voltage is missing for Bus (Maybe boundary was not attached for import) !")
+            return calc_node_dict, True
+
+        if voltage is not None and nominal_voltage is not None:
+            if nominal_voltage != 0.0:
+                vm = voltage[0] / nominal_voltage
+                va = np.deg2rad(voltage[1])
+            else:
+                logger.add_error("Nominal voltage is exactly zero",
+                                 device=cn_elm.rdfid,
+                                 device_class=cn_elm.tpe,
+                                 device_property="nominalVoltage")
+                vm = 1.0
+                va = 0.0
+        else:
+            vm = 1.0
+            va = 0.0
+
+        is_slack = False
+        if slack_id == cn_elm.rdfid:
+            is_slack = True
 
         gcdev_elm = gcdev.Bus(
-            idtag=cgmes_elm.uuid,
-            code=cgmes_elm.description,
-            name=cgmes_elm.name,
+            idtag=cn_elm.uuid,
+            code=cn_elm.description,
+            name=cn_elm.name,
+            Vnom=nominal_voltage
         )
 
         gc_model.add_bus(gcdev_elm)
         cn_look_up.add_cn(gcdev_elm)
         calc_node_dict[gcdev_elm.idtag] = gcdev_elm
 
-
         # Record the associated TopologicalNode
-        if hasattr(cgmes_elm, "TopologicalNode"):
-            if isinstance(cgmes_elm.TopologicalNode, (TopologicalNode_tpe, DCTopologicalNode_tpe)):
-                tp_uid = cgmes_elm.TopologicalNode.uuid
+        if hasattr(cn_elm, "TopologicalNode"):
+            if isinstance(cn_elm.TopologicalNode, (TopologicalNode_tpe, DCTopologicalNode_tpe)):
+                tp_uid = cn_elm.TopologicalNode.uuid
                 tp_with_cn.add(tp_uid)
                 # we double-record such that the TP is considered later
                 calc_node_dict[tp_uid] = gcdev_elm
@@ -368,7 +403,7 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
     # A TopologicalNode is only converted if there is no ConnectivityNode associated
     for tp_node in cgmes_model.cgmes_assets.TopologicalNode_list:
 
-        if not (tp_node.uuid in tp_with_cn):
+        if not (tp_node.uuid in tp_with_cn):  # if this TP does not have an associated CN ...
 
             voltage = v_dict.get(tp_node.uuid, None)
             nominal_voltage = get_nominal_voltage(topological_node=tp_node, logger=logger)
@@ -490,14 +525,14 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                 device=tp_node.uuid)
 
     # We try to add the DC nodes
-    for cgmes_elm in cgmes_model.cgmes_assets.DCTopologicalNode_list:
+    for cn_elm in cgmes_model.cgmes_assets.DCTopologicalNode_list:
 
-        if not (cgmes_elm.uuid in tp_with_cn):
-            if cgmes_elm not in buses_to_skip:
+        if not (cn_elm.uuid in tp_with_cn):
+            if cn_elm not in buses_to_skip:
                 gcdev_elm = gcdev.Bus(
-                    name=cgmes_elm.name,
-                    idtag=cgmes_elm.uuid,
-                    code=cgmes_elm.description,
+                    name=cn_elm.name,
+                    idtag=cn_elm.uuid,
+                    code=cn_elm.description,
                     Vnom=default_nominal_voltage,
                     active=True,
                     is_slack=False,

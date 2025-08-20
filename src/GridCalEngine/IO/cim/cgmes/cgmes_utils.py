@@ -522,6 +522,32 @@ def get_nominal_voltage(topological_node, logger) -> float:
         return 0.0
 
 
+def get_nominal_voltage_for_cn(cn, logger) -> float:
+    """
+
+    :return:
+    """
+    if cn.BaseVoltage is not None:
+        if not isinstance(cn.BaseVoltage, str):
+            return float(cn.BaseVoltage.nominalVoltage)
+        else:
+            logger.add_error(msg='Missing reference',
+                             device=cn.rdfid,
+                             device_class=cn.tpe,
+                             device_property="BaseVoltage",
+                             value=cn.BaseVoltage,
+                             expected_value='object')
+            return 0.0
+    else:
+        logger.add_error(msg='Missing reference',
+                         device=cn.rdfid,
+                         device_class=cn.tpe,
+                         device_property="BaseVoltage",
+                         value=cn.BaseVoltage,
+                         expected_value='object')
+        return 0.0
+
+
 # endregion
 
 
