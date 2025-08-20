@@ -498,8 +498,8 @@ def get_voltage_terminal(terminal, logger: DataLogger) -> float | None:
 
 def get_nominal_voltage(topological_node, logger) -> float:
     """
-
-    :return:
+    Try to get the nominal voltage of a TopologicalNode
+    :return: hopefully the nominal voltage
     """
     if topological_node.BaseVoltage is not None:
         if not isinstance(topological_node.BaseVoltage, str):
@@ -524,26 +524,44 @@ def get_nominal_voltage(topological_node, logger) -> float:
 
 def get_nominal_voltage_for_cn(cn, logger) -> float:
     """
-
-    :return:
+    Try to get the nominal voltage of a ConnectivityNode
+    :return: hopefully the nominal voltage
     """
-    if cn.BaseVoltage is not None:
-        if not isinstance(cn.BaseVoltage, str):
-            return float(cn.BaseVoltage.nominalVoltage)
+    if hasattr(cn, 'ConnectivityNodeContainer'):
+        if hasattr(cn.ConnectivityNodeContainer, 'BaseVoltage'):
+            if cn.ConnectivityNodeContainer.BaseVoltage is not None:
+                if not isinstance(cn.ConnectivityNodeContainer.BaseVoltage, str):
+                    return float(cn.ConnectivityNodeContainer.BaseVoltage.nominalVoltage)
+                else:
+                    logger.add_error(msg='Missing reference',
+                                     device=cn.rdfid,
+                                     device_class=cn.tpe,
+                                     device_property="BaseVoltage",
+                                     value=cn.ConnectivityNodeContainer.BaseVoltage,
+                                     expected_value='object')
+                    return 0.0
+            else:
+                logger.add_error(msg='Missing reference',
+                                 device=cn.rdfid,
+                                 device_class=cn.tpe,
+                                 device_property="BaseVoltage",
+                                 value=cn.ConnectivityNodeContainer,
+                                 expected_value='object')
+                return 0.0
         else:
             logger.add_error(msg='Missing reference',
                              device=cn.rdfid,
                              device_class=cn.tpe,
                              device_property="BaseVoltage",
-                             value=cn.BaseVoltage,
+                             value=cn.ConnectivityNodeContainer,
                              expected_value='object')
             return 0.0
     else:
         logger.add_error(msg='Missing reference',
                          device=cn.rdfid,
                          device_class=cn.tpe,
-                         device_property="BaseVoltage",
-                         value=cn.BaseVoltage,
+                         device_property="ConnectivityNodeContainer",
+                         value=cn,
                          expected_value='object')
         return 0.0
 
