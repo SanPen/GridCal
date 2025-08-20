@@ -1449,15 +1449,32 @@ class ResultTypes(Enum):
     ResultTypes
     """
     # Power flow
-    BusVoltage = 'Voltage'
-    BusVoltagePolar = 'Voltage (polar)'
     BusActivePower = 'P: Active power'
+
+    BusActivePowerA = 'PA: Active power A'
+    BusActivePowerB = 'PB: Active power B'
+    BusActivePowerC = 'PC: Active power C'
+
     BusReactivePower = 'Q: Reactive power'
+
+    BusReactivePowerA = 'QA: Reactive power A'
+    BusReactivePowerB = 'QB: Reactive power B'
+    BusReactivePowerC = 'QC: Reactive power C'
+
     BusActivePowerIncrement = "ΔP: Active power increment"
 
-    BranchPower = 'Sf: Power'
     BranchActivePowerFrom = 'Pf: Active power "from"'
+
+    BranchActivePowerFromA = 'PfA: Active power "from" A'
+    BranchActivePowerFromB = 'PfB: Active power "from" B'
+    BranchActivePowerFromC = 'PfC: Active power "from" C'
+
     BranchReactivePowerFrom = 'Qf: Reactive power "from"'
+
+    BranchReactivePowerFromA = 'QfA: Reactive power "from" A'
+    BranchReactivePowerFromB = 'QfB: Reactive power "from" B'
+    BranchReactivePowerFromC = 'QfC: Reactive power "from" C'
+
     BranchActivePowerTo = 'Pt: Active power "to"'
     BranchReactivePowerTo = 'Qt: Reactive power "to"'
 
@@ -1509,7 +1526,17 @@ class ResultTypes(Enum):
 
     # PF
     BusVoltageModule = 'V: Voltage module'
+
+    BusVoltageModuleA = 'VA: Voltage module A'
+    BusVoltageModuleB = 'VB: Voltage module B'
+    BusVoltageModuleC = 'VC: Voltage module C'
+
     BusVoltageAngle = 'θ: Voltage angle'
+
+    BusVoltageAngleA = 'θA: Voltage angle A'
+    BusVoltageAngleB = 'θB: Voltage angle B'
+    BusVoltageAngleC = 'θC: Voltage angle C'
+
     BusPower = 'Bus power'
     BusShadowPrices = 'Nodal shadow prices'
     BranchOverloads = 'Branch overloads'
