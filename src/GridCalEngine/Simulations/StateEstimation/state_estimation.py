@@ -364,7 +364,8 @@ def b_test(sigma2: Vec,
            H: csc_matrix,
            dz: np.ndarray,
            HtWH: csc_matrix,
-           c_threshold: float = 4.0):
+           c_threshold: float = 4.0,
+           logger: Logger | None =None):
     """
     From RELIABLE BAD DATA PROCESSING FOR REAL-TIME STATE ESTIMATION, 1983
     Monticelli & Garcia (1983) 'b-test' bad data detection
@@ -418,7 +419,11 @@ def b_test(sigma2: Vec,
             if Pii[i] <= 0:
                 # If numerical issues produce tiny negative values, clamp to a small positive eps
                 Pii[i] = max(Pii[i], 1e-14)
-
+            elif Pii[i] < 1e-10:  # Too small - likely numerical error
+                Pii[i] = max(1e-10, sigma2[i] * 0.01)  # Conservative estimate
+            elif Pii[i] > sigma2[i]:  # Impossible physically
+                logger.add_warning(f"Pii[{i}] > sigma2[{i}] ({Pii[i]:.2e} > {sigma2[i]:.2e})")
+                Pii[i] = sigma2[i] * 0.5  # Reasonable default
     r = dz
     rN = r / np.sqrt(Pii)
 
@@ -447,7 +452,7 @@ def solve_se_lm(nc: NumericalCircuit,
                 max_iter=100,
                 verbose: int = 0,
                 c_threshold: float = 4.0,
-                prefer_correct: bool = True,
+                prefer_correct: bool = False,
                 logger: Logger | None = None) -> NumericStateEstimationResults:
     """
     Solve the state estimation problem using the Levenberg-Marquadt method
@@ -539,7 +544,7 @@ def solve_se_lm(nc: NumericalCircuit,
     # RHS
     gx = J.T @ r_t
     # set the previous objective function value
-    obj_val_prev = 1e12
+    obj_val_prev = 1e20
 
     # objective function
     obj_val = 0.5 * dz @ (W * dz)
@@ -563,23 +568,40 @@ def solve_se_lm(nc: NumericalCircuit,
             #     logger.add_warning(f"Bad data detected")
             try:
                 r, sigma2, Pii, rN, imax, b, bad_data_detected = b_test(sigma2=sigma2, H=H, dz=dz, HtWH=G,
-                                                             c_threshold=c_threshold)
+                                                                        c_threshold=c_threshold, logger=logger)
             except AssertionError as ae:
                 logger.add_warning(f"The system is not observable while identifying bad data, {ae}")
             if bad_data_detected:
-
                 if prefer_correct:
-                    z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]
+                    if Pii[imax]>1e-10: # if the value is not corrected in b_test alone
+                        z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]
 
-                    logger.add_info("Measurement corrected",
-                                    device=measurements[imax].api_object.name,
-                                    device_class=measurements[imax].device_type.value,
-                                    device_property="value",
-                                    value=z[imax],
-                                    expected_value=z_tilde_imax)
+                        logger.add_info("Measurement corrected",
+                                        device=measurements[imax].api_object.name,
+                                        device_class=measurements[imax].device_type.value,
+                                        device_property="value",
+                                        value=z[imax],
+                                        expected_value=z_tilde_imax)
 
-                    # correct the bad data index
-                    z[imax] = z_tilde_imax
+                        # correct the bad data index
+                        z[imax] = z_tilde_imax
+                    else:
+                        # Pii is very small - this is likely a critical measurement
+                        logger.add_warning(f"Measurement {imax} appears critical (Pii={Pii[imax]:.2e})")
+                        # Don't correct critical measurements, just remove them
+                        # delete measurements
+                        mask = np.ones(len(z), dtype=int)
+                        mask[imax] = 0
+
+                        se_input = se_input.slice_with_mask(mask=mask)
+
+                        # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
+                        z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
+
+                        # compute the weights matrix using per-unit sigma
+                        sigma2 = np.power(sigma, 2.0)
+                        cov = 1.0 / sigma2
+                        W = diags(cov).tocsc()
                 else:
 
                     logger.add_info("Measurement deleted",
