@@ -73,7 +73,7 @@ def test_network_objects_consistency():
         ok, logger = circuit_cim.compare_circuits(grid)
 
         ok, logger_diff, diff_grid = circuit_cim.differentiate_circuits(grid)
-
+        logger_diff.to_xlsx("grid diff.xlsx")
         # assert ok
         # gce.save_file(grid, 'small_grid_gb_hv_estimate_raw_expected.gridcal')
 
