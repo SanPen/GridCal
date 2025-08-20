@@ -29,9 +29,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Slight improvement in the b_test">
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation_inputs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation_inputs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_stimation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_stimation_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -2364,8 +2363,18 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="len(h) == 0" language="Python" />
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py</url>
-          <line>610</line>
+          <line>631</line>
           <option name="timeStamp" value="2737" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py</url>
+          <line>527</line>
+          <option name="timeStamp" value="2743" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py</url>
+          <line>528</line>
+          <option name="timeStamp" value="2744" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
