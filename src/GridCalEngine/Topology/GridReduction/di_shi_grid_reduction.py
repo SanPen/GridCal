@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import numpy as np
-from typing import TYPE_CHECKING
+from typing import Tuple, TYPE_CHECKING
 from scipy.sparse.linalg import factorized, spsolve
 from scipy.sparse import csc_matrix, bmat, coo_matrix
 from scipy.sparse.csgraph import dijkstra
@@ -298,60 +298,62 @@ def ward_reduction_non_linear(nc: NumericalCircuit, e_buses, b_buses, i_buses, v
     return Seq, Ieq, Yeq, YBBp, adm.Ybus.tocsc()
 
 
-def ward_reduction_linear(nc: NumericalCircuit, e_buses, b_buses, i_buses):
+def ward_reduction_linear(Ybus: csc_matrix, e_buses: IntVec, b_buses: IntVec, i_buses: IntVec):
     """
 
-    :param nc:
+    :param Ybus:
     :param e_buses:
     :param b_buses:
     :param i_buses:
     :return:
     """
-    indices = nc.get_simulation_indices()
-    adm = nc.get_linear_admittance_matrices(indices)
 
     # slice matrices
-    Bii = adm.Bbus[np.ix_(i_buses, i_buses)]
-    Bib = adm.Bbus[np.ix_(i_buses, b_buses)]
-    Bie = adm.Bbus[np.ix_(i_buses, e_buses)]
+    Yii = Ybus[np.ix_(i_buses, i_buses)]
+    Yib = Ybus[np.ix_(i_buses, b_buses)]
+    Yie = Ybus[np.ix_(i_buses, e_buses)]
 
-    Bbi = adm.Bbus[np.ix_(b_buses, i_buses)]
-    Bbb = adm.Bbus[np.ix_(b_buses, b_buses)]
-    Bbe = adm.Bbus[np.ix_(b_buses, e_buses)]
+    Ybi = Ybus[np.ix_(b_buses, i_buses)]
+    Ybb = Ybus[np.ix_(b_buses, b_buses)]
+    Ybe = Ybus[np.ix_(b_buses, e_buses)]
 
-    Beb = adm.Bbus[np.ix_(e_buses, b_buses)]
-    Bee = adm.Bbus[np.ix_(e_buses, e_buses)]
+    Yeb = Ybus[np.ix_(e_buses, b_buses)]
+    Yee = Ybus[np.ix_(e_buses, e_buses)]
 
-    Bee_fact = factorized(Bee.tocsc())
+    Yee_fact = factorized(Yee.tocsc())
 
-    Beq = - Bbe @ Bee_fact(Beb.toarray())  # 2.16
-    Bbbp = Bbb + csc_matrix(Beq)  # YBBp = YBB - YBE @ YEE_fact(YEB)  # 2.13
+    Yeq = - Ybe @ Yee_fact(Yeb.toarray())  # 2.16
 
-    # compute the current
-    P = nc.get_power_injections_pu().real
+    Ybbp = Ybb + csc_matrix(Yeq)  # YBBp = YBB - YBE @ YEE_fact(YEB)  # 2.13
 
-    Pi = P[i_buses]
-    Pb = P[b_buses]
-    Pe = P[e_buses]
+    return Yeq.tocsc(), Ybbp.tocsc()
 
-    # these are the power to be added ar every boundary bus
-    Pb_eq = - Bbe @ Bee_fact(Pe)  # 2.17
+    # # compute the current
+    # P = nc.get_power_injections_pu().real
+    #
+    # Pi = P[i_buses]
+    # Pb = P[b_buses]
+    # Pe = P[e_buses]
+    #
+    # # these are the power to be added ar every boundary bus
+    # Pb_eq = - Bbe @ Bee_fact(Pe)  # 2.17
+    #
+    # # ΔP = −B_ie B_ee⁻¹ P_e
+    # Pe = -Bie @ Bee_fact(Pe)
+    #
+    # return Pb_eq, Pb_eq, Beq, Bbbp, adm.Bbus.tocsc()
 
-    # ΔP = −B_ie B_ee⁻¹ P_e
-    Pe = -Bie @ Bee_fact(Pe)
 
-    return Pb_eq, Pb_eq, Beq, Bbbp, adm.Bbus.tocsc()
-
-
-def ward_reduction(grid: MultiCircuit,
-                   reduction_bus_indices: IntVec,
-                   pf_res: PowerFlowResults | None = None,
-                   add_power_loads: bool = True,
-                   use_linear: bool = False,
-                   tol=1e-8) -> Logger:
+def di_shi_reduction(grid: MultiCircuit,
+                     reduction_bus_indices: IntVec,
+                     pf_res: PowerFlowResults | None = None,
+                     add_power_loads: bool = True,
+                     use_linear: bool = False,
+                     tol=1e-8) -> Tuple[MultiCircuit, Logger]:
     """
-    In-place Grid reduction using the Ward equivalent model
+    In-place Grid reduction using the Di-Shi equivalent model
     from: Power System Network Reduction for Engineering and Economic Analysis by Di Shi, 2012
+    and Optimal Generation Investment Planning: Pt 1: Network Equivalents
     :param grid: MultiCircuit
     :param reduction_bus_indices: Bus indices of the buses to delete
     :param pf_res: PowerFlowResults
@@ -378,31 +380,32 @@ def ward_reduction(grid: MultiCircuit,
 
     nc = compile_numerical_circuit_at(grid, t_idx=None)
 
+    # Step 1 – First Ward reduction ------------------------------------------------------------------------------------
+
+    indices = nc.get_simulation_indices()
+    adm = nc.get_admittance_matrices()
+
     if not use_linear and pf_res is None:
         logger.add_warning("Cannot uses non linear since power flow results are None")
         use_linear = True
 
-    if use_linear:
-        Seq, Ieq, Yeq, YBBp, Bbus = ward_reduction_linear(nc=nc,
-                                                          e_buses=e_buses,
-                                                          b_buses=b_buses,
-                                                          i_buses=i_buses)
-        A_csc = Bbus.copy()
-        A_csc.data = np.abs(A_csc.data)
-    else:
-        Seq, Ieq, Yeq, YBBp, Ybus = ward_reduction_non_linear(nc=nc,
-                                                              e_buses=e_buses,
-                                                              b_buses=b_buses,
-                                                              i_buses=i_buses,
-                                                              voltage=pf_res.voltage,
-                                                              Sbus=pf_res.Sbus)
-        A_csc = Ybus.copy()
-        A_csc.data = np.abs(A_csc.data)
+    Yeq_1, Ybbp_1 = ward_reduction_linear(Ybus=adm.Ybus,
+                                          e_buses=e_buses,
+                                          b_buses=b_buses,
+                                          i_buses=i_buses)
+
+    # Step 2 – Second Ward reduction: Extending to the external generation buses ---------------------------------------
+
+
+    # Step 3 – Relocate generators -------------------------------------------------------------------------------------
+
+
+    # Step 4 – Relocate loads with inverse power flow ------------------------------------------------------------------
 
     # re-locate the generators using dijkstra
 
     # 1. multi-source Dijkstra: one row per boundary, all columns = nodes
-    dist = dijkstra(A_csc, directed=False, indices=b_buses, return_predecessors=False)
+    dist = dijkstra(Yeq_1, directed=False, indices=b_buses, return_predecessors=False)
 
     # 2. for each external node, pick the boundary with the minimal distance
     nearest_idx = dist[:, e_buses].argmin(axis=0)  # row index
@@ -494,7 +497,7 @@ def ward_reduction(grid: MultiCircuit,
     for bus in to_be_deleted:
         grid.delete_bus(obj=bus, delete_associated=True)
 
-    return logger
+    return grid, logger
 
 
 if __name__ == '__main__':
@@ -514,11 +517,11 @@ if __name__ == '__main__':
     #                             PTDF=ptdf,
     #                             tol=1e-8)
 
-    logger_ = ward_reduction(grid=grid_,
-                             reduction_bus_indices=reduction_bus_indices_,
-                             pf_res=gce.power_flow(grid_),
-                             add_power_loads=True,
-                             use_linear=True,
-                             tol=1e-8)
+    logger_ = di_shi_reduction(grid=grid_,
+                               reduction_bus_indices=reduction_bus_indices_,
+                               pf_res=gce.power_flow(grid_),
+                               add_power_loads=True,
+                               use_linear=True,
+                               tol=1e-8)
 
     logger_.print()

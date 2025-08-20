@@ -4,4 +4,4 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from GridCalEngine.Topology.detect_substations import detect_substations
-from GridCalEngine.Topology.grid_reduction import ward_reduction, ptdf_reduction
+from GridCalEngine.Topology.grid_reduction import di_shi_reduction, ptdf_reduction
