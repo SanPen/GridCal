@@ -83,6 +83,7 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                                           apply_temperature=self.pf_options.apply_temperature_correction,
                                           branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
                                           opf_results=self.opf_results,
+                                          control_remote_voltage=self.pf_options.control_remote_voltage,
                                           logger=self.logger)
 
         islands = nc.split_into_islands(ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
@@ -131,7 +132,6 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                                           max_it=self.options.max_it,
                                           stop_at=self.options.stop_at,
                                           control_q=self.pf_options.control_Q,
-                                          control_remote_voltage=self.pf_options.control_remote_voltage,
                                           qmax_bus=Qmax_bus,
                                           qmin_bus=Qmin_bus,
                                           original_bus_types=island.bus_data.bus_types,

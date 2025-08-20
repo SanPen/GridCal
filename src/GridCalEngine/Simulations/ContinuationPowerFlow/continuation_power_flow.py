@@ -553,7 +553,6 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt,
                     max_it: int = 20,
                     stop_at=CpfStopAt.Nose,
                     control_q=False,
-                    control_remote_voltage: bool = True,
                     qmax_bus: Vec | None = None,
                     qmin_bus: Vec | None = None,
                     original_bus_types: IntVec = None,
@@ -592,7 +591,6 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt,
     :param max_it: Maximum iterations
     :param stop_at:  Value of Lambda to stop at. It can be a number or {'NOSE', 'FULL'}
     :param control_q: Type of reactive power control
-    :param control_remote_voltage: Apply remote voltage controls?
     :param qmax_bus: Array of maximum reactive power per node
     :param qmin_bus: Array of minimum reactive power per node
     :param original_bus_types: array of bus types
