@@ -2356,7 +2356,7 @@ class Assets:
     @property
     def va_measurements(self) -> List[dev.VaMeasurement]:
         """
-        Get list of VmMeasurements
+        Get list of VaMeasurements
         :return:
         """
         return self._va_measurements
@@ -2367,8 +2367,8 @@ class Assets:
 
     def get_va_measurements(self) -> List[dev.VaMeasurement]:
         """
-        List of vm_measurements
-        :return: List[dev.VmMeasurement]
+        List of va_measurements
+        :return: List[dev.VaMeasurement]
         """
         return self._va_measurements
 
@@ -2381,7 +2381,7 @@ class Assets:
 
     def get_va_measurement_at(self, i: int) -> dev.VaMeasurement:
         """
-        Get vm_measurement at i
+        Get va_measurement at i
         :param i: index
         :return: VaMeasurement
         """

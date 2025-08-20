@@ -535,7 +535,7 @@ class Panda2GridCal:
         if df is not None:
             for i, row in df.iterrows():
                 name = row['name']
-                m_tpe = row['measurement_type']  # v, p, q
+                m_tpe = row['measurement_type']  # v, va, p, q, i
 
                 # bus, line, transformer, transformer3w, load, sgen, static_generator, ward, xward, external_grid
                 elm_tpe = row['element_type']
@@ -557,6 +557,9 @@ class Panda2GridCal:
                                 api_obj=api_object,
                                 name=name)
                             )
+                        elif m_tpe == "va":
+                            grid.add_va_measurement(dev.VaMeasurement(value=val,uncertainty = std,api_obj=api_object,
+                                                                      name = name))
                         elif m_tpe == 'p':
                             grid.add_pi_measurement(dev.PiMeasurement(
                                 value=val,
@@ -595,6 +598,9 @@ class Panda2GridCal:
                                 api_obj=api_object.bus,
                                 name=name)
                             )
+                        elif m_tpe == "va":
+                            grid.add_va_measurement(dev.VaMeasurement(value=val, uncertainty=std, api_obj=api_object,
+                                                                      name=name))
                         elif m_tpe == 'p':
                             grid.add_pi_measurement(dev.PiMeasurement(
                                 value=val,
