@@ -12,7 +12,7 @@ from GridCalEngine.basic_structures import Vec, CxVec, IntVec, CscMat, CxMat
 @nb.njit(cache=True, fastmath=True)
 def polar_to_rect(Vm, Va) -> CxVec:
     """
-    Convert polar to rectangular corrdinates
+    Convert polar to rectangular coordinates
     :param Vm: Module
     :param Va: Angle in radians
     :return: Polar vector

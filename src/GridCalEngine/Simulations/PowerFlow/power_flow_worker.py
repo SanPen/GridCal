@@ -231,7 +231,7 @@ def __solve_island_complete_support(nc: NumericalCircuit,
                                      verbose=options.verbose,
                                      logger=logger)
 
-            elif solver_type == SolverType.DC:
+            elif solver_type == SolverType.Linear:
 
                 indices = nc.get_simulation_indices(Sbus=S0)
                 lin_adm = nc.get_linear_admittance_matrices(indices=indices)
@@ -268,7 +268,7 @@ def __solve_island_complete_support(nc: NumericalCircuit,
                            elapsed=solution.elapsed,
                            iterations=solution.iterations)
 
-                if solution.method in [SolverType.DC, SolverType.LACPF]:
+                if solution.method in [SolverType.Linear, SolverType.LACPF]:
                     # if the method is linear, we do not check the solution quality
                     final_solution = solution
                 else:
@@ -466,46 +466,46 @@ def __solve_island_limited_support(island: NumericalCircuit,
                                                    logger=logger)
 
             # type DC
-            elif solver_type == SolverType.DC:
+            elif solver_type == SolverType.Linear:
 
                 lin_adm = island.get_linear_admittance_matrices(indices=indices)
                 Bpqpv = lin_adm.get_Bred(pqpv=indices.no_slack)
                 Bref = lin_adm.get_Bslack(pqpv=indices.no_slack, vd=indices.vd)
 
-                solution = pflw.dcpf(nc=island,
-                                     Ybus=adm.Ybus,
-                                     Bpqpv=Bpqpv,
-                                     Bref=Bref,
-                                     Bf=lin_adm.Bf,
-                                     S0=Sbase_plus_hvdc,
-                                     I0=I0,
-                                     Y0=Y0,
-                                     V0=V0,
-                                     tau=island.active_branch_data.tap_angle,
-                                     vd=indices.vd,
-                                     no_slack=indices.no_slack,
-                                     pq=indices.pq,
-                                     pv=indices.pv)
+                solution = pflw.linear_pf(nc=island,
+                                          Ybus=adm.Ybus,
+                                          Bpqpv=Bpqpv,
+                                          Bref=Bref,
+                                          Bf=lin_adm.Bf,
+                                          S0=Sbase_plus_hvdc,
+                                          I0=I0,
+                                          Y0=Y0,
+                                          V0=V0,
+                                          tau=island.active_branch_data.tap_angle,
+                                          vd=indices.vd,
+                                          no_slack=indices.no_slack,
+                                          pq=indices.pq,
+                                          pv=indices.pv)
 
                 if options.distributed_slack:
                     ok, delta = compute_slack_distribution(Scalc=solution.Scalc,
                                                            vd=indices.vd,
                                                            bus_installed_power=island.bus_data.installed_power)
                     if ok:
-                        solution = pflw.dcpf(nc=island,
-                                             Ybus=adm.Ybus,
-                                             Bpqpv=Bpqpv,
-                                             Bref=Bref,
-                                             Bf=lin_adm.Bf,
-                                             S0=Sbase_plus_hvdc + delta,
-                                             I0=I0,
-                                             Y0=Y0,
-                                             V0=V0,
-                                             tau=island.active_branch_data.tap_angle,
-                                             vd=indices.vd,
-                                             no_slack=indices.no_slack,
-                                             pq=indices.pq,
-                                             pv=indices.pv)
+                        solution = pflw.linear_pf(nc=island,
+                                                  Ybus=adm.Ybus,
+                                                  Bpqpv=Bpqpv,
+                                                  Bref=Bref,
+                                                  Bf=lin_adm.Bf,
+                                                  S0=Sbase_plus_hvdc + delta,
+                                                  I0=I0,
+                                                  Y0=Y0,
+                                                  V0=V0,
+                                                  tau=island.active_branch_data.tap_angle,
+                                                  vd=indices.vd,
+                                                  no_slack=indices.no_slack,
+                                                  pq=indices.pq,
+                                                  pv=indices.pv)
 
             # LAC PF
             elif solver_type == SolverType.LACPF:
@@ -684,7 +684,7 @@ def __solve_island_limited_support(island: NumericalCircuit,
                            elapsed=solution.elapsed,
                            iterations=solution.iterations)
 
-                if solution.method in [SolverType.DC, SolverType.LACPF]:
+                if solution.method in [SolverType.Linear, SolverType.LACPF]:
                     # if the method is linear, we do not check the solution quality
                     final_solution = solution
                 else:
@@ -891,7 +891,7 @@ def __solve_island_limited_support_3phase(island: NumericalCircuit,
                            elapsed=solution.elapsed,
                            iterations=solution.iterations)
 
-                if solution.method in [SolverType.DC, SolverType.LACPF]:
+                if solution.method in [SolverType.Linear, SolverType.LACPF]:
                     # if the method is linear, we do not check the solution quality
                     final_solution = solution
                 else:
@@ -1250,12 +1250,12 @@ def multi_island_pf_nc(nc: NumericalCircuit,
 
     else:
 
-        if options.initialize_angles and options.solver_type not in [SolverType.DC, SolverType.LACPF, SolverType.HELM]:
+        if options.initialize_angles and options.solver_type not in [SolverType.Linear, SolverType.LACPF, SolverType.HELM]:
             # NOTE: This is to initialize power flows with very different angles
             # that may happen if the transformer phase shifts are applied in the power flow
             results_0 = __multi_island_pf_nc_limited_support(
                 nc=nc,
-                options=PowerFlowOptions(solver_type=SolverType.DC),
+                options=PowerFlowOptions(solver_type=SolverType.Linear),
                 logger=logger,
                 V_guess=V_guess,
                 Sbus_input=Sbus_input,

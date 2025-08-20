@@ -615,7 +615,7 @@ def get_bentayga_pf_options(opt: PowerFlowOptions):
     :return:
     """
     solver_dict = {SolverType.NR: btg.PowerFlowSolvers.NewtonRaphson,
-                   SolverType.DC: btg.PowerFlowSolvers.LinearDc,
+                   SolverType.Linear: btg.PowerFlowSolvers.LinearDc,
                    # SolverType.HELM: nn.NativeSolverType.HELM,
                    # SolverType.IWAMOTO: nn.NativeSolverType.IWAMOTO,
                    SolverType.LM: btg.PowerFlowSolvers.LevenbergMarquardt,

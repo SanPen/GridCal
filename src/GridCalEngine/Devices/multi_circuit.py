@@ -9,7 +9,7 @@ import cmath
 import copy
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union, Set, TYPE_CHECKING
+from typing import List, Dict, Tuple, Union, Set, Sequence, TYPE_CHECKING
 from uuid import getnode as get_mac, uuid4
 import networkx as nx
 from matplotlib import pyplot as plt
@@ -2688,7 +2688,7 @@ class MultiCircuit(Assets):
         # for i, elm in enumerate(self.get_loads()):
         #     elm.P = results.load_power[i]
 
-    def get_reduction_sets(self, reduction_bus_indices: IntVec,
+    def get_reduction_sets(self, reduction_bus_indices: Sequence[int],
                            add_vsc=False, add_hvdc=False, add_switch=True) -> Tuple[IntVec, IntVec, IntVec, IntVec]:
         """
         Generate the set of bus indices for grid reduction

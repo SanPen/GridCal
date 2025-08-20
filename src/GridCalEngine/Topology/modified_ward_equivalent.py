@@ -19,30 +19,24 @@ import networkx as nx
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from GridCalEngine.enumerations import SolverType
 
 
 # -----------------------------
 # Core Ward reduction (Schur)
 # -----------------------------
 
-def ward_reduce(Y: sp.csr_matrix, retain_idx: Sequence[int]) -> sp.csc_matrix:
+def ward_reduce(Y: sp.csr_matrix,
+                retain_idx: Sequence[int]) -> sp.csc_matrix:
     """
     Compute the Ward reduction (Schur complement) of Y onto the retained buses R.
-
-    Parameters
-    ----------
-    Y : (n x n) complex sparse matrix
-        Bus admittance matrix.
-    retain_idx : list/array of ints
-        Indices (0-based) of buses to retain.
-
-    Returns
-    -------
-    Yeq : (|R| x |R|) complex CSC matrix
+    :param Y: complex sparse matrix
+    :param retain_idx: Array of bus indices to retain
+    :return: Yeq
     """
-    Y = Y.tocsc()
+
     n = Y.shape[0]
     retain_idx = np.asarray(retain_idx, dtype=int)
     mask = np.zeros(n, dtype=bool)
@@ -59,8 +53,8 @@ def ward_reduce(Y: sp.csr_matrix, retain_idx: Sequence[int]) -> sp.csc_matrix:
 
     # Solve Yee * X = Yer (multi-RHS sparse solve)
     X = spla.spsolve(Yee.tocsc(), Yer.toarray())
-    Yeq = (Yrr - Yre @ sp.csr_matrix(X)).tocsc()
-    return Yeq
+    Yeq = Yrr - Yre @ sp.csr_matrix(X)
+    return Yeq.tocsc()
 
 
 # ---------------------------------------
@@ -179,21 +173,17 @@ def build_distance_graph_from_Yeq(Yeq: sp.csc_matrix, mode: str = "ac") -> nx.Gr
     return G
 
 
-def relocate_generators(Yeq_G2: sp.csc_matrix,
-                        gen_idx: Iterable[int],
-                        boundary_idx: Iterable[int],
+def relocate_generators(Yeq_G2: sp.spmatrix,
+                        gen_pos_in_G2: Iterable[int],
+                        boundary_pos_in_G2: Iterable[int],
                         mode: str = "ac") -> Dict[int, int]:
-    """
-    Map each generator position in G2 to the closest boundary position in G2.
-    Returns dict: {gen_pos_in_G2 -> boundary_pos_in_G2}
-    """
     G = build_distance_graph_from_Yeq(Yeq_G2, mode=mode)
     link: Dict[int, int] = {}
-    B = list(boundary_idx)
+    B = list(boundary_pos_in_G2)
     if len(B) == 0:
         return link
 
-    for g in gen_idx:
+    for g in gen_pos_in_G2:
         try:
             dists = nx.single_source_dijkstra_path_length(G, g, weight="weight")
         except nx.NetworkXNoPath:
@@ -206,6 +196,48 @@ def relocate_generators(Yeq_G2: sp.csc_matrix,
         if best_b is not None and np.isfinite(best_val):
             link[g] = best_b
     return link
+
+
+def _build_B_from_Y(Y: sp.spmatrix) -> sp.csr_matrix:
+    Y = Y.tocsr()
+    tril = sp.tril(Y, k=-1)
+    i, j, off = sp.find(tril)
+    y_series = -off.astype(complex)
+    eps = 1e-12
+    mask = np.abs(y_series) > eps
+    i, j, y_series = i[mask], j[mask], y_series[mask]
+    z = 1.0 / y_series
+    x = np.imag(z)
+
+    data_off = []
+    rows_off = []
+    cols_off = []
+    for a, b, xab in zip(i, j, x):
+        if np.abs(xab) < eps:
+            continue
+        val = -1.0 / xab
+        rows_off.extend([a, b])
+        cols_off.extend([b, a])
+        data_off.extend([val, val])
+
+    n = Y.shape[0]
+    B = sp.coo_matrix((data_off, (rows_off, cols_off)), shape=(n, n)).tocsr()
+    diag = -np.array(B.sum(axis=1)).ravel()
+    B = B + sp.diags(diag, 0, shape=(n, n))
+    return B.tocsr()
+
+
+def _dc_theta(B: sp.spmatrix, Pinj: np.ndarray, slack_idx: int) -> np.ndarray:
+    n = B.shape[0]
+    mask = np.ones(n, dtype=bool)
+    mask[slack_idx] = False
+    Bnn = B[mask, :][:, mask]
+    Pn = Pinj[mask]
+    theta_n = spla.spsolve(Bnn.tocsc(), Pn.astype(float))
+    theta = np.zeros(n, dtype=float)
+    theta[mask] = theta_n
+    theta[slack_idx] = 0.0
+    return theta
 
 
 # -----------------------------------------
@@ -393,6 +425,29 @@ def _B_from_Yeq_G1(Yeq_G1: sp.csc_matrix) -> sp.csr_matrix:
     return _build_B_from_Y(Yeq_G1)
 
 
+def build_Y_from_gridcal(circuit):
+    """Return Y-bus (CSR) and ensure it is consistent with circuit bus index order."""
+    nc = compile_numerical_circuit_at(circuit, t_idx=None)
+    adm = nc.get_admittance_matrices()
+    return adm.Ybus
+
+
+def get_boundary_sets_from_gridcal(grid, reduction_bus_indices: List[int]):
+    """
+    Thin wrapper over GridCal's built-in reduction set finder.
+    Returns (e_buses, b_buses, i_buses, b_branches) — all as index arrays (Python lists).
+    """
+    e_buses, b_buses, i_buses, b_branches = grid.get_reduction_sets(
+        reduction_bus_indices=reduction_bus_indices
+    )
+    # Ensure python lists of ints
+    e_buses = list(map(int, e_buses))
+    b_buses = list(map(int, b_buses))
+    i_buses = list(map(int, i_buses))
+    b_branches = list(map(int, b_branches))
+    return e_buses, b_buses, i_buses, b_branches
+
+
 @dataclass
 class DCInversePF:
     theta_B: np.ndarray  # boundary angles (rad) from full-network DC
@@ -514,73 +569,168 @@ class ReductionOutputs:
     dc_fit: Optional[DCInversePF]
 
 
-def reduce_with_gridcal(circuit,
-                        boundary_bus_names: Iterable[str],
-                        mode: str = "ac",
-                        do_dc_inverse_pf: bool = True) -> ReductionOutputs:
+@dataclass
+class DCInversePFResult:
+    theta_boundary: np.ndarray  # boundary angles (rad) from full DC
+    P_target: np.ndarray  # boundary injections needed on reduced DC
+    Pgen_assigned: np.ndarray  # relocated P at boundary (pu)
+    L_new: np.ndarray  # boundary loads to set (pu)
+
+
+@dataclass
+class ReductionOutputsByIndex:
+    # Structural reduced grid (boundary-only)
+    Yeq_G1: sp.csr_matrix
+    boundary_idx_in_Y: List[int]
+    # Reduced generator model (boundary ∪ gens)
+    Yeq_G2: sp.csr_matrix
+    retain2_idx_in_Y: List[int]
+    gen_pos_in_G2: List[int]
+    boundary_pos_in_G2: List[int]
+    relocation_map_g2pos_to_g2pos: Dict[int, int]
+    # Equivalents from G1 (10× rule)
+    equiv_G1: EquivElements
+    # Optional DC inverse PF result
+    dc_fit: Optional[DCInversePFResult]
+
+
+def reduce_with_gridcal_by_indices(grid: MultiCircuit,
+                                   reduction_bus_indices: Sequence[int],
+                                   relocation_mode: str = "dc",  # 'dc' uses |x|, 'ac' uses |z|
+                                   do_dc_inverse_pf: bool = True) -> ReductionOutputsByIndex:
     """
-    Full pipeline using GridCal:
-      1) Build Y from circuit
-      2) G1 = Ward(Y, retain = boundary)
-      3) G2 = Ward(Y, retain = boundary ∪ generator buses)
-      4) Relocate generators by electrical distance in G2
-      5) Extract equivalents from G1 with 10× original-reactance pruning
-      6) (Optional) DC inverse PF redistribution -> boundary loads to set after relocation
 
-    Returns ReductionOutputs with all artifacts.
+    :param grid:
+    :param reduction_bus_indices:
+    :param relocation_mode:
+    :param do_dc_inverse_pf:
+    :return:
     """
-    # 1) Build Y and names
-    Y, y_order_names = _gridcal_get_Y_and_names(circuit)
+    """
+    Index-only pipeline:
+      1) Use GridCal to get (e_buses, b_buses, i_buses, b_branches)
+      2) Build Y (CSR) aligned with those indices
+      3) G1 = Ward(Y, retain=b_buses)
+      4) G2 = Ward(Y, retain=b_buses ∪ gen_buses)
+      5) Relocate generators on G2 (shortest electrical distance)
+      6) Extract equivalents from G1 with 10× original-reactance pruning
+      7) (Optional) DC inverse-PF redistribution → boundary loads on reduced grid
+    """
+    # 1) boundary sets from GridCal (all indices)
+    e_buses, b_buses, i_buses, b_branches = grid.get_reduction_sets(reduction_bus_indices=reduction_bus_indices)
 
-    # boundary indices in Y order
-    boundary_names = list(boundary_bus_names)
-    boundary_idx_in_Y = _gridcal_indices_from_names(y_order_names, boundary_names)
+    # 2) Y-bus
+    nc = compile_numerical_circuit_at(circuit=grid, t_idx=None)
+    adm = nc.get_admittance_matrices()
+    Y_full = adm.Ybus
 
-    # 2) G1: boundary-only retained
-    Yeq_G1 = ward_reduce(Y, boundary_idx_in_Y)
+    # 3) G1: internal set + boundary set -> retained set
+    R1 = sorted(set(i_buses).union(b_buses))  # internal + boundary
+    Yeq_G1 = ward_reduce(Y=Y_full, retain_idx=R1)
 
-    # 3) G2: boundary ∪ generator retained
-    gen_idx_in_Y, gen_objs = _gridcal_generator_bus_indices_in_Y_order(circuit, y_order_names)
-    retain2_in_Y = sorted(set(boundary_idx_in_Y).union(gen_idx_in_Y))
-    Yeq_G2 = ward_reduce(Y, retain2_in_Y)
+    # 4) G2: internal set + boundary set + generator buses set -> retained set
+    gen_buses_in_Y = set(nc.generator_data.bus_idx)
+    R2 = sorted(set(R1).union(gen_buses_in_Y))  # internal + boundary + all gens' buses
+    Yeq_G2 = ward_reduce(Y=Y_full, retain_idx=R2)
 
-    # positions in G2
-    pos_map = {k: p for p, k in enumerate(retain2_in_Y)}
-    boundary_idx_in_G2 = [pos_map[k] for k in boundary_idx_in_Y]
-    gen_idx_in_G2 = [pos_map[k] for k in gen_idx_in_Y if k in pos_map]
-    retain2_names = [y_order_names[k] for k in retain2_in_Y]
+    # positions within G2
+    pos_map = {k: p for p, k in enumerate(R2)}
+    boundary_pos_in_G2 = [pos_map[k] for k in b_buses if k in pos_map]
+    gen_pos_in_G2 = [pos_map[k] for k in gen_buses_in_Y if k in pos_map]
 
-    # 4) Relocation on G2
-    relocation_map = relocate_generators(Yeq_G2, gen_idx_in_G2, boundary_idx_in_G2, mode=mode)
+    # 5) relocation on G2 (positions only)
+    relocation_map = relocate_generators(
+        Yeq_G2,
+        gen_pos_in_G2,
+        boundary_pos_in_G2,
+        mode=relocation_mode,
+    )  # dict: gen_pos -> boundary_pos
 
-    # 5) Equivalents from G1 with 10× rule based on ORIGINAL Y
-    equiv_G1 = y_to_equivalents_10x_rule(Yeq_G1, Y)
+    # 6) equivalents from G1 using 10× original-reactance rule (needs original Y)
+    equiv_G1 = y_to_equivalents_10x_rule(Yeq_G1, Y_full)
 
-    # 6) DC inverse PF redistribution (optional)
-    dc_fit: Optional[DCInversePF] = None
+    # 7) Optional DC inverse-PF redistribution (index-only)
+    dc_fit = None
     if do_dc_inverse_pf:
-        dc_fit = dc_inverse_pf_redistribution(
-            circuit=circuit,
-            Y_full=Y,
-            Yeq_G1=Yeq_G1,
-            y_order_names=y_order_names,
-            boundary_idx_in_Y=boundary_idx_in_Y,
-            retain2_idx_in_Y=retain2_in_Y,
-            boundary_idx_in_G2=boundary_idx_in_G2,
-            gen_idx_in_G2=gen_idx_in_G2,
-            relocation_map_g2=relocation_map,
+        options = PowerFlowOptions(solver_type=SolverType.Linear)
+        res = multi_island_pf_nc(nc=nc, options=options)
+
+        theta_full = np.angle(res.voltage)
+
+        # boundary angles in Y order restricted to b_buses (this is G1’s ordering)
+        theta_boundary = theta_full[b_buses]
+
+        # reduced DC matrix from G1 and target injections
+        Bred = _build_B_from_Y(Yeq_G1)
+        P_target = Bred @ theta_full[R1]
+
+        # relocate generator P to boundary buses (pu)
+        # sum Pg (pu) of each gen at its mapped boundary position
+        # Build Pg_pu vector (aligned to gen_pos_in_G2)
+        Pg_pu = []
+        for g in getattr(grid, "generators", []):
+            bus = getattr(g, "bus", None)
+            y_idx = getattr(bus, "idx", getattr(bus, "index", None))
+            if y_idx is None:
+                continue
+            if y_idx not in pos_map:
+                continue
+            g2_pos = pos_map[int(y_idx)]
+            # power
+            Pg_MW = getattr(g, "P", getattr(g, "Pg", getattr(g, "p", getattr(g, "p_mw", 0.0))))
+            try:
+                Pg_MW = float(Pg_MW)
+            except Exception:
+                Pg_MW = 0.0
+            Pg_pu.append((g2_pos, Pg_MW / max(float(nc.Sbase), 1e-6)))
+
+        Pgen_assigned = np.zeros(len(b_buses), dtype=float)  # G1 boundary order
+        # map G2 boundary position -> index in G1 boundary vector
+        bpos_to_g1 = {p: i for i, p in enumerate(boundary_pos_in_G2)}
+        for g2_pos, pg in Pg_pu:
+            bpos = relocation_map.get(g2_pos, None)
+            if bpos is None:
+                continue
+            i_g1 = bpos_to_g1.get(bpos, None)
+            if i_g1 is None:
+                continue
+            Pgen_assigned[i_g1] += pg
+
+        # boundary loads to set so that net P = P_target
+        L_new = Pgen_assigned - P_target
+
+        dc_fit = DCInversePFResult(
+            theta_boundary=theta_boundary,
+            P_target=P_target,
+            Pgen_assigned=Pgen_assigned,
+            L_new=L_new,
         )
 
-    return ReductionOutputs(
+    return ReductionOutputsByIndex(
         Yeq_G1=Yeq_G1,
-        boundary_idx_in_Y=boundary_idx_in_Y,
-        boundary_names=boundary_names,
+        boundary_idx_in_Y=b_buses,
         Yeq_G2=Yeq_G2,
         retain2_idx_in_Y=retain2_in_Y,
-        retain2_names=retain2_names,
-        gen_idx_in_G2=gen_idx_in_G2,
-        boundary_idx_in_G2=boundary_idx_in_G2,
-        relocation_map=relocation_map,
-        equiv_G1=equiv_G1,
+        gen_pos_in_G2=gen_pos_in_G2,
+        boundary_pos_in_G2=boundary_pos_in_G2,
+        relocation_map_g2pos_to_g2pos=relocation_map,
+        equiv_G1=y_to_equivalents_10x_rule(Yeq_G1, Y_full),
         dc_fit=dc_fit,
     )
+
+
+if __name__ == '__main__':
+    import GridCalEngine as gce
+
+    fname = '/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids/Matpower/case9.m'
+    fname_expected = '/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids/Matpower/ieee9_reduced.m'
+
+    reduction_bus_indices_ = np.array([0, 4, 7])
+
+    grid_ = gce.open_file(fname)
+    grid_expected = gce.open_file(fname_expected)
+
+    reduce_with_gridcal_by_indices(grid=grid_,
+                                   reduction_bus_indices=reduction_bus_indices_,
+                                   relocation_mode="dc",  # 'dc' uses |x|, 'ac' uses |z|
+                                   do_dc_inverse_pf=True)

@@ -426,7 +426,7 @@ if PROPERLY_LOADED_API:
         options_contingencies = ContingencyAnalysisOptions(
             use_provided_flows=False,
             Pf=None,
-            pf_options=PowerFlowOptions(SolverType.DC),
+            pf_options=PowerFlowOptions(SolverType.Linear),
             lin_options=LinearAnalysisOptions(),
             use_srap=use_srap,
             srap_max_power=srap_max_power,
