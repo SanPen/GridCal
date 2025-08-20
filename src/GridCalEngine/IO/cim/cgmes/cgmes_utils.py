@@ -9,7 +9,14 @@ import numpy as np
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.base import rfid2uuid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_typing import (CGMES_TERMINAL, CGMES_BASE_VOLTAGE, CGMES_ASSETS)
+from GridCalEngine.IO.cim.cgmes.cgmes_typing import (CGMES_TERMINAL, CGMES_ACDC_TERMINAL,
+                                                     CGMES_BASE_VOLTAGE, CGMES_ASSETS,
+                                                     CGMES_TOPOLOGICAL_NODE, CGMES_CONNECTIVITY_NODE,
+                                                     CGMES_POWER_TRANSFORMER, CGMES_POWER_TRANSFORMER_END,
+                                                     CGMES_AC_LINE_SEGMENT, CGMES_SHUNT_COMPENSATOR,
+                                                     CGMES_NON_LINEAR_SHUNT_COMPENSATOR,
+                                                     CGMES_LINEAR_SHUNT_COMPENSATOR,
+                                                     CGMES_EQUIVALENT_SHUNT)
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import LimitTypeKind
@@ -212,10 +219,10 @@ def build_cgmes_limit_dicts(cgmes_model: CgmesCircuit,
 # region PowerTransformer ----------------------------------------------------------------------------------------------
 
 
-def get_pu_values_power_transformer(power_transformer, System_Sbase):
+def get_pu_values_power_transformer(power_transformer: CGMES_POWER_TRANSFORMER, System_Sbase: float):
     """
     Get the transformer p.u. values
-    :return:
+    :return: R, X, G, B, R0, X0, G0, B0
     """
     try:
         windings = list(power_transformer.PowerTransformerEnd)
@@ -241,10 +248,10 @@ def get_pu_values_power_transformer(power_transformer, System_Sbase):
     return R, X, G, B, R0, X0, G0, B0
 
 
-def get_pu_values_power_transformer3w(power_transformer, System_Sbase):
+def get_pu_values_power_transformer3w(power_transformer: CGMES_POWER_TRANSFORMER, System_Sbase: float):
     """
     Get the transformer p.u. values
-    :return:
+    :return: r12, r23, r31, x12, x23, x31
     """
     try:
         # windings = get_windings(power_transformer)
@@ -273,7 +280,12 @@ def get_pu_values_power_transformer3w(power_transformer, System_Sbase):
 # endregion ------------------------------------------------------------------------------------------------------------
 
 # region PowerTransformerEnd
-def get_voltage_power_transformer_end(power_transformer_end):
+def get_voltage_power_transformer_end(power_transformer_end: CGMES_POWER_TRANSFORMER_END):
+    """
+
+    :param power_transformer_end:
+    :return:
+    """
     if power_transformer_end.ratedU > 0:
         return power_transformer_end.ratedU
     else:
@@ -283,10 +295,11 @@ def get_voltage_power_transformer_end(power_transformer_end):
             return None
 
 
-def get_pu_values_power_transformer_end(power_transformer_end, Sbase_system=100):
+def get_pu_values_power_transformer_end(power_transformer_end: CGMES_POWER_TRANSFORMER_END,
+                                        Sbase_system: float = 100.0):
     """
     Get the per-unit values of the equivalent PI model
-    :return: R, X, Gch, Bch
+    :return: R, X, G, B, R0, X0, G0, B0
     """
     if (power_transformer_end.ratedS and power_transformer_end.ratedU and power_transformer_end.ratedS > 0 and
             power_transformer_end.ratedU > 0):
@@ -332,7 +345,7 @@ def get_pu_values_power_transformer_end(power_transformer_end, Sbase_system=100)
 # endregion ------------------------------------------------------------------------------------------------------------
 
 # region ACLineSegment
-def get_voltage_ac_line_segment(ac_line_segment, logger: DataLogger) -> float | None:
+def get_voltage_ac_line_segment(ac_line_segment: CGMES_AC_LINE_SEGMENT, logger: DataLogger) -> float | None:
     """
 
     :param ac_line_segment:
@@ -355,7 +368,7 @@ def get_voltage_ac_line_segment(ac_line_segment, logger: DataLogger) -> float | 
         return ac_line_segment.BaseVoltage.nominalVoltage
 
 
-def get_pu_values_ac_line_segment(ac_line_segment, logger: DataLogger, Sbase: float = 100.0):
+def get_pu_values_ac_line_segment(ac_line_segment: CGMES_AC_LINE_SEGMENT, logger: DataLogger, Sbase: float = 100.0):
     """
     Get the per-unit values of the equivalent PI model
 
@@ -416,7 +429,14 @@ def get_rate_ac_line_segment():
 # endregion ------------------------------------------------------------------------------------------------------------
 
 # region Shunt
-def get_voltage_shunt(shunt, logger: DataLogger) -> float | None:
+def get_voltage_shunt(shunt: CGMES_NON_LINEAR_SHUNT_COMPENSATOR | CGMES_EQUIVALENT_SHUNT | CGMES_SHUNT_COMPENSATOR,
+                      logger: DataLogger) -> float | None:
+    """
+
+    :param shunt:
+    :param logger:
+    :return:
+    """
     if shunt.BaseVoltage is not None:
         return shunt.BaseVoltage.nominalVoltage
     elif shunt.nomU is not None:
@@ -435,7 +455,7 @@ def get_voltage_shunt(shunt, logger: DataLogger) -> float | None:
             return None
 
 
-def get_values_shunt(shunt,
+def get_values_shunt(shunt: CGMES_LINEAR_SHUNT_COMPENSATOR,
                      logger: DataLogger,
                      Sbase: float = 100.0):
     """
@@ -474,7 +494,8 @@ def get_values_shunt(shunt,
 # endregion ------------------------------------------------------------------------------------------------------------
 
 # region Terminal(acdc_terminal.ACDCTerminal)
-def get_voltage_terminal(terminal, logger: DataLogger) -> float | None:
+def get_voltage_terminal(terminal: CGMES_TERMINAL | CGMES_ACDC_TERMINAL,
+                         logger: DataLogger) -> float | None:
     """
     Get the voltage of this terminal
     :return: Voltage or None
@@ -496,7 +517,7 @@ def get_voltage_terminal(terminal, logger: DataLogger) -> float | None:
 # TopologicalNode(IdentifiedObject):
 # ----------------------------------------------------------------------------------------------------------------------
 
-def get_nominal_voltage(topological_node, logger) -> float:
+def get_nominal_voltage(topological_node: CGMES_TOPOLOGICAL_NODE, logger: DataLogger) -> float:
     """
     Try to get the nominal voltage of a TopologicalNode
     :return: hopefully the nominal voltage
@@ -522,7 +543,7 @@ def get_nominal_voltage(topological_node, logger) -> float:
         return 0.0
 
 
-def get_nominal_voltage_for_cn(cn, logger) -> float:
+def get_nominal_voltage_for_cn(cn: CGMES_CONNECTIVITY_NODE, logger: DataLogger) -> float:
     """
     Try to get the nominal voltage of a ConnectivityNode
     :return: hopefully the nominal voltage
@@ -662,7 +683,12 @@ def get_nominal_voltage_for_cn(cn, logger) -> float:
 # region BaseVoltage(IdentifiedObject)
 # ----------------------------------------------------------------------------------------------------------------------
 
-def base_voltage_to_str(base_voltage):
+def base_voltage_to_str(base_voltage: CGMES_BASE_VOLTAGE) -> str:
+    """
+
+    :param base_voltage:
+    :return:
+    """
     return base_voltage.tpe + ':' + base_voltage.rdfid + ':' + str(base_voltage.nominalVoltage) + ' kV'
 
 
@@ -868,7 +894,9 @@ def find_object_by_attribute(object_list: List, target_attr_name: str, target_va
     return None
 
 
-def get_ohm_values_power_transformer(r, x, g, b, r0, x0, g0, b0, nominal_power, rated_voltage, Sbase):
+def get_ohm_values_power_transformer(r: float, x: float, g: float, b: float,
+                                     r0: float, x0: float, g0: float, b0: float,
+                                     nominal_power: float, rated_voltage: float, Sbase: float):
     """
     Get the transformer ohm values
     :param r:
@@ -881,6 +909,7 @@ def get_ohm_values_power_transformer(r, x, g, b, r0, x0, g0, b0, nominal_power, 
     :param b0:
     :param nominal_power:
     :param rated_voltage:
+    :param Sbase:
     :return:
     """
 

@@ -28,10 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="improved the continuation power flow options">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved get_nominal_voltage_for_cn">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/others/pandapower_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/others/pandapower_parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_typing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_typing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1870,7 +1870,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="640" />
+    <option name="localTasksCounter" value="641" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1916,7 +1916,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed massive performance issue in gslv-lp interface" />
     <MESSAGE value="improved cgmes management of not found TopologicalNodes" />
     <MESSAGE value="5.4.0b2" />
     <MESSAGE value="fixed the multiple-island handling in the state estimation" />
@@ -1941,7 +1940,8 @@
     <MESSAGE value="small refactor" />
     <MESSAGE value="improved the continuation power flow with zip power" />
     <MESSAGE value="improved the continuation power flow options" />
-    <option name="LAST_COMMIT_MESSAGE" value="improved the continuation power flow options" />
+    <MESSAGE value="Improved get_nominal_voltage_for_cn" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved get_nominal_voltage_for_cn" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2293,7 +2293,7 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="isinstance(cgmes_terminal.TopologicalNode, str)" language="Python" />
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py</url>
-          <line>35</line>
+          <line>42</line>
           <option name="timeStamp" value="2665" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2351,6 +2351,11 @@
           <url>file://$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py</url>
           <line>79</line>
           <option name="timeStamp" value="2746" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py</url>
+          <line>1911</line>
+          <option name="timeStamp" value="2747" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
