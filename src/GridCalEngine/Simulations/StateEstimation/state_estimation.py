@@ -446,7 +446,7 @@ def solve_se_lm(nc: NumericalCircuit,
                 tol=1e-9,
                 max_iter=100,
                 verbose: int = 0,
-                c_threshold: float = 3.0,
+                c_threshold: float = 4.0,
                 prefer_correct: bool = True,
                 logger: Logger | None = None) -> NumericStateEstimationResults:
     """
