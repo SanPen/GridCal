@@ -48,6 +48,7 @@ def test_state_estimation_pandapower():
 
         se.logger.print("SE Logger:")
 
+
 def test_network_objects_consistency():
     if PANDAPOWER_AVAILABLE:
         import pandapower
@@ -57,7 +58,7 @@ def test_network_objects_consistency():
         fname = os.path.join("data", "grids", "state-estimation", "20250605T1315Z_RT_SmallGridTestConfiguration_.zip")
         net_wns = pandapower.from_json(fname_pp)
         if "max_i_ka" not in net_wns.line:
-            net_wns.line.loc[:,"max_i_ka"]=10.
+            net_wns.line.loc[:, "max_i_ka"] = 10.
 
         # pandapower.to_pickle(net_wns, "small_grid_gb_hv_estimate_raw_expected.p")
         file_handler = FileOpen(fname)
@@ -69,8 +70,11 @@ def test_network_objects_consistency():
         print()
         g.logger.print("PandaPower conversion logs")
 
-        ok,logger = circuit_cim.compare_circuits(grid)
-        #assert ok
+        ok, logger = circuit_cim.compare_circuits(grid)
+
+        ok, logger_diff, diff_grid = circuit_cim.differentiate_circuits(grid)
+
+        # assert ok
         # gce.save_file(grid, 'small_grid_gb_hv_estimate_raw_expected.gridcal')
 
         pf_res = gce.power_flow(grid)
@@ -104,6 +108,7 @@ def test_network_objects_consistency():
         print(f"Converged: {se_res_cim.converged}")
         print(f"Error: {se_res_cim.error}")
         print(f"Iter: {se_res_cim.iterations}")
+
 
 if __name__ == '__main__':
     test_state_estimation_pandapower()

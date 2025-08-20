@@ -287,7 +287,7 @@ class Panda2GridCal:
                 x_ohm=row['x_ohm_per_km'],
                 c_nf=row['c_nf_per_km'],
                 length=row['length_km'],
-                Imax=row['max_i_ka'],
+                Imax=row.get('max_i_ka', 10.0),  # max_i_ka might not be there...
                 freq=grid.fBase,
                 Sbase=grid.Sbase,
                 apply_to_profile=False
