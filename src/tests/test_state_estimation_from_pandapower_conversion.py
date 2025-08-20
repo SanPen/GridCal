@@ -6,7 +6,7 @@ import os
 
 from GridCalEngine import FileOpen
 from GridCalEngine.IO.others.pandapower_parser import Panda2GridCal, PANDAPOWER_AVAILABLE
-from GridCalEngine.Simulations.StateEstimation.state_stimation_driver import StateEstimation
+from GridCalEngine.Simulations.StateEstimation.state_stimation_driver import StateEstimation, StateEstimationOptions
 import GridCalEngine as gce
 
 
@@ -32,7 +32,10 @@ def test_state_estimation_pandapower():
         print(pf_res.get_bus_df())
         print(pf_res.get_branch_df())
 
-        se = StateEstimation(circuit=grid)
+        se_opt = StateEstimationOptions(
+            prefer_correct=False
+        )
+        se = StateEstimation(circuit=grid, options=se_opt)
         se.run()
 
         se_res = se.results
