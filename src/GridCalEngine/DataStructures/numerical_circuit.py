@@ -829,11 +829,14 @@ class NumericalCircuit:
             Ct=self.passive_branch_data.Ct.tocsc(),
         )
 
-    def get_linear_admittance_matrices(self, indices: SimulationIndices) -> ycalc.LinearAdmittanceMatrices:
+    def get_linear_admittance_matrices(self, indices: SimulationIndices | None = None) -> ycalc.LinearAdmittanceMatrices:
         """
+        Get the linear admittances
+        :return:LinearAdmittanceMatrices
+        """
+        if indices is None:
+            indices = self.get_simulation_indices()
 
-        :return:
-        """
         return ycalc.compute_linear_admittances(
             nbr=self.nbr,
             X=self.passive_branch_data.X,

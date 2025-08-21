@@ -30,14 +30,14 @@ This action cannot be undone.
 
 ## Theory
 
-The PhD dissertation presented in [1][2], expands on the traditional ward equivalent reduction method.
-The proposed method allows the generators to be "just moved" to the boundary buses and later, 
-injections are calibrated to compensate for that. In that sense, is a very friendly method for 
+
+### Di-Shi grid equivalent
+
+The PhD dissertation of Di-Shi presented in [1] [2], expands on the traditional ward equivalent reduction method.
+The proposed method allows the generators to be *just moved* to the boundary buses. Later, 
+the injections are calibrated to compensate for that. It is a very friendly method for 
 planning engineers that want to reduce the grid, and still need to keep the generators as previously 
 defined for dispatching.
-
-Steps for the **Di-Shi grid equivalent**:
-
 
 **Step 0 – Define bus sets**
 

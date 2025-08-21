@@ -177,7 +177,9 @@ def relocate_generators(Yeq_G2: sp.spmatrix,
                         gen_pos_in_G2: Iterable[int],
                         boundary_pos_in_G2: Iterable[int],
                         mode: str = "ac") -> Dict[int, int]:
+
     G = build_distance_graph_from_Yeq(Yeq_G2, mode=mode)
+
     link: Dict[int, int] = {}
     B = list(boundary_pos_in_G2)
     if len(B) == 0:

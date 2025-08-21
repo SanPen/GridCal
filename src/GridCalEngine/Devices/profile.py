@@ -286,6 +286,10 @@ class Profile:
         if arr.ndim != 1:
             print("You can only set 1D numpy arrays")
 
+        if len(arr) == 0:
+            # Nothing to do
+            return False
+
         if not check_type(dtype=self.dtype, value=arr[0]):
             try:
                 # try casting

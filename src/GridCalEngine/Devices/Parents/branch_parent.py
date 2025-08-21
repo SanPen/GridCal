@@ -100,8 +100,19 @@ class BranchParent(PhysicalDevice):
                                 device_type=device_type)
 
         # connectivity
-        self._bus_from = bus_from
-        self._bus_to = bus_to
+        if bus_from is None:
+            self._bus_from = None
+        elif isinstance(bus_from, Bus):
+            self._bus_from = bus_from
+        else:
+            raise Exception(f"Bus from is a strange value {bus_from}")
+
+        if bus_to is None:
+            self._bus_to = None
+        elif isinstance(bus_to, Bus):
+            self._bus_to = bus_to
+        else:
+            raise Exception(f"Bus from is a strange value {bus_from}")
 
         self.active = bool(active)
         self._active_prof = Profile(default_value=self.active, data_type=bool)

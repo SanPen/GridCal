@@ -5,15 +5,18 @@
 from __future__ import annotations
 
 import numpy as np
-from typing import Tuple, TYPE_CHECKING
+from typing import Tuple, List, Sequence, TYPE_CHECKING
 from scipy.sparse.linalg import factorized, spsolve
 from scipy.sparse import csc_matrix, bmat, coo_matrix
-from scipy.sparse.csgraph import dijkstra
+
+import networkx as nx
 import GridCalEngine.Devices as dev
 from GridCalEngine.basic_structures import IntVec, Mat, CxVec, Logger
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType, SolverType
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Topology.topology import find_islands, build_branches_C_coo_3
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 
 if TYPE_CHECKING:
     from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -326,7 +329,7 @@ def ward_reduction_linear(Ybus: csc_matrix, e_buses: IntVec, b_buses: IntVec, i_
 
     Ybbp = Ybb + csc_matrix(Yeq)  # YBBp = YBB - YBE @ YEE_fact(YEB)  # 2.13
 
-    return Yeq.tocsc(), Ybbp.tocsc()
+    return Yeq, Ybbp.tocsc()
 
     # # compute the current
     # P = nc.get_power_injections_pu().real
@@ -342,6 +345,197 @@ def ward_reduction_linear(Ybus: csc_matrix, e_buses: IntVec, b_buses: IntVec, i_
     # Pe = -Bie @ Bee_fact(Pe)
     #
     # return Pb_eq, Pb_eq, Beq, Bbbp, adm.Bbus.tocsc()
+
+
+def ward_reduction_linear2(Ybus: csc_matrix, e_buses: IntVec, i_buses: IntVec):
+    """
+
+    :param Ybus:
+    :param e_buses:
+    :param i_buses:
+    :return:
+    """
+
+    # slice matrices
+
+    Yii = Ybus[np.ix_(i_buses, i_buses)]
+    Yie = Ybus[np.ix_(i_buses, e_buses)]
+
+    Yei = Ybus[np.ix_(e_buses, i_buses)]
+    Yee = Ybus[np.ix_(e_buses, e_buses)]
+
+    Yee_fact = factorized(Yee.tocsc())
+
+    Yeq = - Yie @ Yee_fact(Yei.toarray())  # 2.16
+
+    # Ybbp = Yii + csc_matrix(Yeq)  # YBBp = YBB - YBE @ YEE_fact(YEB)  # 2.13
+
+    return Yeq.tocsc()
+
+
+def get_reduction_sets_1(nc: NumericalCircuit,
+                         reduction_bus_indices: Sequence[int]) -> Tuple[IntVec, IntVec, IntVec, IntVec]:
+    """
+    Generate the set of bus indices for grid reduction
+    :param nc: NumericalCircuit
+    :param reduction_bus_indices: array of bus indices to reduce (external set)
+    :return: external, boundary, internal, boundary_branches
+    """
+
+    external_set = set(reduction_bus_indices)
+    boundary_set = set()
+    internal_set = set()
+    boundary_branches = list()
+
+    for k in range(nc.nbr):
+        f = nc.passive_branch_data.F[k]
+        t = nc.passive_branch_data.T[k]
+        if f in external_set:
+            if t in external_set:
+                # the branch belongs to the external set
+                pass
+            else:
+                # the branch is a boundary link and t is a frontier bus
+                boundary_set.add(t)
+                boundary_branches.append(k)
+        else:
+            # we know f is not external...
+
+            if t in external_set:
+                # f is not in the external set, but t is: the branch is a boundary link and f is a frontier bus
+                boundary_set.add(f)
+                boundary_branches.append(k)
+            else:
+                # f nor t are in the external set: both belong to the internal set
+                internal_set.add(f)
+                internal_set.add(t)
+
+    # buses cannot be in both the internal and boundary set
+    elms_to_remove = list()
+    for i in internal_set:
+        if i in boundary_set:
+            elms_to_remove.append(i)
+
+    for i in elms_to_remove:
+        internal_set.remove(i)
+
+    # convert to arrays and sort
+    external = np.sort(np.array(list(external_set)))
+    boundary = np.sort(np.array(list(boundary_set)))
+    internal = np.sort(np.array(list(internal_set)))
+    boundary_branches = np.array(boundary_branches)
+
+    return external, boundary, internal, boundary_branches
+
+
+def create_new_boundary_branches(grid: MultiCircuit, b_buses: IntVec, Yeq_1: csc_matrix, Ybbp_1: csc_matrix,
+                                 tol: float, use_linear=False):
+    """
+
+    :param grid:
+    :param b_buses:
+    :param Yeq_1:
+    :param Ybbp_1:
+    :param tol:
+    :param use_linear:
+    :return:
+    """
+    # add boundary equivalent sub-grid: traverse only the triangular
+    max_x = 5.0
+    for i in range(len(b_buses)):
+        for j in range(i):
+            if abs(Yeq_1[i, j]) > tol:
+
+                if i == j:
+                    # add shunt reactance
+                    bus = b_buses[i]
+                    yeq_row_i = Yeq_1[i, :].copy()
+                    yeq_row_i[i] = 0
+                    ysh = Ybbp_1[i, i] - np.sum(yeq_row_i)
+                    if use_linear:
+                        sh = dev.Shunt(name=f"Equivalent shunt {i}", B=ysh, G=0.0)
+                    else:
+                        sh = dev.Shunt(name=f"Equivalent shunt {i}", B=ysh.imag, G=ysh.real)
+                    grid.add_shunt(bus=bus, api_obj=sh)
+                else:
+                    # add series reactance
+                    f = b_buses[i]
+                    t = b_buses[j]
+
+                    z = - 1.0 / Yeq_1[i, j]
+
+                    if z.imag <= max_x:
+                        series_reactance = dev.SeriesReactance(
+                            name=f"Equivalent boundary impedance {b_buses[i]}-{b_buses[j]}",
+                            bus_from=grid.buses[f],
+                            bus_to=grid.buses[t],
+                            r=z.real,
+                            x=z.imag
+                        )
+                        grid.add_series_reactance(series_reactance)
+
+
+def find_gen_relocation(grid: MultiCircuit,
+                        reduction_bus_indices: Sequence[int]):
+    """
+    Relocate generators
+    :param grid: MultiCircuit
+    :param reduction_bus_indices: array of bus indices to reduce (external set)
+    :return: None
+    """
+    G = nx.Graph()
+    bus_idx_dict = grid.get_bus_index_dict()
+    external_set = set(reduction_bus_indices)
+    external_gen_set = set()
+    external_gen_data = list()
+    internal_set = set()
+
+    # loop through the generators in the external set
+    for k, elm in enumerate(grid.generators):
+        i = bus_idx_dict[elm.bus]
+        if i in external_set:
+            external_set.remove(i)
+            external_gen_set.add(i)
+            external_gen_data.append((k, i, 'generator'))
+            G.add_node(i)
+
+    # loop through the branches
+    for branch in grid.get_branches(add_vsc=False, add_hvdc=False, add_switch=True):
+        f = bus_idx_dict[branch.bus_from]
+        t = bus_idx_dict[branch.bus_to]
+        if f in external_set or t in external_set:
+            # the branch belongs to the external set
+            pass
+        else:
+            # f nor t are in the external set: both belong to the internal set
+            internal_set.add(f)
+            internal_set.add(t)
+            G.add_node(f)
+            G.add_node(t)
+            w = branch.get_weight()
+            G.add_edge(f, t, weight=w)
+
+    # convert to arrays and sort
+    # external = np.sort(np.array(list(external_set)))
+    # purely_internal_set = np.sort(np.array(list(purely_internal_set)))
+
+    purely_internal_set = list(internal_set - external_gen_set)
+
+    # now, for every generator, we need to find the shortest path in the "purely internal set"
+    for elm_idx, bus_idx, tpe in external_gen_data:
+        # Compute shortest path lengths from this source
+        lengths = nx.single_source_shortest_path_length(G, bus_idx)
+
+        # Filter only target nodes
+        target_distances = {t: lengths[t] for t in purely_internal_set if t in lengths}
+        if target_distances:
+
+            # Pick the closest
+            closest = min(target_distances, key=target_distances.get)
+
+            # relocate
+            if tpe == 'generator':
+                grid.generators[elm_idx].bus = grid.buses[closest]
 
 
 def di_shi_reduction(grid: MultiCircuit,
@@ -363,8 +557,17 @@ def di_shi_reduction(grid: MultiCircuit,
     """
     logger = Logger()
 
+    nc = compile_numerical_circuit_at(grid, t_idx=None)
+
+    # Step 1 – First Ward reduction ------------------------------------------------------------------------------------
+
+    # This first reduction is to obtain the equivalent admittance matrix Y_eq1
+    # that serves to create the inter-boundary branches that represent the grid
+    # that we are going to remove.
+    # For this the buses to keep are the internal (I) + boundary (B).
+
     # find the boundary set: buses from the internal set the join to the external set
-    e_buses, b_buses, i_buses, b_branches = grid.get_reduction_sets(reduction_bus_indices=reduction_bus_indices)
+    e_buses, b_buses, i_buses, b_branches = get_reduction_sets_1(nc=nc, reduction_bus_indices=reduction_bus_indices)
 
     if len(e_buses) == 0:
         logger.add_info(msg="Nothing to reduce")
@@ -378,10 +581,6 @@ def di_shi_reduction(grid: MultiCircuit,
         logger.add_info(msg="The reducible and non reducible sets are disjoint and cannot be reduced")
         return logger
 
-    nc = compile_numerical_circuit_at(grid, t_idx=None)
-
-    # Step 1 – First Ward reduction ------------------------------------------------------------------------------------
-
     indices = nc.get_simulation_indices()
     adm = nc.get_admittance_matrices()
 
@@ -389,114 +588,55 @@ def di_shi_reduction(grid: MultiCircuit,
         logger.add_warning("Cannot uses non linear since power flow results are None")
         use_linear = True
 
-    Yeq_1, Ybbp_1 = ward_reduction_linear(Ybus=adm.Ybus,
-                                          e_buses=e_buses,
-                                          b_buses=b_buses,
-                                          i_buses=i_buses)
+    Yeq_1, Ybbp_1 = ward_reduction_linear(Ybus=adm.Ybus, e_buses=e_buses, b_buses=b_buses, i_buses=i_buses)
+
+    create_new_boundary_branches(grid=grid, b_buses=b_buses, Yeq_1=Yeq_1, Ybbp_1=Ybbp_1, tol=tol, use_linear=False)
 
     # Step 2 – Second Ward reduction: Extending to the external generation buses ---------------------------------------
 
+    # The second reduction is to generate another equivalent admittance matrix Y_eq2
+    # that we use as adjacency matrix to search the closest bus to move each generator
+    # that is external.
+    # For this the buses to keep are the internal (I) + boundary (B) + the generation buses of E.
+
+    find_gen_relocation(grid=grid, reduction_bus_indices=reduction_bus_indices)
 
     # Step 3 – Relocate generators -------------------------------------------------------------------------------------
 
+    # Using the matrix Y_eq2, we calculate the shortest paths from every external
+    # generation bus, to all the other buses in I + B. The end of each path will
+    # be the relocation bus of every external generator.
+
+    # This is done in the step before: In the original Di-Shi reduction method,
+    # they use a second ward reduction to compute the distances, however that
+    # can be done directly
 
     # Step 4 – Relocate loads with inverse power flow ------------------------------------------------------------------
 
-    # re-locate the generators using dijkstra
+    # Let's not forget about the loads! in order to move the external loads such that
+    # the reduced flows resemble the original flows (even after brutally moving the generators!),
+    # we need to perform an inverse power flow.
+    #
+    # First, we need to run a linear power flow in the original system.
+    # That will get us the original voltage angles.
+    #
+    # Second, we need to form the admittance matrix of the reduced grid
+    # (including the inter-boundary branches), and multiply this admittance matrix
+    # by the original voltage angles for the reduced set of buses.
+    # This gets us the "final" power injections in the reduced system.
+    #
+    # From those, we need to subtract the reduced grid injections.
+    # This will provide us with a vector of new loads that we need
+    # to add at the corresponding reduced grid buses in order to have a final equivalent.
+    pf_options = PowerFlowOptions(solver_type=SolverType.Linear)
+    res = multi_island_pf(multi_circuit=grid, options=pf_options)
 
-    # 1. multi-source Dijkstra: one row per boundary, all columns = nodes
-    dist = dijkstra(Yeq_1, directed=False, indices=b_buses, return_predecessors=False)
+    S_orig = res.Sbus
+    theta_orig = np.angle(res.voltage)
 
-    # 2. for each external node, pick the boundary with the minimal distance
-    nearest_idx = dist[:, e_buses].argmin(axis=0)  # row index
-    nearest_dist = dist[nearest_idx, e_buses]
-
-    # 3. translate row index → actual boundary node ID
-    nearest = b_buses[nearest_idx]
-
-    # 4. mark unreachable externals (dist == +∞)
-    nearest[np.isinf(nearest_dist)] = -1
-
-    # 5. move the generators to the nearest boundary
-    bus_idx_dict = grid.get_bus_index_dict()
-    e_dict = {b: idx for idx, b in enumerate(e_buses)}
-    for gen in grid.generators:
-        i = bus_idx_dict[gen.bus]
-        external_position = e_dict.get(i, None)
-        if external_position is not None:
-            new_bus = grid.buses[nearest[external_position]]
-            gen.bus = new_bus
-
-    n_boundary = len(b_buses)
-
-    # add boundary buses
-    # boundary_buses = [dev.Bus(name=f'Boundary {i}') for i in range(n_boundary)]
-    # grid.buses.extend(boundary_buses)
-
-    boundary_buses = [grid.buses[b_buses[i]] for i in range(n_boundary)]
-
-    # arbitrary criteria: only keep branches which x is less than 10 * max(branches.x)
-    max_x = np.max(nc.passive_branch_data.X) * 10
-
-    # add boundary equivalent sub-grid: traverse only the triangular
-    for i in range(n_boundary):
-        for j in range(i):
-            if abs(Yeq[i, j]) > tol:
-
-                if i == j:
-                    # add shunt reactance
-                    bus = boundary_buses[i]
-                    yeq_row_i = Yeq[i, :].copy()
-                    yeq_row_i[i] = 0
-                    ysh = YBBp[i, i] - np.sum(yeq_row_i)
-                    if use_linear:
-                        sh = dev.Shunt(name=f"Equivalent shunt {i}", B=ysh, G=0.0)
-                    else:
-                        sh = dev.Shunt(name=f"Equivalent shunt {i}", B=ysh.imag, G=ysh.real)
-                    grid.add_shunt(bus=bus, api_obj=sh)
-                else:
-                    # add series reactance
-                    bus_from = boundary_buses[i]
-                    bus_to = boundary_buses[j]
-
-                    z = - 1.0 / Yeq[i, j]
-
-                    if z.imag <= max_x:
-                        series_reactance = dev.SeriesReactance(
-                            name=f"Equivalent boundary impedance {b_buses[i]}-{b_buses[j]}",
-                            bus_from=bus_from,
-                            bus_to=bus_to,
-                            r=z.real,
-                            x=z.imag
-                        )
-                        grid.add_series_reactance(series_reactance)
-
-    # Add loads at the boundary buses
-    for i in range(n_boundary):
-        if add_power_loads:
-            # add power values
-            P = Seq[i].real
-            Q = Seq[i].imag
-            if abs(P) > tol and abs(Q) > tol:
-                load = dev.Load(name=f"Ward equivalent load {i}", P=P * grid.Sbase, Q=Q * grid.Sbase)
-                load.comment = "Added because of a Ward reduction of the grid"
-                bus = boundary_buses[i]
-                grid.add_load(bus=bus, api_obj=load)
-        else:
-            # add current values
-            Ire = Ieq[i].real
-            Iim = Ieq[i].imag
-            if abs(Ire) > tol and abs(Iim) > tol:
-                load = dev.Load(name=f"Ward equivalent load {i}", Ir=Ire * grid.Sbase, Ii=Iim * grid.Sbase)
-                load.comment = "Added because of a Ward reduction of the grid"
-                bus = boundary_buses[i]
-                grid.add_load(bus=bus, api_obj=load)
-
-    # Delete the external buses
-    to_be_deleted = [grid.buses[e] for e in e_buses]
-    for bus in to_be_deleted:
-        grid.delete_bus(obj=bus, delete_associated=True)
-
+    nc_red = compile_numerical_circuit_at(grid, t_idx=0)
+    lin_adm = nc_red.get_linear_admittance_matrices()
+    S
     return grid, logger
 
 
@@ -511,17 +651,11 @@ if __name__ == '__main__':
     grid_ = gce.open_file(fname)
     grid_expected = gce.open_file(fname_expected)
 
-    # ptdf = gce.linear_power_flow(grid=grid_).PTDF
-    # ptdf_reduction_with_islands(grid=grid_,
-    #                             reduction_bus_indices=np.array([0, 1, 2, 3, 7]),
-    #                             PTDF=ptdf,
-    #                             tol=1e-8)
-
-    logger_ = di_shi_reduction(grid=grid_,
-                               reduction_bus_indices=reduction_bus_indices_,
-                               pf_res=gce.power_flow(grid_),
-                               add_power_loads=True,
-                               use_linear=True,
-                               tol=1e-8)
+    grid_red, logger_ = di_shi_reduction(grid=grid_.copy(),
+                                         reduction_bus_indices=reduction_bus_indices_,
+                                         pf_res=gce.power_flow(grid_),
+                                         add_power_loads=True,
+                                         use_linear=True,
+                                         tol=1e-8)
 
     logger_.print()
