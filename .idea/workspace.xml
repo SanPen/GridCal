@@ -30,8 +30,7 @@
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved get_nominal_voltage_for_cn">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_typing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_typing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/file_operations.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/file_operations.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -225,14 +224,14 @@
       <recent name="$PROJECT_DIR$/doc/md_source/figures" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Topology/GridReduction" />
       <recent name="$PROJECT_DIR$/doc/md_source/figures" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Devices/Dynamic" />
       <recent name="C:\Users\eRoots1\PycharmProjects\GridCal\src\tests" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids/RAW" />
-      <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Substation" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation_pandapower">
+  <component name="RunManager" selected="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_network_objects_consistency">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -728,19 +727,19 @@
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
       <item itemvalue="Python tests.pytest in test_state_estimation_from_pandapower_conversion.py" />
+      <item itemvalue="Python tests.pytest in test_continuation_power_flow.py" />
       <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_network_objects_consistency" />
       <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation_pandapower" />
       <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation" />
-      <item itemvalue="Python tests.pytest in test_continuation_power_flow.py" />
       <item itemvalue="Python tests.pytest in test_state_estimation.py" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation_pandapower" />
         <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_network_objects_consistency" />
         <item itemvalue="Python tests.pytest in test_state_estimation.py" />
-        <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation" />
         <item itemvalue="Python tests.pytest in test_continuation_power_flow.py" />
+        <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation" />
+        <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation_pandapower" />
       </list>
     </recent_temporary>
   </component>
@@ -2291,12 +2290,6 @@
           <option name="timeStamp" value="2664" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <condition expression="isinstance(cgmes_terminal.TopologicalNode, str)" language="Python" />
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py</url>
-          <line>42</line>
-          <option name="timeStamp" value="2665" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
           <line>41</line>
           <option name="timeStamp" value="2687" />
@@ -2356,6 +2349,11 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py</url>
           <line>1911</line>
           <option name="timeStamp" value="2747" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py</url>
+          <line>75</line>
+          <option name="timeStamp" value="2748" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
