@@ -636,9 +636,18 @@ def solve_se_lm(nc: NumericalCircuit,
 
             # # modify the solution
             dVa = dx[:n_no_slack]
-            dVm = dx[n_no_slack:]
+            #dVm = dx[n_no_slack:]
+            dVm = dx[n_no_slack:2 * n_no_slack]  # Should be same length as dVa
+            # Va[no_slack] += dVa
+            # Vm += dVm  # yes, this is for all the buses
+            # V = Vm * np.exp(1j * Va)
+
             Va[no_slack] += dVa
-            Vm += dVm  # yes, this is for all the buses
+            Vm[no_slack] += dVm
+            V[no_slack] = Vm[no_slack] * np.exp(1j * Va[no_slack])
+
+            # Keep slack buses fixed
+            #V[vd] = Vm[vd] * np.exp(1j * Va[vd])  # Slack buses should remain at their initial value
             V = Vm * np.exp(1j * Va)
 
             if verbose > 1:
