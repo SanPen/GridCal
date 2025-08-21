@@ -722,7 +722,10 @@ class Panda2GridCal:
         grid = dev.MultiCircuit()
 
         if self.panda_net is not None:
-            grid.Sbase = 100.0  # always, the pandapower scaling is handled in the conversions
+            #grid.Sbase = self.panda_net.sn_mva if self.panda_net.sn_mva > 0.0 else 100.0  # always, the pandapower
+            # For pandapwoer Sbase is crazily affecting only load
+            grid.Sbase = 100.0  # always, the pandapower
+            # scaling is handled in the conversions
             grid.fBase = self.panda_net.f_hz
 
             bus_dict = self.parse_buses(grid=grid)
