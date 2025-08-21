@@ -1,4 +1,4 @@
-# Grid Reduction
+# 👾 Grid Reduction
 
 GridCal has the ability to perform planning-style grid reductions.
 
@@ -24,87 +24,66 @@ Changing the injections, or further topological changes will alter the equivalen
 
 This action cannot be undone.
 
+## API
+
+
+
 ## Theory
 
-The PhD dissertation presented in [1], expands on the traditional ward equivalent reduction method.
-The proposed method allows the generators to be "just moved" to the boundary buses and later, 
-injections are calibrated to compensate for that. In that sense, is a very friendly method for 
+
+### Di-Shi grid equivalent
+
+The PhD dissertation of Di-Shi presented in [1] [2], expands on the traditional ward equivalent reduction method.
+The proposed method allows the generators to be *just moved* to the boundary buses. Later, 
+the injections are calibrated to compensate for that. It is a very friendly method for 
 planning engineers that want to reduce the grid, and still need to keep the generators as previously 
 defined for dispatching.
 
-Steps for the **Modified Ward equivalent**:
+**Step 0 – Define bus sets**
 
+- I: set of internal buses.
+- E: set of external buses: those that we want to remove.
+- B: set of boundary buses between E and I.
 
 **Step 1 – First Ward reduction**
 
-1. Inputs:
+This first reduction is to obtain the equivalent admittance matrix $Y_eq^{(1}$ that serves
+to create the inter-boundary branches that represent the grid that we are going to remove.
+For this the buses to keep are the internal (I) + boundary (B).
 
-   - Full original system network.
+**Step 2 – Second Ward reduction: Extending to the external generation buses**
 
-    - A list of retained buses (the boundary buses you want to keep).
+The second reduction is to generate another equivalent admittance matrix $Y_eq^{(2}$
+that we use as adjacency matrix to search the closest bus to move each generator that is external.
+For this the buses to keep are the internal (I) + boundary (B) + the generation buses of E.
 
-2. Preparation:
+**Step 3 – Relocate generators**
 
-   - Convert all equivalent shunt elements into PQ loads.
+Using the matrix $Y_eq^{(2}$, we calculate the shortest paths from every 
+external generation bus, to all the other buses in I + B. The end of each 
+path will be the relocation bus of every external generator.
 
-   - This makes the load representation compatible with the Ward reduction.
+**Step 4 – Relocate loads with inverse power flow**
 
-3. Apply Ward reduction:
+Let's not forget about the loads! in order to move the external loads such that
+the reduced flows resemble the original flows (even after brutally moving the generators!),
+we need to perform an *inverse power flow*.
 
-   - Eliminate all non-retained (external) buses.
+First, we need to run a linear power flow in the original system. 
+That will get us the original voltage angles.
 
-   - Replace their effects with equivalent injections and lines.
+Second, we need to form the admittance matrix of the reduced grid 
+(including the inter-boundary branches), and multiply this admittance
+matrix by the original voltage angles for the reduced set of buses.
+This gets us the "final" power injections in the reduced system.
 
-4. Post-processing:
+From those, we need to subtract the reduced grid injections. 
+This will provide us with a vector of new loads that we need to add at 
+the corresponding reduced grid buses in order to have a final equivalent.
 
-   - Since the original system has many very low-impedance lines (<0.01 p.u.), some artificial lines created by reduction can be unrealistically large.
-
-   - Therefore, remove any equivalent line with impedance > 5 p.u. from the reduced system.
-
-**Step 2 – Reduced generator model**
-
-5. Update the set of retained buses:
-
-   - Keep all generator buses.
-
-   - Keep all the retained boundary buses from Step 1.
-
-6. Apply Ward reduction again:
-
-   - This produces the reduced generator model.
-
-   - In this model, every generator bus is guaranteed to connect to at least one retained (boundary) bus by a transmission line (either original or equivalent).
-
-7. Generator relocation (different from classical Ward):
-
-   - Classical Ward would “fractionalize” generators (split them into pieces assigned to multiple boundary buses).
-
-   - Instead, the proposed method keeps each generator intact:
-
-     - For each generator bus, find the closest retained bus.
-
-     - Closest = electrically closest, meaning the path with the smallest equivalent impedance between the generator bus and the retained bus.
-
-   - Move the entire generator to that closest internal (retained) bus.
-
-The pseudo-code would be like:
-
-```python 
-# Step 1: Initial Ward reduction
-convert_shunts_to_PQ()
-reduced_system = ward_reduction(original_system, retained_buses)
-remove_lines_if_impedance_gt(reduced_system, threshold=5.0)
-
-# Step 2: Reduced generator model
-new_retained_buses = retained_buses + generator_buses
-reduced_generator_model = ward_reduction(original_system, new_retained_buses)
-
-# Step 3: Generator relocation
-for gen in reduced_generator_model.generators:
-    closest_bus = find_min_impedance_path(gen.bus, retained_buses)
-    move_generator(gen, closest_bus)
-```
 
 [1]: [Power System Network Reduction for Engineering and Economic 
 Analysis by Di Shi, 
 2012 Arizona State University](https://core.ac.uk/download/pdf/79564835.pdf).
+
+[2]: [Optimal Generation Investment Planning: Pt 1: Network Equivalents](https://ieeexplore.ieee.org/document/6336375)

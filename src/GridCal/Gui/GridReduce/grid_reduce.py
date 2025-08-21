@@ -14,7 +14,7 @@ from GridCal.Gui.gui_functions import get_list_model
 from GridCal.Session.session import SimulationSession
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Topology.grid_reduction import ward_reduction, ptdf_reduction
+from GridCalEngine.Topology.grid_reduction import di_shi_reduction, ptdf_reduction
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import GridReductionMethod
 
@@ -81,7 +81,7 @@ class GridReduceDialogue(QtWidgets.QDialog):
                         warning_msg("Run a power flow first! or select another method", "Grid reduction")
                         return
 
-                    logger = ward_reduction(
+                    logger = di_shi_reduction(
                         grid=self._grid,
                         reduction_bus_indices=reduction_bus_indices,
                         pf_res=pf_res,
@@ -90,7 +90,7 @@ class GridReduceDialogue(QtWidgets.QDialog):
                     )
 
                 elif method == GridReductionMethod.Ward:
-                    logger = ward_reduction(
+                    logger = di_shi_reduction(
                         grid=self._grid,
                         reduction_bus_indices=reduction_bus_indices,
                         pf_res=None,
