@@ -30,14 +30,9 @@
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved get_nominal_voltage_for_cn">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/grid_reduction.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/grid_reduction.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/numerical_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/numerical_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/branch_parent.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/branch_parent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/profile.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/profile.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/GridReduction/di_shi_grid_reduction.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/GridReduction/di_shi_grid_reduction.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/GridReduction/modified_ward_equivalent.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/GridReduction/modified_ward_equivalent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/pp_check/4_bus_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/pp_check/4_bus_check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/pp_check/PP_StateEstimation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/pp_check/PP_StateEstimation.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -238,7 +233,7 @@
       <recent name="$PROJECT_DIR$/src/tests/data/grids/RAW" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.4_bus_check">
+  <component name="RunManager" selected="Python tests.pytest in test_state_estimation.py">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -486,6 +481,28 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="GC_StateEstimation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/pp_check" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/pp_check/GC_StateEstimation.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -508,7 +525,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="di_shi_grid_reduction" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="state_estimation.mod" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -516,12 +533,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCalEngine/Topology/GridReduction" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/pp_check" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalEngine/Topology/GridReduction/di_shi_grid_reduction.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/pp_check/state_estimation.mod.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -672,7 +689,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for test_state_estimation_from_pandapower_conversion.test_network_objects_consistency" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation_pandapower" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -685,25 +702,8 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_state_estimation_from_pandapower_conversion.test_network_objects_consistency&quot;" />
+      <option name="_new_target" value="&quot;test_state_estimation_from_pandapower_conversion.test_state_estimation_pandapower&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="pytest in test_continuation_power_flow.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_keywords" value="&quot;&quot;" />
-      <option name="_new_parameters" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_continuation_power_flow.py&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
     <configuration name="pytest in test_state_estimation_from_pandapower_conversion.py" type="tests" factoryName="py.test" nameIsGenerated="true">
@@ -743,20 +743,20 @@
     <list>
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
+      <item itemvalue="Python.GC_StateEstimation" />
+      <item itemvalue="Python.state_estimation.mod" />
       <item itemvalue="Python.4_bus_check" />
-      <item itemvalue="Python.di_shi_grid_reduction" />
       <item itemvalue="Python tests.pytest in test_state_estimation_from_pandapower_conversion.py" />
-      <item itemvalue="Python tests.pytest in test_continuation_power_flow.py" />
-      <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_network_objects_consistency" />
+      <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation_pandapower" />
       <item itemvalue="Python tests.pytest in test_state_estimation.py" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.4_bus_check" />
-        <item itemvalue="Python.di_shi_grid_reduction" />
-        <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_network_objects_consistency" />
         <item itemvalue="Python tests.pytest in test_state_estimation.py" />
-        <item itemvalue="Python tests.pytest in test_continuation_power_flow.py" />
+        <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation_pandapower" />
+        <item itemvalue="Python.4_bus_check" />
+        <item itemvalue="Python.state_estimation.mod" />
+        <item itemvalue="Python.GC_StateEstimation" />
       </list>
     </recent_temporary>
   </component>
@@ -2344,18 +2344,8 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="len(h) == 0" language="Python" />
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py</url>
-          <line>653</line>
+          <line>662</line>
           <option name="timeStamp" value="2737" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py</url>
-          <line>532</line>
-          <option name="timeStamp" value="2743" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py</url>
-          <line>533</line>
-          <option name="timeStamp" value="2744" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py</url>
@@ -2386,6 +2376,16 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/GridReduction/di_shi_grid_reduction.py</url>
           <line>537</line>
           <option name="timeStamp" value="2754" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/.venv311/lib/python3.11/site-packages/pandapower/create.py</url>
+          <line>2402</line>
+          <option name="timeStamp" value="2755" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_state_estimation.py</url>
+          <line>67</line>
+          <option name="timeStamp" value="2756" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

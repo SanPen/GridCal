@@ -40,18 +40,16 @@ def create_pp_network():
                                                    vkr_percent=0.8, vk_percent=0.8, pfe_kw=1,
                                                    i0_percent=0.1)
 
-
     # Adding load to Bus 2
     load1 = pp.create_load(net, name="Load 1", bus=bus4, p_mw=30.0, q_mvar=20.0)
 
     sgen1 = pp.create_sgen(net, name="sgen 1", bus=bus3, p_mw=4.0, q_mvar=2,
-                           min_p_mw=0, max_p_mw=4.0, min_q_mvar=0,  max_q_mvar=2,
+                           min_p_mw=0, max_p_mw=4.0, min_q_mvar=0, max_q_mvar=2,
                            sn_mva=100, in_service=True)
 
     # switch1 = pp.create_switch(net, name="switch 1", bus=bus3, et='l', element=line2)
 
     shunt1 = pp.create_shunt(net, name="shunt 1", bus=bus2, p_mw=0, q_mvar=30)
-
 
     return net
 
@@ -71,9 +69,18 @@ def create_gc_network():
     grid.add_bus(bus3)
     grid.add_bus(bus4)
 
+    line_type_params = {'alpha': 0.00403,
+                        'c_nf_per_km': 210,
+                        'max_i_ka': 0.142,
+                        'q_mm2': 50,
+                        'r_ohm_per_km': 0.642,
+                        'type': 'cs',
+                        'voltage_rating': 'LV',
+                        'x_ohm_per_km': 0.083}
+
     # Adding a line between Bus 1 and Bus 2
     # zzz1, yyy1 = z_ohm_to_pu(r=0.642, x=0.083, c=210.0, length=10, Sbase=100, Vbase=110., fbase=50)
-    line1 = gce.Line(bus_from=bus1,  bus_to=bus2)
+    line1 = gce.Line(bus_from=bus1, bus_to=bus2)
     line1.fill_design_properties(r_ohm=0.642, x_ohm=0.083, c_nf=210.0, length=10, Imax=100,
                                  freq=grid.fBase, Sbase=grid.Sbase)
 
@@ -104,7 +111,8 @@ def create_gc_network():
     grid.add_load(bus=bus4, api_obj=load)  # Adding the load to the bus
 
     # Adding a generator at Bus 1
-    gen = gce.ExternalGrid(name="Grid Connection", Vm=1.02, mode=gce.ExternalGridMode.VD)  # Active power in MW and voltage set point in p.u.
+    gen = gce.ExternalGrid(name="Grid Connection", Vm=1.02,
+                           mode=gce.ExternalGridMode.VD)  # Active power in MW and voltage set point in p.u.
     grid.add_external_grid(bus=bus1, api_obj=gen)  # Adding the generator to the bus
 
     gen = gce.StaticGenerator(name="sgen1", P=4.0, Q=2, )  # Active power in MW and voltage set point in p.u.
@@ -183,11 +191,10 @@ def solve_generalized(grid: gce.MultiCircuit,
 gridPP1 = create_pp_network()
 gridGC1 = create_gc_network()
 
-#Pandapower power flow
+# Pandapower power flow
 pp.runpp(gridPP1)
 
-
-#GridCal network power flow
+# GridCal network power flow
 options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
 power_flowGC1 = gce.power_flow(gridGC1, options)
 

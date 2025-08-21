@@ -503,7 +503,7 @@ def solve_se_lm(nc: NumericalCircuit,
     converged = False
     norm_f = 1e20
     nu = 2.0
-
+    error_list = list()
     # first computation of the jacobian and free term
     H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, se_input, no_slack)
 
@@ -705,6 +705,8 @@ def solve_se_lm(nc: NumericalCircuit,
         norm_f = np.linalg.norm(dx, np.inf)
         converged = norm_f < tol
 
+        error_list.append(norm_f)
+
         if verbose > 0:
             print(f"Norm_f {norm_f}")
 
@@ -725,6 +727,12 @@ def solve_se_lm(nc: NumericalCircuit,
         Yshunt_bus=Yshunt_bus,
         branch_rates=nc.passive_branch_data.rates,
         Sbase=nc.Sbase)
+
+    if verbose > 1:
+        from matplotlib import pyplot as plt
+        plt.plot(error_list)
+        plt.yscale('log')
+        plt.show()
 
     return NumericStateEstimationResults(V=V,
                                          Scalc=Scalc,
