@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+import os
 from GridCalEngine.api import *
 
 np.set_printoptions(linewidth=10000)
@@ -68,5 +69,87 @@ def test_3_node_abur_exposito() -> None:
     assert np.allclose(se.results.voltage, results)
 
 
-def test_3_bus_monticelli():
-    pass
+def test_14_bus_matpower():
+    # Go back two directories
+    file_path = os.path.join('data', 'grids', 'case14.m')
+
+    grid = FileOpen(file_path).open()
+
+    # these are the matpower branch indices
+    idx_zPF = np.array([1, 3, 8, 9, 10, 13, 15, 16, 17, 19], dtype=int)
+    idx_zPT = np.array([4, 5, 7, 11], dtype=int)
+    idx_zPG = np.array([1, 2, 3, 4, 5], dtype=int)
+    idx_zVa = np.array([], dtype=int)
+    idx_zQF = np.array([1, 3, 8, 9, 10, 13, 15, 19], dtype=int)
+    idx_zQT = np.array([4, 5, 7, 11], dtype=int)
+    idx_zQG = np.array([1, 2], dtype=int)
+    idx_zVm = np.array([2, 3, 6, 8, 10, 14], dtype=int)
+
+    # mapping from matpower index to gridcal branch index
+    mapping = {
+        1: 0,
+        2: 1,
+        3: 2,
+        4: 3,
+        5: 4,
+        6: 5,
+        7: 6,
+        8: 17,
+        9: 18,
+        10: 19,
+        11: 7,
+        12: 8,
+        13: 9,
+        14: 10,
+        15: 11,
+        16: 12,
+        17: 13,
+        18: 14,
+        19: 15,
+        20: 16,
+    }
+
+    PF = np.array([1.5708, 0.734, 0.2707, 0.1546, 0.4589, 0.1834, 0.2707, 0.0523, 0.0943, 0.0188], dtype=float)
+    PT = np.array([-0.5427, -0.4081, 0.6006, -0.0816], dtype=float)
+    PG = np.array([2.32, 0.4, 0.0, 0.0, 0.0], dtype=float)
+    Va = np.array([], dtype=float)
+    QF = np.array([-0.1748, 0.0594, -0.154, -0.0264, -0.2084, 0.0998, 0.148, 0.0141], dtype=float)
+    QT = np.array([0.0213, -0.0193, -0.1006, -0.0864], dtype=float)
+    QG = np.array([-0.169, 0.424], dtype=float)
+    Vm = np.array([1, 1, 1, 1, 1, 1], dtype=float)
+
+    sigma_PF = 0.02
+    sigma_PT = 0.02
+    sigma_PG = 0.015
+    sigma_Va = 0.0
+    sigma_QF = 0.02
+    sigma_QT = 0.02
+    sigma_QG = 0.015
+    sigma_Vm = 0.01
+
+    # Add bus measurements
+    for idx_arr, vals_arr, sigma, scale, m_object in [
+        (idx_zPG, PG, sigma_PG, 100, PiMeasurement),
+        (idx_zQG, QG, sigma_QG, 100, QiMeasurement),
+        (idx_zVm, Vm, sigma_Vm, 1.0, VmMeasurement),
+        (idx_zVa, Va, sigma_Va, 1.0, VaMeasurement),
+    ]:
+        for idx, val in zip(idx_arr, vals_arr):
+            gc_idx = idx - 1  # pass to zero indexing
+            obj = grid.buses[gc_idx]
+            grid.add_element(m_object(value=val * scale, uncertainty=sigma, api_obj=obj))
+
+    # Add branch measurements
+    branches = grid.get_branches()
+    for idx_arr, vals_arr, sigma, scale, m_object in [
+        (idx_zPF, PF, sigma_PF, 100, PfMeasurement),
+        (idx_zPT, PT, sigma_PT, 100, PtMeasurement),
+        (idx_zQF, QF, sigma_QF, 100, QfMeasurement),
+        (idx_zQT, QT, sigma_QT, 100, QtMeasurement),
+    ]:
+        for idx, val in zip(idx_arr, vals_arr):
+            gc_idx = mapping[idx]
+            obj = branches[gc_idx]
+            grid.add_element(m_object(value=val * scale, uncertainty=sigma, api_obj=obj))
+
+    print()
