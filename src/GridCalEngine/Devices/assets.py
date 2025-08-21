@@ -64,6 +64,8 @@ class Assets:
         '_controllable_shunts',
         '_pi_measurements',
         '_qi_measurements',
+        '_pg_measurements',
+        '_qg_measurements',
         '_vm_measurements',
         '_va_measurements',
         '_pf_measurements',
@@ -172,6 +174,8 @@ class Assets:
         # Lists of measurements
         self._pi_measurements: List[dev.PiMeasurement] = list()
         self._qi_measurements: List[dev.QiMeasurement] = list()
+        self._pg_measurements: List[dev.PgMeasurement] = list()
+        self._qg_measurements: List[dev.QgMeasurement] = list()
         self._vm_measurements: List[dev.VmMeasurement] = list()
         self._va_measurements: List[dev.VaMeasurement] = list()
         self._pf_measurements: List[dev.PfMeasurement] = list()
@@ -2281,6 +2285,135 @@ class Assets:
         """
         try:
             self._qi_measurements.remove(obj)
+        except ValueError:
+            pass
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # P_g measurement
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @property
+    def pg_measurements(self) -> List[dev.PgMeasurement]:
+        """
+        Get list of PiMeasurements
+        :return:
+        """
+        return self._pg_measurements
+
+    @pg_measurements.setter
+    def pg_measurements(self, value: List[dev.PgMeasurement]):
+        self._pg_measurements = value
+
+    def get_pg_measurements(self) -> List[dev.PgMeasurement]:
+        """
+        List of pg_measurements
+        :return: List[dev.PgMeasurement]
+        """
+        return self._pg_measurements
+
+    def get_pg_measurements_number(self) -> int:
+        """
+        Size of the list of pg_measurements
+        :return: size of pg_measurements
+        """
+        return len(self._pg_measurements)
+
+    def get_pg_measurement_at(self, i: int) -> dev.PgMeasurement:
+        """
+        Get pg_measurement at i
+        :param i: index
+        :return: PgMeasurement
+        """
+        return self._pg_measurements[i]
+
+    def get_pg_measurement_names(self) -> StrVec:
+        """
+        Array of pi_measurement names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self._pg_measurements])
+
+    def add_pg_measurement(self, obj: dev.PgMeasurement):
+        """
+        Add a PgMeasurement object
+        :param obj: PgMeasurement instance
+        """
+
+        if self.time_profile is not None:
+            obj.ensure_profiles_exist(self.time_profile)
+        self._pg_measurements.append(obj)
+
+    def delete_pg_measurement(self, obj: dev.PgMeasurement) -> None:
+        """
+        Add a PiMeasurement object
+        :param obj: PiMeasurement instance
+        """
+        try:
+            self._pg_measurements.remove(obj)
+        except ValueError:
+            pass
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Q_g measurement
+    # ------------------------------------------------------------------------------------------------------------------
+    @property
+    def qg_measurements(self) -> List[dev.QgMeasurement]:
+        """
+        Get list of QgMeasurements
+        :return:
+        """
+        return self._qg_measurements
+
+    @qg_measurements.setter
+    def qg_measurements(self, value: List[dev.QgMeasurement]):
+        self._qg_measurements = value
+
+    def get_qg_measurements(self) -> List[dev.QgMeasurement]:
+        """
+        List of qg_measurements
+        :return: List[dev.QgMeasurement]
+        """
+        return self._qg_measurements
+
+    def get_qg_measurements_number(self) -> int:
+        """
+        Size of the list of qg_measurements
+        :return: size of qg_measurements
+        """
+        return len(self._qg_measurements)
+
+    def get_qg_measurement_at(self, i: int) -> dev.QgMeasurement:
+        """
+        Get qg_measurement at i
+        :param i: index
+        :return: QgMeasurement
+        """
+        return self._qg_measurements[i]
+
+    def get_qg_measurement_names(self) -> StrVec:
+        """
+        Array of qg_measurement names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self._qg_measurements])
+
+    def add_qg_measurement(self, obj: dev.QgMeasurement):
+        """
+        Add a QiMeasurement object
+        :param obj: QiMeasurement instance
+        """
+
+        if self.time_profile is not None:
+            obj.ensure_profiles_exist(self.time_profile)
+        self._qg_measurements.append(obj)
+
+    def delete_qg_measurement(self, obj: dev.QgMeasurement) -> None:
+        """
+        Add a QgMeasurement object
+        :param obj: QgMeasurement instance
+        """
+        try:
+            self._qg_measurements.remove(obj)
         except ValueError:
             pass
 
@@ -5500,6 +5633,12 @@ class Assets:
         elif device_type == DeviceType.QMeasurementDevice:
             return self.get_q_measurements()
 
+        elif device_type == DeviceType.PgMeasurementDevice:
+            return self.get_pg_measurements()
+
+        elif device_type == DeviceType.QgMeasurementDevice:
+            return self.get_qg_measurements()
+
         elif device_type == DeviceType.PfMeasurementDevice:
             return self.get_pf_measurements()
 
@@ -5718,6 +5857,12 @@ class Assets:
         elif device_type == DeviceType.QMeasurementDevice:
             self._qi_measurements = devices
 
+        elif device_type == DeviceType.PgMeasurementDevice:
+            self._pg_measurements = devices
+
+        elif device_type == DeviceType.QgMeasurementDevice:
+            self._qg_measurements = devices
+
         elif device_type == DeviceType.PfMeasurementDevice:
             self._pf_measurements = devices
 
@@ -5905,6 +6050,12 @@ class Assets:
         elif obj.device_type == DeviceType.QMeasurementDevice:
             self.add_qi_measurement(obj=obj)
 
+        elif obj.device_type == DeviceType.PgMeasurementDevice:
+            self.add_pg_measurement(obj=obj)
+
+        elif obj.device_type == DeviceType.QgMeasurementDevice:
+            self.add_qg_measurement(obj=obj)
+
         elif obj.device_type == DeviceType.PfMeasurementDevice:
             self.add_pf_measurement(obj=obj)
 
@@ -6091,6 +6242,12 @@ class Assets:
 
         elif obj.device_type == DeviceType.QMeasurementDevice:
             self.delete_qi_measurement(obj)
+
+        elif obj.device_type == DeviceType.PgMeasurementDevice:
+            self.delete_pg_measurement(obj)
+
+        elif obj.device_type == DeviceType.QgMeasurementDevice:
+            self.delete_qg_measurement(obj)
 
         elif obj.device_type == DeviceType.PfMeasurementDevice:
             self.delete_pf_measurement(obj)

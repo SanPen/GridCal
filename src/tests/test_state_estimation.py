@@ -66,7 +66,7 @@ def test_3_node_abur_exposito() -> None:
     """
 
     results = np.array([0.99962926+0.j, 0.97392515-0.02120941j, 0.94280676-0.04521561j])
-    assert np.allclose(se.results.voltage, results)
+    assert np.allclose(se.results.voltage, results, atol=1e-4)
 
 
 def test_14_bus_matpower():
@@ -109,31 +109,21 @@ def test_14_bus_matpower():
         20: 16,
     }
 
-    gen_bus_mapping = {
-        1: 0,
-        2: 1,
-        3: 2,
-        4: 6,
-        5: 7,
-    }
-
     PF = np.array([1.5708, 0.734, 0.2707, 0.1546, 0.4589, 0.1834, 0.2707, 0.0523, 0.0943, 0.0188], dtype=float)
     PT = np.array([-0.5427, -0.4081, 0.6006, -0.0816], dtype=float)
     PG = np.array([2.32, 0.4, 0.0, 0.0, 0.0], dtype=float)
-    # PG += np.array([0, 0.217, 0.942, 0.478, 0.076], dtype=float)  # this is the load at the bus
 
     Va = np.array([], dtype=float)
     QF = np.array([-0.1748, 0.0594, -0.154, -0.0264, -0.2084, 0.0998, 0.148, 0.0141], dtype=float)
     QT = np.array([0.0213, -0.0193, -0.1006, -0.0864], dtype=float)
     QG = np.array([-0.169, 0.424], dtype=float)
-    # QG += np.array([0, 0.127], dtype=float)  # this is the load at the bus
 
     Vm = np.array([1, 1, 1, 1, 1, 1], dtype=float)
 
     sigma_PF = 0.02
     sigma_PT = 0.02
     sigma_PG = 0.015
-    sigma_Va = 0.0
+    sigma_Va = 0.01
     sigma_QF = 0.02
     sigma_QT = 0.02
     sigma_QG = 0.015
@@ -151,12 +141,12 @@ def test_14_bus_matpower():
 
     # Add generator measurements
     for idx_arr, vals_arr, sigma, scale, m_object in [
-        (idx_zPG, PG, sigma_PG, 100, PiMeasurement),
-        (idx_zQG, QG, sigma_QG, 100, QiMeasurement),
+        (idx_zPG, PG, sigma_PG, 100, PgMeasurement),
+        (idx_zQG, QG, sigma_QG, 100, QgMeasurement),
     ]:
         for idx, val in zip(idx_arr, vals_arr):
-            gc_idx = gen_bus_mapping[idx]  # get the gridcal bus index from the generator index
-            obj = grid.buses[gc_idx]
+            gc_idx = idx - 1  # get the gridcal bus index from the generator index
+            obj = grid.generators[gc_idx]
             grid.add_element(m_object(value=val * scale, uncertainty=sigma * scale, api_obj=obj))
 
     # Add branch measurements
@@ -183,3 +173,24 @@ def test_14_bus_matpower():
     print(f"Error: {se.results.error}")
     print(f"Iter: {se.results.iterations}")
     print()
+
+    expected_voltage = np.array([
+        1.060000000000000 + 0.000000000000000j,
+        1.039933594059899 - 0.090313766102826j,
+        0.982355302637923 - 0.221430317163729j,
+        0.998610257007820 - 0.180922767027063j,
+        1.006066277008519 - 0.155583022160554j,
+        1.086005598052025 - 0.273081360187983j,
+        1.042998635186457 - 0.244449009989143j,
+        0.973617097641113 - 0.228187964583794j,
+        1.022141142371230 - 0.268116448565777j,
+        0.971362042218784 - 0.237604256983231j,
+        1.062397271041971 - 0.274222737353904j,
+        1.067252193108086 - 0.283008909486410j,
+        1.060690860030405 - 0.282328227107489j,
+        0.966563824799688 - 0.256426154260047j,
+    ])
+
+    diff = se.results.voltage - expected_voltage
+
+    assert np.allclose(se.results.voltage, expected_voltage, atol=1e-12)

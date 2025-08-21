@@ -992,6 +992,8 @@ class DeviceType(Enum):
 
     PMeasurementDevice = 'Pi Measurement'
     QMeasurementDevice = 'Qi Measurement'
+    PgMeasurementDevice = 'Pg Measurement'
+    QgMeasurementDevice = 'Qg Measurement'
     PfMeasurementDevice = 'Pf Measurement'
     QfMeasurementDevice = 'Qf Measurement'
     PtMeasurementDevice = 'Pt Measurement'

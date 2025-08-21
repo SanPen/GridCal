@@ -8,7 +8,7 @@ from typing import Tuple
 
 import pandas as pd
 from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, diags
-from scipy.sparse.linalg import factorized
+from scipy.sparse.linalg import factorized, spsolve
 import numpy as np
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
@@ -22,6 +22,7 @@ from GridCalEngine.basic_structures import CscMat, IntVec, CxVec, Vec, ObjVec, L
 def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
                 f: IntVec, t: IntVec, Cf: csc_matrix, Ct: csc_matrix,
                 inputs: StateEstimationInput, pvpq: IntVec,
+                load_per_bus: CxVec,
                 fixed_slack: bool):
     """
     Get the arrays for calculation
@@ -35,6 +36,7 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
     :param Ct: Connectivity matrix "to"
     :param inputs: instance of StateEstimationInput
     :param pvpq: array of pq|pv bus indices
+    :param load_per_bus: Array of load per bus in p.u. (used to compute the Pg and Qg measurements)
     :param fixed_slack: if true, the measurements on the slack bus are omitted
     :return: H (jacobian), h (residual), S (power injections)
     """
@@ -50,13 +52,15 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
     Sf = V[f] * np.conj(If)
     St = V[t] * np.conj(It)
 
-    dS_dVm, dS_dVa = dSbus_dV_matpower(Ybus, V)
+    dS_dVa, dS_dVm = dSbus_dV_matpower(Ybus, V)
     dSf_dVa, dSf_dVm, dSt_dVa, dSt_dVm = dSbr_dV_matpower(Yf, Yt, V, f, t, Cf, Ct)
     dIf_dVa, dIf_dVm, dIt_dVa, dIt_dVm = dIbr_dV_matpower(Yf, Yt, V)
 
     # slice derivatives
     dP_dVa = dS_dVa[np.ix_(inputs.p_idx, pvpq)].real
     dQ_dVa = dS_dVa[np.ix_(inputs.q_idx, pvpq)].imag
+    dPg_dVa = dS_dVa[np.ix_(inputs.pg_idx, pvpq)].real
+    dQg_dVa = dS_dVa[np.ix_(inputs.qg_idx, pvpq)].imag
     dPf_dVa = dSf_dVa[np.ix_(inputs.pf_idx, pvpq)].real
     dPt_dVa = dSt_dVa[np.ix_(inputs.pt_idx, pvpq)].real
     dQf_dVa = dSf_dVa[np.ix_(inputs.qf_idx, pvpq)].imag
@@ -70,6 +74,8 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
         # With the fixed slack, we don't need to compute the derivative values for the slack Vm
         dP_dVm = dS_dVm[np.ix_(inputs.p_idx, pvpq)].real
         dQ_dVm = dS_dVm[np.ix_(inputs.q_idx, pvpq)].imag
+        dPg_dVm = dS_dVm[np.ix_(inputs.pg_idx, pvpq)].real
+        dQg_dVm = dS_dVm[np.ix_(inputs.qg_idx, pvpq)].imag
         dPf_dVm = dSf_dVm[np.ix_(inputs.pf_idx, pvpq)].real
         dPt_dVm = dSt_dVm[np.ix_(inputs.pt_idx, pvpq)].real
         dQf_dVm = dSf_dVm[np.ix_(inputs.qf_idx, pvpq)].imag
@@ -82,6 +88,8 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
         # With the non fixed slack, we need to compute the derivative values for the slack Vm
         dP_dVm = dS_dVm[inputs.p_idx, :].real
         dQ_dVm = dS_dVm[inputs.q_idx, :].imag
+        dPg_dVm = dS_dVm[inputs.pg_idx, :].real
+        dQg_dVm = dS_dVm[inputs.qg_idx, :].imag
         dPf_dVm = dSf_dVm[inputs.pf_idx, :].real
         dPt_dVm = dSt_dVm[inputs.pt_idx, :].real
         dQf_dVm = dSf_dVm[inputs.qf_idx, :].imag
@@ -95,6 +103,8 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
     H = spvs([
         sphs([dP_dVa, dP_dVm]),
         sphs([dQ_dVa, dQ_dVm]),
+        sphs([dPg_dVa, dPg_dVm]),
+        sphs([dQg_dVa, dQg_dVm]),
         sphs([dPf_dVa, dPf_dVm]),
         sphs([dPt_dVa, dPt_dVm]),
         sphs([dQf_dVa, dQf_dVm]),
@@ -109,6 +119,8 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
     h = np.r_[
         S[inputs.p_idx].real,  # P
         S[inputs.q_idx].imag,  # Q
+        S[inputs.pg_idx].real - load_per_bus[inputs.pg_idx].real,  # Pg
+        S[inputs.qg_idx].imag - load_per_bus[inputs.qg_idx].imag,  # Qg
         Sf[inputs.pf_idx].real,  # Pf
         St[inputs.pt_idx].real,  # Pt
         Sf[inputs.qf_idx].imag,  # Qf
@@ -140,6 +152,8 @@ def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float
     k = 0
     for lst in [se_input.p_inj,
                 se_input.q_inj,
+                se_input.pg_inj,
+                se_input.qg_inj,
                 se_input.pf_value,
                 se_input.pt_value,
                 se_input.qf_value,
@@ -294,6 +308,8 @@ def solve_se_lm(nc: NumericalCircuit,
     n = Ybus.shape[0]
     V = nc.bus_data.Vbus.copy()
 
+    load_per_bus = nc.load_data.get_injections_per_bus() / nc.Sbase
+
     # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
     z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
 
@@ -318,7 +334,7 @@ def solve_se_lm(nc: NumericalCircuit,
     nu = 2.0
     error_list = list()
     # first computation of the jacobian and free term
-    H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, Cf, Ct, se_input, no_slack, fixed_slack)
+    H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, Cf, Ct, se_input, no_slack, load_per_bus, fixed_slack)
 
     # measurements error (in per-unit)
     dz = z - h
@@ -511,7 +527,7 @@ def solve_se_lm(nc: NumericalCircuit,
                 print(df)
 
             # update system
-            H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, Cf, Ct, se_input, no_slack, fixed_slack)
+            H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, Cf, Ct, se_input, no_slack, load_per_bus, fixed_slack)
 
             # measurements error (in per-unit)
             dz = z - h
@@ -557,6 +573,170 @@ def solve_se_lm(nc: NumericalCircuit,
 
         # compute the convergence
         norm_f = np.linalg.norm(dx, np.inf)
+        converged = norm_f < tol
+
+        error_list.append(norm_f)
+
+        if verbose > 0:
+            print(f"Norm_f {norm_f}")
+
+        # update loops
+        iter_ += 1
+
+    # Compute the Branches power and the slack buses power
+    Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
+        Sbus=Scalc,
+        V=V,
+        F=nc.passive_branch_data.F,
+        T=nc.passive_branch_data.T,
+        pv=pv,
+        vd=vd,
+        Ybus=Ybus,
+        Yf=Yf,
+        Yt=Yt,
+        Yshunt_bus=Yshunt_bus,
+        branch_rates=nc.passive_branch_data.rates,
+        Sbase=nc.Sbase)
+
+    if verbose > 1:
+        from matplotlib import pyplot as plt
+        plt.plot(error_list)
+        plt.yscale('log')
+        plt.show()
+
+    return NumericStateEstimationResults(V=V,
+                                         Scalc=Scalc,
+                                         m=nc.active_branch_data.tap_module,
+                                         tau=nc.active_branch_data.tap_angle,
+                                         Sf=Sf,
+                                         St=St,
+                                         If=If,
+                                         It=It,
+                                         loading=loading,
+                                         losses=losses,
+                                         Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                         If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                         losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         norm_f=norm_f,
+                                         converged=converged,
+                                         iterations=iter_,
+                                         elapsed=time.time() - start_time,
+                                         bad_data_detected=bad_data_detected)
+
+
+def solve_se_nr(nc: NumericalCircuit,
+                Ybus: CscMat,
+                Yf: CscMat,
+                Yt: CscMat,
+                Yshunt_bus: CxVec,
+                F: IntVec,
+                T: IntVec,
+                Cf: csc_matrix,
+                Ct: csc_matrix,
+                se_input: StateEstimationInput,
+                vd: IntVec,
+                pv: IntVec,
+                no_slack: IntVec,
+                tol=1e-9,
+                max_iter=100,
+                verbose: int = 0,
+                c_threshold: float = 4.0,
+                prefer_correct: bool = False,
+                fixed_slack: bool = False,
+                logger: Logger | None = None) -> NumericStateEstimationResults:
+    """
+    Solve the state estimation problem using the Levenberg-Marquadt method
+    :param nc: instance of NumericalCircuit
+    :param Ybus: Admittance matrix
+    :param Yf: Admittance matrix of the from Branches
+    :param Yt: Admittance matrix of the to Branches
+    :param Yshunt_bus: Array of shunt admittances
+    :param F: array with the from bus indices of all the Branches
+    :param T: array with the to bus indices of all the Branches
+    :param Cf:
+    :param Ct:
+    :param se_input: state estimation input instance (contains the measurements)
+    :param vd: array of slack node indices
+    :param pv: array of PV node indices
+    :param no_slack: array of non-slack node indices
+    :param tol: Tolerance
+    :param max_iter: Maximum nuber of iterations
+    :param verbose: Verbosity level
+    :param c_threshold: Bad data detection threshold 'c' (4 as default)
+    :param prefer_correct: if true the measurements are corrected instead of deleted
+    :param fixed_slack: if true, the measurements on the slack bus are omitted
+    :param logger: log it out
+    :return: NumericPowerFlowResults instance
+    """
+    start_time = time.time()
+    # confidence_value = 0.95
+    bad_data_detected = False
+    logger = logger if logger is not None else Logger()
+
+    n_no_slack = len(no_slack)
+
+    n = Ybus.shape[0]
+    V = nc.bus_data.Vbus.copy()
+    Va = np.angle(V)
+    Vm = np.abs(V)
+
+    load_per_bus = nc.load_data.get_injections_per_bus() / nc.Sbase
+
+    # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
+    z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
+
+    # compute the weights matrix using per-unit sigma
+    sigma2 = np.power(sigma, 2.0)
+    R_inv = diags(1.0 / sigma2)
+
+    iter_ = 0
+    converged = False
+    norm_f = 1e20
+
+    error_list = list()
+
+    while not converged and iter_ < max_iter:
+
+        # update system
+        H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, Cf, Ct, se_input, no_slack, load_per_bus, fixed_slack)
+        # measurements error (in per-unit)
+        dz = z - h
+
+        Gx = (H.T @ R_inv) @ H
+        gx = (H.T @ R_inv) @ dz
+
+        # Solve the increment
+        dx = spsolve(Gx, gx)
+
+        # modify the solution
+        if fixed_slack:
+            dVa = dx[:n_no_slack]
+            dVm = dx[n_no_slack:]
+            Va[no_slack] += dVa
+            Vm[no_slack] += dVm  # yes, this is for all the buses
+        else:
+            dVa = dx[:n_no_slack]
+            dVm = dx[n_no_slack:]
+            Va[no_slack] += dVa
+            Vm += dVm  # yes, this is for all the buses
+
+        V = Vm * np.exp(1j * Va)
+
+        if verbose > 1:
+            dva = np.zeros(n)
+            dva[: n_no_slack] = dVa
+            df = pd.DataFrame(data={"dVa": dva, "dVm": dVm, "Va": Va, "Vm": Vm})
+            print(df)
+
+        # compute the convergence
+        norm_f = np.linalg.norm(gx, np.inf)
         converged = norm_f < tol
 
         error_list.append(norm_f)

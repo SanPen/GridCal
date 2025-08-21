@@ -9,6 +9,7 @@ from GridCalEngine.basic_structures import IntVec, BoolVec
 from GridCalEngine.Devices.measurement import (PfMeasurement, QfMeasurement,
                                                PtMeasurement, QtMeasurement,
                                                PiMeasurement, QiMeasurement,
+                                               PgMeasurement, QgMeasurement,
                                                VmMeasurement, VaMeasurement,
                                                IfMeasurement, ItMeasurement,
                                                MeasurementTemplate)
@@ -52,6 +53,12 @@ class StateEstimationInput:
         self.q_inj: List[QiMeasurement] = list()  # Node  reactive power measurements vector of pointers
         self.q_idx: List[int] = list()  # nodes with reactive power injection measurements
 
+        self.pg_inj: List[PgMeasurement] = list()  # Node active power measurements vector of pointers
+        self.pg_idx: List[int] = list()  # nodes with power injection measurements
+
+        self.qg_inj: List[QgMeasurement] = list()  # Node  reactive power measurements vector of pointers
+        self.qg_idx: List[int] = list()  # nodes with reactive power injection measurements
+
         self.pf_value: List[PfMeasurement] = list()  # Branch active power measurements vector of pointers
         self.pf_idx: List[int] = list()  # Branches with power measurements
 
@@ -82,6 +89,8 @@ class StateEstimationInput:
     def size(self):
         return (len(self.p_inj)
                 + len(self.q_inj)
+                + len(self.pg_inj)
+                + len(self.qg_inj)
                 + len(self.pf_value)
                 + len(self.pt_value)
                 + len(self.qf_value)
@@ -106,6 +115,10 @@ class StateEstimationInput:
 
         se.p_inj, se.p_idx = slice_pair(self.p_inj, self.p_idx, bus_index_map)
         se.q_inj, se.q_idx = slice_pair(self.q_inj, self.q_idx, bus_index_map)
+
+        se.pg_inj, se.pg_idx = slice_pair(self.pg_inj, self.pg_idx, bus_index_map)
+        se.qg_inj, se.qg_idx = slice_pair(self.qg_inj, self.qg_idx, bus_index_map)
+
         se.vm_value, se.vm_idx = slice_pair(self.vm_value, self.vm_idx, bus_index_map)
         se.va_value, se.va_idx = slice_pair(self.va_value, self.va_idx, bus_index_map)
 
@@ -130,8 +143,10 @@ class StateEstimationInput:
         new_obj = StateEstimationInput()
 
         k = 0
-        for m_here, m_there, idx_here, idx_there in [(self.p_inj,    new_obj.p_inj,    self.p_idx,  new_obj.p_idx),
-                                                     (self.q_inj,    new_obj.q_inj,    self.q_idx,  new_obj.q_idx),
+        for m_here, m_there, idx_here, idx_there in [(self.p_inj, new_obj.p_inj, self.p_idx, new_obj.p_idx),
+                                                     (self.q_inj, new_obj.q_inj, self.q_idx, new_obj.q_idx),
+                                                     (self.pg_inj, new_obj.pg_inj, self.pg_idx, new_obj.pg_idx),
+                                                     (self.qg_inj, new_obj.qg_inj, self.qg_idx, new_obj.qg_idx),
                                                      (self.pf_value, new_obj.pf_value, self.pf_idx, new_obj.pf_idx),
                                                      (self.pt_value, new_obj.pt_value, self.pt_idx, new_obj.pt_idx),
                                                      (self.qf_value, new_obj.qf_value, self.qf_idx, new_obj.qf_idx),

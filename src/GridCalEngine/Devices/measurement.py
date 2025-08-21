@@ -5,8 +5,6 @@
 
 from typing import Union
 
-import numpy as np
-
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Branches.line import Line
@@ -16,6 +14,7 @@ from GridCalEngine.Devices.Branches.winding import Winding
 from GridCalEngine.Devices.Branches.switch import Switch
 from GridCalEngine.Devices.Branches.series_reactance import SeriesReactance
 from GridCalEngine.Devices.Branches.upfc import UPFC
+from GridCalEngine.Devices.Injections.generator import Generator
 from GridCalEngine.enumerations import DeviceType
 
 # NOTE: These area here because this object loads first than the types file with the types aggregations
@@ -27,7 +26,8 @@ SE_BRANCH_TYPES = Union[
     UPFC,
     Winding,
     Switch,
-    SeriesReactance
+    SeriesReactance,
+    Generator
 ]
 MEASURABLE_OBJECT = Union[Bus, SE_BRANCH_TYPES]
 
@@ -78,6 +78,14 @@ class PiMeasurement(MeasurementTemplate):
 
     def __init__(self, value: float, uncertainty: float, api_obj: Bus, name="",
                  idtag: Union[str, None] = None):
+        """
+        Bus active power injection measurement
+        :param value: value in MW
+        :param uncertainty: standard deviation in MW
+        :param api_obj: bus object
+        :param name: name
+        :param idtag: idtag
+        """
         MeasurementTemplate.__init__(self,
                                      value=value,
                                      uncertainty=uncertainty,
@@ -100,6 +108,14 @@ class QiMeasurement(MeasurementTemplate):
 
     def __init__(self, value: float, uncertainty: float, api_obj: Bus, name="",
                  idtag: Union[str, None] = None):
+        """
+        Bus reactive power injection measurement
+        :param value: value in MVAr
+        :param uncertainty: standard deviation in MVAr
+        :param api_obj: bus object
+        :param name: name
+        :param idtag: idtag
+        """
         MeasurementTemplate.__init__(self,
                                      value=value,
                                      uncertainty=uncertainty,
@@ -107,6 +123,66 @@ class QiMeasurement(MeasurementTemplate):
                                      name=name,
                                      idtag=idtag,
                                      device_type=DeviceType.QMeasurementDevice)
+
+    def get_value_pu(self, Sbase: float):
+        return self.value / Sbase
+
+    def get_standard_deviation_pu(self, Sbase: float):
+        return self.sigma / Sbase
+
+
+class PgMeasurement(MeasurementTemplate):
+    """
+    Measurement class
+    """
+
+    def __init__(self, value: float, uncertainty: float, api_obj: Generator, name="",
+                 idtag: Union[str, None] = None):
+        """
+        Generator active power injection measurement
+        :param value: value in MW
+        :param uncertainty: standard deviation in MW
+        :param api_obj: bus object
+        :param name: name
+        :param idtag: idtag
+        """
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.PgMeasurementDevice)
+
+    def get_value_pu(self, Sbase: float):
+        return self.value / Sbase
+
+    def get_standard_deviation_pu(self, Sbase: float):
+        return self.sigma / Sbase
+
+
+class QgMeasurement(MeasurementTemplate):
+    """
+    Measurement class
+    """
+
+    def __init__(self, value: float, uncertainty: float, api_obj: Generator, name="",
+                 idtag: Union[str, None] = None):
+        """
+        Generator reactive power injection measurement
+        :param value: value in MVAr
+        :param uncertainty: standard deviation in MVAr
+        :param api_obj: bus object
+        :param name: name
+        :param idtag: idtag
+        """
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.QgMeasurementDevice)
 
     def get_value_pu(self, Sbase: float):
         return self.value / Sbase

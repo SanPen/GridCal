@@ -7,7 +7,7 @@ from typing import Union
 
 from GridCalEngine.Simulations.StateEstimation.state_estimation_results import StateEstimationResults
 from GridCalEngine.basic_structures import ConvergenceReport
-from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_lm
+from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_nr
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
@@ -106,6 +106,14 @@ class StateEstimation(DriverTemplate):
             se_input.q_idx.append(bus_dict[elm.api_object])
             se_input.q_inj.append(elm)
 
+        for elm in circuit.get_pg_measurements():
+            se_input.pg_idx.append(bus_dict[elm.api_object.bus])
+            se_input.pg_inj.append(elm)
+
+        for elm in circuit.get_qg_measurements():
+            se_input.qg_idx.append(bus_dict[elm.api_object.bus])
+            se_input.qg_inj.append(elm)
+
         for elm in circuit.get_vm_measurements():
             se_input.vm_idx.append(bus_dict[elm.api_object])
             se_input.vm_value.append(elm)
@@ -187,7 +195,7 @@ class StateEstimation(DriverTemplate):
             conn = island.get_connectivity_matrices()
 
             # run solver
-            solution = solve_se_lm(nc=island,
+            solution = solve_se_nr(nc=island,
                                    Ybus=adm.Ybus,
                                    Yf=adm.Yf,
                                    Yt=adm.Yt,
