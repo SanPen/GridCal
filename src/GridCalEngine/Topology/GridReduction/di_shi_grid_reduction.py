@@ -15,7 +15,7 @@ from GridCalEngine.basic_structures import IntVec, Mat, CxVec, Logger
 from GridCalEngine.enumerations import DeviceType, SolverType
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Topology.topology import find_islands, build_branches_C_coo_3
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf, multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 
 if TYPE_CHECKING:
@@ -559,6 +559,10 @@ def di_shi_reduction(grid: MultiCircuit,
 
     nc = compile_numerical_circuit_at(grid, t_idx=None)
 
+    # run the original power flow
+    pf_options = PowerFlowOptions(solver_type=SolverType.Linear)
+    res0 = multi_island_pf_nc(nc=nc, options=pf_options)
+
     # Step 1 – First Ward reduction ------------------------------------------------------------------------------------
 
     # This first reduction is to obtain the equivalent admittance matrix Y_eq1
@@ -601,6 +605,12 @@ def di_shi_reduction(grid: MultiCircuit,
 
     find_gen_relocation(grid=grid, reduction_bus_indices=reduction_bus_indices)
 
+    # remove the buses of the external system finally
+    # Delete the external buses
+    to_be_deleted = [grid.buses[e] for e in e_buses]
+    for bus in to_be_deleted:
+        grid.delete_bus(obj=bus, delete_associated=True)
+
     # Step 3 – Relocate generators -------------------------------------------------------------------------------------
 
     # Using the matrix Y_eq2, we calculate the shortest paths from every external
@@ -628,15 +638,18 @@ def di_shi_reduction(grid: MultiCircuit,
     # From those, we need to subtract the reduced grid injections.
     # This will provide us with a vector of new loads that we need
     # to add at the corresponding reduced grid buses in order to have a final equivalent.
-    pf_options = PowerFlowOptions(solver_type=SolverType.Linear)
-    res = multi_island_pf(multi_circuit=grid, options=pf_options)
 
-    S_orig = res.Sbus
-    theta_orig = np.angle(res.voltage)
+    S_orig = res0.Sbus
+    theta_orig = np.angle(res0.voltage)
 
     nc_red = compile_numerical_circuit_at(grid, t_idx=0)
-    lin_adm = nc_red.get_linear_admittance_matrices()
-    S
+    adm = nc_red.get_admittance_matrices()
+    Vred = np.delete(res0.voltage, e_buses)
+    Sred = Vred * np.conj(adm.Ybus @ Vred)
+    Sred_base = nc_red.get_power_injections_pu()
+
+    dSred = Sred_base - Sred
+
     return grid, logger
 
 

@@ -30,14 +30,7 @@
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved get_nominal_voltage_for_cn">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/grid_reduction.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/grid_reduction.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/numerical_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/numerical_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/branch_parent.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/branch_parent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/profile.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/profile.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/GridReduction/di_shi_grid_reduction.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/GridReduction/di_shi_grid_reduction.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/GridReduction/modified_ward_equivalent.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/GridReduction/modified_ward_equivalent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/__init__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -238,7 +231,7 @@
       <recent name="$PROJECT_DIR$/src/tests/data/grids/RAW" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.4_bus_check">
+  <component name="RunManager" selected="Python.di_shi_grid_reduction">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -752,8 +745,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.4_bus_check" />
         <item itemvalue="Python.di_shi_grid_reduction" />
+        <item itemvalue="Python.4_bus_check" />
         <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_network_objects_consistency" />
         <item itemvalue="Python tests.pytest in test_state_estimation.py" />
         <item itemvalue="Python tests.pytest in test_continuation_power_flow.py" />
@@ -1886,7 +1879,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="642" />
+    <option name="localTasksCounter" value="643" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1932,7 +1925,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.4.0b2" />
     <MESSAGE value="fixed the multiple-island handling in the state estimation" />
     <MESSAGE value="improvement to slice_pair" />
     <MESSAGE value="Extended the SE to have Pt, Qt, It, Va" />
@@ -1957,7 +1949,8 @@
     <MESSAGE value="improved the continuation power flow options" />
     <MESSAGE value="Improved get_nominal_voltage_for_cn" />
     <MESSAGE value="Improved file ops docs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved file ops docs" />
+    <MESSAGE value="Added se error plotting as a debug measure" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added se error plotting as a debug measure" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2374,18 +2367,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/GridReduction/di_shi_grid_reduction.py</url>
-          <line>639</line>
+          <line>652</line>
           <option name="timeStamp" value="2749" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/branch_parent.py</url>
           <line>211</line>
           <option name="timeStamp" value="2752" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/GridReduction/di_shi_grid_reduction.py</url>
-          <line>537</line>
-          <option name="timeStamp" value="2754" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
