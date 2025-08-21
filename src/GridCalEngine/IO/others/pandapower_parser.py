@@ -12,6 +12,7 @@ import json
 import pandas as pd
 
 import GridCalEngine.Devices as dev
+from GridCalEngine import ExternalGridMode
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.basic_structures import Logger
 
@@ -206,6 +207,7 @@ class Panda2GridCal:
                 name=row['name'],
                 code=idx,
                 Vm=row['vm_pu'],
+                mode= ExternalGridMode.VD,
                 idtag=row.get('uuid', None)
             )
 
@@ -373,22 +375,22 @@ class Panda2GridCal:
         """
 
         for idx, row in self.panda_net.gen.iterrows():
-            bus = bus_dictionary[row['bus']]
-            elm = dev.Generator(
-                name=row['name'],
-                code=idx,
-                P=row['p_mw'] * self.load_scale,
-                active=row['in_service'],
-                is_controlled=True,
-                idtag=row.get('uuid', None),
-                vset=row["vm_pu"]
-            )
+            if row["in_service"]:
+                bus = bus_dictionary[row['bus']]
+                elm = dev.Generator(
+                    name=row['name'],
+                    code=idx,
+                    P=row['p_mw'] * self.load_scale,
+                    is_controlled=True,
+                    idtag=row.get('uuid', None),
+                    vset=row["vm_pu"]
+                )
 
-            elm.rdfid = row.get('uuid', elm.idtag)
+                elm.rdfid = row.get('uuid', elm.idtag)
 
-            grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
+                grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
 
-            self.register(panda_type="gen", panda_code=idx, api_obj=elm)
+                self.register(panda_type="gen", panda_code=idx, api_obj=elm)
 
     def parse_static_generators(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
