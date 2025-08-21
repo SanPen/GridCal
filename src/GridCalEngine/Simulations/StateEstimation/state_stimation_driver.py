@@ -18,7 +18,8 @@ from GridCalEngine.enumerations import SolverType
 class StateEstimationOptions:
 
     def __init__(self, tol: float = 1e-9, max_iter: int = 100, verbose: int = 0,
-                 prefer_correct: bool = True, c_threshold: int = 4.0):
+                 prefer_correct: bool = True, c_threshold: int = 4.0,
+                 fixed_slack: bool = False):
         """
         StateEstimationOptions
         :param tol: Tolerance
@@ -26,12 +27,14 @@ class StateEstimationOptions:
         :param verbose: Verbosity level (1 light, 2 heavy)
         :param prefer_correct: Prefer measurement correction? otherwise measurement deletion is used
         :param c_threshold: confidence threshold (default 4.0)
+        :param fixed_slack: if true, the measurements on the slack bus are omitted
         """
         self.tol = tol
         self.max_iter = max_iter
         self.verbose = verbose
         self.prefer_correct = prefer_correct
         self.c_threshold = c_threshold
+        self.fixed_slack: bool = fixed_slack
 
 
 class StateEstimationConvergenceReport(ConvergenceReport):
@@ -181,6 +184,8 @@ class StateEstimation(DriverTemplate):
             se_input_island = se_input.slice(bus_idx=island.bus_data.original_idx,
                                              branch_idx=island.passive_branch_data.original_idx)
 
+            conn = island.get_connectivity_matrices()
+
             # run solver
             solution = solve_se_lm(nc=island,
                                    Ybus=adm.Ybus,
@@ -189,6 +194,8 @@ class StateEstimation(DriverTemplate):
                                    Yshunt_bus=adm.Yshunt_bus,
                                    F=island.passive_branch_data.F,
                                    T=island.passive_branch_data.T,
+                                   Cf=conn.Cf,
+                                   Ct=conn.Ct,
                                    se_input=se_input_island,
                                    vd=idx.vd,
                                    pv=idx.pv,
@@ -198,6 +205,7 @@ class StateEstimation(DriverTemplate):
                                    verbose=self.options.verbose,
                                    prefer_correct=self.options.prefer_correct,
                                    c_threshold=self.options.c_threshold,
+                                   fixed_slack=self.options.fixed_slack,
                                    logger=self.logger)
 
             report = StateEstimationConvergenceReport()

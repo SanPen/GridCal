@@ -4,6 +4,9 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from typing import Union
+
+import numpy as np
+
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Branches.line import Line
@@ -83,6 +86,12 @@ class PiMeasurement(MeasurementTemplate):
                                      idtag=idtag,
                                      device_type=DeviceType.PMeasurementDevice)
 
+    def get_value_pu(self, Sbase: float):
+        return self.value / Sbase
+
+    def get_standard_deviation_pu(self, Sbase: float):
+        return self.sigma / Sbase
+
 
 class QiMeasurement(MeasurementTemplate):
     """
@@ -98,6 +107,12 @@ class QiMeasurement(MeasurementTemplate):
                                      name=name,
                                      idtag=idtag,
                                      device_type=DeviceType.QMeasurementDevice)
+
+    def get_value_pu(self, Sbase: float):
+        return self.value / Sbase
+
+    def get_standard_deviation_pu(self, Sbase: float):
+        return self.sigma / Sbase
 
 
 class VmMeasurement(MeasurementTemplate):
@@ -139,6 +154,14 @@ class PfMeasurement(MeasurementTemplate):
 
     def __init__(self, value: float, uncertainty: float, api_obj: SE_BRANCH_TYPES, name="",
                  idtag: Union[str, None] = None):
+        """
+        PfMeasurement
+        :param value: Power flow in MW
+        :param uncertainty: standard deviation in MW
+        :param api_obj: a branch
+        :param name: name
+        :param idtag: idtag
+        """
         MeasurementTemplate.__init__(self,
                                      value=value,
                                      uncertainty=uncertainty,
@@ -146,6 +169,12 @@ class PfMeasurement(MeasurementTemplate):
                                      name=name,
                                      idtag=idtag,
                                      device_type=DeviceType.PfMeasurementDevice)
+
+    def get_value_pu(self, Sbase: float):
+        return self.value / Sbase
+
+    def get_standard_deviation_pu(self, Sbase: float):
+        return self.sigma / Sbase
 
 
 class QfMeasurement(MeasurementTemplate):
@@ -155,6 +184,14 @@ class QfMeasurement(MeasurementTemplate):
 
     def __init__(self, value: float, uncertainty: float, api_obj: SE_BRANCH_TYPES, name="",
                  idtag: Union[str, None] = None):
+        """
+        QfMeasurement
+        :param value: Power flow in MVAr
+        :param uncertainty: standard deviation in MVAr
+        :param api_obj: a branch
+        :param name: name
+        :param idtag: idtag
+        """
         MeasurementTemplate.__init__(self,
                                      value=value,
                                      uncertainty=uncertainty,
@@ -162,6 +199,12 @@ class QfMeasurement(MeasurementTemplate):
                                      name=name,
                                      idtag=idtag,
                                      device_type=DeviceType.QfMeasurementDevice)
+
+    def get_value_pu(self, Sbase: float):
+        return self.value / Sbase
+
+    def get_standard_deviation_pu(self, Sbase: float):
+        return self.sigma / Sbase
 
 
 class PtMeasurement(MeasurementTemplate):
@@ -171,6 +214,14 @@ class PtMeasurement(MeasurementTemplate):
 
     def __init__(self, value: float, uncertainty: float, api_obj: SE_BRANCH_TYPES, name="",
                  idtag: Union[str, None] = None):
+        """
+        PtMeasurement
+        :param value: Power flow in MW
+        :param uncertainty: standard deviation in MW
+        :param api_obj: a branch
+        :param name: name
+        :param idtag: idtag
+        """
         MeasurementTemplate.__init__(self,
                                      value=value,
                                      uncertainty=uncertainty,
@@ -178,6 +229,12 @@ class PtMeasurement(MeasurementTemplate):
                                      name=name,
                                      idtag=idtag,
                                      device_type=DeviceType.PtMeasurementDevice)
+
+    def get_value_pu(self, Sbase: float):
+        return self.value / Sbase
+
+    def get_standard_deviation_pu(self, Sbase: float):
+        return self.sigma / Sbase
 
 
 class QtMeasurement(MeasurementTemplate):
@@ -187,6 +244,14 @@ class QtMeasurement(MeasurementTemplate):
 
     def __init__(self, value: float, uncertainty: float, api_obj: SE_BRANCH_TYPES, name="",
                  idtag: Union[str, None] = None):
+        """
+        QtMeasurement
+        :param value: Power flow in MVAr
+        :param uncertainty: standard deviation in MVAr
+        :param api_obj: a branch
+        :param name: name
+        :param idtag: idtag
+        """
         MeasurementTemplate.__init__(self,
                                      value=value,
                                      uncertainty=uncertainty,
@@ -194,6 +259,16 @@ class QtMeasurement(MeasurementTemplate):
                                      name=name,
                                      idtag=idtag,
                                      device_type=DeviceType.QtMeasurementDevice)
+
+    def get_value_pu(self, Sbase: float):
+        return self.value / Sbase
+
+    def get_standard_deviation_pu(self, Sbase: float):
+        return self.sigma / Sbase
+
+
+def get_i_base(Sbase, Vbase):
+    return Sbase / (Vbase * 1.732050808)
 
 
 class IfMeasurement(MeasurementTemplate):
@@ -203,6 +278,14 @@ class IfMeasurement(MeasurementTemplate):
 
     def __init__(self, value: float, uncertainty: float, api_obj: SE_BRANCH_TYPES, name="",
                  idtag: Union[str, None] = None):
+        """
+        IfMeasurement
+        :param value: current flow in kA, note this is the absolute value
+        :param uncertainty: standard deviation in kA
+        :param api_obj: a branch
+        :param name: name
+        :param idtag: idtag
+        """
         MeasurementTemplate.__init__(self,
                                      value=value,
                                      uncertainty=uncertainty,
@@ -210,6 +293,12 @@ class IfMeasurement(MeasurementTemplate):
                                      name=name,
                                      idtag=idtag,
                                      device_type=DeviceType.IfMeasurementDevice)
+
+    def get_value_pu(self, Sbase: float):
+        return self.value / get_i_base(Sbase, Vbase=self.api_object.bus_from.Vnom)
+
+    def get_standard_deviation_pu(self, Sbase: float):
+        return self.sigma / get_i_base(Sbase, Vbase=self.api_object.bus_from.Vnom)
 
 
 class ItMeasurement(MeasurementTemplate):
@@ -219,6 +308,14 @@ class ItMeasurement(MeasurementTemplate):
 
     def __init__(self, value: float, uncertainty: float, api_obj: SE_BRANCH_TYPES, name="",
                  idtag: Union[str, None] = None):
+        """
+        ItMeasurement
+        :param value: current flow in kA, note this is the absolute value
+        :param uncertainty: standard deviation in kA
+        :param api_obj: a branch
+        :param name: name
+        :param idtag: idtag
+        """
         MeasurementTemplate.__init__(self,
                                      value=value,
                                      uncertainty=uncertainty,
@@ -226,3 +323,9 @@ class ItMeasurement(MeasurementTemplate):
                                      name=name,
                                      idtag=idtag,
                                      device_type=DeviceType.ItMeasurementDevice)
+
+    def get_value_pu(self, Sbase: float):
+        return self.value / get_i_base(Sbase, Vbase=self.api_object.bus_to.Vnom)
+
+    def get_standard_deviation_pu(self, Sbase: float):
+        return self.sigma / get_i_base(Sbase, Vbase=self.api_object.bus_to.Vnom)

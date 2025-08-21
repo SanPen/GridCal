@@ -78,15 +78,15 @@ def test_14_bus_matpower():
     # these are the matpower branch indices
     idx_zPF = np.array([1, 3, 8, 9, 10, 13, 15, 16, 17, 19], dtype=int)
     idx_zPT = np.array([4, 5, 7, 11], dtype=int)
-    idx_zPG = np.array([1, 2, 3, 4, 5], dtype=int)
+    idx_zPG = np.array([1, 2, 3, 4, 5], dtype=int)  # generator index
     idx_zVa = np.array([], dtype=int)
     idx_zQF = np.array([1, 3, 8, 9, 10, 13, 15, 19], dtype=int)
     idx_zQT = np.array([4, 5, 7, 11], dtype=int)
-    idx_zQG = np.array([1, 2], dtype=int)
+    idx_zQG = np.array([1, 2], dtype=int)  # generator index
     idx_zVm = np.array([2, 3, 6, 8, 10, 14], dtype=int)
 
     # mapping from matpower index to gridcal branch index
-    mapping = {
+    branch_mapping = {
         1: 0,
         2: 1,
         3: 2,
@@ -109,13 +109,25 @@ def test_14_bus_matpower():
         20: 16,
     }
 
+    gen_bus_mapping = {
+        1: 0,
+        2: 1,
+        3: 2,
+        4: 6,
+        5: 7,
+    }
+
     PF = np.array([1.5708, 0.734, 0.2707, 0.1546, 0.4589, 0.1834, 0.2707, 0.0523, 0.0943, 0.0188], dtype=float)
     PT = np.array([-0.5427, -0.4081, 0.6006, -0.0816], dtype=float)
     PG = np.array([2.32, 0.4, 0.0, 0.0, 0.0], dtype=float)
+    # PG += np.array([0, 0.217, 0.942, 0.478, 0.076], dtype=float)  # this is the load at the bus
+
     Va = np.array([], dtype=float)
     QF = np.array([-0.1748, 0.0594, -0.154, -0.0264, -0.2084, 0.0998, 0.148, 0.0141], dtype=float)
     QT = np.array([0.0213, -0.0193, -0.1006, -0.0864], dtype=float)
     QG = np.array([-0.169, 0.424], dtype=float)
+    # QG += np.array([0, 0.127], dtype=float)  # this is the load at the bus
+
     Vm = np.array([1, 1, 1, 1, 1, 1], dtype=float)
 
     sigma_PF = 0.02
@@ -129,8 +141,6 @@ def test_14_bus_matpower():
 
     # Add bus measurements
     for idx_arr, vals_arr, sigma, scale, m_object in [
-        (idx_zPG, PG, sigma_PG, 100, PiMeasurement),
-        (idx_zQG, QG, sigma_QG, 100, QiMeasurement),
         (idx_zVm, Vm, sigma_Vm, 1.0, VmMeasurement),
         (idx_zVa, Va, sigma_Va, 1.0, VaMeasurement),
     ]:
@@ -138,6 +148,16 @@ def test_14_bus_matpower():
             gc_idx = idx - 1  # pass to zero indexing
             obj = grid.buses[gc_idx]
             grid.add_element(m_object(value=val * scale, uncertainty=sigma, api_obj=obj))
+
+    # Add generator measurements
+    for idx_arr, vals_arr, sigma, scale, m_object in [
+        (idx_zPG, PG, sigma_PG, 100, PiMeasurement),
+        (idx_zQG, QG, sigma_QG, 100, QiMeasurement),
+    ]:
+        for idx, val in zip(idx_arr, vals_arr):
+            gc_idx = gen_bus_mapping[idx]  # get the gridcal bus index from the generator index
+            obj = grid.buses[gc_idx]
+            grid.add_element(m_object(value=val * scale, uncertainty=sigma * scale, api_obj=obj))
 
     # Add branch measurements
     branches = grid.get_branches()
@@ -148,8 +168,18 @@ def test_14_bus_matpower():
         (idx_zQT, QT, sigma_QT, 100, QtMeasurement),
     ]:
         for idx, val in zip(idx_arr, vals_arr):
-            gc_idx = mapping[idx]
+            gc_idx = branch_mapping[idx]
             obj = branches[gc_idx]
-            grid.add_element(m_object(value=val * scale, uncertainty=sigma, api_obj=obj))
+            grid.add_element(m_object(value=val * scale, uncertainty=sigma * scale, api_obj=obj))
 
+    se_options = StateEstimationOptions(
+        fixed_slack=True
+    )
+    se = StateEstimation(circuit=grid, options=se_options)
+    se.run()
+
+    print("Bus results:\n", se.results.get_bus_df())
+    print(f"Converged: {se.results.converged}")
+    print(f"Error: {se.results.error}")
+    print(f"Iter: {se.results.iterations}")
     print()

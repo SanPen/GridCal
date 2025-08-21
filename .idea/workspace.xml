@@ -28,9 +28,15 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved get_nominal_voltage_for_cn">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="wip test se ieee14">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/measurement.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/measurement.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Derivatives/matpower_derivatives.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Derivatives/matpower_derivatives.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_stimation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_stimation_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/tests/test_state_estimation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_state_estimation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -741,10 +747,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python tests.pytest for test_state_estimation.test_14_bus_matpower" />
+        <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation_pandapower" />
         <item itemvalue="Python tests.pytest for test_state_estimation.test_3_node_abur_exposito" />
         <item itemvalue="Python.4_bus_check" />
         <item itemvalue="Python tests.pytest in test_state_estimation.py" />
-        <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation_pandapower" />
       </list>
     </recent_temporary>
   </component>
@@ -1874,7 +1880,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="642" />
+    <option name="localTasksCounter" value="643" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1920,7 +1926,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.4.0b2" />
     <MESSAGE value="fixed the multiple-island handling in the state estimation" />
     <MESSAGE value="improvement to slice_pair" />
     <MESSAGE value="Extended the SE to have Pt, Qt, It, Va" />
@@ -1945,7 +1950,8 @@
     <MESSAGE value="improved the continuation power flow options" />
     <MESSAGE value="Improved get_nominal_voltage_for_cn" />
     <MESSAGE value="Improved file ops docs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved file ops docs" />
+    <MESSAGE value="wip test se ieee14" />
+    <option name="LAST_COMMIT_MESSAGE" value="wip test se ieee14" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2330,14 +2336,8 @@
           <option name="timeStamp" value="2704" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <condition expression="len(h) == 0" language="Python" />
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py</url>
-          <line>667</line>
-          <option name="timeStamp" value="2737" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py</url>
-          <line>79</line>
+          <line>80</line>
           <option name="timeStamp" value="2746" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2347,7 +2347,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py</url>
-          <line>75</line>
+          <line>76</line>
           <option name="timeStamp" value="2748" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2374,6 +2374,21 @@
           <url>file://$PROJECT_DIR$/src/tests/test_state_estimation.py</url>
           <line>68</line>
           <option name="timeStamp" value="2756" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_state_estimation.py</url>
+          <line>184</line>
+          <option name="timeStamp" value="2757" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py</url>
+          <line>323</line>
+          <option name="timeStamp" value="2761" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py</url>
+          <line>354</line>
+          <option name="timeStamp" value="2764" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

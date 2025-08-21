@@ -33,7 +33,8 @@ def test_state_estimation_pandapower():
         print(pf_res.get_branch_df())
 
         se_opt = StateEstimationOptions(
-            prefer_correct=False
+            prefer_correct=False,
+            verbose=2,
         )
         se = StateEstimation(circuit=grid, options=se_opt)
         se.run()
