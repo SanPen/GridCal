@@ -34,6 +34,8 @@ def test_state_estimation_pandapower():
 
         se_opt = StateEstimationOptions(
             prefer_correct=False,
+            fixed_slack=False,
+            solver=gce.SolverType.LM,
             verbose=2,
         )
         se = StateEstimation(circuit=grid, options=se_opt)

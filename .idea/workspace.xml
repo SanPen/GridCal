@@ -28,16 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="worked on the se and ieee14 se test">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="passing se tests perfectly">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/assets.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/assets.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/measurement.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/measurement.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation_inputs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation_inputs.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_stimation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_stimation_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/tests/test_state_estimation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_state_estimation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -238,7 +234,7 @@
       <recent name="$PROJECT_DIR$/src/tests/data/grids/RAW" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in test_state_estimation.py">
+  <component name="RunManager" selected="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation_pandapower">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -747,10 +743,10 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation_pandapower" />
         <item itemvalue="Python tests.pytest in test_state_estimation.py" />
         <item itemvalue="Python tests.pytest for test_state_estimation.test_14_bus_matpower" />
         <item itemvalue="Python tests.pytest for test_state_estimation.test_3_node_abur_exposito" />
-        <item itemvalue="Python tests.pytest for test_state_estimation_from_pandapower_conversion.test_state_estimation_pandapower" />
         <item itemvalue="Python.4_bus_check" />
       </list>
     </recent_temporary>
@@ -1881,7 +1877,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="644" />
+    <option name="localTasksCounter" value="645" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1927,7 +1923,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="improvement to slice_pair" />
     <MESSAGE value="Extended the SE to have Pt, Qt, It, Va" />
     <MESSAGE value="Extended collect_measurements have Pt, Qt, It, Va" />
     <MESSAGE value="Improved the pandapower measurements parser" />
@@ -1952,7 +1947,8 @@
     <MESSAGE value="Improved file ops docs" />
     <MESSAGE value="wip test se ieee14" />
     <MESSAGE value="worked on the se and ieee14 se test" />
-    <option name="LAST_COMMIT_MESSAGE" value="worked on the se and ieee14 se test" />
+    <MESSAGE value="passing se tests perfectly" />
+    <option name="LAST_COMMIT_MESSAGE" value="passing se tests perfectly" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2338,7 +2334,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py</url>
-          <line>80</line>
+          <line>82</line>
           <option name="timeStamp" value="2746" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2348,7 +2344,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_state_estimation_from_pandapower_conversion.py</url>
-          <line>76</line>
+          <line>78</line>
           <option name="timeStamp" value="2748" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2373,23 +2369,14 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py</url>
-          <line>339</line>
-          <option name="timeStamp" value="2761" />
+          <line>349</line>
+          <option name="timeStamp" value="2756" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py</url>
-          <line>370</line>
-          <option name="timeStamp" value="2764" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation.py</url>
-          <line>719</line>
-          <option name="timeStamp" value="2766" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <condition expression="not ok" language="Python" />
           <url>file://$PROJECT_DIR$/src/tests/test_state_estimation.py</url>
-          <line>195</line>
-          <option name="timeStamp" value="2776" />
+          <line>80</line>
+          <option name="timeStamp" value="2758" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -48,25 +48,37 @@ def test_3_node_abur_exposito() -> None:
     grid.add_line(br2)
     grid.add_line(br3)
 
-    se = StateEstimation(circuit=grid)
+    for solver in [SolverType.NR, SolverType.LM]:
+        se_options = StateEstimationOptions(
+            fixed_slack=True,
+            solver=solver
+        )
 
-    se.run()
+        se = StateEstimation(circuit=grid, options=se_options)
 
-    # print()
-    # print('V: ', se.results.voltage)
-    # print('Vm: ', np.abs(se.results.voltage))
-    # print('Va: ', np.angle(se.results.voltage))
+        se.run()
 
-    """
-    The validated output is:
+        # print()
+        # print('V: ', se.results.voltage)
+        # print('Vm: ', np.abs(se.results.voltage))
+        # print('Va: ', np.angle(se.results.voltage))
 
-    V:   [0.99962926+0.j        0.97392515-0.02120941j  0.94280676-0.04521561j]
-    Vm:  [0.99962926            0.97415607              0.94389038]
-    Va:  [ 0.                   -0.0217738              -0.0479218]
-    """
+        """
+        The validated output is:
+    
+        V:   [0.99962926+0.j        0.97392515-0.02120941j  0.94280676-0.04521561j]
+        Vm:  [0.99962926            0.97415607              0.94389038]
+        Va:  [ 0.                   -0.0217738              -0.0479218]
+        """
 
-    results = np.array([0.99962926+0.j, 0.97392515-0.02120941j, 0.94280676-0.04521561j])
-    assert np.allclose(se.results.voltage, results, atol=1e-4)
+        print("Bus results:\n", se.results.get_bus_df())
+        print(f"Converged: {se.results.converged}")
+        print(f"Error: {se.results.error}")
+        print(f"Iter: {se.results.iterations}")
+
+        expected_results = np.array([0.99962926+0.j, 0.97392515-0.02120941j, 0.94280676-0.04521561j])
+        ok = np.allclose(se.results.voltage, expected_results, atol=1e-4)
+        assert ok
 
 
 def test_14_bus_matpower():
@@ -162,35 +174,38 @@ def test_14_bus_matpower():
             obj = branches[gc_idx]
             grid.add_element(m_object(value=val * scale, uncertainty=sigma * scale, api_obj=obj))
 
-    se_options = StateEstimationOptions(
-        fixed_slack=True
-    )
-    se = StateEstimation(circuit=grid, options=se_options)
-    se.run()
+    for solver in [SolverType.NR, SolverType.LM]:
 
-    print("Bus results:\n", se.results.get_bus_df())
-    print(f"Converged: {se.results.converged}")
-    print(f"Error: {se.results.error}")
-    print(f"Iter: {se.results.iterations}")
-    print()
+        se_options = StateEstimationOptions(
+            fixed_slack=True,
+            solver=solver
+        )
+        se = StateEstimation(circuit=grid, options=se_options)
+        se.run()
 
-    expected_voltage = np.array([
-        1.060000000000000 + 0.000000000000000j,
-        1.039933594059899 - 0.090313766102826j,
-        0.982355302637923 - 0.221430317163729j,
-        0.998610257007820 - 0.180922767027063j,
-        1.006066277008519 - 0.155583022160554j,
-        1.086005598052025 - 0.273081360187983j,
-        1.042998635186457 - 0.244449009989143j,
-        0.973617097641113 - 0.228187964583794j,
-        1.022141142371230 - 0.268116448565777j,
-        0.971362042218784 - 0.237604256983231j,
-        1.062397271041971 - 0.274222737353904j,
-        1.067252193108086 - 0.283008909486410j,
-        1.060690860030405 - 0.282328227107489j,
-        0.966563824799688 - 0.256426154260047j,
-    ])
+        print("Bus results:\n", se.results.get_bus_df())
+        print(f"Converged: {se.results.converged}")
+        print(f"Error: {se.results.error}")
+        print(f"Iter: {se.results.iterations}")
+        print()
 
-    diff = se.results.voltage - expected_voltage
+        expected_voltage = np.array([
+            1.060000000000000 + 0.000000000000000j,
+            1.039933594059899 - 0.090313766102826j,
+            0.982355302637923 - 0.221430317163729j,
+            0.998610257007820 - 0.180922767027063j,
+            1.006066277008519 - 0.155583022160554j,
+            1.086005598052025 - 0.273081360187983j,
+            1.042998635186457 - 0.244449009989143j,
+            0.973617097641113 - 0.228187964583794j,
+            1.022141142371230 - 0.268116448565777j,
+            0.971362042218784 - 0.237604256983231j,
+            1.062397271041971 - 0.274222737353904j,
+            1.067252193108086 - 0.283008909486410j,
+            1.060690860030405 - 0.282328227107489j,
+            0.966563824799688 - 0.256426154260047j,
+        ])
 
-    assert np.allclose(se.results.voltage, expected_voltage, atol=1e-12)
+        diff = se.results.voltage - expected_voltage
+
+        assert np.allclose(se.results.voltage, expected_voltage, atol=1e-12)

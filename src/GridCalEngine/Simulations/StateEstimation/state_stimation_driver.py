@@ -7,7 +7,7 @@ from typing import Union
 
 from GridCalEngine.Simulations.StateEstimation.state_estimation_results import StateEstimationResults
 from GridCalEngine.basic_structures import ConvergenceReport
-from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_nr
+from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_nr, solve_se_lm
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
@@ -17,7 +17,8 @@ from GridCalEngine.enumerations import SolverType
 
 class StateEstimationOptions:
 
-    def __init__(self, tol: float = 1e-9, max_iter: int = 100, verbose: int = 0,
+    def __init__(self, solver: SolverType = SolverType.NR,
+                 tol: float = 1e-9, max_iter: int = 100, verbose: int = 0,
                  prefer_correct: bool = True, c_threshold: int = 4.0,
                  fixed_slack: bool = False):
         """
@@ -29,6 +30,7 @@ class StateEstimationOptions:
         :param c_threshold: confidence threshold (default 4.0)
         :param fixed_slack: if true, the measurements on the slack bus are omitted
         """
+        self.solver = solver
         self.tol = tol
         self.max_iter = max_iter
         self.verbose = verbose
@@ -195,26 +197,51 @@ class StateEstimation(DriverTemplate):
             conn = island.get_connectivity_matrices()
 
             # run solver
-            solution = solve_se_nr(nc=island,
-                                   Ybus=adm.Ybus,
-                                   Yf=adm.Yf,
-                                   Yt=adm.Yt,
-                                   Yshunt_bus=adm.Yshunt_bus,
-                                   F=island.passive_branch_data.F,
-                                   T=island.passive_branch_data.T,
-                                   Cf=conn.Cf,
-                                   Ct=conn.Ct,
-                                   se_input=se_input_island,
-                                   vd=idx.vd,
-                                   pv=idx.pv,
-                                   no_slack=idx.no_slack,
-                                   tol=self.options.tol,
-                                   max_iter=self.options.max_iter,
-                                   verbose=self.options.verbose,
-                                   prefer_correct=self.options.prefer_correct,
-                                   c_threshold=self.options.c_threshold,
-                                   fixed_slack=self.options.fixed_slack,
-                                   logger=self.logger)
+            if self.options.solver == SolverType.NR:
+                solution = solve_se_nr(nc=island,
+                                       Ybus=adm.Ybus,
+                                       Yf=adm.Yf,
+                                       Yt=adm.Yt,
+                                       Yshunt_bus=adm.Yshunt_bus,
+                                       F=island.passive_branch_data.F,
+                                       T=island.passive_branch_data.T,
+                                       Cf=conn.Cf,
+                                       Ct=conn.Ct,
+                                       se_input=se_input_island,
+                                       vd=idx.vd,
+                                       pv=idx.pv,
+                                       no_slack=idx.no_slack,
+                                       tol=self.options.tol,
+                                       max_iter=self.options.max_iter,
+                                       verbose=self.options.verbose,
+                                       prefer_correct=self.options.prefer_correct,
+                                       c_threshold=self.options.c_threshold,
+                                       fixed_slack=self.options.fixed_slack,
+                                       logger=self.logger)
+
+            elif self.options.solver == SolverType.LM:
+                solution = solve_se_lm(nc=island,
+                                       Ybus=adm.Ybus,
+                                       Yf=adm.Yf,
+                                       Yt=adm.Yt,
+                                       Yshunt_bus=adm.Yshunt_bus,
+                                       F=island.passive_branch_data.F,
+                                       T=island.passive_branch_data.T,
+                                       Cf=conn.Cf,
+                                       Ct=conn.Ct,
+                                       se_input=se_input_island,
+                                       vd=idx.vd,
+                                       pv=idx.pv,
+                                       no_slack=idx.no_slack,
+                                       tol=self.options.tol,
+                                       max_iter=self.options.max_iter,
+                                       verbose=self.options.verbose,
+                                       prefer_correct=self.options.prefer_correct,
+                                       c_threshold=self.options.c_threshold,
+                                       fixed_slack=self.options.fixed_slack,
+                                       logger=self.logger)
+            else:
+                raise ValueError(f"State Estimation solver type not recognized: {self.options.solver.value}")
 
             report = StateEstimationConvergenceReport()
 
