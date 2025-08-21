@@ -333,7 +333,7 @@ def solve_se_lm(nc: NumericalCircuit,
 
     # compose the jacobian of the problem
     HtW = H.T @ W
-    J = HtW @ H
+    Gx = HtW @ H
 
     # compose the residual
     gx = HtW @ dz
@@ -342,12 +342,12 @@ def solve_se_lm(nc: NumericalCircuit,
     dz = z - h
 
     # first value of mu
-    mu = 1e-3 * float(J.diagonal().max())
+    mu = 1e-3 * float(Gx.diagonal().max())
 
     # system matrix for levenberg-marquardt
-    Idn = diags(np.full(J.shape[0], mu))
-    Asys = J.T @ J + Idn
-    rhs = J.T @ gx
+    Idn = diags(np.full(Gx.shape[0], mu))
+    Asys = Gx.T @ Gx + Idn
+    rhs = Gx.T @ gx
 
     # set the previous objective function value
     obj_val_prev = 1e20
@@ -360,117 +360,63 @@ def solve_se_lm(nc: NumericalCircuit,
         # Solve the increment
         dx = spsolve(Asys, rhs)
 
-        # if norm_f < (tol * 10.0):
-        #     # bad data detection
-        #     # here we compare the obj func wrt CHI2NV of degree of freedom,
-        #     # degree of freedom is defined as the difference
-        #     # between all the available measurements and min required measurements for observability.
-        #     # deg_of_freedom = len(z_phys) - 2 * n_no_slack
-        #     # threshold_chi2 = chi2.ppf(confidence_value, df=deg_of_freedom)
-        #     # if obj_val <= threshold_chi2:
-        #     #     logger.add_info(f"No bad data detected")
-        #     # else:
-        #     #     bad_data_detected = True
-        #     #     logger.add_warning(f"Bad data detected")
-        #     try:
-        #         r, sigma2, Pii, rN, imax, b, bad_data_detected = b_test(sigma2=sigma2, H=H, dz=dz, HtWH=Gx,
-        #                                                                 c_threshold=c_threshold, logger=logger)
-        #     except AssertionError as ae:
-        #         logger.add_warning(f"The system is not observable while identifying bad data, {ae}")
-        #
-        #         Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
-        #             Sbus=Scalc,
-        #             V=V,
-        #             F=nc.passive_branch_data.F,
-        #             T=nc.passive_branch_data.T,
-        #             pv=pv,
-        #             vd=vd,
-        #             Ybus=Ybus,
-        #             Yf=Yf,
-        #             Yt=Yt,
-        #             Yshunt_bus=Yshunt_bus,
-        #             branch_rates=nc.passive_branch_data.rates,
-        #             Sbase=nc.Sbase)
-        #
-        #         return NumericStateEstimationResults(V=V,
-        #                                              Scalc=Scalc,
-        #                                              m=nc.active_branch_data.tap_module,
-        #                                              tau=nc.active_branch_data.tap_angle,
-        #                                              Sf=Sf,
-        #                                              St=St,
-        #                                              If=If,
-        #                                              It=It,
-        #                                              loading=loading,
-        #                                              losses=losses,
-        #                                              Pf_vsc=np.zeros(nc.nvsc, dtype=float),
-        #                                              St_vsc=np.zeros(nc.nvsc, dtype=complex),
-        #                                              If_vsc=np.zeros(nc.nvsc, dtype=float),
-        #                                              It_vsc=np.zeros(nc.nvsc, dtype=complex),
-        #                                              losses_vsc=np.zeros(nc.nvsc, dtype=float),
-        #                                              loading_vsc=np.zeros(nc.nvsc, dtype=float),
-        #                                              Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-        #                                              St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-        #                                              losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-        #                                              loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-        #                                              norm_f=norm_f,
-        #                                              converged=converged,
-        #                                              iterations=iter_,
-        #                                              elapsed=time.time() - start_time,
-        #                                              bad_data_detected=bad_data_detected)
-        #
-        #     if bad_data_detected:
-        #         if prefer_correct:
-        #             if Pii[imax] > 1e-10:  # if the value is not corrected in b_test alone
-        #                 z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]
-        #
-        #                 logger.add_info("Measurement corrected",
-        #                                 device=measurements[imax].api_object.name,
-        #                                 device_class=measurements[imax].device_type.value,
-        #                                 device_property="value",
-        #                                 value=z[imax],
-        #                                 expected_value=z_tilde_imax)
-        #
-        #                 # correct the bad data index
-        #                 z[imax] = z_tilde_imax
-        #             else:
-        #                 # Pii is very small - this is likely a critical measurement
-        #                 logger.add_warning(f"Measurement {imax} appears critical (Pii={Pii[imax]:.2e})")
-        #                 # Don't correct critical measurements, just remove them
-        #                 # delete measurements
-        #                 mask = np.ones(len(z), dtype=int)
-        #                 mask[imax] = 0
-        #
-        #                 se_input = se_input.slice_with_mask(mask=mask)
-        #
-        #                 # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
-        #                 z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
-        #
-        #                 # compute the weights matrix using per-unit sigma
-        #                 sigma2 = np.power(sigma, 2.0)
-        #                 cov = 1.0 / sigma2
-        #                 W = diags(cov).tocsc()
-        #         else:
-        #
-        #             logger.add_info("Measurement deleted",
-        #                             device=measurements[imax].api_object.name,
-        #                             device_class=measurements[imax].device_type.value,
-        #                             device_property="value",
-        #                             value=z[imax],
-        #                             expected_value="")
-        #
-        #             # delete measurements
-        #             mask = np.ones(len(z), dtype=int)
-        #             mask[imax] = 0
-        #
-        #             se_input = se_input.slice_with_mask(mask=mask)
-        #
-        #             # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
-        #             z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
-        #
-        #             # compute the weights matrix using per-unit sigma
-        #             sigma2 = np.power(sigma, 2.0)
-        #             cov = 1.0 / sigma2
-        #             W = diags(cov).tocsc()
+        if norm_f < (tol * 10.0):
+            r, sigma2, Pii, rN, imax, b, bad_data_detected = b_test(sigma2=sigma2, H=H, dz=dz, HtWH=Gx,
+                                                                    c_threshold=c_threshold, logger=logger)
+
+            if bad_data_detected:
+                if prefer_correct:
+                    if Pii[imax] > 1e-10:  # if the value is not corrected in b_test alone
+                        z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]
+
+                        logger.add_info("Measurement corrected",
+                                        device=measurements[imax].api_object.name,
+                                        device_class=measurements[imax].device_type.value,
+                                        device_property="value",
+                                        value=z[imax],
+                                        expected_value=z_tilde_imax)
+
+                        # correct the bad data index
+                        z[imax] = z_tilde_imax
+                    else:
+                        # Pii is very small - this is likely a critical measurement
+                        logger.add_warning(f"Measurement {imax} appears critical (Pii={Pii[imax]:.2e})")
+                        # Don't correct critical measurements, just remove them
+                        # delete measurements
+                        mask = np.ones(len(z), dtype=int)
+                        mask[imax] = 0
+
+                        se_input = se_input.slice_with_mask(mask=mask)
+
+                        # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
+                        z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
+
+                        # compute the weights matrix using per-unit sigma
+                        sigma2 = np.power(sigma, 2.0)
+                        cov = 1.0 / sigma2
+                        W = diags(cov).tocsc()
+                else:
+
+                    logger.add_info("Measurement deleted",
+                                    device=measurements[imax].api_object.name,
+                                    device_class=measurements[imax].device_type.value,
+                                    device_property="value",
+                                    value=z[imax],
+                                    expected_value="")
+
+                    # delete measurements
+                    mask = np.ones(len(z), dtype=int)
+                    mask[imax] = 0
+
+                    se_input = se_input.slice_with_mask(mask=mask)
+
+                    # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
+                    z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
+
+                    # compute the weights matrix using per-unit sigma
+                    sigma2 = np.power(sigma, 2.0)
+                    cov = 1.0 / sigma2
+                    W = diags(cov).tocsc()
 
         # L-M ratios of convergence
         dF = obj_val_prev - obj_val
@@ -512,7 +458,7 @@ def solve_se_lm(nc: NumericalCircuit,
 
             # compose the jacobian of the problem
             HtW = H.T @ W
-            J = HtW @ H
+            Gx = HtW @ H
 
             # compose the residual
             gx = HtW @ dz
@@ -521,9 +467,9 @@ def solve_se_lm(nc: NumericalCircuit,
             dz = z - h
 
             # system matrix for levenberg-marquardt
-            Idn = diags(np.full(J.shape[0], mu))
-            Asys = J.T @ J + Idn
-            rhs = J.T @ gx
+            Idn = diags(np.full(Gx.shape[0], mu))
+            Asys = Gx.T @ Gx + Idn
+            rhs = Gx.T @ gx
 
             # objective function
             obj_val = 0.5 * dz @ (W * dz)
@@ -701,6 +647,64 @@ def solve_se_nr(nc: NumericalCircuit,
         # and by doing this it is corrected
         Vm = np.abs(V)
         Va = np.angle(V)
+
+        # if norm_f < (tol * 10.0):
+        #     r, sigma2, Pii, rN, imax, b, bad_data_detected = b_test(sigma2=sigma2, H=H, dz=dz, HtWH=Gx,
+        #                                                             c_threshold=c_threshold, logger=logger)
+        #
+        #     if bad_data_detected:
+        #         if prefer_correct:
+        #             if Pii[imax] > 1e-10:  # if the value is not corrected in b_test alone
+        #                 z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]
+        #
+        #                 logger.add_info("Measurement corrected",
+        #                                 device=measurements[imax].api_object.name,
+        #                                 device_class=measurements[imax].device_type.value,
+        #                                 device_property="value",
+        #                                 value=z[imax],
+        #                                 expected_value=z_tilde_imax)
+        #
+        #                 # correct the bad data index
+        #                 z[imax] = z_tilde_imax
+        #             else:
+        #                 # Pii is very small - this is likely a critical measurement
+        #                 logger.add_warning(f"Measurement {imax} appears critical (Pii={Pii[imax]:.2e})")
+        #                 # Don't correct critical measurements, just remove them
+        #                 # delete measurements
+        #                 mask = np.ones(len(z), dtype=int)
+        #                 mask[imax] = 0
+        #
+        #                 se_input = se_input.slice_with_mask(mask=mask)
+        #
+        #                 # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
+        #                 z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
+        #
+        #                 # compute the weights matrix using per-unit sigma
+        #                 sigma2 = np.power(sigma, 2.0)
+        #                 cov = 1.0 / sigma2
+        #                 W = diags(cov).tocsc()
+        #         else:
+        #
+        #             logger.add_info("Measurement deleted",
+        #                             device=measurements[imax].api_object.name,
+        #                             device_class=measurements[imax].device_type.value,
+        #                             device_property="value",
+        #                             value=z[imax],
+        #                             expected_value="")
+        #
+        #             # delete measurements
+        #             mask = np.ones(len(z), dtype=int)
+        #             mask[imax] = 0
+        #
+        #             se_input = se_input.slice_with_mask(mask=mask)
+        #
+        #             # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
+        #             z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
+        #
+        #             # compute the weights matrix using per-unit sigma
+        #             sigma2 = np.power(sigma, 2.0)
+        #             cov = 1.0 / sigma2
+        #             W = diags(cov).tocsc()
 
         if verbose > 1:
             dva = np.zeros(n)
