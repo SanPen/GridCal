@@ -440,12 +440,23 @@ class Panda2GridCal:
                 idtag=row.get('uuid', None),
             )
             elm.rdfid = row.get('uuid', elm.idtag)
+            # --- Derived values ---
+            if "vkr_percent" in row:
+                Pcu = row["vkr_percent"] / 100 * row["sn_mva"] * 1000  # copper losses in kW
+            else:
+                Pcu = 0
+            Pfe = row["pfe_kw"]  # iron losses in kW
+
+            Irated = row['sn_mva'] * 1e6 / (math.sqrt(3) * row['vn_hv_kv'] * 1e3)
+            I0 = row['i0_percent'] / 100 * Irated  # no-load current in A
+
+            Vsc = row["vk_percent"]  # short-circuit voltage (%)
 
             elm.fill_design_properties(
-                Pcu=row["vkr_percent"] * row["sn_mva"] * 10 if "vkr_percent" in row else 0.,
-                Pfe=row['pfe_kw'],
-                I0=row['i0_percent']*row['sn_mva']/(math.sqrt(3)*row['vn_hv_kv']*100),
-                Vsc=row['vk_percent'],
+                Pcu=Pcu,
+                Pfe=Pfe,
+                I0=I0,
+                Vsc=Vsc,
                 Sbase=grid.Sbase
             )
 
