@@ -552,7 +552,9 @@ def solve_se_lm(nc: NumericalCircuit,
     while not converged and iter_ < max_iter:
 
         # Solve the increment
-        dx = spsolve(Gx, gx)
+        #dx = spsolve(Gx, gx)
+        solver = factorized(Gx)  # pre-factorize
+        dx = solver(gx)  # much faster than spsolve
 
         if norm_f < (tol * 10.0):
             # bad data detection
@@ -637,10 +639,13 @@ def solve_se_lm(nc: NumericalCircuit,
             # # modify the solution
             dVa = dx[:n_no_slack]
             #dVm = dx[n_no_slack:]
+
             dVm = dx[n_no_slack:2 * n_no_slack]  # Should be same length as dVa
+
             # Va[no_slack] += dVa
             # Vm += dVm  # yes, this is for all the buses
             # V = Vm * np.exp(1j * Va)
+
 
             Va[no_slack] += dVa
             Vm[no_slack] += dVm
@@ -648,7 +653,7 @@ def solve_se_lm(nc: NumericalCircuit,
 
             # Keep slack buses fixed
             #V[vd] = Vm[vd] * np.exp(1j * Va[vd])  # Slack buses should remain at their initial value
-            V = Vm * np.exp(1j * Va)
+            #V = Vm * np.exp(1j * Va)
 
             if verbose > 1:
                 dva = np.zeros(n)
