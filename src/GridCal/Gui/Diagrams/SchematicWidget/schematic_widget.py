@@ -1676,7 +1676,7 @@ class SchematicWidget(BaseDiagramWidget):
             image.fill(QColor(0, 0, 0, 0))  # transparent
         else:
             image = QImage(w, h, QImage.Format.Format_RGB32)
-            image.fill(ACTIVE['backgound'])
+            image.fill(ACTIVE.get('background', QColor(0, 0, 0, 0)))
 
         painter = QPainter(image)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)

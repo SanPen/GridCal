@@ -2125,6 +2125,7 @@ class GridReductionMethod(Enum):
     GridReductionMethod
     """
     Ward = "Ward"
+    DiShi = "DiShi"
     WardLinear = "Ward linear"
     PTDF = "PTDF"
 
