@@ -304,7 +304,6 @@ def solve_se_lm(nc: NumericalCircuit,
     logger = logger if logger is not None else Logger()
 
     n_no_slack = len(no_slack)
-    nvd = len(vd)
     n = Ybus.shape[0]
     V = nc.bus_data.Vbus.copy()
     Va = np.angle(V)
@@ -339,7 +338,7 @@ def solve_se_lm(nc: NumericalCircuit,
     gx = HtW @ dz
 
     # measurements error (in per-unit)
-    dz = z - h
+    # dz = z - h
 
     # first value of mu
     mu = 1e-3 * float(Gx.diagonal().max())
@@ -462,9 +461,9 @@ def solve_se_lm(nc: NumericalCircuit,
 
             # compose the residual
             gx = HtW @ dz
-
-            # measurements error (in per-unit)
-            dz = z - h
+            #
+            # # measurements error (in per-unit)
+            # dz = z - h
 
             # system matrix for levenberg-marquardt
             Idn = diags(np.full(Gx.shape[0], mu))
@@ -770,3 +769,137 @@ def solve_se_nr(nc: NumericalCircuit,
                                          iterations=iter_,
                                          elapsed=time.time() - start_time,
                                          bad_data_detected=bad_data_detected)
+
+def solve_se_gauss_newton(nc: NumericalCircuit,
+                          Ybus: CscMat,
+                          Yf: CscMat,
+                          Yt: CscMat,
+                          Yshunt_bus: CxVec,
+                          F: IntVec,
+                          T: IntVec,
+                          Cf: csc_matrix,
+                          Ct: csc_matrix,
+                          se_input: StateEstimationInput,
+                          vd: IntVec,
+                          pv: IntVec,
+                          no_slack: IntVec,
+                          tol=1e-9,
+                          max_iter=100,
+                          verbose: int = 0,
+                          c_threshold: float = 4.0,
+                          prefer_correct: bool = False,
+                          fixed_slack: bool = False,
+                          logger: Logger | None = None) -> NumericStateEstimationResults:
+    """
+    Linearize the non-linear measurement model around the current state estimate (Jacobian H)
+
+    Solve the linear WLS problem: Δx = 1/(HᵀWH)HᵀWdz
+
+    Update the state: x = x + Δx
+
+    Repeat until convergence
+    """
+    start_time = time.time()
+    logger = logger if logger is not None else Logger()
+
+    # Initialization
+    n_no_slack = len(no_slack)
+    V = nc.bus_data.Vbus.copy()  # initial guess (can be flat start or power flow solution)
+    Va = np.angle(V)
+    Vm = np.abs(V)
+    load_per_bus = nc.load_data.get_injections_per_bus() / nc.Sbase
+
+    # Get measurements
+    z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
+    W = diags(1.0 / np.power(sigma, 2.0))  # weight matrix
+
+    # Simple iterative method (Gauss-Newton style)
+    iter_ = 0
+    converged = False
+    norm_f = 1e20
+    error_list = []
+
+    while not converged and iter_ < max_iter:
+        # Compute Jacobian and measurement function at current state
+        H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, Cf, Ct, se_input, no_slack, load_per_bus, fixed_slack)
+
+        # Measurement residuals
+        dz = z - h
+
+        # Build normal equations
+        HtW = H.T @ W
+        G = HtW @ H  # Gain matrix
+        g = HtW @ dz  # Gradient
+
+        # Solve for state update
+        try:
+            dx = spsolve(G, g)
+        except:
+            # If matrix is singular, use pseudo-inverse
+            dx = np.linalg.lstsq(G.todense(), g, rcond=None)[0]
+
+        # Update state
+        if fixed_slack:
+            dVa = dx[:n_no_slack]
+            dVm = dx[n_no_slack:]
+            Va[no_slack] += dVa
+            Vm[no_slack] += dVm
+        else:
+            dVa = dx[:n_no_slack]
+            dVm = dx[n_no_slack:]
+            Va[no_slack] += dVa
+            Vm += dVm
+
+        V = Vm * np.exp(1j * Va)
+
+        # Check convergence
+        norm_f = np.linalg.norm(dx, np.inf)
+        converged = norm_f < tol
+        error_list.append(norm_f)
+
+        if verbose > 0:
+            print(f"Iter {iter_}: norm_f = {norm_f:.6e}")
+
+        iter_ += 1
+
+    # Final processing
+    Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
+        Sbus=Scalc, V=V, F=nc.passive_branch_data.F, T=nc.passive_branch_data.T,
+        pv=pv, vd=vd, Ybus=Ybus, Yf=Yf, Yt=Yt, Yshunt_bus=Yshunt_bus,
+        branch_rates=nc.passive_branch_data.rates, Sbase=nc.Sbase
+    )
+
+    end_time = time.time()
+    logger.add_info(f"State estimation completed in {iter_} iterations, time: {end_time - start_time:.3f}s")
+
+    if verbose > 1:
+        from matplotlib import pyplot as plt
+        plt.plot(error_list)
+        plt.yscale('log')
+        plt.show()
+
+    return NumericStateEstimationResults(V=V,
+                                         Scalc=Scalc,
+                                         m=nc.active_branch_data.tap_module,
+                                         tau=nc.active_branch_data.tap_angle,
+                                         Sf=Sf,
+                                         St=St,
+                                         If=If,
+                                         It=It,
+                                         loading=loading,
+                                         losses=losses,
+                                         Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                         If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                         losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         norm_f=norm_f,
+                                         converged=converged,
+                                         iterations=iter_,
+                                         elapsed=time.time() - start_time,
+                                         bad_data_detected=False)

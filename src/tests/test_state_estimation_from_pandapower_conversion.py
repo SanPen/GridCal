@@ -32,24 +32,25 @@ def test_state_estimation_pandapower():
         print(pf_res.get_bus_df())
         print(pf_res.get_branch_df())
 
-        se_opt = StateEstimationOptions(
-            prefer_correct=False,
-            fixed_slack=False,
-            solver=gce.SolverType.LM,
-            verbose=2,
-        )
-        se = StateEstimation(circuit=grid, options=se_opt)
-        se.run()
+        for solver in [gce.SolverType.GN,gce.SolverType.LM]:
+            se_opt = StateEstimationOptions(
+                prefer_correct=False,
+                fixed_slack=False,
+                solver=solver,
+                verbose=2,
+            )
+            se = StateEstimation(circuit=grid, options=se_opt)
+            se.run()
 
-        se_res = se.results
-        print(se_res.get_bus_df())
-        print(se_res.get_branch_df())
+            se_res = se.results
+            print(se_res.get_bus_df())
+            print(se_res.get_branch_df())
 
-        print(f"Converged: {se_res.converged}")
-        print(f"Error: {se_res.error}")
-        print(f"Iter: {se_res.iterations}")
+            print(f"Converged: {se_res.converged}")
+            print(f"Error: {se_res.error}")
+            print(f"Iter: {se_res.iterations}")
 
-        se.logger.print("SE Logger:")
+            se.logger.print("SE Logger:")
 
 
 def test_network_objects_consistency():

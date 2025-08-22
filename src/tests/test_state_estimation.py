@@ -48,7 +48,7 @@ def test_3_node_abur_exposito() -> None:
     grid.add_line(br2)
     grid.add_line(br3)
 
-    for solver in [SolverType.NR, SolverType.LM]:
+    for solver in [SolverType.NR, SolverType.LM, SolverType.GN]:
         se_options = StateEstimationOptions(
             fixed_slack=True,
             solver=solver
@@ -75,6 +75,39 @@ def test_3_node_abur_exposito() -> None:
         print(f"Converged: {se.results.converged}")
         print(f"Error: {se.results.error}")
         print(f"Iter: {se.results.iterations}")
+
+        ## The current implpementation produces these results
+        """
+            NR
+                Vm        Va           P          Q
+            B1 1.000000  0.000000  206.402671 122.647148
+            B2 0.974535 -1.246598  -49.598555 -29.778052
+            B3 0.944280 -2.743562 -151.425970 -78.763137
+            Converged: True
+            Error: 8.540155249647796e-10
+            Iter: 8
+            
+            LM
+            Bus results:
+                 Vm        Va           P          Q
+            B1 1.000000  0.000000  206.402671 122.647148
+            B2 0.974535 -1.246598  -49.598555 -29.778052
+            B3 0.944280 -2.743562 -151.425970 -78.763137
+            Converged: True
+            Error: 2.3640752701194375e-10
+            Iter: 5
+            
+            GN
+            Bus results:
+               Vm        Va           P          Q
+            B1 1.000000  0.000000  206.402671 122.647148
+            B2 0.974535 -1.246598  -49.598554 -29.778052
+            B3 0.944280 -2.743562 -151.425970 -78.763137
+            Converged: True
+            Error: 2.364077197531761e-10
+            Iter: 4
+
+        """
 
         expected_results = np.array([0.99962926+0.j, 0.97392515-0.02120941j, 0.94280676-0.04521561j])
         ok = np.allclose(se.results.voltage, expected_results, atol=1e-4)
@@ -174,7 +207,7 @@ def test_14_bus_matpower():
             obj = branches[gc_idx]
             grid.add_element(m_object(value=val * scale, uncertainty=sigma * scale, api_obj=obj))
 
-    for solver in [SolverType.NR, SolverType.LM]:
+    for solver in [SolverType.NR, SolverType.LM,SolverType.GN]:
 
         se_options = StateEstimationOptions(
             fixed_slack=True,

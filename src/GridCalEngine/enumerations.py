@@ -218,6 +218,7 @@ class SolverType(Enum):
 
     NR = 'Newton Raphson'
     GAUSS = 'Gauss-Seidel'
+    GN = "Gauss-Newton"
     Linear = 'Linear'
     HELM = 'Holomorphic Embedding'
     # ZBUS = 'Z-Gauss-Seidel'
