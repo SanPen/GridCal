@@ -8,7 +8,7 @@ from typing import Tuple
 
 import pandas as pd
 from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, diags
-from scipy.sparse.linalg import factorized, spsolve
+from scipy.sparse.linalg import factorized, spsolve, spilu
 import numpy as np
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
@@ -134,7 +134,8 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
     return H, h, S  # Return Sbus in pu
 
 
-def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float) -> Tuple[Vec, Vec, ObjVec]:
+def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float,
+                                    use_current_squared_meas:bool = True)-> Tuple[Vec, Vec, ObjVec]:
     """
     get_measurements_and_deviations the measurements into "measurements" and "sigma"
     ordering: Pinj, Pflow, Qinj, Qflow, Iflow, Vm
@@ -157,14 +158,35 @@ def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float
                 se_input.pf_value,
                 se_input.pt_value,
                 se_input.qf_value,
-                se_input.qt_value,
-                se_input.if_value,
-                se_input.it_value]:
+                se_input.qt_value]:
         for m in lst:
             magnitudes[k] = m.get_value_pu(Sbase)
             sigma[k] = m.get_standard_deviation_pu(Sbase)
             measurements[k] = m
             k += 1
+    if not use_current_squared_meas:
+        for lst in [se_input.if_value, se_input.it_value]:
+            for m in lst:
+                I_pu = m.get_value_pu(Sbase)
+                sig_I = m.get_standard_deviation_pu(Sbase)
+
+                # Use current magnitude directly (more stable)
+                y = max(abs(I_pu), 1e-4)  # Avoid zero
+                sig_y = sig_I
+
+                magnitudes[k] = y
+                sigma[k] = sig_y
+                measurements[k] = m
+                k += 1
+    else:
+        # current measurements need to be squared
+        for lst in [se_input.if_value,
+                    se_input.it_value]:
+            for m in lst:
+                magnitudes[k] = np.power(m.get_value_pu(Sbase), 2)
+                sigma[k] = m.get_standard_deviation_pu(Sbase)
+                measurements[k] = m
+                k += 1
 
     for lst in [se_input.vm_value,
                 se_input.va_value]:
@@ -810,7 +832,7 @@ def solve_se_gauss_newton(nc: NumericalCircuit,
     load_per_bus = nc.load_data.get_injections_per_bus() / nc.Sbase
 
     # Get measurements
-    z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
+    z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase, use_current_squared_meas=False)
     W = diags(1.0 / np.power(sigma, 2.0))  # weight matrix
 
     # Simple iterative method (Gauss-Newton style)
@@ -836,7 +858,7 @@ def solve_se_gauss_newton(nc: NumericalCircuit,
             dx = spsolve(G, g)
         except:
             # If matrix is singular, use pseudo-inverse
-            dx = np.linalg.lstsq(G.todense(), g, rcond=None)[0]
+            dx = spilu(G).solve(g)
 
         # Update state
         if fixed_slack:
@@ -851,6 +873,8 @@ def solve_se_gauss_newton(nc: NumericalCircuit,
             Vm += dVm
 
         V = Vm * np.exp(1j * Va)
+        Vm = np.abs(V)
+        Va = np.angle(V)
 
         # Check convergence
         norm_f = np.linalg.norm(dx, np.inf)
