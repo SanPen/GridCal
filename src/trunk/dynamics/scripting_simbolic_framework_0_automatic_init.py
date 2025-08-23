@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 
 import sys
 import os
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 # from GridCalEngine.Utils.Symbolic.events import Events, Event
@@ -51,30 +52,28 @@ bus2 = gce.Bus(name="Bus2", Vnom=10)
 grid.add_bus(bus1)
 grid.add_bus(bus2)
 
-
 # Line
-line0 = grid.add_line(gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03, rate=900.0))
-
+line0 = grid.add_line(
+    gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03,
+             rate=900.0))
 
 # load
-load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P= 10, Q= 10))
+load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P=10, Q=10))
 
 # Generators
-gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom = 900,
-                    x1=0.86138701, r1=0.3, freq=50.0,
-                    m_torque0=0.10508619605291579,
-                    vf=1.093704253855166,
-                    M=10.0,
-                    D=1.0,
-                    omega_ref=1.0,
-                    Kp=1.0,
-                    Ki=10.0,
-                    Kw=10.0)
+gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom=900,
+                     x1=0.86138701, r1=0.3, freq=50.0,
+                     # m_torque0=0.10508619605291579,
+                     vf=1.093704253855166,
+                     M=10.0,
+                     D=1.0,
+                     omega_ref=1.0,
+                     Kp=1.0,
+                     Ki=10.0,
+                     # Kw=10.0
+                     )
 
 grid.add_generator(bus=bus1, api_obj=gen1)
-
-
-
 
 options = gce.PowerFlowOptions(
     solver_type=gce.SolverType.NR,
@@ -105,14 +104,10 @@ print(f"Converged: {res.converged}")
 print(res.get_bus_df())
 print(res.get_branch_df())
 
-
 logger = gce.Logger()
-grid.initialize_rms(logger=logger)
-sys, mapping = grid.compose_system_block(res)
+gce.initialize_rms(grid, res, logger=logger)
+sys, mapping = gce.compose_system_block(grid, res)
 print(mapping)
-
-
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Solver
@@ -134,7 +129,7 @@ params_mapping = {
 my_events = RmsEvents([])
 params0 = slv.build_init_params_vector(params_mapping)
 
-#x0 = slv.build_init_vars_vector(mapping)
+# x0 = slv.build_init_vars_vector(mapping)
 
 # x0 = slv.build_init_vars_vector_from_uid(mapping)
 
@@ -160,7 +155,7 @@ params0 = slv.build_init_params_vector(params_mapping)
 #     ramps=[(Pl, 0.0), (Ql, 0.0)],
 # )
 
-#vars_in_order = slv.sort_vars(mapping)
+# vars_in_order = slv.sort_vars(mapping)
 
 vars_in_order = slv.sort_vars_from_uid(mapping)
 
@@ -176,4 +171,3 @@ t, y = slv.simulate(
 
 # save to csv
 slv.save_simulation_to_csv('simulation_results_automatic_init.csv', t, y)
-

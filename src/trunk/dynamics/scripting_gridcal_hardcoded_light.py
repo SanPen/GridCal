@@ -28,7 +28,7 @@ res = gce.power_flow(grid)
 # Time Domain Simulation
 # ----------------------------------------------------------------------------------------------------------------------
 # TDS initialization
-ss, init_guess = grid.initialize_rms(res)
+ss, init_guess = gce.initialize_rms(grid, res)
 
 # TODO: events definition and access to variable still needs to be addressed
 

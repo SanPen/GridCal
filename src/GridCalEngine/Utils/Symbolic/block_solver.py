@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../..", "src")))
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../..", "src")))
 
 from typing import Tuple
 import pandas as pd
@@ -22,7 +22,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import gmres, spilu, LinearOperator
 from typing import Dict, List, Literal, Any, Callable, Sequence
 
-#from GridCalEngine.Devices.multi_circuit import MultiCircuit
+# from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Dynamic.events import RmsEvents
 from GridCalEngine.Utils.Symbolic.symbolic import Var, Expr, Const, _emit
 from GridCalEngine.Utils.Symbolic.block import Block
@@ -231,7 +231,6 @@ class BlockSolver:
             self.uid2idx_params[ep.uid] = j
             j += 1
 
-
         # Compile RHS and Jacobian
         """
                    state Var   algeb var  
@@ -326,7 +325,6 @@ class BlockSolver:
                 raise ValueError(f"Missing uid {key} definition")
 
         return x
-
 
     def build_init_params_vector(self, mapping: dict[Var, float]) -> np.ndarray:
         """
@@ -812,7 +810,6 @@ class BlockSolver:
         if method == "rk4":
             return self._simulate_fixed(t0, t_end, h, x0, params0, stepper="rk4")
         if method == "implicit_euler":
-
             params_matrix = self.build_params_matrix(n_steps=int(np.ceil((t_end - t0) / h)),
                                                      params0=params0,
                                                      events_list=events_list)
@@ -891,8 +888,8 @@ class BlockSolver:
 
                 if step_idx == 0:
                     if converged:
-                       print("System well initailzed.")
-                    else: 
+                        print("System well initailzed.")
+                    else:
                         print(f"System bad initilaized. DAE resiudal is {residual}.")
 
                 if converged:
