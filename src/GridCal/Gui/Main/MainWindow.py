@@ -611,6 +611,12 @@ class Ui_mainWindow(object):
         self.actionSubstation_wizard.setObjectName(u"actionSubstation_wizard")
         self.actionSubstation_wizard.setIcon(icon69)
         self.actionSubstation_wizard.setMenuRole(QAction.MenuRole.NoRole)
+        self.actionRun_Dynamic_RMS_Simulation = QAction(mainWindow)
+        self.actionRun_Dynamic_RMS_Simulation.setObjectName(u"actionRun_Dynamic_RMS_Simulation")
+        icon79 = QIcon()
+        icon79.addFile(u":/Icons/icons/dyn.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.actionRun_Dynamic_RMS_Simulation.setIcon(icon79)
+        self.actionRun_Dynamic_RMS_Simulation.setMenuRole(QAction.MenuRole.NoRole)
         self.centralwidget = QWidget(mainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout_3 = QGridLayout(self.centralwidget)
@@ -691,9 +697,9 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_37.addWidget(self.diagramsListView)
 
-        icon79 = QIcon()
-        icon79.addFile(u":/Icons/icons/show_color_controls.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget_6.addTab(self.tab_3, icon79, "")
+        icon80 = QIcon()
+        icon80.addFile(u":/Icons/icons/show_color_controls.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_6.addTab(self.tab_3, icon80, "")
         self.tab = QWidget()
         self.tab.setObjectName(u"tab")
         self.verticalLayout = QVBoxLayout(self.tab)
@@ -1084,9 +1090,9 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_38.addWidget(self.frame_58)
 
-        icon80 = QIcon()
-        icon80.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget_6.addTab(self.tab_4, icon80, "")
+        icon81 = QIcon()
+        icon81.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_6.addTab(self.tab_4, icon81, "")
 
         self.verticalLayout_2.addWidget(self.tabWidget_6)
 
@@ -1114,9 +1120,9 @@ class Ui_mainWindow(object):
         self.colour_results_pushButton = QPushButton(self.grid_colouring_frame)
         self.colour_results_pushButton.setObjectName(u"colour_results_pushButton")
         self.colour_results_pushButton.setMaximumSize(QSize(32, 16777215))
-        icon81 = QIcon()
-        icon81.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.colour_results_pushButton.setIcon(icon81)
+        icon82 = QIcon()
+        icon82.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.colour_results_pushButton.setIcon(icon82)
 
         self.gridLayout_31.addWidget(self.colour_results_pushButton, 0, 2, 2, 1)
 
@@ -1201,9 +1207,9 @@ class Ui_mainWindow(object):
 
         self.structure_analysis_pushButton = QPushButton(self.frame_54)
         self.structure_analysis_pushButton.setObjectName(u"structure_analysis_pushButton")
-        icon82 = QIcon()
-        icon82.addFile(u":/Icons/icons/histogram.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.structure_analysis_pushButton.setIcon(icon82)
+        icon83 = QIcon()
+        icon83.addFile(u":/Icons/icons/histogram.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.structure_analysis_pushButton.setIcon(icon83)
 
         self.horizontalLayout_28.addWidget(self.structure_analysis_pushButton)
 
@@ -1225,9 +1231,9 @@ class Ui_mainWindow(object):
         self.horizontalLayout_25.setContentsMargins(0, 0, 0, 0)
         self.set_profile_state_button = QPushButton(self.frame_9)
         self.set_profile_state_button.setObjectName(u"set_profile_state_button")
-        icon83 = QIcon()
-        icon83.addFile(u":/Icons/icons/copy2left.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.set_profile_state_button.setIcon(icon83)
+        icon84 = QIcon()
+        icon84.addFile(u":/Icons/icons/copy2left.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.set_profile_state_button.setIcon(icon84)
 
         self.horizontalLayout_25.addWidget(self.set_profile_state_button)
 
@@ -1251,17 +1257,17 @@ class Ui_mainWindow(object):
 
         self.add_object_pushButton = QPushButton(self.frame_9)
         self.add_object_pushButton.setObjectName(u"add_object_pushButton")
-        icon84 = QIcon()
-        icon84.addFile(u":/Icons/icons/plus.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.add_object_pushButton.setIcon(icon84)
+        icon85 = QIcon()
+        icon85.addFile(u":/Icons/icons/plus.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.add_object_pushButton.setIcon(icon85)
 
         self.horizontalLayout_25.addWidget(self.add_object_pushButton)
 
         self.delete_selected_objects_pushButton = QPushButton(self.frame_9)
         self.delete_selected_objects_pushButton.setObjectName(u"delete_selected_objects_pushButton")
-        icon85 = QIcon()
-        icon85.addFile(u":/Icons/icons/minus.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.delete_selected_objects_pushButton.setIcon(icon85)
+        icon86 = QIcon()
+        icon86.addFile(u":/Icons/icons/minus.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.delete_selected_objects_pushButton.setIcon(icon86)
 
         self.horizontalLayout_25.addWidget(self.delete_selected_objects_pushButton)
 
@@ -1316,9 +1322,9 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_11.addWidget(self.frame_20)
 
-        icon86 = QIcon()
-        icon86.addFile(u":/Icons/icons/area_transfer.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget_5.addTab(self.tab_2, icon86, "")
+        icon87 = QIcon()
+        icon87.addFile(u":/Icons/icons/area_transfer.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_5.addTab(self.tab_2, icon87, "")
         self.tab_16 = QWidget()
         self.tab_16.setObjectName(u"tab_16")
         self.verticalLayout_42 = QVBoxLayout(self.tab_16)
@@ -1345,26 +1351,26 @@ class Ui_mainWindow(object):
 
         self.delete_profiles_structure_pushButton = QPushButton(self.frame)
         self.delete_profiles_structure_pushButton.setObjectName(u"delete_profiles_structure_pushButton")
-        icon87 = QIcon()
-        icon87.addFile(u":/Icons/icons/new (delete).svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.delete_profiles_structure_pushButton.setIcon(icon87)
+        icon88 = QIcon()
+        icon88.addFile(u":/Icons/icons/new (delete).svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.delete_profiles_structure_pushButton.setIcon(icon88)
 
         self.horizontalLayout.addWidget(self.delete_profiles_structure_pushButton)
 
         self.edit_profiles_pushButton = QPushButton(self.frame)
         self.edit_profiles_pushButton.setObjectName(u"edit_profiles_pushButton")
-        icon88 = QIcon()
-        icon88.addFile(u":/Icons/icons/import_profiles.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.edit_profiles_pushButton.setIcon(icon88)
+        icon89 = QIcon()
+        icon89.addFile(u":/Icons/icons/import_profiles.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.edit_profiles_pushButton.setIcon(icon89)
         self.edit_profiles_pushButton.setFlat(False)
 
         self.horizontalLayout.addWidget(self.edit_profiles_pushButton)
 
         self.edit_profiles_from_models_pushButton = QPushButton(self.frame)
         self.edit_profiles_from_models_pushButton.setObjectName(u"edit_profiles_from_models_pushButton")
-        icon89 = QIcon()
-        icon89.addFile(u":/Icons/icons/import_models.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.edit_profiles_from_models_pushButton.setIcon(icon89)
+        icon90 = QIcon()
+        icon90.addFile(u":/Icons/icons/import_models.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.edit_profiles_from_models_pushButton.setIcon(icon90)
         self.edit_profiles_from_models_pushButton.setFlat(False)
 
         self.horizontalLayout.addWidget(self.edit_profiles_from_models_pushButton)
@@ -1375,9 +1381,9 @@ class Ui_mainWindow(object):
 
         self.plot_time_series_pushButton = QPushButton(self.frame)
         self.plot_time_series_pushButton.setObjectName(u"plot_time_series_pushButton")
-        icon90 = QIcon()
-        icon90.addFile(u":/Icons/icons/plot.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.plot_time_series_pushButton.setIcon(icon90)
+        icon91 = QIcon()
+        icon91.addFile(u":/Icons/icons/plot.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.plot_time_series_pushButton.setIcon(icon91)
 
         self.horizontalLayout.addWidget(self.plot_time_series_pushButton)
 
@@ -1402,25 +1408,25 @@ class Ui_mainWindow(object):
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.copy_profile_pushButton = QPushButton(self.frame_12)
         self.copy_profile_pushButton.setObjectName(u"copy_profile_pushButton")
-        icon91 = QIcon()
-        icon91.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.copy_profile_pushButton.setIcon(icon91)
+        icon92 = QIcon()
+        icon92.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.copy_profile_pushButton.setIcon(icon92)
 
         self.horizontalLayout_4.addWidget(self.copy_profile_pushButton)
 
         self.paste_profiles_pushButton = QPushButton(self.frame_12)
         self.paste_profiles_pushButton.setObjectName(u"paste_profiles_pushButton")
-        icon92 = QIcon()
-        icon92.addFile(u":/Icons/icons/paste.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.paste_profiles_pushButton.setIcon(icon92)
+        icon93 = QIcon()
+        icon93.addFile(u":/Icons/icons/paste.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.paste_profiles_pushButton.setIcon(icon93)
 
         self.horizontalLayout_4.addWidget(self.paste_profiles_pushButton)
 
         self.set_linear_combination_profile_pushButton = QPushButton(self.frame_12)
         self.set_linear_combination_profile_pushButton.setObjectName(u"set_linear_combination_profile_pushButton")
-        icon93 = QIcon()
-        icon93.addFile(u":/Icons/icons/copy2right.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.set_linear_combination_profile_pushButton.setIcon(icon93)
+        icon94 = QIcon()
+        icon94.addFile(u":/Icons/icons/copy2right.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.set_linear_combination_profile_pushButton.setIcon(icon94)
 
         self.horizontalLayout_4.addWidget(self.set_linear_combination_profile_pushButton)
 
@@ -1436,37 +1442,37 @@ class Ui_mainWindow(object):
 
         self.profile_add_pushButton = QPushButton(self.frame_12)
         self.profile_add_pushButton.setObjectName(u"profile_add_pushButton")
-        self.profile_add_pushButton.setIcon(icon84)
+        self.profile_add_pushButton.setIcon(icon85)
 
         self.horizontalLayout_4.addWidget(self.profile_add_pushButton)
 
         self.profile_subtract_pushButton = QPushButton(self.frame_12)
         self.profile_subtract_pushButton.setObjectName(u"profile_subtract_pushButton")
-        self.profile_subtract_pushButton.setIcon(icon85)
+        self.profile_subtract_pushButton.setIcon(icon86)
 
         self.horizontalLayout_4.addWidget(self.profile_subtract_pushButton)
 
         self.profile_multiply_pushButton = QPushButton(self.frame_12)
         self.profile_multiply_pushButton.setObjectName(u"profile_multiply_pushButton")
-        icon94 = QIcon()
-        icon94.addFile(u":/Icons/icons/multiply.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.profile_multiply_pushButton.setIcon(icon94)
+        icon95 = QIcon()
+        icon95.addFile(u":/Icons/icons/multiply.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.profile_multiply_pushButton.setIcon(icon95)
 
         self.horizontalLayout_4.addWidget(self.profile_multiply_pushButton)
 
         self.profile_divide_pushButton = QPushButton(self.frame_12)
         self.profile_divide_pushButton.setObjectName(u"profile_divide_pushButton")
-        icon95 = QIcon()
-        icon95.addFile(u":/Icons/icons/divide.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.profile_divide_pushButton.setIcon(icon95)
+        icon96 = QIcon()
+        icon96.addFile(u":/Icons/icons/divide.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.profile_divide_pushButton.setIcon(icon96)
 
         self.horizontalLayout_4.addWidget(self.profile_divide_pushButton)
 
         self.set_profile_value_pushButton = QPushButton(self.frame_12)
         self.set_profile_value_pushButton.setObjectName(u"set_profile_value_pushButton")
-        icon96 = QIcon()
-        icon96.addFile(u":/Icons/icons/copy2up.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.set_profile_value_pushButton.setIcon(icon96)
+        icon97 = QIcon()
+        icon97.addFile(u":/Icons/icons/copy2up.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.set_profile_value_pushButton.setIcon(icon97)
 
         self.horizontalLayout_4.addWidget(self.set_profile_value_pushButton)
 
@@ -1481,9 +1487,9 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_42.addWidget(self.frame_12)
 
-        icon97 = QIcon()
-        icon97.addFile(u":/Icons/icons/time_series.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget_5.addTab(self.tab_16, icon97, "")
+        icon98 = QIcon()
+        icon98.addFile(u":/Icons/icons/time_series.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_5.addTab(self.tab_16, icon98, "")
 
         self.verticalLayout_26.addWidget(self.tabWidget_5)
 
@@ -1522,9 +1528,9 @@ class Ui_mainWindow(object):
         self.compute_simulation_data_pushButton = QPushButton(self.frame_28)
         self.compute_simulation_data_pushButton.setObjectName(u"compute_simulation_data_pushButton")
         self.compute_simulation_data_pushButton.setMaximumSize(QSize(32, 16777215))
-        icon98 = QIcon()
-        icon98.addFile(u":/Icons/icons/calculator.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.compute_simulation_data_pushButton.setIcon(icon98)
+        icon99 = QIcon()
+        icon99.addFile(u":/Icons/icons/calculator.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.compute_simulation_data_pushButton.setIcon(icon99)
 
         self.gridLayout_19.addWidget(self.compute_simulation_data_pushButton, 0, 0, 1, 1)
 
@@ -1558,23 +1564,23 @@ class Ui_mainWindow(object):
 
         self.copyArraysToNumpyButton = QPushButton(self.frame_29)
         self.copyArraysToNumpyButton.setObjectName(u"copyArraysToNumpyButton")
-        icon99 = QIcon()
-        icon99.addFile(u":/Icons/icons/array.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.copyArraysToNumpyButton.setIcon(icon99)
+        icon100 = QIcon()
+        icon100.addFile(u":/Icons/icons/array.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.copyArraysToNumpyButton.setIcon(icon100)
 
         self.gridLayout_23.addWidget(self.copyArraysToNumpyButton, 0, 1, 1, 1)
 
         self.plotArraysButton = QPushButton(self.frame_29)
         self.plotArraysButton.setObjectName(u"plotArraysButton")
         self.plotArraysButton.setMinimumSize(QSize(32, 0))
-        self.plotArraysButton.setIcon(icon90)
+        self.plotArraysButton.setIcon(icon91)
 
         self.gridLayout_23.addWidget(self.plotArraysButton, 0, 6, 1, 1)
 
         self.copyArraysButton = QPushButton(self.frame_29)
         self.copyArraysButton.setObjectName(u"copyArraysButton")
         self.copyArraysButton.setMinimumSize(QSize(32, 0))
-        self.copyArraysButton.setIcon(icon91)
+        self.copyArraysButton.setIcon(icon92)
 
         self.gridLayout_23.addWidget(self.copyArraysButton, 0, 2, 1, 1)
 
@@ -1582,9 +1588,9 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_7.addWidget(self.simulationDataSplitter)
 
-        icon100 = QIcon()
-        icon100.addFile(u":/Icons/icons/spmat.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget_3.addTab(self.compiledArraysTab, icon100, "")
+        icon101 = QIcon()
+        icon101.addFile(u":/Icons/icons/spmat.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_3.addTab(self.compiledArraysTab, icon101, "")
         self.commentsTab = QWidget()
         self.commentsTab.setObjectName(u"commentsTab")
         self.verticalLayout_18 = QVBoxLayout(self.commentsTab)
@@ -1594,9 +1600,9 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_18.addWidget(self.comments_textEdit)
 
-        icon101 = QIcon()
-        icon101.addFile(u":/Icons/icons/edit.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget_3.addTab(self.commentsTab, icon101, "")
+        icon102 = QIcon()
+        icon102.addFile(u":/Icons/icons/edit.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_3.addTab(self.commentsTab, icon102, "")
 
         self.verticalLayout_9.addWidget(self.tabWidget_3)
 
@@ -1658,7 +1664,7 @@ class Ui_mainWindow(object):
 
         self.deleteDriverButton = QPushButton(self.frame_62)
         self.deleteDriverButton.setObjectName(u"deleteDriverButton")
-        self.deleteDriverButton.setIcon(icon85)
+        self.deleteDriverButton.setIcon(icon86)
 
         self.horizontalLayout_34.addWidget(self.deleteDriverButton)
 
@@ -1775,45 +1781,45 @@ class Ui_mainWindow(object):
 
         self.results_traspose_checkBox = QCheckBox(self.frame_8)
         self.results_traspose_checkBox.setObjectName(u"results_traspose_checkBox")
-        icon102 = QIcon()
-        icon102.addFile(u":/Icons/icons/transpose.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.results_traspose_checkBox.setIcon(icon102)
+        icon103 = QIcon()
+        icon103.addFile(u":/Icons/icons/transpose.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.results_traspose_checkBox.setIcon(icon103)
 
         self.horizontalLayout_2.addWidget(self.results_traspose_checkBox)
 
         self.results_as_cdf_checkBox = QCheckBox(self.frame_8)
         self.results_as_cdf_checkBox.setObjectName(u"results_as_cdf_checkBox")
-        icon103 = QIcon()
-        icon103.addFile(u":/Icons/icons/cdf.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.results_as_cdf_checkBox.setIcon(icon103)
+        icon104 = QIcon()
+        icon104.addFile(u":/Icons/icons/cdf.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.results_as_cdf_checkBox.setIcon(icon104)
 
         self.horizontalLayout_2.addWidget(self.results_as_cdf_checkBox)
 
         self.results_as_abs_checkBox = QCheckBox(self.frame_8)
         self.results_as_abs_checkBox.setObjectName(u"results_as_abs_checkBox")
-        icon104 = QIcon()
-        icon104.addFile(u":/Icons/icons/abs.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.results_as_abs_checkBox.setIcon(icon104)
+        icon105 = QIcon()
+        icon105.addFile(u":/Icons/icons/abs.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.results_as_abs_checkBox.setIcon(icon105)
 
         self.horizontalLayout_2.addWidget(self.results_as_abs_checkBox)
 
         self.stacked_plot_checkBox = QCheckBox(self.frame_8)
         self.stacked_plot_checkBox.setObjectName(u"stacked_plot_checkBox")
-        icon105 = QIcon()
-        icon105.addFile(u":/Icons/icons/stacked_plot.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.stacked_plot_checkBox.setIcon(icon105)
+        icon106 = QIcon()
+        icon106.addFile(u":/Icons/icons/stacked_plot.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.stacked_plot_checkBox.setIcon(icon106)
 
         self.horizontalLayout_2.addWidget(self.stacked_plot_checkBox)
 
         self.copy_results_pushButton = QPushButton(self.frame_8)
         self.copy_results_pushButton.setObjectName(u"copy_results_pushButton")
-        self.copy_results_pushButton.setIcon(icon91)
+        self.copy_results_pushButton.setIcon(icon92)
 
         self.horizontalLayout_2.addWidget(self.copy_results_pushButton)
 
         self.copy_numpy_button = QPushButton(self.frame_8)
         self.copy_numpy_button.setObjectName(u"copy_numpy_button")
-        self.copy_numpy_button.setIcon(icon99)
+        self.copy_numpy_button.setIcon(icon100)
 
         self.horizontalLayout_2.addWidget(self.copy_numpy_button)
 
@@ -1825,7 +1831,7 @@ class Ui_mainWindow(object):
 
         self.plot_data_pushButton = QPushButton(self.frame_8)
         self.plot_data_pushButton.setObjectName(u"plot_data_pushButton")
-        self.plot_data_pushButton.setIcon(icon90)
+        self.plot_data_pushButton.setIcon(icon91)
 
         self.horizontalLayout_2.addWidget(self.plot_data_pushButton)
 
@@ -1835,7 +1841,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_40.addWidget(self.frame_5)
 
-        self.tabWidget_4.addTab(self.tab_7, icon99, "")
+        self.tabWidget_4.addTab(self.tab_7, icon100, "")
         self.tab_14 = QWidget()
         self.tab_14.setObjectName(u"tab_14")
         self.verticalLayout_41 = QVBoxLayout(self.tab_14)
@@ -1876,7 +1882,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_13.addWidget(self.frame_33)
 
-        self.tabWidget.addTab(self.ResultsTab, icon90, "")
+        self.tabWidget.addTab(self.ResultsTab, icon91, "")
         self.main_console_tab = QWidget()
         self.main_console_tab.setObjectName(u"main_console_tab")
         self.verticalLayout_22 = QVBoxLayout(self.main_console_tab)
@@ -1935,9 +1941,9 @@ class Ui_mainWindow(object):
 
         self.runSourceCodeButton = QPushButton(self.frame_55)
         self.runSourceCodeButton.setObjectName(u"runSourceCodeButton")
-        icon106 = QIcon()
-        icon106.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.runSourceCodeButton.setIcon(icon106)
+        icon107 = QIcon()
+        icon107.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.runSourceCodeButton.setIcon(icon107)
 
         self.horizontalLayout_3.addWidget(self.runSourceCodeButton)
 
@@ -2007,9 +2013,9 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_33.addWidget(self.consoleFrame)
 
-        icon107 = QIcon()
-        icon107.addFile(u":/Icons/icons/console.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget_2.addTab(self.pythonConsoleTab, icon107, "")
+        icon108 = QIcon()
+        icon108.addFile(u":/Icons/icons/console.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_2.addTab(self.pythonConsoleTab, icon108, "")
         self.sourceCodeTab = QWidget()
         self.sourceCodeTab.setObjectName(u"sourceCodeTab")
         self.verticalLayout_39 = QVBoxLayout(self.sourceCodeTab)
@@ -2033,7 +2039,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_22.addWidget(self.frame_10)
 
-        self.tabWidget.addTab(self.main_console_tab, icon107, "")
+        self.tabWidget.addTab(self.main_console_tab, icon108, "")
         self.SettingsTab = QWidget()
         self.SettingsTab.setObjectName(u"SettingsTab")
         self.gridLayout_8 = QGridLayout(self.SettingsTab)
@@ -3527,7 +3533,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_12.addWidget(self.frame_40)
 
-        self.settings_tabWidget.addTab(self.transfer_tab, icon86, "")
+        self.settings_tabWidget.addTab(self.transfer_tab, icon87, "")
         self.contingencies_tab = QWidget()
         self.contingencies_tab.setObjectName(u"contingencies_tab")
         self.horizontalLayout_42 = QHBoxLayout(self.contingencies_tab)
@@ -4719,7 +4725,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_8.addWidget(self.settings_tabWidget, 0, 2, 1, 1)
 
-        self.tabWidget.addTab(self.SettingsTab, icon80, "")
+        self.tabWidget.addTab(self.SettingsTab, icon81, "")
 
         self.gridLayout_3.addWidget(self.tabWidget, 0, 0, 1, 1)
 
@@ -4915,6 +4921,7 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionShort_Circuit)
         self.toolBar.addAction(self.actionVoltage_stability)
         self.toolBar.addAction(self.actionContingency_analysis)
+        self.toolBar.addAction(self.actionRun_Dynamic_RMS_Simulation)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionOptimal_Net_Transfer_Capacity)
         self.toolBar.addAction(self.actionNodal_capacity)
@@ -5300,6 +5307,7 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(shortcut)
         self.actionSubstation_wizard.setShortcut(QCoreApplication.translate("mainWindow", u"Ctrl+A, Ctrl+S", None))
 #endif // QT_CONFIG(shortcut)
+        self.actionRun_Dynamic_RMS_Simulation.setText(QCoreApplication.translate("mainWindow", u"Run Dynamic RMS Simulation", None))
 #if QT_CONFIG(tooltip)
         self.diagramsListView.setToolTip(QCoreApplication.translate("mainWindow", u"List of available diagrams", None))
 #endif // QT_CONFIG(tooltip)
