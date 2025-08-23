@@ -406,18 +406,27 @@ class FileOpen:
                     self.logger += parser.logger
 
                 elif file_extension.lower() in ['.xml', '.zip']:
-                    data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func,
-                                                  logger=self.cgmes_logger)
+                    data_parser = CgmesDataParser(
+                        text_func=text_func,
+                        progress_func=progress_func,
+                        logger=self.cgmes_logger
+                    )
                     data_parser.load_files(files=[self.file_name])
 
                     if is_valid_cgmes(data_parser.cgmes_version):
-                        self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
-                                                          cgmes_map_areas_like_raw=self.options.cgmes_map_areas_like_raw,
-                                                          progress_func=progress_func, logger=self.cgmes_logger)
+                        self.cgmes_circuit = CgmesCircuit(
+                            cgmes_version=data_parser.cgmes_version,
+                            text_func=text_func,
+                            cgmes_map_areas_like_raw=self.options.cgmes_map_areas_like_raw,
+                            progress_func=progress_func,
+                            logger=self.cgmes_logger
+                        )
                         self.cgmes_circuit.parse_files(data_parser=data_parser)
-                        self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit,
-                                                        map_dc_to_hvdc_line=self.options.try_to_map_dc_to_hvdc_line,
-                                                        logger=self.cgmes_logger)
+                        self.circuit = cgmes_to_gridcal(
+                            cgmes_model=self.cgmes_circuit,
+                            map_dc_to_hvdc_line=self.options.try_to_map_dc_to_hvdc_line,
+                            logger=self.cgmes_logger
+                        )
 
                         if self.cgmes_logger.has_logs():
                             self.logger += self.cgmes_logger.get_logger()

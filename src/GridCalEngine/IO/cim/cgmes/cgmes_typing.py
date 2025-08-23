@@ -158,6 +158,5 @@ CGMES_COORDINATE_SYSTEM = cgmes24.CoordinateSystem | cgmes30.CoordinateSystem
 CGMES_LOCATION = cgmes24.Location | cgmes30.Location
 CGMES_POSITION_POINT = cgmes24.PositionPoint | cgmes30.PositionPoint
 
-
 def is_term(term: CGMES_TERMINAL):
     return isinstance(term, (cgmes24.Terminal, cgmes30.Terminal))

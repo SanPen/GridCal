@@ -20,10 +20,10 @@ linear_solver = get_linear_solver()
 sparse = get_sparse_type()
 
 
-def dcpf(nc: NumericalCircuit,
-         Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.csc_matrix,
-         S0: CxVec, I0: CxVec, Y0: CxVec, V0: CxVec, tau: Vec,
-         vd: IntVec, no_slack: IntVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
+def linear_pf(nc: NumericalCircuit,
+              Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.csc_matrix,
+              S0: CxVec, I0: CxVec, Y0: CxVec, V0: CxVec, tau: Vec,
+              vd: IntVec, no_slack: IntVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
     """
     Solves a linear-DC power flow.
     :param nc: NumericalCircuit instance

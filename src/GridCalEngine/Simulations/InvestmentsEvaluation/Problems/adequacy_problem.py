@@ -8,14 +8,21 @@ import numba as nb
 from scipy.sparse import lil_matrix
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.basic_structures import Vec, IntVec, StrVec, IntMat, Mat
+from GridCalEngine.basic_structures import Vec, IntVec, StrVec, IntMat
 from GridCalEngine.Simulations.InvestmentsEvaluation.Problems.black_box_problem_template import BlackBoxProblemTemplate
 from GridCalEngine.Simulations.Reliability.reliability import reliability_simulation
 from GridCalEngine.Simulations.OPF.simple_dispatch_ts import GreedyDispatchInputs, greedy_dispatch
 
 
 @nb.njit(cache=True)
-def correct_x(x, lb, ub) -> Vec:
+def correct_x(x, lb, ub):
+    """
+    Correct x in place to the given boundaries
+    :param x:
+    :param lb:
+    :param ub:
+    :return:
+    """
     for i in range(len(x)):
         if x[i] < lb[i]:
             x[i] = lb[i]
@@ -23,13 +30,13 @@ def correct_x(x, lb, ub) -> Vec:
             x[i] = ub[i]
 
 
-# @nb.njit(cache=True)
+@nb.njit(cache=True)
 def apply_actives_mask(original_active: IntMat, mask_indices: IntVec, mask: IntVec, years_starts_indices: IntVec):
     """
 
     :param original_active:
     :param mask_indices:
-    :param mask: x aplied to generators or batteries (goes from 0 to N-years + 1)
+    :param mask: x applied to generators or batteries (goes from 0 to N-years + 1)
     :param years_starts_indices: array saying in which profile index starts each year
     :return:
     """
@@ -68,6 +75,8 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
                  grid: MultiCircuit,
                  n_monte_carlo_sim=10000,
                  use_monte_carlo: bool = True,
+                 minimum_firm_share: float = 0.2,
+                 use_firm_capacity_penalty: bool = True,
                  save_file: bool = True,
                  time_indices: IntVec | None = None):
         """
@@ -75,6 +84,8 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
         :param grid:
         :param n_monte_carlo_sim:
         :param use_monte_carlo:
+        :param minimum_firm_share: minimum share of firm capacity in p.u.
+        :param use_firm_capacity_penalty: if to use the firm capacity penalty
         :param save_file:
         :param time_indices: array of time indices to use, if None all are used
         """
@@ -85,6 +96,8 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
         # options object
         self.n_monte_carlo_sim = n_monte_carlo_sim
         self.use_monte_carlo = use_monte_carlo
+        self.minimum_firm_share: float = minimum_firm_share
+        self.use_firm_capacity_penalty: bool = use_firm_capacity_penalty
         self.save_file = save_file
         self.time_indices = time_indices
 
@@ -156,7 +169,10 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
         Number of objectives (size of f)
         :return:
         """
-        return 3
+        if self.use_firm_capacity_penalty:
+            return 4
+        else:
+            return 3
 
     def n_vars(self) -> int:
         """
@@ -170,7 +186,10 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
         Get a list of names for the elements of f
         :return:
         """
-        return np.array(["LOLE", "CAPEX", "Unitary electricity cost"])
+        if self.use_firm_capacity_penalty:
+            return np.array(["LOLE", "CAPEX", "Unitary electricity cost", "Firm capacity penalty"])
+        else:
+            return np.array(["LOLE", "CAPEX", "Unitary electricity cost"])
 
     def get_vars_names(self) -> StrVec:
         """
@@ -192,9 +211,28 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
         gen_mask = self.dim2gen @ x
         batt_mask = self.dim2batt @ x
 
-        # invested_gen_idx = np.where(gen_mask == 1)[0]
-        # capex = np.sum(self.gen_capex[invested_gen_idx])
+        # compute the firm capacity
+        if self.use_firm_capacity_penalty:
+            # a generator is "firm" if it is dispatchable
+            P_firm = np.sum(self.greedy_dispatch_inputs.gen_dispatchable
+                            * gen_mask
+                            * self.greedy_dispatch_inputs.gen_p_max)
 
+            P_total = np.sum(gen_mask * self.greedy_dispatch_inputs.gen_p_max)
+            if P_total > 0:
+                firm_share = P_firm / P_total
+
+                if firm_share < self.minimum_firm_share:
+                    # the penalty is the difference scaled by 1000
+                    firm_capacity_penalty = (self.minimum_firm_share - firm_share) * 1000.0
+                else:
+                    firm_capacity_penalty = 0.0
+            else:
+                firm_capacity_penalty = 0.0
+        else:
+            firm_capacity_penalty = 0.0
+
+            # get the active arrays of generators and batteries
         gen_active = apply_actives_mask(original_active=self.greedy_dispatch_inputs.gen_active,
                                         mask_indices=self.inv_gen_idx,
                                         mask=gen_mask,
@@ -274,6 +312,13 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
 
         unit_cost = total_cost / self.total_load
 
-        print(f"n_inv: {sum(x)}, lole: {lole}, capex: {capex}, e cost: {unit_cost}")
+        print(f"n_inv: {sum(x)}, "
+              f"lole: {lole}, "
+              f"capex: {capex}, "
+              f"e cost: {unit_cost}, "
+              f"firm penalty {firm_capacity_penalty}")
 
-        return np.array([lole, capex, unit_cost])
+        if self.use_firm_capacity_penalty:
+            return np.array([lole, capex, unit_cost, firm_capacity_penalty])
+        else:
+            return np.array([lole, capex, unit_cost])

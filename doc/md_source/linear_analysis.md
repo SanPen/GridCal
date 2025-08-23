@@ -1,7 +1,10 @@
 # 📏 Linear analysis
 
+![](figures/settings-pf.png)
+![](figures/settings-con.png)
 
 ## API
+
 
 We can run an PTDF equivalent of the power flow with the linear analysis drivers:
 

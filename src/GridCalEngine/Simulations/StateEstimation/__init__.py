@@ -3,5 +3,5 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-from GridCalEngine.Simulations.StateEstimation.state_stimation_driver import StateEstimation, StateEstimationResults, StateEstimationInput
+from GridCalEngine.Simulations.StateEstimation.state_stimation_driver import StateEstimation, StateEstimationInput
 # from GridCalEngine.Simulations.StateEstimation.state_estimation import *

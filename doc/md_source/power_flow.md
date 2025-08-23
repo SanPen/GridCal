@@ -1,12 +1,15 @@
 # 🔥 Power flow
 
-
-
+GridCal has the most power flow features in any open-source software.
+This is the power flow settings page:
 
 ![](figures/settings-pf.png)
 
-Solver
-    The power flow solver to use.
+Below, a list of the parameters and solvers available.
+
+Settings:
+
+- **Solver**: The power flow solver to use.
 
     - Newton-Raphson in power:
     - Newton-Raphson in current:
@@ -14,69 +17,64 @@ Solver
     - Levenberg-Marquardt:
     - Fast-Decoupled:
     - Holomorphic-Embedding:
-    - Linear AC approximation:
-    - DC approximation:
+    - Linear "AC" approximation:
+    - "DC" approximation
 
-    All these solvers are covered in the theory section.
+The following table relates which power flow controls are available in each solver:
 
-Retry with other methods is failed:
+|                                                                                         | Newton <br/>Raphson  |Powell <br/>Dog-leg|Levenberg-<br/>Marquardt|Iwamoto|Fast-<br/>decoupled|Gauss-<br/>seidel|Holomorphic <br/>embedding|Linear <br/>without <br/>voltage modules|Linear <br/>with voltage <br/>modules|
+|-----------------------------------------------------------------------------------------|---|---|---|---|---|---|---|---|---|
+| Local voltage <br/>control using <br/>a Generator.                                      |  ✅ | ✅  | ✅  |  ✅ | ✅  | ✅  |  ✅ | ✅ |  ✅ |
+| Remote voltage <br/>control using <br/>a Generator.                                     | ✅  |  ✅ |  ✅ |  ✅ |  ✅ |   |   |   |   |
+| Generator <br/>reactive power <br/>limits.                                              | ✅  |  ✅ |  ✅ |  ✅ | ✅  |  ✅ |   |   |   |
+| Local and <br/>remote voltage <br/>control using <br/>a transformer's <br/>tap changer. | ✅  |  ✅ |  ✅ |   |   |   |   |   |   |
+| Local active <br/>power control <br/>using a <br/>transformer's <br/>tap changer.       |  ✅ | ✅  |  ✅ |   |   |   |   |   |   |
+| Local reactive <br/>power control <br/>using a <br/>transformer's <br/>tap changer.     | ✅  | ✅  | ✅  |   |   |   |   |   |   |
+| Local and <br/>remote <br/>AC and DC <br/>voltage control <br/>using a <br/>converter.  | ✅  | ✅  | ✅  |   |   |   |   |   |   |
+| Local <br/>AC and DC <br/>active power<br/> control using <br/>a converter.                  |✅   | ✅  |  ✅ |   |   |   |   |   |   |
+| Local AC <br/>reactive power <br/>control using <br/>a converter.                                      | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
+| 3-phase <br/>unbalanced.                                                                     | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
+
+
+
+- **Tolerance**: per-unit error tolerance to use in the solver. Exponent of the numerical precision. i.e. `4` corresponds to `1e-4` MW in p.u. of precision
+
+- **Automatic precision (find)**:
+    The precision to use for the numerical solvers depends on the magnitude of the power injections.
+    If we are dealing with hundreds of MW, the precision may be `1e-3`, but if we are dealing with Watts, the precision has
+    to be greater. The automatic precision checks the loading for a suitable precision such that the results are fine.
+
+- **Trust radius**: For newton-like methods this is the solution trust radius to use
+- **Max. Iterations**: Maximum number of iterations in the solver.
+- **Verbosity**: Level of verbosity (0: none, 1: some, >=2: all)
+
+Flags:
+
+- **Retry with other methods is failed**:
     This option tries other numerical solvers to try to find a power flow solution.
     This option is relevant because different numerical algorithms may be more suited to certain grid configurations.
     In general the Newton-Raphson implementation in GridCal includes back-tracing and other innovations that make it
     a very competitive method to consider by default.
 
-Automatic precision
-    The precision to use for the numerical solvers depends on the magnitude of the power injections.
-    If we are dealing with hundreds of MW, the precision may be `1e-3`, but if we are dealing with Watts, the precision has
-    to be greater. The automatic precision checks the loading for a suitable precision such that the results are fine.
+- **Use initial guess**: In the buses there are two properties `Vm0`and `Va0` both serve to 
+specify the initial voltage guess. If selected those values are used to initialize the power flow solution.
+- **Ignore single island nodes**: If selected, the islands of 1 one are considered in blackout and not calculated.
+- **3-phase**: If selected a three phase power flow is run. For now only supporting simple local voltage controls.
+- **Distributed slack**: If selected, the slack power is distributed simply among the existing generators.
+- **Control Q limits**: This is the mode of reactive power control for the generators that are set in PV mode. 
+This is a node-level control, so for this to work, there must not be more than one generator per bus. Otherwise a 
+per-node repartition will be made, but the limits respecting cannot be ensured. For that use the AC-OPF.
+- **Control tap module**: If selected the tap module controls are possible, if active at device level.
+- **Control tap phase**: If selected the tap phase controls are possible, if active at device level.
+- **Control remote voltages**: If selected, the remote voltage controls are possible if set at device level.
+- **Orthogonalize controls**: If selected, the controls are "orthogonalized" to their device specified steps. 
+This applies to transformer tap changers and non-linear shunts.
 
-Precision
-    Exponent of the numerical precision. i.e. `4` corresponds to `1e-4` MW in p.u. of precision
-
-Numerical method max. iterations
-    Number of "inner" iterations of the numerical method before terminating.
-
-Outer loop max. iterations
-    Number of "outer loop" iterations to figure out the values of the set controls.
-
-Reactive power control mode
-    This is the mode of reactive power control for the generators that are set in PV mode.
-
-    - No control: The reactive power limits are not enforced.
-    - Direct: The classic pq-pv switching algorithm.
-    - Iterative: An iterative algorithm that uses the power flow as objective function to
-      find suitable reactive power limits.
-
-Q steepness factor (iterative ctrl.)
-    Steepness factor for the iterative reactive power control.
-
-Transformer taps control mode
-
-    - No control: The transformer voltage taps control is not enforced.
-    - Direct:
-    - Iterative:
-
-Apply temperature correction
-    When selected the branches apply the correction of the resistance due to the temperature.
-
-Apply impedance tolerances
-    ???
-
-GridCal has the most power flow features in any open-source software.
-The following table shows the features present in each solver:
-
-|                                                                     | Newton Raphson  |Powell Dog-leg|Levenberg-Marquardt|Iwamoto|Fast-decoupled|Gauss-seidel|Holomorphic embedding|Linear without voltage modules|Linear with voltage modules|
-|---------------------------------------------------------------------|---|---|---|---|---|---|---|---|---|
-| Local voltage control using a Generator.                            |  ✅ | ✅  | ✅  |  ✅ | ✅  | ✅  |  ✅ | ✅ |  ✅ |
-| Remote voltage control using a Generator.                           | ✅  |  ✅ |  ✅ |  ✅ |  ✅ |   |   |   |   |
-| Generator reactive power limits.                                    | ✅  |  ✅ |  ✅ |  ✅ | ✅  |  ✅ |   |   |   |
-| Local and remote voltage control using a transformer's tap changer. | ✅  |  ✅ |  ✅ |   |   |   |   |   |   |
-| Local active power control using a transformer's tap changer.       |  ✅ | ✅  |  ✅ |   |   |   |   |   |   |
-| Local reactive power control using a transformer's tap changer.     | ✅  | ✅  | ✅  |   |   |   |   |   |   |
-| Local and remote AC and DC voltage control using a converter.       | ✅  | ✅  | ✅  |   |   |   |   |   |   |
-| Local AC and DC active power control using converter.               |✅   | ✅  |  ✅ |   |   |   |   |   |   |
-| Local AC reactive power control using a converter.                  | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
-| 3-phase unbalanced.                                                 | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
+- **Initialize angles**: If selected the power flow angles are initialized with a linear power flow. 
+For Holomorphic embedding this is not necessary.
+- **Apply temperature correction**: When selected the branches apply the correction of the resistance due to the temperature.
+- **Apply impedance tolerances**:
+- **Add report**: Inspect the results looking for violations to report in the power flow logger.
 
 
 
@@ -174,6 +172,8 @@ Branch results:
 
 
 ### Running Matpower grids
+
+![GridCal](figures/n_buses_vs_time.png)
 
 Matpower's excellent formulations and consistency has allowed this and other
 projects to develop, relying on its sound math. That is why GridCal reads Matpower
@@ -351,3 +351,617 @@ with mp.Pool(mp.cpu_count()) as p:
 df = pd.DataFrame(data).sort_values(by='n_buses', ascending=False)
 df.to_excel("All matpower grids.xlsx", index=False)
 ```
+
+## Three-phase Unbalanced Power Flow
+
+The power flow problem, or load flow problem, consists of computing the flow of electrical power in a steady-state
+system. In practice, this amounts to calculating the voltage phasor in each bus of the power network.
+Once the bus voltages are known, the other electrical variables are easy to compute. Mathematical equations for the
+power flow problem can be obtained by combining the complex power equation with Ohm's law.
+
+The injected complex power $\vec{S_i}$ can be written as the product of the voltage phasor $\vec{U_i}$ and the
+conjugated current phasor $\vec{I_i}^*$ in the bus $i$.
+
+$$
+\vec{S_i} = \vec{U_i} \vec{I_i}^*
+$$
+
+Ohm's law relates the current $\vec{I_i}$ flowing through the bus $i$ with the bus voltage $\vec{U_i}$ and its
+impedance $\vec{Z_i}$. We can express it in terms of admittance $\vec{Y_i}$, which is the impedance inverse.
+
+$$
+\vec{I_i} = \frac{\vec{U_i}}{\vec{Z_i}} = \vec{Y_i}\vec{U_i}
+$$
+
+Therefore, by substituting the current from the first equation into the second equation, the fundamental expression to
+be solved is obtained as:
+
+$$
+\vec{S_i} = \vec{U_i}(\vec{Y_i}\vec{U_i})^*
+$$
+
+The following magnitudes are defined for each bus $i$:
+
+- $U$: Voltage module.
+- $\delta$: Voltage angle.
+- $P$: Active power injection or consumption.
+- $Q$: Reactive power injection or consumption.
+
+In some buses we artificially define the voltage module and angle (slack buses), in some buses we just know the
+consumption power (load buses or PQ), and in some others we know the active power injection and the voltage module
+(generation buses or PV). Thus, the different bus types are summarised in the following table.
+At least one slack bus is required in order to solve the power flow problem.
+
+|       | $U$      | $\delta$ | $P$      | $Q$      |
+|-------|----------|----------|----------|----------|
+| Slack | Set      | Set      | Computed | Computed |
+| PQ    | Computed | Computed | Set      | Set      |
+| PV    | Set      | Computed | Set      | Computed |
+
+
+### The Newton-Raphson Method
+
+The Newton-Raphson method is used to solve the power flow problem, which consists of a zero-finding algorithm that
+produces successively better approximations to the zeros of a function. A zero of a function $f$ is the $x$ value such
+that $f(x)=0$. The idea is to start with an initial guess $x_0$, then to approximate the function by its tangent line,
+and finally to compute the x-axis interception of this tangent line.
+As shown in the following figure, the $x_1$ interception will typically be a better approximation to the
+function's real zero $x_n$ than the initial guess $x_0$, and the method can be iterated.
+
+![Newton-Raphson Method](figures/3ph_newton_raphson.png "Newton-Raphson Method")
+
+If a function $y=f(x)$ is expanded about an operating point $x_0$ using a Taylor series expansion and ignoring all
+terms of higher order than 1, the following equation can be obtained:
+
+$$
+y = f(x_0) + \frac{df(x_0)}{dx} (x - x_0)
+$$
+
+Returning to the power flow problem and considering again the fundamental equation $\vec{S_i} = \vec{U_i}(\vec{Y_i}\vec{U_i})^*$
+to be solved, it can be noted that it may be expressed as $\vec{S}_i = f(\vec{U}_i)$, in the same way as a generic function $y = f(x)$.
+Therefore, it can be solved using the Newton-Raphson method.
+
+### Solving the Three-phase Unbalanced Power Flow Problem
+
+From the previous consideration, the solution of the function $\vec{S_i} = f(\vec{U_i})$ can be written in the form of 
+the expression above, the fundamental Newton-Raphson expression for the solution of the power flow problem,
+where $J$ is the Jacobian matrix:
+
+$$
+\varDelta \vec{S} = -J \cdot \vec{U}
+$$
+
+If the previous equation is developed such that the complex power is expressed in its respective active $P$ and
+reactive $Q$ components, $J$ is the Jacobian matrix composed by the partial derivatives, and the voltage is isolated
+and expressed in polar coordinates with angle $\delta$ and module $U$. Then, its matrix full representation is as follows:
+
+$$
+\begin{bmatrix}
+\delta \\
+U
+\end{bmatrix}
+=-
+\begin{bmatrix}
+\dfrac{\partial P}{\partial \delta} & \dfrac{\partial P}{\partial U} \\ \\
+\dfrac{\partial Q}{\partial \delta} & \dfrac{\partial Q}{\partial U}
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+\varDelta P \\
+\varDelta Q
+\end{bmatrix}
+$$
+
+Therefore, the system will be solved iteratively until the difference between the specified power $S_\text{spec}$ and
+the calculated power $S_\text{calc}$ is negligible, meaning that the zero of the function has been found:
+
+$$
+\varDelta \vec{S} = \vec{S}_\text{calc} - \vec{S}_\text{spec}
+$$
+
+The calculated power can be obtained using the voltage and the admittance matrices of the lines and
+transformers, as previously developed:
+
+$$
+\vec{S}_\text{calc} = \vec{U} \, (\vec{Y} \, \vec{U})^*
+$$
+
+In contrast, the specified power incorporates the injection values of the different elements defined by
+the user. As previously discussed in the modelling section, these elements may be defined in terms of specified power
+$\vec{S}_0$, current $\vec{I}_0$, or admittance $\vec{Y}_0$. Then, the equivalent specified power is calculated using
+the following expression:
+
+$$
+\vec{S}_\text{spec} = \vec{S}_0 + (\vec{I}_0 + \vec{Y}_0 \, \vec{U})^* \, \vec{U}
+$$
+
+The voltage term $\vec{U}$ is a vector composed by the voltage values at each of the system's buses, and therefore has
+a size equal to $n$, that is, the total number of buses. The admittance term $\vec{Y}$ is a matrix comprising the
+admittance of the lines and transformers, therefore the elements that interconnect the buses with one another.
+As a result, it has a size of $n \times n$.
+
+On the other hand, the specified power and current injection vectors, $\vec{S}_0$ and $\vec{I}_0$, have the same length
+as the voltage vector $\vec{U}$, while the specified admittance $\vec{Y}_0$ has the same dimensions as the branch
+admittance matrix $\vec{Y}$.
+
+One might assume that, in order to formulate a three-phase power flow, it would be sufficient to simply multiply the
+number of buses by three, to account for the $abc$ phases. While this assumption could be valid in transmission systems,
+it does not hold true when we enter the domain of distribution networks. In such systems, all kinds of elements can be
+present, with three-phase, two-phase, and single-phase components.
+
+Since GridCal aims to address both transmission and distribution systems, the assumption of simply tripling the number
+of buses is not sufficient. A more advanced method must be implemented to accurately detect the real number of buses,
+taking into account the presence or absence of the three phases.
+
+This system for detecting the existing phases at each bus must begin with the branches (lines and transformers).
+These are the elements where the presence of phases transporting electrical energy is specified. Based on this
+information, a binary vector, referred to as the bus **mask**, is constructed. This vector contains ones for the phases
+that are present and zeros for those positions where one of the three standard phases is absent.
+
+This mask $M$ must be applied to several variables. The first is the admittance matrix, which will be processed by
+multiplying both its rows and columns by the bus mask. In this way, the entries corresponding to non-existent phases
+are removed. As a result, the matrix remains of size equal to $n \times n$, that this time corresponds to the total
+number of **active buses**.
+
+$$
+\vec{Y}_{\text{masked}} = M \cdot \vec{Y} \cdot M^{\top}
+$$
+
+Considering a simple example of two buses connected through a line that only has phases $a$ and $c$ active, phase $b$
+cannot exist at the second bus. Therefore, the bus mask will contain a zero in that position, effectively removing the
+corresponding rows and columns from the admittance matrix:
+
+![Bus Mask](figures/3ph_mask.png "Bus Mask")
+
+Naturally, the bus mask must also be applied to the voltage vector at each bus in order to eliminate the entries
+corresponding to non-existent buses:
+
+$$
+\vec{U}_{\text{masked}} = M^{\top} \cdot \vec{U}
+$$
+
+And the same operation must be carried out equivalently for the current injection vector and the power vector
+at each bus:
+
+$$
+\vec{I}_{\text{masked}} = M^{\top} \cdot \vec{I}
+$$
+
+$$
+\vec{S}_{\text{masked}} = M^{\top} \cdot \vec{S}
+$$
+
+In this way, all the elements required for the power flow are now correctly dimensioned, and the algorithm can be
+applied in a manner equivalent to the traditional single-phase power flow.
+
+### Benchmark - IEEE 13 Node Test Feeder
+
+To validate the implementation in GridCal of the three-phase power flow algorithm, the IEEE 13 Node Test Feeder has 
+been selected as a reference benchmark. This distribution system model, published by the IEEE Distribution System
+Analysis Subcommittee, represents a typical North American urban radial distribution network.
+
+![IEEE 13 Node Test Feeder](figures/3ph_IEEE_13_Node_Test_Feeder.png "IEEE 13 Node Test Feeder")
+
+The network, depicted in the figure above, includes a variety of distribution elements such as:
+
+- Unbalanced overhead power lines with different phasing configurations (three-phase, two-phase, and single-phase).
+- A distribution transformer between buses 633 and 634.
+- Multiple balanced and unbalanced loads modelled as constant impedance (Z), constant power (P), and constant current (I), with three-phase connections in star (Y) and delta (D), connections between two phases, and also between one phase and the ground.
+- Shunt capacitor banks for reactive power compensation, also with different phasing configurations (three-phase and single-phase).
+
+The base voltage levels of the system are 4,16 kV on the distribution side, with a
+downstream low-voltage level of 0,48 kV at bus 634. The total nominal load is around 3,8 MVA, distributed across
+residential, commercial, and industrial consumers. Due to the network's unbalanced and mixed-phase nature, this test feeder is widely recognised as a challenging yet
+representative case for validating unbalanced power flow solvers.
+
+The following code can be used to model the IEEE 13 Node Test Feeder in GridCal and to perform the three-phase
+unbalanced power flow, obtaining the voltage results depicted bellow.
+
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import WindingType, ShuntConnectionType
+import numpy as np
+
+logger = gce.Logger()
+
+grid = gce.MultiCircuit()
+grid.fBase = 60
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=0)
+bus_632.is_slack = True
+grid.add_bus(obj=bus_632)
+gen = gce.Generator(vset = 1.0)
+grid.add_generator(bus = bus_632, api_obj = gen)
+
+bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
+grid.add_bus(obj=bus_633)
+
+bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0)
+grid.add_bus(obj=bus_634)
+
+bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100*5, ypos=0)
+grid.add_bus(obj=bus_645)
+
+bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-200*5, ypos=0)
+grid.add_bus(obj=bus_646)
+
+bus_652 = gce.Bus(name='652', Vnom=4.16, xpos=-100*5, ypos=200*5)
+grid.add_bus(obj=bus_652)
+
+bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100*5)
+grid.add_bus(obj=bus_671)
+
+bus_675 = gce.Bus(name='675', Vnom=4.16, xpos=200*5, ypos=100*5)
+grid.add_bus(obj=bus_675)
+
+bus_611 = gce.Bus(name='611', Vnom=4.16, xpos=-200*5, ypos=100*5)
+grid.add_bus(obj=bus_611)
+
+bus_680 = gce.Bus(name='680', Vnom=4.16, xpos=0, ypos=200*5)
+grid.add_bus(obj=bus_680)
+
+bus_684 = gce.Bus(name='684', Vnom=4.16, xpos=-100*5, ypos=100*5)
+grid.add_bus(obj=bus_684)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Impedances [Ohm/km]
+# ----------------------------------------------------------------------------------------------------------------------
+z_601 = np.array([
+    [0.3465 + 1j * 1.0179, 0.1560 + 1j * 0.5017, 0.1580 + 1j * 0.4236],
+    [0.1560 + 1j * 0.5017, 0.3375 + 1j * 1.0478, 0.1535 + 1j * 0.3849],
+    [0.1580 + 1j * 0.4236, 0.1535 + 1j * 0.3849, 0.3414 + 1j * 1.0348]
+], dtype=complex) / 1.60934
+
+z_602 = np.array([
+    [0.7526 + 1j * 1.1814, 0.1580 + 1j * 0.4236, 0.1560 + 1j * 0.5017],
+    [0.1580 + 1j * 0.4236, 0.7475 + 1j * 1.1983, 0.1535 + 1j * 0.3849],
+    [0.1560 + 1j * 0.5017, 0.1535 + 1j * 0.3849, 0.7436 + 1j * 1.2112]
+], dtype=complex) / 1.60934
+
+z_603 = np.array([
+    [1.3294 + 1j * 1.3471, 0.2066 + 1j * 0.4591],
+    [0.2066 + 1j * 0.4591, 1.3238 + 1j * 1.3569]
+], dtype=complex) / 1.60934
+
+z_604 = np.array([
+    [1.3238 + 1j * 1.3569, 0.2066 + 1j * 0.4591],
+    [0.2066 + 1j * 0.4591, 1.3294 + 1j * 1.3471]
+], dtype=complex) / 1.60934
+
+z_605 = np.array([
+    [1.3292 + 1j * 1.3475]
+], dtype=complex) / 1.60934
+
+z_606 = np.array([
+    [0.7982 + 1j * 0.4463, 0.3192 + 1j * 0.0328, 0.2849 + 1j * -0.0143],
+    [0.3192 + 1j * 0.0328, 0.7891 + 1j * 0.4041, 0.3192 + 1j * 0.0328],
+    [0.2849 + 1j * -0.0143, 0.3192 + 1j * 0.0328, 0.7982 + 1j * 0.4463]
+], dtype=complex) / 1.60934
+
+z_607 = np.array([
+    [1.3425 + 1j * 0.5124]
+], dtype=complex) / 1.60934
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Admittances [S/km]
+# ----------------------------------------------------------------------------------------------------------------------
+y_601 = np.array([
+    [1j * 6.2998, 1j * -1.9958, 1j * -1.2595],
+    [1j * -1.9958, 1j * 5.9597, 1j * -0.7417],
+    [1j * -1.2595, 1j * -0.7417, 1j * 5.6386]
+], dtype=complex) / 10**6 / 1.60934
+
+y_602 = np.array([
+    [1j * 5.6990, 1j * -1.0817, 1j * -1.6905],
+    [1j * -1.0817, 1j * 5.1795, 1j * -0.6588],
+    [1j * -1.6905, 1j * -0.6588, 1j * 5.4246]
+], dtype=complex) / 10**6 / 1.60934
+
+y_603 = np.array([
+    [1j * 4.7097, 1j * -0.8999],
+    [1j * -0.8999, 1j * 4.6658]
+], dtype=complex) / 10**6 / 1.60934
+
+y_604 = np.array([
+    [1j * 4.6658, 1j * -0.8999],
+    [1j * -0.8999, 1j * 4.7097]
+], dtype=complex) / 10**6 / 1.60934
+
+y_605 = np.array([
+    [1j * 4.5193]
+], dtype=complex) / 10**6 / 1.60934
+
+y_606 = np.array([
+    [1j * 96.8897, 1j * 0.0000, 1j * 0.0000],
+    [1j * 0.0000, 1j * 96.8897, 1j * 0.0000],
+    [1j * 0.0000, 1j * 0.0000, 1j * 96.8897]
+], dtype=complex) / 10**6 / 1.60934
+
+y_607 = np.array([
+    [1j * 88.9912]
+], dtype=complex) / 10**6 / 1.60934
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Loads
+# ----------------------------------------------------------------------------------------------------------------------
+load_634 = gce.Load(P1=0.160,
+                    Q1=0.110,
+                    P2=0.120,
+                    Q2=0.090,
+                    P3=0.120,
+                    Q3=0.090)
+load_634.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus_634, api_obj=load_634)
+
+load_645 = gce.Load(P1=0.0,
+                    Q1=0.0,
+                    P2=0.170,
+                    Q2=0.125,
+                    P3=0.0,
+                    Q3=0.0)
+load_645.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus_645, api_obj=load_645)
+
+load_646 = gce.Load(G1=0.0,
+                    B1=0.0,
+                    G2=0.230,
+                    B2=-0.132,
+                    G3=0.0,
+                    B3=0.0)
+load_646.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus_646, api_obj=load_646)
+
+load_652 = gce.Load(G1=0.128,
+                    B1=-0.086,
+                    G2=0.0,
+                    B2=0.0,
+                    G3=0.0,
+                    B3=0.0)
+load_652.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus_652, api_obj=load_652)
+
+load_671 = gce.Load(P1=0.385,
+                    Q1=0.220,
+                    P2=0.385,
+                    Q2=0.220,
+                    P3=0.385,
+                    Q3=0.220)
+load_671.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus_671, api_obj=load_671)
+
+load_671_692 = gce.Load(Ir1=0.0,
+                        Ii1=0.0,
+                        Ir2=0.0,
+                        Ii2=0.0,
+                        Ir3=0.170,
+                        Ii3=0.151)
+load_671_692.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus_671, api_obj=load_671_692)
+
+load_611 = gce.Load(Ir1=0.0,
+                    Ii1=0.0,
+                    Ir2=0.0,
+                    Ii2=0.0,
+                    Ir3=0.170,
+                    Ii3=0.080)
+load_611.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus_611, api_obj=load_611)
+
+load_632_distrib = gce.Load(P1=0.017/2,
+                            Q1=0.010/2,
+                            P2=0.066/2,
+                            Q2=0.038/2,
+                            P3=0.117/2,
+                            Q3=0.068/2)
+load_632_distrib.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus_632, api_obj=load_632_distrib)
+
+load_671_distrib = gce.Load(P1=0.017/2,
+                            Q1=0.010/2,
+                            P2=0.066/2,
+                            Q2=0.038/2,
+                            P3=0.117/2,
+                            Q3=0.068/2)
+load_671_distrib.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus_671, api_obj=load_671_distrib)
+
+load_675 = gce.Load(P1=0.485,
+                    Q1=0.190,
+                    P2=0.068,
+                    Q2=0.060,
+                    P3=0.290,
+                    Q3=0.212)
+load_675.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus_675, api_obj=load_675)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Capacitors
+# ----------------------------------------------------------------------------------------------------------------------
+cap_675 = gce.Shunt(B1=0.2,
+                    B2=0.2,
+                    B3=0.2)
+cap_675.conn = ShuntConnectionType.GroundedStar
+grid.add_shunt(bus=bus_675, api_obj=cap_675)
+
+cap_611 = gce.Shunt(B1=0.0,
+                    B2=0.0,
+                    B3=0.1)
+cap_611.conn = ShuntConnectionType.GroundedStar
+grid.add_shunt(bus=bus_611, api_obj=cap_611)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Line Configurations
+# ----------------------------------------------------------------------------------------------------------------------
+config_601 = gce.create_known_abc_overhead_template(name='Config. 601',
+                                                    z_abc=z_601,
+                                                    ysh_abc=y_601,
+                                                    phases=np.array([1, 2, 3]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
+grid.add_overhead_line(config_601)
+
+config_602 = gce.create_known_abc_overhead_template(name='Config. 602',
+                                                    z_abc=z_602,
+                                                    ysh_abc=y_602,
+                                                    phases=np.array([1, 2, 3]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
+
+grid.add_overhead_line(config_602)
+
+config_603 = gce.create_known_abc_overhead_template(name='Config. 603',
+                                                    z_abc=z_603,
+                                                    ysh_abc=y_603,
+                                                    phases=np.array([2, 3]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
+
+grid.add_overhead_line(config_603)
+
+config_604 = gce.create_known_abc_overhead_template(name='Config. 604',
+                                                    z_abc=z_604,
+                                                    ysh_abc=y_604,
+                                                    phases=np.array([1, 3]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
+
+grid.add_overhead_line(config_604)
+
+config_605 = gce.create_known_abc_overhead_template(name='Config. 605',
+                                                    z_abc=z_605,
+                                                    ysh_abc=y_605,
+                                                    phases=np.array([3]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
+
+grid.add_overhead_line(config_605)
+
+config_606 = gce.create_known_abc_overhead_template(name='Config. 606',
+                                                    z_abc=z_606,
+                                                    ysh_abc=y_606,
+                                                    phases=np.array([1, 2, 3]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
+
+grid.add_overhead_line(config_606)
+
+config_607 = gce.create_known_abc_overhead_template(name='Config. 607',
+                                                    z_abc=z_607,
+                                                    ysh_abc=y_607,
+                                                    phases=np.array([1]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
+
+grid.add_overhead_line(config_607)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Lines and Transformers
+# ----------------------------------------------------------------------------------------------------------------------
+line_632_645 = gce.Line(bus_from=bus_632,
+                        bus_to=bus_645,
+                        length=500 * 0.0003048)
+line_632_645.apply_template(config_603, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_632_645)
+
+line_645_646 = gce.Line(bus_from=bus_645,
+                        bus_to=bus_646,
+                        length=300 * 0.0003048)
+line_645_646.apply_template(config_603, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_645_646)
+
+line_632_633 = gce.Line(bus_from=bus_632,
+                        bus_to=bus_633,
+                        length=500 * 0.0003048)
+line_632_633.apply_template(config_602, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_632_633)
+
+XFM_1 = gce.Transformer2W(name='XFM-1',
+                          bus_from=bus_633,
+                          bus_to=bus_634,
+                          HV=4.16,
+                          LV=0.48,
+                          nominal_power=0.5,
+                          rate=0.5,
+                          r=1.1*2,
+                          x=2*2)
+XFM_1.conn_f = WindingType.GroundedStar
+XFM_1.conn_t = WindingType.GroundedStar
+grid.add_transformer2w(XFM_1)
+
+line_632_671 = gce.Line(bus_from=bus_632,
+                        bus_to=bus_671,
+                        length= 2000 * 0.0003048)
+line_632_671.apply_template(config_601, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_632_671)
+
+line_671_684 = gce.Line(bus_from=bus_671,
+                        bus_to=bus_684,
+                        length= 300 * 0.0003048)
+line_671_684.apply_template(config_604, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_671_684)
+
+line_684_611 = gce.Line(bus_from=bus_684,
+                        bus_to=bus_611,
+                        length= 300 * 0.0003048)
+line_684_611.apply_template(config_605, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_684_611)
+
+line_684_652 = gce.Line(bus_from=bus_684,
+                        bus_to=bus_652,
+                        length= 800 * 0.0003048)
+line_684_652.apply_template(config_607, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_684_652)
+
+line_671_680 = gce.Line(bus_from=bus_671,
+                        bus_to=bus_680,
+                        length= 1000 * 0.0003048)
+line_671_680.apply_template(config_601, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_671_680)
+
+line_671_675 = gce.Line(bus_from=bus_671,
+                        bus_to=bus_675,
+                        length= 500 * 0.0003048)
+line_671_675.apply_template(config_606, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_671_675)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Run power flow
+# ----------------------------------------------------------------------------------------------------------------------
+res = gce.power_flow(grid=grid, options=gce.PowerFlowOptions(three_phase_unbalanced=True))
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Show the results
+# ----------------------------------------------------------------------------------------------------------------------
+print(res.get_bus_df())
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Save the grid
+# ----------------------------------------------------------------------------------------------------------------------
+gce.save_file(grid, "IEEE 13 Node Test Feeder.gridcal")
+```
+
+#### Phase A
+
+Voltage magnitude:
+![Phase A Voltage Magnitude](figures/3ph_U_a_results.png "Phase A Voltage Magnitude")
+
+Voltage angle:
+![Phase A Voltage Angle](figures/3ph_delta_a_results.png "Phase A Voltage Angle")
+
+#### Phase B:
+
+Voltage magnitude:
+![Phase A Voltage Magnitude](figures/3ph_U_b_results.png "Phase A Voltage Magnitude")
+
+Voltage angle:
+![Phase A Voltage Angle](figures/3ph_delta_b_results.png "Phase A Voltage Angle")
+
+#### Phase C:
+
+Voltage magnitude:
+![Phase A Voltage Magnitude](figures/3ph_U_c_results.png "Phase A Voltage Magnitude")
+
+Voltage angle:
+![Phase A Voltage Angle](figures/3ph_delta_c_results.png "Phase A Voltage Angle")

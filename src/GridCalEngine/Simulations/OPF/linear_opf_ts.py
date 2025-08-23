@@ -34,7 +34,7 @@ from GridCalEngine.DataStructures.fluid_turbine_data import FluidTurbineData
 from GridCalEngine.DataStructures.fluid_pump_data import FluidPumpData
 from GridCalEngine.DataStructures.fluid_p2x_data import FluidP2XData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, DateVec, Mat
-from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lpDot, set_var_bounds, join
+from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lpDot, join
 from GridCalEngine.enumerations import HvdcControlType, ZonalGrouping, MIPSolvers, TapPhaseControl, ConverterControlType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import (LinearAnalysis, LinearMultiContingency,
                                                                      LinearMultiContingencies)
@@ -845,7 +845,7 @@ def add_linear_generation_formulation(t: Union[int, None],
                     gen_vars.cost[t, k] += (gen_data_t.cost_1[k] * gen_vars.p[t, k]) + gen_data_t.cost_0[k]
 
                     if not skip_generation_limits:
-                        set_var_bounds(var=gen_vars.p[t, k],
+                        prob.set_var_bounds(var=gen_vars.p[t, k],
                                        lb=gen_data_t.pmin[k] / Sbase,
                                        ub=gen_data_t.pmax[k] / Sbase)
 
@@ -911,7 +911,7 @@ def add_linear_generation_formulation(t: Union[int, None],
 
                 else:
                     # the generation value is exactly zero
-                    set_var_bounds(var=gen_vars.p[t, k], lb=0.0, ub=0.0)
+                    prob.set_var_bounds(var=gen_vars.p[t, k], lb=0.0, ub=0.0)
 
                 gen_vars.producing[t, k] = 1
                 gen_vars.shutting_down[t, k] = 0
@@ -1031,8 +1031,8 @@ def add_linear_battery_formulation(t: Union[int, None],
 
                     # power boundaries of the generator
                     if not skip_generation_limits:
-                        set_var_bounds(var=p_pos, lb=0, ub=+batt_data_t.pmax[k] / Sbase)
-                        set_var_bounds(var=p_neg, lb=0, ub=-batt_data_t.pmin[k] / Sbase)
+                        prob.set_var_bounds(var=p_pos, lb=0, ub=+batt_data_t.pmax[k] / Sbase)
+                        prob.set_var_bounds(var=p_neg, lb=0, ub=-batt_data_t.pmin[k] / Sbase)
 
                 # compute the time increment in hours
                 if len(time_array) > 1:
@@ -1350,10 +1350,12 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
     for c, contingency in enumerate(linear_multi_contingencies.multi_contingencies):
 
         # compute the contingency flow (Lp expression)
-        contingency_flows, mask = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
-                                                                       injections=bus_vars.Pinj[t_idx, :],
-                                                                       hvdc_flow=hvdc_vars.flows[t_idx, :],
-                                                                       vsc_flow=vsc_vars.flows[t_idx, :])
+        contingency_flows, mask, changed_idx = contingency.get_lp_contingency_flows(
+            base_flow=branch_vars.flows[t_idx, :],
+            injections=bus_vars.Pinj[t_idx, :],
+            hvdc_flow=hvdc_vars.flows[t_idx, :],
+            vsc_flow=vsc_vars.flows[t_idx, :]
+        )
 
         for m, contingency_flow in enumerate(contingency_flows):
 
@@ -1557,7 +1559,7 @@ def add_linear_node_balance(t_idx: int,
 
     Va = np.angle(bus_data.Vbus)
     for i in vd:
-        set_var_bounds(var=bus_vars.Va[t_idx, i], lb=Va[i], ub=Va[i])
+        prob.set_var_bounds(var=bus_vars.Va[t_idx, i], lb=Va[i], ub=Va[i])
 
 
 def add_copper_plate_balance(t_idx: int,

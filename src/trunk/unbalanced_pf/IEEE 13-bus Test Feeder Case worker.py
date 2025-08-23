@@ -1,29 +1,20 @@
 import GridCalEngine.api as gce
-from GridCalEngine import WindingType, ShuntConnectionType, AdmittanceMatrix
+from GridCalEngine import WindingType, ShuntConnectionType
 import numpy as np
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
-import pandas as pd
 
 logger = gce.Logger()
 
 grid = gce.MultiCircuit()
 grid.fBase = 60
 
-"""
-13 Buses
-"""
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
 bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=0)
 bus_632.is_slack = True
 grid.add_bus(obj=bus_632)
 gen = gce.Generator(vset = 1.0)
 grid.add_generator(bus = bus_632, api_obj = gen)
-
-bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100*5, ypos=0)
-grid.add_bus(obj=bus_645)
-
-bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-200*5, ypos=0)
-grid.add_bus(obj=bus_646)
 
 bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
 grid.add_bus(obj=bus_633)
@@ -31,27 +22,33 @@ grid.add_bus(obj=bus_633)
 bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0)
 grid.add_bus(obj=bus_634)
 
-bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100*5)
-grid.add_bus(obj=bus_671)
+bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100*5, ypos=0)
+grid.add_bus(obj=bus_645)
 
-bus_684 = gce.Bus(name='684', Vnom=4.16, xpos=-100*5, ypos=100*5)
-grid.add_bus(obj=bus_684)
-
-bus_611 = gce.Bus(name='611', Vnom=4.16, xpos=-200*5, ypos=100*5)
-grid.add_bus(obj=bus_611)
-
-bus_675 = gce.Bus(name='675', Vnom=4.16, xpos=200*5, ypos=100*5)
-grid.add_bus(obj=bus_675)
-
-bus_680 = gce.Bus(name='680', Vnom=4.16, xpos=0, ypos=200*5)
-grid.add_bus(obj=bus_680)
+bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-200*5, ypos=0)
+grid.add_bus(obj=bus_646)
 
 bus_652 = gce.Bus(name='652', Vnom=4.16, xpos=-100*5, ypos=200*5)
 grid.add_bus(obj=bus_652)
 
-"""
-Impedances [Ohm/km]
-"""
+bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100*5)
+grid.add_bus(obj=bus_671)
+
+bus_675 = gce.Bus(name='675', Vnom=4.16, xpos=200*5, ypos=100*5)
+grid.add_bus(obj=bus_675)
+
+bus_611 = gce.Bus(name='611', Vnom=4.16, xpos=-200*5, ypos=100*5)
+grid.add_bus(obj=bus_611)
+
+bus_680 = gce.Bus(name='680', Vnom=4.16, xpos=0, ypos=200*5)
+grid.add_bus(obj=bus_680)
+
+bus_684 = gce.Bus(name='684', Vnom=4.16, xpos=-100*5, ypos=100*5)
+grid.add_bus(obj=bus_684)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Impedances [Ohm/km]
+# ----------------------------------------------------------------------------------------------------------------------
 z_601 = np.array([
     [0.3465 + 1j * 1.0179, 0.1560 + 1j * 0.5017, 0.1580 + 1j * 0.4236],
     [0.1560 + 1j * 0.5017, 0.3375 + 1j * 1.0478, 0.1535 + 1j * 0.3849],
@@ -88,9 +85,9 @@ z_607 = np.array([
     [1.3425 + 1j * 0.5124]
 ], dtype=complex) / 1.60934
 
-"""
-Admittances [S/km]
-"""
+# ----------------------------------------------------------------------------------------------------------------------
+# Admittances [S/km]
+# ----------------------------------------------------------------------------------------------------------------------
 y_601 = np.array([
     [1j * 6.2998, 1j * -1.9958, 1j * -1.2595],
     [1j * -1.9958, 1j * 5.9597, 1j * -0.7417],
@@ -127,9 +124,9 @@ y_607 = np.array([
     [1j * 88.9912]
 ], dtype=complex) / 10**6 / 1.60934
 
-"""
-Loads
-"""
+# ----------------------------------------------------------------------------------------------------------------------
+# Loads
+# ----------------------------------------------------------------------------------------------------------------------
 load_634 = gce.Load(P1=0.160,
                     Q1=0.110,
                     P2=0.120,
@@ -175,15 +172,6 @@ load_671 = gce.Load(P1=0.385,
 load_671.conn = ShuntConnectionType.Delta
 grid.add_load(bus=bus_671, api_obj=load_671)
 
-load_675 = gce.Load(P1=0.485,
-                    Q1=0.190,
-                    P2=0.068,
-                    Q2=0.060,
-                    P3=0.290,
-                    Q3=0.212)
-load_675.conn = ShuntConnectionType.GroundedStar
-grid.add_load(bus=bus_675, api_obj=load_675)
-
 load_671_692 = gce.Load(Ir1=0.0,
                         Ii1=0.0,
                         Ir2=0.0,
@@ -220,9 +208,18 @@ load_671_distrib = gce.Load(P1=0.017/2,
 load_671_distrib.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_671, api_obj=load_671_distrib)
 
-"""
-Capacitors
-"""
+load_675 = gce.Load(P1=0.485,
+                    Q1=0.190,
+                    P2=0.068,
+                    Q2=0.060,
+                    P3=0.290,
+                    Q3=0.212)
+load_675.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus_675, api_obj=load_675)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Capacitors
+# ----------------------------------------------------------------------------------------------------------------------
 cap_675 = gce.Shunt(B1=0.2,
                     B2=0.2,
                     B3=0.2)
@@ -235,9 +232,9 @@ cap_611 = gce.Shunt(B1=0.0,
 cap_611.conn = ShuntConnectionType.GroundedStar
 grid.add_shunt(bus=bus_611, api_obj=cap_611)
 
-"""
-Line Configurations
-"""
+# ----------------------------------------------------------------------------------------------------------------------
+# Line Configurations
+# ----------------------------------------------------------------------------------------------------------------------
 config_601 = gce.create_known_abc_overhead_template(name='Config. 601',
                                                     z_abc=z_601,
                                                     ysh_abc=y_601,
@@ -300,9 +297,9 @@ config_607 = gce.create_known_abc_overhead_template(name='Config. 607',
 
 grid.add_overhead_line(config_607)
 
-"""
-Lines
-"""
+# ----------------------------------------------------------------------------------------------------------------------
+# Lines and Transformers
+# ----------------------------------------------------------------------------------------------------------------------
 line_632_645 = gce.Line(bus_from=bus_632,
                         bus_to=bus_645,
                         length=500 * 0.0003048)
@@ -321,9 +318,6 @@ line_632_633 = gce.Line(bus_from=bus_632,
 line_632_633.apply_template(config_602, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_632_633)
 
-"""
-Transformer between 633 and 634
-"""
 XFM_1 = gce.Transformer2W(name='XFM-1',
                           bus_from=bus_633,
                           bus_to=bus_634,
@@ -355,12 +349,6 @@ line_684_611 = gce.Line(bus_from=bus_684,
 line_684_611.apply_template(config_605, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_684_611)
 
-line_671_675 = gce.Line(bus_from=bus_671,
-                        bus_to=bus_675,
-                        length= 500 * 0.0003048)
-line_671_675.apply_template(config_606, grid.Sbase, grid.fBase, logger)
-grid.add_line(obj=line_671_675)
-
 line_684_652 = gce.Line(bus_from=bus_684,
                         bus_to=bus_652,
                         length= 800 * 0.0003048)
@@ -373,12 +361,23 @@ line_671_680 = gce.Line(bus_from=bus_671,
 line_671_680.apply_template(config_601, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_671_680)
 
+line_671_675 = gce.Line(bus_from=bus_671,
+                        bus_to=bus_675,
+                        length= 500 * 0.0003048)
+line_671_675.apply_template(config_606, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_671_675)
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Run power flow
 # ----------------------------------------------------------------------------------------------------------------------
-
 res = gce.power_flow(grid=grid, options=gce.PowerFlowOptions(three_phase_unbalanced=True))
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Show the results
+# ----------------------------------------------------------------------------------------------------------------------
 print(res.get_bus_df())
 
-gce.save_file(grid, "IEEE 13 bus (3-phase).gridcal")
+# ----------------------------------------------------------------------------------------------------------------------
+# Save the grid
+# ----------------------------------------------------------------------------------------------------------------------
+gce.save_file(grid, "IEEE 13 Node Test Feeder.gridcal")

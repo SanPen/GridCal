@@ -3,51 +3,76 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-import numpy as np
-from typing import Union, Tuple
-from GridCalEngine.basic_structures import Vec, ConvergenceReport
+from typing import Union
+
+from GridCalEngine.Simulations.StateEstimation.state_estimation_results import StateEstimationResults
+from GridCalEngine.basic_structures import ConvergenceReport
 from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.enumerations import SolverType
 
 
-class StateEstimationResults(PowerFlowResults):
+class StateEstimationOptions:
 
-    def __init__(self, n, m, bus_names, branch_names, hvdc_names, bus_types):
+    def __init__(self, tol: float = 1e-9, max_iter: int = 100, verbose: int = 0,
+                 prefer_correct: bool = True, c_threshold: int = 4.0):
+        """
+        StateEstimationOptions
+        :param tol: Tolerance
+        :param max_iter: Maximum number of iterations
+        :param verbose: Verbosity level (1 light, 2 heavy)
+        :param prefer_correct: Prefer measurement correction? otherwise measurement deletion is used
+        :param c_threshold: confidence threshold (default 4.0)
+        """
+        self.tol = tol
+        self.max_iter = max_iter
+        self.verbose = verbose
+        self.prefer_correct = prefer_correct
+        self.c_threshold = c_threshold
+
+
+class StateEstimationConvergenceReport(ConvergenceReport):
+    def __init__(self) -> None:
+        """
+        Constructor
+        """
+        super().__init__()
+        self.bad_data_detected = list()
+
+    def add_se(self, method,
+               converged: bool,
+               error: float,
+               elapsed: float,
+               iterations: int,
+               bad_data_detected: bool):
         """
 
-        :param n:
-        :param m:
-        :param bus_names:
-        :param branch_names:
-        :param bus_types:
+        :param method:
+        :param converged:
+        :param error:
+        :param elapsed:
+        :param iterations:
+        :param bad_data_detected:
+        :return:
         """
-        # initialize the
-        PowerFlowResults.__init__(self,
-                                  n=n,
-                                  m=m,
-                                  n_hvdc=0,
-                                  n_vsc=0,
-                                  n_gen=0,
-                                  n_batt=0,
-                                  n_sh=0,
-                                  bus_names=bus_names,
-                                  branch_names=branch_names,
-                                  hvdc_names=hvdc_names,
-                                  vsc_names=np.array([]),
-                                  gen_names=np.empty(0, dtype=object),
-                                  batt_names=np.empty(0, dtype=object),
-                                  sh_names=np.empty(0, dtype=object),
-                                  bus_types=bus_types)
+        # Call parent's add method for common parameters
+        self.add(method, converged, error, elapsed, iterations)
+        self.bad_data_detected.append(bad_data_detected)
+
+    def get_bad_data_detected(self) -> list:
+        """
+        Get bad data detection results
+        :return: List of bad data detection results
+        """
+        return self.bad_data_detected
 
 
 class StateEstimation(DriverTemplate):
 
-    def __init__(self, circuit: MultiCircuit):
+    def __init__(self, circuit: MultiCircuit, options: StateEstimationOptions | None = None):
         """
         Constructor
         :param circuit: circuit object
@@ -57,8 +82,10 @@ class StateEstimation(DriverTemplate):
 
         self.results: Union[StateEstimationResults, None] = None
 
+        self.options = StateEstimationOptions() if options is None else options
+
     @staticmethod
-    def collect_measurements(circuit: MultiCircuit, bus_idx, branch_idx):
+    def collect_measurements(circuit: MultiCircuit) -> StateEstimationInput:
         """
         Form the input from the circuit measurements
         :return: nothing, the input object is stored in this class
@@ -77,8 +104,12 @@ class StateEstimation(DriverTemplate):
             se_input.q_inj.append(elm)
 
         for elm in circuit.get_vm_measurements():
-            se_input.vm_m_idx.append(bus_dict[elm.api_object])
-            se_input.vm_m.append(elm)
+            se_input.vm_idx.append(bus_dict[elm.api_object])
+            se_input.vm_value.append(elm)
+
+        for elm in circuit.get_va_measurements():
+            se_input.va_idx.append(bus_dict[elm.api_object])
+            se_input.va_value.append(elm)
 
         # branch measurements
         branch_dict = circuit.get_branches_index_dict(add_vsc=False, add_hvdc=False, add_switch=True)
@@ -87,13 +118,25 @@ class StateEstimation(DriverTemplate):
             se_input.pf_idx.append(branch_dict[elm.api_object])
             se_input.pf_value.append(elm)
 
+        for elm in circuit.get_pt_measurements():
+            se_input.pt_idx.append(branch_dict[elm.api_object])
+            se_input.pt_value.append(elm)
+
         for elm in circuit.get_qf_measurements():
             se_input.qf_idx.append(branch_dict[elm.api_object])
             se_input.qf_value.append(elm)
 
+        for elm in circuit.get_qt_measurements():
+            se_input.qt_idx.append(branch_dict[elm.api_object])
+            se_input.qt_value.append(elm)
+
         for elm in circuit.get_if_measurements():
-            se_input.i_flow_idx.append(branch_dict[elm.api_object])
-            se_input.i_flow.append(elm)
+            se_input.if_idx.append(branch_dict[elm.api_object])
+            se_input.if_value.append(elm)
+
+        for elm in circuit.get_it_measurements():
+            se_input.it_idx.append(branch_dict[elm.api_object])
+            se_input.it_value.append(elm)
 
         return se_input
 
@@ -111,25 +154,34 @@ class StateEstimation(DriverTemplate):
         nc = compile_numerical_circuit_at(self.grid, logger=self.logger)
         self.results = StateEstimationResults(n=n,
                                               m=m,
+                                              n_hvdc=nc.nhvdc,
+                                              n_vsc=nc.nvsc,
+                                              n_gen=nc.ngen,
+                                              n_batt=nc.nbatt,
+                                              n_sh=nc.nshunt,
                                               bus_names=nc.bus_data.names,
                                               branch_names=nc.passive_branch_data.names,
                                               hvdc_names=nc.hvdc_data.names,
+                                              vsc_names=nc.vsc_data.names,
+                                              gen_names=nc.generator_data.names,
+                                              batt_names=nc.battery_data.names,
+                                              sh_names=nc.shunt_data.names,
                                               bus_types=nc.bus_data.bus_types)
         # self.se_results.initialize(n, m)
 
         islands = nc.split_into_islands()
 
+        # collect inputs of the island
+        se_input = self.collect_measurements(circuit=self.grid)
+
         for island in islands:
             idx = island.get_simulation_indices()
             adm = island.get_admittance_matrices()
 
-            # collect inputs of the island
-            se_input = self.collect_measurements(circuit=self.grid,
-                                                 bus_idx=island.bus_data.original_idx,
-                                                 branch_idx=island.passive_branch_data.original_idx)
+            se_input_island = se_input.slice(bus_idx=island.bus_data.original_idx,
+                                             branch_idx=island.passive_branch_data.original_idx)
 
             # run solver
-            report = ConvergenceReport()
             solution = solve_se_lm(nc=island,
                                    Ybus=adm.Ybus,
                                    Yf=adm.Yf,
@@ -137,16 +189,25 @@ class StateEstimation(DriverTemplate):
                                    Yshunt_bus=adm.Yshunt_bus,
                                    F=island.passive_branch_data.F,
                                    T=island.passive_branch_data.T,
-                                   se_input=se_input,
+                                   se_input=se_input_island,
                                    vd=idx.vd,
-                                   pq=idx.pq,
-                                   pv=idx.pv)
+                                   pv=idx.pv,
+                                   no_slack=idx.no_slack,
+                                   tol=self.options.tol,
+                                   max_iter=self.options.max_iter,
+                                   verbose=self.options.verbose,
+                                   prefer_correct=self.options.prefer_correct,
+                                   c_threshold=self.options.c_threshold,
+                                   logger=self.logger)
 
-            report.add(method=SolverType.LM,
-                       converged=solution.converged,
-                       error=solution.norm_f,
-                       elapsed=solution.elapsed,
-                       iterations=solution.iterations)
+            report = StateEstimationConvergenceReport()
+
+            report.add_se(method=SolverType.LM,
+                          converged=solution.converged,
+                          error=solution.norm_f,
+                          elapsed=solution.elapsed,
+                          iterations=solution.iterations,
+                          bad_data_detected=solution.bad_data_detected)
 
             self.results.convergence_reports.append(report)
 

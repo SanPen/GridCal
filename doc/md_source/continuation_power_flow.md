@@ -3,7 +3,7 @@
 
 GridCal can run continuation power flows (voltage collapse studies) 
 
-![](figures/settings-stability.png)
+![](figures/settings-cpf.png)
 
 Max. Iterations
     Number of iteration to perform at each voltage stability (predictor-corrector) stage.

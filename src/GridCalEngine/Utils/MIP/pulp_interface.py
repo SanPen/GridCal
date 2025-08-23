@@ -12,12 +12,15 @@ from __future__ import annotations
 
 from typing import List, Union, Callable, Any
 import subprocess
-import GridCalEngine.Utils.ThirdParty.pulp as pulp
-from GridCalEngine.Utils.ThirdParty.pulp.apis.highs_py import HiGHS
-from GridCalEngine.Utils.ThirdParty.pulp.apis.cplex_cmd import CPLEX_CMD
-from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpAffineExpression as LpExp
-from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpConstraint as LpCst
-from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpVariable as LpVar
+# import GridCalEngine.Utils.ThirdParty.pulp as pulp
+# from GridCalEngine.Utils.ThirdParty.pulp.apis.highs_py import HiGHS
+# from GridCalEngine.Utils.ThirdParty.pulp.apis.cplex_cmd import CPLEX_CMD
+# from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpAffineExpression as LpExp
+# from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpConstraint as LpCst
+# from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpVariable as LpVar
+import pulp
+from pulp import LpVariable as LpVar, LpConstraint as LpCst, LpAffineExpression as LpExp
+from pulp import HiGHS, CPLEX_CMD
 from GridCalEngine.enumerations import MIPSolvers
 from GridCalEngine.basic_structures import Logger
 
@@ -61,18 +64,6 @@ def get_available_mip_solvers() -> List[str]:
     return solvers2
 
 
-def set_var_bounds(var: LpVar, lb: float, ub: float):
-    """
-    Modify the bounds of a variable
-    :param var: LpVar instance to modify
-    :param lb: lower bound value
-    :param ub: upper bound value
-    """
-    if isinstance(var, LpVar):
-        var.upBound = ub
-        var.lowBound = lb
-
-
 class LpModel:
     """
     LPModel implementation for PuLP
@@ -93,6 +84,18 @@ class LpModel:
 
         if self.model is None:
             raise Exception("{} is not present".format(solver_type.value))
+
+    @staticmethod
+    def set_var_bounds(var: LpVar, lb: float, ub: float):
+        """
+        Modify the bounds of a variable
+        :param var: LpVar instance to modify
+        :param lb: lower bound value
+        :param ub: upper bound value
+        """
+        if isinstance(var, LpVar):
+            var.upBound = ub
+            var.lowBound = lb
 
     def save_model(self, file_name: str = "ntc_opf_problem.lp") -> None:
         """
@@ -210,6 +213,10 @@ class LpModel:
             self.logger.add_error(msg=str(e), )
             # Retry with Highs
             status = self.model.solve(solver=HiGHS(mip=self.model.isMIP(), msg=show_logs))
+        except IndexError as e:
+            print("Index error:")
+            print(e)
+            status = 1
 
         if status != self.OPTIMAL:
             self.originally_infeasible = True
@@ -228,7 +235,7 @@ class LpModel:
                 bringing it to optimality.
                 """
 
-                self.logger.add_error(msg="Base probrem could not be solved", value=self.status2string(status))
+                self.logger.add_error(msg="Base problem could not be solved", value=self.status2string(status))
 
                 # deep copy of the original model
                 debug_model = self.model.deepcopy()
@@ -237,7 +244,6 @@ class LpModel:
                 slacks = list()
                 debugging_f_obj = 0
                 for i, (cst_name, cst) in enumerate(debug_model.constraints.items()):
-
                     # create a new slack var in the problem
                     sl = pulp.LpVariable(name=f'Relax_{cst_name}', lowBound=0, upBound=1e20, cat=pulp.LpContinuous)
                     debug_model.addVariable(sl)
@@ -350,6 +356,8 @@ class LpModel:
             val = x.value()
         elif isinstance(x, LpExp):
             val = x.value()
+        elif isinstance(x, LpCst):
+            val = x.values()
         elif isinstance(x, float) or isinstance(x, int):
             return x
         else:

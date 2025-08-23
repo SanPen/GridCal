@@ -1,6 +1,46 @@
 # 💾 File loading and saving
 
 
+To load a grid, just drag & drop the file (or files) into the user interface.
+Alternatively, use the open dialogue and select the file or files.
+You may be presented with a logs dialogue, and in the case of CGMES a 
+new window showing the CGMES information.
+Regardless of the file format, whenever you load a file into GridCal it gets converted to the
+native internal object structures (MultiCircuit). 
+From there you may further edit or export in any of the supported formats.
+
+GridCal supports a great deal of file formats. 
+
+|                    |read   | write |
+|--------------------|-------|-------|
+| GridCal            |✅      | ✅     |
+| Json               |✅      | ✅     |
+| CIM                |✅      | ✅     |
+| CGMES 2.4.15       |✅      | ✅     |
+| CGMES 3.0          |✅      | ✅     |
+| ucte (UCTE)        |✅      |       |
+| m (Matpower)       |✅      |       |
+| p (Pandapower)     |✅      |       |
+| nc (PyPSA)         |✅      |       |
+| raw/rawx (PSS/e)   |✅      | ✅     |
+| epc (PSLF)         |✅      |       |
+| dgs (PowerFactory) |✅      |       |
+
+**Compatibility caveat**
+
+- Install the PandaPower package to load the `.p` format since it is an optional dependency. `pip install pandapower`
+- Install the PyPSA package to load the `.nc` format since it is an optional dependency. `pip install pypsa`
+
+The other supported formats are handled natively.
+
+
+Some additional file settings are found at the Settings>File tab:
+
+![img](figures/settings-file.png)
+
+These are specially relevant for CGMES and raw/rawx formats.
+
+
 ## API
 
 ### Loading a grid

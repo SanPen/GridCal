@@ -8,6 +8,7 @@ from typing import Union
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf, NtcVars
+from GridCalEngine.Simulations.NTC.ntc_opf_strict import run_linear_ntc_opf_strict
 from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityOptions
 from GridCalEngine.Simulations.NTC.ntc_ts_results import OptimalNetTransferCapacityTimeSeriesResults
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
@@ -68,24 +69,45 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         for t_idx, t in enumerate(self.time_indices):
 
-            opf_vars: NtcVars = run_linear_ntc_opf(
-                grid=self.grid,
-                t=t,  # only one time index at a time
-                solver_type=self.options.opf_options.mip_solver,
-                zonal_grouping=self.options.opf_options.zonal_grouping,
-                skip_generation_limits=self.options.skip_generation_limits,
-                consider_contingencies=self.options.consider_contingencies,
-                contingency_groups_used=self.options.opf_options.contingency_groups_used,
-                lodf_threshold=self.options.lin_options.lodf_threshold,
-                bus_a1_idx=self.options.sending_bus_idx,
-                bus_a2_idx=self.options.receiving_bus_idx,
-                logger=self.logger,
-                progress_text=None,
-                progress_func=None,
-                export_model_fname=self.options.opf_options.export_model_fname,
-                verbose=self.options.opf_options.verbose,
-                robust=self.options.opf_options.robust
-            )
+            if self.options.strict_formulation:
+
+                opf_vars: NtcVars = run_linear_ntc_opf_strict(
+                    grid=self.grid,
+                    t=t,  # only one time index at a time
+                    solver_type=self.options.opf_options.mip_solver,
+                    zonal_grouping=self.options.opf_options.zonal_grouping,
+                    skip_generation_limits=self.options.skip_generation_limits,
+                    consider_contingencies=self.options.consider_contingencies,
+                    contingency_groups_used=self.options.opf_options.contingency_groups_used,
+                    lodf_threshold=self.options.lin_options.lodf_threshold,
+                    bus_a1_idx=self.options.sending_bus_idx,
+                    bus_a2_idx=self.options.receiving_bus_idx,
+                    logger=self.logger,
+                    progress_text=None,
+                    progress_func=None,
+                    export_model_fname=self.options.opf_options.export_model_fname,
+                    verbose=self.options.opf_options.verbose,
+                    robust=self.options.opf_options.robust
+                )
+            else:
+                opf_vars: NtcVars = run_linear_ntc_opf(
+                    grid=self.grid,
+                    t=t,  # only one time index at a time
+                    solver_type=self.options.opf_options.mip_solver,
+                    zonal_grouping=self.options.opf_options.zonal_grouping,
+                    skip_generation_limits=self.options.skip_generation_limits,
+                    consider_contingencies=self.options.consider_contingencies,
+                    contingency_groups_used=self.options.opf_options.contingency_groups_used,
+                    lodf_threshold=self.options.lin_options.lodf_threshold,
+                    bus_a1_idx=self.options.sending_bus_idx,
+                    bus_a2_idx=self.options.receiving_bus_idx,
+                    logger=self.logger,
+                    progress_text=None,
+                    progress_func=None,
+                    export_model_fname=self.options.opf_options.export_model_fname,
+                    verbose=self.options.opf_options.verbose,
+                    robust=self.options.opf_options.robust
+                )
 
             if t_idx == 0:
                 # one time results
@@ -101,13 +123,17 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.Sbus[t_idx, :] = opf_vars.bus_vars.Pinj[0, :]
             self.results.dSbus[t_idx, :] = opf_vars.bus_vars.delta_p[0, :]
             self.results.bus_shadow_prices[t_idx, :] = opf_vars.bus_vars.shadow_prices[0, :]
-            self.results.load_shedding[t_idx, :] = opf_vars.bus_vars.load_shedding[0, :]
+
             self.results.nodal_balance[t_idx, :] = opf_vars.bus_vars.Pbalance[0, :]
 
             self.results.Sf[t_idx, :] = opf_vars.branch_vars.flows[0, :]
             self.results.St[t_idx, :] = -opf_vars.branch_vars.flows[0, :]
-            self.results.overloads[t_idx, :] = (opf_vars.branch_vars.flow_slacks_pos[0, :]
-                                                - opf_vars.branch_vars.flow_slacks_neg[0, :])
+
+            if not self.options.strict_formulation:
+                self.results.load_shedding[t_idx, :] = opf_vars.bus_vars.load_shedding[0, :]
+                self.results.overloads[t_idx, :] = (opf_vars.branch_vars.flow_slacks_pos[0, :]
+                                                    - opf_vars.branch_vars.flow_slacks_neg[0, :])
+
             self.results.loading[t_idx, :] = opf_vars.branch_vars.loading[0, :]
             self.results.phase_shift[t_idx, :] = opf_vars.branch_vars.tap_angles[0, :]
 

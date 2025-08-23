@@ -11,8 +11,16 @@ import numpy as np
 from scipy.sparse import csc_matrix
 from GridCalEngine.basic_structures import ObjVec, ObjMat, Vec
 
-# from GridCalEngine.Utils.MIP.SimpleMip import LpExp, LpVar, LpModel, get_available_mip_solvers, set_var_bounds
-from GridCalEngine.Utils.MIP.pulp_interface import LpExp, LpVar, LpModel, get_available_mip_solvers, set_var_bounds
+# from GridCalEngine.Utils.MIP.SimpleMip import LpExp, LpVar, LpModel, get_available_mip_solvers
+from GridCalEngine.Utils.MIP.pulp_interface import LpExp, LpVar, LpModel, get_available_mip_solvers
+# from GridCalEngine.Utils.MIP.gslv_interface import (LpExp, LpVar, LpModel, get_available_mip_solvers)
+
+# try:
+#     from GridCalEngine.Utils.MIP.gslv_interface import (LpExp, LpVar, LpModel, get_available_mip_solvers)
+#     print("Using gslv mip interface")
+# except ImportError:
+#     from GridCalEngine.Utils.MIP.pulp_interface import LpExp, LpVar, LpModel, get_available_mip_solvers
+#     print("Using pulp")
 
 
 def join(init: str, vals: List[int], sep="_"):
@@ -73,3 +81,38 @@ def lpDot(mat: csc_matrix, arr: Union[ObjVec, ObjMat]) -> Union[ObjVec, ObjMat]:
 
     else:
         raise Exception("lpDot: Unsupported number of dimensions")
+
+
+def lpDot1D_changes(mat: csc_matrix, arr: Union[ObjVec, ObjMat]) -> Tuple[ObjVec, List[int]]:
+    """
+    CSC matrix-vector or CSC matrix-matrix dot product (A x b)
+    :param mat: CSC sparse matrix (A)
+    :param arr: dense vector or matrix of object type (b)
+    :return: vector or matrix result of the product
+    """
+    n_rows, n_cols = mat.shape
+
+    # check dimensional compatibility
+    assert (n_cols == arr.shape[0])
+
+    # check that the sparse matrix is indeed of CSC format
+    if mat.format != 'csc':
+        raise Exception("lpDot: Sparse matrix must be in CSC format")
+
+    if arr.ndim == 1:
+        """
+        Uni-dimensional sparse matrix - vector product
+        """
+        res = np.zeros(n_rows, dtype=arr.dtype)
+        indices = list()
+        for i in range(n_cols):
+            for ii in range(mat.indptr[i], mat.indptr[i + 1]):
+                j = mat.indices[ii]  # row index
+                if mat.data[ii] != 0.0:
+                    res[j] += mat.data[ii] * arr[i]  # C.data[ii] is equivalent to C[i, j]
+                    indices.append(j)
+
+        return res, indices
+
+    else:
+        raise Exception("lpDot1D_changes: Unsupported number of dimensions")

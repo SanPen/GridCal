@@ -676,7 +676,7 @@ class BaseDiagramWidget(QSplitter):
                        vsc_loading: Vec = None,
                        vsc_active: IntVec = None,
                        ma: Vec = None,
-                       theta: Vec = None,
+                       tau: Vec = None,
                        fluid_node_p2x_flow: Vec = None,
                        fluid_node_current_level: Vec = None,
                        fluid_node_spillage: Vec = None,
@@ -689,7 +689,8 @@ class BaseDiagramWidget(QSplitter):
                        max_branch_width=5,
                        min_bus_width=20,
                        max_bus_width=20,
-                       cmap: palettes.Colormaps = None):
+                       cmap: palettes.Colormaps = None,
+                       is_three_phase: bool = False):
         """
 
         :param Sbus:
@@ -714,7 +715,7 @@ class BaseDiagramWidget(QSplitter):
         :param vsc_loading:
         :param vsc_active:
         :param ma:
-        :param theta:
+        :param tau:
         :param fluid_node_p2x_flow:
         :param fluid_node_current_level:
         :param fluid_node_spillage:
@@ -728,6 +729,7 @@ class BaseDiagramWidget(QSplitter):
         :param min_bus_width:
         :param max_bus_width:
         :param cmap:
+        :param is_three_phase: the results are three-phase
         :return:
         """
         pass

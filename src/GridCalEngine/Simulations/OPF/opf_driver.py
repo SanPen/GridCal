@@ -99,7 +99,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                 self.logger.add_warning("Overload",
                                         device=name,
                                         value=val * 100,
-                                        expected_value=100.0)
+                                        expected_value=0.0)
 
         va = np.angle(self.results.voltage)
         for i, bus in enumerate(self.grid.buses):
@@ -200,7 +200,6 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                     opf_options=self.options,
                                     pf_options=self.pf_options,
                                     t_idx=None,
-                                    pf_init=self.options.ips_init_with_pf,
                                     logger=self.logger)
             Sbase = self.grid.Sbase
             self.results.voltage = res.V
@@ -216,6 +215,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             self.results.St = res.St * Sbase
             self.results.overloads = (res.sl_sf - res.sl_st) * Sbase
             self.results.loading = res.loading
+            self.results.losses = (self.results.Sf.real + self.results.St.real)
             self.results.phase_shift = res.tap_phase
 
             self.results.hvdc_Pf = res.hvdc_Pf
@@ -299,6 +299,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                 self.results.St = npa_res.St[0, :]
                 self.results.overloads = npa_res.branch_overload[0, :]
                 self.results.loading = npa_res.Loading[0, :]
+                # self.results.losses =
                 self.results.phase_shift = npa_res.tap_angle[0, :]
 
                 self.results.hvdc_Pf = npa_res.hvdc_Pf[0, :]

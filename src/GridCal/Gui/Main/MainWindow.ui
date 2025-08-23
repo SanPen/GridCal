@@ -2770,7 +2770,7 @@
                        <number>0</number>
                       </property>
                       <item>
-                       <widget class="QLineEdit" name="sear_results_lineEdit">
+                       <widget class="QLineEdit" name="search_results_lineEdit">
                         <property name="toolTip">
                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Subjects:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;col, idx, val, colobj, idxobj&lt;/p&gt;&lt;p&gt;colobj and idxobj allow accessing the objects that may be represented at the index or the columns. With these you can access their internal properties for filtering.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Operators:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&amp;gt;, &amp;lt;, &amp;gt;=, &amp;lt;=, !=, =, like, notlike, starts, ends&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Examples:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;The columns should not be column1 or column2, the values should be &amp;gt; 5 and the index be like ab of mn&lt;/span&gt;&lt;/p&gt;&lt;p&gt;-&amp;gt; &lt;span style=&quot; font-style:italic;&quot;&gt;col != [column1, column2] and val &amp;gt; 5 or idx like [ab, mn]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Filter the table values that are between 0.5 and 20&lt;/span&gt;&lt;/p&gt;&lt;p&gt;-&amp;gt; &lt;span style=&quot; font-style:italic;&quot;&gt;val &amp;gt; 0.5 and val &amp;lt; 20.0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                         </property>
@@ -6093,28 +6093,6 @@
                <string>Optimization</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_15">
-               <item row="9" column="0">
-                <widget class="QLabel" name="label_26">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="11" column="0" colspan="2">
-                <widget class="QCheckBox" name="consider_ntc_contingencies_checkBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="toolTip">
-                  <string>If checked, the NTC optimization will use the system declared contingencies</string>
-                 </property>
-                 <property name="text">
-                  <string>Consider constingencies</string>
-                 </property>
-                </widget>
-               </item>
                <item row="7" column="0">
                 <widget class="QCheckBox" name="ntcSelectBasedOnAcerCriteriaCheckBox">
                  <property name="font">
@@ -6127,63 +6105,6 @@
                  </property>
                  <property name="text">
                   <string>Branch rating contribution (ACER)</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="0" colspan="2">
-                <widget class="QLabel" name="label_105">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>36</red>
-                       <green>31</green>
-                       <blue>49</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>0</red>
-                       <green>0</green>
-                       <blue>0</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <pointsize>12</pointsize>
-                   <bold>false</bold>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Contingencies</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_36">
-                 <property name="text">
-                  <string/>
                  </property>
                 </widget>
                </item>
@@ -6205,37 +6126,42 @@
                  </property>
                 </widget>
                </item>
-               <item row="12" column="1">
-                <spacer name="verticalSpacer_23">
-                 <property name="orientation">
-                  <enum>Qt::Orientation::Vertical</enum>
+               <item row="2" column="0">
+                <widget class="QSpinBox" name="trmSpinBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
                  </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>168</height>
-                  </size>
+                 <property name="suffix">
+                  <string> MW</string>
                  </property>
-                </spacer>
+                 <property name="maximum">
+                  <number>1500</number>
+                 </property>
+                 <property name="singleStep">
+                  <number>10</number>
+                 </property>
+                 <property name="value">
+                  <number>400</number>
+                 </property>
+                 <property name="displayIntegerBase">
+                  <number>10</number>
+                 </property>
+                </widget>
                </item>
-               <item row="6" column="0">
-                <widget class="QSpinBox" name="ntcAlphaSpinBox">
+               <item row="11" column="0" colspan="2">
+                <widget class="QCheckBox" name="consider_ntc_contingencies_checkBox">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>Minimum exchange contribution (Alpha)</string>
+                  <string>If checked, the NTC optimization will use the system declared contingencies</string>
                  </property>
-                 <property name="suffix">
-                  <string>%</string>
-                 </property>
-                 <property name="maximum">
-                  <number>100</number>
-                 </property>
-                 <property name="value">
-                  <number>5</number>
+                 <property name="text">
+                  <string>Consider constingencies</string>
                  </property>
                 </widget>
                </item>
@@ -6254,6 +6180,51 @@
                  </property>
                  <property name="checked">
                   <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
+                <widget class="QSpinBox" name="ntcLoadRuleSpinBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="suffix">
+                  <string>%</string>
+                 </property>
+                 <property name="maximum">
+                  <number>100</number>
+                 </property>
+                 <property name="value">
+                  <number>70</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="0">
+                <widget class="QLabel" name="label_26">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="1">
+                <spacer name="verticalSpacer_23">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>168</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_36">
+                 <property name="text">
+                  <string/>
                  </property>
                 </widget>
                </item>
@@ -6310,27 +6281,74 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0">
-                <widget class="QSpinBox" name="trmSpinBox">
+               <item row="10" column="0" colspan="2">
+                <widget class="QLabel" name="label_105">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>36</red>
+                       <green>31</green>
+                       <blue>49</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>0</red>
+                       <green>0</green>
+                       <blue>0</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>12</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Contingencies</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0">
+                <widget class="QSpinBox" name="ntcAlphaSpinBox">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
                   </font>
                  </property>
+                 <property name="toolTip">
+                  <string>Minimum exchange contribution (Alpha)</string>
+                 </property>
                  <property name="suffix">
-                  <string> MW</string>
+                  <string>%</string>
                  </property>
                  <property name="maximum">
-                  <number>1500</number>
-                 </property>
-                 <property name="singleStep">
-                  <number>10</number>
+                  <number>100</number>
                  </property>
                  <property name="value">
-                  <number>400</number>
-                 </property>
-                 <property name="displayIntegerBase">
-                  <number>10</number>
+                  <number>5</number>
                  </property>
                 </widget>
                </item>
@@ -6349,21 +6367,18 @@
                  </property>
                 </widget>
                </item>
-               <item row="8" column="0">
-                <widget class="QSpinBox" name="ntcLoadRuleSpinBox">
+               <item row="12" column="0" colspan="2">
+                <widget class="QCheckBox" name="strict_ntc_formulation_checkBox">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
                   </font>
                  </property>
-                 <property name="suffix">
-                  <string>%</string>
+                 <property name="toolTip">
+                  <string>More strict NTC Formulation: No slacks of any type and specific monitoring criteria</string>
                  </property>
-                 <property name="maximum">
-                  <number>100</number>
-                 </property>
-                 <property name="value">
-                  <number>70</number>
+                 <property name="text">
+                  <string>Strict formulation</string>
                  </property>
                 </widget>
                </item>
@@ -10550,6 +10565,7 @@ QProgressBar::chunk{
     <addaction name="actionInitialize_contingencies"/>
     <addaction name="actionAdd_selected_to_contingency"/>
     <addaction name="actionAdd_selected_as_remedial_action"/>
+    <addaction name="actionSubstation_wizard"/>
     <addaction name="actionFix_generators_active_based_on_the_power"/>
     <addaction name="actionFix_loads_active_based_on_the_power"/>
     <addaction name="actionDelete_inconsistencies"/>
@@ -12303,6 +12319,24 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Grid reduction</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionSubstation_wizard">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/substation.svg</normaloff>:/Icons/icons/substation.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Substation wizard</string>
+   </property>
+   <property name="toolTip">
+    <string>Add substation with a wizard form</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A, Ctrl+S</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

@@ -1,7 +1,7 @@
 # 🎲 Stochastic power flow
 
 
-![](figures/settings-stochastic.png)
+![](figures/settings-ml.png)
 
 Precision
     Monte carlo standard deviation to achieve.

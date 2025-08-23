@@ -16,6 +16,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_typing import (CGMES_TERMINAL, CGMES_TOPOL
                                                      CGMES_CONNECTIVITY_NODE, CGMES_DC_TERMINAL, CGMES_ASSETS)
 
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
+                                                    get_nominal_voltage_for_cn,
                                                     get_pu_values_ac_line_segment,
                                                     get_values_shunt,
                                                     get_pu_values_power_transformer,
@@ -273,12 +274,18 @@ def get_gcdev_dc_device_to_terminal_dict(
 def find_associated_buses(cgmes_elm: CGMES_ASSETS,
                           device_to_terminal_dict: Dict[str, List[CGMES_TERMINAL]],
                           bus_dict: Dict[str, gcdev.Bus],
+                          TopologicalNode_tpe,
+                          DCTopologicalNode_tpe,
                           logger: DataLogger) -> List[gcdev.Bus]:
     """
     This function finds the buses connected to a device
     :param cgmes_elm: some CGMES element
     :param device_to_terminal_dict: dictionary that related the CGMES device to all the terminals it may have
     :param bus_dict: dictionary of GridCal buses
+    :param TopologicalNode_tpe: TopologicalNode type
+                                (might come from different cgmes versions, hence we need to pass the type)
+    :param DCTopologicalNode_tpe: DCTopologicalNode type
+                                  (might come from different cgmes versions, hence we need to pass the type)
     :param logger: DataLogger
     :return: list of associated buses
     """
@@ -288,7 +295,10 @@ def find_associated_buses(cgmes_elm: CGMES_ASSETS,
     if cgmes_terminals is not None:
         buses = list()
         for cgmes_terminal in cgmes_terminals:
-            bus = find_terminal_bus(cgmes_terminal, bus_dict)
+            bus = find_terminal_bus(cgmes_terminal,
+                                    bus_dict,
+                                    TopologicalNode_tpe=TopologicalNode_tpe,
+                                    DCTopologicalNode_tpe=DCTopologicalNode_tpe)
             if bus is not None:
                 buses.append(bus)
     else:
@@ -304,6 +314,9 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                     gc_model: MultiCircuit,
                     v_dict: Dict[str, Tuple[float, float]],
                     cn_look_up: Cn2BusBarLookup,
+                    skip_dc_import: bool,
+                    buses_to_skip: List,
+                    default_nominal_voltage: float,
                     logger: DataLogger) -> Tuple[Dict[str, gcdev.Bus], bool]:
     """
     Convert the TopologicalNodes to Buses (CalculationNodes)
@@ -325,19 +338,26 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
 
     # dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
     calc_node_dict: Dict[str, gcdev.Bus] = dict()
-    for tp_node in cgmes_model.cgmes_assets.TopologicalNode_list:
 
-        voltage = v_dict.get(tp_node.uuid, None)
-        nominal_voltage = get_nominal_voltage(topological_node=tp_node, logger=logger)
+    tp_with_cn = set()
+    TopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("TopologicalNode")
+    DCTopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("DCTopologicalNode")
+    line_tpe = cgmes_model.cgmes_assets.class_dict.get("Line")
+
+    # First convert every CN to a bus
+    for cn_elm in cgmes_model.cgmes_assets.ConnectivityNode_list:
+
+        voltage = v_dict.get(cn_elm.uuid, None)
+        nominal_voltage = get_nominal_voltage_for_cn(cn=cn_elm, logger=logger)
         if nominal_voltage == 0:
             logger.add_error(msg='Nominal voltage is 0. :(',
-                             device=tp_node.rdfid,
-                             device_class=tp_node.tpe,
+                             device=cn_elm.rdfid,
+                             device_class=cn_elm.tpe,
                              device_property="nominalVoltage")
         elif nominal_voltage is None:
             logger.add_error(msg='Nominal voltage is None. Maybe boundary was not attached for import :(',
-                             device=tp_node.rdfid,
-                             device_class=tp_node.tpe,
+                             device=cn_elm.rdfid,
+                             device_class=cn_elm.tpe,
                              device_property="nominalVoltage")
             # raise Exception("Nominal voltage is missing for Bus (Maybe boundary was not attached for import) !")
             return calc_node_dict, True
@@ -348,8 +368,8 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                 va = np.deg2rad(voltage[1])
             else:
                 logger.add_error("Nominal voltage is exactly zero",
-                                 device=tp_node.rdfid,
-                                 device_class=tp_node.tpe,
+                                 device=cn_elm.rdfid,
+                                 device_class=cn_elm.tpe,
                                  device_property="nominalVoltage")
                 vm = 1.0
                 va = 0.0
@@ -358,140 +378,237 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
             va = 0.0
 
         is_slack = False
-        if slack_id == tp_node.rdfid:
+        if slack_id == cn_elm.rdfid:
             is_slack = True
 
-        volt_lev, substat, country, area, zone = None, None, None, None, None
-        longitude, latitude = 0.0, 0.0
-        if tp_node.ConnectivityNodeContainer:
-
-            if isinstance(tp_node.ConnectivityNodeContainer, str):
-                volt_lev: gcdev.VoltageLevel | None = find_object_by_idtag(
-                    object_list=gc_model.voltage_levels,
-                    target_idtag=tp_node.ConnectivityNodeContainer
-                )
-            else:
-                volt_lev: gcdev.VoltageLevel | None = find_object_by_idtag(
-                    object_list=gc_model.voltage_levels,
-                    target_idtag=tp_node.ConnectivityNodeContainer.uuid
-                )
-
-            if volt_lev is None:
-                line_tpe = cgmes_model.cgmes_assets.class_dict.get("Line")
-                if not isinstance(tp_node.ConnectivityNodeContainer, line_tpe):
-                    logger.add_warning(msg='No voltage level found for the bus',
-                                       device=tp_node.rdfid,
-                                       device_class=tp_node.tpe,
-                                       device_property="ConnectivityNodeContainer")
-            else:
-                if volt_lev.substation is not None:
-                    substat: gcdev.Substation | None = find_object_by_idtag(
-                        object_list=gc_model.substations,
-                        target_idtag=volt_lev.substation.idtag
-                    )
-                else:
-                    substat = None
-
-                if substat is None:
-                    logger.add_warning(msg='No substation found for bus.',
-                                       device=volt_lev.rdfid,
-                                       device_class=str(volt_lev),
-                                       device_property="substation")
-                    print(f'No substation found for BUS {tp_node.name}')
-                else:
-                    if cgmes_model.cgmes_map_areas_like_raw:
-                        area = substat.area
-                        zone = substat.zone
-                    else:
-                        country = substat.country
-                    longitude = substat.longitude
-                    latitude = substat.latitude
-        else:
-            logger.add_warning(msg='Missing voltage level.',
-                               device=tp_node.rdfid,
-                               device_class=tp_node.tpe,
-                               device_property="ConnectivityNodeContainer")
-            # else form here get SubRegion and Region for Country...
-
-        gcdev_elm = gcdev.Bus(name=tp_node.name,
-                              idtag=tp_node.uuid,
-                              code=tp_node.description,
-                              Vnom=nominal_voltage,
-                              vmin=0.9,
-                              vmax=1.1,
-                              active=True,
-                              is_slack=is_slack,
-                              is_dc=False,
-                              # is_internal=False,
-                              area=area,
-                              zone=zone,
-                              substation=substat,
-                              voltage_level=volt_lev,
-                              country=country,
-                              latitude=latitude,
-                              longitude=longitude,
-                              Vm0=vm,
-                              Va0=va)
+        gcdev_elm = gcdev.Bus(
+            idtag=cn_elm.uuid,
+            code=cn_elm.description,
+            name=cn_elm.name,
+            Vnom=nominal_voltage,
+            is_slack=is_slack
+        )
 
         gc_model.add_bus(gcdev_elm)
-        cn_look_up.add_bus(bus=gcdev_elm)
+        cn_look_up.add_cn(gcdev_elm)
         calc_node_dict[gcdev_elm.idtag] = gcdev_elm
+
+        # Record the associated TopologicalNode
+        if hasattr(cn_elm, "TopologicalNode"):
+            if isinstance(cn_elm.TopologicalNode, (TopologicalNode_tpe, DCTopologicalNode_tpe)):
+                tp_uid = cn_elm.TopologicalNode.uuid
+                tp_with_cn.add(tp_uid)
+                # we double-record such that the TP is considered later
+                calc_node_dict[tp_uid] = gcdev_elm
+
+    # A TopologicalNode is only converted if there is no ConnectivityNode associated
+    for tp_node in cgmes_model.cgmes_assets.TopologicalNode_list:
+
+        if not (tp_node.uuid in tp_with_cn):  # if this TP does not have an associated CN ...
+
+            voltage = v_dict.get(tp_node.uuid, None)
+            nominal_voltage = get_nominal_voltage(topological_node=tp_node, logger=logger)
+            if nominal_voltage == 0:
+                logger.add_error(msg='Nominal voltage is 0. :(',
+                                 device=tp_node.rdfid,
+                                 device_class=tp_node.tpe,
+                                 device_property="nominalVoltage")
+            elif nominal_voltage is None:
+                logger.add_error(msg='Nominal voltage is None. Maybe boundary was not attached for import :(',
+                                 device=tp_node.rdfid,
+                                 device_class=tp_node.tpe,
+                                 device_property="nominalVoltage")
+                # raise Exception("Nominal voltage is missing for Bus (Maybe boundary was not attached for import) !")
+                return calc_node_dict, True
+
+            if voltage is not None and nominal_voltage is not None:
+                if nominal_voltage != 0.0:
+                    vm = voltage[0] / nominal_voltage
+                    va = np.deg2rad(voltage[1])
+                else:
+                    logger.add_error("Nominal voltage is exactly zero",
+                                     device=tp_node.rdfid,
+                                     device_class=tp_node.tpe,
+                                     device_property="nominalVoltage")
+                    vm = 1.0
+                    va = 0.0
+            else:
+                vm = 1.0
+                va = 0.0
+
+            is_slack = False
+            if slack_id == tp_node.rdfid:
+                is_slack = True
+
+            volt_lev = None
+            substation = None
+            country = None
+            area = None
+            zone = None
+            longitude = 0.0
+            latitude = 0.0
+            if tp_node.ConnectivityNodeContainer is not None:
+
+                if isinstance(tp_node.ConnectivityNodeContainer, str):
+                    volt_lev: gcdev.VoltageLevel | None = find_object_by_idtag(
+                        object_list=gc_model.voltage_levels,
+                        target_idtag=tp_node.ConnectivityNodeContainer
+                    )
+                else:
+                    volt_lev: gcdev.VoltageLevel | None = find_object_by_idtag(
+                        object_list=gc_model.voltage_levels,
+                        target_idtag=tp_node.ConnectivityNodeContainer.uuid
+                    )
+
+                if volt_lev is None:
+                    if not isinstance(tp_node.ConnectivityNodeContainer, line_tpe):
+                        logger.add_warning(msg='No voltage level found for the bus',
+                                           device=tp_node.rdfid,
+                                           device_class=tp_node.tpe,
+                                           device_property="ConnectivityNodeContainer")
+                else:
+                    if volt_lev.substation is not None:
+                        substation: gcdev.Substation | None = find_object_by_idtag(
+                            object_list=gc_model.substations,
+                            target_idtag=volt_lev.substation.idtag
+                        )
+                    else:
+                        substation = None
+
+                    if substation is None:
+                        logger.add_warning(msg='No substation found for bus.',
+                                           device=volt_lev.rdfid,
+                                           device_class=str(volt_lev),
+                                           device_property="substation")
+                        print(f'No substation found for BUS {tp_node.name}')
+                    else:
+                        if cgmes_model.cgmes_map_areas_like_raw:
+                            area = substation.area
+                            zone = substation.zone
+                        else:
+                            country = substation.country
+                        longitude = substation.longitude
+                        latitude = substation.latitude
+            else:
+                logger.add_warning(msg='Missing voltage level.',
+                                   device=tp_node.rdfid,
+                                   device_class=tp_node.tpe,
+                                   device_property="ConnectivityNodeContainer")
+                # else form here get SubRegion and Region for Country...
+
+            gcdev_elm = gcdev.Bus(name=tp_node.name,
+                                  idtag=tp_node.uuid,
+                                  code=tp_node.description,
+                                  Vnom=nominal_voltage,
+                                  vmin=0.9,
+                                  vmax=1.1,
+                                  active=True,
+                                  is_slack=is_slack,
+                                  is_dc=False,
+                                  # is_internal=False,
+                                  area=area,
+                                  zone=zone,
+                                  substation=substation,
+                                  voltage_level=volt_lev,
+                                  country=country,
+                                  latitude=latitude,
+                                  longitude=longitude,
+                                  Vm0=vm,
+                                  Va0=va)
+
+            gc_model.add_bus(gcdev_elm)
+            cn_look_up.add_bus(bus=gcdev_elm)
+            calc_node_dict[gcdev_elm.idtag] = gcdev_elm
+        else:
+            logger.add_info(
+                "TopologicalNode skipped because a ConnectivityNode exists",
+                device_class="TopologicalNode",
+                device=tp_node.uuid)
+
+    # We try to add the DC nodes
+    for cn_elm in cgmes_model.cgmes_assets.DCTopologicalNode_list:
+
+        if not (cn_elm.uuid in tp_with_cn):
+            if cn_elm not in buses_to_skip:
+                gcdev_elm = gcdev.Bus(
+                    name=cn_elm.name,
+                    idtag=cn_elm.uuid,
+                    code=cn_elm.description,
+                    Vnom=default_nominal_voltage,
+                    active=True,
+                    is_slack=False,
+                    is_dc=True,
+                    area=None,  # areas and zones are not created from cgmes models
+                    zone=None,
+                    # substation=substat,
+                    # voltage_level=volt_lev,
+                    # country=country,
+                    # latitude=latitude,
+                    # longitude=longitude,
+                    # Vm0=vm,
+                    # Va0=va
+                )
+
+                if not skip_dc_import:
+                    gc_model.add_bus(gcdev_elm)
+
+                calc_node_dict[gcdev_elm.idtag] = gcdev_elm
 
     return calc_node_dict, False
 
 
-def get_gcdev_dc_buses(cgmes_model: CgmesCircuit,
-                       gc_model: MultiCircuit,
-                       skip_dc_import: bool,
-                       buses_to_skip: List,
-                       logger: DataLogger,
-                       default_nominal_voltage=500.0) -> Dict[str, gcdev.Bus]:
-    """
-    Convert the DCTopologicalNodes to DC Buses (CalculationNodes)
-
-    :param cgmes_model: CgmesCircuit
-    :param gc_model: gcdevCircuit
-    :param buses_to_skip:
-    :param skip_dc_import: If simplified HVDC modelling applied,
-                           DC buses are not imported into MultiCircuit model,
-                           but they are added to dc_bus_dict.
-    :param buses_to_skip: DCGround buses
-    :param logger: DataLogger
-    :param default_nominal_voltage: default nominal voltage for DC nodes since CGMES does not have any...
-    :return:
-    """
-
-    # dictionary relating the DCTopologicalNode uuid to the gcdev Bus (CalculationNode)
-    dc_bus_dict: Dict[str, gcdev.Bus] = dict()
-
-    for cgmes_elm in cgmes_model.cgmes_assets.DCTopologicalNode_list:
-
-        if cgmes_elm not in buses_to_skip:
-            gcdev_elm = gcdev.Bus(
-                name=cgmes_elm.name,
-                idtag=cgmes_elm.uuid,
-                code=cgmes_elm.description,
-                Vnom=default_nominal_voltage,
-                active=True,
-                is_slack=False,
-                is_dc=True,
-                area=None,  # areas and zones are not created from cgmes models
-                zone=None,
-                # substation=substat,
-                # voltage_level=volt_lev,
-                # country=country,
-                # latitude=latitude,
-                # longitude=longitude,
-                # Vm0=vm,
-                # Va0=va
-            )
-
-            if not skip_dc_import:
-                gc_model.add_bus(gcdev_elm)
-
-            dc_bus_dict[gcdev_elm.idtag] = gcdev_elm
-
-    return dc_bus_dict
+# def get_gcdev_dc_buses(cgmes_model: CgmesCircuit,
+#                        gc_model: MultiCircuit,
+#                        skip_dc_import: bool,
+#                        buses_to_skip: List,
+#                        logger: DataLogger,
+#                        default_nominal_voltage=500.0) -> Dict[str, gcdev.Bus]:
+#     """
+#     Convert the DCTopologicalNodes to DC Buses (CalculationNodes)
+#
+#     :param cgmes_model: CgmesCircuit
+#     :param gc_model: gcdevCircuit
+#     :param buses_to_skip:
+#     :param skip_dc_import: If simplified HVDC modelling applied,
+#                            DC buses are not imported into MultiCircuit model,
+#                            but they are added to dc_bus_dict.
+#     :param buses_to_skip: DCGround buses
+#     :param logger: DataLogger
+#     :param default_nominal_voltage: default nominal voltage for DC nodes since CGMES does not have any...
+#     :return:
+#     """
+#
+#     # dictionary relating the DCTopologicalNode uuid to the gcdev Bus (CalculationNode)
+#     dc_bus_dict: Dict[str, gcdev.Bus] = dict()
+#
+#     for cgmes_elm in cgmes_model.cgmes_assets.DCTopologicalNode_list:
+#
+#         if cgmes_elm not in buses_to_skip:
+#             gcdev_elm = gcdev.Bus(
+#                 name=cgmes_elm.name,
+#                 idtag=cgmes_elm.uuid,
+#                 code=cgmes_elm.description,
+#                 Vnom=default_nominal_voltage,
+#                 active=True,
+#                 is_slack=False,
+#                 is_dc=True,
+#                 area=None,  # areas and zones are not created from cgmes models
+#                 zone=None,
+#                 # substation=substat,
+#                 # voltage_level=volt_lev,
+#                 # country=country,
+#                 # latitude=latitude,
+#                 # longitude=longitude,
+#                 # Vm0=vm,
+#                 # Va0=va
+#             )
+#
+#             if not skip_dc_import:
+#                 gc_model.add_bus(gcdev_elm)
+#
+#             dc_bus_dict[gcdev_elm.idtag] = gcdev_elm
+#
+#     return dc_bus_dict
 
 
 def get_gcdev_dc_connectivity_nodes(cgmes_model: CgmesCircuit,
@@ -547,6 +664,8 @@ def get_gcdev_dc_lines(cgmes_model: CgmesCircuit,
     :param logger: DataLogger
     :return: None
     """
+    TopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("TopologicalNode")
+    DCTopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("DCTopologicalNode")
 
     # convert DC lines
     for cgmes_elm in cgmes_model.cgmes_assets.DCLineSegment_list:
@@ -554,6 +673,8 @@ def get_gcdev_dc_lines(cgmes_model: CgmesCircuit,
         calc_nodes = find_associated_buses(cgmes_elm=cgmes_elm,
                                            device_to_terminal_dict=device_to_terminal_dict,
                                            bus_dict=dc_bus_dict,
+                                           TopologicalNode_tpe=TopologicalNode_tpe,
+                                           DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                            logger=logger)
 
         if len(calc_nodes) == 2:
@@ -617,17 +738,23 @@ def get_gcdev_vsc_converters(cgmes_model: CgmesCircuit,
     :param logger: DataLogger
     :return: None
     """
+    TopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("TopologicalNode")
+    DCTopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("DCTopologicalNode")
 
     for cgmes_elm in cgmes_model.cgmes_assets.VsConverter_list:
 
         bus_dc = find_associated_buses(cgmes_elm=cgmes_elm,
                                        device_to_terminal_dict=dc_device_to_terminal_dict,
                                        bus_dict=dc_bus_dict,
+                                       TopologicalNode_tpe=TopologicalNode_tpe,
+                                       DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                        logger=logger)
 
         bus_ac = find_associated_buses(cgmes_elm=cgmes_elm,
                                        device_to_terminal_dict=device_to_terminal_dict,
                                        bus_dict=bus_dict,
+                                       TopologicalNode_tpe=TopologicalNode_tpe,
+                                       DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                        logger=logger)
 
         if len(bus_dc) == 1 and len(bus_ac) == 1:
@@ -683,6 +810,8 @@ def get_gcdev_hvdc_from_dcline_and_vscs(
     :param logger: DataLogger
     :return: None
     """
+    TopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("TopologicalNode")
+    DCTopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("DCTopologicalNode")
 
     for dc_line_sgm in cgmes_model.cgmes_assets.DCLineSegment_list:
         # or in more general it is DCLine_list
@@ -690,6 +819,8 @@ def get_gcdev_hvdc_from_dcline_and_vscs(
         dc_buses = find_associated_buses(cgmes_elm=dc_line_sgm,
                                          device_to_terminal_dict=dc_device_to_terminal_dict,
                                          bus_dict=dc_bus_dict,
+                                         TopologicalNode_tpe=TopologicalNode_tpe,
+                                         DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                          logger=logger)
 
         # get the cgmes terminal of this device
@@ -719,12 +850,16 @@ def get_gcdev_hvdc_from_dcline_and_vscs(
             bus_from = find_associated_buses(cgmes_elm=vsc_list[0],
                                              device_to_terminal_dict=device_to_terminal_dict,
                                              bus_dict=bus_dict,
+                                             TopologicalNode_tpe=TopologicalNode_tpe,
+                                             DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                              logger=logger)
 
             # bus_to: AC side of VSC 2
             bus_to = find_associated_buses(cgmes_elm=vsc_list[1],
                                            device_to_terminal_dict=device_to_terminal_dict,
                                            bus_dict=bus_dict,
+                                           TopologicalNode_tpe=TopologicalNode_tpe,
+                                           DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                            logger=logger)
 
             rated_udc = getattr(vsc_list[0], 'ratedUdc', None)
@@ -773,55 +908,55 @@ def get_gcdev_branch_groups(cgmes_model: CgmesCircuit,
         gcdev_model.add_branch_group(gcdev_elm)
 
 
-def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
-                                 gcdev_model: MultiCircuit,
-                                 calc_node_dict: Dict[str, gcdev.Bus],
-                                 cn_look_up: Cn2BusBarLookup,
-                                 logger: DataLogger) -> Dict[str, gcdev.Bus]:
-    """
-    Convert the ConnectivityNodes to GridCal Buses
-
-    :param calc_node_dict: dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
-             Dict[str, gcdev.Bus]
-    :param cgmes_model: CgmesCircuit
-    :param gcdev_model: gcdevCircuit
-    :param cn_look_up: CnLookUp
-    :param logger: DataLogger
-    :return: dictionary relating the ConnectivityNode uuid to the gcdev CalculationNode
-             Dict[str, gcdev.Bus]
-    """
-    # dictionary relating the ConnectivityNode uuid to the gcdev ConnectivityNode
-    cn_node_dict: Dict[str, gcdev.Bus] = dict()
-    used_buses = set()
-    for cgmes_elm in cgmes_model.cgmes_assets.ConnectivityNode_list:
-        bus: gcdev.Bus = calc_node_dict.get(cgmes_elm.TopologicalNode.uuid, None)
-        # vnom, vl = 10, None
-        # if bus is None:
-        #     logger.add_error(msg='No Bus found',
-        #                      device=cgmes_elm.rdfid,
-        #                      device_class=cgmes_elm.tpe)
-        #     default_bus = None
-        # else:
-        #     if bus not in used_buses:
-        #         default_bus = bus
-        #         used_buses.add(bus)
-        #     else:
-        #         default_bus = bus
-        #         # for the new TP processor, a CN always has to have a TP(/Bus)
-        #     vnom = bus.Vnom
-        #     vl = bus.voltage_level
-
-        gcdev_elm = gcdev.Bus(
-            idtag=cgmes_elm.uuid,
-            code=cgmes_elm.description,
-            name=cgmes_elm.name,
-        )
-
-        gcdev_model.add_bus(gcdev_elm)
-        cn_look_up.add_cn(gcdev_elm)
-        cn_node_dict[gcdev_elm.idtag] = gcdev_elm
-
-    return cn_node_dict
+# def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
+#                                  gcdev_model: MultiCircuit,
+#                                  calc_node_dict: Dict[str, gcdev.Bus],
+#                                  cn_look_up: Cn2BusBarLookup,
+#                                  logger: DataLogger) -> Dict[str, gcdev.Bus]:
+#     """
+#     Convert the ConnectivityNodes to GridCal Buses
+#
+#     :param calc_node_dict: dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
+#              Dict[str, gcdev.Bus]
+#     :param cgmes_model: CgmesCircuit
+#     :param gcdev_model: gcdevCircuit
+#     :param cn_look_up: CnLookUp
+#     :param logger: DataLogger
+#     :return: dictionary relating the ConnectivityNode uuid to the gcdev CalculationNode
+#              Dict[str, gcdev.Bus]
+#     """
+#     # dictionary relating the ConnectivityNode uuid to the gcdev ConnectivityNode
+#     cn_node_dict: Dict[str, gcdev.Bus] = dict()
+#     used_buses = set()
+#     for cgmes_elm in cgmes_model.cgmes_assets.ConnectivityNode_list:
+#         bus: gcdev.Bus = calc_node_dict.get(cgmes_elm.TopologicalNode.uuid, None)
+#         # vnom, vl = 10, None
+#         # if bus is None:
+#         #     logger.add_error(msg='No Bus found',
+#         #                      device=cgmes_elm.rdfid,
+#         #                      device_class=cgmes_elm.tpe)
+#         #     default_bus = None
+#         # else:
+#         #     if bus not in used_buses:
+#         #         default_bus = bus
+#         #         used_buses.add(bus)
+#         #     else:
+#         #         default_bus = bus
+#         #         # for the new TP processor, a CN always has to have a TP(/Bus)
+#         #     vnom = bus.Vnom
+#         #     vl = bus.voltage_level
+#
+#         gcdev_elm = gcdev.Bus(
+#             idtag=cgmes_elm.uuid,
+#             code=cgmes_elm.description,
+#             name=cgmes_elm.name,
+#         )
+#
+#         gcdev_model.add_bus(gcdev_elm)
+#         cn_look_up.add_cn(gcdev_elm)
+#         cn_node_dict[gcdev_elm.idtag] = gcdev_elm
+#
+#     return cn_node_dict
 
 
 def get_gcdev_loads(cgmes_model: CgmesCircuit,
@@ -837,6 +972,9 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
     :param device_to_terminal_dict: Dict[str, Terminal]
     :param logger:
     """
+    TopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("TopologicalNode")
+    DCTopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("DCTopologicalNode")
+
     # convert loads
     for device_list in [cgmes_model.cgmes_assets.EnergyConsumer_list,
                         cgmes_model.cgmes_assets.ConformLoad_list,
@@ -846,6 +984,8 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
             calc_nodes = find_associated_buses(cgmes_elm=cgmes_elm,
                                                device_to_terminal_dict=device_to_terminal_dict,
                                                bus_dict=bus_dict,
+                                               TopologicalNode_tpe=TopologicalNode_tpe,
+                                               DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                                logger=logger)
 
             if len(calc_nodes) == 1:
@@ -920,6 +1060,9 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
     :param device_to_terminal_dict: Dict[str, Terminal]
     :param logger: Logger object
     """
+    TopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("TopologicalNode")
+    DCTopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("DCTopologicalNode")
+
     # add generation technologies
     general_tech = gcdev.Technology(idtag='', code='', name='General')
     thermal_tech = gcdev.Technology(idtag='', code='', name='Thermal')
@@ -954,6 +1097,8 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
             calc_nodes = find_associated_buses(cgmes_elm=cgmes_elm,
                                                device_to_terminal_dict=device_to_terminal_dict,
                                                bus_dict=bus_dict,
+                                               TopologicalNode_tpe=TopologicalNode_tpe,
+                                               DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                                logger=logger)
 
             if len(calc_nodes) == 1:
@@ -966,6 +1111,8 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                             cgmes_elm=cgmes_elm,
                             cgmes_enums=cgmes_enums,
                             bus_dict=bus_dict,
+                            TopologicalNode_tpe=TopologicalNode_tpe,
+                            DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                             logger=logger
                         ))
 
@@ -1035,6 +1182,9 @@ def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
     :param device_to_terminal_dict: Dict[str, Terminal]
     :param logger:
     """
+    TopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("TopologicalNode")
+    DCTopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("DCTopologicalNode")
+
     # convert loads
     for device_list in [cgmes_model.cgmes_assets.EquivalentInjection_list]:
         # TODO ExternalNetworkInjection
@@ -1042,6 +1192,8 @@ def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
             calc_nodes = find_associated_buses(cgmes_elm=cgmes_elm,
                                                device_to_terminal_dict=device_to_terminal_dict,
                                                bus_dict=calc_node_dict,
+                                               TopologicalNode_tpe=TopologicalNode_tpe,
+                                               DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                                logger=logger)
 
             if len(calc_nodes) == 1:
@@ -1111,12 +1263,17 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
     #                 branch_id = e.OperationalLimitSet.Terminal.ConductingEquipment.uuid
     #                 rates_dict[branch_id] = e.value
 
+    TopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("TopologicalNode")
+    DCTopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("DCTopologicalNode")
+
     # convert ac lines
     for device_list in [cgmes_model.cgmes_assets.ACLineSegment_list]:
         for cgmes_elm in device_list:
             calc_nodes = find_associated_buses(cgmes_elm=cgmes_elm,
                                                device_to_terminal_dict=device_to_terminal_dict,
                                                bus_dict=bus_dict,
+                                               TopologicalNode_tpe=TopologicalNode_tpe,
+                                               DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                                logger=logger)
 
             if len(calc_nodes) == 2:
@@ -1283,6 +1440,9 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
     :return: None
     """
 
+    TopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("TopologicalNode")
+    DCTopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("DCTopologicalNode")
+
     # build the ratings dictionary
     trafo_type = cgmes_model.assets.PowerTransformer
     (patl_dict, tatl_900_dict, tatl_60_dict) = build_cgmes_limit_dicts(cgmes_model, trafo_type, logger)
@@ -1315,6 +1475,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
             calc_nodes = find_associated_buses(cgmes_elm=cgmes_elm,
                                                device_to_terminal_dict=device_to_terminal_dict,
                                                bus_dict=bus_dict,
+                                               TopologicalNode_tpe=TopologicalNode_tpe,
+                                               DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                                logger=logger)
 
             if len(windings) == 2:
@@ -1485,19 +1647,21 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
 
 def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                                  gcdev_model: MultiCircuit,
-                                 calc_node_dict: Dict[str, gcdev.Bus],
-                                 cn_dict: Dict[str, gcdev.Bus],
+                                 bus_dict: Dict[str, gcdev.Bus],
                                  logger: DataLogger) -> None:
     """
     Process Tap Changer Classes from CGMES and put them into GridCal transformers.
 
     :param cgmes_model: CgmesModel
     :param gcdev_model: MultiCircuit
-    :param calc_node_dict: Dict[str, gcdev.Bus]
-    :param cn_dict: Dict[str, gcdev.Bus]
+    :param bus_dict: Dict[str, gcdev.Bus]
     :param logger:
     :return:
     """
+
+    TopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("TopologicalNode")
+    DCTopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("DCTopologicalNode")
+
     ratio_tc_class = cgmes_model.assets.RatioTapChanger
     phase_sy_class = cgmes_model.assets.PhaseTapChangerSymmetrical
     phase_as_class = cgmes_model.assets.PhaseTapChangerAsymmetrical
@@ -1528,7 +1692,9 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
 
                         reg_bus = find_terminal_bus(
                             cgmes_terminal=tap_changer.TapChangerControl.Terminal,
-                            bus_dict=calc_node_dict,
+                            bus_dict=bus_dict,
+                            TopologicalNode_tpe=TopologicalNode_tpe,
+                            DCTopologicalNode_tpe=DCTopologicalNode_tpe
                         )
                 else:
                     logger.add_warning(msg="No TapChangerControl found for RatioTapChanger",
@@ -1720,6 +1886,9 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
     :param device_to_terminal_dict: Dict[str, Terminal]
     :param logger:
     """
+    TopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("TopologicalNode")
+    DCTopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("DCTopologicalNode")
+
     # convert shunts
     for device_list in [cgmes_model.cgmes_assets.EquivalentShunt_list]:
 
@@ -1728,6 +1897,8 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
             calc_nodes = find_associated_buses(cgmes_elm=cgmes_elm,
                                                device_to_terminal_dict=device_to_terminal_dict,
                                                bus_dict=calc_node_dict,
+                                               TopologicalNode_tpe=TopologicalNode_tpe,
+                                               DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                                logger=logger)
 
             if len(calc_nodes) == 1:
@@ -1775,12 +1946,17 @@ def get_gcdev_controllable_shunts(
     :param Sbase: base power (100 MVA)
     :param logger:
     """
+    TopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("TopologicalNode")
+    DCTopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("DCTopologicalNode")
+
     # LINEAR
     for cgmes_elm in cgmes_model.cgmes_assets.LinearShuntCompensator_list:
 
         calc_nodes = find_associated_buses(cgmes_elm=cgmes_elm,
                                            device_to_terminal_dict=device_to_terminal_dict,
                                            bus_dict=bus_dict,
+                                           TopologicalNode_tpe=TopologicalNode_tpe,
+                                           DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                            logger=logger)
 
         if len(calc_nodes) == 1:
@@ -1796,6 +1972,8 @@ def get_gcdev_controllable_shunts(
                     cgmes_elm=cgmes_elm,
                     cgmes_enums=cgmes_enums,
                     bus_dict=bus_dict,
+                    TopologicalNode_tpe=TopologicalNode_tpe,
+                    DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                     logger=logger
                 ))
 
@@ -1833,6 +2011,8 @@ def get_gcdev_controllable_shunts(
         calc_nodes = find_associated_buses(cgmes_elm=cgmes_elm,
                                            device_to_terminal_dict=device_to_terminal_dict,
                                            bus_dict=bus_dict,
+                                           TopologicalNode_tpe=TopologicalNode_tpe,
+                                           DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                            logger=logger)
 
         if len(calc_nodes) == 1:
@@ -1848,6 +2028,8 @@ def get_gcdev_controllable_shunts(
                     cgmes_elm=cgmes_elm,
                     cgmes_enums=cgmes_enums,
                     bus_dict=bus_dict,
+                    TopologicalNode_tpe=TopologicalNode_tpe,
+                    DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                     logger=logger
                 ))
 
@@ -1914,6 +2096,9 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
     :param logger: DataLogger
     :return: None
     """
+    TopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("TopologicalNode")
+    DCTopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("DCTopologicalNode")
+
     # Build the ratings dictionary
     rates_dict = {}
 
@@ -1960,6 +2145,8 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
             calc_nodes = find_associated_buses(cgmes_elm=cgmes_elm,
                                                device_to_terminal_dict=device_to_terminal_dict,
                                                bus_dict=bus_dict,
+                                               TopologicalNode_tpe=TopologicalNode_tpe,
+                                               DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                                logger=logger)
 
             if len(calc_nodes) == 2:
@@ -2130,6 +2317,9 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
     """
     vl_dict = {elm.idtag: elm for elm in gcdev_model.voltage_levels}
 
+    TopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("TopologicalNode")
+    DCTopologicalNode_tpe = cgmes_model.cgmes_assets.class_dict.get("DCTopologicalNode")
+
     # convert busbars
     for device_list in [cgmes_model.cgmes_assets.BusbarSection_list]:
 
@@ -2138,6 +2328,8 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
             calc_nodes = find_associated_buses(cgmes_elm=cgmes_elm,
                                                device_to_terminal_dict=device_to_terminal_dict,
                                                bus_dict=calc_node_dict,
+                                               TopologicalNode_tpe=TopologicalNode_tpe,
+                                               DCTopologicalNode_tpe=DCTopologicalNode_tpe,
                                                logger=logger)
 
             if len(calc_nodes) == 1:
@@ -2316,20 +2508,32 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     device_to_terminal_dict = get_gcdev_device_to_terminal_dict(cgmes_model=cgmes_model,
                                                                 logger=logger)
 
+    dc_device_to_terminal_dict, ground_buses, ground_nodes = get_gcdev_dc_device_to_terminal_dict(
+        cgmes_model=cgmes_model,
+        logger=logger
+    )
+
+    # NOTE: In gridCal there are only buses (as it should be)
+    # hence, the ConnectivityNodes and TopologicalNodes are
+    # converted to buses giving priority to the ConnectivityNodes
     bus_dict, fatal_error = get_gcdev_buses(cgmes_model=cgmes_model,
                                             gc_model=gc_model,
                                             v_dict=sv_volt_dict,
                                             cn_look_up=cn_look_up,
+                                            skip_dc_import=map_dc_to_hvdc_line,
+                                            buses_to_skip=ground_buses,
+                                            default_nominal_voltage=500.0,
                                             logger=logger)
 
     if fatal_error:
         return gc_model
 
-    cn_dict = get_gcdev_connectivity_nodes(cgmes_model=cgmes_model,
-                                           gcdev_model=gc_model,
-                                           calc_node_dict=bus_dict,
-                                           cn_look_up=cn_look_up,
-                                           logger=logger)
+    # cn_dict = get_gcdev_connectivity_nodes(cgmes_model=cgmes_model,
+    #                                        gcdev_model=gc_model,
+    #                                        calc_node_dict=bus_dict,
+    #                                        cn_look_up=cn_look_up,
+    #                                        logger=logger)
+
     cgmes_model.emit_progress(78)
     get_gcdev_busbars(cgmes_model=cgmes_model,
                       gcdev_model=gc_model,
@@ -2373,8 +2577,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
 
     get_transformer_tap_changers(cgmes_model=cgmes_model,
                                  gcdev_model=gc_model,
-                                 calc_node_dict=bus_dict,
-                                 cn_dict=cn_dict,
+                                 bus_dict=bus_dict,
                                  logger=logger)
 
     get_gcdev_shunts(cgmes_model=cgmes_model,
@@ -2407,19 +2610,19 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
         logger=logger
     )
 
-    dc_bus_dict = get_gcdev_dc_buses(
-        cgmes_model=cgmes_model,
-        gc_model=gc_model,
-        skip_dc_import=map_dc_to_hvdc_line,
-        buses_to_skip=ground_buses,
-        logger=logger
-    )
+    # dc_bus_dict = get_gcdev_dc_buses(
+    #     cgmes_model=cgmes_model,
+    #     gc_model=gc_model,
+    #     skip_dc_import=map_dc_to_hvdc_line,
+    #     buses_to_skip=ground_buses,
+    #     logger=logger
+    # )
 
     dc_cn_dict = get_gcdev_dc_connectivity_nodes(
         cgmes_model=cgmes_model,
         gc_model=gc_model,
         skip_dc_import=map_dc_to_hvdc_line,
-        dc_bus_dict=dc_bus_dict,
+        dc_bus_dict=bus_dict,
         logger=logger
     )
 
@@ -2432,7 +2635,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
         get_gcdev_hvdc_from_dcline_and_vscs(
             cgmes_model=cgmes_model,
             gcdev_model=gc_model,
-            dc_bus_dict=dc_bus_dict,
+            dc_bus_dict=bus_dict,
             dc_device_to_terminal_dict=dc_device_to_terminal_dict,
             bus_dict=bus_dict,
             device_to_terminal_dict=device_to_terminal_dict,
@@ -2448,7 +2651,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
         get_gcdev_dc_lines(
             cgmes_model=cgmes_model,
             gcdev_model=gc_model,
-            dc_bus_dict=dc_bus_dict,
+            dc_bus_dict=bus_dict,
             device_to_terminal_dict=dc_device_to_terminal_dict,
             logger=logger,
         )
@@ -2456,7 +2659,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
         get_gcdev_vsc_converters(
             cgmes_model=cgmes_model,
             gcdev_model=gc_model,
-            dc_bus_dict=dc_bus_dict,
+            dc_bus_dict=bus_dict,
             dc_device_to_terminal_dict=dc_device_to_terminal_dict,
             bus_dict=bus_dict,
             device_to_terminal_dict=device_to_terminal_dict,

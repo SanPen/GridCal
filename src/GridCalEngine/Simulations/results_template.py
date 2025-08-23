@@ -474,7 +474,11 @@ class ResultsTemplate:
                 curr_value = getattr(self, res_prop.name)
 
                 if isinstance(curr_value, np.ndarray):
-                    if curr_value.shape == array.shape:
+
+                    # if results arrays are exactly 0, don't check
+                    dont_check = sum(curr_value.shape) == 0
+
+                    if curr_value.shape == array.shape or dont_check:
                         setattr(self, res_prop.name, array)
                     else:
                         logger.add_error(msg="Wrong array shape",

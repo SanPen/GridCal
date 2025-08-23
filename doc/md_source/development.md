@@ -2,8 +2,11 @@
 
 ## Contributing
 
-You have found a bug in **GridCal** or have a suggestion for a new functionality? Then
-get in touch with us by opening up an issue on the issue board to discuss possible new
+Have you found a bug in **GridCal** or have a suggestion for a new functionality? Then
+get in touch with us by opening up an issue on the 
+[issue board](https://github.com/SanPen/GridCal/issues) 
+or [join the community discord chat](https://discord.com/invite/dzxctaNbvu) 
+to discuss possible new
 developments with the community and the maintainers.
 
 ### Setup your git repository

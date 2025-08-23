@@ -28,7 +28,7 @@ class Battery(Generator):
         'energy',
     )
 
-    def __init__(self, name='batt', idtag=None, P=0.0, power_factor=0.8, vset=1.0,
+    def __init__(self, name='batt', idtag=None, code="", P=0.0, power_factor=0.8, vset=1.0,
                  is_controlled=True, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999,
                  Pmin=-9999, Pmax=9999,
                  Cost=1.0, active=True, Sbase=100,
@@ -77,6 +77,7 @@ class Battery(Generator):
         """
         Generator.__init__(self, name=name,
                            idtag=idtag,
+                           code=code,
                            P=P,
                            power_factor=power_factor,
                            vset=vset,

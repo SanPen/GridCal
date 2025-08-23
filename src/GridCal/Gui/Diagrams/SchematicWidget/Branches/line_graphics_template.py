@@ -30,6 +30,7 @@ from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.enumerations import SwitchGraphicType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -221,13 +222,22 @@ class SeriesReactanceSymbol(VscSymbol):
 
 class SwitchSymbol(VscSymbol):
     """
-    UpfcSymbol
+    SwitchSymbol
     """
 
     def __init__(self, parent, pen_width, h=30, w=30):
         VscSymbol.__init__(self, parent=parent, pen_width=pen_width, h=h, w=w,
                            icon_route=":/Icons/icons/switch.svg")
 
+
+class DisconnectorSymbol(VscSymbol):
+    """
+    DisconnectorSymbol
+    """
+
+    def __init__(self, parent, pen_width, h=30, w=30):
+        VscSymbol.__init__(self, parent=parent, pen_width=pen_width, h=h, w=w,
+                           icon_route=":/Icons/icons/disconnector.svg")
 
 class HvdcSymbol(QGraphicsRectItem):
     """
@@ -480,7 +490,12 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         elif isinstance(api_object, SeriesReactance):
             self.symbol = SeriesReactanceSymbol(parent=self, pen_width=width, h=30, w=30)
         elif isinstance(api_object, Switch):
-            self.symbol = SwitchSymbol(parent=self, pen_width=width, h=30, w=30)
+            if api_object.graphic_type == SwitchGraphicType.CircuitBreaker:
+                self.symbol = SwitchSymbol(parent=self, pen_width=width, h=30, w=30)
+            elif api_object.graphic_type == SwitchGraphicType.Disconnector:
+                self.symbol = DisconnectorSymbol(parent=self, pen_width=width, h=30, w=30)
+            else:
+                self.symbol = DisconnectorSymbol(parent=self, pen_width=width, h=30, w=30)
         else:
             self.symbol = None
 

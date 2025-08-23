@@ -30,7 +30,7 @@ nc = gce.compile_numerical_circuit_at(grid)
 S0 = nc.get_power_injections_pu()
 ind = nc.get_simulation_indices(Sbus=S0)
 lin_adm = nc.get_linear_admittance_matrices(indices=ind)
-res = gce.power_flow(grid=grid, options=gce.PowerFlowOptions(solver_type=gce.SolverType.DC))
+res = gce.power_flow(grid=grid, options=gce.PowerFlowOptions(solver_type=gce.SolverType.Linear))
 
 Va = np.angle(res.voltage)
 

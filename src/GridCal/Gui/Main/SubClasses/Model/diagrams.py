@@ -2905,3 +2905,5 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.max_branch_size_spinBox.setValue(0.002)
         self.ui.arrow_size_size_spinBox.setValue(0.0015)
         self.redraw_current_diagram()
+
+

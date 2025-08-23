@@ -2,27 +2,24 @@
 
 GridCal is a software made in the Python programming language.
 Therefore, it needs a Python interpreter installed in your operative system.
+Once [python](https://www.python.org/) is installed in the system, 
+you only need to install the GridCal package and the others will be installed as dependencies.
 
-The GridCal project is divided in three packages:
-
-- GridCalEngine: A package with the database and calculations logic.
-- GridCalServer: A package that serves an API-rest to use GridCalEngine remotely.
-- GridCal: A package that contains the Graphical User Interface (GUI) and operates with `GridCalEngine` and
-  `GridCalServer` seamlessly.
-
-To install everything, you only need to install the GridCal package and the others will be installed as dependencies.
-
-![](figures/Packages.png)
+```bash
+pip install gridcal
+```
 
 ## Standalone setup
 
-If you don't know what is this Python thing, we offer a windows installation:
+If you don't know what is this Python thing, we offer a windows' installation:
 
-[Windows setup](https://www.eroots.tech/software)
+[💻 Windows setup](https://www.eroots.tech/software)
 
 This will install GridCal as a normal windows program, and you don't need to worry
 about any of the previous instructions. Still, if you need some guidance, the
-following video might be of assistance: [Setup tutorial (video)](https://youtu.be/SY66WgLGo54).
+following video might be of assistance: 
+
+[📺 Setup tutorial (video)](https://youtu.be/SY66WgLGo54).
 
 ## Package installation
 
@@ -50,13 +47,13 @@ gridcal
 Once you install GridCal in your local Python distribution, you can run the
 graphical user interface with the following terminal command:
 
-```
+```bash
 gridcal
 ```
 
 If this doesn't work, try:
 
-```
+```bash
 python -c "from GridCal.ExecuteGridCal import runGridCal; runGridCal()"
 ```
 
@@ -68,7 +65,7 @@ Some of you may only need GridCal as a library for some other purpose
 like batch calculations, AI training or simple scripting. Whatever it may be,
 you can get the GridCal engine with the following terminal command:
 
-```
+```bash
 pip install GridCalEngine
 ```
 

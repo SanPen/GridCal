@@ -706,6 +706,8 @@ class ConvergenceReport:
         return pd.DataFrame(data)
 
 
+
+
 def get_list_dim(a: List[Any]) -> int:
     """
     Get the dimensions of a List, this is for the case were a matrix is represented by lists of lists

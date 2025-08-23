@@ -19,7 +19,9 @@ from GridCalEngine.basic_structures import Logger
 class MatpowerCircuit:
 
     def __init__(self):
-
+        """
+        Constructor
+        """
         self.areas: List[MatpowerArea] = list()
         self.buses: List[MatpowerBus] = list()
         self.generators: List[MatpowerGenerator] = list()
@@ -34,10 +36,14 @@ class MatpowerCircuit:
         self.logger = Logger()
 
     def read_file(self, file_name: str):
-
+        """
+        Read matpower .m file
+        :param file_name:
+        :return:
+        """
         # open the file as text
-        with open(file_name, 'r') as myfile:
-            text = myfile.read()
+        with open(file_name, 'r') as my_file:
+            text = my_file.read()
 
         # split the file into its case variables (the case variables always start with 'mpc.')
         chunks = text.split('mpc.')

@@ -187,7 +187,7 @@ def test_contingencies_ts():
     options = gce.ContingencyAnalysisOptions(
         use_provided_flows=False,
         Pf=None,
-        pf_options=gce.PowerFlowOptions(gce.SolverType.DC),
+        pf_options=gce.PowerFlowOptions(gce.SolverType.Linear),
         lin_options=gce.LinearAnalysisOptions(),
         use_srap=False,
         srap_max_power=1400.0,
