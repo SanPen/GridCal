@@ -1464,50 +1464,110 @@ class ResultTypes(Enum):
     BusActivePowerIncrement = "ΔP: Active power increment"
 
     BranchActivePowerFrom = 'Pf: Active power "from"'
-
     BranchActivePowerFromA = 'PfA: Active power "from" A'
     BranchActivePowerFromB = 'PfB: Active power "from" B'
     BranchActivePowerFromC = 'PfC: Active power "from" C'
 
     BranchReactivePowerFrom = 'Qf: Reactive power "from"'
-
     BranchReactivePowerFromA = 'QfA: Reactive power "from" A'
     BranchReactivePowerFromB = 'QfB: Reactive power "from" B'
     BranchReactivePowerFromC = 'QfC: Reactive power "from" C'
 
     BranchActivePowerTo = 'Pt: Active power "to"'
-    BranchReactivePowerTo = 'Qt: Reactive power "to"'
+    BranchActivePowerToA = 'Pt: Active power "to" A'
+    BranchActivePowerToB = 'Pt: Active power "to" B'
+    BranchActivePowerToC = 'Pt: Active power "to" C'
 
-    BranchCurrent = 'I: Current'
+    BranchReactivePowerTo = 'Qt: Reactive power "to"'
+    BranchReactivePowerToA = 'Qt: Reactive power "to" A'
+    BranchReactivePowerToB = 'Qt: Reactive power "to" B'
+    BranchReactivePowerToC = 'Qt: Reactive power "to" C'
+
     BranchActiveCurrentFrom = 'Irf: Active current "from"'
+    BranchActiveCurrentFromA = 'Irf: Active current "from" A'
+    BranchActiveCurrentFromB = 'Irf: Active current "from" B'
+    BranchActiveCurrentFromC = 'Irf: Active current "from" C'
+
+
     BranchReactiveCurrentFrom = 'Iif: Reactive current "from"'
+    BranchReactiveCurrentFromA = 'Iif: Reactive current "from" A'
+    BranchReactiveCurrentFromB = 'Iif: Reactive current "from" B'
+    BranchReactiveCurrentFromC = 'Iif: Reactive current "from" C'
+
+
     BranchActiveCurrentTo = 'Irt: Active current "to"'
+    BranchActiveCurrentToA = 'Irt: Active current "to" A'
+    BranchActiveCurrentToB = 'Irt: Active current "to" B'
+    BranchActiveCurrentToC = 'Irt: Active current "to" C'
+
+
     BranchReactiveCurrentTo = 'Iit: Reactive current "to"'
+    BranchReactiveCurrentToA = 'Iit: Reactive current "to" A'
+    BranchReactiveCurrentToB = 'Iit: Reactive current "to" B'
+    BranchReactiveCurrentToC = 'Iit: Reactive current "to" C'
+
 
     BranchTapModule = 'm: Tap module'
     BranchTapAngle = '𝜏: Tap angle'
     BranchBeq = 'Beq: Equivalent susceptance'
 
     BranchLoading = 'Branch Loading'
-    Transformer2WTapModule = 'Transformer tap module'
+    BranchLoadingA = 'Branch Loading A'
+    BranchLoadingB = 'Branch Loading B'
+    BranchLoadingC = 'Branch Loading C'
+
     BranchVoltage = 'ΔV: Voltage modules drop'
+    BranchVoltageA = 'ΔV: Voltage modules drop A'
+    BranchVoltageB = 'ΔV: Voltage modules drop B'
+    BranchVoltageC = 'ΔV: Voltage modules drop C'
+
     BranchAngles = 'Δθ: Voltage angles drop'
+    BranchAnglesA = 'Δθ: Voltage angles drop A'
+    BranchAnglesB = 'Δθ: Voltage angles drop B'
+    BranchAnglesC = 'Δθ: Voltage angles drop C'
+
     BranchLosses = 'Branch losses'
+
     BranchActiveLosses = 'Pl: Active losses'
+    BranchActiveLossesA = 'Pl: Active losses A'
+    BranchActiveLossesB = 'Pl: Active losses B'
+    BranchActiveLossesC = 'Pl: Active losses C'
+
     BranchReactiveLosses = 'Ql: Reactive losses'
+    BranchReactiveLossesA = 'Ql: Reactive losses A'
+    BranchReactiveLossesB = 'Ql: Reactive losses B'
+    BranchReactiveLossesC = 'Ql: Reactive losses C'
+
     BranchActiveLossesPercentage = 'Pl: Active losses (%)'
+    BranchActiveLossesPercentageA = 'Pl: Active losses (%) A'
+    BranchActiveLossesPercentageB = 'Pl: Active losses (%) B'
+    BranchActiveLossesPercentageC = 'Pl: Active losses (%) C'
+
     BatteryPower = 'Battery power'
     BatteryEnergy = 'Battery energy'
 
     HvdcLosses = 'HVDC losses'
-    HvdcPowerFrom = 'HVDC power "from"'
     HvdcLoading = 'HVDC loading'
+
+    HvdcPowerFrom = 'HVDC power "from"'
+    HvdcPowerFromA = 'HVDC power "from" A'
+    HvdcPowerFromB = 'HVDC power "from" B'
+    HvdcPowerFromC = 'HVDC power "from" C'
+
+
     HvdcPowerTo = 'HVDC power "to"'
+    HvdcPowerToA = 'HVDC power "to" A'
+    HvdcPowerToB = 'HVDC power "to" B'
+    HvdcPowerToC = 'HVDC power "to" C'
 
     VscLosses = 'Vsc losses'
     VscPowerFrom = 'Vsc power "from"'
     VscLoading = 'Vsc loading'
+
     VscPowerTo = 'Vsc power "to"'
+    VscPowerToA = 'Vsc power "to" A'
+    VscPowerToB = 'Vsc power "to" B'
+    VscPowerToC = 'Vsc power "to" C'
 
     # StochasticPowerFlowDriver
     BusVoltageAverage = 'Bus voltage avg'
@@ -1548,7 +1608,12 @@ class ResultTypes(Enum):
 
     GeneratorShedding = 'Generator shedding'
     GeneratorPower = 'Generator power'
+
     GeneratorReactivePower = 'Generator reactive power'
+    GeneratorReactivePowerA = 'Generator reactive power A'
+    GeneratorReactivePowerB = 'Generator reactive power B'
+    GeneratorReactivePowerC = 'Generator reactive power C'
+
     GeneratorCost = 'Generator cost'
     GeneratorFuels = 'Generator fuels'
     GeneratorEmissions = 'Generator emissions'
@@ -1558,9 +1623,16 @@ class ResultTypes(Enum):
     GeneratorInvested = 'Generator invested'
 
     BatteryReactivePower = 'Battery reactive power'
+    BatteryReactivePowerA = 'Battery reactive power A'
+    BatteryReactivePowerB = 'Battery reactive power B'
+    BatteryReactivePowerC = 'Battery reactive power C'
+
     BatteryInvested = 'Battery invested'
 
     ShuntReactivePower = 'Shunt reactive power'
+    ShuntReactivePowerA = 'Shunt reactive power A'
+    ShuntReactivePowerB = 'Shunt reactive power B'
+    ShuntReactivePowerC = 'Shunt reactive power C'
 
     BusVoltagePolarPlot = 'Voltage plot'
     BusNodalCapacity = "Nodal capacity"
@@ -1743,35 +1815,35 @@ class ResultTypes(Enum):
     BranchReactiveLosses2 = 'Branch reactive losses (2)'
     BranchMonitoring = 'Branch monitoring logic'
 
-    BusVoltageModuleA = 'Voltage module (A)'
-    BusVoltageAngleA = 'Voltage angle (A)'
-    BranchActivePowerFromA = 'Branch active power "from" (A)'
-    BranchReactivePowerFromA = 'Branch reactive power "from" (A)'
-    BranchActiveCurrentFromA = 'Branch active current "from" (A)'
-    BranchReactiveCurrentFromA = 'Branch reactive current "from" (A)'
-    BranchLoadingA = 'Branch loading (A)'
-    BranchActiveLossesA = 'Branch active losses (A)'
-    BranchReactiveLossesA = 'Branch reactive losses (A)'
-
-    BusVoltageModuleB = 'Voltage module (B)'
-    BusVoltageAngleB = 'Voltage angle (B)'
-    BranchActivePowerFromB = 'Branch active power "from" (B)'
-    BranchReactivePowerFromB = 'Branch reactive power "from" (B)'
-    BranchActiveCurrentFromB = 'Branch active current "from" (B)'
-    BranchReactiveCurrentFromB = 'Branch reactive current "from" (B)'
-    BranchLoadingB = 'Branch loading (B)'
-    BranchActiveLossesB = 'Branch active losses (B)'
-    BranchReactiveLossesB = 'Branch reactive losses (B)'
-
-    BusVoltageModuleC = 'Voltage module (C)'
-    BusVoltageAngleC = 'Voltage angle (C)'
-    BranchActivePowerFromC = 'Branch active power "from" (C)'
-    BranchReactivePowerFromC = 'Branch reactive power "from" (C)'
-    BranchActiveCurrentFromC = 'Branch active current "from" (C)'
-    BranchReactiveCurrentFromC = 'Branch reactive current "from" (C)'
-    BranchLoadingC = 'Branch loading (C)'
-    BranchActiveLossesC = 'Branch active losses (C)'
-    BranchReactiveLossesC = 'Branch reactive losses (C)'
+    # BusVoltageModuleA = 'Voltage module (A)'
+    # BusVoltageAngleA = 'Voltage angle (A)'
+    # BranchActivePowerFromA = 'Branch active power "from" (A)'
+    # BranchReactivePowerFromA = 'Branch reactive power "from" (A)'
+    # BranchActiveCurrentFromA = 'Branch active current "from" (A)'
+    # BranchReactiveCurrentFromA = 'Branch reactive current "from" (A)'
+    # BranchLoadingA = 'Branch loading (A)'
+    # BranchActiveLossesA = 'Branch active losses (A)'
+    # BranchReactiveLossesA = 'Branch reactive losses (A)'
+    #
+    # BusVoltageModuleB = 'Voltage module (B)'
+    # BusVoltageAngleB = 'Voltage angle (B)'
+    # BranchActivePowerFromB = 'Branch active power "from" (B)'
+    # BranchReactivePowerFromB = 'Branch reactive power "from" (B)'
+    # BranchActiveCurrentFromB = 'Branch active current "from" (B)'
+    # BranchReactiveCurrentFromB = 'Branch reactive current "from" (B)'
+    # BranchLoadingB = 'Branch loading (B)'
+    # BranchActiveLossesB = 'Branch active losses (B)'
+    # BranchReactiveLossesB = 'Branch reactive losses (B)'
+    #
+    # BusVoltageModuleC = 'Voltage module (C)'
+    # BusVoltageAngleC = 'Voltage angle (C)'
+    # BranchActivePowerFromC = 'Branch active power "from" (C)'
+    # BranchReactivePowerFromC = 'Branch reactive power "from" (C)'
+    # BranchActiveCurrentFromC = 'Branch active current "from" (C)'
+    # BranchReactiveCurrentFromC = 'Branch reactive current "from" (C)'
+    # BranchLoadingC = 'Branch loading (C)'
+    # BranchActiveLossesC = 'Branch active losses (C)'
+    # BranchReactiveLossesC = 'Branch reactive losses (C)'
 
     ShortCircuitInfo = 'Short-circuit information'
 

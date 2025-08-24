@@ -777,9 +777,9 @@ class PowerFlowResults3Ph(ResultsTemplate):
                                 units='(MVAr)')
 
 
-        elif result_type == ResultTypes.BranchActivePowerTo:
+        elif result_type == ResultTypes.BranchActivePowerToA:
 
-            return ResultsTable(data=self.St.real,
+            return ResultsTable(data=self.St_A.real,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
                                 columns=np.array([result_type.value]),
@@ -788,75 +788,9 @@ class PowerFlowResults3Ph(ResultsTemplate):
                                 ylabel='(MW)',
                                 units='(MW)')
 
-        elif result_type == ResultTypes.BranchReactivePowerTo:
+        elif result_type == ResultTypes.BranchActivePowerToB:
 
-            return ResultsTable(data=self.St.imag,
-                                index=self.branch_names,
-                                idx_device_type=DeviceType.BranchDevice,
-                                columns=np.array([result_type.value]),
-                                cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
-                                ylabel='(MVAr)',
-                                units='(MVAr)')
-
-        elif result_type == ResultTypes.BranchActiveCurrentFrom:
-
-            return ResultsTable(data=self.If.real,
-                                index=self.branch_names,
-                                idx_device_type=DeviceType.BranchDevice,
-                                columns=np.array([result_type.value]),
-                                cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
-                                ylabel='(p.u.)',
-                                units='(p.u.)')
-
-        elif result_type == ResultTypes.BranchReactiveCurrentFrom:
-
-            return ResultsTable(data=self.If.imag,
-                                index=self.branch_names,
-                                idx_device_type=DeviceType.BranchDevice,
-                                columns=np.array([result_type.value]),
-                                cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
-                                ylabel='(p.u.)',
-                                units='(p.u.)')
-
-        elif result_type == ResultTypes.BranchActiveCurrentTo:
-
-            return ResultsTable(data=self.It.real,
-                                index=self.branch_names,
-                                idx_device_type=DeviceType.BranchDevice,
-                                columns=np.array([result_type.value]),
-                                cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
-                                ylabel='(p.u.)',
-                                units='(p.u.)')
-
-        elif result_type == ResultTypes.BranchReactiveCurrentTo:
-
-            return ResultsTable(data=self.It.imag,
-                                index=self.branch_names,
-                                idx_device_type=DeviceType.BranchDevice,
-                                columns=np.array([result_type.value]),
-                                cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
-                                ylabel='(p.u.)',
-                                units='(p.u.)')
-
-        elif result_type == ResultTypes.BranchLoading:
-
-            return ResultsTable(data=np.abs(self.loading) * 100,
-                                index=self.branch_names,
-                                idx_device_type=DeviceType.BranchDevice,
-                                columns=np.array([result_type.value]),
-                                cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
-                                ylabel='(%)',
-                                units='(%)')
-
-        elif result_type == ResultTypes.BranchActiveLosses:
-
-            return ResultsTable(data=self.losses.real,
+            return ResultsTable(data=self.St_B.real,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
                                 columns=np.array([result_type.value]),
@@ -865,9 +799,20 @@ class PowerFlowResults3Ph(ResultsTemplate):
                                 ylabel='(MW)',
                                 units='(MW)')
 
-        elif result_type == ResultTypes.BranchReactiveLosses:
+        elif result_type == ResultTypes.BranchActivePowerToC:
 
-            return ResultsTable(data=self.losses.imag,
+            return ResultsTable(data=self.St_C.real,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.BranchReactivePowerToA:
+
+            return ResultsTable(data=self.St_A.imag,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
                                 columns=np.array([result_type.value]),
@@ -876,20 +821,31 @@ class PowerFlowResults3Ph(ResultsTemplate):
                                 ylabel='(MVAr)',
                                 units='(MVAr)')
 
-        elif result_type == ResultTypes.BranchActiveLossesPercentage:
+        elif result_type == ResultTypes.BranchReactivePowerToB:
 
-            return ResultsTable(data=np.abs(self.losses.real) / np.abs(self.Sf.real + 1e-20) * 100.0,
+            return ResultsTable(data=self.St_B.imag,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
                                 columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
-                                ylabel='(%)',
-                                units='(%)')
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
 
-        elif result_type == ResultTypes.BranchVoltage:
+        elif result_type == ResultTypes.BranchReactivePowerToC:
 
-            return ResultsTable(data=np.abs(self.Vbranch),
+            return ResultsTable(data=self.St_C.imag,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
+
+        elif result_type == ResultTypes.BranchActiveCurrentFromA:
+
+            return ResultsTable(data=self.If_A.real,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
                                 columns=np.array([result_type.value]),
@@ -898,9 +854,317 @@ class PowerFlowResults3Ph(ResultsTemplate):
                                 ylabel='(p.u.)',
                                 units='(p.u.)')
 
-        elif result_type == ResultTypes.BranchAngles:
+        elif result_type == ResultTypes.BranchActiveCurrentFromB:
 
-            return ResultsTable(data=np.angle(self.Vbranch, deg=True),
+            return ResultsTable(data=self.If_B.real,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
+        elif result_type == ResultTypes.BranchActiveCurrentFromC:
+
+            return ResultsTable(data=self.If_C.real,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
+        elif result_type == ResultTypes.BranchReactiveCurrentFromA:
+
+            return ResultsTable(data=self.If_A.imag,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
+        elif result_type == ResultTypes.BranchReactiveCurrentFromB:
+
+            return ResultsTable(data=self.If_B.imag,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
+        elif result_type == ResultTypes.BranchReactiveCurrentFromC:
+
+            return ResultsTable(data=self.If_C.imag,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
+        elif result_type == ResultTypes.BranchActiveCurrentToA:
+
+            return ResultsTable(data=self.It_A.real,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
+        elif result_type == ResultTypes.BranchActiveCurrentToB:
+
+            return ResultsTable(data=self.It_B.real,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
+        elif result_type == ResultTypes.BranchActiveCurrentToC:
+
+            return ResultsTable(data=self.It_C.real,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
+        elif result_type == ResultTypes.BranchReactiveCurrentToA:
+
+            return ResultsTable(data=self.It_A.imag,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
+        elif result_type == ResultTypes.BranchReactiveCurrentToB:
+
+            return ResultsTable(data=self.It_B.imag,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
+        elif result_type == ResultTypes.BranchReactiveCurrentToC:
+
+            return ResultsTable(data=self.It_C.imag,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
+        elif result_type == ResultTypes.BranchLoadingA:
+
+            return ResultsTable(data=np.abs(self.loading_A) * 100,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(%)',
+                                units='(%)')
+
+        elif result_type == ResultTypes.BranchLoadingB:
+
+            return ResultsTable(data=np.abs(self.loading_B) * 100,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(%)',
+                                units='(%)')
+
+        elif result_type == ResultTypes.BranchLoadingC:
+
+            return ResultsTable(data=np.abs(self.loading_C) * 100,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(%)',
+                                units='(%)')
+
+        elif result_type == ResultTypes.BranchActiveLossesA:
+
+            return ResultsTable(data=self.losses_A.real,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.BranchActiveLossesB:
+
+            return ResultsTable(data=self.losses_B.real,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.BranchActiveLossesC:
+
+            return ResultsTable(data=self.losses_C.real,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.BranchReactiveLossesA:
+
+            return ResultsTable(data=self.losses_A.imag,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
+
+        elif result_type == ResultTypes.BranchReactiveLossesB:
+
+            return ResultsTable(data=self.losses_B.imag,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
+
+        elif result_type == ResultTypes.BranchReactiveLossesC:
+
+            return ResultsTable(data=self.losses_C.imag,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
+
+        elif result_type == ResultTypes.BranchActiveLossesPercentageA:
+
+            return ResultsTable(data=np.abs(self.losses_A.real) / np.abs(self.Sf_A.real + 1e-20) * 100.0,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(%)',
+                                units='(%)')
+
+        elif result_type == ResultTypes.BranchActiveLossesPercentageB:
+
+            return ResultsTable(data=np.abs(self.losses_B.real) / np.abs(self.Sf_B.real + 1e-20) * 100.0,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(%)',
+                                units='(%)')
+
+        elif result_type == ResultTypes.BranchActiveLossesPercentageC:
+
+            return ResultsTable(data=np.abs(self.losses_C.real) / np.abs(self.Sf_C.real + 1e-20) * 100.0,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(%)',
+                                units='(%)')
+
+        elif result_type == ResultTypes.BranchVoltageA:
+
+            return ResultsTable(data=np.abs(self.Vbranch_A),
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
+        elif result_type == ResultTypes.BranchVoltageB:
+
+            return ResultsTable(data=np.abs(self.Vbranch_B),
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
+        elif result_type == ResultTypes.BranchVoltageC:
+
+            return ResultsTable(data=np.abs(self.Vbranch_C),
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
+        elif result_type == ResultTypes.BranchAnglesA:
+
+            return ResultsTable(data=np.angle(self.Vbranch_A, deg=True),
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(deg)',
+                                units='(deg)')
+
+        elif result_type == ResultTypes.BranchAnglesB:
+
+            return ResultsTable(data=np.angle(self.Vbranch_B, deg=True),
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(deg)',
+                                units='(deg)')
+
+        elif result_type == ResultTypes.BranchAnglesC:
+
+            return ResultsTable(data=np.angle(self.Vbranch_C, deg=True),
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
                                 columns=np.array([result_type.value]),
@@ -942,9 +1206,9 @@ class PowerFlowResults3Ph(ResultsTemplate):
                                 ylabel='(MW)',
                                 units='(MW)')
 
-        elif result_type == ResultTypes.HvdcPowerFrom:
+        elif result_type == ResultTypes.HvdcPowerFromA:
 
-            return ResultsTable(data=self.Pf_hvdc,
+            return ResultsTable(data=self.Pf_hvdc_A,
                                 index=self.hvdc_names,
                                 idx_device_type=DeviceType.HVDCLineDevice,
                                 columns=np.array([result_type.value]),
@@ -953,9 +1217,53 @@ class PowerFlowResults3Ph(ResultsTemplate):
                                 ylabel='(MW)',
                                 units='(MW)')
 
-        elif result_type == ResultTypes.HvdcPowerTo:
+        elif result_type == ResultTypes.HvdcPowerFromB:
 
-            return ResultsTable(data=self.Pt_hvdc,
+            return ResultsTable(data=self.Pf_hvdc_B,
+                                index=self.hvdc_names,
+                                idx_device_type=DeviceType.HVDCLineDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.HvdcPowerFromC:
+
+            return ResultsTable(data=self.Pf_hvdc_C,
+                                index=self.hvdc_names,
+                                idx_device_type=DeviceType.HVDCLineDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.HvdcPowerToA:
+
+            return ResultsTable(data=self.Pt_hvdc_A,
+                                index=self.hvdc_names,
+                                idx_device_type=DeviceType.HVDCLineDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.HvdcPowerToB:
+
+            return ResultsTable(data=self.Pt_hvdc_B,
+                                index=self.hvdc_names,
+                                idx_device_type=DeviceType.HVDCLineDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.HvdcPowerToC:
+
+            return ResultsTable(data=self.Pt_hvdc_C,
                                 index=self.hvdc_names,
                                 idx_device_type=DeviceType.HVDCLineDevice,
                                 columns=np.array([result_type.value]),
@@ -986,9 +1294,9 @@ class PowerFlowResults3Ph(ResultsTemplate):
                                 ylabel='(MW)',
                                 units='(MW)')
 
-        elif result_type == ResultTypes.VscPowerTo:
+        elif result_type == ResultTypes.VscPowerToA:
 
-            return ResultsTable(data=self.St_vsc.real,
+            return ResultsTable(data=self.St_vsc_A.real,
                                 index=self.vsc_names,
                                 idx_device_type=DeviceType.VscDevice,
                                 columns=np.array([result_type.value]),
@@ -997,9 +1305,31 @@ class PowerFlowResults3Ph(ResultsTemplate):
                                 ylabel='(MW)',
                                 units='(MW)')
 
-        elif result_type == ResultTypes.GeneratorReactivePower:
+        elif result_type == ResultTypes.VscPowerToB:
 
-            return ResultsTable(data=self.gen_q,
+            return ResultsTable(data=self.St_vsc_B.real,
+                                index=self.vsc_names,
+                                idx_device_type=DeviceType.VscDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.VscPowerToC:
+
+            return ResultsTable(data=self.St_vsc_C.real,
+                                index=self.vsc_names,
+                                idx_device_type=DeviceType.VscDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.GeneratorReactivePowerA:
+
+            return ResultsTable(data=self.gen_q_A,
                                 index=self.gen_names,
                                 idx_device_type=DeviceType.GeneratorDevice,
                                 columns=np.array([result_type.value]),
@@ -1008,9 +1338,31 @@ class PowerFlowResults3Ph(ResultsTemplate):
                                 ylabel='(MVAr)',
                                 units='(MVAr)')
 
-        elif result_type == ResultTypes.BatteryReactivePower:
+        elif result_type == ResultTypes.GeneratorReactivePowerB:
 
-            return ResultsTable(data=self.battery_q,
+            return ResultsTable(data=self.gen_q_B,
+                                index=self.gen_names,
+                                idx_device_type=DeviceType.GeneratorDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
+
+        elif result_type == ResultTypes.GeneratorReactivePowerC:
+
+            return ResultsTable(data=self.gen_q_C,
+                                index=self.gen_names,
+                                idx_device_type=DeviceType.GeneratorDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
+
+        elif result_type == ResultTypes.BatteryReactivePowerA:
+
+            return ResultsTable(data=self.battery_q_A,
                                 index=self.batt_names,
                                 idx_device_type=DeviceType.BatteryDevice,
                                 columns=np.array([result_type.value]),
@@ -1019,9 +1371,53 @@ class PowerFlowResults3Ph(ResultsTemplate):
                                 ylabel='(MVAr)',
                                 units='(MVAr)')
 
+        elif result_type == ResultTypes.BatteryReactivePowerB:
+
+            return ResultsTable(data=self.battery_q_B,
+                                index=self.batt_names,
+                                idx_device_type=DeviceType.BatteryDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
+
+        elif result_type == ResultTypes.BatteryReactivePowerC:
+
+            return ResultsTable(data=self.battery_q_C,
+                                index=self.batt_names,
+                                idx_device_type=DeviceType.BatteryDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
+
+        elif result_type == ResultTypes.ShuntReactivePowerA:
+
+            return ResultsTable(data=self.shunt_q_A,
+                                index=self.sh_names,
+                                idx_device_type=DeviceType.ShuntLikeDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
+
+        elif result_type == ResultTypes.ShuntReactivePowerB:
+
+            return ResultsTable(data=self.shunt_q_B,
+                                index=self.sh_names,
+                                idx_device_type=DeviceType.ShuntLikeDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
+
         elif result_type == ResultTypes.ShuntReactivePower:
 
-            return ResultsTable(data=self.shunt_q,
+            return ResultsTable(data=self.shunt_q_C,
                                 index=self.sh_names,
                                 idx_device_type=DeviceType.ShuntLikeDevice,
                                 columns=np.array([result_type.value]),
@@ -1039,45 +1435,44 @@ class PowerFlowResults3Ph(ResultsTemplate):
 
         Returns:
 
-            Bus results, Branch reuslts
+            Bus results, Branch results
         """
 
         # buses results
-        vm = np.abs(self.voltage)
-        va = np.angle(self.voltage)
-        vr = self.voltage.real
-        vi = self.voltage.imag
-        bus_data = np.c_[vr, vi, vm, va]
-        bus_cols = ['Real voltage (p.u.)',
-                    'Imag Voltage (p.u.)',
-                    'Voltage module (p.u.)',
-                    'Voltage angle (rad)']
-        df_bus = pd.DataFrame(data=bus_data, columns=bus_cols)
+        df_bus = pd.DataFrame(data={
+            "VmA (p.u.)": np.abs(self.voltage_A),
+            "VmB (p.u.)": np.abs(self.voltage_B),
+            "VmC (p.u.)": np.abs(self.voltage_C),
+            "VaA (deg)": np.angle(self.voltage_A, deg=True),
+            "VaB (deg)": np.angle(self.voltage_B, deg=True),
+            "VaC (deg)": np.angle(self.voltage_C, deg=True),
+            "PA (MW)": self.Sbus_A.real,
+            "PB (MW)": self.Sbus_B.real,
+            "PC (MW)": self.Sbus_C.real,
+            "QA (MVAr)": self.Sbus_A.imag,
+            "QB (MVAr)": self.Sbus_B.imag,
+            "QC (MVAr)": self.Sbus_C.imag,
+        })
 
         # branch results
-        sr = self.Sf.real
-        si = self.Sf.imag
-        sm = np.abs(self.Sf)
-        ld = np.abs(self.loading)
-        la = self.losses.real
-        lr = self.losses.imag
-        ls = np.abs(self.losses)
-        tm = np.abs(self.tap_module)
-
-        branch_data = np.c_[sr, si, sm, ld, la, lr, ls, tm]
-        branch_cols = ['Real power (MW)',
-                       'Imag power (MVAr)',
-                       'Power module (MVA)',
-                       'Loading(%)',
-                       'Losses (MW)',
-                       'Losses (MVAr)',
-                       'Losses (MVA)',
-                       'Tap module']
-        df_branch = pd.DataFrame(data=branch_data, columns=branch_cols)
+        df_branch = pd.DataFrame(data={
+            "PfA (MW)": self.Sf_A.real,
+            "PfB (MW)": self.Sf_B.real,
+            "PfC (MW)": self.Sf_C.real,
+            "QfA (MVAr)": self.Sf_A.imag,
+            "QfB (MVAr)": self.Sf_B.imag,
+            "QfC (MVAr)": self.Sf_C.imag,
+            "PtA (MW)": self.St_A.real,
+            "PtB (MW)": self.St_B.real,
+            "PtC (MW)": self.St_C.real,
+            "QtA (MVAr)": self.St_A.imag,
+            "QtB (MVAr)": self.St_B.imag,
+            "QtC (MVAr)": self.St_C.imag,
+        })
 
         return df_bus, df_branch
 
-    def compare(self, other: "PowerFlowResults", tol=1e-6) -> Tuple[bool, Logger]:
+    def compare(self, other: "PowerFlowResults3Ph", tol=1e-6) -> Tuple[bool, Logger]:
         """
         Compare this results with another
         :param other: PowerFlowResults
