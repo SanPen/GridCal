@@ -16,7 +16,7 @@ from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec, Convergen
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
-def get_3p_indices(length_3p):
+def get_3p_indices(length_3p: int) -> Tuple[IntVec, IntVec, IntVec]:
     """
     get the 3-phase indexing
     :param length_3p: 3N length
@@ -140,7 +140,8 @@ class PowerFlowResults3Ph(ResultsTemplate):
             },
             time_array=None,
             clustering_results=clustering_results,
-            study_results_type=StudyResultsType.PowerFlow
+            study_results_type=StudyResultsType.PowerFlow,
+            is_3ph=True
         )
 
         self.n = n
@@ -544,6 +545,47 @@ class PowerFlowResults3Ph(ResultsTemplate):
             "QlossB": self.losses_B.imag,
             "QlossC": self.losses_C.imag,
         }, index=self.branch_names)
+
+
+    def export_all(self):
+        """
+        Exports all the results to DataFrames.
+
+        Returns:
+
+            Bus results, Branch results
+        """
+
+        # buses results
+        df_bus = self.get_bus_df()
+
+        # branch results
+        df_branch = self.get_branch_df()
+
+        return df_bus, df_branch
+
+    def compare(self, other: "PowerFlowResults3Ph", tol=1e-6) -> Tuple[bool, Logger]:
+        """
+        Compare this results with another
+        :param other: PowerFlowResults
+        :param tol: absolute comparison tolerance
+        :return: all ok?, Logger
+        """
+        logger = Logger()
+        all_ok = True
+        for prop_name, prp in self.data_variables.items():
+
+            if prp.tpe in [Vec, CxVec]:
+                a = getattr(self, prop_name)
+                b = getattr(other, prop_name)
+
+                ok = np.allclose(a, b, atol=tol)
+
+                if not ok:
+                    logger.add_error(msg="Difference", device_property=prop_name)
+                    all_ok = False
+
+        return all_ok, logger
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
@@ -1429,68 +1471,3 @@ class PowerFlowResults3Ph(ResultsTemplate):
         else:
             raise Exception('Unsupported result type: ' + str(result_type))
 
-    def export_all(self):
-        """
-        Exports all the results to DataFrames.
-
-        Returns:
-
-            Bus results, Branch results
-        """
-
-        # buses results
-        df_bus = pd.DataFrame(data={
-            "VmA (p.u.)": np.abs(self.voltage_A),
-            "VmB (p.u.)": np.abs(self.voltage_B),
-            "VmC (p.u.)": np.abs(self.voltage_C),
-            "VaA (deg)": np.angle(self.voltage_A, deg=True),
-            "VaB (deg)": np.angle(self.voltage_B, deg=True),
-            "VaC (deg)": np.angle(self.voltage_C, deg=True),
-            "PA (MW)": self.Sbus_A.real,
-            "PB (MW)": self.Sbus_B.real,
-            "PC (MW)": self.Sbus_C.real,
-            "QA (MVAr)": self.Sbus_A.imag,
-            "QB (MVAr)": self.Sbus_B.imag,
-            "QC (MVAr)": self.Sbus_C.imag,
-        })
-
-        # branch results
-        df_branch = pd.DataFrame(data={
-            "PfA (MW)": self.Sf_A.real,
-            "PfB (MW)": self.Sf_B.real,
-            "PfC (MW)": self.Sf_C.real,
-            "QfA (MVAr)": self.Sf_A.imag,
-            "QfB (MVAr)": self.Sf_B.imag,
-            "QfC (MVAr)": self.Sf_C.imag,
-            "PtA (MW)": self.St_A.real,
-            "PtB (MW)": self.St_B.real,
-            "PtC (MW)": self.St_C.real,
-            "QtA (MVAr)": self.St_A.imag,
-            "QtB (MVAr)": self.St_B.imag,
-            "QtC (MVAr)": self.St_C.imag,
-        })
-
-        return df_bus, df_branch
-
-    def compare(self, other: "PowerFlowResults3Ph", tol=1e-6) -> Tuple[bool, Logger]:
-        """
-        Compare this results with another
-        :param other: PowerFlowResults
-        :param tol: absolute comparison tolerance
-        :return: all ok?, Logger
-        """
-        logger = Logger()
-        all_ok = True
-        for prop_name, prp in self.data_variables.items():
-
-            if prp.tpe in [Vec, CxVec]:
-                a = getattr(self, prop_name)
-                b = getattr(other, prop_name)
-
-                ok = np.allclose(a, b, atol=tol)
-
-                if not ok:
-                    logger.add_error(msg="Difference", device_property=prop_name)
-                    all_ok = False
-
-        return all_ok, logger

@@ -22,6 +22,7 @@ from GridCal.Gui.general_dialogues import (CheckListDialogue, StartEndSelectionD
                                            InputNumberDialogue, LogsDialogue)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Simulations import PowerFlowResults, ContinuationPowerFlowResults, PowerFlowTimeSeriesResults
+from GridCalEngine.Simulations.PowerFlow.power_flow_results_3ph import PowerFlowResults3Ph
 from GridCalEngine.Utils.progress_bar import print_progress_bar
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import SimulationTypes, Colormaps
@@ -495,7 +496,8 @@ class DiagramsMain(CompiledArraysMain):
             self.show_error_toast("There are no time series :/")
 
     def pf_colouring(self, diagram_widget: ALL_EDITORS,
-                     results: PowerFlowResults, cmap: Colormaps,
+                     results: PowerFlowResults | PowerFlowResults3Ph,
+                     cmap: Colormaps,
                      use_flow_based_width: bool = False,
                      min_branch_width: int = 2,
                      max_branch_width: int = 5,
@@ -518,37 +520,89 @@ class DiagramsMain(CompiledArraysMain):
         hvdc_active = self.circuit.get_hvdc_actives(t_idx=None)
         vsc_active = self.circuit.get_vsc_actives(t_idx=None)
 
-        return diagram_widget.colour_results(
-            Sbus=results.Sbus,
-            bus_active=bus_active,
-            Sf=results.Sf,
-            St=results.St,
-            voltages=results.voltage,
-            loadings=np.abs(results.loading),
-            types=results.bus_types,
-            losses=results.losses,
-            br_active=br_active,
-            hvdc_Pf=results.Pf_hvdc,
-            hvdc_Pt=results.Pt_hvdc,
-            hvdc_losses=results.losses_hvdc,
-            hvdc_loading=results.loading_hvdc,
-            hvdc_active=hvdc_active,
-            vsc_Pf=results.Pf_vsc,
-            vsc_Pt=results.St_vsc.real,
-            vsc_Qt=results.St_vsc.imag,
-            vsc_losses=results.losses_vsc,
-            vsc_loading=results.loading_vsc,
-            vsc_active=vsc_active,
-            ma=results.tap_module,
-            tau=results.tap_angle,
-            use_flow_based_width=use_flow_based_width,
-            min_branch_width=min_branch_width,
-            max_branch_width=max_branch_width,
-            min_bus_width=min_bus_width,
-            max_bus_width=max_bus_width,
-            cmap=cmap,
-            is_three_phase=results.three_phase
-        )
+        if results.is_3ph:
+            return diagram_widget.colour_results_3ph(
+                SbusA=results.Sbus_A,
+                SbusB=results.Sbus_B,
+                SbusC=results.Sbus_C,
+                voltagesA=results.voltage_A,
+                voltagesB=results.voltage_B,
+                voltagesC=results.voltage_C,
+                bus_active=bus_active,
+                types=results.bus_types,
+                SfA=results.Sf_A,
+                SfB=results.Sf_B,
+                SfC=results.Sf_C,
+                StA=results.St_A,
+                StB=results.St_B,
+                StC=results.St_C,
+                loadingsA=results.loading_A,
+                loadingsB=results.loading_B,
+                loadingsC=results.loading_C,
+                lossesA=results.losses_A,
+                lossesB=results.losses_B,
+                lossesC=results.losses_C,
+                br_active=br_active,
+                ma=results.tap_module,
+                tau=results.tap_angle,
+                hvdc_PfA=results.Pf_hvdc_A,
+                hvdc_PfB=results.Pf_hvdc_B,
+                hvdc_PfC=results.Pf_hvdc_C,
+                hvdc_PtA=results.Pt_hvdc_A,
+                hvdc_PtB=results.Pt_hvdc_B,
+                hvdc_PtC=results.Pt_hvdc_C,
+                hvdc_losses=results.losses_hvdc,
+                hvdc_loading=results.loading_hvdc,
+                hvdc_active=hvdc_active,
+                vsc_Pf=results.Pf_vsc,
+                vsc_PtA=results.St_vsc_A.real,
+                vsc_PtB=results.St_vsc_B.real,
+                vsc_PtC=results.St_vsc_C.real,
+                vsc_QtA=results.St_vsc_A.imag,
+                vsc_QtB=results.St_vsc_B.imag,
+                vsc_QtC=results.St_vsc_C.imag,
+                vsc_losses=results.losses_vsc,
+                vsc_loading=results.loading_vsc,
+                vsc_active=vsc_active,
+                loading_label='loading',
+                use_flow_based_width=use_flow_based_width,
+                min_branch_width=min_branch_width,
+                max_branch_width=max_branch_width,
+                min_bus_width=min_bus_width,
+                max_bus_width=max_bus_width,
+                cmap=cmap)
+        else:
+
+            return diagram_widget.colour_results(
+                Sbus=results.Sbus,
+                bus_active=bus_active,
+                Sf=results.Sf,
+                St=results.St,
+                voltages=results.voltage,
+                loadings=np.abs(results.loading),
+                types=results.bus_types,
+                losses=results.losses,
+                br_active=br_active,
+                hvdc_Pf=results.Pf_hvdc,
+                hvdc_Pt=results.Pt_hvdc,
+                hvdc_losses=results.losses_hvdc,
+                hvdc_loading=results.loading_hvdc,
+                hvdc_active=hvdc_active,
+                vsc_Pf=results.Pf_vsc,
+                vsc_Pt=results.St_vsc.real,
+                vsc_Qt=results.St_vsc.imag,
+                vsc_losses=results.losses_vsc,
+                vsc_loading=results.loading_vsc,
+                vsc_active=vsc_active,
+                ma=results.tap_module,
+                tau=results.tap_angle,
+                use_flow_based_width=use_flow_based_width,
+                min_branch_width=min_branch_width,
+                max_branch_width=max_branch_width,
+                min_bus_width=min_bus_width,
+                max_bus_width=max_bus_width,
+                cmap=cmap
+            )
 
     def pf_ts_colouring(self, t_idx: int,
                         diagram_widget: ALL_EDITORS,
@@ -1842,7 +1896,6 @@ class DiagramsMain(CompiledArraysMain):
                 info_msg(text=f"No buses were found associated with the substations",
                          title="New schematic from substation")
 
-
     def create_circuit_stored_diagrams(self):
         """
         Create as Widgets the diagrams stored in the circuit
@@ -2905,5 +2958,3 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.max_branch_size_spinBox.setValue(0.002)
         self.ui.arrow_size_size_spinBox.setValue(0.0015)
         self.redraw_current_diagram()
-
-
