@@ -132,8 +132,17 @@ def compose_system_block(grid: MultiCircuit,
         sys_block.children.append(mdl)
 
     # injections
+
+    # already known variables:
+
     for elm in grid.get_injection_devices_iter():
+        bus_rms_mdl = elm.bus.rms_model.model
         mdl = elm.rms_model.model
+
+
+        init_guess[(mdl.external_mapping[DynamicVarType.P].uid, mdl.external_mapping[DynamicVarType.P].name)] = init_guess[(bus_rms_mdl.external_mapping[DynamicVarType.P].uid, bus_rms_mdl.external_mapping[DynamicVarType.P].name)]
+        init_guess[(mdl.external_mapping[DynamicVarType.Q].uid, mdl.external_mapping[DynamicVarType.Q].name)] = init_guess[(bus_rms_mdl.external_mapping[DynamicVarType.Q].uid, bus_rms_mdl.external_mapping[DynamicVarType.Q].name)]
+
         mdl_vars = mdl.state_vars + mdl.algebraic_vars
 
         for var in mdl_vars:
@@ -168,7 +177,7 @@ def compose_system_block(grid: MultiCircuit,
             else:
                 eq = mdl.init_eqs[var]
                 eq_fn = _compile_equation([eq], uid2sym_vars)
-                init_val = float(eq_fn(x)[0])
+                init_val = float(eq_fn(x))
                 init_guess[key] = init_val
                 x[uid2idx_vars[var.uid]] = init_val
 

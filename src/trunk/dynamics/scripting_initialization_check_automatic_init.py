@@ -3,7 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import math
-import pdb
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -13,71 +12,48 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
+# from GridCalEngine.Utils.Symbolic.events import Events, Event
 from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
 from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
 from GridCalEngine.Utils.Symbolic.block import Block
-from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver  # compose_system_block
+from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
 import GridCalEngine.api as gce
-
-# In this script a small system in build with a Generator a Load and a line. Generator is connected to bus 1 and Load is connected to bus 2.
-# The system is uncontrolled and there are no events applyed.
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Constants
 # ----------------------------------------------------------------------------------------------------------------------
-# line0
-g_0 = Const(5)
-b_0 = Const(-12)
-bsh_0 = Const(0.03)
-
-# line1
-g_1 = Const(5)
-b_1 = Const(-12)
-bsh_1 = Const(0.03)
-
 pi = Const(math.pi)
+fn = Const(50)
+M = Const(1.0)
+D = Const(1.0)
+ra = Const(0.3)
+xd = Const(0.86138701)
+vf = Const(1.081099313)
 
-# Generator 0
-fn_0 = Const(50.0)
-M_0 = Const(10.0)
-D_0 = Const(1.0)
-ra_0 = Const(0.3)
-xd_0 = Const(0.86138701)
+omega_ref = Const(1)
+Kp = Const(1.0)
+Ki = Const(10.0)
+Kw = Const(10.0)
 
-omega_ref_0 = Const(1.0)
-Kp_0 = Const(0.0)
-Ki_0 = Const(0.0)
-
-# Generator 1
-fn_1 = Const(50.0)
-M_1 = Const(10.0)
-D_1 = Const(1.0)
-ra_1 = Const(0.3)
-xd_1 = Const(0.86138701)
-
-omega_ref_1 = Const(1.0)
-Kp_1 = Const(0.0)
-Ki_1 = Const(0.0)
+g = Const(5)
+b = Const(-12)
+bsh = Const(0.03)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Power flow
 # ----------------------------------------------------------------------------------------------------------------------
-# Build the system to compute the powerflow
-grid = gce.MultiCircuit(Sbase=100, fbase=50.0)
+
+grid = gce.MultiCircuit()
 
 # Buses
-bus0 = gce.Bus(name="Bus0", Vnom=10, is_slack=True)
+bus1 = gce.Bus(name="Bus1", Vnom=10, is_slack=True)
 bus2 = gce.Bus(name="Bus2", Vnom=10)
-bus1 = gce.Bus(name="Bus1", Vnom=10)
-grid.add_bus(bus0)
-grid.add_bus(bus2)
+
 grid.add_bus(bus1)
+grid.add_bus(bus2)
 
 # Line
 line0 = grid.add_line(
-    gce.Line(name="line 0-2", bus_from=bus0, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03,
-             rate=900.0))
-line1 = grid.add_line(
     gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03,
              rate=900.0))
 
@@ -85,9 +61,11 @@ line1 = grid.add_line(
 load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P=10, Q=10))
 
 # Generators
-gen0 = gce.Generator(name="Gen0", P=10, vset=1.0, Snom=900,
+gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom=900,
                      x1=0.86138701, r1=0.3, freq=50.0,
-                     # m_torque0=0.1,
+                     # m_torque0=0.10508619605291579,
+                     vf=1.093704253855166,
+                     tm0=0.10508619605291579,
                      M=10.0,
                      D=1.0,
                      omega_ref=1.0,
@@ -96,17 +74,6 @@ gen0 = gce.Generator(name="Gen0", P=10, vset=1.0, Snom=900,
                      # Kw=10.0
                      )
 
-gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom=900,
-                     x1=0.86138701, r1=0.3, freq=50.0,
-                     # m_torque0=0.1,
-                     M=10.0,
-                     D=1.0,
-                     omega_ref=1.0,
-                     Kp=1.0,
-                     Ki=10.0,
-                     # Kw=10.0
-                     )
-grid.add_generator(bus=bus0, api_obj=gen0)
 grid.add_generator(bus=bus1, api_obj=gen1)
 
 options = gce.PowerFlowOptions(
@@ -136,15 +103,11 @@ res = gce.power_flow(grid, options=options)
 
 print(f"Converged: {res.converged}")
 print(res.get_bus_df())
-
-bus_df = res.get_bus_df()
-value = bus_df.loc['Bus1', 'Va']
-print(value)
-
 print(res.get_branch_df())
 
 logger = gce.Logger()
-sys_block, init_guess = gce.initialize_rms(grid, res)
+sys_block, init_guess = gce.initialize_rms(grid, res, logger=logger)
+
 print(init_guess)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -169,7 +132,7 @@ params0 = slv.build_init_params_vector(params_mapping)
 
 # x0 = slv.build_init_vars_vector(mapping)
 
-x0 = slv.build_init_vars_vector_from_uid(init_guess)
+# x0 = slv.build_init_vars_vector_from_uid(mapping)
 
 # x0 = slv.initialize_with_newton(x0=slv.build_init_vars_vector(vars_mapping),
 #                                 params0=params0)

@@ -105,14 +105,14 @@ print(res.get_bus_df())
 print(res.get_branch_df())
 
 logger = gce.Logger()
-gce.initialize_rms(grid, res, logger=logger)
-sys, mapping = gce.compose_system_block(grid, res)
-print(mapping)
+sys_block, init_guess = gce.initialize_rms(grid, res, logger=logger)
+
+print(init_guess)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Solver
 # ----------------------------------------------------------------------------------------------------------------------
-slv = BlockSolver(sys)
+slv = BlockSolver(sys_block)
 
 params_mapping = {
     # Pl0: 0.1,
@@ -157,7 +157,7 @@ params0 = slv.build_init_params_vector(params_mapping)
 
 # vars_in_order = slv.sort_vars(mapping)
 
-vars_in_order = slv.sort_vars_from_uid(mapping)
+vars_in_order = slv.sort_vars_from_uid(init_guess)
 
 t, y = slv.simulate(
     t0=0,

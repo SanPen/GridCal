@@ -22,7 +22,7 @@ import GridCalEngine.api as gce
 # Power flow
 # ----------------------------------------------------------------------------------------------------------------------
 # Load system
-grid = gce.open_file('src/trunk/dynamics/Two_Areas_PSS_E/Benchmark_4ger_33_2015.raw')
+grid = gce.open_file('Two_Areas_PSS_E/Benchmark_4ger_33_2015.raw')
 # Run power flow
 res = gce.power_flow(grid)
 # # Print results

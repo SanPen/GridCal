@@ -65,6 +65,7 @@ gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom=900,
                      x1=0.86138701, r1=0.3, freq=50.0,
                      # m_torque0=0.10508619605291579,
                      vf=1.093704253855166,
+                     tm0=0.10508619605291579,
                      M=10.0,
                      D=1.0,
                      omega_ref=1.0,
@@ -75,8 +76,30 @@ gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom=900,
 
 grid.add_generator(bus=bus1, api_obj=gen1)
 
-
-res = gce.power_flow(grid)
+options = gce.PowerFlowOptions(
+    solver_type=gce.SolverType.NR,
+    retry_with_other_methods=False,
+    verbose=0,
+    initialize_with_existing_solution=True,
+    tolerance=1e-6,
+    max_iter=25,
+    control_q=False,
+    control_taps_modules=True,
+    control_taps_phase=True,
+    control_remote_voltage=True,
+    orthogonalize_controls=True,
+    apply_temperature_correction=True,
+    branch_impedance_tolerance_mode=gce.BranchImpedanceMode.Specified,
+    distributed_slack=False,
+    ignore_single_node_islands=False,
+    trust_radius=1.0,
+    backtracking_parameter=0.05,
+    use_stored_guess=False,
+    initialize_angles=False,
+    generate_report=False,
+    three_phase_unbalanced=False
+)
+res = gce.power_flow(grid, options=options)
 
 print(f"Converged: {res.converged}")
 
@@ -84,6 +107,8 @@ print(res.get_bus_df())
 print(res.get_branch_df())
 
 # System
+
+# Voltages*
 v1 = res.voltage[0]
 v2 = res.voltage[1]
 
@@ -93,18 +118,18 @@ Sf = res.Sf / grid.Sbase
 St = res.St / grid.Sbase
 
 # Generator
-# Current from power and voltage
+# Current from power and voltage*
 i = np.conj(Sb1 / v1)          # ī = (p - jq) / v̄* 
-# Delta angle 
+# Delta angle *****
 delta0 = np.angle(v1 + (ra.value + 1j*xd.value) * i)
-# dq0 rotation
+# dq0 rotation*
 rot = np.exp(-1j * (delta0 - np.pi/2))
-# dq voltages and currents
+# dq voltages and currents*
 v_d0 = np.real(v1*rot)
 v_q0 = np.imag(v1*rot)
 i_d0 = np.real(i*rot)
 i_q0 = np.imag(i*rot)
-# inductances 
+# inductances *
 psid0 = ra.value * i_q0 + v_q0
 psiq0 = -ra.value * i_d0 - v_d0
 

@@ -23,7 +23,7 @@ def main():
 
     start = time.time()
 
-    ss = andes.load('src/trunk/dynamics/Gen_Load/kundur_ieee.json', default_config=True)
+    ss = andes.load('Gen_Load/kundur_ieee.json', default_config=True)
     ss.files.no_output = True
     
     # Run PF
@@ -131,17 +131,17 @@ def main():
     df.to_csv("simulation_andes_output.csv", index=False)
     print('simulation results saved in simulation_andes_output.csv')
 
-    # Plot
-    plt.figure(figsize=(10, 6))
-    for i, omega in enumerate(omega_history):
-        plt.plot(time_history, omega, label=f'Gen {i+1}')
-    plt.xlabel("Time [s]")
-    plt.ylabel("Speed [pu]")
-    plt.title("Generator Speed ω vs Time")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
+    # # Plot
+    # plt.figure(figsize=(10, 6))
+    # for i, omega in enumerate(omega_history):
+    #     plt.plot(time_history, omega, label=f'Gen {i+1}')
+    # plt.xlabel("Time [s]")
+    # plt.ylabel("Speed [pu]")
+    # plt.title("Generator Speed ω vs Time")
+    # plt.legend()
+    # plt.grid(True)
+    # plt.tight_layout()
+    # plt.show()
 
 if __name__ == '__main__':
     main()

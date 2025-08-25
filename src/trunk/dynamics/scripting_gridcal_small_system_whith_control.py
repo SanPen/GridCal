@@ -483,6 +483,8 @@ print("\n🔍 Residuals of generator algebraic equations:\n")
 for eq, val in residuals.items():
     print(f"{eq:55} = {val:.3e}")
 
+print(vars_mapping)
+
 # ---------------------------------------------------------------------------------------
 # Events
 # ---------------------------------------------------------------------------------------
@@ -495,7 +497,6 @@ vars_in_order = slv.sort_vars(vars_mapping)
 
 t, y = slv.simulate(
     t0=0,
-    t_end=20.0,
     t_end=20.0,
     h=0.001,
     x0=x0,

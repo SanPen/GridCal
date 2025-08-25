@@ -526,6 +526,7 @@ class Generator(GeneratorParent):
                 ],
                 algebraic_vars=[P_g, Q_g, v_d, v_q, i_d, i_q, psid, psiq, te, tm],
                 init_eqs = { #TODO: symbolic framworks needs to handle complex numbers. Apparently this is not wokring as expected
+
                     delta: angle(Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va))))),
                     omega: Const(self.omega_ref),
                     v_d: real((Vm * exp(1j * Va)) * exp(-1j * (delta - np.pi / 2))),
@@ -537,8 +538,8 @@ class Generator(GeneratorParent):
                     te: psid * i_q - psiq * i_d,
                     tm: te,
                     et: Const(0), 
-                    self.tm0 : tm,
-                    self.vf : psid + self.X1 * i_d
+                    # self.tm0 : tm,
+                    # self.vf : psid + self.X1 * i_d
                 },
                 init_vars = [delta, omega, et, v_d, v_q, i_d, i_q, psid, psiq, te, tm],
                 parameters=[],
