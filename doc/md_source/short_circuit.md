@@ -1,39 +1,21 @@
 # ⚡ Short-Circuit
 
-The calculation of short-circuit currents is crucial for the proper functioning and safety of a power system.
-It ensures that equipment such as circuit breakers or transformers can withstand fault currents without failure.
-This analysis is also essential for calculating the potential rise at substations and nearby metallic structures,
-thus ensuring safety and preventing damage to sensitive infrastructure.
+Short-circuit current calculations are essential for the safe and reliable operation of power systems. They ensure that
+equipment such as circuit breakers, transformers, and grounding systems can withstand fault conditions, and they guide
+the correct setting of protection relays. These studies are performed during system design and periodically updated
+to account for network changes, equipment ageing, and new loads.
 
-Short-circuit calculations are carried out during the system design phase to determine the ratings of new equipment and
-are periodically updated to verify that existing assets remain adequate as the system evolves. These calculations are
-critical for setting protection relays, which must act swiftly to avoid system-wide failures. They also assist in the
-design of grounding systems and the assessment of power quality issues when new loads are introduced into the network.
-
-Short-circuit faults can occur between phases or between phases and earth. These include one-phase to earth,
-phase-to-phase, two-phase to earth, three-phase clear of earth, and three-phase to earth faults. The three-phase fault,
-which symmetrically affects all three phases, is the only balanced fault, while all others are unbalanced.
-A one-phase to earth fault can cause a voltage rise on the health phases, potentially leading to a flashover and
-creating a short-circuit fault, known as a cross-country fault. Some faults may evolve during the fault period, such as
-a one-phase to earth fault developing into a two-phase to earth fault, which typically occurs in overhead lines or 
-substations.
-
-The majority of short-circuit faults, especially in overhead line systems, are weather-related, with lightning strikes,
-wind, ice, and salt pollution being the most common causes. Lightning strikes can generate extremely high voltages,
-potentially causing flashovers and short-circuit faults, particularly on overhead lines. Equipment failures due to
-ageing, mechanical issues, or poor installation are also significant contributors. Human error, such as leaving
-isolated equipment connected during maintenance, can also result in faults when the equipment is re-energised.
-Around 90\% of short-circuit faults occur on overhead lines, with approximately 70\% of these being
-phase-to-ground faults.
+Faults can occur between phases or between phases and earth, with the three-phase fault being the only balanced type.
+Most faults are unbalanced and can evolve during the fault period, for example, a single-phase-to-earth fault becoming
+a two-phase-to-earth fault. In overhead line systems, about 90% of faults occur on the lines, 70% of which are
+phase-to-ground. Weather events such as lightning, wind, ice, and salt pollution are the main causes, followed by
+equipment failures and human error.
 
 ## Short-Circuit in the Phase Reference Frame
 
-The formulation for simulating short-circuit faults in the phase reference frame in GridCal will be detailed step by
-step. A key advantage of having modelled the entire network in the phases and implementing the power flow using the 
-three phases instead of sequences is that we can now easily simulate any type of short-circuit by simply adding a fault
-impedance to the bus of interest, whether between the three phases, between one phase and earth, between two phases, etc.
-Furthermore, both the system voltage and short-circuit current results will be in their actual values, rather than
-sequence values, which also simplifies fault analysis.
+In GridCal, modelling the network directly in the phase reference frame allows short-circuit faults of any type to be
+simulated by adding a fault impedance at the desired bus. This avoids sequence transformations and provides voltage and
+current results directly in their real phase values, simplifying both setup and analysis.
 
 ### Linearisation
 
@@ -118,7 +100,12 @@ current. It can be assumed that the internal voltage $\vec{E}$ of the generator 
 of the fault. The generator could be modelled during the short-circuit using the classic Thévenin equivalent, that is,
 as an ideal voltage source in series with the generator’s impedance, as shown in the electrical circuit of figure bellow:
 
-![Generator's Thevenin](figures/3ph_thevenin.png "Generator's Thevenin")
+<div style="text-align: center;">
+    <img src="figures/3ph_thevenin.png"
+    alt="Generator's Thevenin"
+    title="Generator's Thevenin"
+    width="50%"/>
+</div>
 
 This circuit allows us to obtain the value of the induced electromotive force, given the voltage $\vec{U}_{pf}$ and
 power $\vec{S}_{pf}$ before the fault at the generator’s output bus:
@@ -135,7 +122,12 @@ $\vec{U}_{pf}$ and the already linearised admittance matrix $\vec{Y}_{\text{line
 these connections would be more difficult to handle. Therefore, the generator is modelled using its Norton equivalent,
 that is, an ideal current source in parallel with the generator’s impedance, as shown in the following schematic:
 
-![Generator's Norton](figures/3ph_norton.png "Generator's Norton")
+<div style="text-align: center;">
+    <img src="figures/3ph_norton.png"
+    alt="Generator's Norton"
+    title="Generator's Norton"
+    width="40%"/>
+</div>
 
 The Norton current source will take the value of the internal voltage multiplied by its admittance:
 
@@ -166,7 +158,12 @@ $$
 \end{bmatrix}
 $$
 
-![Single Line-to-Ground Fault (SLG)](figures/3ph_SLG.png "Single Line-to-Ground Fault (SLG)")
+<div style="text-align: center;">
+    <img src="figures/3ph_SLG.png"
+    alt="Single Line-to-Ground Fault (SLG)"
+    title="Single Line-to-Ground Fault (SLG)"
+    width="30%"/>
+</div>
 
 ### Line-to-Line Fault (LL)
 
@@ -182,7 +179,12 @@ $$
 \end{bmatrix}
 $$
 
-![Line-to-Line Fault (LL)](figures/3ph_LL.png "Line-to-Line Fault (LL)")
+<div style="text-align: center;">
+    <img src="figures/3ph_LL.png"
+    alt="Line-to-Line Fault (LL)"
+    title="Line-to-Line Fault (LL)"
+    width="30%"/>
+</div>
 
 ### Double Line-to-Ground Fault (DLG)
 
@@ -199,7 +201,12 @@ $$
 \end{bmatrix}
 $$
 
-![Double Line-to-Ground Fault (DLG)](figures/3ph_DLG.png "Double Line-to-Ground Fault (DLG)")
+<div style="text-align: center;">
+    <img src="figures/3ph_DLG.png"
+    alt="Double Line-to-Ground Fault (DLG)"
+    title="Double Line-to-Ground Fault (DLG)"
+    width="40%"/>
+</div>
 
 ### Three-Phase Fault (LLL)
 
@@ -215,7 +222,12 @@ $$
 \end{bmatrix}
 $$
 
-![Three-Phase Fault (LLL)](figures/3ph_LLL.png "Three-Phase Fault (LLL)")
+<div style="text-align: center;">
+    <img src="figures/3ph_LLL.png"
+    alt="Three-Phase Fault (LLL)"
+    title="Three-Phase Fault (LLL)"
+    width="40%"/>
+</div>
 
 ### Three-Phase-to-Ground Fault (LLLG)
 
@@ -232,7 +244,12 @@ $$
 \end{bmatrix}
 $$
 
-![Three-Phase-to-Ground Fault (LLLG)](figures/3ph_LLLG.png "Three-Phase-to-Ground Fault (LLLG)")
+<div style="text-align: center;">
+    <img src="figures/3ph_LLLG.png"
+    alt="Three-Phase-to-Ground Fault (LLLG)"
+    title="Three-Phase-to-Ground Fault (LLLG)"
+    width="40%"/>
+</div>
 
 ### Benchmark - SLG Fault in the IEEE 13 Node Test Feeder
 
@@ -240,7 +257,12 @@ The short-circuit calculation method can be tested using the 13-bus test network
 the power flow. As shown in the schematic of the figure bellow, a fault will be simulated on phase \textit{a} to earth
 at bus 634 with two fault impedance values.
 
-![Short-Circuit at the IEEE 13 Node Test Feeder](figures/3ph_SC_IEEE_13.png "Short-Circuit at the IEEE 13 Node Test Feeder")
+<div style="text-align: center;">
+    <img src="figures/3ph_SC_IEEE_13.png"
+    alt="Short-Circuit at the IEEE 13 Node Test Feeder"
+    title="Short-Circuit at the IEEE 13 Node Test Feeder"
+    width="90%"/>
+</div>
 
 A generator has been added to bus 632, providing an equivalent power to the network to which the system was connected.
 The sequence impedance values for the generator are $Z_1 = 0.004 + 0.5j$ p.u. for the positive sequence,
@@ -275,8 +297,10 @@ grid.add_bus(obj=bus_646)
 bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100 * 5, ypos=0)
 grid.add_bus(obj=bus_633)
 
+# Affected Bus 634 -----------------------------------------------------------------------------------------------------
 bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200 * 5, ypos=0, r_fault=0.1)
 grid.add_bus(obj=bus_634)
+# ----------------------------------------------------------------------------------------------------------------------
 
 bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100 * 5)
 grid.add_bus(obj=bus_671)
@@ -638,19 +662,34 @@ The following figure shows the GridCal results for the voltage magnitude across 
 phase a. As expected, there is a sharp voltage drop at the affected bus (634), as well as a significant reduction at
 the bus immediately upstream of the fault (633), which becomes more pronounced as the fault resistance decreases.
 
-![Short-Circuit results for phase a](figures/3ph_SC_phaseA.png "Short-Circuit results for phase a")
+<div style="text-align: center;">
+    <img src="figures/3ph_SC_phaseA.png"
+    alt="Short-Circuit results for phase a"
+    title="Short-Circuit results for phase a"
+    width="60%"/>
+</div>
 
 On the other hand, the following figures present the voltage profiles for the healthy phases b and c.
 A slight voltage rise can be observed at the most affected buses (634 and 633), while the voltage decreases across the
 remaining buses in the network.
 
-![Short-Circuit results for phase b](figures/3ph_SC_phaseB.png "Short-Circuit results for phase b")
+<div style="text-align: center;">
+    <img src="figures/3ph_SC_phaseB.png"
+    alt="Short-Circuit results for phase b"
+    title="Short-Circuit results for phase b"
+    width="60%"/>
+</div>
 
-![Short-Circuit results for phase c](figures/3ph_SC_phaseC.png "Short-Circuit results for phase c")
+<div style="text-align: center;">
+    <img src="figures/3ph_SC_phaseC.png"
+    alt="Short-Circuit results for phase c"
+    title="Short-Circuit results for phase c"
+    width="60%"/>
+</div>
 
 ## Short-Circuit in the Sequence Components
 
-GridCal has unbalanced (sequence and rectangular) short-circuit calculations.
+GridCal has also unbalanced short-circuit calculations in the sequence and rectangular components.
 
 ### API
 

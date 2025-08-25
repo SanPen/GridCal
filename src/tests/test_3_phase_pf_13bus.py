@@ -188,6 +188,7 @@ def test_ieee_13_bus_feeder():
     load_645.conn = ShuntConnectionType.GroundedStar
     grid.add_load(bus=bus_645, api_obj=load_645)
 
+    # Two-phase impedance load
     load_646 = gce.Load(G1=0.0,
                         B1=0.0,
                         G2=0.230,
@@ -197,6 +198,7 @@ def test_ieee_13_bus_feeder():
     load_646.conn = ShuntConnectionType.Delta
     grid.add_load(bus=bus_646, api_obj=load_646)
 
+    # Single-phase impedance load
     load_652 = gce.Load(G1=0.128,
                         B1=0.086,
                         G2=0.0,
@@ -224,6 +226,7 @@ def test_ieee_13_bus_feeder():
     load_675.conn = ShuntConnectionType.GroundedStar
     grid.add_load(bus=bus_675, api_obj=load_675)
 
+    # Two-phase current load
     load_671_692 = gce.Load(Ir1=0.0,
                             Ii1=0.0,
                             Ir2=0.0,
@@ -233,6 +236,7 @@ def test_ieee_13_bus_feeder():
     load_671_692.conn = ShuntConnectionType.Delta
     grid.add_load(bus=bus_671, api_obj=load_671_692)
 
+    # Single-phase current load
     load_611 = gce.Load(Ir1=0.0,
                         Ii1=0.0,
                         Ir2=0.0,
