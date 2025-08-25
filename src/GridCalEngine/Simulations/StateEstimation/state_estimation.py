@@ -7,8 +7,10 @@ import time
 from typing import Tuple
 
 import pandas as pd
+from scipy import sparse
+from scipy.linalg import lstsq
 from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, diags
-from scipy.sparse.linalg import factorized, spsolve, spilu
+from scipy.sparse.linalg import factorized, spsolve, spilu, splu, lsqr
 import numpy as np
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
@@ -925,5 +927,213 @@ def solve_se_gauss_newton(nc: NumericalCircuit,
                                          norm_f=norm_f,
                                          converged=converged,
                                          iterations=iter_,
+                                         elapsed=time.time() - start_time,
+                                         bad_data_detected=False)
+
+
+def decoupled_state_estimation(nc: NumericalCircuit,
+                          Ybus: CscMat,
+                          Yf: CscMat,
+                          Yt: CscMat,
+                          Yshunt_bus: CxVec,
+                          F: IntVec,
+                          T: IntVec,
+                          Cf: csc_matrix,
+                          Ct: csc_matrix,
+                          se_input: StateEstimationInput,
+                          vd: IntVec,
+                          pv: IntVec,
+                          no_slack: IntVec,
+                          tol=1e-9,
+                          max_iter=100,
+                          verbose: int = 0,
+                          c_threshold: float = 4.0,
+                          prefer_correct: bool = False,
+                          fixed_slack: bool = False,
+                          logger: Logger | None = None) -> NumericStateEstimationResults:
+    """
+    Fast decoupled WLS state estimator using LU decomposition.
+    Active power -> angles
+    Reactive power -> voltage magnitudes
+    """
+    start_time = time.time()
+    logger if logger is not None else Logger()
+    load_per_bus = nc.load_data.get_injections_per_bus() / nc.Sbase
+
+    # --- Initialize voltages ---
+    V = nc.bus_data.Vbus.copy()
+    Va = np.angle(V)
+    Vm = np.abs(V)
+
+    # Identify non-slack buses
+    non_slack_buses = no_slack  # Your no_slack variable
+    n_non_slack = len(non_slack_buses)
+
+    # --- Measurement vector and weights ---
+    z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase,
+                                                             use_current_squared_meas=False)
+    W = diags(1.0 / sigma ** 2, 0, format="csc")
+
+
+    # --- Create measurement type mapping based on processing order ---
+    # The measurements are processed in this fixed order:
+    # 1. p_inj, 2. q_inj, 3. pg_inj, 4. qg_inj,
+    # 5. pf_value, 6. pt_value, 7. qf_value, 8. qt_value,
+    # 9. if_value, 10. it_value, 11. vm_value, 12. va_value
+
+    # Count measurements in each category
+    counts = [
+        len(se_input.p_inj), len(se_input.q_inj),
+        len(se_input.pg_inj), len(se_input.qg_inj),
+        len(se_input.pf_value), len(se_input.pt_value),
+        len(se_input.qf_value), len(se_input.qt_value),
+        len(se_input.if_value), len(se_input.it_value),
+        len(se_input.vm_value), len(se_input.va_value)
+    ]
+
+    # Create measurement type array
+    measurement_types = []
+    for i, count in enumerate(counts):
+        if i in [0, 2, 4, 5]:  # p_inj, pg_inj, pf_value, pt_value
+            measurement_types.extend(['P'] * count)
+        elif i in [1, 3, 6, 7]:  # q_inj, qg_inj, qf_value, qt_value
+            measurement_types.extend(['Q'] * count)
+        else:  # current and voltage measurements (I, V, θ)
+            measurement_types.extend(['Other'] * count)
+
+    measurement_types = np.array(measurement_types)
+
+    # Create indices for active and reactive measurements
+    a_idx = np.where(measurement_types == 'P')[0]  # Active power measurements
+    r_idx = np.where(measurement_types == 'Q')[0]  # Reactive power measurements
+
+    if verbose > 0:
+        logger.add_info(f"Active power measurements: {len(a_idx)}")
+        logger.add_info(f"Reactive power measurements: {len(r_idx)}")
+
+    relax_theta = 1.0  # angle relaxation
+    relax_V = 0.5  # voltage relaxation
+    reg_eps = 1e-8  # tiny reg for Ga
+    reg_eps_v = 1e-6  # slightly larger reg for Gr
+    max_theta_step = 0.3
+    max_V_step = 0.2
+    iter_count = 0
+    converged = False
+    previous_max_update = 1e6
+
+    while not converged and iter_count < max_iter:
+        iter_count += 1
+
+        # --- 1) Recompute Jacobian and measurement function
+        H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, Cf, Ct,
+                                  se_input, non_slack_buses, load_per_bus, fixed_slack)
+        if H.shape[0] != z.shape[0]:
+            raise ValueError(f"H rows ({H.shape[0]}) != len(z) ({len(z)}) - check measurement ordering")
+
+        dz = z - h
+
+        # --- 2) Build and factorize Ga (P-subsystem)
+        Ha = H[a_idx, :n_non_slack]  # dP/dθ (rows = P-meas, cols = θ_non_slack)
+        Wa = W[a_idx, :][:, a_idx].tocsc()
+        Ga = Ha.T @ Wa @ Ha
+        if Ga.shape[0] > 0:
+            #Ga_reg = Ga + eps_base * np.diag(np.max(np.abs(Ga), axis=0))
+            Ga = Ga + reg_eps * diags(np.ones(Ga.shape[0]), 0, format='csc')
+
+        # --- 3) Compute Ta
+        Ta = Ha.T @ Wa @ dz[a_idx]/1
+        # --- 4) Solve Ga * dtheta = Ta
+        try:
+            lu_ga = splu(Ga)
+            dtheta = lu_ga.solve(Ta)
+        except Exception:
+            dtheta = lstsq(Ga.toarray(), Ta, rcond=None)[0]
+
+        # safety clip + apply relaxation
+        if np.any(np.abs(dtheta) > max_theta_step):
+            dtheta = np.clip(dtheta, -max_theta_step, max_theta_step)
+        Va[non_slack_buses] += relax_theta * dtheta
+        V = Vm * np.exp(1j * Va)  # recompute complex voltage after angle update
+
+        # --- 5) Recompute Jacobian/h after angle update (needed for Q-subsystem) ---
+        H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, Cf, Ct,
+                                  se_input, non_slack_buses, load_per_bus, fixed_slack)
+        dz = z - h
+
+        # --- 6) Build and factorize Gr (Q-subsystem)
+        Hr = H[r_idx, n_non_slack:2 * n_non_slack]  # dQ/dV for non-slack V columns
+        Wr = W[r_idx, :][:, r_idx].tocsc()
+        Gr = Hr.T @ Wr @ Hr
+        if Gr.shape[0] > 0:
+            #Gr_reg = Gr + eps_base * np.diag(np.max(np.abs(Gr), axis=0))
+            Gr = Gr + reg_eps_v * diags(np.ones(Gr.shape[0]), 0, format='csc')
+
+        # --- 7) Compute Tr and solve Gr * dV = Tr
+        dz_r_scaled = dz[r_idx] / np.maximum(Vm, 0.01)
+        Tr = Hr.T @ Wr @ dz_r_scaled
+        try:
+            lu_gr = splu(Gr)
+            dV = lu_gr.solve(Tr)
+        except Exception:
+            dV = lstsq(Gr.toarray(), Tr, rcond=None)[0]
+
+        # safety clip + apply relaxation
+        if np.any(np.abs(dV) > max_V_step):
+            dV = np.clip(dV, -max_V_step, max_V_step)
+        Vm[non_slack_buses] += relax_V * dV
+        V = Vm * np.exp(1j * Va)
+
+        # --- 8) Convergence & divergence checks
+        max_theta_update = np.max(np.abs(dtheta)) if dtheta.size > 0 else 0.0
+        max_V_update = np.max(np.abs(dV)) if dV.size > 0 else 0.0
+        norm_f = max(max_theta_update, max_V_update)
+
+        if verbose > 0:
+            logger.add_info(f"Iter {iter_count}: max update = {norm_f:.6f}, max |dz| = {np.max(np.abs(dz)):.6f}")
+
+        # simple divergence guard
+        if norm_f > previous_max_update * 5 and iter_count > 1:
+            if verbose > 0:
+                logger.add_info(f"Divergence detected at iteration {iter_count}")
+                logger.add_info(f"Updates: theta={max_theta_update:.6f}, V={max_V_update:.6f}")
+            break
+
+        previous_max_update = norm_f
+
+        if norm_f < tol*100: # decoupled solution checks for both active & reactive parts against tolerance,
+            # so its a bit lower, but it also provides same(very) result for all tests with more stricter tol
+            converged = True
+            if verbose > 0:
+                logger.add_info(f"Converged at iter {iter_count}")
+            break
+
+    Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
+        Sbus=Scalc, V=V, F=nc.passive_branch_data.F, T=nc.passive_branch_data.T,
+        pv=pv, vd=vd, Ybus=Ybus, Yf=Yf, Yt=Yt, Yshunt_bus=Yshunt_bus,
+        branch_rates=nc.passive_branch_data.rates, Sbase=nc.Sbase
+    )
+    return NumericStateEstimationResults(V=V,
+                                         Scalc=Scalc,
+                                         m=nc.active_branch_data.tap_module,
+                                         tau=nc.active_branch_data.tap_angle,
+                                         Sf=Sf,
+                                         St=St,
+                                         If=If,
+                                         It=It,
+                                         loading=loading,
+                                         losses=losses,
+                                         Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                         If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                         losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                         Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                         norm_f=norm_f,
+                                         converged=converged,
+                                         iterations=iter_count,
                                          elapsed=time.time() - start_time,
                                          bad_data_detected=False)

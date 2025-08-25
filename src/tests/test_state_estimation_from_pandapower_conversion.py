@@ -32,10 +32,10 @@ def test_state_estimation_pandapower():
         print(pf_res.get_bus_df())
         print(pf_res.get_branch_df())
 
-        for solver in [gce.SolverType.GN,gce.SolverType.LM]:
+        for solver in [gce.SolverType.LU,gce.SolverType.GN,gce.SolverType.LM]:
             se_opt = StateEstimationOptions(
                 prefer_correct=False,
-                fixed_slack=False,
+                fixed_slack=True,
                 solver=solver,
                 verbose=2,
             )

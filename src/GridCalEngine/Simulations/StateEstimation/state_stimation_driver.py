@@ -7,7 +7,8 @@ from typing import Union
 
 from GridCalEngine.Simulations.StateEstimation.state_estimation_results import StateEstimationResults
 from GridCalEngine.basic_structures import ConvergenceReport
-from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_nr, solve_se_lm, solve_se_gauss_newton
+from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_nr, solve_se_lm, solve_se_gauss_newton, \
+    decoupled_state_estimation
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
@@ -243,6 +244,27 @@ class StateEstimation(DriverTemplate):
 
             elif self.options.solver == SolverType.GN:
                 solution = solve_se_gauss_newton(nc=island,
+                                                 Ybus=adm.Ybus,
+                                                 Yf=adm.Yf,
+                                                 Yt=adm.Yt,
+                                                 Yshunt_bus=adm.Yshunt_bus,
+                                                 F=island.passive_branch_data.F,
+                                                 T=island.passive_branch_data.T,
+                                                 Cf=conn.Cf,
+                                                 Ct=conn.Ct,
+                                                 se_input=se_input_island,
+                                                 vd=idx.vd,
+                                                 pv=idx.pv,
+                                                 no_slack=idx.no_slack,
+                                                 tol=self.options.tol,
+                                                 max_iter=self.options.max_iter,
+                                                 verbose=self.options.verbose,
+                                                 prefer_correct=self.options.prefer_correct,
+                                                 c_threshold=self.options.c_threshold,
+                                                 fixed_slack=self.options.fixed_slack,
+                                                 logger=self.logger)
+            elif self.options.solver == SolverType.LU:
+                solution = decoupled_state_estimation(nc=island,
                                                  Ybus=adm.Ybus,
                                                  Yf=adm.Yf,
                                                  Yt=adm.Yt,

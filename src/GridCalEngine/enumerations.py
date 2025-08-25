@@ -218,6 +218,7 @@ class SolverType(Enum):
 
     NR = 'Newton Raphson'
     GAUSS = 'Gauss-Seidel'
+    LU = 'Decoupled-LU Decomposition'
     GN = "Gauss-Newton"
     Linear = 'Linear'
     HELM = 'Holomorphic Embedding'
