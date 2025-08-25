@@ -170,6 +170,7 @@ def test_ieee_13_bus_feeder():
     """
     Loads
     """
+    # Three-phase power load
     load_634 = gce.Load(P1=0.160,
                         Q1=0.110,
                         P2=0.120,
@@ -179,6 +180,7 @@ def test_ieee_13_bus_feeder():
     load_634.conn = ShuntConnectionType.GroundedStar
     grid.add_load(bus=bus_634, api_obj=load_634)
 
+    # Single-phase power load
     load_645 = gce.Load(P1=0.0,
                         Q1=0.0,
                         P2=0.170,
@@ -208,6 +210,7 @@ def test_ieee_13_bus_feeder():
     load_652.conn = ShuntConnectionType.GroundedStar
     grid.add_load(bus=bus_652, api_obj=load_652)
 
+    # Three-phase delta power load
     load_671 = gce.Load(P1=0.385,
                         Q1=0.220,
                         P2=0.385,
@@ -217,6 +220,7 @@ def test_ieee_13_bus_feeder():
     load_671.conn = ShuntConnectionType.Delta
     grid.add_load(bus=bus_671, api_obj=load_671)
 
+    # Three-phase star power load
     load_675 = gce.Load(P1=0.485,
                         Q1=0.190,
                         P2=0.068,

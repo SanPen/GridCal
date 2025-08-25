@@ -29,10 +29,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Short-circuit Documentation">
-      <change afterPath="$PROJECT_DIR$/doc/md_source/figures/3ph_SLG.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/md_source/figures/3ph_power_line.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/figures/3ph_power_line.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/md_source/modelling.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/modelling.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/md_source/short_circuit.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/md_source/short_circuit.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/tests/test_3_phase_pf_13bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_3_phase_pf_13bus.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -74,7 +73,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="392_Multiterminal_HVDC" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -748,11 +747,11 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.compare_lp" />
-        <item itemvalue="Python tests.pytest for test_ntc.test_activs_2000_acdc" />
         <item itemvalue="Python tests.pytest in test_ntc.py" />
-        <item itemvalue="Python tests.pytest for test_ntc.test_hvdc_lines_tests" />
         <item itemvalue="Python tests.pytest in tests" />
+        <item itemvalue="Python tests.pytest for test_ntc.test_hvdc_lines_tests" />
+        <item itemvalue="Python tests.pytest for test_ntc.test_activs_2000_acdc" />
+        <item itemvalue="Python.compare_lp" />
       </list>
     </recent_temporary>
   </component>
@@ -2198,16 +2197,6 @@
           <option name="timeStamp" value="2448" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/driver_handler.py</url>
-          <line>146</line>
-          <option name="timeStamp" value="2465" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_ts_results.py</url>
-          <line>345</line>
-          <option name="timeStamp" value="2490" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/remote.py</url>
           <line>175</line>
           <option name="timeStamp" value="2505" />
@@ -2253,89 +2242,14 @@
           <option name="timeStamp" value="2596" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py</url>
-          <line>504</line>
-          <option name="timeStamp" value="2598" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_ts_driver.py</url>
-          <line>243</line>
-          <option name="timeStamp" value="2599" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_gslv.py</url>
-          <line>2361</line>
-          <option name="timeStamp" value="2600" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_driver.py</url>
-          <line>181</line>
-          <option name="timeStamp" value="2601" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_gslv.py</url>
-          <line>2434</line>
-          <option name="timeStamp" value="2602" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
-          <line>229</line>
-          <option name="timeStamp" value="2635" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
-          <line>555</line>
-          <option name="timeStamp" value="2636" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py</url>
-          <line>430</line>
-          <option name="timeStamp" value="2638" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py</url>
-          <line>522</line>
-          <option name="timeStamp" value="2640" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/grid_reduction.py</url>
-          <line>274</line>
-          <option name="timeStamp" value="2646" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/ortools_interface.py</url>
           <line>11</line>
           <option name="timeStamp" value="2647" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
-          <line>1952</line>
-          <option name="timeStamp" value="2651" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py</url>
-          <line>1402</line>
-          <option name="timeStamp" value="2658" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py</url>
-          <line>1407</line>
-          <option name="timeStamp" value="2659" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py</url>
-          <line>1412</line>
-          <option name="timeStamp" value="2660" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/gslv_interface.py</url>
           <line>317</line>
           <option name="timeStamp" value="2662" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
-          <line>1399</line>
-          <option name="timeStamp" value="2664" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

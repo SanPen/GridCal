@@ -16,9 +16,14 @@ with transformers stepping voltages up or down as required. Transmission circuit
 compensation, while transformer winding configurations must be carefully modelled under unbalanced conditions. At the
 distribution level, load points can be highly unbalanced due to single-phase connections.
 
-![Electrical power system network](figures/3ph_PowerSystem.png "Electrical power system network")
+<div style="text-align: center;">
+    <img src="figures/3ph_PowerSystem.png"
+    alt="Electrical power system network"
+    title="Electrical power system network"
+    width="90%"/>
+</div>
 
-## Three-phase Overhead Lines
+## Lines
 
 Power lines are essential in delivering electricity from generation to loads. They consist of phase conductors
 positioned above the ground, sometimes using it as a return path, which must be considered in parameter calculations.
@@ -27,7 +32,12 @@ Both types can introduce geometric and electrical unbalances. Accurate modelling
 losses, based on determining the per-unit-length parameters: resistance $R$, inductance $L$, conductance $G$,
 and capacitance $C$.
 
-![Power line geometric arrangement](figures/3ph_power_line.png "Power line geometric arrangement")
+<div style="text-align: center;">
+    <img src="figures/3ph_power_line.png"
+    alt="Power line geometric arrangement"
+    title="Power line geometric arrangement"
+    width="30%"/>
+</div>
 
 ### π model
 
@@ -36,7 +46,12 @@ effects of multiconductor lines are represented by a series impedance matrix, wh
 a shunt admittance matrix. Together, these form the basis of the $\pi$-equivalent model commonly used in power system
 studies.
 
-![Line π equivalent circuit](figures/3ph_pi_model.png "Line π equivalent circuit")
+<div style="text-align: center;">
+    <img src="figures/3ph_pi_model.png"
+    alt="Line π equivalent circuit"
+    title="Line π equivalent circuit"
+    width="60%"/>
+</div>
 
 It consists of:
 
@@ -45,8 +60,8 @@ It consists of:
 - Shunt admittance: $Y_{\text{shunt}} = G + jB$
 
 In the $\pi$-model, $R$ represents conductor resistance, $X$ the self and mutual inductive reactances, $G$ the shunt
-conductance through insulation, and $B$ the shunt susceptance from line capacitance. Capacitance is divided between
-the ends, with $R$ and $X$ in the middle. While the single-phase model is common, unbalanced systems require a 5-wire
+conductance through insulation, and $B$ the shunt susceptance from line capacitance. Shunt admittance is divided between
+the ends, with series impedance in the middle. While the single-phase model is common, unbalanced systems require a 5-wire
 representation, the three-phase conductors ($a$, $b$, $c$), the neutral ($n$), and the ground ($g$). The neutral returns
 unbalanced current and stabilises voltage, while the ground provides a fault current path for safety. Each conductor
 has its own impedance, and mutual coupling between all conductors requires a $5\times 5$ impedance or admittance matrix.
@@ -81,7 +96,12 @@ ground return path. They assume long, horizontally arranged conductors with aver
 and lossless free space, uniform earth properties, and conductor spacing much greater than conductor radius to neglect
 proximity effects. The impedance matrix elements are derived from the tower geometry and conductor characteristics.
 
-![Carson’s geometry data of the tower](figures/3ph_carson.png "Carson’s geometry data of the tower")
+<div style="text-align: center;">
+    <img src="figures/3ph_carson.png"
+    alt="Carson’s geometry data of the tower"
+    title="Carson’s geometry data of the tower"
+    width="30%"/>
+</div>
 
 Then, the following equations are implemented to obtain the self and mutual values:
 
@@ -247,20 +267,93 @@ line_632_671.apply_template(config_601, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_632_671)
 ```
 
-## Three-phase Transformers
+### Definition of a line from the wire configuration
+
+**Definition of the exercise**
+
+In this tutorial we are going to define a 3-phase line with 4 wires of two different types.
+
+The cable types are the following:
+
+| name         | r        | x   | gmr      | max_current |
+|--------------|----------|-----|----------|-------------|
+| ACSR 6/1     | 1.050117 | 0.0 | 0.001274 | 180.0       |
+| Class A / AA | 0.379658 | 0.0 | 0.004267 | 263.0       |
+
+These are taken from the data_sheets__ section
+
+The layout is the following:
+
+| Wire         | x(m) | y(m) | Phase |
+|--------------|------|------|-------|
+| ACSR 6/1     | 0    | 7    | 1 (A) |
+| ACSR 6/1     | 0.4  | 7    | 2 (B) |
+| ACSR 6/1     | 0.8  | 7    | 3 (C) |
+| Class A / AA | 0.3  | 6.5  | 0 (N) |
+
+**Practice**
+
+
+We may start with a prepared example from the ones provided in the `grids and profiles` folder.
+The example file is `Some distribution grid.xlsx`. First define the wires that you are going 
+to use in the tower. For that, we proceed to the tab `Database -> Catalogue -> Wire`.
+
+![](figures/tutorials/tower/wires.png)
+
+Then, we proceed to the tab `Database -> Catalogue -> Tower`. Then we select
+one of the existing towers or we create one with the (+) button.
+
+![](figures/tutorials/tower/tower.png)
+
+By clicking on the edit button (pencil) we open a new window with the `Tower builder` editor. 
+Here we enter the tower definition, and once we are done, we click on the compute button (calculator). 
+Then the tower cross-section will
+be displayed and the results will appear in the following tabs.
+
+![](figures/tutorials/tower/editor1.png)
+
+This tab shows the series impedance matrix ($\Omega / km$) in several forms:
+
+- Per phase without reduction.
+- Per phase with the neutral embedded.
+- Sequence reduction.
+
+![](figures/tutorials/tower/editorZ.png)
+
+This tab shows the series shunt admittance matrix ($\mu S / km$) in several forms:
+
+- Per phase without reduction.
+- Per phase with the neutral embedded.
+- Sequence reduction.
+
+![](figures/tutorials/tower/editorY.png)
+
+When closed, the values are applied to the overhead line catalogue type that we were editing.
+
+## Transformers
 
 Power transformers link network sections operating at different voltages, such as generators and transmission systems.
-For two-winding, three-phase transformers, the winding impedance $\vec{Z}s$ is derived from short-circuit tests, and
-the iron-core shunt admittance $\vec{Y}{sh}$ from open-circuit tests. Modelling begins with the schematic of the basic
+For two-winding, three-phase transformers, the winding impedance $\vec{Z}_s$ is derived from short-circuit tests, and
+the iron-core shunt admittance $\vec{Y}_{sh}$ from open-circuit tests. Modelling begins with the schematic of the basic
 two-winding transformer:
 
-![Two-winding transformer](figures/3ph_single_phase_transformer.png "Two-winding transformer")
+<div style="text-align: center;">
+    <img src="figures/3ph_single_phase_transformer.png"
+    alt="Two-winding transformer"
+    title="Two-winding transformer"
+    width="50%"/>
+</div>
 
 A transformer’s primary and secondary windings, with $N_p$ and $N_s$ turns respectively, have their voltages and
 currents related through short-circuit and open-circuit admittance parameters. These relationships are represented in
 the transformer’s electrical equivalent circuit:
 
-![Transformer electrical equivalent circuit](figures/3ph_transformer_electrical_circuit.png "Transformer electrical equivalent circuit")
+<div style="text-align: center;">
+    <img src="figures/3ph_transformer_electrical_circuit.png"
+    alt="Transformer electrical equivalent circuit"
+    title="Transformer electrical equivalent circuit"
+    width="90%"/>
+</div>
 
 In the per-unit system, the transformer voltage ratio $N_p:N_s$ becomes $1:1$. Many transformers include tap
 changers to regulate voltage by adjusting the ratio to $\vec{m}:1$. In the $\pi$-model, virtual tap transformers
@@ -341,13 +434,21 @@ The three-phase windings of power transformers may be connected in several ways.
 popular connections are star and delta, although the zig-zag connection is also used in distribution systems, depicted
 in figure bellow. Consequently, connectivity matrices must be computed for each configuration.
 
-![Zig-zag transformer](figures/3ph_zigzag.png "Zig-zag transformer")
+<div style="text-align: center;">
+    <img src="figures/3ph_zigzag.png"
+    alt="Zig-zag transformer"
+    title="Zig-zag transformer"
+    width="40%"/>
+</div>
 
-### Delta-star (Dy) connection
+For instance, the following figure shows the three-phase delta-star (Dy) connection:
 
-The following shows the three-phase delta-star (Dy) connection:
-
-![Dy connection](figures/3ph_Dy_connection.png "Dy connection")
+<div style="text-align: center;">
+    <img src="figures/3ph_Dy_connection.png"
+    alt="Dy connection"
+    title="Dy connection"
+    width="70%"/>
+</div>
 
 The transformation matrix $C_U$, which relates the voltages of each winding to the corresponding phase voltages,
 is given explicitly in the following expression:
@@ -425,10 +526,9 @@ $$
 The full transformer admittance matrix for the Dy connection is obtained by substituting the connectivity matrices $C_U$
 and $C_I$:
 
-\begin{equation}
+$$
     \vec{Y} = C_I^{-1} \cdot \vec{Y}_\text{primitive} \cdot C_U
-    \label{eq:Dy_Compact}
-\end{equation}
+$$
 
 Finally, the transformer admittance matrix for the Dy connection is computed:
 
@@ -446,142 +546,6 @@ $$
 $$
 
 The admittance matrices for the other eight possible configurations have been obtained using exactly the same procedure.
-The final matrices are shown below.
-
-### Star-delta (Yd) connection
-
-$$
-\vec{Y}
-=
-\begin{bmatrix}
-    \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & 0 & 0 & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & 0 \\
-    0 & \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & 0 & 0 & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} \\
-    0 & 0 & \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & 0 & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} \\
-    \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{3m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} \\
-    \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & 0 & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{3m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} \\
-    0 & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} &  \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{3m_t^2} \\
-\end{bmatrix}
-$$
-
-### Star-star (Yy) connection
-
-$$
-\begin{bmatrix}
-    \vec{I}_A \\
-    \vec{I}_B \\
-    \vec{I}_C \\
-    \vec{I}_a \\
-    \vec{I}_b \\
-    \vec{I}_c
-\end{bmatrix}
-=
-\begin{bmatrix}
-    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} & 0 & 0 \\
-    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} & 0 \\
-    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} \\
-    \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
-    0 & \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
-    0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
-\end{bmatrix}
-\begin{bmatrix}
-    \vec{U}_A \\
-    \vec{U}_B \\
-    \vec{U}_C \\
-    \vec{U}_a \\
-    \vec{U}_b \\
-    \vec{U}_c
-\end{bmatrix} \\
-$$
-
-### Delta-delta (Dd) connection
-
-$$
-\vec{Y}
-= \frac{1}{3}
-\begin{bmatrix}
-    \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{-2\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} \\
-    \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{-2\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} \\
-    \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m^2m_f^2} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{-2\vec{Y_s}}{\vec{m}^*m_fm_t} \\
-    \dfrac{-2\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} \\
-    \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{-2\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} \\
-    \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{-2\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m_t^2} \\
-\end{bmatrix}
-$$
-
-### Star-zigzag (Yz) connection
-
-$$
-\vec{Y}
-=
-\begin{bmatrix}
-    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} & 0 & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} \\
-    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} & 0 \\
-    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} \\
-    \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
-    0 & \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
-    \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
-\end{bmatrix}
-$$
-
-### Zigzag-star (Zy) connection
-
-$$
-\vec{Y}
-=
-\begin{bmatrix}
-    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} & 0 \\
-    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} \\
-    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} \\
-    \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
-    \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
-    0 & \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
-\end{bmatrix}
-$$
-
-### Zigzag-zigzag (Zz) connection
-
-$$
-\vec{Y}
-=
-\begin{bmatrix}
-    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} & 0 & 0 \\
-    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} & 0 \\
-    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} \\
-    \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
-    0 & \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
-    0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
-\end{bmatrix}
-$$
-
-### Delta-zigzag (Dz) connection
-
-$$
-\vec{Y}
-=
-\begin{bmatrix}
-    \dfrac{2 \vec{Y_s}+\vec{Y_{sh}}} {3m^2m_f^2} & \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} &\dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} \\
-    \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{2 \vec{Y_s}+\vec{Y_{sh}}} {3m^2m_f^2} & \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} \\
-    \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{2 \vec{Y_s}+\vec{Y_{sh}}} {3m^2m_f^2} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} \\
-    \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
-    \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
-    \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
-\end{bmatrix}
-$$
-
-### Zigzag-delta (Zd) connection
-
-$$
-\vec{Y}
-=
-\begin{bmatrix}
-    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} \\
-    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} \\
-    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} \\
-    \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{2\vec{Y_s}+\vec{Y_{sh}}}{3m_t^2} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} \\
-    \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} & \dfrac{2\vec{Y_s}+\vec{Y_{sh}}}{3m_t^2} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} \\
-    \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} & \dfrac{2\vec{Y_s}+\vec{Y_{sh}}}{3m_t^2}
-\end{bmatrix}
-$$
 
 ### Vector group and clock notation
 
@@ -590,7 +554,12 @@ of a three-phase transformer, as well as the phase displacement between their vo
 The HV side connection is indicated first using uppercase letters, followed by the LV side in lowercase.
 The phase displacement is then specified using clock notation:
 
-![Clock notation](figures/3ph_clock_notation.png "Clock notation")
+<div style="text-align: center;">
+    <img src="figures/3ph_clock_notation.png"
+    alt="Clock notation"
+    title="Clock notation"
+    width="30%"/>
+</div>
 
 The full circumference of a clock is $360^\circ$, which, divided by its $12$ hours, assigns $30^\circ$ to each hour.
 If the high-voltage (HV) side is taken as the reference, the low-voltage (LV) side indicates the phase displacement
@@ -611,41 +580,183 @@ grid.fBase = 60
 # ----------------------------------------------------------------------------------------------------------------------
 # Buses
 # ----------------------------------------------------------------------------------------------------------------------
-bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
-grid.add_bus(obj=bus_633)
+bus_1 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
+grid.add_bus(obj=bus_1)
 
-bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0)
-grid.add_bus(obj=bus_634)
+bus_2 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0)
+grid.add_bus(obj=bus_2)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Transformer Definition
 # ----------------------------------------------------------------------------------------------------------------------
-XFM_1 = gce.Transformer2W(name='XFM-1',
-                          bus_from=bus_633,
-                          bus_to=bus_634,
-                          HV=4.16,
-                          LV=0.48,
-                          nominal_power=0.5,
-                          rate=0.5,
-                          r=1.1*2,
-                          x=2*2)
-XFM_1.conn_f = WindingType.GroundedStar
-XFM_1.conn_t = WindingType.GroundedStar
-grid.add_transformer2w(XFM_1)
+trafo_1 = gce.Transformer2W(name='Transformer',
+                            bus_from=bus_1,
+                            bus_to=bus_2,
+                            HV=4.16,
+                            LV=0.48,
+                            nominal_power=0.5,
+                            rate=0.5,
+                            r=1,
+                            x=2)
+trafo_1.conn_f = WindingType.GroundedStar
+trafo_1.conn_t = WindingType.GroundedStar
+grid.add_transformer2w(trafo_1)
 ```
 
-## Three-phase Loads and Shunts
+### Transformer definition from SC test values
+
+The transformers are modeled as π branches too. In order to get the series impedance and shunt admittance of
+the transformer to match the branch model, it is advised to transform the specification sheet values of the device
+into the desired values. The values to take from the specs sheet are:
+
+- $S_n$: Nominal power in MVA.
+- $HV$: Voltage at the high-voltage side in kV.
+- $LV$: Voltage at the low-voltage side in kV.
+- $V_{hv\_bus}$: Nominal voltage of the high-voltage side bus kV.
+- $V_{lv\_bus}$: Nominal voltage of the low-voltage side bus kV.
+- $V_{sc}$: Short circuit voltage in %.
+- $P_{cu}$: Copper losses in kW.
+- $I_0$: No load current in %.
+- $Share_{hv1}$: Contribution to the HV side. Value from 0 to 1.
+
+
+Short circuit impedance (p.u. of the machine)
+
+$$
+    z_{sc} = \frac{V_{sc}}{100}
+$$
+
+Short circuit resistance (p.u. of the machine)
+
+$$
+    r_{sc} = \frac{P_{cu} / 1000}{ S_n }
+$$
+
+Short circuit reactance (p.u. of the machine)
+Can only be computed if $r_{sc} < z_{sc}$
+
+$$
+    x_{sc} = \sqrt{z_{sc}^2 - r_{sc}^2}
+$$
+
+Series impedance (p.u. of the machine)
+
+$$
+    z_s = r_{sc} + j \cdot x_{sc}
+$$
+
+The issue with this is that we now must convert $zs$ from machine base to the system base.
+
+First we compute the High voltage side:
+
+$$
+    z_{base}^{HV} = \frac{HV^2}{S_n}
+$$
+
+$$
+    z_{base}^{hv\_bus} = \frac{V_{hv\_bus}^2}{S_{base}}
+$$
+
+$$
+    z_{s\_HV}^{system}  = z_s\cdot  \frac{z_{base}^{HV}}{z_{base}^{hv\_bus}} \cdot Share_{hv1}  = z_s \cdot  \frac{HV^2 \cdot S_{base}}{V_{hv\_bus}^2 \cdot S_n}  \cdot Share_{hv1}
+$$
+
+Now, we compute the Low voltage side:
+
+$$
+    z_{base}^{LV} = \frac{LV^2}{S_n}
+$$
+
+$$
+    z_{base}^{lv\_bus} = \frac{V_{lv\_bus}^2}{S_{base}}
+$$
+
+$$
+    z_{s\_LV}^{system} = z_s \cdot \frac{z_{base}^{LV}}{z_{base}^{lv\_bus}}  \cdot (1 - Share_{hv1})  = z_s \cdot  \frac{LV^2 \cdot S_{base}}{V_{lv\_bus}^2 \cdot S_n}  \cdot (1 - Share_{hv1})
+$$
+
+
+Finally, the system series impedance in p.u. is:
+
+$$
+    z_s = z_{s\_HV}^{system} + z_{s\_LV}^{system}
+$$
+
+Now, the leakage impedance (shunt of the model)
+
+$$
+    r_m = \frac{S_{base}}{P_{fe} / 1000}
+$$
+
+$$
+    z_m = \frac{100 \cdot S_{base}}{I0 \cdot S_n}
+$$
+
+$$
+    x_m = \sqrt{\frac{ - r_m^2 \cdot z_m^2}{z_m^2 - r_m^2}}
+$$
+
+Finally, the shunt admittance is (p.u. of the system):
+
+$$
+    y_{shunt} = \frac{1}{r_m} + j \cdot \frac{1}{x_m}
+$$
+
+### Inverse definition of SC values from π model
+
+In GridCal I found the need to find the short circuit values 
+($P_{cu}, V_{sc}, r_{fe}, I0$) from the branch values (*R*, *X*, *G*, *B*). Hence the following formulas:
+
+$$
+    z_{sc} = \sqrt{R^2 + X^2}
+$$
+
+$$
+    V_{sc} = 100 \cdot z_{sc}
+$$
+
+$$
+    P_{cu} = R \cdot S_n \cdot 1000
+$$
+
+
+$$
+    zl = 1 / (G + j B)
+$$
+
+$$
+    r_{fe} = zl.real
+$$
+
+$$
+    xm = zl.imag
+$$
+
+$$
+    I0 = 100 \cdot \sqrt{1 / r_{fe}^2 + 1 / xm^2}
+$$
+
+## Loads and Shunts
 
 Given the diversity of loads in power networks, they are grouped into bulk consumption points and represented using the
 ZIP model, which combines impedance, current, and power components.
 
-![ZIP model](figures/3ph_zip_model.png "ZIP model")
+<div style="text-align: center;">
+    <img src="figures/3ph_zip_model.png"
+    alt="ZIP model"
+    title="ZIP model"
+    width="50%"/>
+</div>
 
 In steady-state studies, loads are represented as three-phase power sinks, connected in star or delta. Since the
 formulation uses phase-to-neutral voltages and line currents, all loads are modelled as
 star-connected, requiring delta loads to be converted to star equivalents for impedance, current, and power injections.
 
-![Star and delta connected loads](figures/3ph_loads_star_delta.png "Star and delta connected loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_loads_star_delta.png"
+    title="Star and delta connected loads"
+    width="70%"/>
+</div>
 
 ### Constant impedance (Z) modelling of three-phase star-connected loads and shunts
 
@@ -662,7 +773,11 @@ $$
 \end{bmatrix}
 $$
 
-![Three-phase star impedance loads](figures/3ph_star_impedance.png "Three-phase star impedance loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_star_impedance.png"
+    title="Three-phase star impedance loads"
+    width="50%"/>
+</div>
 
 #### Example
 ```python
@@ -671,12 +786,11 @@ from GridCalEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
-grid.fBase = 60
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Buses
 # ----------------------------------------------------------------------------------------------------------------------
-bus = gce.Bus(name='Bus', Vnom=0.48, xpos=200*5, ypos=0)
+bus = gce.Bus(name='Bus', Vnom=0.48)
 grid.add_bus(obj=bus)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -706,7 +820,11 @@ $$
 \end{bmatrix}
 $$
 
-![Three-phase delta impedance loads](figures/3ph_delta_impedance.png "Three-phase delta impedance loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_delta_impedance.png"
+    title="Three-phase delta impedance loads"
+    width="60%"/>
+</div>
 
 #### Example
 ```python
@@ -715,12 +833,11 @@ from GridCalEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
-grid.fBase = 60
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Buses
 # ----------------------------------------------------------------------------------------------------------------------
-bus = gce.Bus(name='Bus', Vnom=0.48, xpos=200*5, ypos=0)
+bus = gce.Bus(name='Bus', Vnom=0.48)
 grid.add_bus(obj=bus)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -760,7 +877,11 @@ $$
 \end{bmatrix}
 $$
 
-![Two-phase impedance loads](figures/3ph_two_phase_impedance.png "Two-phase impedance loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_two_phase_impedance.png"
+    title="Two-phase impedance loads"
+    width="40%"/>
+</div>
 
 #### Example
 ```python
@@ -769,12 +890,11 @@ from GridCalEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
-grid.fBase = 60
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Buses
 # ----------------------------------------------------------------------------------------------------------------------
-bus = gce.Bus(name='Bus', Vnom=0.48, xpos=200*5, ypos=0)
+bus = gce.Bus(name='Bus', Vnom=0.48)
 grid.add_bus(obj=bus)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -782,10 +902,10 @@ grid.add_bus(obj=bus)
 # ----------------------------------------------------------------------------------------------------------------------
 load = gce.Load(G1=0.0,
                 B1=0.0,
-                G2=0.230,
-                B2=0.132,
-                G3=0.0,
-                B3=0.0)
+                G2=0.0,
+                B2=0.0,
+                G3=0.230,
+                B3=0.132)
 load.conn = ShuntConnectionType.Delta
 grid.add_load(bus=bus, api_obj=load)
 ```
@@ -804,7 +924,11 @@ $$
 \end{bmatrix}
 $$
 
-![Single-phase impedance loads](figures/3ph_single_phase_impedance.png "Single-phase impedance loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_single_phase_impedance.png"
+    title="Single-phase impedance loads"
+    width="20%"/>
+</div>
 
 #### Example
 ```python
@@ -813,21 +937,20 @@ from GridCalEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
-grid.fBase = 60
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Buses
 # ----------------------------------------------------------------------------------------------------------------------
-bus = gce.Bus(name='Bus', Vnom=0.48, xpos=200*5, ypos=0)
+bus = gce.Bus(name='Bus', Vnom=0.48)
 grid.add_bus(obj=bus)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Single-phase impedance load
 # ----------------------------------------------------------------------------------------------------------------------
-load = gce.Load(G1=0.128,
-                B1=0.086,
-                G2=0.0,
-                B2=0.0,
+load = gce.Load(G1=0.0,
+                B1=0.0,
+                G2=0.128,
+                B2=0.086,
                 G3=0.0,
                 B3=0.0)
 load.conn = ShuntConnectionType.GroundedStar
@@ -850,7 +973,11 @@ $$
 \end{bmatrix}
 $$
 
-![Three-phase star current loads](figures/3ph_star_current.png "Three-phase star current loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_star_current.png"
+    title="Three-phase star current loads"
+    width="50%"/>
+</div>
 
 #### Example
 ```python
@@ -859,12 +986,11 @@ from GridCalEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
-grid.fBase = 60
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Buses
 # ----------------------------------------------------------------------------------------------------------------------
-bus = gce.Bus(name='Bus', Vnom=0.48, xpos=200*5, ypos=0)
+bus = gce.Bus(name='Bus', Vnom=0.48)
 grid.add_bus(obj=bus)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -899,7 +1025,11 @@ phase to which the current load will be mapped, but rather the angle of the volt
 between the two phases to which the current-defined load is connected. Then, the angles
 will be updated in each iteration, adding significant complexity compared to the traditional power flow.
 
-![Three-phase delta current loads](figures/3ph_delta_current.png "Three-phase delta current loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_delta_current.png"
+    title="Three-phase delta current loads"
+    width="60%"/>
+</div>
 
 #### Example
 ```python
@@ -908,12 +1038,11 @@ from GridCalEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
-grid.fBase = 60
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Buses
 # ----------------------------------------------------------------------------------------------------------------------
-bus = gce.Bus(name='Bus', Vnom=0.48, xpos=200*5, ypos=0)
+bus = gce.Bus(name='Bus', Vnom=0.48)
 grid.add_bus(obj=bus)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -944,7 +1073,11 @@ $$
 \end{bmatrix}
 $$
 
-![Two-phase current loads](figures/3ph_two_phase_current.png "Two-phase current loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_two_phase_current.png"
+    title="Two-phase current loads"
+    width="40%"/>
+</div>
 
 #### Example
 ```python
@@ -953,12 +1086,11 @@ from GridCalEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
-grid.fBase = 60
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Buses
 # ----------------------------------------------------------------------------------------------------------------------
-bus = gce.Bus(name='Bus', Vnom=0.48, xpos=200*5, ypos=0)
+bus = gce.Bus(name='Bus', Vnom=0.48)
 grid.add_bus(obj=bus)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -988,7 +1120,11 @@ $$
 \end{bmatrix}
 $$
 
-![Single-phase current loads](figures/3ph_single_phase_current.png "Single-phase current loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_single_phase_current.png"
+    title="Single-phase current loads"
+    width="20%"/>
+</div>
 
 #### Example
 ```python
@@ -997,23 +1133,22 @@ from GridCalEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
-grid.fBase = 60
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Buses
 # ----------------------------------------------------------------------------------------------------------------------
-bus = gce.Bus(name='Bus', Vnom=0.48, xpos=200*5, ypos=0)
+bus = gce.Bus(name='Bus', Vnom=0.48)
 grid.add_bus(obj=bus)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Single-phase current load
 # ----------------------------------------------------------------------------------------------------------------------
 load = gce.Load(Ir1=0.0,
-                    Ii1=0.0,
-                    Ir2=0.0,
-                    Ii2=0.0,
-                    Ir3=0.170,
-                    Ii3=0.080)
+                Ii1=0.0,
+                Ir2=0.170,
+                Ii2=0.080,
+                Ir3=0.0,
+                Ii3=0.0)
 load.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus, api_obj=load)
 ```
@@ -1032,7 +1167,38 @@ $$
 \end{bmatrix}
 $$
 
-![Three-phase star power loads](figures/3ph_star_power.png "Three-phase star power loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_star_power.png"
+    title="Three-phase star power loads"
+    width="50%"/>
+</div>
+
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Three-phase star power load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(P1=0.485,
+                Q1=0.190,
+                P2=0.068,
+                Q2=0.060,
+                P3=0.290,
+                Q3=0.212)
+load.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus, api_obj=load)
+```
 
 ### Constant power (P) modelling of three-phase delta-connected loads
 
@@ -1049,7 +1215,38 @@ $$
 \end{bmatrix}
 $$
 
-![Three-phase delta power loads](figures/3ph_delta_power.png "Three-phase delta power loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_delta_power.png"
+    title="Three-phase delta power loads"
+    width="60%"/>
+</div>
+
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Three-phase delta power load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(P1=0.385,
+                Q1=0.220,
+                P2=0.385,
+                Q2=0.220,
+                P3=0.385,
+                Q3=0.220)
+load.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus, api_obj=load)
+```
 
 ### Constant power (P) modelling of two-phase loads
 
@@ -1066,7 +1263,38 @@ $$
 \end{bmatrix}
 $$
 
-![Two-phase power loads](figures/3ph_two_phase_power.png "Two-phase power loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_two_phase_power.png"
+    title="Two-phase power loads"
+    width="40%"/>
+</div>
+
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Two-phase power load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(P1=0.0,
+                Q1=0.0,
+                P2=0.0,
+                Q2=0.0,
+                P3=0.160,
+                Q3=0.110)
+load.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus, api_obj=load)
+```
 
 ### Constant power (P) modelling of single-phase loads
 
@@ -1082,16 +1310,47 @@ $$
 \end{bmatrix}
 $$
 
-![Single-phase power loads](figures/3ph_single_phase_power.png "Single-phase power loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_single_phase_power.png"
+    title="Single-phase power loads"
+    width="20%"/>
+</div>
 
-## Three-phase Generators
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Single-phase power load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(P1=0.0,
+                Q1=0.0,
+                P2=0.170,
+                Q2=0.125,
+                P3=0.0,
+                Q3=0.0)
+load.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus, api_obj=load)
+```
+
+## Generators
 
 For the power flow simulations, generators had been modelled as simple power injections into the system, which was
 completely valid. However, this is not sufficient when performing the short-circuit analysis, as the impedance of the
 generator must also be taken into account. GridCal has been programmed to accept a $3 \times 3$ impedance matrix, which
 includes both the self and mutual impedances between the $abc$ phases.
 
-It is also common to encounter generator impedances in the sequence domain. Therefore, Fortescue’s theorem must be
+It is also common to encounter generator impedances in the sequence domain. Therefore, Fortescue’s theorem is
 applied to obtain the equivalent values for the three phases:
 
 $$
@@ -1105,29 +1364,24 @@ $$
 
 Where the transformation eigenvector $\vec{a} = e^{j2\pi/3}$ is used.
 
-A key parameter that must be transferred from the power flow to the short-circuit analysis is the induced electromotive
-force (EMF) in the generators $\vec{E}$, as this is the only voltage that will not change during the fault. 
-The electromotive force depends on the flux induced in the machine's rotor, and therefore on the excitation current.
-It can be assumed that the internal voltage $\vec{E}$ of the generator remains constant during the duration of the fault.
-
 The generator could be modelled during the short-circuit using the classic Thévenin equivalent, that is, as an ideal
 voltage source in series with the generator’s impedance, as shown in the electrical circuit of the following figure:
 
-![Thévenin equivalent circuit](figures/3ph_thevenin.png "Thévenin equivalent circuit")
-
-This circuit allows us to obtain the value of the induced electromotive force, given the voltage $\vec{U}_{pf}$ and
-power $\vec{S}_{pf}$ before the fault (power flow results) at the generator’s output bus:
-
-$$
-\vec{E} = \vec{U}_{pf} + \vec{Z}_{gen} \cdot \vec{I}_{pf}
-    = \vec{U}_{pf} + \dfrac{\vec{S}_{pf}^*}{\vec{Y}_{gen} \cdot \vec{U}_{pf}^*}
-$$
+<div style="text-align: center;">
+    <img src="figures/3ph_thevenin.png"
+    title="Thévenin equivalent circuit"
+    width="50%"/>
+</div>
 
 However, this would require to add an additional bus to the original system between the generator’s impedance and the
-ideal voltage source. Therefore, the generator is modelled using its Norton equivalent, that is, an ideal current source
+ideal voltage source. Therefore, the generator can be also modelled using its Norton equivalent, that is, an ideal current source
 in parallel with the generator’s impedance, as shown in the schematic bellow:
 
-![Norton equivalent circuit](figures/3ph_norton.png "Norton equivalent circuit")
+<div style="text-align: center;">
+    <img src="figures/3ph_norton.png"
+    title="Norton equivalent circuit"
+    width="35%"/>
+</div>
 
 The Norton current source will take the value of the internal voltage multiplied by its admittance:
 
@@ -1137,111 +1391,9 @@ $$
 
 ## Three-phase Voltage Source Converters
 
-## AC modelling
+To be done.
 
-### Universal Branch Model
-
-This section describes the positive‑sequence branch model implemented in **GridCal**. 
-The formulation is state‑of‑the‑art and general enough to cover overhead lines, 
-cables and transformers.
-
-![π model of a branch](figures/BranchModel.png "π model of a branch")
-
-To define the π‑model we must specify the following quantities:
-
-| Magnitude | Units | Description |
-|-----------|-------|-------------|
-| $R$ | p.u. | Resistance of the equivalent branch. |
-| $X$ | p.u. | Reactance of the equivalent branch. |
-| $G$ | p.u. | Shunt conductance. |
-| $B$ | p.u. | Shunt susceptance. |
-| $|\mathrm{tap}|$ | p.u. | Transformer tap magnitude (internal voltage regulation, e.g. 0.98 or 1.05). |
-| $\delta$ | rad | Phase‑shift angle. |
-| $\mathrm{tap}_f$ | p.u. | *Virtual* tap on the high‑voltage side (difference between bus HV rating and transformer HV rating). |
-| $\mathrm{tap}_t$ | p.u. | *Virtual* tap on the low‑voltage side (difference between bus LV rating and transformer LV rating). |
-
-`GridCal` computes $\mathrm{tap}_f$ and $\mathrm{tap}_t$ automatically, taking the connection sense into account.
-
-#### Basic complex quantities
-
-$$
-Y_s = \frac{1}{R + jX}
-$$
-
-$$
-Y_{sh} = G + jB
-$$
-
-$$
-\mathrm{tap} = |\mathrm{tap}| \, e^{j\delta}
-$$
-
-$$
-\mathrm{tap}_f = \frac{V_{HV}}{V_{\text{bus, HV}}}
-$$
-
-$$
-\mathrm{tap}_t = \frac{V_{LV}}{V_{\text{bus, LV}}}
-$$
-
-#### Primitive admittances
-
-$$
-Y_{tt} = \frac{Y_s + Y_{sh}}{2\,\mathrm{tap}_t^{2}}
-$$
-
-$$
-Y_{ff} = \frac{Y_s + Y_{sh}}{2\,\mathrm{tap}_f^{2}\,\mathrm{tap}\,\mathrm{tap}^*}
-$$
-
-$$
-Y_{ft} = -\frac{Y_s}{\mathrm{tap}_f\,\mathrm{tap}_t\,\mathrm{tap}^*}
-$$
-
-$$
-Y_{tf} = -\frac{Y_s}{\mathrm{tap}_t\,\mathrm{tap}_f\,\mathrm{tap}}
-$$
-
-In the actual implementation all branch primitives are assembled simultaneously 
-in matrix form; the scalar expressions above are shown purely for clarity.
-
-
-
-#### Temperature correction
-
-`GridCal` can adjust the resistance to account for conductor temperature:
-
-$$
-R' = R \bigl(1 + \alpha\,\Delta t\bigr)
-$$
-
-where $\alpha$ depends on the conductor material and $\Delta t$ is the 
-temperature rise above the reference value (commonly 20 °C).
-
-| Material | Reference T (°C) | $\alpha$ (1/°C) |
-|----------|-----------------|------------------|
-| Copper | 20 | 0.004041 |
-| Copper | 75 | 0.00323 |
-| Annealed copper | 20 | 0.00393 |
-| Aluminum | 20 | 0.004308 |
-| Aluminum | 75 | 0.00330 |
-
-
-
-#### Embedded tap‑changer
-
-The general branch model includes a **discrete tap changer** so that the 
-magnitude $|\mathrm{tap}|$ can be regulated manually or automatically by 
-the power‑flow routines, enabling realistic transformer control within simulations.
-
-
-## AC-DC modelling
-
-
-## Substations modelling
-
-
-## Distribution Grid example
+## Distribution Grid Example in the Sequence Reference Frame
 
 This tutorial shows a step by step guide on how to build distribution grid 
 system that contains: 13 Buses, 4 Transformers, 4 Loads. 
@@ -1754,7 +1906,7 @@ From the result plots you can do various things with the plot:
 
 ![](figures/tutorials/dg/plotoptions.png)
 
-## 5 Node example (API)
+## Power Flow on the 5-Node Example Grid
 
 This example creates the five-node grid from the fantastic book
 "Power System Load Flow Analysis" and runs a power flow. After the power flow is executed,
@@ -1813,199 +1965,115 @@ print(results.get_bus_df())
 print(results.get_branch_df())
 ```
 
+## AC-DC modelling
+
+To be done.
+
+## Substations modelling
+
+To be done.
 
 
 
 
-## Definition of a line from the wire configuration
-
-
-**Definition of the exercise**
-
-
-In this tutorial we are going to define a 3-phase line with 4 wires of two different types.
-
-The cable types are the following:
-
-| name         | r        | x   | gmr      | max_current |
-|--------------|----------|-----|----------|-------------|
-| ACSR 6/1     | 1.050117 | 0.0 | 0.001274 | 180.0       |
-| Class A / AA | 0.379658 | 0.0 | 0.004267 | 263.0       |
-
-These are taken from the data_sheets__ section
-
-The layout is the following:
-
-| Wire         | x(m) | y(m) | Phase |
-|--------------|------|------|-------|
-| ACSR 6/1     | 0    | 7    | 1 (A) |
-| ACSR 6/1     | 0.4  | 7    | 2 (B) |
-| ACSR 6/1     | 0.8  | 7    | 3 (C) |
-| Class A / AA | 0.3  | 6.5  | 0 (N) |
-
-**Practice**
-
-
-We may start with a prepared example from the ones provided in the `grids and profiles` folder.
-The example file is `Some distribution grid.xlsx`. First define the wires that you are going 
-to use in the tower. For that, we proceed to the tab `Database -> Catalogue -> Wire`.
-
-![](figures/tutorials/tower/wires.png)
-
-Then, we proceed to the tab `Database -> Catalogue -> Tower`. Then we select
-one of the existing towers or we create one with the (+) button.
-
-![](figures/tutorials/tower/tower.png)
-
-By clicking on the edit button (pencil) we open a new window with the `Tower builder` editor. 
-Here we enter the tower definition, and once we are done, we click on the compute button (calculator). 
-Then the tower cross-section will
-be displayed and the results will appear in the following tabs.
-
-![](figures/tutorials/tower/editor1.png)
-
-This tab shows the series impedance matrix ($\Omega / km$) in several forms:
-
-- Per phase without reduction.
-- Per phase with the neutral embedded.
-- Sequence reduction.
-
-![](figures/tutorials/tower/editorZ.png)
-
-This tab shows the series shunt admittance matrix ($\mu S / km$) in several forms:
-
-- Per phase without reduction.
-- Per phase with the neutral embedded.
-- Sequence reduction.
-
-![](figures/tutorials/tower/editorY.png)
-
-When closed, the values are applied to the overhead line catalogue type that we were editing.
 
 
 
-## Transformer definition from SC test values
+# TO REMOVE?
 
-The transformers are modeled as π branches too. In order to get the series impedance and shunt admittance of
-the transformer to match the branch model, it is advised to transform the specification sheet values of the device
-into the desired values. The values to take from the specs sheet are:
+## AC modelling
 
-- $S_n$: Nominal power in MVA.
-- $HV$: Voltage at the high-voltage side in kV.
-- $LV$: Voltage at the low-voltage side in kV.
-- $V_{hv\_bus}$: Nominal voltage of the high-voltage side bus kV.
-- $V_{lv\_bus}$: Nominal voltage of the low-voltage side bus kV.
-- $V_{sc}$: Short circuit voltage in %.
-- $P_{cu}$: Copper losses in kW.
-- $I_0$: No load current in %.
-- $Share_{hv1}$: Contribution to the HV side. Value from 0 to 1.
+### Universal Branch Model
 
+This section describes the positive‑sequence branch model implemented in **GridCal**. 
+The formulation is state‑of‑the‑art and general enough to cover overhead lines, 
+cables and transformers.
 
-Short circuit impedance (p.u. of the machine)
+![π model of a branch](figures/BranchModel.png "π model of a branch")
+
+To define the π‑model we must specify the following quantities:
+
+| Magnitude | Units | Description |
+|-----------|-------|-------------|
+| $R$ | p.u. | Resistance of the equivalent branch. |
+| $X$ | p.u. | Reactance of the equivalent branch. |
+| $G$ | p.u. | Shunt conductance. |
+| $B$ | p.u. | Shunt susceptance. |
+| $|\mathrm{tap}|$ | p.u. | Transformer tap magnitude (internal voltage regulation, e.g. 0.98 or 1.05). |
+| $\delta$ | rad | Phase‑shift angle. |
+| $\mathrm{tap}_f$ | p.u. | *Virtual* tap on the high‑voltage side (difference between bus HV rating and transformer HV rating). |
+| $\mathrm{tap}_t$ | p.u. | *Virtual* tap on the low‑voltage side (difference between bus LV rating and transformer LV rating). |
+
+`GridCal` computes $\mathrm{tap}_f$ and $\mathrm{tap}_t$ automatically, taking the connection sense into account.
+
+#### Basic complex quantities
 
 $$
-    z_{sc} = \frac{V_{sc}}{100}
-$$
-
-Short circuit resistance (p.u. of the machine)
-
-$$
-    r_{sc} = \frac{P_{cu} / 1000}{ S_n }
-$$
-
-Short circuit reactance (p.u. of the machine)
-Can only be computed if $r_{sc} < z_{sc}$
-
-$$
-    x_{sc} = \sqrt{z_{sc}^2 - r_{sc}^2}
-$$
-
-Series impedance (p.u. of the machine)
-
-$$
-    z_s = r_{sc} + j \cdot x_{sc}
-$$
-
-The issue with this is that we now must convert $zs$ from machine base to the system base.
-
-First we compute the High voltage side:
-
-$$
-    z_{base}^{HV} = \frac{HV^2}{S_n}
-
-    z_{base}^{hv\_bus} = \frac{V_{hv\_bus}^2}{S_{base}}
-
-    z_{s\_HV}^{system}  = z_s\cdot  \frac{z_{base}^{HV}}{z_{base}^{hv\_bus}} \cdot Share_{hv1}  = z_s \cdot  \frac{HV^2 \cdot S_{base}}{V_{hv\_bus}^2 \cdot S_n}  \cdot Share_{hv1}
-$$
-
-Now, we compute the Low voltage side:
-
-$$
-    z_{base}^{LV} = \frac{LV^2}{S_n}
-
-    z_{base}^{lv\_bus} = \frac{V_{lv\_bus}^2}{S_{base}}
-
-    z_{s\_LV}^{system} = z_s \cdot \frac{z_{base}^{LV}}{z_{base}^{lv\_bus}}  \cdot (1 - Share_{hv1})  = z_s \cdot  \frac{LV^2 \cdot S_{base}}{V_{lv\_bus}^2 \cdot S_n}  \cdot (1 - Share_{hv1})
-$$
-
-
-Finally, the system series impedance in p.u. is:
-
-$$
-    z_s = z_{s\_HV}^{system} + z_{s\_LV}^{system}
-$$
-
-Now, the leakage impedance (shunt of the model)
-
-$$
-    r_m = \frac{S_{base}}{P_{fe} / 1000}
+Y_s = \frac{1}{R + jX}
 $$
 
 $$
-    z_m = \frac{100 \cdot S_{base}}{I0 \cdot S_n}
+Y_{sh} = G + jB
 $$
 
 $$
-    x_m = \sqrt{\frac{ - r_m^2 \cdot z_m^2}{z_m^2 - r_m^2}}
-$$
-
-Finally, the shunt admittance is (p.u. of the system):
-
-$$
-    y_{shunt} = \frac{1}{r_m} + j \cdot \frac{1}{x_m}
-$$
-
-
-## Inverse definition of SC values from π model
-
-In GridCal I found the need to find the short circuit values 
-($P_{cu}, V_{sc}, r_{fe}, I0$) from the branch values (*R*, *X*, *G*, *B*). Hence the following formulas:
-
-$$
-    z_{sc} = \sqrt{R^2 + X^2}
+\mathrm{tap} = |\mathrm{tap}| \, e^{j\delta}
 $$
 
 $$
-    V_{sc} = 100 \cdot z_{sc}
+\mathrm{tap}_f = \frac{V_{HV}}{V_{\text{bus, HV}}}
 $$
 
 $$
-    P_{cu} = R \cdot S_n \cdot 1000
+\mathrm{tap}_t = \frac{V_{LV}}{V_{\text{bus, LV}}}
 $$
 
+#### Primitive admittances
 
 $$
-    zl = 1 / (G + j B)
-$$
-
-$$
-    r_{fe} = zl.real
+Y_{tt} = \frac{Y_s + Y_{sh}}{2\,\mathrm{tap}_t^{2}}
 $$
 
 $$
-    xm = zl.imag
+Y_{ff} = \frac{Y_s + Y_{sh}}{2\,\mathrm{tap}_f^{2}\,\mathrm{tap}\,\mathrm{tap}^*}
 $$
 
 $$
-    I0 = 100 \cdot \sqrt{1 / r_{fe}^2 + 1 / xm^2}
+Y_{ft} = -\frac{Y_s}{\mathrm{tap}_f\,\mathrm{tap}_t\,\mathrm{tap}^*}
 $$
+
+$$
+Y_{tf} = -\frac{Y_s}{\mathrm{tap}_t\,\mathrm{tap}_f\,\mathrm{tap}}
+$$
+
+In the actual implementation all branch primitives are assembled simultaneously 
+in matrix form; the scalar expressions above are shown purely for clarity.
+
+
+
+#### Temperature correction
+
+`GridCal` can adjust the resistance to account for conductor temperature:
+
+$$
+R' = R \bigl(1 + \alpha\,\Delta t\bigr)
+$$
+
+where $\alpha$ depends on the conductor material and $\Delta t$ is the 
+temperature rise above the reference value (commonly 20 °C).
+
+| Material | Reference T (°C) | $\alpha$ (1/°C) |
+|----------|-----------------|------------------|
+| Copper | 20 | 0.004041 |
+| Copper | 75 | 0.00323 |
+| Annealed copper | 20 | 0.00393 |
+| Aluminum | 20 | 0.004308 |
+| Aluminum | 75 | 0.00330 |
+
+
+
+#### Embedded tap‑changer
+
+The general branch model includes a **discrete tap changer** so that the 
+magnitude $|\mathrm{tap}|$ can be regulated manually or automatically by 
+the power‑flow routines, enabling realistic transformer control within simulations.
