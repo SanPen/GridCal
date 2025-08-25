@@ -7,7 +7,7 @@ import numba as nb
 import numpy as np
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Simulations.OPF.simple_dispatch_ts import greedy_dispatch
+from GridCalEngine.Simulations.OPF.simple_dispatch_ts import greedy_dispatch2
 from GridCalEngine.basic_structures import IntMat, Vec, Mat
 
 """
@@ -222,6 +222,7 @@ def reliability_simulation(n_sim: int,
     """
     lole_arr = np.zeros(n_sim)
     total_cost_arr = np.zeros(n_sim)
+    curtailment_arr = np.zeros(n_sim)
     for sim_idx in nb.prange(n_sim):
         simulated_gen_actives, n_failures = generate_states_matrix(mttf=gen_mttf,
                                                                    mttr=gen_mttr,
@@ -239,7 +240,9 @@ def reliability_simulation(n_sim: int,
 
             (gen_dispatch, batt_dispatch,
              batt_energy, total_cost,
-             load_not_supplied, load_shedding) = greedy_dispatch(
+             load_not_supplied, load_shedding,
+             ndg_surplus_after_batt,
+             ndg_curtailment_per_gen) = greedy_dispatch2(
                 load_profile=load_profile,
                 gen_profile=gen_profile,
                 gen_p_max=simulated_gen_max,
@@ -263,5 +266,6 @@ def reliability_simulation(n_sim: int,
 
             lole_arr[sim_idx] = np.sum(load_not_supplied)
             total_cost_arr[sim_idx] = total_cost
+            curtailment_arr[sim_idx] = np.sum(ndg_surplus_after_batt)
 
-    return lole_arr, total_cost_arr
+    return lole_arr, total_cost_arr, curtailment_arr
