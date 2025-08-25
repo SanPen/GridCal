@@ -83,9 +83,13 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                                           apply_temperature=self.pf_options.apply_temperature_correction,
                                           branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
                                           opf_results=self.opf_results,
+                                          control_remote_voltage=self.pf_options.control_remote_voltage,
                                           logger=self.logger)
 
         islands = nc.split_into_islands(ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
+
+        I0 = nc.get_current_injections_pu()
+        Y0 = nc.get_admittance_injections_pu()
 
         result_series = list()
 
@@ -107,6 +111,8 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                                           branch_rates=island.passive_branch_data.rates,
                                           Sbase=island.Sbase,
                                           Sbus_base=self.inputs.Sbase[island.bus_data.original_idx],
+                                          I0=I0[island.bus_data.original_idx],
+                                          Y0=Y0[island.bus_data.original_idx],
                                           Sbus_target=self.inputs.Starget[island.bus_data.original_idx],
                                           V=self.inputs.Vbase[island.bus_data.original_idx],
                                           distributed_slack=self.pf_options.distributed_slack,
@@ -126,7 +132,6 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                                           max_it=self.options.max_it,
                                           stop_at=self.options.stop_at,
                                           control_q=self.pf_options.control_Q,
-                                          control_remote_voltage=self.pf_options.control_remote_voltage,
                                           qmax_bus=Qmax_bus,
                                           qmin_bus=Qmin_bus,
                                           original_bus_types=island.bus_data.bus_types,

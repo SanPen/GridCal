@@ -9,7 +9,7 @@ import cmath
 import copy
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union, Set, TYPE_CHECKING
+from typing import List, Dict, Tuple, Union, Set, Sequence, TYPE_CHECKING
 from uuid import getnode as get_mac, uuid4
 import networkx as nx
 from matplotlib import pyplot as plt
@@ -22,7 +22,7 @@ from GridCalEngine.basic_structures import IntVec, Vec, Mat, CxVec, IntMat, CxMa
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, AREA_TYPES
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Topology.topology as tp
+from GridCalEngine.Topology.topology import find_different_states
 from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType
 
 if TYPE_CHECKING:
@@ -292,7 +292,7 @@ class MultiCircuit(Assets):
                  and that [5, 6, 7, 8] are represented by the topology of 5
         """
 
-        return tp.find_different_states(states_array=self.get_branch_active_time_array())
+        return find_different_states(states_array=self.get_branch_active_time_array())
 
     def copy(self) -> "MultiCircuit":
         """
@@ -2688,7 +2688,7 @@ class MultiCircuit(Assets):
         # for i, elm in enumerate(self.get_loads()):
         #     elm.P = results.load_power[i]
 
-    def get_reduction_sets(self, reduction_bus_indices: IntVec,
+    def get_reduction_sets(self, reduction_bus_indices: Sequence[int],
                            add_vsc=False, add_hvdc=False, add_switch=True) -> Tuple[IntVec, IntVec, IntVec, IntVec]:
         """
         Generate the set of bus indices for grid reduction

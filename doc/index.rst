@@ -51,6 +51,7 @@ Contents
 
     md_source/topology.md
     md_source/clustering.md
+    md_source/grid_reduction.md
 
     md_source/power_flow.md
     md_source/linear_analysis.md

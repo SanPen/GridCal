@@ -43,7 +43,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
     nc = compile_numerical_circuit_at(grid, t_idx=t_idx)
 
     if options.pf_options is None:
-        pf_opts = PowerFlowOptions(solver_type=SolverType.DC,
+        pf_opts = PowerFlowOptions(solver_type=SolverType.Linear,
                                    ignore_single_node_islands=True)
 
     else:

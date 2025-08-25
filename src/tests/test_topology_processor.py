@@ -613,7 +613,7 @@ def test_nc_active_works() -> None:
     main_circuit = FileOpen(fname).open()
     nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
 
-    for slv in [SolverType.DC, SolverType.LACPF,
+    for slv in [SolverType.Linear, SolverType.LACPF,
                 SolverType.NR, SolverType.LM, SolverType.PowellDogLeg, SolverType.IWAMOTO, SolverType.HELM,
                 SolverType.FASTDECOUPLED, SolverType.GAUSS]:
         options = PowerFlowOptions(solver_type=slv)

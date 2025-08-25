@@ -36,10 +36,8 @@ def cgmes_object():
 
 def calc_node_dict_object() -> Dict[str, gcdev.Bus]:
     d = dict()
-    bus_data = BusData(1)
-    bus_data.Vnom = 10
-    d["tn1"] = bus_data
-    d["tn2"] = bus_data
+    d["tn1"] = gcdev.Bus(Vnom=10)
+    d["tn2"] = gcdev.Bus(Vnom=10)
     return d
 
 

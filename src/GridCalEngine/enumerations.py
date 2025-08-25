@@ -218,7 +218,7 @@ class SolverType(Enum):
 
     NR = 'Newton Raphson'
     GAUSS = 'Gauss-Seidel'
-    DC = 'Linear DC'
+    Linear = 'Linear'
     HELM = 'Holomorphic Embedding'
     # ZBUS = 'Z-Gauss-Seidel'
     PowellDogLeg = "Powell's Dog Leg"
@@ -997,6 +997,7 @@ class DeviceType(Enum):
     PtMeasurementDevice = 'Pt Measurement'
     QtMeasurementDevice = 'Qt Measurement'
     VmMeasurementDevice = 'Vm Measurement'
+    VaMeasurementDevice = 'Va Measurement'
     IfMeasurementDevice = 'If Measurement'
     ItMeasurementDevice = 'It Measurement'
 
@@ -2124,6 +2125,7 @@ class GridReductionMethod(Enum):
     GridReductionMethod
     """
     Ward = "Ward"
+    DiShi = "DiShi"
     WardLinear = "Ward linear"
     PTDF = "PTDF"
 

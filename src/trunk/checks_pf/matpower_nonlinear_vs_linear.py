@@ -15,7 +15,7 @@ def run_grid(fname):
 
         res_linear = gce.power_flow(
             grid=grid,
-            options=gce.PowerFlowOptions(solver_type=gce.SolverType.DC,
+            options=gce.PowerFlowOptions(solver_type=gce.SolverType.Linear,
                                          retry_with_other_methods=False,
                                          use_stored_guess=False)
         )

@@ -7,9 +7,11 @@ from GridCalEngine.api import *
 np.set_printoptions(linewidth=10000)
 
 
-def test_3_node() -> None:
+def test_3_node_abur_exposito() -> None:
     """
-    3-bus state estimation test from monticellí's book
+    3-bus state estimation test from
+    Power System State Estimation Theory and Implementation
+    Ali Abur and Antonio Gomez Expósito
     """
     grid = MultiCircuit()
 
@@ -22,15 +24,16 @@ def test_3_node() -> None:
     br3 = Line(bus_from=b2, bus_to=b3, name='Br3', r=0.03, x=0.08)
 
     # add measurements
-    Sb = grid.Sbase
+    Sb = 100.0
+
+    # Note: THe book measurements are in p.u. so we need to scale them back to insert them
 
     grid.add_pf_measurement(PfMeasurement(0.888 * Sb, 0.008 * Sb, br1))
     grid.add_pf_measurement(PfMeasurement(1.173 * Sb, 0.008 * Sb, br2))
+    grid.add_pi_measurement(PiMeasurement(-0.501 * Sb, 0.01 * Sb, b2))
 
     grid.add_qf_measurement(QfMeasurement(0.568 * Sb, 0.008 * Sb, br1))
     grid.add_qf_measurement(QfMeasurement(0.663 * Sb, 0.008 * Sb, br2))
-
-    grid.add_pi_measurement(PiMeasurement(-0.501 * Sb, 0.01 * Sb, b2))
     grid.add_qi_measurement(QiMeasurement(-0.286 * Sb, 0.01 * Sb, b2))
 
     grid.add_vm_measurement(VmMeasurement(1.006, 0.004, b1))
@@ -63,3 +66,7 @@ def test_3_node() -> None:
 
     results = np.array([0.99962926+0.j, 0.97392515-0.02120941j, 0.94280676-0.04521561j])
     assert np.allclose(se.results.voltage, results)
+
+
+def test_3_bus_monticelli():
+    pass

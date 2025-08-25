@@ -65,9 +65,13 @@ class Assets:
         '_pi_measurements',
         '_qi_measurements',
         '_vm_measurements',
+        '_va_measurements',
         '_pf_measurements',
+        '_pt_measurements',
         '_qf_measurements',
+        '_qt_measurements',
         '_if_measurements',
+        '_it_measurements',
         '_overhead_line_types',
         '_wire_types',
         '_underground_cable_types',
@@ -169,9 +173,13 @@ class Assets:
         self._pi_measurements: List[dev.PiMeasurement] = list()
         self._qi_measurements: List[dev.QiMeasurement] = list()
         self._vm_measurements: List[dev.VmMeasurement] = list()
+        self._va_measurements: List[dev.VaMeasurement] = list()
         self._pf_measurements: List[dev.PfMeasurement] = list()
+        self._pt_measurements: List[dev.PtMeasurement] = list()
         self._qf_measurements: List[dev.QfMeasurement] = list()
+        self._qt_measurements: List[dev.QtMeasurement] = list()
         self._if_measurements: List[dev.IfMeasurement] = list()
+        self._it_measurements: List[dev.ItMeasurement] = list()
 
         # List of overhead line objects
         self._overhead_line_types: List[dev.OverheadLineType] = list()
@@ -2342,6 +2350,70 @@ class Assets:
             pass
 
     # ------------------------------------------------------------------------------------------------------------------
+    # Va measurement
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @property
+    def va_measurements(self) -> List[dev.VaMeasurement]:
+        """
+        Get list of VaMeasurements
+        :return:
+        """
+        return self._va_measurements
+
+    @va_measurements.setter
+    def va_measurements(self, value: List[dev.VaMeasurement]):
+        self._va_measurements = value
+
+    def get_va_measurements(self) -> List[dev.VaMeasurement]:
+        """
+        List of va_measurements
+        :return: List[dev.VaMeasurement]
+        """
+        return self._va_measurements
+
+    def get_va_measurements_number(self) -> int:
+        """
+        Size of the list of va_measurements
+        :return: size of va_measurements
+        """
+        return len(self._va_measurements)
+
+    def get_va_measurement_at(self, i: int) -> dev.VaMeasurement:
+        """
+        Get va_measurement at i
+        :param i: index
+        :return: VaMeasurement
+        """
+        return self._va_measurements[i]
+
+    def get_va_measurement_names(self) -> StrVec:
+        """
+        Array of va_measurement names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self._va_measurements])
+
+    def add_va_measurement(self, obj: dev.VaMeasurement):
+        """
+        Add a VaMeasurement object
+        :param obj: VmMeasurement instance
+        """
+        if self.time_profile is not None:
+            obj.ensure_profiles_exist(self.time_profile)
+        self._va_measurements.append(obj)
+
+    def delete_va_measurement(self, obj: dev.VaMeasurement) -> None:
+        """
+        Add a VaMeasurement object
+        :param obj: VaMeasurement instance
+        """
+        try:
+            self._va_measurements.remove(obj)
+        except ValueError:
+            pass
+
+    # ------------------------------------------------------------------------------------------------------------------
     # Pf measurement
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -2403,6 +2475,71 @@ class Assets:
         """
         try:
             self._pf_measurements.remove(obj)
+        except ValueError:
+            pass
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Pt measurement
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @property
+    def pt_measurements(self) -> List[dev.PtMeasurement]:
+        """
+        Get list of PtMeasuremnts
+        :return:
+        """
+        return self._pt_measurements
+
+    @pt_measurements.setter
+    def pt_measurements(self, value: List[dev.PtMeasurement]):
+        self._pt_measurements = value
+
+    def get_pt_measurements(self) -> List[dev.PtMeasurement]:
+        """
+        List of pt_measurements
+        :return: List[dev.PtMeasurement]
+        """
+        return self._pt_measurements
+
+    def get_pt_measurements_number(self) -> int:
+        """
+        Size of the list of pt_measurements
+        :return: size of pt_measurements
+        """
+        return len(self._pt_measurements)
+
+    def get_pt_measurement_at(self, i: int) -> dev.PtMeasurement:
+        """
+        Get pt_measurement at i
+        :param i: index
+        :return: PfMeasurement
+        """
+        return self._pt_measurements[i]
+
+    def get_pt_measurement_names(self) -> StrVec:
+        """
+        Array of pt_measurement names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self._pt_measurements])
+
+    def add_pt_measurement(self, obj: dev.PtMeasurement):
+        """
+        Add a PfMeasurement object
+        :param obj: PfMeasurement instance
+        """
+
+        if self.time_profile is not None:
+            obj.ensure_profiles_exist(self.time_profile)
+        self._pt_measurements.append(obj)
+
+    def delete_pt_measurement(self, obj: dev.PtMeasurement) -> None:
+        """
+        Add a PtMeasurement object
+        :param obj: PtMeasurement instance
+        """
+        try:
+            self._pt_measurements.remove(obj)
         except ValueError:
             pass
 
@@ -2472,6 +2609,71 @@ class Assets:
             pass
 
     # ------------------------------------------------------------------------------------------------------------------
+    # Qt measurement
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @property
+    def qt_measurements(self) -> List[dev.QtMeasurement]:
+        """
+        Get list of Qt measurements
+        :return:
+        """
+        return self._qt_measurements
+
+    @qt_measurements.setter
+    def qt_measurements(self, value: List[dev.QtMeasurement]):
+        self._qt_measurements = value
+
+    def get_qt_measurements(self) -> List[dev.QtMeasurement]:
+        """
+        List of qt_measurements
+        :return: List[dev.QtMeasurement]
+        """
+        return self._qt_measurements
+
+    def get_qt_measurements_number(self) -> int:
+        """
+        Size of the list of qt_measurements
+        :return: size of qt_measurements
+        """
+        return len(self._qt_measurements)
+
+    def get_qt_measurement_at(self, i: int) -> dev.QtMeasurement:
+        """
+        Get qt_measurement at i
+        :param i: index
+        :return: QtMeasurement
+        """
+        return self._qt_measurements[i]
+
+    def get_qt_measurement_names(self) -> StrVec:
+        """
+        Array of qt_measurement names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self._qt_measurements])
+
+    def add_qt_measurement(self, obj: dev.QtMeasurement):
+        """
+        Add a QtMeasurement object
+        :param obj: QtMeasurement instance
+        """
+
+        if self.time_profile is not None:
+            obj.ensure_profiles_exist(self.time_profile)
+        self._qt_measurements.append(obj)
+
+    def delete_qt_measurement(self, obj: dev.QtMeasurement) -> None:
+        """
+        Add a QtMeasurement object
+        :param obj: QtMeasurement instance
+        """
+        try:
+            self._qt_measurements.remove(obj)
+        except ValueError:
+            pass
+
+    # ------------------------------------------------------------------------------------------------------------------
     # If measurement
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -2533,6 +2735,71 @@ class Assets:
         """
         try:
             self._if_measurements.remove(obj)
+        except ValueError:
+            pass
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # It measurement
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @property
+    def it_measurements(self) -> List[dev.ItMeasurement]:
+        """
+        Get list of It measurements
+        :return:
+        """
+        return self._it_measurements
+
+    @it_measurements.setter
+    def it_measurements(self, value: List[dev.ItMeasurement]):
+        self._it_measurements = value
+
+    def get_it_measurements(self) -> List[dev.ItMeasurement]:
+        """
+        List of it_measurements
+        :return: List[dev.ItMeasurement]
+        """
+        return self._it_measurements
+
+    def get_it_measurements_number(self) -> int:
+        """
+        Size of the list of it_measurements
+        :return: size of it_measurements
+        """
+        return len(self._it_measurements)
+
+    def get_it_measurement_at(self, i: int) -> dev.ItMeasurement:
+        """
+        Get it_measurement at i
+        :param i: index
+        :return: ItMeasurement
+        """
+        return self._it_measurements[i]
+
+    def get_it_measurement_names(self) -> StrVec:
+        """
+        Array of it_measurement names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self._it_measurements])
+
+    def add_it_measurement(self, obj: dev.ItMeasurement):
+        """
+        Add a ItMeasurement object
+        :param obj: ItMeasurement instance
+        """
+
+        if self.time_profile is not None:
+            obj.ensure_profiles_exist(self.time_profile)
+        self._it_measurements.append(obj)
+
+    def delete_it_measurement(self, obj: dev.ItMeasurement) -> None:
+        """
+        Add a ItMeasurement object
+        :param obj: ItMeasurement instance
+        """
+        try:
+            self._it_measurements.remove(obj)
         except ValueError:
             pass
 
@@ -5236,14 +5503,26 @@ class Assets:
         elif device_type == DeviceType.PfMeasurementDevice:
             return self.get_pf_measurements()
 
+        elif device_type == DeviceType.PtMeasurementDevice:
+            return self.get_pt_measurements()
+
         elif device_type == DeviceType.QfMeasurementDevice:
             return self.get_qf_measurements()
+
+        elif device_type == DeviceType.QtMeasurementDevice:
+            return self.get_qt_measurements()
 
         elif device_type == DeviceType.VmMeasurementDevice:
             return self.get_vm_measurements()
 
+        elif device_type == DeviceType.VaMeasurementDevice:
+            return self.get_va_measurements()
+
         elif device_type == DeviceType.IfMeasurementDevice:
             return self.get_if_measurements()
+
+        elif device_type == DeviceType.ItMeasurementDevice:
+            return self.get_it_measurements()
 
         elif device_type == DeviceType.LoadLikeDevice:
             return self.get_load_like_devices()
@@ -5442,14 +5721,26 @@ class Assets:
         elif device_type == DeviceType.PfMeasurementDevice:
             self._pf_measurements = devices
 
+        elif device_type == DeviceType.PtMeasurementDevice:
+            self._pt_measurements = devices
+
         elif device_type == DeviceType.QfMeasurementDevice:
             self._qf_measurements = devices
+
+        elif device_type == DeviceType.QtMeasurementDevice:
+            self._qt_measurements = devices
 
         elif device_type == DeviceType.VmMeasurementDevice:
             self._vm_measurements = devices
 
+        elif device_type == DeviceType.VaMeasurementDevice:
+            self._va_measurements = devices
+
         elif device_type == DeviceType.IfMeasurementDevice:
             self._if_measurements = devices
+
+        elif device_type == DeviceType.ItMeasurementDevice:
+            self._it_measurements = devices
 
         elif device_type == DeviceType.ModellingAuthority:
             self._modelling_authorities = devices
@@ -5617,14 +5908,26 @@ class Assets:
         elif obj.device_type == DeviceType.PfMeasurementDevice:
             self.add_pf_measurement(obj=obj)
 
+        elif obj.device_type == DeviceType.PtMeasurementDevice:
+            self.add_pt_measurement(obj=obj)
+
         elif obj.device_type == DeviceType.QfMeasurementDevice:
             self.add_qf_measurement(obj=obj)
+
+        elif obj.device_type == DeviceType.QtMeasurementDevice:
+            self.add_qt_measurement(obj=obj)
 
         elif obj.device_type == DeviceType.VmMeasurementDevice:
             self.add_vm_measurement(obj=obj)
 
+        elif obj.device_type == DeviceType.VaMeasurementDevice:
+            self.add_va_measurement(obj=obj)
+
         elif obj.device_type == DeviceType.IfMeasurementDevice:
             self.add_if_measurement(obj=obj)
+
+        elif obj.device_type == DeviceType.ItMeasurementDevice:
+            self.add_it_measurement(obj=obj)
 
         elif obj.device_type == DeviceType.ModellingAuthority:
             self.add_modelling_authority(obj=obj)
@@ -5792,14 +6095,26 @@ class Assets:
         elif obj.device_type == DeviceType.PfMeasurementDevice:
             self.delete_pf_measurement(obj)
 
+        elif obj.device_type == DeviceType.PtMeasurementDevice:
+            self.delete_pt_measurement(obj)
+
         elif obj.device_type == DeviceType.QfMeasurementDevice:
             self.delete_qf_measurement(obj)
+
+        elif obj.device_type == DeviceType.QtMeasurementDevice:
+            self.delete_qt_measurement(obj)
 
         elif obj.device_type == DeviceType.VmMeasurementDevice:
             self.delete_vm_measurement(obj)
 
+        elif obj.device_type == DeviceType.VaMeasurementDevice:
+            self.delete_va_measurement(obj)
+
         elif obj.device_type == DeviceType.IfMeasurementDevice:
             self.delete_if_measurement(obj)
+
+        elif obj.device_type == DeviceType.ItMeasurementDevice:
+            self.delete_it_measurement(obj)
 
         elif obj.device_type == DeviceType.ModellingAuthority:
             self.delete_modelling_authority(obj)
@@ -5825,12 +6140,6 @@ class Assets:
         :return: replaced?
         """
 
-        elm_from_base = all_elms_base_dict.get(api_obj.idtag, None)
-
-        # if elm_from_base is None:
-        #     return False
-        # else:
-
         if api_obj.selected_to_merge:
 
             if api_obj.action == ActionType.Add:
@@ -5845,7 +6154,6 @@ class Assets:
                     else:
                         self.delete_element(obj=elm_from_base)
 
-
             elif api_obj.action == ActionType.Modify:
 
                 elm_from_base = all_elms_base_dict.get(api_obj.idtag, None)
@@ -5858,7 +6166,6 @@ class Assets:
                             elm_from_base.set_property_value(prop=prop, value=val, t_idx=None)
                 else:
                     self.add_element(obj=api_obj)
-
 
             elif api_obj.action == ActionType.NoAction:
                 pass
@@ -5888,7 +6195,7 @@ class Assets:
         Get a dictionary of all elements
         :param use_secondary_key: if true the code i˘s used as key
         :param use_rdfid: if true the rdfid is used as key
-        :param: logger: Logger
+        :param logger: Logger
         :return: Dict[idtag] -> object, ok
         """
         data = dict()

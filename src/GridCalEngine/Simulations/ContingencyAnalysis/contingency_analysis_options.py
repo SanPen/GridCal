@@ -19,7 +19,7 @@ class ContingencyAnalysisOptions(OptionsTemplate):
     def __init__(self,
                  use_provided_flows: bool = False,
                  Pf: Vec = None,
-                 pf_options=PowerFlowOptions(SolverType.DC),
+                 pf_options=PowerFlowOptions(SolverType.Linear),
                  lin_options=LinearAnalysisOptions(),
                  use_srap: bool = False,
                  srap_max_power: float = 1400.0,

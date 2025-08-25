@@ -67,6 +67,7 @@ def find_references(elements_by_type: Dict[str, List[CGMES_ASSETS]],
                                 setattr(element, property_name, value)
                             else:
                                 setattr(element, property_name, cim_prop.class_type(value))
+
                         except ValueError:
                             logger.add_error(msg='Value error',
                                              device=element.rdfid,
@@ -83,6 +84,7 @@ def find_references(elements_by_type: Dict[str, List[CGMES_ASSETS]],
                             try:
                                 enum_val = cim_prop.class_type(value2)
                                 setattr(element, property_name, enum_val)
+
                             except TypeError as e:
                                 logger.add_error(msg='Could not convert Enum',
                                                  device=element.rdfid,
@@ -251,8 +253,10 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
             if object_template is not None:
 
                 parsed_object = object_template(rdfid=rdfid, tpe=class_name)
+
                 if all_objects_dict_boundary is None:
                     parsed_object.boundary_set = True
+
                 parsed_object.parse_dict(data=object_data, logger=logger)
 
                 found = all_objects_dict.get(parsed_object.rdfid, None)
@@ -330,7 +334,7 @@ class CgmesCircuit(BaseCircuit):
             raise NotImplemented(f"Unrecognized CGMES version {cgmes_version}")
 
             # classes to read, theo others are ignored
-        self.classes = [key for key, va in self.cgmes_assets.class_dict.items()]
+        self.classes = [key for key, _ in self.cgmes_assets.class_dict.items()]
 
         # dictionary with all objects, useful to find repeated ID's
         self.all_objects_dict: Dict[str, CGMES_ASSETS] = dict()
@@ -357,34 +361,10 @@ class CgmesCircuit(BaseCircuit):
         else:
             raise NotImplementedError()
 
-    def get_cn_to_bb_dict(self) -> Tuple[dict, dict]:
-        """
-        Get a dictionary of the ConnectivityNodes to the BusBars
-        Get a dictionary of the TopologicalNode to the BusBars
-        :return: cn_to_bb_dict, tn_to_bb_dict
-        """
-        data_bb = dict()
-        data_tn = dict()
-        bb_tpe = self.cgmes_assets.class_dict.get("BusbarSection", None)
-
-        if bb_tpe is not None:
-
-            # find the terminal -> CN links
-            for terminal in self.cgmes_assets.Terminal_list:
-                if isinstance(terminal.ConductingEquipment, bb_tpe):
-
-                    if terminal.ConnectivityNode is not None:
-                        data_bb[terminal.ConnectivityNode] = terminal.ConductingEquipment
-
-                    if terminal.TopologicalNode is not None:
-                        data_tn[terminal.TopologicalNode] = terminal.ConductingEquipment
-
-        return data_bb, data_tn
-
     def parse_files(self, data_parser: CgmesDataParser, delete_unused=True, detect_circular_references=False):
         """
         Parse CGMES files into this class
-        :param delete_unused: Detele the unused boundary set?
+        :param delete_unused: Delete the unused boundary set?
         :param data_parser: getting the read files
         :param detect_circular_references: report the circular references
         """
@@ -398,8 +378,7 @@ class CgmesCircuit(BaseCircuit):
         self.emit_text("Processing CGMES model")
         self.emit_progress(20)
         # set the data
-        self.set_data(data=data_parser.data,
-                      boundary_set=data_parser.boundary_set)
+        self.set_data(data=data_parser.data, boundary_set=data_parser.boundary_set)
         self.emit_progress(25)
         # convert the dictionaries to the internal class model for the boundary set
         # do not mark the boundary set objects as used
