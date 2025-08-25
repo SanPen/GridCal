@@ -38,6 +38,7 @@ def test_state_estimation_pandapower():
                 fixed_slack=True,
                 solver=solver,
                 verbose=2,
+                run_observability_analyis=True
             )
             se = StateEstimation(circuit=grid, options=se_opt)
             se.run()

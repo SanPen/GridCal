@@ -5,6 +5,8 @@
 
 from typing import Union
 
+from GridCalEngine.Simulations.StateEstimation.observability_analysis import \
+    check_for_observability_and_identify_observable_islands
 from GridCalEngine.Simulations.StateEstimation.state_estimation_results import StateEstimationResults
 from GridCalEngine.basic_structures import ConvergenceReport
 from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_nr, solve_se_lm, solve_se_gauss_newton, \
@@ -21,7 +23,7 @@ class StateEstimationOptions:
     def __init__(self, solver: SolverType = SolverType.NR,
                  tol: float = 1e-9, max_iter: int = 100, verbose: int = 0,
                  prefer_correct: bool = True, c_threshold: int = 4.0,
-                 fixed_slack: bool = False):
+                 fixed_slack: bool = False, run_observability_analyis:bool =False):
         """
         StateEstimationOptions
         :param tol: Tolerance
@@ -38,6 +40,7 @@ class StateEstimationOptions:
         self.prefer_correct = prefer_correct
         self.c_threshold = c_threshold
         self.fixed_slack: bool = fixed_slack
+        self.observability_analysis: bool = run_observability_analyis
 
 
 class StateEstimationConvergenceReport(ConvergenceReport):
@@ -196,6 +199,25 @@ class StateEstimation(DriverTemplate):
                                              branch_idx=island.passive_branch_data.original_idx)
 
             conn = island.get_connectivity_matrices()
+
+            if self.options.observability_analysis:
+                # this will provide the result of unobservable branches
+                # here we have to store Jacobian and measurements so that it is not again recalculated in
+                # State estimation calculations
+                # if pseudo meas is allowed it will create meas at the unobser branches so that the net is observable
+                # in that case Jacobian needs to be called again in SE formulations(needs to be worked upon)
+                check_for_observability_and_identify_observable_islands(nc=island,
+                                       Ybus=adm.Ybus,
+                                       Yf=adm.Yf,
+                                       Yt=adm.Yt,
+                                       no_slack=idx.no_slack,
+                                       F=island.passive_branch_data.F,
+                                       T=island.passive_branch_data.T,
+                                       Cf=conn.Cf,
+                                       Ct=conn.Ct,
+                                       se_input=se_input_island,
+                                       fixed_slack=self.options.fixed_slack,
+                                       logger=self.logger)
 
             # run solver
             if self.options.solver == SolverType.NR:

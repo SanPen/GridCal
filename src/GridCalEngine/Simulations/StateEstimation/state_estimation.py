@@ -58,6 +58,14 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
     dSf_dVa, dSf_dVm, dSt_dVa, dSt_dVm = dSbr_dV_matpower(Yf, Yt, V, f, t, Cf, Ct)
     dIf_dVa, dIf_dVm, dIt_dVa, dIt_dVm = dIbr_dV_matpower(Yf, Yt, V)
 
+    # compute the derivatives of absolute current:
+    # using the identity d|I|2/dx = 2 * re(diags(conj(I)) x dI/dx)
+    # so we will square the current measurements for using these derivatives
+    dabsIf2_dVa = 2.0 * (diags(np.conj(If)) @ dIf_dVa).real
+    dabsIf2_dVm = 2.0 * (diags(np.conj(If)) @ dIf_dVm).real
+    dabsIt2_dVa = 2.0 * (diags(np.conj(It)) @ dIt_dVa).real
+    dabsIt2_dVm = 2.0 * (diags(np.conj(It)) @ dIt_dVm).real
+
     # slice derivatives
     dP_dVa = dS_dVa[np.ix_(inputs.p_idx, pvpq)].real
     dQ_dVa = dS_dVa[np.ix_(inputs.q_idx, pvpq)].imag
@@ -67,8 +75,8 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
     dPt_dVa = dSt_dVa[np.ix_(inputs.pt_idx, pvpq)].real
     dQf_dVa = dSf_dVa[np.ix_(inputs.qf_idx, pvpq)].imag
     dQt_dVa = dSt_dVa[np.ix_(inputs.qt_idx, pvpq)].imag
-    dIf_dVa = np.abs(dIf_dVa[np.ix_(inputs.if_idx, pvpq)])
-    dIt_dVa = np.abs(dIt_dVa[np.ix_(inputs.it_idx, pvpq)])
+    dIf_dVa = np.abs(dabsIf2_dVa[np.ix_(inputs.if_idx, pvpq)])
+    dIt_dVa = np.abs(dabsIt2_dVa[np.ix_(inputs.it_idx, pvpq)])
     dVm_dVa = csc_matrix(np.zeros((len(inputs.vm_idx), len(pvpq))))
     dVa_dVa = csc_matrix(np.diag(np.ones(n))[np.ix_(inputs.va_idx, pvpq)])
 
@@ -82,8 +90,8 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
         dPt_dVm = dSt_dVm[np.ix_(inputs.pt_idx, pvpq)].real
         dQf_dVm = dSf_dVm[np.ix_(inputs.qf_idx, pvpq)].imag
         dQt_dVm = dSt_dVm[np.ix_(inputs.qt_idx, pvpq)].imag
-        dIf_dVm = np.abs(dIf_dVm[np.ix_(inputs.if_idx, pvpq)])
-        dIt_dVm = np.abs(dIt_dVm[np.ix_(inputs.it_idx, pvpq)])
+        dIf_dVm = np.abs(dabsIf2_dVm[np.ix_(inputs.if_idx, pvpq)])
+        dIt_dVm = np.abs(dabsIt2_dVm[np.ix_(inputs.it_idx, pvpq)])
         dVm_dVm = csc_matrix(np.diag(np.ones(n))[np.ix_(inputs.vm_idx, pvpq)])
         dVa_dVm = csc_matrix(np.zeros((len(inputs.va_idx), len(pvpq))))
     else:
@@ -96,8 +104,8 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
         dPt_dVm = dSt_dVm[inputs.pt_idx, :].real
         dQf_dVm = dSf_dVm[inputs.qf_idx, :].imag
         dQt_dVm = dSt_dVm[inputs.qt_idx, :].imag
-        dIf_dVm = np.abs(dIf_dVm[inputs.if_idx, :])
-        dIt_dVm = np.abs(dIt_dVm[inputs.it_idx, :])
+        dIf_dVm = np.abs(dabsIf2_dVm[inputs.if_idx, :])
+        dIt_dVm = np.abs(dabsIt2_dVm[inputs.it_idx, :])
         dVm_dVm = csc_matrix(np.diag(np.ones(n))[inputs.vm_idx, :])
         dVa_dVm = csc_matrix(np.zeros((len(inputs.va_idx), n)))
 
@@ -127,13 +135,13 @@ def Jacobian_SE(Ybus: csc_matrix, Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
         St[inputs.pt_idx].real,  # Pt
         Sf[inputs.qf_idx].imag,  # Qf
         St[inputs.qt_idx].imag,  # Qt
-        np.abs(If[inputs.if_idx]),  # If
-        np.abs(It[inputs.it_idx]),  # It
+        np.power(np.abs(If[inputs.if_idx]), 2),  # If
+        np.power(np.abs(It[inputs.it_idx]), 2),  # It
         np.abs(V[inputs.vm_idx]),  # Vm
         np.angle(V[inputs.va_idx]),  # Va
     ]
 
-    return H, h, S  # Return Sbus in pu
+    return H, h, S
 
 
 def get_measurements_and_deviations(se_input: StateEstimationInput, Sbase: float,
@@ -464,11 +472,11 @@ def solve_se_lm(nc: NumericalCircuit,
 
             V = Vm * np.exp(1j * Va)
 
-            if verbose > 1:
-                dva = np.zeros(n)
-                dva[: n_no_slack] = dVa
-                df = pd.DataFrame(data={"dVa": dva, "dVm": dVm, "Va": Va, "Vm": Vm})
-                print(df)
+            # if verbose > 1:
+            #     dva = np.zeros(n)
+            #     dva[: n_no_slack] = dVa
+            #     df = pd.DataFrame(data={"dVa": dva, "dVm": dVm, "Va": Va, "Vm": Vm})
+            #     print(df)
 
             # update system
             H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, Cf, Ct, se_input, no_slack, load_per_bus, fixed_slack)
@@ -834,14 +842,22 @@ def solve_se_gauss_newton(nc: NumericalCircuit,
     load_per_bus = nc.load_data.get_injections_per_bus() / nc.Sbase
 
     # Get measurements
-    z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase, use_current_squared_meas=False)
-    W = diags(1.0 / np.power(sigma, 2.0))  # weight matrix
+    z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase, use_current_squared_meas=True)
+    # Weight matrix with regularization to avoid numerical issues
+    sigma2 = np.power(sigma, 2.0)
+    W_vec = 1.0 / np.maximum(sigma2, 1e-10)  # Avoid division by zero
+    W = diags(W_vec)
 
     # Simple iterative method (Gauss-Newton style)
     iter_ = 0
     converged = False
     norm_f = 1e20
     error_list = []
+    # Step control parameters
+    max_step_va = 0.3  # radians
+    max_step_vm = 0.2  # per unit
+    relaxation = 1.1   # initial step relaxation
+    obj_val_prev = 1e30
 
     while not converged and iter_ < max_iter:
         # Compute Jacobian and measurement function at current state
@@ -849,44 +865,85 @@ def solve_se_gauss_newton(nc: NumericalCircuit,
 
         # Measurement residuals
         dz = z - h
+        # Objective function value
+        obj_val = 0.5 * dz @ (W * dz)
 
         # Build normal equations
         HtW = H.T @ W
         G = HtW @ H  # Gain matrix
+        # Add regularization to handle ill-conditioning
+        reg_factor = 1e-6 * G.diagonal().max()
+        G_reg = G + reg_factor * sparse.eye(G.shape[0])
         g = HtW @ dz  # Gradient
 
         # Solve for state update
         try:
-            dx = spsolve(G, g)
+            dx = spsolve(G_reg, g)
         except:
             # If matrix is singular, use pseudo-inverse
             dx = spilu(G).solve(g)
-
-        # Update state
+        #Update state
         if fixed_slack:
             dVa = dx[:n_no_slack]
             dVm = dx[n_no_slack:]
+            dVa = np.clip(dVa, -max_step_va, max_step_va)
+            dVm = np.clip(dVm, -max_step_vm, max_step_vm)
             Va[no_slack] += dVa
             Vm[no_slack] += dVm
         else:
             dVa = dx[:n_no_slack]
             dVm = dx[n_no_slack:]
+            dVa = np.clip(dVa, -max_step_va, max_step_va)
+            dVm = np.clip(dVm, -max_step_vm, max_step_vm)
             Va[no_slack] += dVa
             Vm += dVm
 
         V = Vm * np.exp(1j * Va)
+
+        # Adaptive step control based on objective function improvement
+        # if obj_val < obj_val_prev:
+        #     # Good step - slightly increase relaxation
+        #     relaxation = min(1.0, relaxation * 1.1)
+        # else:
+        #     # Bad step - reduce step size and backtrack
+        #     relaxation *= 0.8
+        #     if fixed_slack:
+        #         Va[no_slack] -= relaxation * dVa
+        #         Vm[no_slack] -= relaxation * dVm
+        #     else:
+        #         Va[no_slack] -= relaxation * dVa
+        #         Vm -= relaxation * dVm
+        #     V = Vm * np.exp(1j * Va)
+        #     continue  # Recompute with smaller step
+
+        obj_val_prev = obj_val
         Vm = np.abs(V)
         Va = np.angle(V)
-
         # Check convergence
         norm_f = np.linalg.norm(dx, np.inf)
         converged = norm_f < tol
+
         error_list.append(norm_f)
 
         if verbose > 0:
-            print(f"Iter {iter_}: norm_f = {norm_f:.6e}")
+            print(f"Iter {iter_}: norm_f = {norm_f:.6e}, obj_val = {obj_val:.6e}, "
+                  f"relax = {relaxation:.3f}")
 
         iter_ += 1
+
+        #  Add bad data detection like LM does
+        # if norm_f < tol * 10 and iter_ > 3:
+        #     r, sigma2, Pii, rN, imax, b, bad_data_detected = b_test(
+        #         sigma2=sigma2, H=H, dz=dz, HtWH=G, c_threshold=c_threshold, logger=logger
+        #     )
+        #
+        #     if bad_data_detected and prefer_correct:
+        #         # Implement correction logic similar to LM
+        #         if Pii[imax] > 1e-10:
+        #             z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]
+        #             z[imax] = z_tilde_imax
+        #             if verbose > 0:
+        #                 logger.add_info(f"Corrected measurement {imax}")
 
     # Final processing
     Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
@@ -1033,7 +1090,7 @@ def decoupled_state_estimation(nc: NumericalCircuit,
         dz = z - h
 
         # --- 2) Build and factorize Ga (P-subsystem)
-        Ha = H[a_idx, :n_non_slack]  # dP/dθ (rows = P-meas, cols = θ_non_slack)
+        Ha = H.tocsr()[a_idx, :n_non_slack]  # dP/dθ (rows = P-meas, cols = θ_non_slack)
         Wa = W[a_idx, :][:, a_idx].tocsc()
         Ga = Ha.T @ Wa @ Ha
         if Ga.shape[0] > 0:
@@ -1061,7 +1118,7 @@ def decoupled_state_estimation(nc: NumericalCircuit,
         dz = z - h
 
         # --- 6) Build and factorize Gr (Q-subsystem)
-        Hr = H[r_idx, n_non_slack:2 * n_non_slack]  # dQ/dV for non-slack V columns
+        Hr = H.tocsr()[r_idx, n_non_slack:2 * n_non_slack]  # dQ/dV for non-slack V columns
         Wr = W[r_idx, :][:, r_idx].tocsc()
         Gr = Hr.T @ Wr @ Hr
         if Gr.shape[0] > 0:
