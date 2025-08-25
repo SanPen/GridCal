@@ -23,7 +23,7 @@ def get_3p_indices(length_3p: int) -> Tuple[IntVec, IntVec, IntVec]:
     :return: index A, index B, index C
     """
     n = length_3p / 3
-    bus_seq = np.arange(n)
+    bus_seq = np.arange(n, dtype=int)
     ia = 3 * bus_seq
     ib = 3 * bus_seq + 1
     ic = 3 * bus_seq + 2
@@ -93,45 +93,94 @@ class PowerFlowResults3Ph(ResultsTemplate):
                     ResultTypes.BranchReactivePowerFromB,
                     ResultTypes.BranchReactivePowerFromC,
 
-                    ResultTypes.BranchActivePowerTo,
-                    ResultTypes.BranchReactivePowerTo,
+                    ResultTypes.BranchActivePowerToA,
+                    ResultTypes.BranchActivePowerToB,
+                    ResultTypes.BranchActivePowerToC,
 
-                    ResultTypes.BranchActiveCurrentFrom,
-                    ResultTypes.BranchReactiveCurrentFrom,
-                    ResultTypes.BranchActiveCurrentTo,
-                    ResultTypes.BranchReactiveCurrentTo,
+                    ResultTypes.BranchReactivePowerToA,
+                    ResultTypes.BranchReactivePowerToB,
+                    ResultTypes.BranchReactivePowerToC,
+
+                    ResultTypes.BranchActiveCurrentFromA,
+                    ResultTypes.BranchActiveCurrentFromB,
+                    ResultTypes.BranchActiveCurrentFromC,
+
+                    ResultTypes.BranchReactiveCurrentFromA,
+                    ResultTypes.BranchReactiveCurrentFromB,
+                    ResultTypes.BranchReactiveCurrentFromC,
+
+                    ResultTypes.BranchActiveCurrentToA,
+                    ResultTypes.BranchActiveCurrentToB,
+                    ResultTypes.BranchActiveCurrentToC,
+
+                    ResultTypes.BranchReactiveCurrentToA,
+                    ResultTypes.BranchReactiveCurrentToB,
+                    ResultTypes.BranchReactiveCurrentToC,
 
                     ResultTypes.BranchTapModule,
                     ResultTypes.BranchTapAngle,
 
-                    ResultTypes.BranchLoading,
-                    ResultTypes.BranchActiveLosses,
-                    ResultTypes.BranchReactiveLosses,
-                    ResultTypes.BranchActiveLossesPercentage,
-                    ResultTypes.BranchVoltage,
-                    ResultTypes.BranchAngles
+                    ResultTypes.BranchLoadingA,
+                    ResultTypes.BranchLoadingB,
+                    ResultTypes.BranchLoadingC,
+
+                    ResultTypes.BranchActiveLossesA,
+                    ResultTypes.BranchActiveLossesB,
+                    ResultTypes.BranchActiveLossesC,
+
+                    ResultTypes.BranchReactiveLossesA,
+                    ResultTypes.BranchReactiveLossesB,
+                    ResultTypes.BranchReactiveLossesC,
+
+                    ResultTypes.BranchActiveLossesPercentageA,
+                    ResultTypes.BranchActiveLossesPercentageB,
+                    ResultTypes.BranchActiveLossesPercentageC,
+
+                    ResultTypes.BranchVoltageA,
+                    ResultTypes.BranchVoltageB,
+                    ResultTypes.BranchVoltageC,
+
+                    ResultTypes.BranchAnglesA,
+                    ResultTypes.BranchAnglesB,
+                    ResultTypes.BranchAnglesC
                 ],
                 ResultTypes.HvdcResults: [
-                    ResultTypes.HvdcPowerFrom,
-                    ResultTypes.HvdcPowerTo,
+                    ResultTypes.HvdcPowerFromA,
+                    ResultTypes.HvdcPowerFromB,
+                    ResultTypes.HvdcPowerFromC,
+
+                    ResultTypes.HvdcPowerToA,
+                    ResultTypes.HvdcPowerToB,
+                    ResultTypes.HvdcPowerToC,
+
                     ResultTypes.HvdcLosses,
                 ],
 
                 ResultTypes.VscResults: [
                     ResultTypes.VscPowerFrom,
-                    ResultTypes.VscPowerTo,
+
+                    ResultTypes.VscPowerToA,
+                    ResultTypes.VscPowerToB,
+                    ResultTypes.VscPowerToC,
+
                     ResultTypes.VscLosses,
                 ],
                 ResultTypes.GeneratorResults: [
-                    ResultTypes.GeneratorReactivePower,
+                    ResultTypes.GeneratorReactivePowerA,
+                    ResultTypes.GeneratorReactivePowerB,
+                    ResultTypes.GeneratorReactivePowerC,
                 ],
 
                 ResultTypes.BatteryResults: [
-                    ResultTypes.BatteryReactivePower,
+                    ResultTypes.BatteryReactivePowerA,
+                    ResultTypes.BatteryReactivePowerB,
+                    ResultTypes.BatteryReactivePowerC,
                 ],
 
                 ResultTypes.ShuntResults: [
-                    ResultTypes.ShuntReactivePower,
+                    ResultTypes.ShuntReactivePowerA,
+                    ResultTypes.ShuntReactivePowerB,
+                    ResultTypes.ShuntReactivePowerC,
                 ],
 
                 ResultTypes.SpecialPlots: [
@@ -412,8 +461,9 @@ class PowerFlowResults3Ph(ResultsTemplate):
         self.Sbus_B[b_idx] = results.Scalc[ib]
         self.Sbus_C[b_idx] = results.Scalc[ic]
 
-        self.tap_module[br_idx] = results.tap_module
-        self.tap_angle[br_idx] = results.tap_angle
+        # TODO: taps are 3-phase too
+        # self.tap_module[br_idx] = results.tap_module
+        # self.tap_angle[br_idx] = results.tap_angle
 
         self.Sf_A[br_idx] = results.Sf[ka]
         self.Sf_B[br_idx] = results.Sf[kb]
