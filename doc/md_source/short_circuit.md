@@ -165,6 +165,16 @@ $$
     width="30%"/>
 </div>
 
+```python
+import GridCalEngine.api as gce
+from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
+
+sc_options = gce.ShortCircuitOptions(bus_index=4,
+                                     fault_type=FaultType.LG,
+                                     method=MethodShortCircuit.phases,
+                                     phases=PhasesShortCircuit.a)
+```
+
 ### Line-to-Line Fault (LL)
 
 A line-to-line fault (LL) occurs when two phase conductors come into contact with each other.
@@ -185,6 +195,16 @@ $$
     title="Line-to-Line Fault (LL)"
     width="30%"/>
 </div>
+
+```python
+import GridCalEngine.api as gce
+from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
+
+sc_options = gce.ShortCircuitOptions(bus_index=4,
+                                     fault_type=FaultType.LL,
+                                     method=MethodShortCircuit.phases,
+                                     phases=PhasesShortCircuit.ca)
+```
 
 ### Double Line-to-Ground Fault (DLG)
 
@@ -208,6 +228,16 @@ $$
     width="40%"/>
 </div>
 
+```python
+import GridCalEngine.api as gce
+from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
+
+sc_options = gce.ShortCircuitOptions(bus_index=4,
+                                     fault_type=FaultType.LLG,
+                                     method=MethodShortCircuit.phases,
+                                     phases=PhasesShortCircuit.ca)
+```
+
 ### Three-Phase Fault (LLL)
 
 A three-phase (LLL) fault occurs when all three phase conductors come into contact with each other.
@@ -228,6 +258,16 @@ $$
     title="Three-Phase Fault (LLL)"
     width="40%"/>
 </div>
+
+```python
+import GridCalEngine.api as gce
+from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
+
+sc_options = gce.ShortCircuitOptions(bus_index=4,
+                                     fault_type=FaultType.LLL,
+                                     method=MethodShortCircuit.phases,
+                                     phases=PhasesShortCircuit.abc)
+```
 
 ### Three-Phase-to-Ground Fault (LLLG)
 
@@ -250,6 +290,16 @@ $$
     title="Three-Phase-to-Ground Fault (LLLG)"
     width="40%"/>
 </div>
+
+```python
+import GridCalEngine.api as gce
+from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
+
+sc_options = gce.ShortCircuitOptions(bus_index=4,
+                                     fault_type=FaultType.ph3,
+                                     method=MethodShortCircuit.phases,
+                                     phases=PhasesShortCircuit.abc)
+```
 
 ### Benchmark - SLG Fault in the IEEE 13 Node Test Feeder
 
