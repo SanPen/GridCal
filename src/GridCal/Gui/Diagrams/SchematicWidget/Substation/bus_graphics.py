@@ -963,32 +963,68 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                 msg += f" [{tpe}]"
             msg += "<br>"
 
-            if isinstance(Vm, float) and isinstance(Va, float):
-                vm = format_str.format(Vm)
-                vm_kv = format_str.format(Vm * self._api_object.Vnom)
-                va = format_str.format(Va)
-                msg += f"V={vm_kv} KV<br>  {vm}&lt;{va}º p.u.<br>"
-                # msg += f"V={vm_kv} KV<br>"
-
-            elif isinstance(Vm, np.ndarray) and isinstance(Va, np.ndarray):
-                for Vm_i, Va_i, ph in zip(Vm, Va, ["a", "b", "c"]):
-                    if not (Vm_i == 0.0 and Va_i == 0.0):
-                        vm = format_str.format(Vm_i)
-                        vm_kv = format_str.format(Vm_i * self._api_object.Vnom)
-                        va = format_str.format(Va_i)
-                        msg += f"V{ph}={vm_kv} KV / {vm}&lt;{va}º p.u.<br>"
+            vm = format_str.format(Vm)
+            vm_kv = format_str.format(Vm * self._api_object.Vnom)
+            va = format_str.format(Va)
+            msg += f"V={vm_kv} KV<br>  {vm}&lt;{va}º p.u.<br>"
 
             if P is not None:
-                if isinstance(P, float) and isinstance(Q, float):
-                    p = format_str.format(P)
-                    q = format_str.format(Q)
-                    msg += f"P={p} MW<br>Q={q} MVAr"
-                elif isinstance(P, np.ndarray) and isinstance(Q, np.ndarray):
-                    for P_i, Q_i, ph in zip(P, Q, ["a", "b", "c"]):
-                        if not (P_i == 0.0 and Q_i == 0.0):
-                            p = format_str.format(P_i)
-                            q = format_str.format(Q_i)
-                            msg += f"P{ph}={p} MW<br>Q{ph}={q} MVAr<br>"
+                p = format_str.format(P)
+                q = format_str.format(Q)
+                msg += f"P={p} MW<br>Q={q} MVAr"
+
+        else:
+            msg = ""
+
+        title = self._api_object.name if self._api_object is not None else ""
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
+                           f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
+
+        self.setToolTip(msg)
+
+    def set_values_3ph(self, i: int,
+                       VmA: float, VmB: float, VmC: float,
+                       VaA: float, VaB: float, VaC: float,
+                       PA: float, PB: float, PC: float,
+                       QA: float, QB: float, QC: float,
+                       tpe: str, format_str="{:10.2f}"):
+        """
+        Set three phase tags
+        :param i: Bus index
+        :param VmA:
+        :param VmB:
+        :param VmC:
+        :param VaA:
+        :param VaB:
+        :param VaC:
+        :param PA:
+        :param PB:
+        :param PC:
+        :param QA:
+        :param QB:
+        :param QC:
+        :param tpe: Bus type
+        :param format_str: number formatting string
+        """
+        if self.draw_labels:
+
+            msg = f"Bus {i}"
+            if tpe is not None:
+                msg += f" [{tpe}]"
+            msg += "<br>"
+
+            for Vm_i, Va_i, ph in zip([VmA, VmB, VmC], [VaA, VaB, VaC], ["a", "b", "c"]):
+                if not (Vm_i == 0.0 and Va_i == 0.0):
+                    vm = format_str.format(Vm_i)
+                    vm_kv = format_str.format(Vm_i * self._api_object.Vnom)
+                    va = format_str.format(Va_i)
+                    msg += f"V{ph}={vm_kv} KV / {vm}&lt;{va}º p.u.<br>"
+
+            for P_i, Q_i, ph in zip([PA, PB, PC], [QA, QB, QC], ["a", "b", "c"]):
+                if not (P_i == 0.0 and Q_i == 0.0):
+                    p = format_str.format(P_i)
+                    q = format_str.format(Q_i)
+                    msg += f"P{ph}={p} MW<br>Q{ph}={q} MVAr<br>"
 
         else:
             msg = ""
