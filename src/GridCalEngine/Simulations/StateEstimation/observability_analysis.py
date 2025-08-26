@@ -37,6 +37,7 @@ def check_for_observability_and_return_unobservable_buses(nc: NumericalCircuit,
     # Identify non-slack buses
     non_slack_buses = no_slack  # Your no_slack variable
     n_non_slack = len(non_slack_buses)
+    bus_contrib = {}
     # --- Create measurement type mapping based on processing order ---
     # The measurements are processed in this fixed order:
     # 1. p_inj, 2. q_inj, 3. pg_inj, 4. qg_inj,
@@ -104,8 +105,8 @@ def check_for_observability_and_return_unobservable_buses(nc: NumericalCircuit,
     return unobservable_buses, V, bus_contrib
 
 
-def add_pseudo_measurements_for_unobservable_buses(unobservable_buses: object, se_input: object, V: object, Ybus: object, Cf: object, Ct: object,
-                                                   sigma_pseudo_meas_value: object = 1.0,
+def add_pseudo_measurements_for_unobservable_buses(bus_dict,unobservable_buses: object, se_input: object, V: object, Ybus: object, Cf: object, Ct: object,
+                                                   sigma_pseudo_meas_value: object = 1.0,Sbase=100,
                                                    logger: object = None) -> StateEstimationInput:
     """
     Full preprocessing: detect unobservable buses and add pseudo-measurements
@@ -120,6 +121,8 @@ def add_pseudo_measurements_for_unobservable_buses(unobservable_buses: object, s
         V,
         Ybus,
         neighbors,
+        bus_dict=bus_dict,
         sigma_pseudo=sigma_pseudo_meas_value,
+        Sbase=100,
         logger=logger
     )
