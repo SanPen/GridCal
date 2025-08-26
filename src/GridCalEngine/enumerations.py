@@ -230,7 +230,7 @@ class SolverType(Enum):
     LACPF = 'Linear AC'
     LINEAR_OPF = 'Linear OPF'
     NONLINEAR_OPF = 'Nonlinear OPF'
-    SIMPLE_OPF = 'Simple dispatch'
+    GREEDY_DISPATCH_OPF = 'Greedy dispatch'
     Proportional_OPF = 'Proportional OPF'
 
     BFS = 'Backwards-Forward substitution'  # for PGM

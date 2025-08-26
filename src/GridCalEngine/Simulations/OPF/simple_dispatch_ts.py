@@ -360,6 +360,9 @@ def greedy_dispatch2(
 
     for t in range(T):
 
+        # --- carry SoC forward by default (very important) ---
+        batt_energy[t + 1, :] = batt_energy[t, :]
+
         # Step 0: Initialize the remaining load to the total load
         remaining_load = np.sum(load_profile[t, :])
         load_total[t] = remaining_load
@@ -614,11 +617,82 @@ class GreedyDispatchInputs:
             self.batt_soc_min[i] = elm.Enom * elm.min_soc
 
 
+class GreedyDispatchInputsSnapshot:
+
+    def __init__(self, grid: MultiCircuit, logger: Logger = Logger()):
+        """
+
+        :param grid:
+        :param logger:
+        """
+
+        nt = 1
+        nl = grid.get_loads_number()
+        ng = grid.get_generators_number()
+        nbatt = grid.get_batteries_number()
+
+        self.dt = np.ones(1)
+
+        # loads
+        self.load_profile = np.zeros((nt, nl), dtype=float)
+        for i, elm in enumerate(grid.loads):
+            self.load_profile[:, i] = elm.P
+
+        # generators
+        self.gen_profile = np.zeros((nt, ng), dtype=float)
+        self.gen_dispatchable = np.zeros(ng, dtype=int)
+        self.gen_active = np.zeros((nt, ng), dtype=int)
+        self.gen_cost = np.zeros((nt, ng), dtype=float)
+        self.gen_p_max = np.zeros((nt, ng), dtype=float)
+        self.gen_p_min = np.zeros((nt, ng), dtype=float)
+        for i, elm in enumerate(grid.generators):
+            self.gen_profile[:, i] = elm.P
+            self.gen_active[:, i] = elm.active
+            self.gen_cost[:, i] = elm.Cost
+            self.gen_p_max[:, i] = elm.Pmax
+            self.gen_p_min[:, i] = elm.Pmin
+            self.gen_dispatchable[i] = elm.enabled_dispatch
+
+        self.gen_profile = np.nan_to_num(self.gen_profile)
+
+        # batteries
+        self.batt_active = np.zeros((nt, nbatt), dtype=int)
+        self.batt_p_max_charge = np.zeros((nt, nbatt), dtype=float)
+        self.batt_p_max_discharge = np.zeros((nt, nbatt), dtype=float)
+        self.batt_energy_max = np.zeros((nt, nbatt), dtype=float)
+        self.batt_eff_charge = np.ones((nt, nbatt), dtype=float)
+        self.batt_eff_discharge = np.ones((nt, nbatt), dtype=float)
+        self.batt_cost = np.ones((nt, nbatt), dtype=float)
+        self.batt_soc0 = np.zeros(nbatt, dtype=float) + 0.5
+        self.batt_soc_min = np.zeros(nbatt, dtype=float) + 0.1
+        for i, elm in enumerate(grid.batteries):
+            self.batt_active[:, i] = elm.active
+            self.batt_p_max_charge[:, i] = elm.Pmax
+            self.batt_p_max_discharge[:, i] = elm.Pmax
+            self.batt_energy_max[:, i] = elm.Enom
+            self.batt_cost[:, i] = elm.Cost + elm.opex
+
+            if elm.charge_efficiency > 0.0:
+                self.batt_eff_charge[:, i] = elm.charge_efficiency
+            else:
+                self.batt_eff_charge[:, i] = 1.0
+                logger.add_warning("Charge efficiency is zero", device_class="Battery", device=elm.idtag)
+
+            if elm.discharge_efficiency > 0.0:
+                self.batt_eff_discharge[:, i] = elm.discharge_efficiency
+            else:
+                self.batt_eff_discharge[:, i] = 1.0
+                logger.add_warning("Discharge efficiency is zero", device_class="Battery", device=elm.idtag)
+
+            self.batt_soc0[i] = elm.Enom * 0.5
+            self.batt_soc_min[i] = elm.Enom * elm.min_soc
+
+
 def run_greedy_dispatch_ts(grid: MultiCircuit,
                            time_indices: IntVec | None,
                            logger: Logger,
                            text_prog=None,
-                           prog_func=None) -> Tuple[Mat, Mat, Mat, Mat, Mat]:
+                           prog_func=None) -> Tuple[Mat, Mat, Mat, Mat, Mat, Mat]:
     """
     Run a simple (greedy) dispatch
     :param grid: MultiCircuit
@@ -632,14 +706,16 @@ def run_greedy_dispatch_ts(grid: MultiCircuit,
         prog_func(0.0)
 
     if text_prog is not None:
-        text_prog("Running simple dispatch...")
+        text_prog("Running greedy dispatch...")
 
     inpts = GreedyDispatchInputs(grid=grid, time_indices=time_indices, logger=logger)
 
     # === Run dispatch ===
     (gen_dispatch, batt_dispatch,
      batt_energy, total_cost,
-     load_not_supplied, load_shedding) = greedy_dispatch(
+     load_not_supplied, load_shedding,
+     ndg_surplus_after_batt,
+     ndg_curtailment_per_gen) = greedy_dispatch2(
         load_profile=inpts.load_profile,
         gen_profile=inpts.gen_profile,
         gen_p_max=inpts.gen_p_max,
@@ -666,7 +742,7 @@ def run_greedy_dispatch_ts(grid: MultiCircuit,
     if text_prog is not None:
         text_prog("Done!")
 
-    return inpts.load_profile, gen_dispatch, batt_dispatch, batt_energy, load_shedding
+    return inpts.load_profile, gen_dispatch, batt_dispatch, batt_energy, load_shedding, ndg_curtailment_per_gen
 
 
 if __name__ == '__main__':
