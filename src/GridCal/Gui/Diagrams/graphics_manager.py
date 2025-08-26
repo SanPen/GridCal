@@ -16,7 +16,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.winding_graphics import Windi
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.dc_line_graphics import DcLineGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer2w_graphics import TransformerGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.hvdc_graphics import HvdcGraphicItem
-from GridCal.Gui.Diagrams.SchematicWidget.Branches.vsc_graphics_3term import VscGraphicItem
+from GridCal.Gui.Diagrams.SchematicWidget.Branches.vsc_graphics import VscGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.upfc_graphics import UpfcGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.series_reactance_graphics import SeriesReactanceGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem

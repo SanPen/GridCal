@@ -1085,7 +1085,8 @@ class SchematicWidget(BaseDiagramWidget):
         # set the connection placement
         graphic_object.setZValue(-1)
 
-    def create_vsc_graphics_2term(self, bus_from: Bus, bus_to: Bus, from_port: BarTerminalItem, to_port: BarTerminalItem):
+    def create_vsc_graphics_2term(self, bus_from: Bus, bus_to: Bus, from_port: BarTerminalItem,
+                                  to_port: BarTerminalItem):
         """
 
         :param bus_from:
@@ -1171,30 +1172,13 @@ class SchematicWidget(BaseDiagramWidget):
 
                     if arriving_widget.get_parent() is not self.started_branch.get_terminal_from_parent():  # forbid connecting to itself
 
-                        # --- Handle VSC Terminal Connection --- START
-                        is_vsc_connection = False
-                        vsc_graphic = None
-                        target_object = None # Bus, CN, or BusBar API object
-
                         # Check if starting from VSC terminal
-                        if isinstance(self.started_branch.get_terminal_from(), RoundTerminalItem) \
-                                and isinstance(self.started_branch.get_terminal_from_parent(), VscGraphicItem):
-                            is_vsc_connection = True
-                            vsc_graphic = cast(VscGraphicItem, self.started_branch.get_terminal_from_parent())
-                            vsc_terminal_type = self.started_branch.get_terminal_from()
+                        # if isinstance(self.started_branch.get_terminal_from(), RoundTerminalItem) \
+                        #         and isinstance(self.started_branch.get_terminal_from_parent(), VscGraphicItem3Term):
+
+                        if isinstance(self.started_branch.get_terminal_from_parent(), VscGraphicItem3Term):
+
                             target_object = arriving_widget.parent.api_object
-
-                        # If it's a VSC connection, handle it and skip other checks. Use enums
-                        if is_vsc_connection:
-                            if vsc_terminal_type.terminal_type == TerminalType.AC:
-                                vsc_terminal_class = TerminalType.AC
-                            elif vsc_terminal_type.terminal_type == TerminalType.DC_P:
-                                vsc_terminal_class = TerminalType.DC_P
-                            elif vsc_terminal_type.terminal_type == TerminalType.DC_N:
-                                vsc_terminal_class = TerminalType.DC_N
-                            else:
-                                warn(f"Unknown VSC terminal type: {vsc_terminal_type}")
-
 
                             # Create the visual line
                             conn_line = LineGraphicTemplateItem(
@@ -1204,21 +1188,62 @@ class SchematicWidget(BaseDiagramWidget):
 
                             # Set the connection in the VSC graphics/API
                             if isinstance(target_object, Bus):
-                                have_to_conn_line = vsc_graphic.set_connection(vsc_terminal_class, target_object, conn_line)
                                 self.add_to_scene(conn_line)
 
                             self._remove_from_scene(self.started_branch)
 
                             self.started_branch = None
 
-                            break # Exit the inner loop once connection is handled
+                            break  # Exit the inner loop once connection is handled
+
+                        elif isinstance(arriving_widget.get_parent(), VscGraphicItem3Term):
+
+                            target_object = arriving_widget.parent.api_object
+
+                            # Create the visual line
+                            conn_line = LineGraphicTemplateItem(
+                                from_port=self.started_branch.get_terminal_from(),
+                                to_port=arriving_widget,
+                                editor=self)
+
+                            # Set the connection in the VSC graphics/API
+                            if isinstance(target_object, Bus):
+                                self.add_to_scene(conn_line)
+
+                            self._remove_from_scene(self.started_branch)
+
+                            self.started_branch = None
+
+                            break  # Exit the inner loop once connection is handled
+
+                        # elif isinstance(self.started_branch.get_terminal_from(), VscGraphicItem3Term) \
+                        #         and isinstance(self.started_branch.get_terminal_from_parent(), RoundTerminalItem):
+                        #     target_object = arriving_widget.parent.api_object
+                        #
+                        #     # Create the visual line
+                        #     conn_line = LineGraphicTemplateItem(
+                        #         from_port=self.started_branch.get_terminal_from(),
+                        #         to_port=arriving_widget,
+                        #         editor=self)
+                        #
+                        #     # Set the connection in the VSC graphics/API
+                        #     if isinstance(target_object, Bus):
+                        #         self.add_to_scene(conn_line)
+                        #
+                        #     self._remove_from_scene(self.started_branch)
+                        #
+                        #     self.started_branch = None
+                        #
+                        #     break  # Exit the inner loop once connection is handled
+
+                        else:
+                            pass
 
                         # --- Handle VSC Terminal Connection --- END
 
                         # Set the target port for the temporary line *after* VSC check
                         # if self.started_branch: # Check if it wasn't already cleared by VSC logic
                         self.started_branch.set_to_port(arriving_widget)
-
 
                         if self.started_branch.connected_between_buses():  # electrical branch between electrical buses
 
@@ -2036,8 +2061,8 @@ class SchematicWidget(BaseDiagramWidget):
 
     def add_api_vsc(self,
                     elm: VSC,
-                    x: float = None,
-                    y: float = None,
+                    x: float,
+                    y: float,
                     logger: Logger = Logger()) -> Union[VscGraphicItem, None]:
         """
         add API VSC to the Scene
@@ -2047,12 +2072,6 @@ class SchematicWidget(BaseDiagramWidget):
         :param logger: Logger
         :return: VscGraphicItem or None
         """
-
-        # Use provided coordinates or fall back to API object coordinates
-        if x is None:
-            x = elm.x
-        if y is None:
-            y = elm.y
 
         # search for the api object, because it may be created already
         graphic_object = self.graphics_manager.query(elm=elm)
@@ -2420,10 +2439,9 @@ class SchematicWidget(BaseDiagramWidget):
         vsc = self.circuit.convert_line_to_vsc(line)
 
         # add device to the schematic
-        graphic_object = self.add_api_vsc(branch=vsc,
-                                          from_port=line_graphic.get_terminal_from(),
-                                          to_port=line_graphic.get_terminal_to(),
-                                          draw_labels=line_graphic.draw_labels)
+        graphic_object = self.add_api_vsc(elm=vsc,
+                                          x=vsc.x,
+                                          y=vsc.y)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2633,7 +2651,9 @@ class SchematicWidget(BaseDiagramWidget):
                 graphic_obj = self.add_api_switch(elm)
 
             elif isinstance(elm, VSC):
-                graphic_obj = self.add_api_vsc(elm)
+                graphic_obj = self.add_api_vsc(elm=elm,
+                                               x=elm.x,
+                                               y=elm.y)
 
             elif isinstance(elm, UPFC):
                 graphic_obj = self.add_api_upfc(elm)
@@ -2794,7 +2814,9 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            graphic_obj = self.add_api_vsc(branch)
+            graphic_obj = self.add_api_vsc(elm=branch,
+                                           x=branch.x,
+                                           y=branch.y)
             self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
@@ -3346,7 +3368,6 @@ class SchematicWidget(BaseDiagramWidget):
                             # else:
                             #     graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
                             #                                        St=-vsc_Pf[i] + 1j * vsc_Qt[i])
-
 
                             if vsc_Qt is None:
                                 if vsc_losses is not None:
@@ -4263,22 +4284,22 @@ def generate_schematic_diagram(buses: List[Bus],
     add_devices_list(cls="windings", dev_lst=windings)
     add_devices_list(cls="hvdc_lines", dev_lst=hvdc_lines)
 
-    #TODO: Review this merge
-    # add_devices_list(cls="vsc_devices", dev_lst=vsc_devices)
+    # TODO: Review this merge
+    add_devices_list(cls="vsc_devices", dev_lst=vsc_devices)
 
     # Handle VSC devices specially to preserve their coordinates
-    if text_func is not None:
-        text_func('Adding VSC devices to the diagram')
-
-    nn = len(vsc_devices)
-    for i, elm in enumerate(vsc_devices):
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        # Preserve VSC coordinates like buses do
-        x = int(elm.x * explode_factor) if not np.isnan(elm.x) else 0
-        y = int(elm.y * explode_factor) if not np.isnan(elm.y) else 0
-        diagram.set_point(device=elm, location=GraphicLocation(x=x, y=y))
+    # if text_func is not None:
+    #     text_func('Adding VSC devices to the diagram')
+    #
+    # nn = len(vsc_devices)
+    # for i, elm in enumerate(vsc_devices):
+    #     if prog_func is not None:
+    #         prog_func((i + 1) / nn * 100.0)
+    #
+    #     # Preserve VSC coordinates like buses do
+    #     x = int(elm.x * explode_factor) if not np.isnan(elm.x) else 0
+    #     y = int(elm.y * explode_factor) if not np.isnan(elm.y) else 0
+    #     diagram.set_point(device=elm, location=GraphicLocation(x=x, y=y))
 
     # TODO: End review here
 
