@@ -89,25 +89,22 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
         self.conn_line_dc_n: LineGraphicTemplateItem | None = None
 
         # AC Terminal (Index 0)
-        terminal_ac = RoundTerminalItem("ac", parent=self, editor=self.editor, terminal_type=TerminalType.AC)
-        terminal_ac.setPos(t_ac_pos)
-        terminal_ac.setRotation(0) # Points right
-        terminal_ac.setPen(QPen(self.color, self.pen_width, self.style))
-        self.terminal_ac = terminal_ac
+        self.terminal_ac = RoundTerminalItem("ac", parent=self, editor=self.editor, terminal_type=TerminalType.AC)
+        self.terminal_ac.setPos(t_ac_pos)
+        self.terminal_ac.setRotation(0) # Points right
+        self.terminal_ac.setPen(QPen(self.color, self.pen_width, self.style))
 
         # DC+ Terminal (Index 1)
-        terminal_dc_p = RoundTerminalItem("dc_p", parent=self, editor=self.editor, terminal_type=TerminalType.DC_P)
-        terminal_dc_p.setPos(t_dc_p_pos)
-        terminal_dc_p.setRotation(180) # Points left
-        terminal_dc_p.setPen(QPen(self.color, self.pen_width, self.style))
-        self.terminal_dc_p = terminal_dc_p
+        self.terminal_dc_p = RoundTerminalItem("dc_p", parent=self, editor=self.editor, terminal_type=TerminalType.DC_P)
+        self.terminal_dc_p.setPos(t_dc_p_pos)
+        self.terminal_dc_p.setRotation(180) # Points left
+        self.terminal_dc_p.setPen(QPen(self.color, self.pen_width, self.style))
 
         # DC- Terminal (Index 2)
-        terminal_dc_n = RoundTerminalItem("dc_n", parent=self, editor=self.editor, terminal_type=TerminalType.DC_N)
-        terminal_dc_n.setPos(t_dc_n_pos)
-        terminal_dc_n.setRotation(180) # Points left
-        terminal_dc_n.setPen(QPen(self.color, self.pen_width, self.style))
-        self.terminal_dc_n = terminal_dc_n
+        self.terminal_dc_n = RoundTerminalItem("dc_n", parent=self, editor=self.editor, terminal_type=TerminalType.DC_N)
+        self.terminal_dc_n.setPos(t_dc_n_pos)
+        self.terminal_dc_n.setRotation(180) # Points left
+        self.terminal_dc_n.setPen(QPen(self.color, self.pen_width, self.style))
 
         self.set_terminal_tooltips()
 

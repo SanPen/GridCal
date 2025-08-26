@@ -17,8 +17,6 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
     from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
-    from GridCal.Gui.Diagrams.SchematicWidget.Substation.busbar_graphics import BusBarGraphicItem
-    from GridCal.Gui.Diagrams.SchematicWidget.Substation.cn_graphics import CnGraphicItem
     from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 
 
@@ -30,7 +28,7 @@ class BarTerminalItem(QGraphicsRectItem):
     def __init__(self,
                  name: str,
                  editor: SchematicWidget,
-                 parent: Union[None, BusGraphicItem, BusBarGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = None,
+                 parent: Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = None,
                  h=10.0,
                  w=10.0):
         """
@@ -281,7 +279,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
     def __init__(self,
                  name: str,
                  editor: SchematicWidget,
-                 parent: Union[CnGraphicItem, Transformer3WGraphicItem],
+                 parent: Union[Transformer3WGraphicItem],
                  terminal_type: TerminalType=TerminalType.OTHER,
                  h=10.0,
                  w=10.0):

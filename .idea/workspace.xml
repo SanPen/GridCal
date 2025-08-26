@@ -28,11 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Solving three-terminal VSC GUI">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Saving the connected buses to the corresponding terminals of the VSC.">
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/vsc_graphics_3term.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/vsc_graphics_3term.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/vsc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/vsc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/terminal_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/terminal_item.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -2364,7 +2362,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="725" />
+    <option name="localTasksCounter" value="726" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2410,7 +2408,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Caught possible bug in the adjacency formation" />
     <MESSAGE value="minor change in the test_fubm_new voltage comparison, now checking also the imaginary part" />
     <MESSAGE value="5.3.37" />
     <MESSAGE value="gslv interface improvements" />
@@ -2435,7 +2432,8 @@
     <MESSAGE value="Merging devel branch into 392_Multiterminal_HVDC" />
     <MESSAGE value="Creating two and three terminal VSC." />
     <MESSAGE value="Solving three-terminal VSC GUI" />
-    <option name="LAST_COMMIT_MESSAGE" value="Solving three-terminal VSC GUI" />
+    <MESSAGE value="Saving the connected buses to the corresponding terminals of the VSC." />
+    <option name="LAST_COMMIT_MESSAGE" value="Saving the connected buses to the corresponding terminals of the VSC." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2858,6 +2856,11 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py</url>
           <line>1369</line>
           <option name="timeStamp" value="2701" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/terminal_item.py</url>
+          <line>428</line>
+          <option name="timeStamp" value="2743" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
