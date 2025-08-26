@@ -306,6 +306,14 @@ def greedy_dispatch2(
         tol=1e-6):
     """
     Greedy dispatch algorithm with dispatchable and non-dispatchable (e.g., renewable) generators.
+
+    (A) non-dispatchable gens
+    → (B) battery discharge
+    → (C) dispatchable gens
+    → (D) charge batteries from NDG excess
+         (and, if force_charge_if_low=True,
+         allow charging even with no excess for depleted batteries).
+
     :param load_profile: ndarray (T, L) - Load time series per timestep and load element.
     :param gen_profile: ndarray (T, G) - Precomputed generator output (for renewables or constraints).
     :param gen_p_max: ndarray (T, G) - array of generators maximum power
@@ -341,44 +349,46 @@ def greedy_dispatch2(
     _, B = batt_p_max_charge.shape
 
     dispatch_gen = np.zeros((T, G))
-    dispatch_batt = np.zeros((T, B))
+    dispatch_batt = np.zeros((T, B))  # + = discharge to grid, - = charging
     batt_energy = np.zeros((T + 1, B))
     total_cost = 0.0
 
     load_not_supplied = np.zeros(T)
     load_total = np.zeros(T)
 
-    # NEW: NDG accounting
-    ndg_surplus_after_batt = np.zeros(T)  # system-level curtailed NDG after charging
-    ndg_curtailment_per_gen = np.zeros((T, G))  # per NDG unit (post-battery)
+    # Non-dispatchable generation (NDG) accounting
+    ndg_surplus_after_batt = np.zeros(T)  # total curtailed NDG after attempting to charge
+    ndg_curtailment_per_gen = np.zeros((T, G))
+    ndg_unused = np.zeros((T, G))  # NDG not used to serve load at (A)
 
-    # helper to remember unused NDG at Step 1 for proportional allocation later
-    ndg_unused = np.zeros((T, G))
-
-    # initialize the SoC
+    # init SoC
     batt_energy[0, :] = batt_soc0
 
     for t in range(T):
-
-        # --- carry SoC forward by default (very important) ---
+        # carry SoC forward by default
         batt_energy[t + 1, :] = batt_energy[t, :]
 
-        # Step 0: Initialize the remaining load to the total load
+        # total load this step
         remaining_load = np.sum(load_profile[t, :])
         load_total[t] = remaining_load
 
-        # Step 1: Apply fixed (non-dispatchable) generation
+        # ------------------------------------------------------------
+        # (A) NON-DISPATCHABLE GENERATION
+        # ------------------------------------------------------------
         ndg_excess = 0.0
         gen_order = list()
+
         for g in range(G):
             if gen_active[t, g]:
                 if gen_dispatchable[g]:
-                    # store the dispatchable generation for later
                     gen_order.append((gen_cost[t, g], g))
                 else:
-                    # non dispatchable generator
+                    # available NDG this step (keep original behaviour)
                     avail = gen_profile[t, g]
+                    if gen_p_max[t, g] < avail:
+                        avail = gen_p_max[t, g]  # cap the dispatch to the maximum value (error in the model)
 
+                    # dispatch = min(avail, remaining_load)
                     if avail <= remaining_load:
                         dispatch = avail
                     else:
@@ -388,27 +398,86 @@ def greedy_dispatch2(
                     remaining_load = remaining_load - dispatch
                     total_cost = total_cost + dispatch * gen_cost[t, g] * dt[t]
 
+                    # NDG not used to serve load -> potential surplus
                     unused = avail - dispatch
                     ndg_unused[t, g] = unused
                     ndg_excess = ndg_excess + unused
             else:
-                # inactive generator: nothing
+                # inactive generator
                 pass
 
-        # Step 2: Dispatchable generation (sorted by cost)
-        # Generate list of (cost, g) for active+dispatchable generators
+        # ------------------------------------------------------------
+        # (B) BATTERY DISCHARGE (cover remaining deficit)
+        # ------------------------------------------------------------
+        # track batteries that discharged to avoid charging them later in (D)
+        batt_discharged_flag = np.zeros(B, dtype=np.int64)
+
+        if remaining_load > tol:
+            for b in range(B):
+                if batt_active[t, b]:
+                    # available discharge power; do not go below soc_min
+                    if batt_energy[t, b] > batt_soc_min[b]:
+                        if dt[t] != 0.0:
+                            avail_pow = (batt_energy[t, b] - batt_soc_min[b]) / dt[t]
+                        else:
+                            avail_pow = 0.0
+                        if avail_pow < 0.0:
+                            avail_pow = 0.0
+                    else:
+                        avail_pow = 0.0
+
+                    # remaining/eta_d (guard η)
+                    if batt_eff_discharge[t, b] > tol:
+                        limit_by_eff = remaining_load / batt_eff_discharge[t, b]
+                    else:
+                        limit_by_eff = 0.0
+
+                    # p_dis = min(p_max_discharge, limit_by_eff, avail_pow)
+                    p_dis = batt_p_max_discharge[t, b]
+                    if limit_by_eff < p_dis:
+                        p_dis = limit_by_eff
+                    if avail_pow < p_dis:
+                        p_dis = avail_pow
+
+                    if p_dis > tol:
+                        delivered = p_dis * batt_eff_discharge[t, b]
+                        dispatch_batt[t, b] = delivered
+                        batt_energy[t + 1, b] = batt_energy[t, b] - p_dis * dt[t]
+
+                        # clamp SoC to [soc_min, Emax]
+                        if batt_energy[t + 1, b] < batt_soc_min[b]:
+                            batt_energy[t + 1, b] = batt_soc_min[b]
+                        if batt_energy[t + 1, b] > batt_energy_max[t, b]:
+                            batt_energy[t + 1, b] = batt_energy_max[t, b]
+
+                        remaining_load = remaining_load - delivered
+                        total_cost = total_cost + delivered * batt_cost[t, b] * dt[t]
+                        batt_discharged_flag[b] = 1
+
+                        if remaining_load <= tol:
+                            break
+                else:
+                    # inactive battery
+                    pass
+
+        # ------------------------------------------------------------
+        # (C) DISPATCHABLE GENERATION (ascending cost)
+        # ------------------------------------------------------------
         gen_order.sort()
         for cost, g in gen_order:
+            # p_max = min(gen_p_max, gen_profile)
             if gen_p_max[t, g] <= gen_profile[t, g]:
                 p_max = gen_p_max[t, g]
             else:
                 p_max = gen_profile[t, g]
 
+            # p_min = min(gen_p_min, p_max)
             if gen_p_min[t, g] <= p_max:
                 p_min = gen_p_min[t, g]
             else:
                 p_min = p_max
 
+            # if remaining >= p_min: p = min(p_max, remaining) else 0
             if remaining_load >= p_min:
                 if p_max <= remaining_load:
                     p = p_max
@@ -417,112 +486,102 @@ def greedy_dispatch2(
             else:
                 p = 0.0
 
-            dispatch_gen[t, g] = p
+            dispatch_gen[t, g] = dispatch_gen[t, g] + p  # in case unit had NDG earlier (it didn't, but explicit)
             total_cost = total_cost + p * gen_cost[t, g] * dt[t]
             remaining_load = remaining_load - p
 
             if remaining_load <= tol:
                 break
 
-        # Step 3: Battery dispatch
-        if remaining_load > tol:
-            # Deficit -> discharge
-            for b in range(B):
-                if batt_active[t, b]:
-                    if dt[t] != 0.0:
-                        avail_pow = batt_energy[t, b] / dt[t]
-                    else:
-                        avail_pow = 0.0
+        # ------------------------------------------------------------
+        # (D) BATTERY CHARGE from Non-Dispatchable Generation EXCESS
+        #     If depleted and force flag, allow charging even without NDG excess.
+        # ------------------------------------------------------------
+        excess = ndg_excess  # pool available for regular charging
 
-                    if batt_eff_discharge[t, b] > tol:
-                        limit_by_eff = remaining_load / batt_eff_discharge[t, b]
-                    else:
-                        limit_by_eff = 0.0
-
-                    p_dis = batt_p_max_discharge[t, b]
-                    if limit_by_eff < p_dis:
-                        p_dis = limit_by_eff
-                    if avail_pow < p_dis:
-                        p_dis = avail_pow
-
-                    delivered = p_dis * batt_eff_discharge[t, b]
-                    dispatch_batt[t, b] = delivered
-                    batt_energy[t + 1, b] = batt_energy[t, b] - p_dis * dt[t]
-                    remaining_load = remaining_load - delivered
-                    total_cost = total_cost + delivered * batt_cost[t, b] * dt[t]
-
-                    if remaining_load <= tol:
-                        break
-                else:
-                    # inactive battery: nothing
+        for b in range(B):
+            if batt_active[t, b]:
+                # skip if it discharged earlier this step (avoid ping-pong)
+                if batt_discharged_flag[b] == 1:
+                    # keep carried SoC
                     pass
-        else:
-            # Surplus side -> charge from NDG excess
-            excess = ndg_excess
-
-            for b in range(B):
-                if batt_active[t, b]:
+                else:
+                    # force-charge if depleted and flag is on
                     if force_charge_if_low and (batt_energy[t, b] < batt_soc_min[b]):
                         force_charge = True
                     else:
                         force_charge = False
 
+                    # headroom (kW) this step
                     if dt[t] != 0.0:
                         room_kw = (batt_energy_max[t, b] - batt_energy[t, b]) / dt[t]
-                        if room_kw < 0.0:
-                            room_kw = 0.0
                     else:
+                        room_kw = 0.0
+                    if room_kw < 0.0:
                         room_kw = 0.0
 
                     p_ch_possible = batt_p_max_charge[t, b]
 
+                    # p_ch starts at possible and is capped by room
                     p_ch = p_ch_possible
                     if room_kw < p_ch:
                         p_ch = room_kw
 
                     if not force_charge:
+                        # limit by NDG excess via efficiency
                         if batt_eff_charge[t, b] > tol:
                             max_by_excess = excess * batt_eff_charge[t, b]
                         else:
                             max_by_excess = 0.0
                         if max_by_excess < p_ch:
                             p_ch = max_by_excess
+                    else:
+                        # allowed even if excess == 0
+                        pass
 
+                    # apply if feasible
                     if batt_eff_charge[t, b] > tol and p_ch > 0.0:
-                        grid_draw = p_ch / batt_eff_charge[t, b]
-                        dispatch_batt[t, b] = -grid_draw
+                        grid_draw = p_ch / batt_eff_charge[t, b]  # taken from excess when not forced
+                        dispatch_batt[t, b] = dispatch_batt[t, b] - grid_draw
                         batt_energy[t + 1, b] = batt_energy[t, b] + p_ch * dt[t]
 
+                        # clamp SoC to [0, Emax]
+                        if batt_energy[t + 1, b] < 0.0:
+                            batt_energy[t + 1, b] = 0.0
+                        if batt_energy[t + 1, b] > batt_energy_max[t, b]:
+                            batt_energy[t + 1, b] = batt_energy_max[t, b]
+
                         if not force_charge:
+                            # reduce NDG excess by the grid draw (positive)
                             excess = excess - grid_draw
                             if excess < 0.0:
                                 excess = 0.0
                     else:
-                        # keep SoC (already carried forward)
+                        # no feasible charge; keep carried SoC
                         pass
-                else:
-                    # inactive battery
-                    pass
-
-            if excess > tol:
-                ndg_surplus_after_batt[t] = excess
             else:
-                ndg_surplus_after_batt[t] = 0.0
+                # inactive battery
+                pass
 
-            # Proportional per-NDG curtailment
-            if ndg_excess > tol and ndg_surplus_after_batt[t] > tol:
-                for g in range(G):
-                    if gen_active[t, g]:
-                        if gen_dispatchable[g]:
-                            ndg_curtailment_per_gen[t, g] = 0.0
-                        else:
-                            w = ndg_unused[t, g] / ndg_excess
-                            ndg_curtailment_per_gen[t, g] = ndg_surplus_after_batt[t] * w
-                    else:
+        # leftover NDG after charging is curtailment
+        if excess > tol:
+            ndg_surplus_after_batt[t] = excess
+        else:
+            ndg_surplus_after_batt[t] = 0.0
+
+        # proportional per-NDG curtailment
+        if ndg_excess > tol and ndg_surplus_after_batt[t] > tol:
+            for g in range(G):
+                if gen_active[t, g]:
+                    if gen_dispatchable[g]:
                         ndg_curtailment_per_gen[t, g] = 0.0
-            else:
-                # zero this row (NumPy notation)
-                ndg_curtailment_per_gen[t, :] = 0.0
+                    else:
+                        w = ndg_unused[t, g] / ndg_excess
+                        ndg_curtailment_per_gen[t, g] = ndg_surplus_after_batt[t] * w
+                else:
+                    ndg_curtailment_per_gen[t, g] = 0.0
+        else:
+            ndg_curtailment_per_gen[t, :] = 0.0
 
         # unmet load
         if remaining_load > 0.0:
@@ -530,11 +589,12 @@ def greedy_dispatch2(
         else:
             load_not_supplied[t] = 0.0
 
+    # proportional shedding split
     load_shedding = np.round(load_profile * (load_not_supplied / load_total)[:, np.newaxis], 6)
 
     return (dispatch_gen,
             dispatch_batt,
-            batt_energy[1::, :],
+            batt_energy[1:, :],
             total_cost,
             load_not_supplied,
             load_shedding,
