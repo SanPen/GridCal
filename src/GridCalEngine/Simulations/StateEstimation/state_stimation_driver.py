@@ -6,7 +6,7 @@
 from typing import Union
 
 from GridCalEngine.Simulations.StateEstimation.observability_analysis import \
-    check_for_observability_and_identify_observable_islands
+    check_for_observability_and_return_unobservable_buses, add_pseudo_measurements_for_unobservable_buses
 from GridCalEngine.Simulations.StateEstimation.state_estimation_results import StateEstimationResults
 from GridCalEngine.basic_structures import ConvergenceReport
 from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_nr, solve_se_lm, solve_se_gauss_newton, \
@@ -23,7 +23,8 @@ class StateEstimationOptions:
     def __init__(self, solver: SolverType = SolverType.NR,
                  tol: float = 1e-9, max_iter: int = 100, verbose: int = 0,
                  prefer_correct: bool = True, c_threshold: int = 4.0,
-                 fixed_slack: bool = False, run_observability_analyis:bool =False):
+                 fixed_slack: bool = False, run_observability_analyis: bool = False,add_pseudo_measurements:bool=False,
+                 pseudo_meas_std: float=1.0):
         """
         StateEstimationOptions
         :param tol: Tolerance
@@ -41,7 +42,8 @@ class StateEstimationOptions:
         self.c_threshold = c_threshold
         self.fixed_slack: bool = fixed_slack
         self.observability_analysis: bool = run_observability_analyis
-
+        self.add_pseudo_measurements:bool=add_pseudo_measurements
+        self.pseudo_meas_std: float =pseudo_meas_std
 
 class StateEstimationConvergenceReport(ConvergenceReport):
     def __init__(self) -> None:
@@ -199,25 +201,33 @@ class StateEstimation(DriverTemplate):
                                              branch_idx=island.passive_branch_data.original_idx)
 
             conn = island.get_connectivity_matrices()
-
+            # the idea is to first run observability analysis uif user wants then the normal SE
             if self.options.observability_analysis:
                 # this will provide the result of unobservable branches
                 # here we have to store Jacobian and measurements so that it is not again recalculated in
                 # State estimation calculations
                 # if pseudo meas is allowed it will create meas at the unobser branches so that the net is observable
                 # in that case Jacobian needs to be called again in SE formulations(needs to be worked upon)
-                check_for_observability_and_identify_observable_islands(nc=island,
-                                       Ybus=adm.Ybus,
-                                       Yf=adm.Yf,
-                                       Yt=adm.Yt,
-                                       no_slack=idx.no_slack,
-                                       F=island.passive_branch_data.F,
-                                       T=island.passive_branch_data.T,
-                                       Cf=conn.Cf,
-                                       Ct=conn.Ct,
-                                       se_input=se_input_island,
-                                       fixed_slack=self.options.fixed_slack,
-                                       logger=self.logger)
+                unobservable_buses, V, bus_contrib = check_for_observability_and_return_unobservable_buses(nc=island,
+                                                                                                           Ybus=adm.Ybus,
+                                                                                                           Yf=adm.Yf,
+                                                                                                           Yt=adm.Yt,
+                                                                                                           no_slack=idx.no_slack,
+                                                                                                           F=island.passive_branch_data.F,
+                                                                                                           T=island.passive_branch_data.T,
+                                                                                                           Cf=conn.Cf,
+                                                                                                           Ct=conn.Ct,
+                                                                                                           se_input=se_input_island,
+                                                                                                           fixed_slack=self.options.fixed_slack,
+                                                                                                           logger=self.logger)
+                if unobservable_buses and self.options.add_pseudo_measurements:
+                    se_input_island = add_pseudo_measurements_for_unobservable_buses(unobservable_buses, V,
+                                                                                     Ybus=adm.Ybus,
+                                                                                     Cf=conn.Cf,
+                                                                                     Ct=conn.Ct,
+                                                                                     sigma_pseudo_meas_value=
+                                                                                     self.options.pseudo_meas_std,
+                                                                                     logger=self.logger)
 
             # run solver
             if self.options.solver == SolverType.NR:
@@ -287,25 +297,25 @@ class StateEstimation(DriverTemplate):
                                                  logger=self.logger)
             elif self.options.solver == SolverType.LU:
                 solution = decoupled_state_estimation(nc=island,
-                                                 Ybus=adm.Ybus,
-                                                 Yf=adm.Yf,
-                                                 Yt=adm.Yt,
-                                                 Yshunt_bus=adm.Yshunt_bus,
-                                                 F=island.passive_branch_data.F,
-                                                 T=island.passive_branch_data.T,
-                                                 Cf=conn.Cf,
-                                                 Ct=conn.Ct,
-                                                 se_input=se_input_island,
-                                                 vd=idx.vd,
-                                                 pv=idx.pv,
-                                                 no_slack=idx.no_slack,
-                                                 tol=self.options.tol,
-                                                 max_iter=self.options.max_iter,
-                                                 verbose=self.options.verbose,
-                                                 prefer_correct=self.options.prefer_correct,
-                                                 c_threshold=self.options.c_threshold,
-                                                 fixed_slack=self.options.fixed_slack,
-                                                 logger=self.logger)
+                                                      Ybus=adm.Ybus,
+                                                      Yf=adm.Yf,
+                                                      Yt=adm.Yt,
+                                                      Yshunt_bus=adm.Yshunt_bus,
+                                                      F=island.passive_branch_data.F,
+                                                      T=island.passive_branch_data.T,
+                                                      Cf=conn.Cf,
+                                                      Ct=conn.Ct,
+                                                      se_input=se_input_island,
+                                                      vd=idx.vd,
+                                                      pv=idx.pv,
+                                                      no_slack=idx.no_slack,
+                                                      tol=self.options.tol,
+                                                      max_iter=self.options.max_iter,
+                                                      verbose=self.options.verbose,
+                                                      prefer_correct=self.options.prefer_correct,
+                                                      c_threshold=self.options.c_threshold,
+                                                      fixed_slack=self.options.fixed_slack,
+                                                      logger=self.logger)
             else:
                 raise ValueError(f"State Estimation solver type not recognized: {self.options.solver.value}")
 
