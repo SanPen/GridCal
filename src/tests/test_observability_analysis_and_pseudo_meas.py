@@ -83,4 +83,7 @@ def test_se_with_and_without_pseudo_measurements():
     unobs_after = report_pseudo.get_unobservable_buses()
     assert len(unobs_before[0]) > 0, "Expected unobservable buses without pseudo-measurements."
     assert unobs_after[0]==unobs_before[0], "Expected unobservable buses without pseudo-measurements."
+    print(f"unobservable_buses_before={unobs_before}",
+          f"unobservable_buses_after={unobs_after}",
+          f"bus_contributions={report_pseudo.get_bus_contribution()}")
     print("Test passed: SE fails without pseudo-measurements but converges when they are added.")
