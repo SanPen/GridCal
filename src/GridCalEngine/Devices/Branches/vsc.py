@@ -562,3 +562,8 @@ class VSC(BranchParent):
 
         if show_fig:
             plt.show()
+
+
+    def is_3term(self):
+
+        return self.bus_from is not None and self.bus_to is not None and self._bus_dc_n is not None

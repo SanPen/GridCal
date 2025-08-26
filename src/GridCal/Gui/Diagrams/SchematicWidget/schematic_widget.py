@@ -53,6 +53,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.winding_graphics import Windi
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.dc_line_graphics import DcLineGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer2w_graphics import TransformerGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.hvdc_graphics import HvdcGraphicItem
+from GridCal.Gui.Diagrams.SchematicWidget.Branches.vsc_graphics_3term import VscGraphicItem3Term
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.vsc_graphics import VscGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.upfc_graphics import UpfcGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.series_reactance_graphics import SeriesReactanceGraphicItem
@@ -66,6 +67,9 @@ from GridCal.Gui.general_dialogues import InputNumberDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.messages import error_msg, warning_msg, yes_no_question
+
+from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
+from GridCalEngine.enumerations import TerminalType
 
 if TYPE_CHECKING:
     from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -448,7 +452,7 @@ class SchematicWidget(BaseDiagramWidget):
             elif obj_type == self.library_model.get_vsc_mime_data():
                 # Create VSC API object
                 obj = VSC(name=f'VSC {len(self.circuit.vsc_devices)}')
-                graphic_object = self.create_vsc_graphics(elm=obj, x=x0, y=y0)
+                graphic_object = self.create_vsc_graphics_3term(elm=obj, x=x0, y=y0)
                 self.circuit.add_vsc(obj)
 
             else:
@@ -561,15 +565,15 @@ class SchematicWidget(BaseDiagramWidget):
                                               draw_labels=draw_labels)
         return graphic_object
 
-    def create_vsc_graphics(self, elm: VSC, x: float, y: float) -> VscGraphicItem:
+    def create_vsc_graphics_3term(self, elm: VSC, x: float, y: float) -> VscGraphicItem3Term:
         """
         Add VSC to the graphics
         :param elm: VSC
         :param x: x coordinate
         :param y: y coordinate
-        :return: VscGraphicItem
+        :return: VscGraphicItem3Term
         """
-        graphic_object = VscGraphicItem(editor=self, api_object=elm)
+        graphic_object = VscGraphicItem3Term(editor=self, api_object=elm)
         graphic_object.setPos(QPointF(x, y))
         return graphic_object
 
@@ -1081,7 +1085,7 @@ class SchematicWidget(BaseDiagramWidget):
         # set the connection placement
         graphic_object.setZValue(-1)
 
-    def create_vsc(self, bus_from: Bus, bus_to: Bus, from_port: BarTerminalItem, to_port: BarTerminalItem):
+    def create_vsc_graphics_2term(self, bus_from: Bus, bus_to: Bus, from_port: BarTerminalItem, to_port: BarTerminalItem):
         """
 
         :param bus_from:
@@ -1095,12 +1099,10 @@ class SchematicWidget(BaseDiagramWidget):
                   bus_to=bus_to,
                   name=name)
 
-        #TODO: Review
         graphic_object = VscGraphicItem(from_port=from_port,
                                         to_port=to_port,
                                         editor=self,
                                         api_object=obj)
-        # TODO: End review
 
         self.add_to_scene(graphic_object=graphic_object)
 
@@ -2046,89 +2048,97 @@ class SchematicWidget(BaseDiagramWidget):
         :return: VscGraphicItem or None
         """
 
-        # Import required types
-        from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
-        from GridCalEngine.enumerations import TerminalType
-
         # Use provided coordinates or fall back to API object coordinates
         if x is None:
             x = elm.x
         if y is None:
             y = elm.y
 
-        # Find ports for all three terminals
-        port_ac = self.find_port(bus=elm.bus_to, cn=elm.cn_to)
-        port_dcp = self.find_port(bus=elm.bus_from, cn=elm.cn_from)
-        port_dcn = self.find_port(bus=elm.bus_dc_n, cn=elm.cn_dc_n)
-
         # search for the api object, because it may be created already
         graphic_object = self.graphics_manager.query(elm=elm)
 
         if graphic_object is None:
-            # Create new VSC graphics
-            graphic_object = self.create_vsc_graphics(elm=elm, x=x, y=y)
+            if elm.is_3term():
+                # Create new VSC graphics
+                graphic_object = self.create_vsc_graphics_3term(elm=elm, x=x, y=y)
 
-            # Register in graphics manager
-            self.graphics_manager.add_device(elm=elm, graphic=graphic_object)
+                # Register in graphics manager
+                self.graphics_manager.add_device(elm=elm, graphic=graphic_object)
 
-            # Add to scene
-            self.add_to_scene(graphic_object=graphic_object)
+                # Add to scene
+                self.add_to_scene(graphic_object=graphic_object)
 
-            # Create connection lines (following the same pattern as interactive creation)
-            if port_ac is not None:
-                # Create line from bus port to VSC AC terminal
-                conn_line_ac = LineGraphicTemplateItem(
-                    from_port=port_ac,  # from bus port
-                    to_port=graphic_object.terminal_ac,  # to VSC terminal
-                    editor=self
-                )
+                # Find ports for all three terminals
+                port_ac = self.find_port(bus=elm.bus_to)
+                port_dcp = self.find_port(bus=elm.bus_from)
+                port_dcn = self.find_port(bus=elm.bus_dc_n)
 
-                # Set connection in VSC
-                if elm.bus_to is not None:
-                    graphic_object.set_connection(TerminalType.AC, elm.bus_to, conn_line_ac)
+                # Create connection lines (following the same pattern as interactive creation)
+                if port_ac is not None:
+                    # Create line from bus port to VSC AC terminal
+                    conn_line_ac = LineGraphicTemplateItem(
+                        from_port=port_ac,  # from bus port
+                        to_port=graphic_object.terminal_ac,  # to VSC terminal
+                        editor=self
+                    )
 
-                # Add connection line to scene
-                self.add_to_scene(conn_line_ac)
+                    # Set connection in VSC
+                    if elm.bus_to is not None:
+                        graphic_object.set_connection(TerminalType.AC, elm.bus_to, conn_line_ac)
 
-            if port_dcp is not None:
-                # Create line from bus port to VSC DC+ terminal
-                conn_line_dcp = LineGraphicTemplateItem(
-                    from_port=port_dcp,  # from bus port
-                    to_port=graphic_object.terminal_dc_p,  # to VSC terminal
-                    editor=self
-                )
+                    # Add connection line to scene
+                    self.add_to_scene(conn_line_ac)
 
-                # Set connection in VSC
-                if elm.bus_from is not None:
-                    graphic_object.set_connection(TerminalType.DC_P, elm.bus_from, conn_line_dcp)
+                if port_dcp is not None:
+                    # Create line from bus port to VSC DC+ terminal
+                    conn_line_dcp = LineGraphicTemplateItem(
+                        from_port=port_dcp,  # from bus port
+                        to_port=graphic_object.terminal_dc_p,  # to VSC terminal
+                        editor=self
+                    )
 
-                # Add connection line to scene
-                self.add_to_scene(conn_line_dcp)
+                    # Set connection in VSC
+                    if elm.bus_from is not None:
+                        graphic_object.set_connection(TerminalType.DC_P, elm.bus_from, conn_line_dcp)
 
-            if port_dcn is not None:
-                # Create line from bus port to VSC DC- terminal
-                conn_line_dcn = LineGraphicTemplateItem(
-                    from_port=port_dcn,  # from bus port
-                    to_port=graphic_object.terminal_dc_n,  # to VSC terminal
-                    editor=self
-                )
+                    # Add connection line to scene
+                    self.add_to_scene(conn_line_dcp)
 
-                # Set connection in VSC
-                if elm.bus_dc_n is not None:
-                    graphic_object.set_connection(TerminalType.DC_N, elm.bus_dc_n, conn_line_dcn)
+                if port_dcn is not None:
+                    # Create line from bus port to VSC DC- terminal
+                    conn_line_dcn = LineGraphicTemplateItem(
+                        from_port=port_dcn,  # from bus port
+                        to_port=graphic_object.terminal_dc_n,  # to VSC terminal
+                        editor=self
+                    )
 
-                # Add connection line to scene
-                self.add_to_scene(conn_line_dcn)
+                    # Set connection in VSC
+                    if elm.bus_dc_n is not None:
+                        graphic_object.set_connection(TerminalType.DC_N, elm.bus_dc_n, conn_line_dcn)
 
-            # Update diagram element
-            self.update_diagram_element(device=elm,
-                                        x=x,
-                                        y=y,
-                                        w=graphic_object.w,
-                                        h=graphic_object.h,
-                                        r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
+                    # Add connection line to scene
+                    self.add_to_scene(conn_line_dcn)
+
+                # Update diagram element
+                self.update_diagram_element(device=elm,
+                                            x=x,
+                                            y=y,
+                                            w=graphic_object.w,
+                                            h=graphic_object.h,
+                                            r=0,
+                                            draw_labels=graphic_object.draw_labels,
+                                            graphic_object=graphic_object)
+            else:
+                # Find ports for the terminals
+                from_port = self.find_port(bus=elm.bus_to)
+                to_port = self.find_port(bus=elm.bus_from)
+
+                self.add_api_branch(branch=elm,
+                                    new_graphic_func=VscGraphicItem,
+                                    from_port=from_port,
+                                    to_port=to_port,
+                                    draw_labels=True,
+                                    logger=logger)
         else:
             logger.add_info("VSC graphics already exist", device=elm.name)
 
