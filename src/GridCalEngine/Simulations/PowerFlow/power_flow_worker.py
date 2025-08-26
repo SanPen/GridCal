@@ -14,10 +14,6 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation import PfBasicFormulation
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import (PfBasicFormulation3Ph,
-                                                                                       expand3phIndices,
-                                                                                       expand3ph,
-                                                                                       expandVoltage3ph)
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.powell_fx import powell_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquadt_fx import levenberg_marquardt_fx
@@ -720,213 +716,6 @@ def __solve_island_limited_support(island: NumericalCircuit,
         return final_solution, report
 
 
-def __solve_island_limited_support_3phase(island: NumericalCircuit,
-                                          indices: SimulationIndices,
-                                          options: PowerFlowOptions,
-                                          V0: CxVec,
-                                          S_base: CxVec,
-                                          Shvdc: Vec,
-                                          logger=Logger()) -> Tuple[NumericPowerFlowResults, ConvergenceReport]:
-    """
-    Run a power flow simulation using the selected method (no outer loop controls).
-    This routine supports delete voltage controls,and Hvdc links through external injections (Shvdc)
-    Also requires grids to be split by HvdcLines
-    :param island: SnapshotData circuit, this ensures on-demand admittances computation
-    :param indices: SimulationIndices
-    :param options: PowerFlow options
-    :param V0: Array of initial voltages
-    :param S_base: Array of power Injections
-    :param Shvdc: Array of power injections due t the HVDC lines (only used in some algorithms)
-    :param logger: Logger
-    :return: NumericPowerFlowResults
-    """
-
-    logger.add_info('Using the complete support power flow method')
-
-    report = ConvergenceReport()
-    if options.retry_with_other_methods:
-        solver_list = [SolverType.NR,
-                       SolverType.PowellDogLeg,
-                       SolverType.LM]
-
-        if options.solver_type in solver_list:
-            solver_list.remove(options.solver_type)
-
-        solvers = [options.solver_type] + solver_list
-    else:
-        # No retry selected
-        solvers = [options.solver_type]
-
-    # set worked = false to enter the loop
-    solver_idx = 0
-
-    # set the initial value
-    Qmax, Qmin = island.get_reactive_power_limits()
-    S0: CxVec = Shvdc + S_base  # already for 3-phase
-
-    if len(indices.vd) == 0:
-        solution = NumericPowerFlowResults(V=np.zeros(len(S0) * 3, dtype=complex),
-                                           Scalc=S0,
-                                           m=expand3ph(island.active_branch_data.tap_module),
-                                           tau=expand3ph(island.active_branch_data.tap_angle),
-                                           Sf=np.zeros(island.nbr * 3, dtype=complex),
-                                           St=np.zeros(island.nbr * 3, dtype=complex),
-                                           If=np.zeros(island.nbr * 3, dtype=complex),
-                                           It=np.zeros(island.nbr * 3, dtype=complex),
-                                           loading=np.zeros(island.nbr * 3, dtype=complex),
-                                           losses=np.zeros(island.nbr * 3, dtype=complex),
-                                           Pf_vsc=np.zeros(island.nvsc, dtype=float),
-                                           St_vsc=np.zeros(island.nvsc * 3, dtype=complex),
-                                           If_vsc=np.zeros(island.nvsc, dtype=float),
-                                           It_vsc=np.zeros(island.nvsc, dtype=complex),
-                                           losses_vsc=np.zeros(island.nvsc, dtype=float),
-                                           loading_vsc=np.zeros(island.nvsc, dtype=float),
-                                           Sf_hvdc=np.zeros(island.nhvdc, dtype=complex),
-                                           St_hvdc=np.zeros(island.nhvdc, dtype=complex),
-                                           losses_hvdc=np.zeros(island.nhvdc, dtype=complex),
-                                           loading_hvdc=np.zeros(island.nhvdc, dtype=complex),
-                                           converged=False,
-                                           norm_f=1e200,
-                                           iterations=0,
-                                           elapsed=0)
-
-        # method, converged: bool, error: float, elapsed: float, iterations: int
-        report.add(method=SolverType.NoSolver, converged=True, error=0.0, elapsed=0.0, iterations=0)
-        logger.add_error('Not solving power flow because there is no slack bus')
-        return solution, report
-
-    else:
-
-        final_solution = NumericPowerFlowResults(V=V0,
-                                                 converged=False,
-                                                 norm_f=1e200,
-                                                 Scalc=S0,
-                                                 m=expand3ph(island.active_branch_data.tap_module),
-                                                 tau=expand3ph(island.active_branch_data.tap_angle),
-                                                 Sf=np.zeros(island.nbr * 3, dtype=complex),
-                                                 St=np.zeros(island.nbr * 3, dtype=complex),
-                                                 If=np.zeros(island.nbr * 3, dtype=complex),
-                                                 It=np.zeros(island.nbr * 3, dtype=complex),
-                                                 loading=np.zeros(island.nbr * 3, dtype=complex),
-                                                 losses=np.zeros(island.nbr * 3, dtype=complex),
-                                                 Pf_vsc=np.zeros(island.nvsc, dtype=float),
-                                                 St_vsc=np.zeros(island.nvsc * 3, dtype=complex),
-                                                 If_vsc=np.zeros(island.nvsc, dtype=float),
-                                                 It_vsc=np.zeros(island.nvsc * 3, dtype=complex),
-                                                 losses_vsc=np.zeros(island.nvsc, dtype=float),
-                                                 loading_vsc=np.zeros(island.nvsc, dtype=float),
-                                                 Sf_hvdc=np.zeros(island.nhvdc, dtype=complex),
-                                                 St_hvdc=np.zeros(island.nhvdc, dtype=complex),
-                                                 losses_hvdc=np.zeros(island.nhvdc, dtype=complex),
-                                                 loading_hvdc=np.zeros(island.nhvdc, dtype=complex),
-                                                 iterations=0,
-                                                 elapsed=0)
-
-        while solver_idx < len(solvers) and not final_solution.converged:
-            # get the solver
-            solver_type = solvers[solver_idx]
-
-            if solver_type == SolverType.LM:
-
-                problem = PfBasicFormulation3Ph(V0=final_solution.V,
-                                                S0=S0,
-                                                Qmin=Qmin,
-                                                Qmax=Qmax,
-                                                nc=island,
-                                                options=options,
-                                                logger=logger)
-
-                solution = levenberg_marquardt_fx(problem=problem,
-                                                  tol=options.tolerance,
-                                                  max_iter=options.max_iter,
-                                                  verbose=options.verbose,
-                                                  logger=logger)
-
-            elif solver_type == SolverType.NR:
-
-                problem = PfBasicFormulation3Ph(V0=final_solution.V,
-                                                S0=S0,
-                                                Qmin=Qmin,
-                                                Qmax=Qmax,
-                                                nc=island,
-                                                options=options,
-                                                logger=logger)
-
-                solution = newton_raphson_fx(problem=problem,
-                                             tol=options.tolerance,
-                                             max_iter=options.max_iter,
-                                             trust=options.trust_radius,
-                                             verbose=options.verbose,
-                                             logger=logger)
-
-            elif solver_type == SolverType.PowellDogLeg:
-
-                problem = PfBasicFormulation3Ph(V0=final_solution.V,
-                                                S0=S0,
-                                                Qmin=Qmin,
-                                                Qmax=Qmax,
-                                                nc=island,
-                                                options=options,
-                                                logger=logger)
-
-                solution = powell_fx(problem=problem,
-                                     tol=options.tolerance,
-                                     max_iter=options.max_iter,
-                                     trust=options.trust_radius,
-                                     verbose=options.verbose,
-                                     logger=logger)
-
-            else:
-                # for any other method, raise exception
-                raise Exception(solver_type.value + ' Not supported in power flow mode')
-
-            # record the solution type
-            solution.method = solver_type
-
-            # record the method used, if it improved the solution
-            if abs(solution.norm_f) < abs(final_solution.norm_f):
-                report.add(method=solver_type,
-                           converged=solution.converged,
-                           error=solution.norm_f,
-                           elapsed=solution.elapsed,
-                           iterations=solution.iterations)
-
-                if solution.method in [SolverType.Linear, SolverType.LACPF]:
-                    # if the method is linear, we do not check the solution quality
-                    final_solution = solution
-                else:
-                    # if the method is supposed to be exact, we check the solution quality
-                    if abs(solution.norm_f) < 0.1:
-                        final_solution = solution
-                    else:
-                        logger.add_info('Tried solution is garbage',
-                                        solver_type.value,
-                                        value="{:.4e}".format(solution.norm_f),
-                                        expected_value=0.1)
-            else:
-                logger.add_info('Tried solver but it did not improve the solution',
-                                solver_type.value,
-                                value="{:.4e}".format(solution.norm_f),
-                                expected_value=final_solution.norm_f)
-
-            # next solver
-            solver_idx += 1
-
-        if not final_solution.converged:
-            logger.add_error('Did not converge, even after retry!',
-                             device='Error',
-                             value="{:.4e}".format(final_solution.norm_f),
-                             expected_value=f"<{options.tolerance}")
-
-        if final_solution.tap_module is None:
-            final_solution.tap_module = island.active_branch_data.tap_module
-
-        if final_solution.tap_angle is None:
-            final_solution.tap_angle = island.active_branch_data.tap_angle
-
-        return final_solution, report
-
-
 def __multi_island_pf_nc_complete_support(nc: NumericalCircuit,
                                           options: PowerFlowOptions,
                                           logger: Logger | None = None,
@@ -1228,9 +1017,23 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     if logger is None:
         logger = Logger()
 
-    if options.three_phase_unbalanced:
+    if options.initialize_angles and options.solver_type not in [SolverType.Linear,
+                                                                 SolverType.LACPF,
+                                                                 SolverType.HELM]:
+        # NOTE: This is to initialize power flows with very different angles
+        # that may happen if the transformer phase shifts are applied in the power flow
+        results_0 = __multi_island_pf_nc_limited_support(
+            nc=nc,
+            options=PowerFlowOptions(solver_type=SolverType.Linear),
+            logger=logger,
+            V_guess=V_guess,
+            Sbus_input=Sbus_input,
+        )
+        V_guess = results_0.voltage
 
-        results = __multi_island_pf_nc_limited_support_3phase(
+    if nc.active_branch_data.any_pf_control:
+
+        results = __multi_island_pf_nc_complete_support(
             nc=nc,
             options=options,
             logger=logger,
@@ -1238,60 +1041,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
             Sbus_input=Sbus_input,
         )
 
-        # expand voltages if there was a bus topology reduction
-        # if nc.topology_performed:
-        #     results.voltage = nc.propagate_bus_result(results.voltage)
-
-        # do the reactive power partition and store the values
-        # __split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag, results=results)
-
-        results.three_phase = True
-        return results
-
-    else:
-
-        if options.initialize_angles and options.solver_type not in [SolverType.Linear, SolverType.LACPF, SolverType.HELM]:
-            # NOTE: This is to initialize power flows with very different angles
-            # that may happen if the transformer phase shifts are applied in the power flow
-            results_0 = __multi_island_pf_nc_limited_support(
-                nc=nc,
-                options=PowerFlowOptions(solver_type=SolverType.Linear),
-                logger=logger,
-                V_guess=V_guess,
-                Sbus_input=Sbus_input,
-            )
-            V_guess = results_0.voltage
-
-        if nc.active_branch_data.any_pf_control:
-
-            results = __multi_island_pf_nc_complete_support(
-                nc=nc,
-                options=options,
-                logger=logger,
-                V_guess=V_guess,
-                Sbus_input=Sbus_input,
-            )
-
-            if not results.converged:
-                results = __multi_island_pf_nc_limited_support(
-                    nc=nc,
-                    options=options,
-                    logger=logger,
-                    V_guess=V_guess,
-                    Sbus_input=Sbus_input,
-                )
-
-            # expand voltages if there was a bus topology reduction
-            if nc.topology_performed:
-                results.voltage = nc.propagate_bus_result(results.voltage)
-
-            # do the reactive power partition and store the values
-            __split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag, results=results)
-
-            return results
-
-        else:
-
+        if not results.converged:
             results = __multi_island_pf_nc_limited_support(
                 nc=nc,
                 options=options,
@@ -1300,14 +1050,33 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                 Sbus_input=Sbus_input,
             )
 
-            # expand voltages if there was a bus topology reduction
-            if nc.topology_performed:
-                results.voltage = nc.propagate_bus_result(results.voltage)
+        # expand voltages if there was a bus topology reduction
+        if nc.topology_performed:
+            results.voltage = nc.propagate_bus_result(results.voltage)
 
-            # do the reactive power partition and store the values
-            __split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag, results=results)
+        # do the reactive power partition and store the values
+        __split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag, results=results)
 
-            return results
+        return results
+
+    else:
+
+        results = __multi_island_pf_nc_limited_support(
+            nc=nc,
+            options=options,
+            logger=logger,
+            V_guess=V_guess,
+            Sbus_input=Sbus_input,
+        )
+
+        # expand voltages if there was a bus topology reduction
+        if nc.topology_performed:
+            results.voltage = nc.propagate_bus_result(results.voltage)
+
+        # do the reactive power partition and store the values
+        __split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag, results=results)
+
+        return results
 
 
 def multi_island_pf(multi_circuit: MultiCircuit,
@@ -1342,7 +1111,7 @@ def multi_island_pf(multi_circuit: MultiCircuit,
         control_taps_phase=options.control_taps_phase,
         control_remote_voltage=options.control_remote_voltage,
         logger=logger,
-        fill_three_phase=options.three_phase_unbalanced
+        fill_three_phase=False  # This worker is only for positive sequence
     )
 
     res = multi_island_pf_nc(nc=nc, options=options, logger=logger)

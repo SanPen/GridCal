@@ -401,7 +401,7 @@ def get_load_data(data: LoadData,
                             data.S3_delta[3 * ii + 2] = complex(elm.Pc, elm.Qc)
 
                             if elm.G1 > 0 and elm.G2 > 0 and elm.G3 > 0:
-                                data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                                data.Y3_star[3 * ii:3 * ii + 3, [0, 1, 2]] = delta2StarAdmittance(
                                     Yab=complex(elm.G1, -elm.B1),
                                     Ybc=complex(elm.G2, -elm.B2),
                                     Yca=complex(elm.G3, -elm.B3)
@@ -743,7 +743,7 @@ def get_shunt_data(
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                        data.Y3_star[3 * ii:3 * ii + 3, [0, 1, 2]] = delta2StarAdmittance(
                             Yab=complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx]),
                             Ybc=complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx]),
                             Yca=complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
@@ -766,7 +766,7 @@ def get_shunt_data(
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                        data.Y3_star[3 * ii:3 * ii + 3, [0, 1, 2]] = delta2StarAdmittance(
                             Yab=complex(elm.Ga, elm.Ba),
                             Ybc=complex(elm.Gb, elm.Bb),
                             Yca=complex(elm.Gc, elm.Bc)
@@ -819,7 +819,7 @@ def get_shunt_data(
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                        data.Y3_star[3 * ii:3 * ii + 3, [0, 1, 2]] = delta2StarAdmittance(
                             Yab=complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx]),
                             Ybc=complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx]),
                             Yca=complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
@@ -864,7 +864,7 @@ def get_shunt_data(
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                        data.Y3_star[3 * ii:3 * ii + 3, [0, 1, 2]] = delta2StarAdmittance(
                             Yab=complex(elm.Ga, elm.Ba),
                             Ybc=complex(elm.Gb, elm.Bb),
                             Yca=complex(elm.Gc, elm.Bc)
@@ -1906,15 +1906,13 @@ def get_vsc_data(
         data.mttf[i] = elm.mttf
         data.mttr[i] = elm.mttr
         f_dcp = bus_dict[elm.bus_from]
-        t_dcn = bus_dict[elm.bus_dc_n]
         t_ac = bus_dict[elm.bus_to]
 
         data.original_idx[i] = i
 
-        data.F_dcp[i] = f_dcp
-        data.F_dcn[i] = t_dcn
-        data.T_ac[i] = t_ac
-
+        data.F[i] = f_dcp
+        data.F_dcn[i] = bus_dict[elm.bus_dc_n] if elm.bus_dc_n is not None else -1  # TODO SANPEN: Handle the -1 everywhere for this
+        data.T[i] = t_ac
 
         if time_series:
             data.active[i] = elm.active_prof[t_idx]

@@ -14,11 +14,14 @@ from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import RoundTerminalItem
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget, ACTIVE, DEACTIVATED
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.enumerations import DeviceType, ConverterControlType, TerminalType # Assuming VSC controls might be relevant later
+from GridCalEngine.enumerations import DeviceType, ConverterControlType, \
+    TerminalType  # Assuming VSC controls might be relevant later
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
-    from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem # For type hints if needed later
+    from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import \
+        LineGraphicTemplateItem  # For type hints if needed later
+    from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import RoundTerminalItem, BarTerminalItem
 
 
 class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
@@ -41,7 +44,8 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
         :param parent: Parent item
         :param draw_labels: Whether to draw labels
         """
-        GenericDiagramWidget.__init__(self, parent=parent, api_object=api_object, editor=editor, draw_labels=draw_labels)
+        GenericDiagramWidget.__init__(self, parent=parent, api_object=api_object, editor=editor,
+                                      draw_labels=draw_labels)
         QGraphicsRectItem.__init__(self, parent=parent)
 
         # Make it a square
@@ -61,7 +65,7 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
 
         # Setup pen, brush, flags and cursor
         self.setPen(QPen(self.color, self.pen_width, self.style))
-        self.setBrush(Qt.BrushStyle.NoBrush) # Set transparent background
+        self.setBrush(Qt.BrushStyle.NoBrush)  # Set transparent background
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -91,19 +95,19 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
         # AC Terminal (Index 0)
         self.terminal_ac = RoundTerminalItem("ac", parent=self, editor=self.editor, terminal_type=TerminalType.AC)
         self.terminal_ac.setPos(t_ac_pos)
-        self.terminal_ac.setRotation(0) # Points right
+        self.terminal_ac.setRotation(0)  # Points right
         self.terminal_ac.setPen(QPen(self.color, self.pen_width, self.style))
 
         # DC+ Terminal (Index 1)
         self.terminal_dc_p = RoundTerminalItem("dc_p", parent=self, editor=self.editor, terminal_type=TerminalType.DC_P)
         self.terminal_dc_p.setPos(t_dc_p_pos)
-        self.terminal_dc_p.setRotation(180) # Points left
+        self.terminal_dc_p.setRotation(180)  # Points left
         self.terminal_dc_p.setPen(QPen(self.color, self.pen_width, self.style))
 
         # DC- Terminal (Index 2)
         self.terminal_dc_n = RoundTerminalItem("dc_n", parent=self, editor=self.editor, terminal_type=TerminalType.DC_N)
         self.terminal_dc_n.setPos(t_dc_n_pos)
-        self.terminal_dc_n.setRotation(180) # Points left
+        self.terminal_dc_n.setRotation(180)  # Points left
         self.terminal_dc_n.setPen(QPen(self.color, self.pen_width, self.style))
 
         self.set_terminal_tooltips()
@@ -120,7 +124,7 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
         """Paint the VSC symbol."""
         # Draw the main rectangle (square)
         painter.setPen(QPen(self.color, self.pen_width, self.style))
-        painter.setBrush(Qt.BrushStyle.NoBrush) # Ensure transparent background
+        painter.setBrush(Qt.BrushStyle.NoBrush)  # Ensure transparent background
         painter.drawRect(self.rect())
 
         # Draw a diagonal line from top-right to bottom-left
@@ -130,16 +134,23 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
 
         # Draw AC/DC symbols inside the box near terminals
         text_rect_size = 15
-        painter.drawText(QRectF(self.w * 0.8 - text_rect_size / 2, self.h / 2 - text_rect_size / 2 * 1.3, text_rect_size, text_rect_size), Qt.AlignmentFlag.AlignCenter, "~")
-        painter.drawText(QRectF(self.w * 0.15 - text_rect_size / 2, self.h * 0.35 - text_rect_size / 2, text_rect_size, text_rect_size), Qt.AlignmentFlag.AlignCenter, "+")
-        painter.drawText(QRectF(self.w * 0.15 - text_rect_size / 2, self.h * 0.65 - text_rect_size / 2, text_rect_size, text_rect_size), Qt.AlignmentFlag.AlignCenter, "-")
+        painter.drawText(
+            QRectF(self.w * 0.8 - text_rect_size / 2, self.h / 2 - text_rect_size / 2 * 1.3, text_rect_size,
+                   text_rect_size), Qt.AlignmentFlag.AlignCenter, "~")
+        painter.drawText(QRectF(self.w * 0.15 - text_rect_size / 2, self.h * 0.35 - text_rect_size / 2, text_rect_size,
+                                text_rect_size), Qt.AlignmentFlag.AlignCenter, "+")
+        painter.drawText(QRectF(self.w * 0.15 - text_rect_size / 2, self.h * 0.65 - text_rect_size / 2, text_rect_size,
+                                text_rect_size), Qt.AlignmentFlag.AlignCenter, "-")
 
     def set_terminal_tooltips(self):
         """Set tooltips for the terminals."""
         if self.api_object:
-            self.terminal_ac.setToolTip(f"AC Terminal ({self.api_object.bus_to.name if self.api_object.bus_to else 'Unconnected'})")
-            self.terminal_dc_p.setToolTip(f"DC+ Terminal ({self.api_object.bus_from.name if self.api_object.bus_from else 'Unconnected'})")
-            self.terminal_dc_n.setToolTip(f"DC- Terminal ({self.api_object.bus_dc_n.name if self.api_object.bus_dc_n else 'Unconnected'})")
+            self.terminal_ac.setToolTip(
+                f"AC Terminal ({self.api_object.bus_to.name if self.api_object.bus_to else 'Unconnected'})")
+            self.terminal_dc_p.setToolTip(
+                f"DC+ Terminal ({self.api_object.bus_from.name if self.api_object.bus_from else 'Unconnected'})")
+            self.terminal_dc_n.setToolTip(
+                f"DC- Terminal ({self.api_object.bus_dc_n.name if self.api_object.bus_dc_n else 'Unconnected'})")
 
     def update_conn(self):
         """Update the connection lines attached to this item."""
@@ -155,8 +166,8 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
         return [self.conn_line_ac, self.conn_line_dc_p, self.conn_line_dc_n]
 
     def get_extra_graphics(self):
-         """Return terminals associated with this widget."""
-         return [self.terminal_ac, self.terminal_dc_p, self.terminal_dc_n]
+        """Return terminals associated with this widget."""
+        return [self.terminal_ac, self.terminal_dc_p, self.terminal_dc_n]
 
     def recolour_mode(self):
         """Change the colour according to the system theme and active state."""
@@ -181,7 +192,7 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
         if self.conn_line_dc_n is not None:
             self.conn_line_dc_n.recolour_mode()
 
-        self.update() # Request repaint
+        self.update()  # Request repaint
 
     def set_enable(self, val=True):
         """Set the enable value, graphically and in the API."""
@@ -202,15 +213,15 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """Handle mouse press: select item and show in editor."""
-        super().mousePressEvent(event) # Handle selection
+        super().mousePressEvent(event)  # Handle selection
         if self.api_object is not None:
             self.editor.set_editor_model(api_object=self.api_object)
 
     def mouseDoubleClickEvent(self, event):
-         """ On double-click, potentially open an editor (optional)."""
-         # Currently no specific editor for VSC, but could be added.
-         # self.edit()
-         pass
+        """ On double-click, potentially open an editor (optional)."""
+        # Currently no specific editor for VSC, but could be added.
+        # self.edit()
+        pass
 
     def delete(self):
         """Delete the VSC and its connections."""
@@ -232,7 +243,8 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
 
         elif terminal_type == TerminalType.AC:
             if bus.is_dc:
-                self.editor.gui.show_error_toast(f"Connecting AC terminal of VSC '{self.api_object.name}' to DC bus '{bus.name}'")
+                self.editor.gui.show_error_toast(
+                    f"Connecting AC terminal of VSC '{self.api_object.name}' to DC bus '{bus.name}'")
             elif self.conn_line_ac is not None:
                 self.editor.gui.show_error_toast(f"AC terminal of VSC {self.api_object.name} is already connected.")
             else:
@@ -243,7 +255,8 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
 
         elif terminal_type == TerminalType.DC_P:
             if not bus.is_dc:
-                self.editor.gui.show_error_toast(f"Connecting DC+ terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
+                self.editor.gui.show_error_toast(
+                    f"Connecting DC+ terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
             elif self.conn_line_dc_p is not None:
                 self.editor.gui.show_error_toast(f"AC terminal of VSC {self.api_object.name} is already connected.")
             else:
@@ -254,7 +267,8 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
 
         elif terminal_type == TerminalType.DC_N:
             if not bus.is_dc:
-                self.editor.gui.show_error_toast(f"Connecting DC- terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
+                self.editor.gui.show_error_toast(
+                    f"Connecting DC- terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
             elif self.conn_line_dc_n is not None:
                 self.editor.gui.show_error_toast(f"DC- terminal of VSC {self.api_object.name} is already connected.")
             else:
@@ -284,7 +298,8 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
             a = h2 * np.cos(ang) - w2 * np.sin(ang)
             b = w2 * np.sin(ang) + h2 * np.cos(ang)
 
-            center = (self.terminal_ac.pos() + (self.terminal_dc_p.pos() + self.terminal_dc_n.pos()) * 0.5) * 0.5 - QPointF(a, b)
+            center = (self.terminal_ac.pos() + (
+                        self.terminal_dc_p.pos() + self.terminal_dc_n.pos()) * 0.5) * 0.5 - QPointF(a, b)
 
             transform = QTransform()
             transform.translate(center.x(), center.y())
@@ -309,7 +324,6 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
             elif line == self.conn_line_dc_n:
                 self.api_object.bus_dc_n = None
             self.set_terminal_tooltips()
-
 
     def contextMenuEvent(self, event):
         """Show context menu."""
@@ -378,7 +392,6 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
         else:
             pass
 
-
     def control_v_from(self):
         """
         Set control mode to regulate DC voltage based on DC+ side (Interpretation).
@@ -387,10 +400,10 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
         if self.api_object.bus_to and self.api_object.bus_from:
             self.api_object.control1 = ConverterControlType.Vm_dc
             self.api_object.control1_dev = self.api_object.bus_from
-            self.api_object.control1_val = 1.0 # Default to 1.0 pu
+            self.api_object.control1_val = 1.0  # Default to 1.0 pu
 
             print(f"VSC {self.api_object.name} control set: Control1=Vm_dcp (Bus: {self.api_object.bus_from.name})")
-            self.editor.set_editor_model(api_object=self.api_object) # Refresh editor view
+            self.editor.set_editor_model(api_object=self.api_object)  # Refresh editor view
         else:
             print("Error: Cannot set control_v_from, DC+ bus not connected.")
 
@@ -403,10 +416,10 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
         if self.api_object.bus_to:
             self.api_object.control1 = ConverterControlType.Vm_ac
             self.api_object.control1_dev = self.api_object.bus_to
-            self.api_object.control1_val = 1.0 # Default to 1.0 pu
+            self.api_object.control1_val = 1.0  # Default to 1.0 pu
 
             print(f"VSC {self.api_object.name} control set: Control1=Vm_ac (Bus: {self.api_object.bus_to.name})")
-            self.editor.set_editor_model(api_object=self.api_object) # Refresh editor view
+            self.editor.set_editor_model(api_object=self.api_object)  # Refresh editor view
         else:
             print("Error: Cannot set control_v_to, AC bus not connected.")
 
@@ -429,20 +442,32 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
         """
         pass
 
-
-    def assign_bus_to_vsc(self, terminal_vsc, bus_vsc):
+    def assign_bus_to_vsc(self, terminal_vsc: RoundTerminalItem, bus_vsc:  RoundTerminalItem | BarTerminalItem) -> bool:
         """
         Assign the connected bus to a three-terminal VSC
-        :return:
+        :return: if the connection was successful
         """
         if terminal_vsc.terminal_type == TerminalType.AC:
-            self.api_object.bus_to = bus_vsc.parent.api_object
+            if not bus_vsc.parent.api_object.is_dc:
+                self.api_object.bus_to = bus_vsc.parent.api_object
+                return True
+            else:
+                return False
 
         elif terminal_vsc.terminal_type == TerminalType.DC_P:
-            self.api_object.bus_from = bus_vsc.parent.api_object
+            if bus_vsc.parent.api_object.is_dc:
+                self.api_object.bus_from = bus_vsc.parent.api_object
+                return True
+            else:
+                return False
 
         elif terminal_vsc.terminal_type == TerminalType.DC_N:
-            self.api_object.bus_dc_n = bus_vsc.parent.api_object
+            if bus_vsc.parent.api_object.is_dc:
+                self.api_object.bus_dc_n = bus_vsc.parent.api_object
+                return True
+            else:
+                return False
 
         else:
-            raise Exception('Error in the VSC connection!')
+            print('Error in the VSC connection!')
+            return False

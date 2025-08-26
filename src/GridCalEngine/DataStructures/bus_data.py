@@ -254,6 +254,10 @@ class BusData:
         return self.nbus
 
     def get_3ph_names(self):
+        """
+        Get the 3-phase names
+        :return:
+        """
         names3: StrVec = np.empty(self.nbus * 3, dtype=object)
         for i in range(self.nbus):
             names3[3 * i + 0] = self.names[i] + "_A"

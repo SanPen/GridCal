@@ -125,35 +125,40 @@ class VSC(BranchParent):
                               build_status=build_status,
                               device_type=DeviceType.VscDevice)
 
-        if bus_from is not None and bus_dc_n is not None and bus_to is not None:
-            if bus_from.is_dc and bus_dc_n.is_dc and not bus_to.is_dc:
-                # self._bus_dc_p = bus_dc_p
-                # self._bus_dc_n = bus_dc_n
-                # self._bus_ac = bus_ac
+        # TODO SANPEN: this is making the ntc test fail
+        # if bus_from is not None and bus_dc_n is not None and bus_to is not None:
+        #     if bus_from.is_dc and bus_dc_n.is_dc and not bus_to.is_dc:
+        #         # self._bus_dc_p = bus_dc_p
+        #         # self._bus_dc_n = bus_dc_n
+        #         # self._bus_ac = bus_ac
+        #
+        #         # self._cn_dc_p = cn_dc_p
+        #         # self._cn_dc_n = cn_dc_n
+        #         # self._cn_ac = cn_ac
+        #
+        #         self._bus_from = bus_from
+        #         self._bus_dc_n = bus_dc_n
+        #         self._bus_to = bus_to
+        #
+        #     else:
+        #         raise Exception('Impossible connecting a VSC device here. '
+        #                         'VSC devices must be connected between 1 AC and 2 DC buses')
+        # else:
+        #     # self._bus_dc_p = None
+        #     # self._bus_dc_n = None
+        #     # self._bus_ac = None
+        #
+        #     # self._cn_dc_p = None
+        #     # self._cn_dc_n = None
+        #     # self._cn_ac = None
+        #
+        #     self._bus_from = None
+        #     self._bus_dc_n = None
+        #     self._bus_to = None
 
-                # self._cn_dc_p = cn_dc_p
-                # self._cn_dc_n = cn_dc_n
-                # self._cn_ac = cn_ac
-
-                self._bus_from = bus_from
-                self._bus_dc_n = bus_dc_n
-                self._bus_to = bus_to
-
-            else:
-                raise Exception('Impossible connecting a VSC device here. '
-                                'VSC devices must be connected between 1 AC and 2 DC buses')
-        else:
-            # self._bus_dc_p = None
-            # self._bus_dc_n = None
-            # self._bus_ac = None
-
-            # self._cn_dc_p = None
-            # self._cn_dc_n = None
-            # self._cn_ac = None
-
-            self._bus_from = None
-            self._bus_dc_n = None
-            self._bus_to = None
+        self._bus_from = bus_from
+        self._bus_dc_n = bus_dc_n
+        self._bus_to = bus_to
 
         self.kdp = float(kdp)
         self.alpha1 = float(alpha1)

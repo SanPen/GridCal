@@ -308,7 +308,7 @@ if PROPERLY_LOADED_API:
 
     def simple_opf(grid: MultiCircuit,
                    options: OptimalPowerFlowOptions = OptimalPowerFlowOptions(
-                       solver=SolverType.SIMPLE_OPF,
+                       solver=SolverType.GREEDY_DISPATCH_OPF,
                    )) -> OptimalPowerFlowResults:
         """
         Run Linear Optimal Power Flow
@@ -337,7 +337,7 @@ if PROPERLY_LOADED_API:
         :return: PowerFlowResults instance
         """
         if opf_options is None:
-            opf_options = OptimalPowerFlowOptions(solver=SolverType.SIMPLE_OPF)
+            opf_options = OptimalPowerFlowOptions(solver=SolverType.GREEDY_DISPATCH_OPF)
 
         # declare the snapshot opf
         opf_driver = OptimalPowerFlowDriver(grid=grid, options=opf_options)
@@ -368,7 +368,7 @@ if PROPERLY_LOADED_API:
         :return: PowerFlowResults instance
         """
         if opf_options is None:
-            opf_options = OptimalPowerFlowOptions(solver=SolverType.SIMPLE_OPF)
+            opf_options = OptimalPowerFlowOptions(solver=SolverType.GREEDY_DISPATCH_OPF)
 
         # declare the snapshot opf
         opf_driver = OptimalPowerFlowDriver(grid=grid, options=opf_options)

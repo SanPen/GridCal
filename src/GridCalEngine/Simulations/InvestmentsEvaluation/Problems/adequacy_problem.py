@@ -11,7 +11,7 @@ from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.basic_structures import Vec, IntVec, StrVec, IntMat
 from GridCalEngine.Simulations.InvestmentsEvaluation.Problems.black_box_problem_template import BlackBoxProblemTemplate
 from GridCalEngine.Simulations.Reliability.reliability import reliability_simulation
-from GridCalEngine.Simulations.OPF.simple_dispatch_ts import GreedyDispatchInputs, greedy_dispatch
+from GridCalEngine.Simulations.OPF.simple_dispatch_ts import GreedyDispatchInputs, greedy_dispatch2
 
 
 @nb.njit(cache=True)
@@ -170,9 +170,9 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
         :return:
         """
         if self.use_firm_capacity_penalty:
-            return 4
+            return 5
         else:
-            return 3
+            return 4
 
     def n_vars(self) -> int:
         """
@@ -187,9 +187,16 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
         :return:
         """
         if self.use_firm_capacity_penalty:
-            return np.array(["LOLE", "CAPEX", "Unitary electricity cost", "Firm capacity penalty"])
+            return np.array(["LOLE",
+                             "CAPEX",
+                             "Unitary electricity cost",
+                             "Curtailment",
+                             "Firm capacity penalty"])
         else:
-            return np.array(["LOLE", "CAPEX", "Unitary electricity cost"])
+            return np.array(["LOLE",
+                             "CAPEX",
+                             "Unitary electricity cost",
+                             "Curtailment"])
 
     def get_vars_names(self) -> StrVec:
         """
@@ -253,7 +260,7 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
 
         if self.use_monte_carlo:
 
-            lole_array, total_cost_arr = reliability_simulation(
+            lole_array, total_cost_arr, curtailment_arr = reliability_simulation(
                 n_sim=self.n_monte_carlo_sim,
                 load_profile=self.greedy_dispatch_inputs.load_profile,
 
@@ -280,11 +287,15 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
             )
             lole = np.cumsum(lole_array / (self.n_monte_carlo_sim - 1))[-1]
             total_cost = np.cumsum(total_cost_arr / (self.n_monte_carlo_sim - 1))[-1]
+            ndg_curtailment = np.cumsum(curtailment_arr / (self.n_monte_carlo_sim - 1))[-1]
+
         else:
 
             (gen_dispatch, batt_dispatch,
              batt_energy, total_cost,
-             load_not_supplied, load_shedding) = greedy_dispatch(
+             load_not_supplied, load_shedding,
+             ndg_surplus_after_batt,
+             ndg_curtailment_per_gen) = greedy_dispatch2(
                 load_profile=self.greedy_dispatch_inputs.load_profile,
                 gen_profile=self.greedy_dispatch_inputs.gen_profile,
                 gen_p_max=self.greedy_dispatch_inputs.gen_p_max,
@@ -305,6 +316,7 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
                 force_charge_if_low=True
             )
             lole = np.sum(load_not_supplied)
+            ndg_curtailment = np.sum(ndg_surplus_after_batt)
 
         if self.output_f is not None:
             # write header
@@ -316,9 +328,10 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
               f"lole: {lole}, "
               f"capex: {capex}, "
               f"e cost: {unit_cost}, "
+              f"curtailment: {ndg_curtailment}, "
               f"firm penalty {firm_capacity_penalty}")
 
         if self.use_firm_capacity_penalty:
-            return np.array([lole, capex, unit_cost, firm_capacity_penalty])
+            return np.array([lole, capex, unit_cost, ndg_curtailment, firm_capacity_penalty])
         else:
-            return np.array([lole, capex, unit_cost])
+            return np.array([lole, capex, unit_cost, ndg_curtailment])

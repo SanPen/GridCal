@@ -87,7 +87,7 @@ class ReliabilityStudyDriver(DriverTemplate):
         # C = sp.coo_matrix((data, (i, j)), shape=(n_elm, nc.bus_data.nbus), dtype=int)
         # A = (C.T @ C).tocsc()
 
-        lole = reliability_simulation(
+        lole, _, _ = reliability_simulation(
             n_sim=self.n_sim,
             load_profile=self.greedy_dispatch_inputs.load_profile,
 

@@ -303,7 +303,7 @@ def build_branches_C_coo_2(bus_active: IntVec,
         if active1[k]:
             f = F1[k]
             t = T1[k]
-            if bus_active[f] and bus_active[t]:
+            if bus_active[f] and bus_active[t] and f > -1 and t > -1:
                 # C[k, f] = 1
                 i[ii] = br_count
                 j[ii] = f
@@ -321,7 +321,7 @@ def build_branches_C_coo_2(bus_active: IntVec,
         if active2[k]:
             f = F2[k]
             t = T2[k]
-            if bus_active[f] and bus_active[t]:
+            if bus_active[f] and bus_active[t] and f > -1 and t > -1:
                 # C[k, f] = 1
                 i[ii] = br_count
                 j[ii] = f
@@ -381,7 +381,7 @@ def build_branches_C_coo_3(bus_active: IntVec,
         if active1[k]:
             f = F1[k]
             t = T1[k]
-            if bus_active[f] and bus_active[t]:
+            if bus_active[f] and bus_active[t] and f > -1 and t > -1:
                 # C[k, f] = 1
                 i[ii] = br_count
                 j[ii] = f
@@ -399,7 +399,7 @@ def build_branches_C_coo_3(bus_active: IntVec,
         if active2[k]:
             f = F2[k]
             t = T2[k]
-            if bus_active[f] and bus_active[t]:
+            if bus_active[f] and bus_active[t] and f > -1 and t > -1:
                 # C[k, f] = 1
                 i[ii] = br_count
                 j[ii] = f
@@ -417,7 +417,7 @@ def build_branches_C_coo_3(bus_active: IntVec,
         if active3[k]:
             f = F3[k]
             t = T3[k]
-            if bus_active[f] and bus_active[t]:
+            if bus_active[f] and bus_active[t] and f > -1 and t > -1:
                 # C[k, f] = 1
                 i[ii] = br_count
                 j[ii] = f

@@ -49,7 +49,7 @@ def dSbus_dV_numba_sparse_csc(Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, Vm: V
     for j in range(n):  # for each column ...
 
         # compute the unitary vector of the voltage
-        if Vm[j] != 0.0:
+        if Vm[j] != 0.0:  # TODO SANPEN: does this makes sense, in devel it is if Vm[j] > 0.0:
             E[j] /= Vm[j]
 
         for k in range(Yp[j], Yp[j + 1]):  # for each row ...
@@ -2065,11 +2065,11 @@ def dPQ_dPQft_csc(nbus: int, nvsc: int, i_k_pq: IntVec, u_dev_pq: IntVec, FT_dev
     for dev_idx, dev in enumerate(u_dev_pq):
         f_bus = FT_dev[dev]
 
-        if j_lookup[f_bus] >= 0:
-            Tx[nnz] = 1.0
-            Ti[nnz] = j_lookup[f_bus]
-            Tj[nnz] = vsc_lookup[dev]
-            nnz += 1
+        # if j_lookup[f_bus] >= 0: # this is always evaluated to true
+        Tx[nnz] = 1.0
+        Ti[nnz] = j_lookup[f_bus]
+        Tj[nnz] = vsc_lookup[dev]
+        nnz += 1
 
     # Convert to CSC
     mat.fill_from_coo(Ti, Tj, Tx, nnz)

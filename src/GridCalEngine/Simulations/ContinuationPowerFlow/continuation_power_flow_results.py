@@ -25,7 +25,7 @@ class ContinuationPowerFlowResults(ResultsTemplate):
         ResultsTemplate.__init__(self,
                                  name='Continuation Power Flow',
                                  available_results={
-                                     ResultTypes.BusResults: [ResultTypes.BusVoltage,
+                                     ResultTypes.BusResults: [ResultTypes.BusVoltageModule,
                                                               ResultTypes.BusActivePower,
                                                               ResultTypes.BusReactivePower],
                                      ResultTypes.BranchResults: [ResultTypes.BranchActivePowerFrom,
@@ -126,7 +126,7 @@ class ContinuationPowerFlowResults(ResultsTemplate):
         :return:
         """
 
-        if result_type == ResultTypes.BusVoltage:
+        if result_type == ResultTypes.BusVoltageModule:
 
             return ResultsTable(data=np.abs(np.array(self.voltages)),
                                 index=self.lambdas,

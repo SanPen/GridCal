@@ -1189,18 +1189,21 @@ class SchematicWidget(BaseDiagramWidget):
 
                             # Set the connection in the VSC graphics/API
                             if isinstance(target_object, Bus):
-                                self.add_to_scene(conn_line)
-                                self.started_branch.get_terminal_from_parent().assign_bus_to_vsc(
-                                                                      terminal_vsc=self.started_branch.get_terminal_from(),
-                                                                      bus_vsc=arriving_widget
-                                                                      )
+                                success = self.started_branch.get_terminal_from_parent().assign_bus_to_vsc(
+                                    terminal_vsc=self.started_branch.get_terminal_from(),
+                                    bus_vsc=arriving_widget
+                                )
 
                             elif isinstance(target_object, VSC):
+                                success = arriving_widget.get_parent().assign_bus_to_vsc(
+                                    terminal_vsc=arriving_widget,
+                                    bus_vsc=self.started_branch.get_terminal_from()
+                                )
+                            else:
+                                success = False
+
+                            if success:
                                 self.add_to_scene(conn_line)
-                                arriving_widget.get_parent().assign_bus_to_vsc(
-                                                  terminal_vsc=arriving_widget,
-                                                  bus_vsc=self.started_branch.get_terminal_from()
-                                                  )
 
                             self._remove_from_scene(self.started_branch)
 
@@ -4164,6 +4167,7 @@ class SchematicWidget(BaseDiagramWidget):
         for i, bus, bus_graphics in self.get_buses():
             bus_graphics.set_position(bus.x, bus.y)
 
+
 def generate_schematic_diagram(buses: List[Bus],
                                lines: List[Line],
                                dc_lines: List[DcLine],
@@ -4282,6 +4286,7 @@ def generate_schematic_diagram(buses: List[Bus],
 
     return diagram
 
+
 def get_devices_to_expand(circuit: MultiCircuit, buses: List[Bus], max_level: int = 1) -> Tuple[List[Bus],
 List[Line],
 List[DcLine],
@@ -4398,6 +4403,7 @@ List[FluidPath]]:
             windings, hvdc_lines, vsc_converters, upfc_devices, series_reactances, switches,
             list(fluid_nodes), fluid_paths)
 
+
 def make_vicinity_diagram(circuit: MultiCircuit,
                           root_bus: Bus,
                           max_level: int = 1,
@@ -4444,6 +4450,7 @@ def make_vicinity_diagram(circuit: MultiCircuit,
     )
 
     return diagram
+
 
 def make_diagram_from_buses(circuit: MultiCircuit,
                             buses: List[Bus] | Set[Bus],

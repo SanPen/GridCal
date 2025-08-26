@@ -1662,7 +1662,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # VSC ----------------------------------------------------------------------------------------------------------
         tm[3] = time.time()
 
-        T_vsc = self.nc.vsc_data.T_ac
+        T_vsc = self.nc.vsc_data.T
         It = np.sqrt(Pt_vsc_ * Pt_vsc_ + Qt_vsc_ * Qt_vsc_) / Vm_[T_vsc]
         It2 = It * It
         PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
@@ -1673,7 +1673,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         St_vsc = make_complex(Pt_vsc_, Qt_vsc_)
 
         # Add the 2nd equation per VSC
-        balance_vsc = Pfp_vsc_ * Vm_[self.nc.vsc_data.F_dcn] + Pfn_vsc_ * Vm_[self.nc.vsc_data.F_dcp]
+        balance_vsc = Pfp_vsc_ * Vm_[self.nc.vsc_data.F_dcn] + Pfn_vsc_ * Vm_[self.nc.vsc_data.F]
 
         # Add the 3rd equation per VSC
         current_vsc = It**2 - Imax_vsc**2
@@ -1705,9 +1705,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             T_hvdc=self.nc.hvdc_data.T,
             Sf_hvdc=Sf_hvdc,
             St_hvdc=St_hvdc,
-            Fdcp_vsc=self.nc.vsc_data.F_dcp,
+            Fdcp_vsc=self.nc.vsc_data.F,
             Fdcn_vsc=self.nc.vsc_data.F_dcn,
-            T_vsc=self.nc.vsc_data.T_ac,
+            T_vsc=self.nc.vsc_data.T,
             Pfp_vsc=Pfp_vsc_,
             Pfn_vsc=Pfn_vsc_,
             St_vsc=St_vsc)
@@ -1735,7 +1735,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         tm[7] = time.time()
         for i in range(self.nc.nvsc):
 
-            It_i = np.sqrt(self.Pt_vsc[i]**2 + self.Qt_vsc[i]**2) / self.Vm[self.nc.vsc_data.T_ac[i]]
+            It_i = np.sqrt(self.Pt_vsc[i]**2 + self.Qt_vsc[i]**2) / self.Vm[self.nc.vsc_data.T[i]]
             Imax = self.nc.vsc_data.rates[i] / self.nc.Sbase  # Assume 1.0 p.u. base voltage
 
             # print(f"Compute f current: {It_i}, Imax: {Imax}")
@@ -1919,7 +1919,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
                 for i in range(self.nc.nvsc):
 
-                    It_i = np.sqrt(self.Pt_vsc[i]**2 + self.Qt_vsc[i]**2) / self.Vm[self.nc.vsc_data.T_ac[i]]
+                    It_i = np.sqrt(self.Pt_vsc[i]**2 + self.Qt_vsc[i]**2) / self.Vm[self.nc.vsc_data.T[i]]
                     Imax = self.nc.vsc_data.rates[i] / self.nc.Sbase  # Assume 1.0 p.u. base voltage
 
                     print(f"Josep current: {It_i}, Imax: {Imax}")
@@ -1933,13 +1933,13 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                              value=It_i)
 
                         if self.nc.vsc_data.control1[i] == ConverterControlType.Vm_ac:
-                            self.nc.bus_data.is_vm_controlled[self.nc.vsc_data.T_ac[i]] = False
+                            self.nc.bus_data.is_vm_controlled[self.nc.vsc_data.T[i]] = False
                             self.nc.vsc_data.control1[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control1_val[i] = Imax
                             self.nc.vsc_data.control1_branch_idx[i] = i
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control2[i] == ConverterControlType.Vm_ac:
-                            self.nc.bus_data.is_vm_controlled[self.nc.vsc_data.T_ac[i]] = False
+                            self.nc.bus_data.is_vm_controlled[self.nc.vsc_data.T[i]] = False
                             self.nc.vsc_data.control2[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control2_val[i] = Imax
                             self.nc.vsc_data.control2_branch_idx[i] = i
@@ -1975,25 +1975,25 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                             self.nc.vsc_data.control2_branch_idx[i] = i
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control1[i] == ConverterControlType.Vm_dc:
-                            self.nc.bus_data.is_vm_controlled[self.nc.vsc_data.F_dcp[i]] = False
+                            self.nc.bus_data.is_vm_controlled[self.nc.vsc_data.F[i]] = False
                             self.nc.vsc_data.control1[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control1_val[i] = Imax
                             self.nc.vsc_data.control1_branch_idx[i] = i
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control2[i] == ConverterControlType.Vm_dc:
-                            self.nc.bus_data.is_vm_controlled[self.nc.vsc_data.F_dcp[i]] = False
+                            self.nc.bus_data.is_vm_controlled[self.nc.vsc_data.F[i]] = False
                             self.nc.vsc_data.control2[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control2_val[i] = Imax
                             self.nc.vsc_data.control2_branch_idx[i] = i
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control1[i] == ConverterControlType.Va_ac:
-                            self.nc.bus_data.is_va_controlled[self.nc.vsc_data.T_ac[i]] = False
+                            self.nc.bus_data.is_va_controlled[self.nc.vsc_data.T[i]] = False
                             self.nc.vsc_data.control1[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control1_val[i] = Imax
                             self.nc.vsc_data.control1_branch_idx[i] = i
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control2[i] == ConverterControlType.Va_ac:
-                            self.nc.bus_data.is_va_controlled[self.nc.vsc_data.T_ac[i]] = False
+                            self.nc.bus_data.is_va_controlled[self.nc.vsc_data.T[i]] = False
                             self.nc.vsc_data.control2[i] = ConverterControlType.Imax
                             self.nc.vsc_data.control2_val[i] = Imax
                             self.nc.vsc_data.control2_branch_idx[i] = i
@@ -2170,8 +2170,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
 
         # VSC ----------------------------------------------------------------------------------------------------------
-        T_vsc = self.nc.vsc_data.T_ac
-        F_dcp = self.nc.vsc_data.F_dcp
+        T_vsc = self.nc.vsc_data.T
+        F = self.nc.vsc_data.F
         F_dcn = self.nc.vsc_data.F_dcn
         It = np.sqrt(self.Pt_vsc * self.Pt_vsc + self.Qt_vsc * self.Qt_vsc) / self.Vm[T_vsc]
         It2 = It * It
@@ -2180,7 +2180,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                      + self.nc.vsc_data.alpha1)
 
         loss_vsc = PLoss_IEC - self.Pt_vsc - self.Pfp_vsc - self.Pfn_vsc
-        balance_vsc = self.Pfp_vsc * self.Vm[F_dcn] + self.Pfn_vsc * self.Vm[F_dcp]
+        balance_vsc = self.Pfp_vsc * self.Vm[F_dcn] + self.Pfn_vsc * self.Vm[F]
 
         current_vsc = It**2 - Imax_vsc**2
 
@@ -2209,7 +2209,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             T_hvdc=self.nc.hvdc_data.T,
             Sf_hvdc=Sf_hvdc,
             St_hvdc=St_hvdc,
-            Fdcp_vsc=F_dcp,
+            Fdcp_vsc=F,
             Fdcn_vsc=F_dcn,
             T_vsc=T_vsc,
             Pfp_vsc=self.Pfp_vsc,
@@ -2272,9 +2272,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 nhvdc=nhvdc,
                 F=self.nc.passive_branch_data.F,
                 T=self.nc.passive_branch_data.T,
-                Fdcp_vsc=self.nc.vsc_data.F_dcp,
+                Fdcp_vsc=self.nc.vsc_data.F,
                 Fdcn_vsc=self.nc.vsc_data.F_dcn,
-                T_vsc=self.nc.vsc_data.T_ac,
+                T_vsc=self.nc.vsc_data.T,
                 F_hvdc=self.nc.hvdc_data.F,
                 T_hvdc=self.nc.hvdc_data.T,
 
@@ -2410,8 +2410,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # VSC ----------------------------------------------------------------------------------------------------------
         Pf_vsc = self.Pfp_vsc * self.nc.Sbase
         St_vsc = make_complex(self.Pt_vsc, self.Qt_vsc) * self.nc.Sbase
-        If_vsc = self.Pfp_vsc / self.Vm[self.nc.vsc_data.F_dcp]
-        It_vsc = St_vsc / self.Vm[self.nc.vsc_data.T_ac]
+        If_vsc = self.Pfp_vsc / self.Vm[self.nc.vsc_data.F]
+        It_vsc = St_vsc / self.Vm[self.nc.vsc_data.T]
         loading_vsc = np.abs(St_vsc) / (self.nc.vsc_data.rates + 1e-20)
         losses_vsc = (self.Pt_vsc + self.Pfp_vsc + self.Pfn_vsc) * self.nc.Sbase
         # losses_vsc = Pf_vsc + St_vsc.real
@@ -2435,9 +2435,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             T_hvdc=self.nc.hvdc_data.T,
             Sf_hvdc=Sf_hvdc,
             St_hvdc=St_hvdc,
-            Fdcp_vsc=self.nc.vsc_data.F_dcp,
+            Fdcp_vsc=self.nc.vsc_data.F,
             Fdcn_vsc=self.nc.vsc_data.F_dcn,
-            T_vsc=self.nc.vsc_data.T_ac,
+            T_vsc=self.nc.vsc_data.T,
             Pfp_vsc=self.Pfp_vsc,
             Pfn_vsc=self.Pfn_vsc,
             St_vsc=St_vsc
