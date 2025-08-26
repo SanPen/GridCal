@@ -207,9 +207,6 @@ class Bus(PhysicalDevice):
         # determined if this bus is an AC or DC bus
         self.is_dc = bool(is_dc)
 
-        # determine if this bus is part of a composite transformer such as a 3-winding transformer
-        self._internal = bool(is_internal)
-
         # determine if the bus is solidly grounded
         self.is_grounded = bool(is_grounded)
 
@@ -232,10 +229,6 @@ class Bus(PhysicalDevice):
         self.register(key='is_slack', units='', tpe=bool, definition='Force the bus to be of slack type.',
                       profile_name='')
         self.register(key='is_dc', units='', tpe=bool, definition='Is this bus of DC type?.', profile_name='')
-        self.register(key='internal', units='', tpe=bool,
-                      definition='Is this bus part of a composite transformer, '
-                                 'such as  a 3-winding transformer or a fluid node?.',
-                      profile_name='', old_names=['is_tr_bus', 'is_internal'])
         self.register(key='graphic_type', units='', tpe=BusGraphicType, definition='Graphic to use in the schematic.')
         self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the bus.', profile_name='')
         self.register(key='Vm0', units='p.u.', tpe=float, definition='Voltage module guess.', profile_name='')

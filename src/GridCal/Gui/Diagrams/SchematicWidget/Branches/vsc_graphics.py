@@ -14,7 +14,6 @@ from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import RoundTerminalItem
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget, ACTIVE, DEACTIVATED
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import DeviceType, ConverterControlType, TerminalType # Assuming VSC controls might be relevant later
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -242,7 +241,6 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
             else:
                 self.api_object.bus_to = bus
                 self.conn_line_ac = conn_line
-                self.api_object.cn_to = None
                 self.set_terminal_tooltips()
                 success = True
 
@@ -254,7 +252,6 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
             else:
                 self.api_object.bus_from = bus
                 self.conn_line_dc_p = conn_line
-                self.api_object.cn_from = None
                 self.set_terminal_tooltips()
                 success = True
 
@@ -266,55 +263,6 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
             else:
                 self.api_object.bus_dc_n = bus
                 self.conn_line_dc_n = conn_line
-                self.api_object.cn_dc_n = None
-                self.set_terminal_tooltips()
-                success = True
-
-        return success
-
-    def set_connection_cn(self, terminal_type: TerminalType, cn: ConnectivityNode, conn_line: LineGraphicTemplateItem, set_voltage: bool = True):
-        """ Set a connection to a specific terminal using a connectivity node. """
-
-        success = False
-        # Check type compatibility and update API / store line
-        if terminal_type == TerminalType.OTHER:
-            print(f"Error: Invalid terminal type {terminal_type} for VSC {self.api_object.name}")
-
-        elif terminal_type == TerminalType.AC:
-            if cn.dc:
-                self.editor.gui.show_error_toast(f"Connecting AC terminal of VSC '{self.api_object.name}' to DC node '{cn.name}'")
-            elif self.conn_line_ac is not None:
-                self.editor.gui.show_error_toast(f"AC terminal of VSC {self.api_object.name} is already connected.")
-            else:
-                self.api_object.bus_to = cn.bus
-                self.conn_line_ac = conn_line
-                self.api_object.cn_to = cn
-                self.set_terminal_tooltips()
-                success = True
-
-        elif terminal_type == TerminalType.DC_P:
-            if not cn.dc:
-                self.editor.gui.show_error_toast(f"Connecting DC+ terminal of VSC '{self.api_object.name}' to AC node '{cn.name}'")
-            elif self.conn_line_dc_p is not None:
-                self.editor.gui.show_error_toast(f"AC terminal of VSC {self.api_object.name} is already connected.")
-            else:
-                cn.bus.is_dc = True
-                self.api_object.bus_from = cn.bus
-                self.conn_line_dc_p = conn_line
-                self.api_object.cn_from = cn
-                self.set_terminal_tooltips()
-                success = True
-
-        elif terminal_type == TerminalType.DC_N:
-            if not cn.dc:
-                self.editor.gui.show_error_toast(f"Connecting DC- terminal of VSC '{self.api_object.name}' to AC node '{cn.name}'")
-            elif self.conn_line_dc_n is not None:
-                self.editor.gui.show_error_toast(f"DC- terminal of VSC {self.api_object.name} is already connected.")
-            else:
-                cn.bus.is_dc = True
-                self.api_object.bus_dc_n = cn.bus
-                self.conn_line_dc_n = conn_line
-                self.api_object.cn_dc_n = cn
                 self.set_terminal_tooltips()
                 success = True
 
@@ -359,13 +307,10 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
             # Optionally clear the bus/cn reference in the api_object
             if line == self.conn_line_ac:
                 self.api_object.bus_to = None
-                self.api_object.cn_to = None
             elif line == self.conn_line_dc_p:
                 self.api_object.bus_from = None
-                self.api_object.cn_from = None
             elif line == self.conn_line_dc_n:
                 self.api_object.bus_dc_n = None
-                self.api_object.cn_dc_n = None
             self.set_terminal_tooltips()
 
 
@@ -458,12 +403,12 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         Sets control1 to Vm_ac (controlling AC bus).
         Leaves control2 as is, or sets it to something default like Pac if necessary.
         """
-        if self.api_object.bus_ac:
+        if self.api_object.bus_to:
             self.api_object.control1 = ConverterControlType.Vm_ac
-            self.api_object.control1_dev = self.api_object.bus_ac
+            self.api_object.control1_dev = self.api_object.bus_to
             self.api_object.control1_val = 1.0 # Default to 1.0 pu
 
-            print(f"VSC {self.api_object.name} control set: Control1=Vm_ac (Bus: {self.api_object.bus_ac.name})")
+            print(f"VSC {self.api_object.name} control set: Control1=Vm_ac (Bus: {self.api_object.bus_to.name})")
             self.editor.set_editor_model(api_object=self.api_object) # Refresh editor view
         else:
             print("Error: Cannot set control_v_to, AC bus not connected.")

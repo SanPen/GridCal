@@ -1913,7 +1913,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             if self.options.limit_i_vsc:
                 """
                 Limit the current through the VSCs
-                Priority of magnitudes to remove from controlling: P, Q, V, theta
+                Priority of magnitudes to remove from controlling: V, P, Q, theta
                 When switching to current limiting, do not allow going back
                 """
 

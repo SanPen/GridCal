@@ -16,10 +16,11 @@ builder = 'html'
 # Call the build_main function
 status = build_main(
     [
-        '-b', builder,  # Specify the builder
-        '-d', os.path.join(build_dir, builder, 'doctrees'),  # Directory for doctrees (you can change this)
-        confdir,  # Path to your Sphinx project's conf.py
-        os.path.join(build_dir, builder),  # Output directory for generated documentation
+        '-E',   # <--- fuerza reconstrucción limpia
+        '-b', builder,
+        '-d', os.path.join(build_dir, builder, 'doctrees'),
+        confdir,
+        os.path.join(build_dir, builder),
     ]
 )
 

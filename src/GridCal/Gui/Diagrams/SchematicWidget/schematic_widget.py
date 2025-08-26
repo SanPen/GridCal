@@ -104,13 +104,13 @@ class SchematicLibraryModel(QStandardItemModel):
         self.cn_name = "Connectivity bus"
         self.transformer3w_name = "3W-Transformer"
         self.fluid_node_name = "Fluid-node"
-        self.vsc_name = "VSC" # Add VSC name
+        self.vsc_name = "VSC"  # Add VSC name
 
         self.add(name=self.bus_name, icon_name="bus_icon")
         self.add(name=self.cn_name, icon_name="cn_icon")
         self.add(name=self.transformer3w_name, icon_name="transformer3w")
         self.add(name=self.fluid_node_name, icon_name="dam")
-        self.add(name=self.vsc_name, icon_name="vsc_icon") # Add VSC
+        self.add(name=self.vsc_name, icon_name="vsc_icon")  # Add VSC
 
     def add(self, name: str, icon_name: str):
         """
@@ -1095,10 +1095,12 @@ class SchematicWidget(BaseDiagramWidget):
                   bus_to=bus_to,
                   name=name)
 
+        #TODO: Review
         graphic_object = VscGraphicItem(from_port=from_port,
                                         to_port=to_port,
                                         editor=self,
                                         api_object=obj)
+        # TODO: End review
 
         self.add_to_scene(graphic_object=graphic_object)
 
@@ -1110,7 +1112,7 @@ class SchematicWidget(BaseDiagramWidget):
         self.circuit.add_vsc(obj)
 
         # update the connection placement
-        graphic_object.update_ports()
+        # graphic_object.update_ports()
 
         # set the connection placement
         graphic_object.setZValue(-1)
@@ -1191,33 +1193,23 @@ class SchematicWidget(BaseDiagramWidget):
                             else:
                                 warn(f"Unknown VSC terminal type: {vsc_terminal_type}")
 
-                            # Ensure target is valid (Bus, CN, BusBar)
-                            if not isinstance(target_object, (Bus, ConnectivityNode, BusBar)):
-                                warn(f"Cannot connect VSC terminal to {type(target_object)}")
 
-                            else:
-                                # Create the visual line
-                                conn_line = LineGraphicTemplateItem(
-                                    from_port=self.started_branch.get_terminal_from(),
-                                    to_port=arriving_widget,
-                                    editor=self)
+                            # Create the visual line
+                            conn_line = LineGraphicTemplateItem(
+                                from_port=self.started_branch.get_terminal_from(),
+                                to_port=arriving_widget,
+                                editor=self)
 
-                                # Set the connection in the VSC graphics/API
-                                if isinstance(target_object, Bus):
-                                    have_to_conn_line = vsc_graphic.set_connection(vsc_terminal_class, target_object, conn_line)
-                                elif isinstance(target_object, ConnectivityNode):
-                                    have_to_conn_line = vsc_graphic.set_connection_cn(vsc_terminal_class, target_object, conn_line)
-                                elif isinstance(target_object, BusBar):
-                                    have_to_conn_line = vsc_graphic.set_connection_cn(vsc_terminal_class, target_object.cn, conn_line)
+                            # Set the connection in the VSC graphics/API
+                            if isinstance(target_object, Bus):
+                                have_to_conn_line = vsc_graphic.set_connection(vsc_terminal_class, target_object, conn_line)
+                                self.add_to_scene(conn_line)
 
-                                if have_to_conn_line:
-                                    self.add_to_scene(conn_line)
+                            self._remove_from_scene(self.started_branch)
 
-                                self._remove_from_scene(self.started_branch)
+                            self.started_branch = None
 
-                                self.started_branch = None
-
-                                break # Exit the inner loop once connection is handled
+                            break # Exit the inner loop once connection is handled
 
                         # --- Handle VSC Terminal Connection --- END
 
@@ -2094,8 +2086,6 @@ class SchematicWidget(BaseDiagramWidget):
                 # Set connection in VSC
                 if elm.bus_to is not None:
                     graphic_object.set_connection(TerminalType.AC, elm.bus_to, conn_line_ac)
-                elif elm.cn_to is not None:
-                    graphic_object.set_connection_cn(TerminalType.AC, elm.cn_to, conn_line_ac)
 
                 # Add connection line to scene
                 self.add_to_scene(conn_line_ac)
@@ -2111,8 +2101,6 @@ class SchematicWidget(BaseDiagramWidget):
                 # Set connection in VSC
                 if elm.bus_from is not None:
                     graphic_object.set_connection(TerminalType.DC_P, elm.bus_from, conn_line_dcp)
-                elif elm.cn_from is not None:
-                    graphic_object.set_connection_cn(TerminalType.DC_P, elm.cn_from, conn_line_dcp)
 
                 # Add connection line to scene
                 self.add_to_scene(conn_line_dcp)
@@ -2128,8 +2116,6 @@ class SchematicWidget(BaseDiagramWidget):
                 # Set connection in VSC
                 if elm.bus_dc_n is not None:
                     graphic_object.set_connection(TerminalType.DC_N, elm.bus_dc_n, conn_line_dcn)
-                elif elm.cn_dc_n is not None:
-                    graphic_object.set_connection_cn(TerminalType.DC_N, elm.cn_dc_n, conn_line_dcn)
 
                 # Add connection line to scene
                 self.add_to_scene(conn_line_dcn)
@@ -4284,7 +4270,7 @@ def generate_schematic_diagram(buses: List[Bus],
         y = int(elm.y * explode_factor) if not np.isnan(elm.y) else 0
         diagram.set_point(device=elm, location=GraphicLocation(x=x, y=y))
 
-    #TODO: End review here
+    # TODO: End review here
 
     add_devices_list(cls="upfc_devices", dev_lst=upfc_devices)
     add_devices_list(cls="fluid_paths", dev_lst=fluid_paths)

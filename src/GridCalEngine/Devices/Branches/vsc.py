@@ -7,11 +7,9 @@ from __future__ import annotations
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
-from typing import List, Tuple, TYPE_CHECKING, Union
+from typing import List, Tuple, TYPE_CHECKING
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.enumerations import BuildStatus, ConverterControlType
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -38,17 +36,15 @@ class VSC(BranchParent):
         '_control1_val_prof',
         '_control2_val',
         '_control2_val_prof',
+        '_bus_dc_n',
+        'x',
+        'y'
     )
 
     def __init__(self,
-                 bus_dc_p: Bus | None = None,
-                 bus_dc_n: Bus | None = None,
-                 bus_ac: Bus | None = None,
-                 cn_dc_p: ConnectivityNode | None = None,
-                 cn_dc_n: ConnectivityNode | None = None,
-                 cn_ac: ConnectivityNode | None = None,
                  bus_from: Bus | None = None,
                  bus_to: Bus | None = None,
+                 bus_dc_n: Bus | None = None,
                  name='VSC',
                  idtag: str | None = None,
                  code='',
@@ -61,7 +57,7 @@ class VSC(BranchParent):
                  mttf=0.0,
                  mttr=0.0,
                  cost=100,
-                 contingency_factor:float = 1.0,
+                 contingency_factor=1.0,
                  protection_rating_factor: float = 1.4,
                  contingency_enabled=True,
                  monitor_loading=True,
@@ -78,12 +74,9 @@ class VSC(BranchParent):
                  y: float = 0.0):
         """
         Voltage source converter (VSC) with 3 terminals
-        :param bus_dc_p:
+        :param bus_from: bus_dc_p
+        :param bus_to: bus_ac
         :param bus_dc_n:
-        :param bus_ac:
-        :param cn_dc_p:
-        :param cn_dc_n:
-        :param cn_ac:
         :param bus_from:
         :param bus_to:
         :param name:
@@ -92,7 +85,6 @@ class VSC(BranchParent):
         :param active:
         :param rate:
         :param kdp:
-        :param k:
         :param alpha1:
         :param alpha2:
         :param alpha3:
@@ -116,10 +108,8 @@ class VSC(BranchParent):
                               name=name,
                               idtag=idtag,
                               code=code,
-                              bus_from=bus_dc_p,
-                              bus_to=bus_ac,
-                              cn_from=cn_dc_p,
-                              cn_to=cn_ac,
+                              bus_from=bus_from,
+                              bus_to=bus_to,
                               active=active,
                               reducible=False,
                               rate=rate,
@@ -135,8 +125,8 @@ class VSC(BranchParent):
                               build_status=build_status,
                               device_type=DeviceType.VscDevice)
 
-        if bus_dc_p is not None and bus_dc_n is not None and bus_ac is not None:
-            if bus_dc_p.is_dc and bus_dc_n.is_dc and not bus_ac.is_dc:
+        if bus_from is not None and bus_dc_n is not None and bus_to is not None:
+            if bus_from.is_dc and bus_dc_n.is_dc and not bus_to.is_dc:
                 # self._bus_dc_p = bus_dc_p
                 # self._bus_dc_n = bus_dc_n
                 # self._bus_ac = bus_ac
@@ -145,13 +135,10 @@ class VSC(BranchParent):
                 # self._cn_dc_n = cn_dc_n
                 # self._cn_ac = cn_ac
 
-                self._bus_from = bus_dc_p
+                self._bus_from = bus_from
                 self._bus_dc_n = bus_dc_n
-                self._bus_to = bus_ac
+                self._bus_to = bus_to
 
-                self._cn_from = cn_dc_p
-                self._cn_dc_n = cn_dc_n
-                self._cn_to = cn_ac
             else:
                 raise Exception('Impossible connecting a VSC device here. '
                                 'VSC devices must be connected between 1 AC and 2 DC buses')
@@ -167,10 +154,6 @@ class VSC(BranchParent):
             self._bus_from = None
             self._bus_dc_n = None
             self._bus_to = None
-
-            self._cn_from = None
-            self._cn_dc_n = None
-            self._cn_to = None
 
         self.kdp = float(kdp)
         self.alpha1 = float(alpha1)
@@ -204,13 +187,6 @@ class VSC(BranchParent):
                       definition='DC negative bus', editable=False)
         # self.register(key='bus_ac', units="", tpe=DeviceType.BusDevice,
         #               definition='AC bus', editable=False)
-
-        # self.register(key='cn_dc_p', units="", tpe=DeviceType.ConnectivityNodeDevice,
-        #               definition='DC positive connectivity node', editable=False)
-        self.register(key='cn_dc_n', units="", tpe=DeviceType.ConnectivityNodeDevice,
-                      definition='DC negative connectivity node', editable=False)
-        # self.register(key='cn_ac', units="", tpe=DeviceType.ConnectivityNodeDevice,
-        #               definition='AC connectivity node', editable=False)
 
         self.register(key='alpha1', units='', tpe=float,
                       definition='Losses constant parameter (IEC 62751-2 loss Correction).')
@@ -326,46 +302,6 @@ class VSC(BranchParent):
 
     #             if self.bus_dc_p is None:
     #                 self.bus_dc_p = self._cn_dc_p.bus
-    #         else:
-    #             raise Exception(str(type(val)) + 'not supported to be set into a connectivity node from')
-
-    @property
-    def cn_dc_n(self) -> ConnectivityNode:
-        """
-        Get the DC negative connectivity node
-        """
-        return self._cn_dc_n
-
-    @cn_dc_n.setter
-    def cn_dc_n(self, val: ConnectivityNode):
-        if val is None:
-            self._cn_dc_n = val
-        else:
-            if isinstance(val, ConnectivityNode):
-                self._cn_dc_n = val
-
-                if self.bus_dc_n is None:
-                    self.bus_dc_n = self._cn_dc_n.bus
-            else:
-                raise Exception(str(type(val)) + 'not supported to be set into a connectivity node from')
-
-    # @property
-    # def cn_ac(self) -> ConnectivityNode:
-    #     """
-    #     Get the AC connectivity node
-    #     """
-    #     return self._cn_ac
-
-    # @cn_ac.setter
-    # def cn_ac(self, val: ConnectivityNode):
-    #     if val is None:
-    #         self._cn_ac = val
-    #     else:
-    #         if isinstance(val, ConnectivityNode):
-    #             self._cn_ac = val
-
-    #             if self.bus_ac is None:
-    #                 self.bus_ac = self._cn_ac.bus
     #         else:
     #             raise Exception(str(type(val)) + 'not supported to be set into a connectivity node from')
 
@@ -561,11 +497,11 @@ class VSC(BranchParent):
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a profile')
 
-    def get_coordinates(self) -> List[Tuple[float, float, float]]:
+    def get_coordinates(self) -> List[Tuple[float, float]]:
         """
         Get the line defining coordinates
         """
-        return [self.bus_from.get_coordinates(), self.bus_dc_n.get_coordinates(), self.bus_to.get_coordinates()]
+        return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
 
     # def correct_buses_connection(self) -> None:
     #     """
