@@ -431,3 +431,21 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
         @return:
         """
         pass
+
+
+    def assign_bus_to_vsc(self, terminal_vsc, bus_vsc):
+        """
+        Assign the connected bus to a three-terminal VSC
+        :return:
+        """
+        if terminal_vsc.terminal_type == TerminalType.AC:
+            self.api_object.bus_to = bus_vsc.parent.api_object
+
+        elif terminal_vsc.terminal_type == TerminalType.DC_P:
+            self.api_object.bus_from = bus_vsc.parent.api_object
+
+        elif terminal_vsc.terminal_type == TerminalType.DC_N:
+            self.api_object.bus_dc_n = bus_vsc.parent.api_object
+
+        else:
+            raise Exception('Error in the VSC connection!')

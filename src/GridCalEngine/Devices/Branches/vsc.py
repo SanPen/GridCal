@@ -225,25 +225,25 @@ class VSC(BranchParent):
         self.register(key='x', units='px', tpe=float, definition='x position')
         self.register(key='y', units='px', tpe=float, definition='y position')
 
-    # @property
-    # def bus_dc_p(self) -> Bus:
-    #     """
-    #     Get the DC positive bus
-    #     """
-    #     return self._bus_dc_p
+    @property
+    def bus_from(self) -> Bus:
+        """
+        Get the DC positive bus
+        """
+        return self._bus_from
 
-    # @bus_dc_p.setter
-    # def bus_dc_p(self, value: Bus):
-    #     if value is None:
-    #         self._bus_dc_p = value
-    #     else:
-    #         if isinstance(value, Bus):
-    #             if value.is_dc:
-    #                 self._bus_dc_p = value
-    #             else:
-    #                 raise Exception('This should be a DC bus')
-    #         else:
-    #             raise Exception(str(type(value)) + 'not supported to be set into a _bus_dc_p')
+    @bus_from.setter
+    def bus_from(self, value: Bus):
+        if value is None:
+            self._bus_from = value
+        else:
+            if isinstance(value, Bus):
+                if value.is_dc:
+                    self._bus_from = value
+                else:
+                    raise Exception('This should be a DC bus')
+            else:
+                raise Exception(str(type(value)) + 'not supported to be set into a _bus_from')
 
     @property
     def bus_dc_n(self) -> Bus:
@@ -265,25 +265,25 @@ class VSC(BranchParent):
             else:
                 raise Exception(str(type(value)) + 'not supported to be set into a _bus_dc_n')
 
-    # @property
-    # def bus_ac(self) -> Bus:
-    #     """
-    #     Get the AC bus
-    #     """
-    #     return self._bus_ac
+    @property
+    def bus_to(self) -> Bus:
+        """
+        Get the AC bus
+        """
+        return self._bus_to
 
-    # @bus_ac.setter
-    # def bus_ac(self, value: Bus):
-    #     if value is None:
-    #         self._bus_ac = value
-    #     else:
-    #         if isinstance(value, Bus):
-    #             if not value.is_dc:
-    #                 self._bus_ac = value
-    #             else:
-    #                 raise Exception('This should be an AC bus')
-    #         else:
-    #             raise Exception(str(type(value)) + 'not supported to be set into a _bus_ac')
+    @bus_to.setter
+    def bus_to(self, value: Bus):
+        if value is None:
+            self._bus_to = value
+        else:
+            if isinstance(value, Bus):
+                if not value.is_dc:
+                    self._bus_to = value
+                else:
+                    raise Exception('This should be an AC bus')
+            else:
+                raise Exception(str(type(value)) + 'not supported to be set into a _bus_to')
 
     # @property
     # def cn_dc_p(self) -> ConnectivityNode:

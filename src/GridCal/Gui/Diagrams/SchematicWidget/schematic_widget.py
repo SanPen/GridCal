@@ -1188,8 +1188,19 @@ class SchematicWidget(BaseDiagramWidget):
                                 editor=self)
 
                             # Set the connection in the VSC graphics/API
-                            if isinstance(target_object, Bus) or isinstance(target_object, VSC):
+                            if isinstance(target_object, Bus):
                                 self.add_to_scene(conn_line)
+                                self.started_branch.get_terminal_from_parent().assign_bus_to_vsc(
+                                                                      terminal_vsc=self.started_branch.get_terminal_from(),
+                                                                      bus_vsc=arriving_widget
+                                                                      )
+
+                            elif isinstance(target_object, VSC):
+                                self.add_to_scene(conn_line)
+                                arriving_widget.get_parent().assign_bus_to_vsc(
+                                                  terminal_vsc=arriving_widget,
+                                                  bus_vsc=self.started_branch.get_terminal_from()
+                                                  )
 
                             self._remove_from_scene(self.started_branch)
 
@@ -1358,14 +1369,14 @@ class SchematicWidget(BaseDiagramWidget):
                         else:
                             warn('unknown connection')
 
-            # If a VSC connection was made, the temporary line might still be the 'started_branch'
-            if self.started_branch is not None:
-                self.started_branch.unregister_port_from()
-                self.started_branch.unregister_port_to()
-                self._remove_from_scene(self.started_branch)
+                # If a VSC connection was made, the temporary line might still be the 'started_branch'
+                if self.started_branch is not None:
+                    self.started_branch.unregister_port_from()
+                    self.started_branch.unregister_port_to()
+                    self._remove_from_scene(self.started_branch)
 
-            # release this pointer
-            self.started_branch = None
+                # release this pointer
+                self.started_branch = None
 
     def apply_expansion_factor(self, factor: float):
         """
@@ -3191,7 +3202,8 @@ class SchematicWidget(BaseDiagramWidget):
                                 else:
                                     l_color_val = lnorm[i]
                                     tooltip = str(i) + ': ' + branch.name
-                                    tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
+                                    tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
+                                        lnorm[i] * 100) + ' [%]'
 
                                     tooltip += '\nPower (from):\t' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
 
@@ -4152,7 +4164,6 @@ class SchematicWidget(BaseDiagramWidget):
         for i, bus, bus_graphics in self.get_buses():
             bus_graphics.set_position(bus.x, bus.y)
 
-
 def generate_schematic_diagram(buses: List[Bus],
                                lines: List[Line],
                                dc_lines: List[DcLine],
@@ -4271,7 +4282,6 @@ def generate_schematic_diagram(buses: List[Bus],
 
     return diagram
 
-
 def get_devices_to_expand(circuit: MultiCircuit, buses: List[Bus], max_level: int = 1) -> Tuple[List[Bus],
 List[Line],
 List[DcLine],
@@ -4388,7 +4398,6 @@ List[FluidPath]]:
             windings, hvdc_lines, vsc_converters, upfc_devices, series_reactances, switches,
             list(fluid_nodes), fluid_paths)
 
-
 def make_vicinity_diagram(circuit: MultiCircuit,
                           root_bus: Bus,
                           max_level: int = 1,
@@ -4435,7 +4444,6 @@ def make_vicinity_diagram(circuit: MultiCircuit,
     )
 
     return diagram
-
 
 def make_diagram_from_buses(circuit: MultiCircuit,
                             buses: List[Bus] | Set[Bus],
