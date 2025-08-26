@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import os
-from collections import defaultdict
 from typing import Dict, List, Union, Callable, Tuple
 import xml.etree.ElementTree as ET
 from GridCalEngine.data_logger import DataLogger
@@ -94,6 +93,7 @@ def parse_xml_to_dict(xml_element: ET.Element):
                         t_set.update(result[class_name])
                     else:
                         t_set.add(result[class_name])
+
                     t_set.update([obj_id])  # it is a resource id
                     if len(t_set) > 1:
                         result[class_name] = list(t_set)
@@ -294,7 +294,7 @@ class CgmesDataParser(BaseCircuit):
         self.data: Dict[str, Dict[str, Dict[str, str]]] = dict()
 
         # boundary set data
-        self.boudary_set: Dict[str, Dict[str, Dict[str, str]]] = dict()
+        self.boundary_set: Dict[str, Dict[str, Dict[str, str]]] = dict()
 
         # store the CGMES version from the data files
         self.cgmes_version: Union[None, CGMESVersions] = None
@@ -361,7 +361,7 @@ class CgmesDataParser(BaseCircuit):
                                 self.cgmes_version = CGMESVersions.v3_0_0
 
                         if 'Boundary' in profile[0]:
-                            merge(self.boudary_set, file_cgmes_data, self.logger)
+                            merge(self.boundary_set, file_cgmes_data, self.logger)
                         else:
                             merge(self.data, file_cgmes_data, self.logger)
                     else:
@@ -371,7 +371,7 @@ class CgmesDataParser(BaseCircuit):
                             self.cgmes_version = CGMESVersions.v3_0_0
 
                         if 'Boundary' in profile:
-                            merge(self.boudary_set, file_cgmes_data, self.logger)
+                            merge(self.boundary_set, file_cgmes_data, self.logger)
                         else:
                             merge(self.data, file_cgmes_data, self.logger)
 
@@ -398,7 +398,7 @@ class CgmesDataParser(BaseCircuit):
                             self.cgmes_version = CGMESVersions.v3_0_0
 
                     if 'Boundary' in profile:
-                        merge(self.boudary_set, file_cgmes_data, self.logger)
+                        merge(self.boundary_set, file_cgmes_data, self.logger)
                     else:
                         merge(self.data, file_cgmes_data, self.logger)
                 else:

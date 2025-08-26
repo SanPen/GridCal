@@ -4,11 +4,13 @@ import networkx as nx
 import GridCalEngine as gce
 
 import warnings
+
 # Suppress all warnings
 warnings.filterwarnings("ignore")
 
-def CreateGrid(load = True):
-    Vbase = 10 #kV
+
+def CreateGrid(load=True):
+    Vbase = 10  # kV
     Sbase = 100
 
     m_circuit = gce.MultiCircuit()
@@ -19,7 +21,7 @@ def CreateGrid(load = True):
     m_circuit.add_bus(b1)
     m_circuit.add_bus(b2)
     m_circuit.add_bus(b3)
-    
+
     br0 = gce.Line(b1, b2, name='l1')
     br0.fill_design_properties(r_ohm=0.01, x_ohm=0.03, c_nf=0.0,
                                length=1.0, Imax=1.0, freq=m_circuit.fBase, Sbase=m_circuit.Sbase)
@@ -30,24 +32,23 @@ def CreateGrid(load = True):
     br2.fill_design_properties(r_ohm=0.03, x_ohm=0.08, c_nf=0.0,
                                length=1.0, Imax=1.0, freq=m_circuit.fBase, Sbase=m_circuit.Sbase)
 
-    
     m_circuit.add_line(br0)
     m_circuit.add_line(br1)
     m_circuit.add_line(br2)
-    
+
     if load:
-        load1 = gce.Load('load 1'	, P=50, Q=30	)
-        load2 = gce.Load('load 2'	, P=150, Q=80	)
-        m_circuit.add_load(b2 ,load1)
-        m_circuit.add_load(b3 ,load2)
+        load1 = gce.Load('load 1', P=50, Q=30)
+        load2 = gce.Load('load 2', P=150, Q=80)
+        m_circuit.add_load(b2, load1)
+        m_circuit.add_load(b3, load2)
 
     return m_circuit
+
 
 def ExecutePF(grid, show=False):
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
     power_flow = gce.PowerFlowDriver(grid, options)
     power_flow.run()
-
 
     losses = power_flow.results.losses.sum()
     bus_df = power_flow.results.get_bus_df()
@@ -59,22 +60,31 @@ def ExecutePF(grid, show=False):
 
     return losses, bus_df, branch_df
 
-print("Red con cargas((P,Q) = (50,30),(150,80)) , se ejecuta PF para ver el resultado y comparar con la estimación de estado")
-m_circuit1 = CreateGrid(load = True)
+
+print(
+    "Red con cargas((P,Q) = (50,30),(150,80)) , se ejecuta PF para ver el resultado y comparar con la estimación de estado")
+m_circuit1 = CreateGrid(load=True)
 losses, bus_df, branch_df = ExecutePF(m_circuit1, show=True)
 
 print("\\n")
-print("creo una red sin cargas y les añado medidas, con los valores de pandapower, multiplicados por 100, para ser coherentes con el ejemplo anterior")
-m_circuit2 = CreateGrid(load = False)
-multiplicador=100
+print(
+    "creo una red sin cargas y les añado medidas, con los valores de pandapower, multiplicados por 100, para ser coherentes con el ejemplo anterior")
+m_circuit2 = CreateGrid(load=False)
+multiplicador = 100
 m_circuit2.add_vm_measurement(gce.Devices.VmMeasurement(1.006, 0.004, m_circuit2.buses[0]))
 m_circuit2.add_vm_measurement(gce.Devices.VmMeasurement(0.968, 0.004, m_circuit2.buses[1]))
-m_circuit2.add_pi_measurement(gce.Devices.PiMeasurement(-0.501*multiplicador, 0.010*multiplicador, m_circuit2.buses[1]))
-m_circuit2.add_qi_measurement(gce.Devices.QiMeasurement(-0.286*multiplicador, 0.010*multiplicador, m_circuit2.buses[1]))
-m_circuit2.add_pf_measurement(gce.Devices.PfMeasurement(0.888*multiplicador, 0.008*multiplicador, m_circuit2.lines[0]))
-m_circuit2.add_pf_measurement(gce.Devices.PfMeasurement(1.173*multiplicador, 0.008*multiplicador, m_circuit2.lines[1]))
-m_circuit2.add_qf_measurement(gce.Devices.QfMeasurement(0.568*multiplicador, 0.008*multiplicador, m_circuit2.lines[0]))
-m_circuit2.add_qf_measurement(gce.Devices.QfMeasurement(0.663*multiplicador, 0.008*multiplicador, m_circuit2.lines[1]))
+m_circuit2.add_pi_measurement(
+    gce.Devices.PiMeasurement(-0.501 * multiplicador, 0.010 * multiplicador, m_circuit2.buses[1]))
+m_circuit2.add_qi_measurement(
+    gce.Devices.QiMeasurement(-0.286 * multiplicador, 0.010 * multiplicador, m_circuit2.buses[1]))
+m_circuit2.add_pf_measurement(
+    gce.Devices.PfMeasurement(0.888 * multiplicador, 0.008 * multiplicador, m_circuit2.lines[0]))
+m_circuit2.add_pf_measurement(
+    gce.Devices.PfMeasurement(1.173 * multiplicador, 0.008 * multiplicador, m_circuit2.lines[1]))
+m_circuit2.add_qf_measurement(
+    gce.Devices.QfMeasurement(0.568 * multiplicador, 0.008 * multiplicador, m_circuit2.lines[0]))
+m_circuit2.add_qf_measurement(
+    gce.Devices.QfMeasurement(0.663 * multiplicador, 0.008 * multiplicador, m_circuit2.lines[1]))
 # Declare the simulation driver and run
 se = gce.StateEstimation(circuit=m_circuit2)
 se.run()

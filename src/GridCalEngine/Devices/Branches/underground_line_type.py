@@ -8,6 +8,17 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice, Device
 
 
 class UndergroundLineType(EditableDevice):
+    __slots__ = (
+        'Imax',
+        'Vnom',
+        'R',
+        'X',
+        'B',
+        'R0',
+        'X0',
+        'B0',
+        'n_circuits'
+    )
 
     def __init__(self, name: str = 'UndergroundLine', idtag: None | str = None, Imax: float = 1.0,
                  Vnom: float = 1.0, R: float = 0.0, X: float = 0.0, B: float = 0.0,
@@ -41,6 +52,8 @@ class UndergroundLineType(EditableDevice):
         self.X0 = float(X0)
         self.B0 = float(B0)
 
+        self.n_circuits = 1
+
         self.register(key='Imax', units='kA', tpe=float, definition='Current rating of the line', old_names=['rating'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Voltage rating of the line')
         self.register(key='R', units='Ohm/km', tpe=float, definition='Positive-sequence resistance per km')
@@ -49,6 +62,7 @@ class UndergroundLineType(EditableDevice):
         self.register(key='R0', units='Ohm/km', tpe=float, definition='Zero-sequence resistance per km')
         self.register(key='X0', units='Ohm/km', tpe=float, definition='Zero-sequence reactance per km')
         self.register(key='B0', units='uS/km', tpe=float, definition='Zero-sequence shunt susceptance per km')
+        self.register(key='n_circuits', units='', tpe=int, definition='number of circuits')
 
     def get_values(self, Sbase: float, length: float):
         """

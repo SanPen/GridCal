@@ -18,16 +18,14 @@ for i, br in enumerate(branches):
 
     # add the branch contingency to the groups, only groups are failed at once
     # con = Contingency(device_idtag=br.idtag, name=br.name, group=group)  # Use imported Contingency
-    con = gce.Contingency(device_idtag=br.idtag, name=br.name, group=group)
+    con = gce.Contingency(device=br, name=br.name, group=group)
     main_circuit.add_contingency(con)
 
 # add a special contingency
 group = gce.ContingencyGroup(name="Special contingency")
 main_circuit.add_contingency_group(group)
-main_circuit.add_contingency(gce.Contingency(device_idtag=branches[3].idtag,
-                                         name=branches[3].name, group=group))
-main_circuit.add_contingency(gce.Contingency(device_idtag=branches[5].idtag,
-                                         name=branches[5].name, group=group))
+main_circuit.add_contingency(gce.Contingency(device=branches[3], name=branches[3].name, group=group))
+main_circuit.add_contingency(gce.Contingency(device=branches[5], name=branches[5].name, group=group))
 
 pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
 

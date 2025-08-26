@@ -107,6 +107,7 @@ GridCal is packed with features:
 
 - Large collection of devices to model electricity grids
 - AC/DC multi-grid power flow
+- 3-phase unbalanced power flow and short circuit
 - AC/DC multi-grid linear optimal power flow
 - AC linear analysis (PTDF & LODF)
 - AC linear net transfer capacity calculation
@@ -182,7 +183,7 @@ description of the theory, the models and the objects.
 
 ### Understanding the program structure
 
-GridCal structure is composed by objects aranged in a "database" and  by "structs" at a deeper level.
+GridCal structure is composed by objects arranged in a "database" and  by "structs" at a deeper level.
 Learn [here](https://gridcal.readthedocs.io/en/latest/rst_source/development/structure.html) why.
 
 All simulations in GridCal are handled by the simulation drivers. The structure is as follows:
@@ -228,7 +229,7 @@ aligned in memory. The GridCal data model is object-oriented, while the numerica
 ```python
 import GridCalEngine as gce
 
-# load a grid (.gridcal, .m (Matpower), .raw (PSS/e) .rawx (PSS/e), .epc (PowerWorld), .dgs (PowerFactory)
+# load a grid (.gridcal, .m (Matpower), .raw (PSS/e) .rawx (PSS/e), .epc (PSLF), .dgs (PowerFactory)
 my_grid = gce.open_file("my_file.gridcal")
 ```
 
@@ -277,7 +278,7 @@ GridCal supports many file formats:
 - PSS/e raw and rawx versions 29 to 35, including USA market exchange RAW-30 specifics.
 - Matpower .m files directly.
 - DigSilent .DGS (not fully compatible)
-- PowerWorld .EPC (not fully compatible, supports substation coordinates)
+- PSLF .EPC (not fully compatible, supports substation coordinates)
 
 Similarly to CGMES you may be able to use the conversion objects to explore the original formats.
 
@@ -309,7 +310,7 @@ pf_results = gce.power_flow(my_grid)
 gce.save_cgmes_file(grid=my_grid,
                     filename="My_cgmes_model.zip",
                     cgmes_boundary_set_path="path_to_the_boundary_set.zip",
-                    cgmes_version=CGMESVersions.v2_4_15,
+                    cgmes_version=gce.CGMESVersions.v2_4_15,
                     pf_results=pf_results)
 
 ```
@@ -493,6 +494,23 @@ Which yields:
 Exactly the same results as the example from the book of the issue.
 
 ### Power Flow
+
+GridCal has the most power flow features in any open-source software.
+The following table shows the features present in each solver:
+
+|                                                                     | Newton Raphson  |Powell Dog-leg|Levenberg-Marquardt|Iwamoto|Fast-decoupled|Gauss-seidel|Holomorphic embedding|Linear without voltage modules|Linear with voltage modules|
+|---------------------------------------------------------------------|---|---|---|---|---|---|---|---|---|
+| Local voltage control using a Generator.                            |  ✅ | ✅  | ✅  |  ✅ | ✅  | ✅  |  ✅ |   |  ✅ |
+| Remote voltage control using a Generator.                           | ✅  |  ✅ |  ✅ |  ✅ |  ✅ |   |   |   |   |
+| Generator reactive power limits.                                    | ✅  |  ✅ |  ✅ |  ✅ | ✅  |  ✅ |   |   |   |
+| Local and remote voltage control using a transformer's tap changer. | ✅  |  ✅ |  ✅ |   |   |   |   |   |   |
+| Local active power control using a transformer's tap changer.       |  ✅ | ✅  |  ✅ |   |   |   |   |   |   |
+| Local reactive power control using a transformer's tap changer.     | ✅  | ✅  | ✅  |   |   |   |   |   |   |
+| Local and remote AC and DC voltage control using a converter.       | ✅  | ✅  | ✅  |   |   |   |   |   |   |
+| Local AC and DC active power control using converter.               |✅   | ✅  |  ✅ |   |   |   |   |   |   |
+| Local AC reactive power control using a converter.                  | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
+| 3-phase unbalanced.                                                 | ✅  | ✅  |  ✅ |   |   |   |   |   |   |
+
 
 Using the simplified API:
 
@@ -1165,16 +1183,14 @@ for i, br in enumerate(branches):
   main_circuit.add_contingency_group(group)
 
   # add the branch contingency to the groups, only groups are failed at once
-  con = gce.Contingency(device_idtag=br.idtag, name=br.name, group=group)
+  con = gce.Contingency(device=br, name=br.name, group=group)
   main_circuit.add_contingency(con)
 
 # add a special contingency
 group = gce.ContingencyGroup(name="Special contingency")
 main_circuit.add_contingency_group(group)
-main_circuit.add_contingency(gce.Contingency(device_idtag=branches[3].idtag,
-                                             name=branches[3].name, group=group))
-main_circuit.add_contingency(gce.Contingency(device_idtag=branches[5].idtag,
-                                             name=branches[5].name, group=group))
+main_circuit.add_contingency(gce.Contingency(device=branches[3], name=branches[3].name, group=group))
+main_circuit.add_contingency(gce.Contingency(device=branches[5], name=branches[5].name, group=group))
 
 pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
 
@@ -1220,6 +1236,29 @@ Contingency flows:
 ```
 
 This simulation can also be done for time series.
+
+### Contingency analysis time series
+
+To perform the contingency analysis of a time series, it's easier to directly usi the API:
+
+```python
+import os
+import GridCalEngine as gce
+
+folder = os.path.join('Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+main_circuit = gce.open_file(fname)
+
+results = gce.contingencies_ts(circuit=main_circuit,
+                               detailed_massive_report=False,
+                               contingency_deadband=0.0,
+                               contingency_method=gce.ContingencyMethod.PowerFlow)
+```
+
+Note that the grid must have the declared contingencies saved already.
+Also note that the results are statistics, and you will not get a cube because 
+for large grids that demands terabytes of RAM memory.
+
 
 ### State estimation
 
@@ -1287,6 +1326,7 @@ Br3  38.591163 22.775597  -37.956374 -21.082828  38.591163 0.634789 1.692770
 A simple function is available to export the results of a driver.
 
 ```python
+import os
 import GridCalEngine as gce
 
 fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
@@ -1308,6 +1348,7 @@ You could save many drivers in the same zip file passing then into the list `dri
 Also there is a function to save from the results objects themselves:
 
 ```python
+import os
 import GridCalEngine as gce
 
 fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
@@ -1417,7 +1458,6 @@ All contributions must come with testing.
 - Join the [Discord GridCal channel](https://discord.com/invite/dzxctaNbvu) for a friendly chat, or quick question.
 - Submit questions or comments to our [form](https://forms.gle/MpjJAntAwZiLwE6B6).
 - Submit bugs or requests in the [Issues](https://github.com/SanPen/GridCal/issues) section.
-- Simply email [santiago@gridcal.org](santiago@gridcal.org)
 
 ## License
 

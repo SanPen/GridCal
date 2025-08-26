@@ -35,9 +35,11 @@ class BarTerminalItem(QGraphicsRectItem):
                  w=10.0):
         """
 
-        @param name:
-        @param editor:
-        @param parent:
+        :param name:
+        :param editor:
+        :param parent:
+        :param h:
+        :param w:
         """
 
         QGraphicsRectItem.__init__(self, QRectF(-6.0, -6.0, h, w), parent)
@@ -113,6 +115,14 @@ class BarTerminalItem(QGraphicsRectItem):
         """
         return self.pos().y() - self.h / 2
 
+    @property
+    def hosting_connections(self):
+        """
+        Getter for hosting connections
+        :return:
+        """
+        return self._hosting_connections
+
     def add_hosting_connection(self,
                                graphic_obj: LineGraphicTemplateItem,
                                callback: Callable[[QPointF], None]):
@@ -155,6 +165,12 @@ class BarTerminalItem(QGraphicsRectItem):
         :return:
         """
         self.process_callbacks(self.parent.pos() + self.pos())
+
+    def get_center_pos(self, value: QPointF):
+        h2 = self.h / 2.0
+        w2 = self.w / 2.0
+        center = QPointF(w2, h2)
+        return value + center
 
     def process_callbacks(self, value: QPointF, scale: float = 1.0):
         """
@@ -271,9 +287,11 @@ class RoundTerminalItem(QGraphicsEllipseItem):
                  w=10.0):
         """
 
-        @param name:
-        @param editor:
-        @param parent:
+        :param name:
+        :param editor:
+        :param parent:
+        :param h:
+        :param w:
         """
 
         QGraphicsEllipseItem.__init__(self, QRectF(-6.0, -6.0, h, w), parent)
@@ -287,6 +305,10 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         self.setPen(QPen(self.color, self.pen_width, self.style))
 
         self.terminal_type = terminal_type
+
+        h2 = self.h / 2.0
+        w2 = self.w / 2.0
+        self.center = QPointF(w2, h2)
 
         # terminal parent object
         self.parent: Union[BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = parent
@@ -351,6 +373,14 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         """
         return self.pos().y() - self.h / 2.0
 
+    @property
+    def hosting_connections(self):
+        """
+        Getter for hosting connections
+        :return:
+        """
+        return self._hosting_connections
+
     def add_hosting_connection(self,
                                graphic_obj: LineGraphicTemplateItem,
                                callback: Callable[[QPointF], None]):
@@ -371,7 +401,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         else:
             print(f'No such hosting connection {self.name} -> {graphic_obj}')
 
-    def get_hosted_graphics(self) ->List[LineGraphicTemplateItem]:
+    def get_hosted_graphics(self) -> List[LineGraphicTemplateItem]:
         """
         Get hosted graphics
         :return:
@@ -384,7 +414,10 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         :param rect:
         :return:
         """
-        self.process_callbacks(parent_pos=self.parent.pos())
+        self.process_callbacks(self.parent.pos() + self.pos())
+
+    def get_center_pos(self, value: QPointF):
+        return value + self.center
 
     def process_callbacks(self, parent_pos: QPointF, mul: float = 1.0):
         """
@@ -440,3 +473,44 @@ class RoundTerminalItem(QGraphicsEllipseItem):
 
     def __repr__(self):
         return str(self)
+
+
+class HandleItem(QGraphicsEllipseItem):
+    """
+    A handle that can be moved by the mouse: Element to resize the boxes
+    """
+
+    def __init__(self, parent: BarTerminalItem = None, callback: Callable = None) -> None:
+        """
+
+        @param parent:
+        """
+        QGraphicsEllipseItem.__init__(self, QRectF(-4, -4, 8, 8), parent)
+
+        self.callback = callback
+
+        self.setBrush(Qt.GlobalColor.red)
+        self.setFlag(self.GraphicsItemFlag.ItemIsMovable, True)
+        self.setFlag(self.GraphicsItemFlag.ItemSendsScenePositionChanges, True)
+        self.setCursor(QCursor(Qt.CursorShape.SizeFDiagCursor))
+
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any):
+        """
+
+        @param change:
+        @param value:
+        @return:
+        """
+        if change == self.GraphicsItemChange.ItemPositionChange:
+            x, y = value.x(), value.y()
+
+            # This cannot be a signal because this is not a QObject
+            if self.callback is not None:
+                res = self.callback(x, y)
+                if res:
+                    x, y = res
+                    value = QPointF(x, y)
+            return value
+
+        # Call superclass method:
+        return super(HandleItem, self).itemChange(change, value)

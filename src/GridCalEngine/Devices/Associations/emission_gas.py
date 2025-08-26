@@ -11,6 +11,7 @@ from GridCalEngine.Devices.profile import Profile
 
 
 class EmissionGas(EditableDevice):
+    __slots__ = ('cost', '_cost_prof', 'color')
 
     def __init__(self,
                  name: str = '',
@@ -40,7 +41,7 @@ class EmissionGas(EditableDevice):
 
         self.register(key='cost', units='e/t', tpe=float, definition='Cost of emissions (e / ton)',
                       profile_name='cost_prof')
-        self.register(key='color', units='', tpe=str, definition='Color to paint')
+        self.register(key='color', units='', tpe=str, definition='Color to paint', is_color=True)
 
     @property
     def cost_prof(self) -> Profile:

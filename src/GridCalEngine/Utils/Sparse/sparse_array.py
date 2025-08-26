@@ -44,6 +44,13 @@ class SparseArray:
     SparseArray
     """
 
+    __slots__ = (
+        '_dtype',
+        '_default_value',
+        '_size',
+        '_map',
+    )
+
     def __init__(self, data_type: PROFILE_TYPES, default_value: Any, size: int = 0) -> None:
         """
 
@@ -257,6 +264,18 @@ class SparseArray:
         :return: integer
         """
         return self._size
+
+    def clear(self):
+        """
+        Clear the sparse array
+        :return:
+        """
+        self._map.clear()
+        self._size = 0
+
+    def set_data(self, d: Dict[int, Any]):
+
+        self._map = d
 
     def resize(self, n: int):
         """

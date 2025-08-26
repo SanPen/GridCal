@@ -53,12 +53,11 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                          bus_types=nc.bus_data.bus_types,
                                          con_names=linear_multiple_contingencies.get_contingency_group_names())
 
-    linear_analysis = LinearAnalysis(numerical_circuit=nc,
+    linear_analysis = LinearAnalysis(nc=nc,
                                      distributed_slack=options.lin_options.distribute_slack,
                                      correct_values=options.lin_options.correct_values)
 
-    linear_multiple_contingencies.compute(lodf=linear_analysis.LODF,
-                                          ptdf=linear_analysis.PTDF,
+    linear_multiple_contingencies.compute(lin=linear_analysis,
                                           ptdf_threshold=options.lin_options.ptdf_threshold,
                                           lodf_threshold=options.lin_options.lodf_threshold)
 
@@ -94,7 +93,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
         else:
             injections = None
 
-        c_flow = multi_contingency.get_contingency_flows(base_flow=flows_n, injections=injections)
+        c_flow = multi_contingency.get_contingency_flows(base_branches_flow=flows_n, injections=injections)
         c_loading = c_flow / (nc.passive_branch_data.rates + 1e-9)
 
         results.Sf[ic, :] = c_flow  # already in MW

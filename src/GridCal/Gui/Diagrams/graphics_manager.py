@@ -9,8 +9,6 @@ from warnings import warn
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
-from GridCal.Gui.Diagrams.SchematicWidget.Substation.cn_graphics import CnGraphicItem
-from GridCal.Gui.Diagrams.SchematicWidget.Substation.busbar_graphics import BusBarGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_path_graphics import FluidPathGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics import LineGraphicItem
@@ -29,8 +27,6 @@ from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import
 from GridCal.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item import LineLocationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
-from GridCalEngine.Devices.Substation.busbar import BusBar
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 
 
 ALL_BUS_BRACH_GRAPHICS = Union[
@@ -48,8 +44,6 @@ ALL_BUS_BRACH_GRAPHICS = Union[
     LineGraphicTemplateItem,
     Transformer3WGraphicItem,
     GeneratorGraphicItem,
-    CnGraphicItem,
-    BusBarGraphicItem,
 ]
 
 ALL_MAP_GRAPHICS = Union[
@@ -73,9 +67,6 @@ class GraphicsManager:
         # first by DeviceType
         # second idtag -> GraphicItem
         self.graphic_dict: Dict[DeviceType, Dict[str, ALL_GRAPHICS]] = dict()
-
-        # this dictionary stores the relationship between CN and their BusBar if applicable
-        self.cn_to_busbar_dict: Dict[ConnectivityNode, BusBar] = dict()
 
     def clear(self):
         """
@@ -104,9 +95,6 @@ class GraphicsManager:
                         warn(f"Replacing {graphic} with {graphic}, this could be a sign of an idtag bug")
                     elm_dict[elm.idtag] = graphic
 
-            # store the cn->busbar relationship
-            if isinstance(elm, BusBar):
-                self.cn_to_busbar_dict[elm.cn] = elm
         else:
             raise ValueError(f"Trying to set a None graphic object for {elm}")
 
@@ -157,14 +145,7 @@ class GraphicsManager:
         :param elm: Any device
         :return: Any graphic element if found, None otherwise
         """
-        if isinstance(elm, ConnectivityNode):
-            bb = self.cn_to_busbar_dict.get(elm, None)
-            if bb is not None:
-                return self.query(elm=bb)
-            else:
-                return self.query(elm=elm)
-        else:
-            return self.query(elm=elm)
+        return self.query(elm=elm)
 
     def get_device_type_list(self, device_type: DeviceType) -> List[ALL_GRAPHICS]:
         """

@@ -38,8 +38,7 @@ from GridCalEngine.Simulations.NTC.ntc_ts_driver import (OptimalNetTransferCapac
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import (NodalCapacityTimeSeriesDriver,
                                                                               NodalCapacityTimeSeriesResults)
 from GridCalEngine.Simulations.Topology.node_groups_driver import NodeGroupsDriver
-from GridCalEngine.Simulations.Topology.topology_processor_driver import TopologyProcessorDriver
-
+from GridCalEngine.Simulations.Reliability.reliability_driver import ReliabilityStudyDriver, ReliabilityResults
 
 DRIVER_OBJECTS = Union[
     AvailableTransferCapacityDriver,
@@ -63,8 +62,8 @@ DRIVER_OBJECTS = Union[
     NodeGroupsDriver,
     InputsAnalysisDriver,
     InvestmentsEvaluationDriver,
-    TopologyProcessorDriver,
-    NodalCapacityTimeSeriesDriver
+    NodalCapacityTimeSeriesDriver,
+    ReliabilityStudyDriver
 ]
 
 RESULTS_OBJECTS = Union[
@@ -88,5 +87,6 @@ RESULTS_OBJECTS = Union[
     OptimalNetTransferCapacityTimeSeriesResults,
     InputsAnalysisResults,
     InvestmentsEvaluationResults,
-    NodalCapacityTimeSeriesResults
+    NodalCapacityTimeSeriesResults,
+    ReliabilityResults
 ]

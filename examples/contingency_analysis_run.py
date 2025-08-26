@@ -16,14 +16,14 @@ for i, br in enumerate(branches):
     main_circuit.add_contingency_group(group)
 
     # add the branch contingency to the groups, only groups are failed at once
-    con = Contingency(device_idtag=br.idtag, name=br.name, group=group)
+    con = Contingency(device=br, name=br.name, group=group)
     main_circuit.add_contingency(con)
 
 # add a special contingency
 group = ContingencyGroup(name="Special contingency")
 main_circuit.add_contingency_group(group)
-main_circuit.add_contingency(Contingency(device_idtag=branches[3].idtag, name=branches[3].name, group=group))
-main_circuit.add_contingency(Contingency(device_idtag=branches[5].idtag, name=branches[5].name, group=group))
+main_circuit.add_contingency(Contingency(device=branches[3], name=branches[3].name, group=group))
+main_circuit.add_contingency(Contingency(device=branches[5], name=branches[5].name, group=group))
 
 pf_options = PowerFlowOptions(solver_type=SolverType.NR)
 

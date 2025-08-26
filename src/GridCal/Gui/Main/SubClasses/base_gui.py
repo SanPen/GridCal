@@ -23,7 +23,7 @@ from PySide6 import QtGui, QtWidgets, QtCore
 # Engine imports
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Simulations as sim
-from GridCalEngine.enumerations import EngineType, DeviceType
+from GridCalEngine.enumerations import EngineType, DeviceType, SimulationTypes
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 
@@ -49,6 +49,7 @@ from GridCal.Session.session import SimulationSession, GcThread
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
+from GridCal.Gui.GridReduce.grid_reduce import GridReduceDialogue
 from GridCal.Gui.Diagrams.generic_graphics import IS_DARK
 from GridCal.Gui.python_console import PythonConsole
 from GridCal.Gui.toast_widget import ToastManager
@@ -129,7 +130,7 @@ class BaseMainGui(QMainWindow):
         self.lock_ui = False
         self.ui.progress_frame.setVisible(self.lock_ui)
 
-        self.stuff_running_now: List[str] = list()
+        self.stuff_running_now: List[SimulationTypes] = list()
 
         self.session: SimulationSession = SimulationSession(name='GUI session')
 
@@ -180,6 +181,7 @@ class BaseMainGui(QMainWindow):
         self.contingency_checks_diag: Union[CheckListDialogue, None] = None
         self.ra_checks_diag: Union[CheckListDialogue, None] = None
         self.start_end_dialogue_window: Union[StartEndSelectionDialogue, None] = None
+        self.grid_reduction_dialogue: GridReduceDialogue | None = None
 
         # available engines --------------------------------------------------------------------------------------------
         engine_lst = [EngineType.GridCal]

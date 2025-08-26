@@ -21,6 +21,24 @@ if TYPE_CHECKING:
 
 
 class VSC(BranchParent):
+    __slots__ = (
+        'kdp',
+        'alpha1',
+        'alpha2',
+        'alpha3',
+        '_control1',
+        '_control1_prof',
+        '_control2',
+        '_control2_prof',
+        '_control1_dev',
+        '_control1_dev_prof',
+        '_control2_dev',
+        '_control2_dev_prof',
+        '_control1_val',
+        '_control1_val_prof',
+        '_control2_val',
+        '_control2_val_prof',
+    )
 
     def __init__(self,
                  bus_dc_p: Bus | None = None,
@@ -29,6 +47,8 @@ class VSC(BranchParent):
                  cn_dc_p: ConnectivityNode | None = None,
                  cn_dc_n: ConnectivityNode | None = None,
                  cn_ac: ConnectivityNode | None = None,
+                 bus_from: Bus | None = None,
+                 bus_to: Bus | None = None,
                  name='VSC',
                  idtag: str | None = None,
                  code='',
@@ -64,6 +84,8 @@ class VSC(BranchParent):
         :param cn_dc_p:
         :param cn_dc_n:
         :param cn_ac:
+        :param bus_from:
+        :param bus_to:
         :param name:
         :param idtag:
         :param code:
@@ -101,16 +123,16 @@ class VSC(BranchParent):
                               active=active,
                               reducible=False,
                               rate=rate,
+                              cost=cost,
+                              mttf=mttf,
+                              mttr=mttr,
                               contingency_factor=contingency_factor,
                               protection_rating_factor=protection_rating_factor,
                               contingency_enabled=contingency_enabled,
                               monitor_loading=monitor_loading,
-                              mttf=mttf,
-                              mttr=mttr,
-                              build_status=build_status,
                               capex=capex,
                               opex=opex,
-                              cost=cost,
+                              build_status=build_status,
                               device_type=DeviceType.VscDevice)
 
         if bus_dc_p is not None and bus_dc_n is not None and bus_ac is not None:
@@ -176,18 +198,18 @@ class VSC(BranchParent):
         self.x = float(x)
         self.y = float(y)
 
-        # self.register(key='bus_dc_p', units="", tpe=DeviceType.BusDevice, 
+        # self.register(key='bus_dc_p', units="", tpe=DeviceType.BusDevice,
         #               definition='DC positive bus', editable=False)
-        self.register(key='bus_dc_n', units="", tpe=DeviceType.BusDevice, 
+        self.register(key='bus_dc_n', units="", tpe=DeviceType.BusDevice,
                       definition='DC negative bus', editable=False)
         # self.register(key='bus_ac', units="", tpe=DeviceType.BusDevice,
         #               definition='AC bus', editable=False)
 
-        # self.register(key='cn_dc_p', units="", tpe=DeviceType.ConnectivityNodeDevice, 
+        # self.register(key='cn_dc_p', units="", tpe=DeviceType.ConnectivityNodeDevice,
         #               definition='DC positive connectivity node', editable=False)
-        self.register(key='cn_dc_n', units="", tpe=DeviceType.ConnectivityNodeDevice, 
+        self.register(key='cn_dc_n', units="", tpe=DeviceType.ConnectivityNodeDevice,
                       definition='DC negative connectivity node', editable=False)
-        # self.register(key='cn_ac', units="", tpe=DeviceType.ConnectivityNodeDevice, 
+        # self.register(key='cn_ac', units="", tpe=DeviceType.ConnectivityNodeDevice,
         #               definition='AC connectivity node', editable=False)
 
         self.register(key='alpha1', units='', tpe=float,

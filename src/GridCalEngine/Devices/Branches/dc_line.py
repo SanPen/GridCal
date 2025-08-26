@@ -15,6 +15,21 @@ from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 
 class DcLine(BranchParent):
+    __slots__ = (
+        'measurements',
+        '_length',
+        'tolerance',
+        'r_fault',
+        'fault_pos',
+        'R',
+        'temp_base',
+        'temp_oper',
+        '_temp_oper_prof',
+        'alpha',
+        'template',
+        '_locations',
+    )
+
     def __init__(self,
                  bus_from: Union[Bus, None] = None,
                  bus_to: Union[Bus, None] = None,
@@ -77,8 +92,6 @@ class DcLine(BranchParent):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=None,
-                              cn_to=None,
                               active=active,
                               reducible=False,
                               rate=rate,
@@ -199,7 +212,8 @@ class DcLine(BranchParent):
 
                 self._length = val
             else:
-                print('The length cannot be zero, ignoring value')
+                # print('The length cannot be zero, ignoring value')
+                pass
         else:
             raise Exception('The length must be a float value')
 

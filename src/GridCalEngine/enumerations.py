@@ -55,6 +55,58 @@ class BusMode(Enum):
             return ""
 
 
+class BusGraphicType(Enum):
+    """
+    Bus graphical modes
+    """
+    BusBar = "BusBar"
+    Connectivity = "Connectivity"
+    Internal = "Internal"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return BusGraphicType[s]
+        except KeyError:
+            return s
+
+
+class SwitchGraphicType(Enum):
+    """
+    Bus graphical modes
+    """
+    CircuitBreaker = "CircuitBreaker"
+    Disconnector = "Disconnector"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return BusGraphicType[s]
+        except KeyError:
+            return s
+
 class CpfStopAt(Enum):
     """
     CpfStopAt
@@ -166,7 +218,7 @@ class SolverType(Enum):
 
     NR = 'Newton Raphson'
     GAUSS = 'Gauss-Seidel'
-    DC = 'Linear DC'
+    Linear = 'Linear'
     HELM = 'Holomorphic Embedding'
     # ZBUS = 'Z-Gauss-Seidel'
     PowellDogLeg = "Powell's Dog Leg"
@@ -274,6 +326,8 @@ class MIPSolvers(Enum):
     CPLEX = 'CPLEX'
     GUROBI = 'GUROBI'
     XPRESS = 'XPRESS'
+    CBC = 'CBC'
+    PDLP = 'PDLP'
 
     def __str__(self):
         return self.value
@@ -530,6 +584,7 @@ class ConverterControlType(Enum):
     Qac = 'Q_ac'
     Pdc = 'P_dc'
     Pac = 'P_ac'
+    Pdc_angle_droop = 'P_dc_angle_droop'  # PMODE3
     Imax = 'Imax'
 
     def __str__(self) -> str:
@@ -616,6 +671,7 @@ class FaultType(Enum):
     LG = 'LG'
     LL = 'LL'
     LLG = 'LLG'
+    LLL = 'LLL'
 
     def __str__(self):
         return str(self.value)
@@ -639,6 +695,74 @@ class FaultType(Enum):
     def list(cls):
         """
 
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+class MethodShortCircuit(Enum):
+    """
+    Short circuit type
+    """
+    sequences = 'sequences'
+    phases = 'phases'
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+        :param s:
+        :return:
+        """
+        try:
+            return MethodShortCircuit[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class PhasesShortCircuit(Enum):
+    """
+    Short circuit type
+    """
+    abc = 'abc'
+    ab = 'ab'
+    bc = 'bc'
+    ca = 'ca'
+    a = 'a'
+    b = 'b'
+    c = 'c'
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+        :param s:
+        :return:
+        """
+        try:
+            return PhasesShortCircuit[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
         :return:
         """
         return list(map(lambda c: c.value, cls))
@@ -684,7 +808,6 @@ class WindingsConnection(Enum):
         """
         return list(map(lambda c: c.value, cls))
 
-
 class TerminalType(Enum):
     """
     Terminal types
@@ -713,6 +836,76 @@ class TerminalType(Enum):
         """
         try:
             return TerminalType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+class WindingType(Enum):
+    """
+    Transformer windings connection types
+    """
+    Star = "Y"
+    GroundedStar = "Yn"
+    Delta = "D"
+    ZigZag = "Z"
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return WindingType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class ShuntConnectionType(Enum):
+    """
+    Loads, shunts, etc.. connection types
+    """
+    Star = "Y"
+    GroundedStar = "Yn"
+    Delta = "D"
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return ShuntConnectionType[s]
         except KeyError:
             return s
 
@@ -842,6 +1035,7 @@ class DeviceType(Enum):
     PtMeasurementDevice = 'Pt Measurement'
     QtMeasurementDevice = 'Qt Measurement'
     VmMeasurementDevice = 'Vm Measurement'
+    VaMeasurementDevice = 'Va Measurement'
     IfMeasurementDevice = 'If Measurement'
     ItMeasurementDevice = 'It Measurement'
 
@@ -1144,8 +1338,10 @@ class InvestmentsEvaluationObjectives(Enum):
     """
     PowerFlow = 'PowerFlow'
     TimeSeriesPowerFlow = 'TimeSeriesPowerFlow'
-    OptimalPowerFlow = 'OptimalPowerFlow'
-    TimeSeriesOptimalPowerFlow = 'TimeSeriesOptimalPowerFlow'
+    # OptimalPowerFlow = 'OptimalPowerFlow'
+    # TimeSeriesOptimalPowerFlow = 'TimeSeriesOptimalPowerFlow'
+    GenerationAdequacy = "Adequacy"
+    SimpleDispatch = "Simple dispatch"
     FromPlugin = 'From Plugin'
 
     def __str__(self):
@@ -1378,7 +1574,6 @@ class ResultTypes(Enum):
 
     ShuntReactivePower = 'Shunt reactive power'
 
-
     BusVoltagePolarPlot = 'Voltage plot'
     BusNodalCapacity = "Nodal capacity"
 
@@ -1407,15 +1602,33 @@ class ResultTypes(Enum):
 
     # Short-circuit
     BusShortCircuitActivePower = 'Short circuit active power'
+    BusShortCircuitActivePowerA = 'Short circuit active power A'
+    BusShortCircuitActivePowerB = 'Short circuit active power B'
+    BusShortCircuitActivePowerC = 'Short circuit active power C'
+
     BusShortCircuitReactivePower = 'Short circuit reactive power'
+    BusShortCircuitReactivePowerA = 'Short circuit reactive power A'
+    BusShortCircuitReactivePowerB = 'Short circuit reactive power B'
+    BusShortCircuitReactivePowerC = 'Short circuit reactive power C'
 
     BusShortCircuitActiveCurrent = 'Short circuit active current'
+    BusShortCircuitActiveCurrentA = 'Short circuit active current A'
+    BusShortCircuitActiveCurrentB = 'Short circuit active current B'
+    BusShortCircuitActiveCurrentC = 'Short circuit active current C'
+
     BusShortCircuitReactiveCurrent = 'Short circuit reactive current'
+    BusShortCircuitReactiveCurrentA = 'Short circuit reactive current A'
+    BusShortCircuitReactiveCurrentB = 'Short circuit reactive current B'
+    BusShortCircuitReactiveCurrentC = 'Short circuit reactive current C'
 
     # PTDF
     PTDF = 'PTDF'
     PTDFBusVoltageSensitivity = 'Bus voltage sensitivity'
     LODF = 'LODF'
+    HvdcPTDF = "HVDC PTDF"
+    HvdcODF = "HVDC ODF"
+    VscPTDF = "Vsc PTDF"
+    VscODF = "Vsc ODF"
 
     MaxOverloads = 'Maximum contingency flow'
     ContingencyFlows = 'Contingency flow'
@@ -1542,6 +1755,36 @@ class ResultTypes(Enum):
     BranchReactiveLosses2 = 'Branch reactive losses (2)'
     BranchMonitoring = 'Branch monitoring logic'
 
+    BusVoltageModuleA = 'Voltage module (A)'
+    BusVoltageAngleA = 'Voltage angle (A)'
+    BranchActivePowerFromA = 'Branch active power "from" (A)'
+    BranchReactivePowerFromA = 'Branch reactive power "from" (A)'
+    BranchActiveCurrentFromA = 'Branch active current "from" (A)'
+    BranchReactiveCurrentFromA = 'Branch reactive current "from" (A)'
+    BranchLoadingA = 'Branch loading (A)'
+    BranchActiveLossesA = 'Branch active losses (A)'
+    BranchReactiveLossesA = 'Branch reactive losses (A)'
+
+    BusVoltageModuleB = 'Voltage module (B)'
+    BusVoltageAngleB = 'Voltage angle (B)'
+    BranchActivePowerFromB = 'Branch active power "from" (B)'
+    BranchReactivePowerFromB = 'Branch reactive power "from" (B)'
+    BranchActiveCurrentFromB = 'Branch active current "from" (B)'
+    BranchReactiveCurrentFromB = 'Branch reactive current "from" (B)'
+    BranchLoadingB = 'Branch loading (B)'
+    BranchActiveLossesB = 'Branch active losses (B)'
+    BranchReactiveLossesB = 'Branch reactive losses (B)'
+
+    BusVoltageModuleC = 'Voltage module (C)'
+    BusVoltageAngleC = 'Voltage angle (C)'
+    BranchActivePowerFromC = 'Branch active power "from" (C)'
+    BranchReactivePowerFromC = 'Branch reactive power "from" (C)'
+    BranchActiveCurrentFromC = 'Branch active current "from" (C)'
+    BranchReactiveCurrentFromC = 'Branch reactive current "from" (C)'
+    BranchLoadingC = 'Branch loading (C)'
+    BranchActiveLossesC = 'Branch active losses (C)'
+    BranchReactiveLossesC = 'Branch reactive losses (C)'
+
     ShortCircuitInfo = 'Short-circuit information'
 
     # classifiers
@@ -1590,6 +1833,10 @@ class ResultTypes(Enum):
     InvestmentsParetoPlot = 'Pareto plots'
     InvestmentsIterationsPlot = 'Iterations plot'
     InvestmentsParetoPlotNSGA2 = 'Pareto plot NSGA2'
+    InvestmentsWhenToMakePlot = "When to make them plot"
+
+    # reliability
+    ReliabilityLoleResults = "LOLE"
 
     def __str__(self):
         return self.value
@@ -1647,6 +1894,7 @@ class SimulationTypes(Enum):
     InvestmentsEvaluation_run = 'Investments evaluation'
     TopologyProcessor_run = 'Topology Processor'
     NodalCapacityTimeSeries_run = 'Nodal capacity time series'
+    Reliability_run = "Reliability"
 
     NoSim = "No simulation"
 
@@ -1821,6 +2069,9 @@ class ContingencyOperationTypes(Enum):
         :param s:
         :return:
         """
+        if s == 'status':
+            return ContingencyOperationTypes.Active
+
         try:
             return ContingencyOperationTypes[s]
         except KeyError:
@@ -1899,3 +2150,31 @@ class CascadeType(Enum):
         :return:
         """
         return list(map(lambda c: c.value, cls))
+
+
+class GridReductionMethod(Enum):
+    """
+    GridReductionMethod
+    """
+    Ward = "Ward"
+    DiShi = "DiShi"
+    WardLinear = "Ward linear"
+    PTDF = "PTDF"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return GridReductionMethod[s]
+        except KeyError:
+            return s

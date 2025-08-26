@@ -9,37 +9,37 @@ GridCal.Gui.ContingencyPlanner.contingency\_planner\_dialogue module
 
 .. automodule:: GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.ContingencyPlanner.gui module
 -----------------------------------------
 
 .. automodule:: GridCal.Gui.ContingencyPlanner.gui
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.ContingencyPlanner.icons\_rc module
 -----------------------------------------------
 
 .. automodule:: GridCal.Gui.ContingencyPlanner.icons_rc
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 GridCal.Gui.ContingencyPlanner.update\_gui\_file module
 -------------------------------------------------------
 
 .. automodule:: GridCal.Gui.ContingencyPlanner.update_gui_file
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: GridCal.Gui.ContingencyPlanner
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

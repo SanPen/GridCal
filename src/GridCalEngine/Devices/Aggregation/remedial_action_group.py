@@ -13,6 +13,7 @@ class RemedialActionGroup(EditableDevice):
     """
     The RemedialAction group
     """
+    __slots__ = ('category', '_conn_group')
 
     def __init__(self,
                  idtag: Union[str, None] = None,

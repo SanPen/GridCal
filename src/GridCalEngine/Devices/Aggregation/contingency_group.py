@@ -11,6 +11,7 @@ class ContingencyGroup(EditableDevice):
     """
     The Contingency group
     """
+    __slots__ = ('category',)
 
     def __init__(self, idtag: Union[str, None] = None, name="ContingencyGroup", category=''):
         """

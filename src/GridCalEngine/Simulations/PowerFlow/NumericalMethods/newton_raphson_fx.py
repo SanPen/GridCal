@@ -114,6 +114,9 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
             update_controls = error < (tol * 100)
             error, converged, x, f = problem.update(x=x_sol, update_controls=update_controls)
 
+            if verbose > 1:
+                print("x:\n", problem.get_x_df(x))
+
             # save the error evolution
             error0 = error
             error_evolution[iteration] = error

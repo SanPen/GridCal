@@ -8,7 +8,7 @@ import os
 import numpy as np
 import GridCalEngine.api as gce
 from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow, run_nonlinear_opf
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import NonlinearOPFResults
 
 
@@ -24,10 +24,9 @@ def case9() -> NonlinearOPFResults:
     file_path = os.path.join('data', 'grids', 'case9.m')
 
     grid = gce.FileOpen(file_path).open()
-    nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8)
-    return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    return run_nonlinear_opf(grid=grid, t_idx=None, pf_options=pf_options, opf_options=opf_options)
 
 
 def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResults]:
@@ -49,11 +48,11 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
     nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8, ips_iterations=50,
-                                              acopf_mode=gce.AcOpfMode.ACOPFstd)
-    base_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+                                              acopf_mode=gce.AcOpfMode.ACOPFstd, ips_init_with_pf=True)
+    base_sol = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
     opf_options.acopf_mode = gce.AcOpfMode.ACOPFslacks
-    slack_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    slack_sol = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
     grid.transformers2w[0].tap_phase_control_mode = TapPhaseControl.Pt
     grid.transformers2w[0].tap_module_control_mode = TapModuleControl.Qt
@@ -69,12 +68,12 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
     for b in range(len(grid.buses)):
         grid.buses[b].Vm_cost *= 10000
 
-    nc = gce.compile_numerical_circuit_at(grid)
     opf_options.acopf_mode = gce.AcOpfMode.ACOPFstd
-    tap_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    opf_options.ips_init_with_pf = False
+    tap_sol = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
     opf_options.acopf_mode = gce.AcOpfMode.ACOPFslacks
-    tap_slack_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    tap_slack_sol = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
     return base_sol, slack_sol, tap_sol, tap_slack_sol
 
@@ -104,12 +103,11 @@ def case14_ctrlQ_shunts() -> NonlinearOPFResults:
 
     grid = gce.FileOpen(file_path_csh).open()
 
-    nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8, ips_iterations=50,
                                               acopf_mode=gce.AcOpfMode.ACOPFstd, ips_control_q_limits=True, verbose=0)
 
-    base_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    base_sol = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
     # delete
     os.remove(file_path_csh)
@@ -127,13 +125,10 @@ def case_pegase89() -> NonlinearOPFResults:
     file_path = os.path.join('data', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
-    nc = gce.compile_numerical_circuit_at(grid)
-    # pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, tolerance=1e-8)
-    # return ac_optimal_power_flow(nc=nc, pf_options=pf_options)
     pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-10,
                                               acopf_mode=gce.AcOpfMode.ACOPFstd)
-    return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    return run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
 
 def test_ieee9():
@@ -214,7 +209,7 @@ def test_ieee14():
     assert np.allclose(tap.Qg, Qg_test_tap, atol=1e-3)
     assert np.allclose(tap.tap_module, tapm_test_tap, atol=1e-3)
     assert np.allclose(tap.tap_phase, tapt_test_tap, atol=1e-3)
-
+    #
     assert np.allclose(tapslack.Vm, vm_test_tap_sl, atol=1e-3)
     assert np.allclose(tapslack.Va, va_test_tap_sl, atol=1e-3)
     assert np.allclose(tapslack.Pg, Pg_test_tap_sl, atol=1e-3)
@@ -277,7 +272,7 @@ def test_pegase89():
     Qg_test = [5.277412923694324, 6.618986753297607, 2.2815996838399255, 3.7236056370014854, -0.29809756674253635,
                0.04179455966592346, -1.8996743248262995, 3.55863879355706, -0.06639703271324378, 2.7419484992706997,
                1.25513044433617, 2.7419485085973423]
-
+    #
     res = case_pegase89()
     assert np.allclose(res.Vm, vm_test, atol=1e-3)
     assert np.allclose(res.Va, va_test, atol=1e-3)
@@ -292,7 +287,7 @@ def test_ieee14_controlQ_controllableshunts():
                -0.1683, -0.2233, -0.2277, -0.2260, -0.2343, -0.2351, -0.2462]
 
     Pg_test = [1.957688, 0.370331, 0.220336, 0.000012, 0.136859]
-    Qg_test = [0.000001, 0.217937, 0.120408, 0.095518, 0.068983, 0.178715]
+    Qg_test = [0.000001, 0.217937, 0.120408, 0.095518, 0.068983, 0.0, 0.178715]
 
     res = case14_ctrlQ_shunts()
 
@@ -320,11 +315,10 @@ def superconductor() -> NonlinearOPFResults:
     return run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
 
-#
+
 def test_superconductors_handling():
     vm_test = [1.0957346797437704, 1.0969574703822882, 1.0862735278860973, 1.0957346797437704,
                1.0854699877686833, 1.0999995150478854, 1.089489008278147, 1.0999995260914164, 1.072794065554122]
-
 
     va_test = [-4.2370941920734066e-20, 0.1286722741064758, 0.09997739459585175, -4.2370941920734066e-20,
                -0.026373782258851553, 0.05377100775984605, 0.022363497246639205, 0.05904426953721843,

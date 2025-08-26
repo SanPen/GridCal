@@ -1,0 +1,254 @@
+{
+    "network": {
+        "bus": {
+            "0": {
+                "slack": true,
+                "load": false,
+                "name": "slack",
+                "type": "nev-network"
+            },
+            "1": {
+                "slack": false,
+                "load": false,
+                "name": "n01",
+                "type": "nev-network"
+            },
+            "2": {
+                "slack": false,
+                "load": false,
+                "name": "n02",
+                "type": "nev-network"
+            },
+            "3": {
+                "slack": false,
+                "load": false,
+                "name": "n03",
+                "type": "nev-network"
+            },
+            "4": {
+                "slack": false,
+                "load": false,
+                "name": "n04",
+                "type": "nev-network"
+            },
+            "5": {
+                "slack": false,
+                "load": false,
+                "name": "n05",
+                "type": "nev-network"
+            },
+            "6": {
+                "slack": false,
+                "load": false,
+                "name": "n06",
+                "type": "nev-network"
+            },
+            "7": {
+                "slack": false,
+                "load": false,
+                "name": "n07",
+                "type": "nev-network"
+            },
+            "8": {
+                "slack": false,
+                "load": false,
+                "name": "n08",
+                "type": "nev-network"
+            },
+            "9": {
+                "slack": false,
+                "load": false,
+                "name": "n09",
+                "type": "nev-network"
+            },
+            "10": {
+                "slack": false,
+                "load": false,
+                "name": "n10",
+                "type": "nev-network"
+            },
+            "11": {
+                "slack": false,
+                "load": false,
+                "name": "n11",
+                "type": "nev-network"
+            },
+            "12": {
+                "slack": false,
+                "load": false,
+                "name": "n12",
+                "type": "nev-network"
+            },
+            "13": {
+                "slack": false,
+                "load": false,
+                "name": "n13",
+                "type": "nev-network"
+            },
+            "14": {
+                "slack": false,
+                "load": false,
+                "name": "n14",
+                "type": "nev-network"
+            },
+            "15": {
+                "slack": false,
+                "load": false,
+                "name": "n15",
+                "type": "nev-network"
+            },
+            "16": {
+                "slack": false,
+                "load": false,
+                "name": "n16",
+                "type": "nev-network"
+            },
+            "17": {
+                "slack": false,
+                "load": false,
+                "name": "n17",
+                "type": "nev-network"
+            },
+            "18": {
+                "slack": false,
+                "load": false,
+                "name": "n18",
+                "type": "nev-network"
+            },
+            "19": {
+                "slack": false,
+                "load": false,
+                "name": "n19",
+                "type": "nev-network"
+            },
+            "20": {
+                "slack": false,
+                "load": true,
+                "name": "n20",
+                "type": "nev-network"
+            }
+        },
+        "branch": {
+            "0": {
+                "type": "nev-cable",
+                "nodefrom": 0,
+                "nodeto": 1,
+                "length": 1.44
+            },
+            "1": {
+                "type": "nev-cable",
+                "nodefrom": 1,
+                "nodeto": 2,
+                "length": 9000.44
+            },
+            "2": {
+                "type": "nev-cable",
+                "nodefrom": 2,
+                "nodeto": 3,
+                "length": 1.44
+            },
+            "3": {
+                "type": "nev-cable",
+                "nodefrom": 3,
+                "nodeto": 4,
+                "length": 1.44
+            },
+            "4": {
+                "type": "nev-cable",
+                "nodefrom": 4,
+                "nodeto": 5,
+                "length": 1.44
+            },
+            "5": {
+                "type": "nev-cable",
+                "nodefrom": 5,
+                "nodeto": 6,
+                "length": 1.44
+            },
+            "6": {
+                "type": "nev-cable",
+                "nodefrom": 6,
+                "nodeto": 7,
+                "length": 1.44
+            },
+            "7": {
+                "type": "nev-cable",
+                "nodefrom": 7,
+                "nodeto": 8,
+                "length": 1.44
+            },
+            "8": {
+                "type": "nev-cable",
+                "nodefrom": 8,
+                "nodeto": 9,
+                "length": 1.44
+            },
+            "9": {
+                "type": "nev-cable",
+                "nodefrom": 9,
+                "nodeto": 10,
+                "length": 1.44
+            },
+            "10": {
+                "type": "nev-cable",
+                "nodefrom": 10,
+                "nodeto": 11,
+                "length": 9000.44
+            },
+            "11": {
+                "type": "nev-cable",
+                "nodefrom": 11,
+                "nodeto": 12,
+                "length": 1.44
+            },
+            "12": {
+                "type": "nev-cable",
+                "nodefrom": 12,
+                "nodeto": 13,
+                "length": 1.44
+            },
+            "13": {
+                "type": "nev-cable",
+                "nodefrom": 13,
+                "nodeto": 14,
+                "length": 1.44
+            },
+            "14": {
+                "type": "nev-cable",
+                "nodefrom": 14,
+                "nodeto": 15,
+                "length": 1.44
+            },
+            "15": {
+                "type": "nev-cable",
+                "nodefrom": 15,
+                "nodeto": 16,
+                "length": 1.44
+            },
+            "16": {
+                "type": "nev-cable",
+                "nodefrom": 16,
+                "nodeto": 17,
+                "length": 1.44
+            },
+            "17": {
+                "type": "nev-cable",
+                "nodefrom": 17,
+                "nodeto": 18,
+                "length": 1.44
+            },
+            "18": {
+                "type": "nev-cable",
+                "nodefrom": 18,
+                "nodeto": 19,
+                "length": 1.44
+            },
+            "19": {
+                "type": "nev-cable",
+                "nodefrom": 19,
+                "nodeto": 20,
+                "length": 9000.44
+            }
+        }
+    }
+}

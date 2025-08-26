@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+from typing import List
 from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
@@ -48,7 +49,7 @@ class RawArea(RawObject):
                                description="Area name",
                                max_chars=12)
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data: List[List[str | int | float]], version: int, logger: Logger):
         """
 
         :param data:
@@ -61,8 +62,12 @@ class RawArea(RawObject):
         self.ARNAME = ''
 
         if version >= 29:
-            # I, ISW, PDES, PTOL, 'ARNAME'
-            self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
+            if len(data[0]) == 5:
+                # I, ISW, PDES, PTOL, 'ARNAME'
+                self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
+            else:
+                logger.add_warning('Undefined number of Area attributes', value=len(data[0]), expected_value=5)
+                self.try_parse(values=data[0])
 
             self.ARNAME = self.ARNAME.replace("'", "").strip()
         else:

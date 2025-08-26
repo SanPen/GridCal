@@ -2,13 +2,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 
+from typing import TYPE_CHECKING
 import os
 import json
 from typing import List
 from GridCalEngine.Devices.Aggregation.contingency import Contingency, ContingencyOperationTypes
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
+
+if TYPE_CHECKING:
+    from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
 def parse_contingencies(data):
@@ -29,9 +33,9 @@ def parse_contingencies(data):
         for elem in jentry['elements']:
             cnt = Contingency(
                 idtag=elem['key'] if 'name' in elem.keys() else None,
-                device_idtag=elem['device_idtag'] if 'device_idtag' in elem.keys() else '',
-                name=str(elem['name']) if 'key' in elem.keys() else '',
-                code=str(elem['code']) if 'code' in elem.keys() else '',
+                device=elem.get('device_idtag', None),
+                name=str(elem.get('name', "")),
+                code=str(elem.get('code', "")),
                 prop=ContingencyOperationTypes(str(elem['property'])) if 'property' in elem.keys() else ContingencyOperationTypes.Active,
                 value=str(elem['value']) if 'value' in elem.keys() else 0,
                 group=group

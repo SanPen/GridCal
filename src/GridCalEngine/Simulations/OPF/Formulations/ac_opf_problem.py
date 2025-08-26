@@ -50,8 +50,9 @@ class NonlinearOPFResults:
     error: float = None
     converged: bool = None
     iterations: int = None
+    voltage: CxVec = None
 
-    def initialize(self, nbus: int, nbr: int, nsh: int, ng: int, nhvdc: int, ncap: int):
+    def initialize(self, nbus: int, nbr: int, nil: int, nsh: int, ng: int, nhvdc: int, ncap: int):
         """
         Initialize the arrays
         :param nbus: number of buses
@@ -77,14 +78,15 @@ class NonlinearOPFResults:
         self.hvdc_loading: Vec = np.zeros(nhvdc)
         self.lam_p: Vec = np.zeros(nbus)
         self.lam_q: Vec = np.zeros(nbus)
-        self.sl_sf: Vec = np.zeros(nbr)
-        self.sl_st: Vec = np.zeros(nbr)
+        self.sl_sf: Vec = np.zeros(nil)
+        self.sl_st: Vec = np.zeros(nil)
         self.sl_vmax: Vec = np.zeros(nbus)
         self.sl_vmin: Vec = np.zeros(nbus)
         self.nodal_capacity: Vec = np.zeros(ncap)
         self.error: float = 0.0
         self.converged: bool = False
         self.iterations: int = 0
+        self.voltage: CxVec = np.zeros(nbus, dtype=complex)
 
     def merge(self,
               other: "NonlinearOPFResults",
@@ -111,6 +113,7 @@ class NonlinearOPFResults:
         """
         self.Va[bus_idx] = other.Va
         self.Vm[bus_idx] = other.Vm
+        self.voltage[bus_idx] = other.Vm * np.exp(1j * other.Va)
         self.S[bus_idx] = other.S
         self.Sf[br_idx] = other.Sf
         self.St[br_idx] = other.St
@@ -145,6 +148,7 @@ class NonlinearOPFResults:
         :return: CxVec
         """
         return self.Vm * np.exp(1j * self.Va)
+
 
 
 class NonLinearOptimalPfProblem:
@@ -210,8 +214,8 @@ class NonLinearOptimalPfProblem:
         # Since controllable shunts will be treated as generators, we deactivate them to avoid its computation in the
         # Admittance matrix. Then, the admittance elements are stored.
 
-        nc.shunt_data.Y[
-            self.id_sh] = 0 + 0j  # TODO: this modifies the original data, better to make a copy of Y for shunts
+        # TODO: this modifies the original data, better to make a copy of Y for shunts
+        nc.shunt_data.Y[self.id_sh] = 0 + 0j
         self.admittances = nc.get_admittance_matrices()
 
         self.Qsh_max = nc.shunt_data.qmax[self.id_sh] / self.Sbase
@@ -252,15 +256,12 @@ class NonLinearOptimalPfProblem:
         self.nbr = nc.passive_branch_data.nelm
         self.br_idx = np.arange(self.nbr)
         self.br_mon_idx = nc.passive_branch_data.get_monitor_enabled_indices()
-        self.gen_disp_idx = np.r_[
-            nc.generator_data.get_dispatchable_active_indices(),
-            np.arange(self.ngen, self.ngen + self.nsh)
-        ]
+        self.gen_disp_idx = nc.generator_data.get_dispatchable_indices()
+        self.gen_disp_idx_sh = np.r_[self.gen_disp_idx, np.arange(self.ngen, self.ngen + self.nsh)]
         self.Cfmon = nc.passive_branch_data.monitored_Cf(self.br_mon_idx)
         self.Cfmon_t = self.Cfmon.T
         self.Ctmon = nc.passive_branch_data.monitored_Ct(self.br_mon_idx)
         self.Ctmon_t = self.Ctmon.T
-
 
         self.R = nc.passive_branch_data.R
         self.X = nc.passive_branch_data.X
@@ -273,9 +274,8 @@ class NonLinearOptimalPfProblem:
         self.npv = len(self.pv)
         self.npq = len(self.pq)
         self.n_br_mon = len(self.br_mon_idx)
-        self.n_gen_disp_sh = len(self.gen_disp_idx)
-        self.n_gen_disp = self.n_gen_disp_sh - self.nsh
-        gen_disp_idx_2 = self.gen_disp_idx[:self.n_gen_disp]
+        self.n_gen_disp = len(self.gen_disp_idx)
+        self.n_gen_disp_sh = self.n_gen_disp + self.nsh
 
         self.ind_gens = np.arange(len(self.Pg_max))
         self.gen_nondisp_idx = nc.generator_data.get_non_dispatchable_indices()
@@ -294,17 +294,23 @@ class NonLinearOptimalPfProblem:
         self.Ybus_diag_pos = np.where(self.Ybus_indices == self.Ybus_cols)[0]
 
         # TODO: Maybe an opportunity to use some sort of function so this is clearer?
-        self.Cdispgen = csc_matrix((np.ones(self.n_gen_disp_sh),
+        self.Cdispgen = csc_matrix((np.ones(self.n_gen_disp),
                                     (self.gen_bus_idx[self.gen_disp_idx],
-                                     np.arange(self.n_gen_disp_sh))),
-                                   shape=(self.nbus, self.n_gen_disp_sh))
+                                     np.arange(self.n_gen_disp))),
+                                   shape=(self.nbus, self.n_gen_disp))
         self.Cdispgen_t = self.Cdispgen.T
 
-        self.Inom = nc.generator_data.snom[self.gen_disp_idx] / self.Sbase
+        self.Cdispgen_sh = csc_matrix((np.ones(self.n_gen_disp_sh),
+                                    (self.gen_bus_idx[self.gen_disp_idx_sh],
+                                     np.arange(self.n_gen_disp_sh))),
+                                   shape=(self.nbus, self.n_gen_disp_sh))
+        self.Cdispgen_sh_t = self.Cdispgen.T
 
-        self.c0 = np.r_[nc.generator_data.cost_0[gen_disp_idx_2], np.zeros(self.nsh)]
-        self.c1 = np.r_[nc.generator_data.cost_1[gen_disp_idx_2], np.zeros(self.nsh)]
-        self.c2 = np.r_[nc.generator_data.cost_2[gen_disp_idx_2], np.zeros(self.nsh)]
+        self.Inom = nc.generator_data.snom / self.Sbase
+
+        self.c0 = np.r_[nc.generator_data.cost_0[self.gen_disp_idx], np.zeros(self.nsh)]
+        self.c1 = np.r_[nc.generator_data.cost_1[self.gen_disp_idx], np.zeros(self.nsh)]
+        self.c2 = np.r_[nc.generator_data.cost_2[self.gen_disp_idx], np.zeros(self.nsh)]
 
         self.c0n = nc.generator_data.cost_0[self.gen_nondisp_idx]
         self.c1n = nc.generator_data.cost_1[self.gen_nondisp_idx]
@@ -378,14 +384,14 @@ class NonLinearOptimalPfProblem:
             ngenforgen = np.bincount(self.gen_bus_idx[:self.ngen])[self.gen_bus_idx[:self.ngen]]
 
             # If there are multiple generators connected to the same bus, they share in equal parts the injection.
-            allPgen = (Sbus_pf.real / self.Sbase + self.Sd.real)[self.gen_bus_idx[:self.ngen]] / ngenforgen
+            allPgen = (Sbus_pf.real + self.Sd.real)[self.gen_bus_idx[:self.ngen]] / ngenforgen
 
             # Same for Q
-            allQgen = (Sbus_pf.imag / self.Sbase + self.Sd.imag)[self.gen_bus_idx[:self.ngen]] / ngenforgen
+            allQgen = (Sbus_pf.imag + self.Sd.imag)[self.gen_bus_idx[:self.ngen]] / ngenforgen
 
             self.Sg_undis = allPgen[self.gen_nondisp_idx] + 1j * allQgen[self.gen_nondisp_idx]
-            self.Pg = np.r_[allPgen[gen_disp_idx_2], np.zeros(self.nsh)]
-            self.Qg = np.r_[allQgen[gen_disp_idx_2], np.zeros(self.nsh)]
+            self.Pg = np.r_[allPgen[self.gen_disp_idx], np.zeros(self.nsh)]
+            self.Qg = np.r_[allQgen[self.gen_disp_idx], np.zeros(self.nsh)]
             self.Vm = np.abs(voltage_pf)
             self.Va = np.angle(voltage_pf)
             self.tap_m = nc.active_branch_data.tap_module[self.k_m]
@@ -394,13 +400,16 @@ class NonLinearOptimalPfProblem:
 
         else:
 
-            # TODO: Unresolved Pmax, ie Pmax and Pmin must be in __init__
+            # TODO: Review this
+            # Pmax = nc.generator_data.pmax / self.Sbase
+            # Pmin = nc.generator_data.pmin / self.Sbase
             self.Pg = np.r_[
-                (self.Pmax[gen_disp_idx_2] + self.Pmin[gen_disp_idx_2]) / (2 * self.Sbase),
+                # (Pmax[gen_disp_idx_2] + Pmin[gen_disp_idx_2]) / 2,
+                (self.Pg_max[self.gen_disp_idx] + self.Pg_min[self.gen_disp_idx]) / 2,
                 np.zeros(self.nsh)
             ]
             self.Qg = np.r_[
-                (self.Qg_max[gen_disp_idx_2] +  self.Qg_min[gen_disp_idx_2]) / (2 * self.Sbase),
+                (self.Qg_max[self.gen_disp_idx] + self.Qg_min[self.gen_disp_idx]) / 2 ,
                 np.zeros(self.nsh)
             ]
             self.Va = np.angle(nc.bus_data.Vbus)
@@ -445,7 +454,6 @@ class NonLinearOptimalPfProblem:
 
         self.Sf2 = np.conj(self.Sf) * self.Sf
         self.St2 = np.conj(self.St) * self.St
-
 
     def analyze_branch_controls(self) -> None:
         """
@@ -505,7 +513,6 @@ class NonLinearOptimalPfProblem:
             else:
                 raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
 
-
         # convert lists to integer arrays
         k_pf_tau = np.array(k_pf_tau, dtype=int)
         k_pt_tau = np.array(k_pt_tau, dtype=int)
@@ -543,11 +550,11 @@ class NonLinearOptimalPfProblem:
 
         self.Vm = x[a: b]
         a = b
-        b += self.n_gen_disp
+        b += self.n_gen_disp_sh
 
         self.Pg = x[a: b]
         a = b
-        b += self.n_gen_disp
+        b += self.n_gen_disp_sh
 
         self.Qg = x[a: b]
         a = b
@@ -606,10 +613,10 @@ class NonLinearOptimalPfProblem:
             self.all_tap_m[self.k_m] = self.tap_m
             self.all_tap_tau[self.k_tau] = self.tap_tau
 
-            self.admittances.modify_taps(m=prev_all_tap_m,
-                                         m2=self.all_tap_m,
-                                         tau=prev_all_tap_tau,
-                                         tau2=self.all_tap_tau)
+            self.admittances.modify_taps_all(m=prev_all_tap_m,
+                                             m2=self.all_tap_m,
+                                             tau=prev_all_tap_tau,
+                                             tau2=self.all_tap_tau)
 
         else:
             pass
@@ -620,9 +627,9 @@ class NonLinearOptimalPfProblem:
 
         Pgen = np.zeros(self.nbus)
         Qgen = np.zeros(self.nbus)
-        np.add.at(Pgen, self.gen_bus_idx[self.gen_disp_idx], self.Pg)  # Variable generation
+        np.add.at(Pgen, self.gen_bus_idx[self.gen_disp_idx_sh], self.Pg)  # Variable generation
         np.add.at(Pgen, self.gen_bus_idx[self.gen_nondisp_idx], self.Sg_undis.real)  # Variable generation
-        np.add.at(Qgen, self.gen_bus_idx[self.gen_disp_idx], self.Qg)  # Fixed generation
+        np.add.at(Qgen, self.gen_bus_idx[self.gen_disp_idx_sh], self.Qg)  # Fixed generation
         np.add.at(Qgen, self.gen_bus_idx[self.gen_nondisp_idx], self.Sg_undis.imag)  # Fixed generation
 
         dS = self.Scalc + self.Sd - Pgen - 1j * Qgen  # Nodal power balance
@@ -689,11 +696,11 @@ class NonLinearOptimalPfProblem:
             self.Sf2.real - self.rates2 - sl_sf,  # rates "lower limit"
             self.St2.real - self.rates2 - sl_st,  # rates "upper limit"
             self.Vm[self.pq] - self.Vm_max[self.pq] - sl_vmax,  # voltage module upper limit
-            self.Pg - self.Pg_max[self.gen_disp_idx],  # generator P upper limits
-            self.Qg - self.Qg_max[self.gen_disp_idx],  # generator Q upper limits
+            self.Pg - self.Pg_max[self.gen_disp_idx_sh],  # generator P upper limits
+            self.Qg - self.Qg_max[self.gen_disp_idx_sh],  # generator Q upper limits
             self.Vm_min[self.pq] - self.Vm[self.pq] - sl_vmin,  # voltage module lower limit
-            self.Pg_min[self.gen_disp_idx] - self.Pg,  # generator P lower limits
-            self.Qg_min[self.gen_disp_idx] - self.Qg,  # generation Q lower limits
+            self.Pg_min[self.gen_disp_idx_sh] - self.Pg,  # generator P lower limits
+            self.Qg_min[self.gen_disp_idx_sh] - self.Qg,  # generation Q lower limits
             - self.sl_sf,  # Slack variable for Sf >0
             - self.sl_st,  # Slack variable for St >0
             - self.sl_vmax,  # Slack variable for Vmax >0
@@ -735,6 +742,9 @@ class NonLinearOptimalPfProblem:
         vm_inv = diags(1 / self.Vm)
         E = Vmat @ vm_inv
         Ibus = self.admittances.Ybus @ self.V
+
+        self.all_tap_m[self.k_m] = self.tap_m
+        self.all_tap_tau[self.k_tau] = self.tap_tau
 
         # Useful pre-constructed matrices:
         diags_gensh_disp_ones = diags(np.ones(self.n_gen_disp_sh))
@@ -817,45 +827,39 @@ class NonLinearOptimalPfProblem:
         GSva = csc_matrix((np.conj(data) * 1j * self.V[self.Ybus_indices], self.Ybus_indices, self.Ybus_indptr),
                           shape=(self.nbus, self.nbus))
 
-        GSpg = - self.Cdispgen
-        GSqg = -1j * self.Cdispgen
+        GSpg = - self.Cdispgen_sh
+        GSqg = -1j * self.Cdispgen_sh
 
-        # TODO: This is subject to a CSC function
-        GTH = lil_matrix((len(self.slack), self.NV))
+        GTH = csc((len(self.slack), self.NV))
         for i, ss in enumerate(self.slack):
             GTH[i, ss] = 1.
 
-        # TODO: This is subject to a CSC function
-        Gvm = lil_matrix((len(self.pv), self.NV))
+
+        Gvm = csc((len(self.pv), self.NV))
         for i, ss in enumerate(self.pv):
             Gvm[i, self.nbus + ss] = 1.
 
         dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt = self.compute_branch_power_derivatives()
 
         if self.ntapm > 0:
-            # TODO: Do we really need a copy? I think a reference is enough here
-            Gtapm = dSbusdm.copy()
+            Gtapm = dSbusdm
         else:
-            # TODO: Why not a csc directly?
-            Gtapm = lil_matrix((self.nbus, self.ntapm), dtype=complex)
+
+            Gtapm = csc((self.nbus, self.ntapm), dtype=complex)
 
         if self.ntapt > 0:
-            # TODO: Do we really need a copy? I think a reference is enough here
-            Gtapt = dSbusdt.copy()
+            Gtapt = dSbusdt
         else:
-            Gtapt = lil_matrix((self.nbus, self.ntapt), dtype=complex)
+            Gtapt = csc((self.nbus, self.ntapt), dtype=complex)
 
-        # TODO: There is a chance for a CSC function here
-        GSpfdc = lil_matrix((self.nbus, self.n_disp_hvdc), dtype=complex)
+        GSpfdc = csc((self.nbus, self.n_disp_hvdc), dtype=complex)
         for k_link in range(self.n_disp_hvdc):
             GSpfdc[self.f_disp_hvdc[k_link], k_link] = 1.0  # TODO: check that this is correct
             GSpfdc[self.t_disp_hvdc[k_link], k_link] = -1.0  # TODO: check that this is correct
 
-        # TODO: Why not a csc directly?
-        Gslack = lil_matrix((self.nbus, self.nsl), dtype=complex)
+        Gslack = csc((self.nbus, self.nsl), dtype=complex)
 
-        # TODO: There is a chance for a CSC function here
-        Gslcap = lil_matrix((self.nbus, self.nslcap), dtype=complex)
+        Gslcap = csc((self.nbus, self.nslcap), dtype=complex)
         if self.nslcap != 0:
             for idslcap, capbus in enumerate(self.capacity_nodes_idx):
                 Gslcap[capbus, idslcap] = -1
@@ -1019,7 +1023,7 @@ class NonLinearOptimalPfProblem:
                 HSfdata = self.Sf.real[SfX.row] * SfX.data.real + self.Sf.imag[SfX.row] * SfX.data.imag
                 HSf = 2 * csc((HSfdata, (SfX.row, SfX.col)), shape=(self.n_br_mon, self.NV))
 
-                HStdata = self.St.real[SfX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
+                HStdata = self.St.real[StX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
                 HSt = 2 * csc((HStdata, (StX.row, StX.col)), shape=(self.n_br_mon, self.NV))
 
             if self.ntapm != 0:
@@ -1073,7 +1077,7 @@ class NonLinearOptimalPfProblem:
                 HSfdata = self.Sf.real[SfX.row] * SfX.data.real + self.Sf.imag[SfX.row] * SfX.data.imag
                 HSf = 2 * csc((HSfdata, (SfX.row, SfX.col)), shape=(self.n_br_mon, self.NV)) + Hslsf
 
-                HStdata = self.St.real[SfX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
+                HStdata = self.St.real[StX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
                 HSt = 2 * csc((HStdata, (StX.row, StX.col)), shape=(self.n_br_mon, self.NV)) + Hslst
 
             else:
@@ -1084,18 +1088,19 @@ class NonLinearOptimalPfProblem:
                 HSfdata = self.Sf.real[SfX.row] * SfX.data.real + self.Sf.imag[SfX.row] * SfX.data.imag
                 HSf = 2 * csc((HSfdata, (SfX.row, SfX.col)), shape=(self.n_br_mon, self.NV))
 
-                HStdata = self.St.real[SfX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
+                HStdata = self.St.real[StX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
                 HSt = 2 * csc((HStdata, (StX.row, StX.col)), shape=(self.n_br_mon, self.NV))
 
         if self.options.ips_control_q_limits:  # if reactive power control...
             # tanmax curves (simplified capability curves of generators)
-            Hqmaxp = 2 * self.Pg[:self.n_gen_disp_sh]
-            Hqmaxq = 2 * self.Qg[:self.n_gen_disp_sh]
+            Hqmaxp = 2 * self.Pg[:self.n_gen_disp]
+            Hqmaxq = 2 * self.Qg[:self.n_gen_disp]
+
             # Hqmaxv = - 2 * diags(np.power(self.Inom, 2.0)) * self.Cdispgen_t @ diags(
             #     self.Vm)
             Hqmaxv_data = np.power(self.Inom, 2) * self.Vm[self.gen_bus_idx[self.gen_disp_idx]]
             Hqmaxv = csc((- 2 * Hqmaxv_data, (np.arange(self.n_gen_disp), self.gen_bus_idx[self.gen_disp_idx])),
-                               shape=(self.n_gen_disp, self.nbus))
+                         shape=(self.n_gen_disp, self.nbus))
 
             Hqmax = sp.hstack(
                 [lil_matrix((nqct, self.nbus)), Hqmaxv, diags(Hqmaxp), lil_matrix((nqct, self.nsh)), diags(Hqmaxq),
@@ -1162,15 +1167,15 @@ class NonLinearOptimalPfProblem:
             lam_p = lam[0: self.nbus]
             lam_diag_p = diags(lam_p)
 
-            # B_p = np.conj(self.admittances.Ybus @ Vmat)
-            data = self.admittances.Ybus.data * self.V[self.Ybus_indices]
-            B_p = csc_matrix((np.conj(data), self.Ybus_indices, self.Ybus_indptr),
-                             shape=(self.nbus, self.nbus)).transpose()
+            B_p = np.conj(self.admittances.Ybus @ Vmat)
+            # data = self.admittances.Ybus.data * self.V[self.Ybus_indices]
+            # B_p = csc_matrix((np.conj(data), self.Ybus_indices, self.Ybus_indptr),
+            #                  shape=(self.nbus, self.nbus)).transpose()
 
-            # D_p = np.conj(self.admittances.Ybus).T @ Vmat
-            data = np.conj(self.admittances.Ybus.data) * self.V[self.Ybus_cols]
-            D_p = csc_matrix((data, (self.Ybus_cols, self.Ybus_indices)),
-                             shape=(self.nbus, self.nbus)).transpose()
+            D_p = np.conj(self.admittances.Ybus).T @ Vmat
+            # data = np.conj(self.admittances.Ybus.data) * self.V[self.Ybus_cols]
+            # D_p = csc_matrix((data, (self.Ybus_cols, self.Ybus_indices)),
+            #                  shape=(self.nbus, self.nbus)).transpose()
 
             I_p = np.conj(Vmat) @ (D_p @ lam_diag_p - diags(D_p @ lam_p))
             F_p = lam_diag_p @ Vmat @ (B_p - diags(np.conj(Ibus)))
@@ -1413,17 +1418,27 @@ class NonLinearOptimalPfProblem:
             ts_hxx = 0
             te_hxx = 0
 
-        print(1000 * np.array([te_fx - ts_fx,
-                               te_gx - ts_gx,
-                               te_hx - ts_hx,
-                               te_fxx - ts_fxx,
-                               te_gxx - ts_gxx,
-                               te_hxx - ts_hxx]), 100 * np.array([te_fx - ts_fx,
-                                                                  te_gx - ts_gx,
-                                                                  te_hx - ts_hx,
-                                                                  te_fxx - ts_fxx,
-                                                                  te_gxx - ts_gxx,
-                                                                  te_hxx - ts_hxx]) / (te_hxx - ts_fx))
+        # # Save to csv fx, Gx, Hx, fxx, Gxx, Hxx
+        #
+        # fx.tofile('fx_n.csv', sep=',')
+        # Gx.toarray().tofile('Gx_n.csv', sep=',')
+        # Hx.toarray().tofile('Hx_n.csv', sep=',')
+        # fxx.toarray().tofile('fxx_n.csv', sep=',')
+        # Gxx.toarray().tofile('Gxx_n.csv', sep=',')
+        # Hxx.toarray().tofile('Hxx_n.csv', sep=',')
+
+        #
+        # print(1000 * np.array([te_fx - ts_fx,
+        #                        te_gx - ts_gx,
+        #                        te_hx - ts_hx,
+        #                        te_fxx - ts_fxx,
+        #                        te_gxx - ts_gxx,
+        #                        te_hxx - ts_hxx]), 100 * np.array([te_fx - ts_fx,
+        #                                                           te_gx - ts_gx,
+        #                                                           te_hx - ts_hx,
+        #                                                           te_fxx - ts_fxx,
+        #                                                           te_gxx - ts_gxx,
+        #                                                           te_hxx - ts_hxx]) / (te_hxx - ts_fx))
 
         return fx, Gx, Hx, fxx, Gxx, Hxx
 
@@ -1675,11 +1690,11 @@ class NonLinearOptimalPfProblem:
         # pd.DataFrame(Pg_dis).transpose().to_csv('REEresP.csv')
         # pd.DataFrame(Qg_dis).transpose().to_csv('REEresQ.csv')
 
-        Pg = np.zeros(self.ngen)
-        Qg = np.zeros(self.ngen)
+        Pg = np.zeros(self.n_gen_disp_sh)
+        Qg = np.zeros(self.n_gen_disp_sh)
 
-        Pg[self.gen_disp_idx] = self.Pg
-        Qg[self.gen_disp_idx] = self.Qg
+        Pg[self.gen_disp_idx_sh] = self.Pg
+        Qg[self.gen_disp_idx_sh] = self.Qg
         Pg[self.gen_nondisp_idx] = np.real(self.Sg_undis)
         Qg[self.gen_nondisp_idx] = np.imag(self.Sg_undis)
 
@@ -1707,8 +1722,8 @@ class NonLinearOptimalPfProblem:
         tap_phase[self.k_tau] = self.tap_tau
         Pcost = np.zeros(self.ngen + self.nsh)
 
-        Pcost[self.gen_disp_idx] = (self.c0 + self.c1 * Pg[self.gen_disp_idx]
-                                    + self.c2 * np.power(Pg[self.gen_disp_idx], 2.0))
+        Pcost[self.gen_disp_idx_sh] = (self.c0 + self.c1 * Pg[self.gen_disp_idx_sh]
+                                    + self.c2 * np.power(Pg[self.gen_disp_idx_sh], 2.0))
 
         Pcost[self.gen_nondisp_idx] = (self.c0n + self.c1n * np.real(self.Sg_undis)
                                        + self.c2n * np.power(np.real(self.Sg_undis), 2.0))

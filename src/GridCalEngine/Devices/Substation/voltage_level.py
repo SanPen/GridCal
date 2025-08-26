@@ -10,6 +10,10 @@ from GridCalEngine.Devices.Substation.substation import Substation
 
 
 class VoltageLevel(PhysicalDevice):
+    __slots__ = (
+        'Vnom',
+        'substation',
+    )
 
     def __init__(self, name='VoltageLevel',
                  idtag: Union[str, None] = None,

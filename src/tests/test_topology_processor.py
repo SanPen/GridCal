@@ -4,76 +4,13 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 
-import numpy as np
-from scipy.sparse import lil_matrix, csc_matrix
+from scipy.sparse import lil_matrix
 from GridCalEngine.api import *
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.api import power_flow
 from GridCalEngine.Topology.topology import compute_connectivity_flexible
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
-
-
-def test_cn_makes_a_bus() -> None:
-    """
-    Checks if by crating a CN, we also create a bus
-    :return:
-    """
-    grid = MultiCircuit()
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0"))
-
-    assert grid.get_bus_number() == 1
-
-
-def test_cn_makes_a_bus2():
-    """
-    Checks if by crating a CN, with a pre-existing bus, we don't create a new bus
-    """
-    grid = MultiCircuit()
-    b0 = grid.add_bus(dev.Bus(name="B0"))
-
-    assert grid.get_bus_number() == 1
-
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
-
-    assert grid.get_bus_number() == 1
-
-    assert grid.buses[0] == b0
-
-
-def test_busbar_makes_a_bus():
-    """
-    Checks if by crating a busbar, we also create a cn and a bus
-    """
-    grid = MultiCircuit()
-
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
-
-    assert grid.get_connectivity_nodes_number() == 1
-
-    assert grid.get_bus_number() == 1
-
-    assert grid.buses[0] == bb3.cn.bus
-
-
-def test_busbar_makes_a_bus2():
-    """
-    Checks if by crating a busbar using an existing cn, we respect the exiting buses and cn's
-    """
-    grid = MultiCircuit()
-
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0"))
-
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3", cn=cn0))
-
-    assert grid.get_connectivity_nodes_number() == 1
-
-    assert grid.get_bus_number() == 1
-
-    assert grid.connectivity_nodes[0] == bb3.cn
-
-    assert grid.buses[0] == bb3.cn.bus
-
 
 def test_topology_4_nodes_A():
     """
@@ -85,22 +22,19 @@ def test_topology_4_nodes_A():
     b1 = grid.add_bus(dev.Bus(name="B1"))
     b2 = grid.add_bus(dev.Bus(name="B2"))
 
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
-    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
+    cn0 = grid.add_bus(b0)
+    cn1 = grid.add_bus(b1)
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
+    bb3 = grid.add_bus(dev.Bus(name="BB3"))
 
-    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=cn0, bus_to=cn1, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=bb3, active=False))
 
-    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l1 = grid.add_line(dev.Line(name="L1", bus_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=cn1, bus_to=bb3, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
-
-    logger = Logger()
-    grid.process_topology_at(logger=logger)
+    grid.add_generator(api_obj=dev.Generator(P=10), bus=bb3)
 
     """
     After processing,
@@ -129,19 +63,19 @@ def test_topology_4_nodes_B():
     b1 = grid.add_bus(dev.Bus(name="B1"))
     b2 = grid.add_bus(dev.Bus(name="B2"))
 
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
-    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
+    cn0 = grid.add_bus(b0)
+    cn1 = grid.add_bus(b1)
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
+    bb3 = grid.add_bus(dev.Bus(name="BB3"))
 
-    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=cn0, bus_to=cn1, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=bb3, active=True))
 
-    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l1 = grid.add_line(dev.Line(name="L1", bus_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=cn1, bus_to=bb3, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), bus=bb3)
 
     """
     After processing,
@@ -169,19 +103,19 @@ def test_topology_4_nodes_C():
     b1 = grid.add_bus(dev.Bus(name="B1"))
     b2 = grid.add_bus(dev.Bus(name="B2"))
 
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
-    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
+    cn0 = grid.add_bus(b0)
+    cn1 = grid.add_bus(b1)
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
+    bb3 = grid.add_bus(dev.Bus(name="BB3"))
 
-    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=cn0, bus_to=cn1, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=bb3, active=True))
 
-    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l1 = grid.add_line(dev.Line(name="L1", bus_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=cn1, bus_to=bb3, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), bus=bb3)
 
     """
     After processing,
@@ -210,19 +144,19 @@ def test_topology_4_nodes_D():
     b1 = grid.add_bus(dev.Bus(name="B1"))
     b2 = grid.add_bus(dev.Bus(name="B2"))
 
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
-    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
+    cn0 = grid.add_bus(b0)
+    cn1 = grid.add_bus(b1)
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
+    bb3 = grid.add_bus(dev.Bus(name="BB3"))
 
-    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=cn0, bus_to=cn1, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=bb3, active=False))
 
-    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l1 = grid.add_line(dev.Line(name="L1", bus_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=cn1, bus_to=bb3, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), bus=bb3)
 
     """
     After processing,
@@ -253,19 +187,19 @@ def test_topology_4_nodes_E():
 
     # there are buses but some are not used (not referenced by the cn's)
 
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=None))
-    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=None))
+    cn0 = grid.add_bus(dev.Bus(name="CN0"))
+    cn1 = grid.add_bus(dev.Bus(name="CN1"))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
+    bb3 = grid.add_bus(dev.Bus(name="BB3"))
 
-    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=cn0, bus_to=cn1, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=bb3, active=True))
 
-    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l1 = grid.add_line(dev.Line(name="L1", bus_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=cn1, bus_to=bb3, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), bus=bb3)
 
     """
     After processing,
@@ -296,19 +230,19 @@ def test_topology_4_nodes_F():
 
     # there are buses but some are not used (not referenced by the cn's)
 
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=None))
-    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=None))
+    cn0 = grid.add_bus(dev.Bus(name="CN0"))
+    cn1 = grid.add_bus(dev.Bus(name="CN1"))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
+    bb3 = grid.add_bus(dev.Bus(name="BB3"))
 
-    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=cn0, bus_to=cn1, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=bb3, active=True))
 
-    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l1 = grid.add_line(dev.Line(name="L1", bus_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=cn1, bus_to=bb3, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), bus=bb3)
 
     """
     After processing,
@@ -339,19 +273,19 @@ def test_topology_4_nodes_G():
 
     # there are buses but some are not used (not referenced by the cn's)
 
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=None))
-    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=None))
+    cn0 = grid.add_bus(dev.Bus(name="CN0"))
+    cn1 = grid.add_bus(dev.Bus(name="CN1"))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
+    bb3 = grid.add_bus(dev.Bus(name="BB3"))
 
-    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=cn0, bus_to=cn1, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=bb3, active=False))
 
-    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l1 = grid.add_line(dev.Line(name="L1", bus_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=cn1, bus_to=bb3, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), bus=bb3)
 
     """
     After processing,
@@ -382,19 +316,19 @@ def test_topology_4_nodes_H():
 
     # there are buses but some are not used (not referenced by the cn's)
 
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=None))
-    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=None))
+    cn0 = grid.add_bus(dev.Bus(name="CN0"))
+    cn1 = grid.add_bus(dev.Bus(name="CN1"))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
+    bb3 = grid.add_bus(dev.Bus(name="BB3"))
 
-    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=cn0, bus_to=cn1, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=bb3, active=False))
 
-    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l1 = grid.add_line(dev.Line(name="L1", bus_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=cn1, bus_to=bb3, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), bus=bb3)
 
     """
     After processing,
@@ -424,19 +358,19 @@ def test_topology_4_nodes_A2():
     b2 = grid.add_bus(dev.Bus(name="B2"))
     b3 = grid.add_bus(dev.Bus(name="B3"))
 
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
-    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
+    cn0 = grid.add_bus(b0)
+    cn1 = grid.add_bus(b1)
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))  # isolated
+    bb3 = grid.add_bus(dev.Bus(name="BB3"))  # isolated
 
-    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, cn_from=cn0, cn_to=cn1, active=True))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.cn, active=False))
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, active=False))
 
-    l1 = grid.add_line(dev.Line(name="L1", bus_from=b0, bus_to=b2, cn_from=cn0, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l1 = grid.add_line(dev.Line(name="L1", bus_from=b0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)  # isolated
+    grid.add_generator(api_obj=dev.Generator(P=10), bus=bb3)  # isolated
 
     """
     In this test we are connecting to buses and CN,
@@ -470,19 +404,19 @@ def test_topology_4_nodes_B2():
     b2 = grid.add_bus(dev.Bus(name="B2"))
     b3 = grid.add_bus(dev.Bus(name="B3"))
 
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
-    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
+    cn0 = grid.add_bus(b0)
+    cn1 = grid.add_bus(b1)
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))  # isolated
+    bb3 = grid.add_bus(dev.Bus(name="BB3"))  # isolated
 
-    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, cn_from=cn0, cn_to=cn1, active=True))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.cn, active=True))
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, active=True))
 
-    l1 = grid.add_line(dev.Line(name="L1", bus_from=b0, bus_to=b2, cn_from=cn0, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l1 = grid.add_line(dev.Line(name="L1", bus_from=b0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)  # isolated
+    grid.add_generator(api_obj=dev.Generator(P=10), bus=bb3)  # isolated
 
     """
     In this test we are connecting to buses and CN,
@@ -516,19 +450,19 @@ def test_topology_4_nodes_C2():
     b2 = grid.add_bus(dev.Bus(name="B2"))
     b3 = grid.add_bus(dev.Bus(name="B3"))
 
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
-    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
+    cn0 = grid.add_bus(b0)
+    cn1 = grid.add_bus(b1)
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
+    bb3 = grid.add_bus(dev.Bus(name="BB3"))
 
-    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, cn_from=cn0, cn_to=cn1, active=False))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.cn, active=True))
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, active=True))
 
-    l1 = grid.add_line(dev.Line(name="L1", bus_from=b0, bus_to=b2, cn_from=cn0, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l1 = grid.add_line(dev.Line(name="L1", bus_from=b0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), bus=bb3)
 
     """
     In this test we are connecting to buses and CN,
@@ -562,19 +496,19 @@ def test_topology_4_nodes_D2():
     b2 = grid.add_bus(dev.Bus(name="B2"))
     b3 = grid.add_bus(dev.Bus(name="B3"))
 
-    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
-    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
+    cn0 = grid.add_bus(b0)
+    cn1 = grid.add_bus(b1)
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
+    bb3 = grid.add_bus(dev.Bus(name="BB3"))
 
-    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, cn_from=cn0, cn_to=cn1, active=False))
-    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.cn, active=False))
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, active=False))
 
-    l1 = grid.add_line(dev.Line(name="L1", bus_from=b0, bus_to=b2, cn_from=cn0, x=0.05))
-    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, cn_from=cn1, cn_to=bb3.cn, x=0.01))
+    l1 = grid.add_line(dev.Line(name="L1", bus_from=b0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+    grid.add_generator(api_obj=dev.Generator(P=10), bus=bb3)
 
     """
     In this test we are connecting to buses and CN,
@@ -621,35 +555,6 @@ def test_topology_2_nodes_A1():
 
     assert np.equal(nc.generator_data.bus_idx, [0]).all()
     assert np.equal(nc.load_data.bus_idx, [0]).all()
-
-
-def test_topology_2_nodes_A2():
-    """
-    Topology test 2 Node A2
-    """
-    grid = MultiCircuit()
-
-    b0 = grid.add_bus(dev.Bus(name="B0"))
-    b1 = grid.add_bus(dev.Bus(name="B1"))
-
-    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, active=False))
-    grid.add_switch(sw1)
-
-    g1 = grid.add_generator(api_obj=dev.Generator(P=10), bus=b0)
-    ld1 = grid.add_load(api_obj=dev.Load(P=10), bus=b1)
-
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
-
-    """
-    The switch is open, the original buses must remain
-    """
-
-    nc = compile_numerical_circuit_at(grid)
-    nc.process_reducible_branches()
-
-    assert np.equal(nc.generator_data.bus_idx, [0]).all()
-    assert np.equal(nc.load_data.bus_idx, [1]).all()
 
 
 def test_topology_3_nodes_A1() -> None:
@@ -708,7 +613,7 @@ def test_nc_active_works() -> None:
     main_circuit = FileOpen(fname).open()
     nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
 
-    for slv in [SolverType.DC, SolverType.LACPF,
+    for slv in [SolverType.Linear, SolverType.LACPF,
                 SolverType.NR, SolverType.LM, SolverType.PowellDogLeg, SolverType.IWAMOTO, SolverType.HELM,
                 SolverType.FASTDECOUPLED, SolverType.GAUSS]:
         options = PowerFlowOptions(solver_type=slv)
@@ -1009,7 +914,7 @@ def test_lynn_Ybus3() -> None:
     m = nc.passive_branch_data.nelm
     for _ in range(m):
         print("-" * 200)
-        cidx = np.unique(np.random.random_integers(0, m-1, np.random.random_integers(1, m-1, 1)))
+        cidx = np.unique(np.random.random_integers(0, m - 1, np.random.random_integers(1, m - 1, 1)))
 
         nc.passive_branch_data.active[cidx] = 0
 
@@ -1063,6 +968,7 @@ def lst_ok(lst1, lst2):
                 return False
 
         return True
+
 
 def test_island_slicing():
     """

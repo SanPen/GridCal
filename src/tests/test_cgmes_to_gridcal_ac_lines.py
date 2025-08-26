@@ -9,7 +9,6 @@ import pytest
 
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.DataStructures import BusData
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_ac_lines
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
@@ -57,10 +56,8 @@ def cgmes_object():
 def calc_node_dict_object() -> Dict[str, gcdev.Bus]:
     d = dict()
 
-    bus_data = BusData(1)
-    bus_data.Vnom = 10
-    d["tn1"] = bus_data
-    d["tn2"] = bus_data
+    d["tn1"] = gcdev.Bus(Vnom=10)
+    d["tn2"] = gcdev.Bus(Vnom=10)
 
     return d
 
@@ -108,22 +105,24 @@ def test_ac_lines(cgmes_model, calc_node_dict, cn_dict, device_to_terminal_dict,
     multi_circuit = MultiCircuit()
     tn_test.BaseVoltage = BaseVoltage()
     tn_test.BaseVoltage.nominalVoltage = 100
-    get_gcdev_ac_lines(cgmes_model, multi_circuit, calc_node_dict, cn_dict, device_to_terminal_dict, logger, s_base)
+    get_gcdev_ac_lines(cgmes_model=cgmes_model,
+                       gcdev_model=multi_circuit,
+                       bus_dict=calc_node_dict,
+                       device_to_terminal_dict=device_to_terminal_dict,
+                       logger=logger,
+                       Sbase=s_base)
     generated_ac_line = multi_circuit.lines[0]
 
     assert generated_ac_line.B == expected_b
     assert generated_ac_line.B0 == expected_b0
-    assert generated_ac_line.B2 == expected_b2
     assert generated_ac_line.Cost == expected_cost
     assert generated_ac_line.R == expected_r
     assert generated_ac_line.R0 == expected_r0
-    assert generated_ac_line.R2 == expected_r2
     assert generated_ac_line.R_corrected == expected_r_corrected
     assert generated_ac_line.Vf == expected_vf
     assert generated_ac_line.Vt == expected_vt
     assert generated_ac_line.X == expected_x
     assert generated_ac_line.X0 == expected_x0
-    assert generated_ac_line.X2 == expected_x2
     assert generated_ac_line.rate == expected_rate
     assert generated_ac_line.temp_base == expected_temp_base
     assert generated_ac_line.temp_oper == expected_temp_oper

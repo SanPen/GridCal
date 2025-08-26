@@ -12,6 +12,15 @@ class Wire(EditableDevice):
     This class represents a wire (an actual wire)
     to compose towers
     """
+    __slots__ = (
+        '_stranding',
+        '_material',
+        '_diameter',
+        '_diameter_internal',
+        '_is_tube',
+        '_R',
+        '_max_current',
+    )
 
     def __init__(self, name='',
                  idtag: Union[str, None] = None,

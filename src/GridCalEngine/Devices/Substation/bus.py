@@ -8,15 +8,56 @@ from typing import Tuple, Union
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCalEngine.enumerations import BusMode, DeviceType
+from GridCalEngine.enumerations import BusMode, DeviceType, BusGraphicType
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Aggregation import Area, Zone, Country
 from GridCalEngine.Devices.Substation.substation import Substation
+from GridCalEngine.Devices.Substation.busbar import BusBar
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.profile import Profile
 
 
 class Bus(PhysicalDevice):
+    __slots__ = (
+        'active',
+        '_active_prof',
+        'Vnom',
+        'Vmin',
+        'Vm_cost',
+        'Vmax',
+        'Vm0',
+        'Va0',
+        '_Vmin_prof',
+        '_Vmax_prof',
+        'angle_min',
+        'angle_max',
+        'angle_cost',
+        'Qmin_sum',
+        'Qmax_sum',
+        'r_fault',
+        'x_fault',
+        'country',
+        'area',
+        'zone',
+        'substation',
+        '_voltage_level',
+        'type',
+        'is_slack',
+        'is_dc',
+        'x',
+        'y',
+        'h',
+        'w',
+        'longitude',
+        'latitude',
+        'ph_a',
+        'ph_b',
+        'ph_c',
+        'ph_n',
+        'is_grounded',
+        'graphic_type',
+        '_bus_bar'
+    )
 
     def __init__(self, name="Bus",
                  idtag=None,
@@ -45,7 +86,9 @@ class Bus(PhysicalDevice):
                  longitude=0.0,
                  latitude=0.0,
                  Vm0=1,
-                 Va0=0):
+                 Va0=0,
+                 graphic_type: BusGraphicType = BusGraphicType.BusBar,
+                 bus_bar: BusBar | None = None):
         """
         The Bus object is the container of all the possible devices that can be attached to
         a bus bar or Substation. Such objects can be loads, voltage controlled generators,
@@ -67,7 +110,8 @@ class Bus(PhysicalDevice):
         :param active: Is the bus active?
         :param is_slack: Is this bus a slack bus?
         :param is_dc: Is this bus a DC bus?
-        :param is_internal: Is this bus an internal bus? (i.e. the central bus on a 3W transformer, or the bus of a FluidNode)
+        :param is_internal: Is this bus an internal bus?
+                            (i.e. the central bus on a 3W transformer, or the bus of a FluidNode)
         :param is_grounded: Is this bus grounded, i.e., at V=0? Sometimes used for DC buses connected to a VSC
         :param area: Area object
         :param zone: Zone object
@@ -77,6 +121,7 @@ class Bus(PhysicalDevice):
         :param latitude: latitude (deg)
         :param Vm0: initial solution for the voltage module (p.u.)
         :param Va0: initial solution for the voltage angle (rad)
+        :param graphic_type: BusGraphicType to represent the bus in the schematic
         """
 
         PhysicalDevice.__init__(self,
@@ -131,12 +176,19 @@ class Bus(PhysicalDevice):
 
         self._voltage_level: VoltageLevel = voltage_level
 
+        self._bus_bar: BusBar = bus_bar
+
+        if is_internal:
+            self.graphic_type: BusGraphicType = BusGraphicType.Internal
+        else:
+            self.graphic_type: BusGraphicType = graphic_type
+
         if voltage_level is not None:
 
             if voltage_level.Vnom != Vnom:
                 print(f"{self.idtag} {self.name} "
-                f"The nominal voltage of the voltage level is different from bus nominal voltage!"
-                f"{voltage_level.Vnom} != {Vnom}")
+                      f"The nominal voltage of the voltage level is different from bus nominal voltage!"
+                      f"{voltage_level.Vnom} != {Vnom}")
 
             if voltage_level.substation is not None:
                 if substation is None:
@@ -144,7 +196,7 @@ class Bus(PhysicalDevice):
                 else:
                     if substation != voltage_level.substation:
                         print(f"{self.idtag} {self.name} "
-                        f"The substation from the voltage level is different from bus substation!")
+                              f"The substation from the voltage level is different from bus substation!")
 
         # Bus type
         self.type = BusMode.PQ_tpe
@@ -173,6 +225,7 @@ class Bus(PhysicalDevice):
         self.ph_b: bool = True
         self.ph_c: bool = True
         self.ph_n: bool = True
+        self.is_grounded: bool = True
 
         self.register(key='active', units='', tpe=bool, definition='Is the bus active? used to disable the bus.',
                       profile_name='active_prof')
@@ -183,7 +236,7 @@ class Bus(PhysicalDevice):
                       definition='Is this bus part of a composite transformer, '
                                  'such as  a 3-winding transformer or a fluid node?.',
                       profile_name='', old_names=['is_tr_bus', 'is_internal'])
-        self.register(key='is_grounded', units='', tpe=bool, definition='Is this bus solidly grounded?.', profile_name='')
+        self.register(key='graphic_type', units='', tpe=BusGraphicType, definition='Graphic to use in the schematic.')
         self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the bus.', profile_name='')
         self.register(key='Vm0', units='p.u.', tpe=float, definition='Voltage module guess.', profile_name='')
         self.register(key='Va0', units='rad.', tpe=float, definition='Voltage angle guess.', profile_name='')
@@ -219,6 +272,8 @@ class Bus(PhysicalDevice):
                       definition='Substation of the bus.')
         self.register(key='voltage_level', units='', tpe=DeviceType.VoltageLevelDevice,
                       definition='Voltage level of the bus.')
+        self.register(key='bus_bar', units='', tpe=DeviceType.BusBarDevice,
+                      definition='Busbar associated to the bus.')
         self.register(key='longitude', units='deg', tpe=float, definition='longitude of the bus.', profile_name='')
         self.register(key='latitude', units='deg', tpe=float, definition='latitude of the bus.', profile_name='')
 
@@ -226,6 +281,7 @@ class Bus(PhysicalDevice):
         self.register(key='ph_b', units='', tpe=bool, definition='Has phase B?')
         self.register(key='ph_c', units='', tpe=bool, definition='Has phase C?')
         self.register(key='ph_n', units='', tpe=bool, definition='Has phase N?')
+        self.register(key='is_grounded', units='', tpe=bool, definition='Is this bus neutral grounded?.')
 
     @property
     def active_prof(self) -> Profile:
@@ -277,7 +333,6 @@ class Bus(PhysicalDevice):
             self._Vmax_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a Vmax_prof')
-
 
     @property
     def voltage_level(self) -> Union[VoltageLevel, None]:
@@ -409,8 +464,22 @@ class Bus(PhysicalDevice):
 
     @property
     def internal(self):
-        return self._internal
+        return self.graphic_type == BusGraphicType.Internal
 
     @internal.setter
     def internal(self, val: bool):
-        self._internal = val
+        if val:
+            self.graphic_type = BusGraphicType.Internal
+        else:
+            pass
+
+    @property
+    def bus_bar(self) -> BusBar:
+        return self._bus_bar
+
+    @bus_bar.setter
+    def bus_bar(self, val: BusBar):
+        if isinstance(val, BusBar) or val is None:
+            self._bus_bar = val
+        else:
+            raise ValueError("The value must be a BusBar")

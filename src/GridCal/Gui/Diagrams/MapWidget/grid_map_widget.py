@@ -11,7 +11,6 @@ import json
 import numpy as np
 import math
 import pandas as pd
-from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType
 from matplotlib import pyplot as plt
 
 from PySide6.QtWidgets import QGraphicsItem, QMessageBox, QDialog, QVBoxLayout, QLabel, QPushButton
@@ -35,12 +34,14 @@ from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import DeviceType, ResultTypes
+from GridCalEngine.enumerations import DeviceType, ResultTypes, SubstationTypes
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 from GridCalEngine.enumerations import Colormaps
+from GridCalEngine.Topology import substation_wizards as substation_wizards
+import GridCalEngine.Devices.Diagrams.palettes as palettes
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_ac_line import MapAcLine
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_dc_line import MapDcLine
@@ -52,7 +53,6 @@ from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import
 from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget, MapDiagramScene
 from GridCal.Gui.Diagrams.Editors.new_line_dialogue import NewMapLineDialogue
 import GridCal.Gui.Visualization.visualization as viz
-import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
@@ -101,7 +101,7 @@ class MapLibraryModel(QStandardItemModel):
 
         self.substation_name = "Substation"
 
-        self.add(name=self.substation_name, icon_name="bus_icon")
+        self.add(name=self.substation_name, icon_name="substation")
 
     def add(self, name: str, icon_name: str):
         """
@@ -506,7 +506,7 @@ class GridMapWidget(BaseDiagramWidget):
                                                  lat=lat,
                                                  lon=lon,
                                                  index=index,
-                                                 r=0.005)
+                                                 r=self.diagram.min_branch_width)
 
         self.graphics_manager.add_device(elm=api_object, graphic=graphic_object)
 
@@ -521,6 +521,21 @@ class GridMapWidget(BaseDiagramWidget):
         :return: List[SubstationGraphicItem]
         """
         return [s for s in self.map.view.selected_items() if isinstance(s, SubstationGraphicItem)]
+
+    def get_substations(self) -> List[Tuple[int, Substation, SubstationGraphicItem]]:
+        """
+        Get all the substations
+        :return: tuple(substation index, substation_api_object, substation_graphic_object)
+        """
+        lst: List[Tuple[int, Substation, Union[SubstationGraphicItem, None]]] = list()
+        substation_graphics_dict = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
+        substations_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.substations)}
+
+        for bus_idtag, graphic_object in substation_graphics_dict.items():
+            idx, substation = substations_dict[bus_idtag]
+            lst.append((idx, substation, graphic_object))
+
+        return lst
 
     def create_new_line_wizard(self):
         """
@@ -611,6 +626,7 @@ class GridMapWidget(BaseDiagramWidget):
 
             # Delete the substation itself
             self.circuit.delete_substation(obj=api_object)
+
     #
     # def show_devices_to_disconnect_dialog(self,
     #                                       devices: List[ALL_DEV_TYPES],
@@ -945,37 +961,35 @@ class GridMapWidget(BaseDiagramWidget):
         :return:
         """
         kv = self.gui.get_default_voltage()
-        dlg = SubstationDesigner(grid=self.circuit, default_voltage=kv)
+        dlg = SubstationDesigner(grid=self.circuit, default_voltage=kv, lat=lat, lon=lon)
         dlg.exec()
         if dlg.was_ok():
 
-            # create the SE
-            se_object = Substation(name=dlg.get_name(),
-                                   code=dlg.get_code(),
-                                   latitude=lat,
-                                   longitude=lon)
+            se_object, voltage_levels = substation_wizards.create_substation(
+                grid=self.circuit,
+                se_name=dlg.get_name(),
+                se_code=dlg.get_code(),
+                lat=dlg.get_latitude(),
+                lon=dlg.get_longitude(),
+                vl_templates=dlg.get_voltage_levels()
+            )
 
-            self.circuit.add_substation(obj=se_object)
+            # create SE graphic
             substation_graphics = self.add_api_substation(api_object=se_object, lat=lat, lon=lon)
 
-            for vl_template in dlg.get_voltage_levels():
-                # substation_graphics.add_voltage_level()
-                vl = VoltageLevel(name=f"{se_object.name} @{vl_template.voltage} kV VL",
-                                  Vnom=vl_template.voltage,
-                                  substation=se_object)
-                self.circuit.add_voltage_level(vl)
-
-                bus = Bus(name=f"{se_object.name} @{vl_template.voltage} kV bus",
-                          Vnom=vl_template.voltage,
-                          substation=se_object,
-                          voltage_level=vl)
-                self.circuit.add_bus(obj=bus)
-
-                # add the vl graphics
+            # add voltage level graphics
+            for vl in voltage_levels:
                 self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
 
             # sort voltage levels
             substation_graphics.sort_voltage_levels()
+
+            # ask to create a se diagram
+            ok = yes_no_question(title="create substation diagram",
+                                 text="Do you want to finalize the editing of the substation in the schematic?")
+
+            if ok:
+                self.new_substation_diagram(substation=se_object)
 
     def get_branch_width(self) -> float:
         """
@@ -1060,7 +1074,7 @@ class GridMapWidget(BaseDiagramWidget):
         # rescale substations (this is super-fast)
         data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
         for se_key, elm_graphics in data.items():
-            elm_graphics.set_api_object_color()
+            # elm_graphics.set_api_object_color()
             elm_graphics.set_size(r=se_width)
 
         self.diagram_scene.blockSignals(False)
@@ -1106,7 +1120,7 @@ class GridMapWidget(BaseDiagramWidget):
                        vsc_loading: Vec = None,
                        vsc_active: IntVec = None,
                        ma: Vec = None,
-                       theta: Vec = None,
+                       tau: Vec = None,
                        fluid_node_p2x_flow: Vec = None,
                        fluid_node_current_level: Vec = None,
                        fluid_node_spillage: Vec = None,
@@ -1119,7 +1133,8 @@ class GridMapWidget(BaseDiagramWidget):
                        max_branch_width=5,
                        min_bus_width=20,
                        max_bus_width=20,
-                       cmap: palettes.Colormaps = None):
+                       cmap: palettes.Colormaps = None,
+                       is_three_phase: bool = False):
         """
         Color objects based on the results passed
         :param Sbus: Buses power (MVA)
@@ -1142,9 +1157,9 @@ class GridMapWidget(BaseDiagramWidget):
         :param vsc_losses: VSC branch losses [MW]
         :param vsc_loading: VSC Branch loading [%]
         :param vsc_active: VSC Branch status
-        :param loading_label: String saling whatever the loading label means
+        :param loading_label: String saying whatever the loading label means
         :param ma: branch phase shift angle (rad)
-        :param theta: branch tap module (p.u.)
+        :param tau: branch tap module (p.u.)
         :param fluid_node_p2x_flow: P2X flow rate (m3)
         :param fluid_node_current_level: Current level (m3)
         :param fluid_node_spillage: Spillage (m3)
@@ -1158,6 +1173,7 @@ class GridMapWidget(BaseDiagramWidget):
         :param min_bus_width: Minimum bus width [px]
         :param max_bus_width: Maximum bus width [px]
         :param cmap: Color map [palettes.Colormaps]
+        :param is_three_phase: the results are three-phase
         """
 
         # voltage_cmap = viz.get_voltage_color_map()
@@ -1180,13 +1196,13 @@ class GridMapWidget(BaseDiagramWidget):
         arrow_size = self.diagram.arrow_size  # self.get_arrow_scale()
 
         # Try colouring the branches
-        if self.circuit.get_branch_number_wo_hvdc():
+        if self.circuit.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True):
 
             lnorm = np.abs(loadings)
             lnorm[lnorm == np.inf] = 0
             Sfabs = np.abs(Sf)
             Sfnorm = Sfabs / np.max(Sfabs + 1e-20)
-            for i, branch in enumerate(self.circuit.get_branches_wo_hvdc_iter()):
+            for i, branch in enumerate(self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)):
 
                 # try to find the diagram object of the DB object
                 graphic_object: Union[MapAcLine, MapDcLine] = self.graphics_manager.query(branch)
@@ -1517,7 +1533,6 @@ class GridMapWidget(BaseDiagramWidget):
 
         selected_lineloc = self.get_selected_linelocations_tup()
 
-
         if len(selected_lineloc) != 1:
             self.gui.show_error_toast('More than one waypoint selected. Could not determine where '
                                       'the substation should be created.')
@@ -1657,12 +1672,9 @@ class GridMapWidget(BaseDiagramWidget):
                 line2 = Line(name=line.name, code=line.code, bus_from=added_bus, bus_to=line.bus_to,
                              circuit_idx=line.circuit_idx, length=length2)
 
-                template = line.template
-                if isinstance(template, OverheadLineType):
-                    template.compute()
-                line1.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
-
-                line2.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+                if line.template is not None:
+                    line1.apply_template(line.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+                    line2.apply_template(line.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
                 line1.color = line.color
                 line2.color = line.color
@@ -1705,8 +1717,8 @@ class GridMapWidget(BaseDiagramWidget):
 
         line1 = selected_lines[0][0]
         line2 = selected_lines[1][0]
-        line1_graphic = selected_lines[0][1]
-        line2_graphic = selected_lines[1][1]
+        line1_graphic: MapAcLine = selected_lines[0][1]
+        line2_graphic: MapAcLine = selected_lines[1][1]
 
         if line1.template != line2.template:
             self.gui.show_error_toast('Line merging could not be done, lines have different templates. Check if that '
@@ -1738,14 +1750,19 @@ class GridMapWidget(BaseDiagramWidget):
 
             if inpt.is_accepted:
                 circ_idx = inpt.value
-                if circ_idx > line1.template.n_circuits:
-                    self.gui.show_error_toast(f'The circuit id introduced is greater than the maximum id that this '
-                                              f'template can use. The template has {line1.template.n_circuits}, the '
-                                              f'maximum possible value for the circuit_idx is '
-                                              f'{line1.template.n_circuits}, try again.')
-                    return
+                if line1.template is not None:
+
+                    if circ_idx > line1.template.n_circuits:
+                        self.gui.show_error_toast(f'The circuit id introduced is greater than the maximum id that this '
+                                                  f'template can use. The template has {line1.template.n_circuits}, the '
+                                                  f'maximum possible value for the circuit_idx is '
+                                                  f'{line1.template.n_circuits}, try again.')
+                        return
+                    else:
+                        pass
                 else:
                     pass
+
             else:
                 self.gui.show_error_toast(f'Dialogue not accepted. Operation not performed.')
                 return
@@ -1808,7 +1825,8 @@ class GridMapWidget(BaseDiagramWidget):
                         length=line1.length + line2.length, circuit_idx=circ_idx)
         new_line.color = line1.color
 
-        new_line.apply_template(obj=line1.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        if line1.template is not None:
+            new_line.apply_template(obj=line1.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         previous_coordinates = [0, 0]
 
@@ -1823,11 +1841,10 @@ class GridMapWidget(BaseDiagramWidget):
                 pass
 
         self.circuit.add_line(new_line)
-        self.circuit.delete_line(line1)
-        self.circuit.delete_line(line2)
 
-        self.remove_branch_graphic(line=line1_graphic)
-        self.remove_branch_graphic(line=line2_graphic)
+        self.remove_element(device=line1, graphic_object=line1_graphic, delete_from_db=True)
+        self.remove_element(device=line2, graphic_object=line2_graphic, delete_from_db=True)
+
         self.add_api_line(api_object=new_line)
 
         self.gui.show_info_toast(message='Line merging successful!')
@@ -2058,8 +2075,9 @@ class GridMapWidget(BaseDiagramWidget):
                      protection_rating_factor=line_api.protection_rating_factor,
                      circuit_idx=line_api.circuit_idx)
 
-        line1.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
-        line2.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        if line_api.template is not None:
+            line1.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+            line2.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
@@ -2484,8 +2502,9 @@ class GridMapWidget(BaseDiagramWidget):
                      protection_rating_factor=line_api.protection_rating_factor,
                      circuit_idx=line_api.circuit_idx)
 
-        line1.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
-        line2.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        if line_api.template is not None:
+            line1.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+            line2.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
@@ -2526,7 +2545,8 @@ class GridMapWidget(BaseDiagramWidget):
                                protection_rating_factor=line_api.protection_rating_factor,
                                circuit_idx=line_api.circuit_idx)
 
-        connection_line.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        if line_api.template is not None:
+            connection_line.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
@@ -2586,11 +2606,7 @@ class GridMapWidget(BaseDiagramWidget):
         selected_substations = self.get_selected_substations_tup()
 
         if len(selected_lines) != 1 or len(selected_substations) != 2:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Information)
-            msg.setText("Please select exactly one line and two substations.")
-            msg.setWindowTitle("Selection Error")
-            msg.exec()
+            self.gui.show_error_toast(message="Please select exactly one line and two substations.")
             return
 
         # Get the API objects
@@ -2615,11 +2631,7 @@ class GridMapWidget(BaseDiagramWidget):
                     line_api.bus_from = bus
                     break
             if bus_from_idtag_0 == line_api.bus_from.idtag:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Icon.Information)
-                msg.setText("The new substation did not have any valid bus to connect the line.")
-                msg.setWindowTitle("No valid bus")
-                msg.exec()
+                self.gui.show_error_toast(message="The new substation did not have any valid bus to connect the line.")
                 return
 
         elif substation_api_1.idtag == bus_to.substation.idtag:
@@ -2630,11 +2642,7 @@ class GridMapWidget(BaseDiagramWidget):
                     line_api.bus_to = bus
                     break
             if bus_to_idtag_0 == line_api.bus_to.idtag:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Icon.Information)
-                msg.setText("The new substation did not have any valid bus to connect the line.")
-                msg.setWindowTitle("No valid bus")
-                msg.exec()
+                self.gui.show_error_toast(message="The new substation did not have any valid bus to connect the line.")
                 return
 
 
@@ -2646,11 +2654,7 @@ class GridMapWidget(BaseDiagramWidget):
                     line_api.bus_from = bus
                     break
             if bus_from_idtag_0 == line_api.bus_from.idtag:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Icon.Information)
-                msg.setText("The new substation did not have any valid bus to connect the line.")
-                msg.setWindowTitle("No valid bus")
-                msg.exec()
+                self.gui.show_error_toast(message="The new substation did not have any valid bus to connect the line.")
                 return
 
         elif substation_api_2.idtag == bus_to.substation.idtag:
@@ -2661,33 +2665,22 @@ class GridMapWidget(BaseDiagramWidget):
                     line_api.bus_to = bus
                     break
             if bus_to_idtag_0 == line_api.bus_to.idtag:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Icon.Information)
-                msg.setText("The new substation did not have any valid bus to connect the line.")
-                msg.setWindowTitle("No valid bus")
-                msg.exec()
+                self.gui.show_error_toast(message="The new substation did not have any valid bus to connect the line.")
                 return
 
         else:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Information)
-            msg.setText("None of the selected substations are related to the line.")
-            msg.setWindowTitle("No Action")
-            msg.exec()
+            self.gui.show_error_toast(message="None of the selected substations are related to the line.")
             return
 
         # Remove past graphic item and add the new one
 
-        self.remove_branch_graphic(line=line_graphic, delete_from_db=False)
+        self.remove_element(device=line_api, graphic_object=line_graphic, delete_from_db=False)
         line = self.add_api_line(api_object=line_api)
         line.calculate_total_length()
 
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Icon.Information)
-        msg.setText(f"Line {line_api.name} had its connection to substation {removed_substation} changed to substation "
-                    f"{added_substation}.")
-        msg.setWindowTitle("Operation Successful")
-        msg.exec()
+        self.gui.show_info_toast(
+            f"Line {line_api.name} had its connection to substation {removed_substation} changed to substation "
+            f"{added_substation}.")
 
 
 def generate_map_diagram(

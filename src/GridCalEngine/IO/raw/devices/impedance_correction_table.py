@@ -52,7 +52,7 @@ class RawImpedanceCorrectionTable(RawObject):
                     i = 0
                     ln = len(all_data)
                     while k < ln:
-                        if not (all_data[k] == 0 and all_data[k+1] == 0 and all_data[k+2] == 0):
+                        if not (all_data[k] == 0 and all_data[k + 1] == 0 and all_data[k + 2] == 0):
                             self.T.append(all_data[k])
                             self.F_re.append(all_data[k + 1])
                             self.F_im.append(all_data[k + 2])
@@ -63,7 +63,7 @@ class RawImpedanceCorrectionTable(RawObject):
                     k = 0
                     i = 0
                     ln = len(all_data)
-                    while k < ln:
+                    while k < ln - 1:
                         if not (all_data[k] == 0 and all_data[k + 1] == 0 and all_data[k + 2] == 0):
                             self.T.append(all_data[k])
                             self.F_re.append(all_data[k + 1])

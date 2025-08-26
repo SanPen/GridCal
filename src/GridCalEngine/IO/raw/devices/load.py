@@ -169,6 +169,12 @@ class RawLoad(RawObject):
                 (self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
                  self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT,
                  self.DGENP, self.DGENQ, self.LOADTYPE) = data[0]
+
+            elif len(data[0]) == 13:
+                # 1,'1 ',1,11,38,0,1.754,0,0,0,0,115,    /[1 ROANSPRARE 1 LD]/
+                (self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
+                 self.IP, self.IQ, self.YP, self.YQ, self.OWNER, comment) = data[0]
+
             else:
                 raise Exception("PSSe 35 load data came with {} "
                                 "elements and 18 or 17 were expected :/".format(len(data[0])))

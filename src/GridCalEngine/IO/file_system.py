@@ -8,7 +8,7 @@ from pathlib import Path
 
 def get_create_gridcal_folder() -> str:
     """
-    Get the home folder of gridCAl, and if it does not exist, create it
+    Get the home folder of GridCal, and if it does not exist, create it
     :return: folder path string
     """
     home = str(Path.home())

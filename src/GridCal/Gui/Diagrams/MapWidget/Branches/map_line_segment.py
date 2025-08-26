@@ -17,7 +17,7 @@ from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.Diagrams.Editors.line_editor import LineEditor
 
-from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.Devices.types import BRANCH_TYPES, ALL_DEV_TYPES
 from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:
@@ -131,6 +131,13 @@ class MapLineSegment(QGraphicsLineItem):
         :return:
         """
         return [self.container]
+
+    def get_associated_devices(self) -> List[ALL_DEV_TYPES]:
+        """
+        This forwards to the map line container for the appropriate deletion of everything
+        :return:
+        """
+        return [self.container.api_object]
 
     def set_width(self, width: float):
         """

@@ -6,45 +6,13 @@
 import numba as nb
 import numpy as np
 from scipy.sparse import csc_matrix
-from typing import Tuple, Union
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, CscMat
-
-
-# @nb.njit(cache=True)
-# def csc_diagonal_from_array(m, array) -> Tuple[IntVec, IntVec, Union[Vec, CxVec, IntVec]]:
-#     """
-#     Generate CSC sparse diagonal matrix from array
-#     :param m: Size of array
-#     :param array: Array
-#     :return: indices, indptr, data
-#     """
-#     indptr = np.empty(m + 1, dtype=nb.int32)
-#     indices = np.empty(m, dtype=nb.int32)
-#     data = np.empty(m, dtype=nb.complex128)
-#     for i in range(m):
-#         indptr[i] = i
-#         indices[i] = i
-#         data[i] = array[i]
-#     indptr[m] = m
-#
-#     return indices, indptr, data
-
-
-# def diag(x) -> csc_matrix:
-#     """
-#     CSC diagonal matrix from array
-#     :param x:
-#     :return: csc_matrix
-#     """
-#     m = x.shape[0]
-#     indices, indptr, data = csc_diagonal_from_array(m, x)
-#     return csc_matrix((data, indices, indptr), shape=(m, m))
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, CscMat, CxMat
 
 
 @nb.njit(cache=True, fastmath=True)
 def polar_to_rect(Vm, Va) -> CxVec:
     """
-    Convert polar to rectangular corrdinates
+    Convert polar to rectangular coordinates
     :param Vm: Module
     :param Va: Angle in radians
     :return: Polar vector
@@ -68,13 +36,13 @@ def expand(n, arr: Vec, idx: IntVec, default: float) -> Vec:
 
 
 @nb.njit(cache=True, fastmath=True)
-def compute_zip_power(S0: CxVec, I0: CxVec, Y0: CxVec, Vm: Vec) -> CxVec:
+def compute_zip_power(S0: CxVec, I0: CxVec, Y0: CxVec, Vm: CxVec) -> CxVec:
     """
     Compute the equivalent power injection
     :param S0: Base power (P + jQ)
     :param I0: Base current (Ir + jIi)
     :param Y0: Base admittance (G + jB)
-    :param Vm: voltage module
+    :param Vm: voltage module, for the 3ph power flow the complete voltage phasor is used (Vm + Va)
     :return: complex power injection
     """
     return S0 + np.conj(I0 + Y0 * Vm) * Vm
@@ -88,6 +56,25 @@ def compute_power(Ybus: csc_matrix, V: CxVec) -> CxVec:
     :return: Calculated power injections
     """
     return V * np.conj(Ybus @ V)
+
+
+def fortescue_012_to_abc(z0: complex, z1: complex, z2: complex) -> CxMat:
+    """
+    Convert 012 to abc
+    :param z0: zero-sequence impedance
+    :param z1: positive-sequence impedance
+    :param z2: negative-sequence impedance
+    :return: abc impedance matrix
+    """
+
+    a = 1.0 * np.exp(1j * 2 * np.pi / 3)
+    Zabc = 1 / 3 * np.array([
+        [z0 + z1 + z2, z0 + a * z1 + a ** 2 * z2, z0 + a ** 2 * z1 + a * z2],
+        [z0 + a ** 2 * z1 + a * z2, z0 + z1 + z2, z0 + a * z1 + a ** 2 * z2],
+        [z0 + a * z1 + a ** 2 * z2, z0 + a ** 2 * z1 + a * z2, z0 + z1 + z2]
+    ])
+
+    return Zabc
 
 
 @nb.njit(cache=True, fastmath=True)
@@ -204,9 +191,96 @@ def get_It(k: IntVec, V: CxVec, ytf: CxVec, ytt: CxVec, F: IntVec, T: IntVec):
     return np.conj(V[t]) * np.conj(ytt[k]) + np.conj(V[f]) * np.conj(ytf[k])
 
 
+def expand_magnitudes(magnitude: CxVec, lookup: IntVec):
+    """
+    :param magnitude:
+    :param lookup:
+    :return:
+    """
+    n_buses_total = len(lookup)
+    magnitude_expanded = np.zeros(n_buses_total, dtype=complex)
+    for i, value in enumerate(lookup):
+        if value < 0:
+            magnitude_expanded[i] = 0.0 + 0.0j
+        else:
+            magnitude_expanded[i] = magnitude[value]
+
+    return magnitude_expanded
+
+
+def power_flow_post_process_nonlinear_3ph(Sbus: CxVec,
+                                          V: CxVec,
+                                          F: IntVec, T: IntVec,
+                                          pv: IntVec, vd: IntVec,
+                                          Ybus: CscMat, Yf: CscMat, Yt: CscMat,
+                                          Yshunt_bus: CxVec,
+                                          branch_rates: Vec,
+                                          Sbase: float,
+                                          bus_lookup: IntVec,
+                                          branch_lookup: IntVec):
+    """
+
+    :param Sbus:
+    :param V:
+    :param F:
+    :param T:
+    :param pv:
+    :param vd:
+    :param Ybus:
+    :param Yf:
+    :param Yt:
+    :param Yshunt_bus:
+    :param branch_rates:
+    :param Sbase:
+    :param bus_lookup:
+    :param branch_lookup:
+    :return:
+    """
+
+    V_expanded = expand_magnitudes(V, bus_lookup)
+
+    # power at the slack nodes
+    Sbus[vd] = V[vd] * np.conj(Ybus[vd, :] @ V)
+
+    # Reactive power at the pv nodes
+    P_pv = Sbus[pv].real
+    Q_pv = (V[pv] * np.conj(Ybus[pv, :] @ V)).imag
+    Sbus[pv] = P_pv + 1j * Q_pv  # keep the original P injection and set the calculated reactive power for PV nodes
+
+    # Add the shunt power V^2 x Y^*
+    Vm = np.abs(V_expanded)
+    Sbus = np.conj(Yshunt_bus) @ (Vm * Vm)
+    Sbus_expanded = expand_magnitudes(Sbus, bus_lookup)
+
+    # Branches current, loading, etc
+    Vf_expanded = V_expanded[F]
+    Vt_expanded = V_expanded[T]
+
+    If = Yf @ V
+    It = Yt @ V
+    If_expanded = expand_magnitudes(If, branch_lookup)
+    It_expanded = expand_magnitudes(It, branch_lookup)
+
+    Sf_expanded = Vf_expanded * np.conj(If_expanded) * Sbase
+    St_expanded = Vt_expanded * np.conj(It_expanded) * Sbase
+
+    # Branch losses in MVA
+    losses = (Sf_expanded + St_expanded)
+
+    # branch voltage increment
+    Vbranch = Vf_expanded - Vt_expanded
+
+    # Branch loading in p.u.
+    loading = Sf_expanded / (branch_rates + 1e-9)
+
+    return Sf_expanded, St_expanded, If_expanded, It_expanded, Vbranch, loading, losses, Sbus_expanded, V_expanded
+
+
 def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVec,
-                                      pv: IntVec, vd: IntVec, Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
-                                      branch_rates: Vec, Sbase: float):
+                                      pv: IntVec, vd: IntVec,
+                                      Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
+                                      branch_rates: Vec,
+                                      Sbase: float):
     """
 
     :param Sbus:

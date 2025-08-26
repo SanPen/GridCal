@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
+from typing import List
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
 
@@ -28,7 +29,7 @@ class RawZone(RawObject):
                                description="Zone name",
                                max_chars=12)
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data: List[List[str | int | float]], version: int, logger: Logger):
         """
 
         :param data:
@@ -37,10 +38,17 @@ class RawZone(RawObject):
         """
 
         if version >= 29:
-            # I, 'ZONAME'
-            self.I, self.ZONAME = data[0]
+            if len(data[0]) == 2:
 
-            self.ZONAME = self.ZONAME.replace("'", "").strip()
+                self.I, self.ZONAME = data[0]
+
+                self.ZONAME = self.ZONAME.replace("'", "").strip()
+            elif len(data[0]) == 1:
+
+                self.I = data[0]
+            else:
+                logger.add_warning('Undefined number of Zone attributes',
+                                   value=len(data[0]), expected_value=2)
         else:
             logger.add_warning('Zones not defined for version', str(version))
 

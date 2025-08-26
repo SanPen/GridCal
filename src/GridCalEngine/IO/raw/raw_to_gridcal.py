@@ -1110,7 +1110,7 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
         # detect if this branch is actually a transformer
         if branch.should_this_be_a_transformer(branch_connection_voltage_tolerance, logger=logger):
 
-            transformer = branch.get_equivalent_transformer()
+            transformer = branch.get_equivalent_transformer(index=None)
 
             # Add to the circuit
             circuit.add_transformer2w(transformer)

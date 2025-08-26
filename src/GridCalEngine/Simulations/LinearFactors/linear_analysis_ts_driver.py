@@ -2,10 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 
-from typing import Dict, Union
+from typing import Dict, Union, TYPE_CHECKING
 from GridCalEngine.basic_structures import IntVec
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
@@ -14,6 +14,9 @@ from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_results import LinearAnalysisTimeSeriesResults
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
+
+if TYPE_CHECKING:
+    from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
 class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
@@ -48,11 +51,11 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.results = LinearAnalysisTimeSeriesResults(
             n=self.grid.get_bus_number(),
-            m=self.grid.get_branch_number_wo_hvdc(),
+            m=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
             time_array=self.grid.time_profile[self.time_indices],
             bus_names=self.grid.get_bus_names(),
             bus_types=self.grid.get_bus_default_types(),
-            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            branch_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
             clustering_results=self.clustering_results,
         )
 
@@ -84,7 +87,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
                                                                 logger=self.logger)
 
             driver_ = LinearAnalysis(
-                numerical_circuit=nc,
+                nc=nc,
                 distributed_slack=True,
                 correct_values=False,
             )
@@ -93,7 +96,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.S[it, :] = Sbus * nc.Sbase
             self.results.Sf[it, :] = driver_.get_flows(Sbus=Sbus) * nc.Sbase
 
-        rates = self.grid.get_branch_rates_wo_hvdc()
+        rates = self.grid.get_branch_rates()
         self.results.loading = self.results.Sf.real / (rates + 1e-9)
 
         self.toc()

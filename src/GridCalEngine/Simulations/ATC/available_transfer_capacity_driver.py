@@ -46,15 +46,19 @@ def get_proportional_deltas_sensed(P, idx, dP=1.0):
             nD -= P[i]  # store it as positive value
 
     # compute witch proportion to attend with positive and negative sense
-    dPu = nU / (nU + nD)  # positive proportion
-    dPd = nD / (nU + nD)  # negative proportion
+    if (nU + nD) != 0.0:
+        dPu = nU / (nU + nD)  # positive proportion
+        dPd = nD / (nU + nD)  # negative proportion
+    else:
+        dPu = 0.0
+        dPd = 0.0
 
     for i in idx:
 
-        if P[i] > 0:
+        if P[i] > 0 and nU != 0.0:
             deltaP[i] = dP * dPu * P[i] / nU
 
-        if P[i] < 0:
+        if P[i] < 0 and nD != 0.0:
             deltaP[i] = -dP * dPd * P[i] / nD  # P[i] is already negative
 
     return deltaP
@@ -80,23 +84,27 @@ def scale_proportional_sensed(P, idx1, idx2, dT=1.0):
 
 
 @nb.njit()
-def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, bus_a1_idx, bus_a2_idx, dT=1.0, mode=0, lodf=None):
+def compute_dP(P0: Vec,
+               Pgen: Vec,
+               P_installed: Vec,
+               Pload: Vec,
+               bus_a1_idx: IntVec,
+               bus_a2_idx: IntVec,
+               dT: float = 1.0, mode: int = 0) -> Vec:
     """
-    Compute line sensitivity to power transfer
-    :param ptdf: Power transfer distribution factors (n-branch, n-bus)
-    :param lodf: Optional. Line outage distribution factor (n-branch, n-branch). Needed to compute alpha n-1.
+    Compute power injections to compute the inter-area sensitivities
     :param P0: all bus Injections [p.u.]
-    :param Pinstalled: bus generation installed power [p.u.]
     :param Pgen: bus generation current power [p.u.]
+    :param P_installed: bus generation installed power [p.u.]
     :param Pload: bus load power [p.u.]
     :param bus_a1_idx: bus indices of the sending region
     :param bus_a2_idx: bus indices of the receiving region
-    :param dT: Exchange amount
+    :param dT: Exchange amount (MW) usually a unitary increment is sufficient
     :param mode: Type of power shift
                  0: shift generation based on the current generated power
                  1: shift generation based on the installed power
                  2: shift load
-                 3 (or else): shift udasing generation and load
+                 3 (or else): shift using generation and load
 
     :return: Exchange sensitivity vector for all the lines
     """
@@ -107,7 +115,7 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, bus_a1_idx, bus_a2_idx, dT=
 
     elif mode == 1:
         # move the generators based on the installed power
-        P = Pinstalled
+        P = P_installed
 
     elif mode == 2:
         # move the load
@@ -120,28 +128,56 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, bus_a1_idx, bus_a2_idx, dT=
     # compute the bus injection increments due to the exchange
     dPu = get_proportional_deltas_sensed(P, bus_a1_idx, dP=dT)
     dPd = get_proportional_deltas_sensed(P, bus_a2_idx, dP=-dT)
-
     dP = dPu + dPd
 
+    return dP
+
+
+@nb.njit(cache=True)
+def compute_alpha(ptdf: Mat, dP: Vec, dT: float = 1.0) -> Vec:
+    """
+    Compute line sensitivity to power transfer
+    :param ptdf: Power transfer distribution factors (n-branch, n-bus)
+    :param dP: Vector of power increments to used for the power exchange
+    :param dT: Exchange amount (MW) usually a unitary increment is sufficient
+    :return: Exchange sensitivity vector for all the lines
+    """
+
     # compute the line flow increments due to the exchange increment dT in MW
-    dflow = ptdf.dot(dP)
+    dflow = ptdf @ dP
 
     # compute the sensitivity
     alpha = dflow / dT
-    # alpha_n1 = np.zeros((len(alpha), len(alpha)))
-    #
-    # if lodf is not None:
-    #     for m in range(len(alpha)):
-    #         for c in range(len(alpha)):
-    #             if m != c:
-    #                 dflow_n1 = dflow[m] + lodf[m, c] * dflow[c]
-    #                 alpha_c = dflow_n1 / dT
-    #                 alpha_n1[m, c] = alpha_c
 
     return alpha
 
 
-@nb.njit()
+@nb.njit(cache=True)
+def compute_alpha_n1(ptdf: Mat, lodf: Mat, dP: Vec, alpha: Vec, dT=1.0) -> Mat:
+    """
+
+    :param ptdf: Power transfer distribution factors (n-branch, n-bus)
+    :param lodf:
+    :param dP:
+    :param alpha:
+    :param dT:
+    :return:
+    """
+    # compute the line flow increments due to the exchange increment dT in MW
+    dflow = ptdf @ dP
+
+    alpha_n1 = np.zeros((len(alpha), len(alpha)))
+    if lodf is not None:
+        for m in nb.prange(len(alpha)):
+            for c in range(len(alpha)):
+                if m != c:
+                    dflow_n1 = dflow[m] + lodf[m, c] * dflow[c]
+                    alpha_n1[m, c] = dflow_n1 / dT
+
+    return alpha_n1
+
+
+@nb.njit(cache=True)
 def compute_atc_list(br_idx: IntVec, contingency_br_idx: IntVec, lodf: Mat, alpha: Vec, flows: Vec, rates: Vec,
                      contingency_rates: Vec, base_exchange: float, threshold: float,
                      time_idx: int) -> List[
@@ -406,8 +442,10 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         self.options = options
 
         # OPF results
-        rates = self.grid.get_branch_rates_wo_hvdc()
-        self.results = AvailableTransferCapacityResults(br_names=self.grid.get_branch_names_wo_hvdc(),
+        rates = self.grid.get_branch_rates()
+        self.results = AvailableTransferCapacityResults(br_names=self.grid.get_branch_names(add_hvdc=False,
+                                                                                            add_vsc=False,
+                                                                                            add_switch=True),
                                                         bus_names=self.grid.get_bus_names(),
                                                         rates=rates,
                                                         contingency_rates=rates,
@@ -431,7 +469,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
 
         # declare the linear analysis
         linear = LinearAnalysis(
-            numerical_circuit=nc,
+            nc=nc,
             distributed_slack=self.options.distributed_slack,
             correct_values=self.options.correct_values,
         )
@@ -442,10 +480,10 @@ class AvailableTransferCapacityDriver(DriverTemplate):
 
         # declare the results
         self.results = AvailableTransferCapacityResults(
-            br_names=linear.numerical_circuit.passive_branch_data.names,
-            bus_names=linear.numerical_circuit.bus_data.names,
-            rates=nc.Rates,
-            contingency_rates=nc.ContingencyRates,
+            br_names=nc.passive_branch_data.names,
+            bus_names=nc.bus_data.names,
+            rates=nc.passive_branch_data.rates,
+            contingency_rates=nc.passive_branch_data.contingency_rates,
             clustering_results=None
         )
 
@@ -462,14 +500,24 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                       AvailableTransferMode.Load: 2,
                       AvailableTransferMode.GenerationAndLoad: 3}
 
-        alpha = compute_alpha(ptdf=linear.PTDF,
-                              P0=nc.Sbus.real,
-                              Pinstalled=nc.bus_installed_power,
-                              Pgen=nc.generator_data.get_injections_per_bus().real,
-                              Pload=nc.load_data.get_injections_per_bus().real,
-                              bus_a1_idx=idx1b,
-                              bus_a2_idx=idx2b,
-                              mode=mode_2_int[self.options.mode])
+        Sbus = nc.get_power_injections_pu()
+
+        dP = compute_dP(
+            P0=Sbus.real,
+            P_installed=nc.bus_data.installed_power,
+            Pgen=nc.generator_data.get_injections_per_bus().real,
+            Pload=nc.load_data.get_injections_per_bus().real,
+            bus_a1_idx=idx1b,
+            bus_a2_idx=idx2b,
+            mode=mode_2_int[self.options.mode],
+            dT=1.0
+        )
+
+        alpha = compute_alpha(
+            ptdf=linear.PTDF,
+            dP=dP,
+            dT=1.0
+        )
 
         # get flow
         if self.options.use_provided_flows:
@@ -484,7 +532,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
             (Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc,
              loading_hvdc, n_free) = nc.hvdc_data.get_power(Sbase=nc.Sbase, theta=np.zeros(nc.nbus))
 
-            flows = linear.get_flows(nc.Sbus + Shvdc)
+            flows = linear.get_flows(Sbus + Shvdc)
 
         # base exchange
         base_exchange = (self.options.inter_area_branch_sense * flows[self.options.inter_area_branch_idx]).sum()
@@ -501,8 +549,8 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                                   lodf=linear.LODF,
                                   alpha=alpha,
                                   flows=flows,
-                                  rates=nc.Rates,
-                                  contingency_rates=nc.ContingencyRates,
+                                  rates=nc.passive_branch_data.rates,
+                                  contingency_rates=nc.passive_branch_data.contingency_rates,
                                   base_exchange=base_exchange,
                                   time_idx=0,
                                   threshold=self.options.threshold)

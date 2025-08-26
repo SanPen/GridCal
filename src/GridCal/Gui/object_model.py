@@ -3,12 +3,15 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
+
+import datetime
+
 import numpy as np
 from typing import Dict, List, Union
 from PySide6 import QtCore, QtWidgets, QtGui
 from enum import EnumMeta
 from GridCal.Gui.gui_functions import (IntDelegate, ComboDelegate, TextDelegate, FloatDelegate, ColorPickerDelegate,
-                                       ComplexDelegate, LineLocationsDelegate)
+                                       ComplexDelegate, LineLocationsDelegate, DateTimeDelegate)
 from GridCal.Gui.wrappable_table_model import WrappableTableModel
 from GridCalEngine.Devices import Bus, ContingencyGroup
 from GridCalEngine.Devices.Parents.editable_device import GCProp, GCPROP_TYPES
@@ -103,58 +106,63 @@ class ObjectsModel(WrappableTableModel):
             F = self.parent.setItemDelegateForColumn
 
         for i in range(self.c):
-            tpe = self.attribute_types[i]
 
-            if tpe is bool:
-                delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
+            if self.property_list[i].is_color:
+                delegate = ColorPickerDelegate(self.parent)
                 F(i, delegate)
 
-            elif tpe is str:
-
-                if 'color' in self.attributes[i]:
-                    delegate = ColorPickerDelegate(self.parent)
-                else:
-                    delegate = TextDelegate(self.parent)
-
-                F(i, delegate)
-
-            elif tpe is float:
-                delegate = FloatDelegate(self.parent)
-                F(i, delegate)
-
-            elif tpe is int:
-                delegate = IntDelegate(self.parent)
-                F(i, delegate)
-
-            elif tpe is complex:
-                delegate = ComplexDelegate(self.parent)
-                F(i, delegate)
-
-            elif tpe is LineLocations:
-                delegate = LineLocationsDelegate(self.parent)
-                F(i, delegate)
-
-            elif tpe is None:
-                F(i, None)
-                if len(self.non_editable_attributes) == 0:
-                    self.non_editable_attributes.append(self.attributes[i])
-
-            elif isinstance(tpe, EnumMeta):
-                objects = list(tpe)
-                values = [x.value for x in objects]
-                delegate = ComboDelegate(self.parent, objects, values)
-                F(i, delegate)
-
-            elif tpe in self.dictionary_of_lists:
-                # foreign key objects drop-down
-                objs = self.dictionary_of_lists[tpe]
-                delegate = ComboDelegate(parent=self.parent,
-                                         objects=[None] + objs,
-                                         object_names=['None'] + [x.name for x in objs])
+            elif self.property_list[i].is_date:
+                delegate = DateTimeDelegate(self.parent)
                 F(i, delegate)
 
             else:
-                F(i, None)
+                tpe = self.attribute_types[i]
+
+                if tpe is bool:
+                    delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
+                    F(i, delegate)
+
+                elif tpe is str:
+                    delegate = TextDelegate(self.parent)
+                    F(i, delegate)
+
+                elif tpe is float:
+                    delegate = FloatDelegate(self.parent)
+                    F(i, delegate)
+
+                elif tpe is int:
+                    delegate = IntDelegate(self.parent)
+                    F(i, delegate)
+
+                elif tpe is complex:
+                    delegate = ComplexDelegate(self.parent)
+                    F(i, delegate)
+
+                elif tpe is LineLocations:
+                    delegate = LineLocationsDelegate(self.parent)
+                    F(i, delegate)
+
+                elif tpe is None:
+                    F(i, None)
+                    if len(self.non_editable_attributes) == 0:
+                        self.non_editable_attributes.append(self.attributes[i])
+
+                elif isinstance(tpe, EnumMeta):
+                    objects = list(tpe)
+                    values = [x.value for x in objects]
+                    delegate = ComboDelegate(self.parent, objects, values)
+                    F(i, delegate)
+
+                elif tpe in self.dictionary_of_lists:
+                    # foreign key objects drop-down
+                    objs = self.dictionary_of_lists[tpe]
+                    delegate = ComboDelegate(parent=self.parent,
+                                             objects=[None] + objs,
+                                             object_names=['None'] + [x.name for x in objs])
+                    F(i, delegate)
+
+                else:
+                    F(i, None)
 
     def update(self):
         """
@@ -263,16 +271,23 @@ class ObjectsModel(WrappableTableModel):
             return None
 
         if index.isValid():
+            if self.transposed:
+                attr_idx = index.row()
+            else:
+                attr_idx = index.column()
+
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
-                return str(self.data_with_type(index))
+
+                if self.property_list[attr_idx].is_date:
+                    dt = QtCore.QDateTime.fromSecsSinceEpoch(self.data_with_type(index))
+                    formatted_date = dt.toString("yyyy/MM/dd")
+                    return formatted_date
+                else:
+                    return str(self.data_with_type(index))
+
             elif role == QtCore.Qt.ItemDataRole.BackgroundRole:
 
-                if self.transposed:
-                    attr_idx = index.row()
-                else:
-                    attr_idx = index.column()
-
-                if 'color' in self.attributes[attr_idx]:
+                if self.property_list[attr_idx].is_color:
                     return QtGui.QColor(str(self.data_with_type(index)))
 
         return None
@@ -396,7 +411,6 @@ class ObjectsModel(WrappableTableModel):
         """
         Copy the value pointed by the index to all the other cells in the column
         :param index: QModelIndex instance
-        :return:
         """
         value = self.data_with_type(index=index)
         col = index.column()

@@ -5,7 +5,7 @@
 from __future__ import annotations
 import numpy as np
 from typing import List, TYPE_CHECKING
-from PySide6.QtCore import Qt, QPoint
+from PySide6.QtCore import Qt, QPoint, QPointF
 from PySide6.QtGui import QPen, QCursor, QColor
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QMenu, QGraphicsSceneMouseEvent
 
@@ -16,7 +16,6 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.winding_graphics import Windi
 from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCal.Gui.messages import yes_no_question
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.gui_functions import add_menu_entry
 
@@ -51,15 +50,11 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         :param index:
         :param draw_labels:
         """
+        self.h = 100
+        self.w = 100
         GenericDiagramWidget.__init__(self, parent=parent, api_object=elm, editor=editor, draw_labels=True)
-        QGraphicsRectItem.__init__(self, parent=parent)
+        QGraphicsRectItem.__init__(self, 0.0, 0.0, self.w, self.h, parent=parent)
         self.n_windings = 3
-        self.min_w = 180.0
-        self.min_h = 20.0
-        self.offset = 10
-        self.h = 70
-        self.w = 80
-        self.setRect(0.0, 0.0, self.w, self.h)
 
         self.draw_labels = draw_labels
 
@@ -89,16 +84,12 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
             self.setPos(pos)
 
         # windings
-        diameter = self.w * 0.5
-        r = diameter / 2
-        angle_0 = -90
-        d_angle = 360 / self.n_windings
-        angles_deg = [angle_0 + d_angle * i for i in range(self.n_windings)]
-        angles = np.deg2rad(angles_deg)
-        x = r * np.cos(angles) + self.w / 4
-        y = r * np.sin(angles) + self.w / 4
-        xt = diameter * np.cos(angles) + diameter
-        yt = diameter * np.sin(angles) + diameter
+        winding_diameter = 40
+        radius_large = winding_diameter * 0.5
+        radius_small = 5
+        angle_0 = -90.0
+        d_angle = 360.0 / self.n_windings
+        center = QPointF(self.w / 2.0, self.h / 2.0)
 
         self.winding_circles: List[QGraphicsEllipseItem] = list()
         self.terminals: List[RoundTerminalItem] = list()
@@ -107,14 +98,27 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         pen = QPen(self.color, self.pen_width, self.style)
 
         for i in range(self.n_windings):
+            angles_deg = angle_0 + d_angle * i
+            angle_rad = np.deg2rad(angles_deg)
+
+            # Direction vector
+            dx = np.cos(angle_rad)
+            dy = np.sin(angle_rad)
+
+            winding_center_x = center.x() + dx * radius_large - radius_large
+            winding_center_y = center.y() + dy * radius_large - radius_large
+
             # create objects
             winding_circle = QGraphicsEllipseItem(parent=self)
-            winding_circle.setRect(0.0, 0.0, diameter, diameter)
-            winding_circle.setPos(x[i], y[i])
+            winding_circle.setRect(winding_center_x, winding_center_y, winding_diameter, winding_diameter)
 
-            terminal = RoundTerminalItem("t", parent=self, editor=self.editor)
-            terminal.setPos(xt[i], yt[i])
-            terminal.setRotation(angles_deg[i])
+            # Compute offset to make small circle tangent and centered on the same line
+            tangent_center_distance = winding_diameter + radius_small
+            terminal_center_x = center.x() + dx * tangent_center_distance - radius_small
+            terminal_center_y = center.y() + dy * tangent_center_distance - radius_small
+
+            terminal = RoundTerminalItem(name=f"t{i + 1}", parent=self, editor=self.editor, h=10, w=10)
+            terminal.setPos(terminal_center_x, terminal_center_y)
 
             # set objects style
             winding_circle.setPen(pen)
@@ -123,9 +127,6 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
             self.winding_circles.append(winding_circle)
             self.terminals.append(terminal)
             self.connection_lines.append(None)
-
-        # set the graphical objects appropriately
-        # self.api_object.winding1.graphic_obj = self.winding_circles[0]
 
         self.big_marker = None
 
@@ -225,7 +226,7 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
                                            r=self.rotation(),
                                            graphic_object=self)
 
-        self.update_conn()
+        # self.update_conn()
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
@@ -302,7 +303,6 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
                     self._editor.set_active_status_to_profile(self.api_object.winding2, override_question=True)
                     self._editor.set_active_status_to_profile(self.api_object.winding3, override_question=True)
 
-
     def add_big_marker(self, color=Qt.GlobalColor.red, tool_tip_text=""):
         """
         Add a big marker to the bus
@@ -349,14 +349,6 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         x = 0 if np.isnan(x) else int(x)
         y = 0 if np.isnan(y) else int(y)
         self.setPos(QPoint(int(x), int(y)))
-
-    def update_conn(self) -> None:
-        """
-        Update the object
-        """
-        # Arrange line positions
-        for terminal in self.terminals:
-            terminal.process_callbacks(parent_pos=self.pos())
 
     def get_connection_winding(self, from_port: RoundTerminalItem, to_port: RoundTerminalItem):
         """
@@ -411,51 +403,7 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         conn.parent_tr3_graphics_item = self
 
         # update the connection placement
-        self.update_conn()
-        self.mousePressEvent(None)
-
-    def set_connection_cn(self, i: int, cn: ConnectivityNode, conn: WindingGraphicItem, set_voltage: bool = True):
-        """
-        Create the connection with a bus
-        :param i: winding index 0-2
-        :param cn: ConnectivityNode object to connect to
-        :param conn: Connection graphical object [LineGraphicItem]
-        :param set_voltage: Set voltage in the object (Transformer3W and Windings)
-        """
-        if i == 0:
-            self.api_object.cn1 = cn
-            if set_voltage:
-                self.api_object.V1 = cn.Vnom
-            self.connection_lines[0] = conn
-            self.terminals[0].setZValue(-1)
-            conn.api_object = self.api_object.winding1
-            conn.winding_number = 0
-
-        elif i == 1:
-            self.api_object.bus2 = cn
-            if set_voltage:
-                self.api_object.V2 = cn.Vnom
-            self.connection_lines[1] = conn
-            self.terminals[1].setZValue(-1)
-            conn.api_object = self.api_object.winding2
-            conn.winding_number = 1
-
-        elif i == 2:
-            self.api_object.bus3 = cn
-            if set_voltage:
-                self.api_object.V3 = cn.Vnom
-            self.connection_lines[2] = conn
-            self.terminals[2].setZValue(-1)
-            conn.api_object = self.api_object.winding3
-            conn.winding_number = 2
-        else:
-            raise Exception('Unsupported winding index {}'.format(i))
-
-        # set the reverse lookup
-        conn.parent_tr3_graphics_item = self
-
-        # update the connection placement
-        self.update_conn()
+        # self.update_conn()
         self.mousePressEvent(None)
 
     def remove_winding(self, i: int):
@@ -515,7 +463,7 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         Remove this element
         @return:
         """
-        deleted, delete_from_db_final = self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
+        self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
 
     def edit(self):
         """

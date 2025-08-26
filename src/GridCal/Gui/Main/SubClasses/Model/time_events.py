@@ -14,13 +14,13 @@ from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCal.Gui.general_dialogues import NewProfilesStructureDialogue, TimeReIndexDialogue, LogsDialogue
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
-from GridCal.Gui.Main.SubClasses.Model.objects import ObjectsTableMain
+from GridCal.Gui.Main.SubClasses.Model.data_base import DataBaseTableMain
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI, GeneratorsProfileOptionsDialogue
 from GridCal.Gui.profiles_model import ProfilesModel
 
 
-class TimeEventsMain(ObjectsTableMain):
+class TimeEventsMain(DataBaseTableMain):
     """
     Diagrams Main
     """
@@ -32,7 +32,7 @@ class TimeEventsMain(ObjectsTableMain):
         """
 
         # create main window
-        ObjectsTableMain.__init__(self, parent)
+        DataBaseTableMain.__init__(self, parent)
 
         # --------------------------------------------------------------------------------------------------------------
         self.ui.actionre_index_time.triggered.connect(self.re_index_time)
@@ -53,19 +53,14 @@ class TimeEventsMain(ObjectsTableMain):
         self.ui.copy_profile_pushButton.clicked.connect(self.copy_profiles)
         self.ui.paste_profiles_pushButton.clicked.connect(self.paste_profiles)
 
-        # combobox chnage
-        self.ui.device_type_magnitude_comboBox.currentTextChanged.connect(self.display_profiles)
+        # combobox change
+        self.ui.device_type_magnitude_comboBox.currentTextChanged.connect(self.profile_device_type_changed)
 
     def profile_device_type_changed(self):
         """
         profile_device_type_changed
         """
-        dev_type = self.get_db_object_selected_type()
-
-        if dev_type is not None:
-            mdl = gf.get_list_model(self.circuit.profile_magnitudes[dev_type][0])
-            self.ui.device_type_magnitude_comboBox.setModel(mdl)
-            self.ui.device_type_magnitude_comboBox_2.setModel(mdl)
+        self.display_profiles(proxy_mdl=self.get_current_objects_model_view())
 
     def new_profiles_structure(self):
         """
@@ -83,7 +78,7 @@ class TimeEventsMain(ObjectsTableMain):
                                          step_unit=step_unit,
                                          time_base=time_base)
 
-            self.display_profiles()
+            self.display_profiles(proxy_mdl=self.get_current_objects_model_view())
 
             self.update_date_dependent_combos()
 
@@ -139,7 +134,7 @@ class TimeEventsMain(ObjectsTableMain):
 
                     # set up sliders
                     self.update_date_dependent_combos()
-                    self.display_profiles()
+                    self.display_profiles(proxy_mdl=self.get_current_objects_model_view())
                     self.show_info_toast("Profiles imported", duration=3000)
 
                     # ask to update active profile when magnitude is P for generators and loads
@@ -339,7 +334,7 @@ class TimeEventsMain(ObjectsTableMain):
                             else:
                                 print(f"P or Q profile None in {elm.name}")
 
-                        self.display_profiles()
+                        self.display_profiles(proxy_mdl=self.get_current_objects_model_view())
 
                 else:
                     # rejected the operation
@@ -437,7 +432,7 @@ class TimeEventsMain(ObjectsTableMain):
 
                 # set up sliders
                 self.update_date_dependent_combos()
-                self.display_profiles()
+                self.display_profiles(proxy_mdl=self.get_current_objects_model_view())
 
                 if logger.has_logs():
                     dialogue = LogsDialogue(name="Import profiles", logger=logger)
@@ -486,7 +481,6 @@ class TimeEventsMain(ObjectsTableMain):
 
         if mdl is not None:
             mdl.copy_to_clipboard(cols=list(cols))
-            print('Copied!')
         else:
             warning_msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
 

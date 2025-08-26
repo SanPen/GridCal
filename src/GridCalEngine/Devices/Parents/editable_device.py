@@ -14,7 +14,9 @@ from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, Wind
                                         CpfParametrization, CpfStopAt, InvestmentEvaluationMethod, SolverType,
                                         InvestmentsEvaluationObjectives, NodalCapacityMethod, TimeGrouping,
                                         ZonalGrouping, MIPSolvers, AcOpfMode, SubstationTypes, BranchGroupTypes,
-                                        BranchImpedanceMode, FaultType, TapChangerTypes, ContingencyOperationTypes)
+                                        BranchImpedanceMode, FaultType, TapChangerTypes, ContingencyOperationTypes,
+                                        WindingType, MethodShortCircuit, PhasesShortCircuit, ShuntConnectionType,
+                                        BusGraphicType, SwitchGraphicType)
 
 # types that can be assigned to a GridCal property
 GCPROP_TYPES = Union[
@@ -48,7 +50,14 @@ GCPROP_TYPES = Union[
     Type[SubstationTypes],
     Type[ContingencyOperationTypes],
     Type[BranchGroupTypes],
-    Type[ConverterControlType]
+    Type[ConverterControlType],
+    Type[WindingType],
+    Type[MethodShortCircuit],
+    Type[PhasesShortCircuit],
+    Type[DeviceType],
+    Type[ShuntConnectionType],
+    Type[BusGraphicType],
+    Type[SwitchGraphicType]
 ]
 
 
@@ -83,7 +92,7 @@ def parse_idtag(val: Union[str, None]) -> str:
         return str(val)
 
 
-def smart_compare(a, b, atol = 1.e-10):
+def smart_compare(a, b, atol=1.e-10):
     """
     Compares two Python objects with tolerance for numerical values.
 
@@ -113,7 +122,9 @@ class GCProp:
                  profile_name: str = '',
                  display: bool = True,
                  editable: bool = True,
-                 old_names: List[str] = None):
+                 old_names: List[str] = None,
+                 is_color: bool = False,
+                 is_date: bool = False):
         """
         GridCal property
         :param prop_name:
@@ -123,6 +134,8 @@ class GCProp:
         :param profile_name: name of the associated profile property
         :param display: Display the property in the GUI
         :param editable: Is this editable?
+        :param is_color: Is this a color? i.e. the tpe is str, but it represents a color
+        :param is_date: Is this a date? i.e. the tpe is int but represents a date
         """
 
         self.name = prop_name
@@ -138,6 +151,10 @@ class GCProp:
         self.display = display
 
         self.editable = editable
+
+        self.is_color = is_color
+
+        self.is_date = is_date
 
         self.old_names = old_names if old_names is not None else list()
 
@@ -210,19 +227,36 @@ class EditableDevice:
     """
     This is the main device class from which all inherit
     """
+    __slots__ = (
+        '_idtag',
+        '_name',
+        '_code',
+        '_rdfid',
+        'device_type',
+        'comment',
+        'action',
+        'selected_to_merge',
+        'property_list',
+        'registered_properties',
+        'non_editable_properties',
+        'properties_with_profile',
+        '__auto_update_enabled',
+    )
 
     def __init__(self,
                  name: str,
                  idtag: Union[str, None],
                  code: str,
                  device_type: DeviceType,
-                 comment: str = ""):
+                 comment: str = "",
+                 rdfid: str = ""):
         """
         Class to generalize any editable device
         :param name: Asset's name
-        :param device_type: DeviceType instance
         :param idtag: unique ID, if not provided it is generated
         :param code: alternative code to identify this object in other databases (i.e. psse number tec...)
+        :param device_type: DeviceType instance
+        :param rdfid: RDFID code optional
         """
 
         self._idtag = parse_idtag(val=idtag)
@@ -230,6 +264,8 @@ class EditableDevice:
         self._name: str = name
 
         self._code: str = code
+
+        self._rdfid = rdfid
 
         self.device_type: DeviceType = device_type
 
@@ -257,6 +293,7 @@ class EditableDevice:
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='name', units='', tpe=str, definition='Name of the device.')
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
+        self.register(key='rdfid', units='', tpe=str, definition='RDF ID for further compatibility')
         self.register(key='action', units='', tpe=ActionType,
                       definition='Object action to perform.\nOnly used for model merging.',
                       display=False)
@@ -352,9 +389,17 @@ class EditableDevice:
         """
         self._code = val
 
+    @property
+    def rdfid(self) -> str:
+        return self._rdfid
+
+    @rdfid.setter
+    def rdfid(self, val: str):
+        self._rdfid = val
+
     def flatten_idtag(self):
         """
-        Remove useless undercore and
+        Remove useless underscore (_) and dash (-)
         :return:
         """
         self._idtag = self._idtag.replace('_', '').replace('-', '')
@@ -372,14 +417,17 @@ class EditableDevice:
         Convert the idtag to RDFID
         :return: UUID converted to RDFID
         """
-        lenghts = [8, 4, 4, 4, 12]
-        chunks = list()
-        s = 0
-        for length_ in lenghts:
-            a = self.idtag[s:s + length_]
-            chunks.append(a)
-            s += length_
-        return "-".join(chunks)
+        if len(self._rdfid) == 0:
+            lenghts = [8, 4, 4, 4, 12]
+            chunks = list()
+            s = 0
+            for length_ in lenghts:
+                a = self.idtag[s:s + length_]
+                chunks.append(a)
+                s += length_
+            return "-".join(chunks)
+        else:
+            return self.rdfid
 
     def register(self,
                  key: str,
@@ -389,7 +437,9 @@ class EditableDevice:
                  profile_name: str = '',
                  display: bool = True,
                  editable: bool = True,
-                 old_names: List[str] = None):
+                 old_names: List[str] = None,
+                 is_color: bool = False,
+                 is_date: bool = False):
         """
         Register property
         The property must exist, and if provided, the profile_name property must exist too
@@ -401,6 +451,8 @@ class EditableDevice:
         :param display: display this property?
         :param editable: is this editable?
         :param old_names: List of old names
+        :param is_color: is this a color property?
+        :param is_date: Is this a date property?
         """
         assert (hasattr(self, key))  # the property must exist, this avoids bugs when registering
 
@@ -412,7 +464,9 @@ class EditableDevice:
                       profile_name=profile_name,
                       display=display,
                       editable=editable,
-                      old_names=old_names)
+                      old_names=old_names,
+                      is_color=is_color,
+                      is_date=is_date)
 
         if key in self.registered_properties.keys():
             raise Exception(f"Property {key} already registered!")
@@ -812,8 +866,13 @@ class EditableDevice:
         except TypeError:
             new_obj = tpe()
 
-        for prop_name, value in self.__dict__.items():
+        for prop_name, gc_prop in self.registered_properties.items():
+            value = getattr(self, prop_name)
             setattr(new_obj, prop_name, value)
+
+            if gc_prop.has_profile():
+                my_prof = getattr(self, gc_prop.profile_name)
+                setattr(new_obj, gc_prop.profile_name, my_prof.copy())
 
         if forced_new_idtag:
             new_obj.idtag = uuid.uuid4().hex
@@ -873,7 +932,7 @@ class EditableDevice:
                                 device=self.idtag + ":" + self.name,
                                 device_property=prop.name,
                                 value=str(new_obj))
-                
+
     def compare(self, other: Any,
                 logger: Logger,
                 detailed_profile_comparison=False,

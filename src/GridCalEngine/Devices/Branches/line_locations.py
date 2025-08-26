@@ -62,6 +62,8 @@ class LineLocations(EditableDevice):
     LineLocations
     """
 
+    __slots__ = ("data")
+
     def __init__(self,
                  name: str = "",
                  idtag: Union[str, None] = None,

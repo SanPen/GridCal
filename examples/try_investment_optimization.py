@@ -12,6 +12,7 @@ import GridCalEngine.Simulations as sim
 from GridCalEngine.enumerations import InvestmentEvaluationMethod, ResultTypes, DeviceType
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
+from trunk.acdc_pf.generalized_wip.acdc_generalized_9_lynn import problem
 
 
 # Define investment power lines in the grid
@@ -41,7 +42,7 @@ def add_investments_to_grid(grid):
     for i, line in enumerate(lines_list):
         grid.add_line(line)
         inv_group = dev.InvestmentsGroup(name='Ig' + str(i))
-        investment = dev.Investment(device_idtag=line.idtag, name='Investment' + str(i), CAPEX=1,
+        investment = dev.Investment(device=line, name='Investment' + str(i), CAPEX=1,
                                     group=inv_group)  # template=line.possible_tower_types[:]
         grid.add_investment(investment)
         grid.add_investments_group(inv_group)
@@ -80,7 +81,9 @@ def add_random_lines_investments(grid, num_lines):
                         r=0.02, x=0.2, b=0.02, rate=10, cost=2)
 
         inv_group = dev.InvestmentsGroup(name=f'Ig_rand_{i}')
-        investment = dev.Investment(device_idtag=line.idtag, name=f'Investment_rand_{i}', CAPEX=i % 3 + 1,
+        investment = dev.Investment(device=line,
+                                    name=f'Investment_rand_{i}',
+                                    CAPEX=i % 3 + 1,
                                     group=inv_group)
 
         # Add the line and investments to the grid
@@ -95,7 +98,7 @@ def obtain_random_points(grid, num_random_combinations, pf_options):
     list_length = len(grid.investments_groups)
     combinations_list = [[random.choice([0, 1]) for _ in range(list_length)] for _ in range(num_random_combinations)]
 
-    investments_by_group = grid.get_investmenst_by_groups_index_dict()
+    investments_by_group = grid.get_investment_by_groups_index_dict()
 
     results = []
 
@@ -171,7 +174,8 @@ if __name__ == "__main__":
 
     print(6 * len(grid.investments))
     options = sim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=6 * len(grid.investments), pf_options=pf_options)
-    inv = sim.InvestmentsEvaluationDriver(grid, options=options)
+    problem = sim.PowerFlowInvestmentProblem(grid=grid, pf_options=pf_options)
+    inv = sim.InvestmentsEvaluationDriver(grid, options=options, problem=problem)
     inv.run()
 
     inv_results = inv.results

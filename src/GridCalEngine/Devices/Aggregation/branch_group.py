@@ -8,6 +8,9 @@ from GridCalEngine.enumerations import BranchGroupTypes
 
 
 class BranchGroup(EditableDevice):
+    __slots__ = (
+        '_group_type',
+    )
 
     def __init__(self,
                  name='',

@@ -66,6 +66,8 @@ class ActiveBranchData:
         Slice branch data by given indices
         :param elm_idx: array of branch indices
         :param bus_idx: array of bus indices
+        :param bus_map: array of bus indices to re index main to island indices
+        :param logger: Logger (optional)
         :return: new BranchData instance
         """
 
@@ -97,9 +99,8 @@ class ActiveBranchData:
                 data.tap_controlled_buses[k] = bus_map[data.tap_controlled_buses[k]]
                 if data.tap_controlled_buses[k] == -1:
                     if logger is not None:
-                        logger.add_error(f"Branch {k}, {self.names[k]} is controlling a bus from another island ",
-                                         value=data.F[k])
-
+                        logger.add_error(f"Branch {k}, is controlling a bus from another island ",
+                                         value=data.tap_controlled_buses[k])
 
         return data
 
@@ -140,19 +141,3 @@ class ActiveBranchData:
         :return:
         """
         return self.tap_module * np.exp(1.0j * self.tap_angle)
-
-    def get_controlled_idx(self) -> IntVec:
-        """
-        Get the controlled device indices
-        :return: IntVec
-        """
-        return np.where(self.is_controlled == 1)[0]
-    
-    def get_fixed_idx(self) -> IntVec:
-        """
-        Get the fixed device indices
-        :return: IntVec
-        """
-        return np.where(self.is_controlled == 0)[0]
-
-

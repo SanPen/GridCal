@@ -20,7 +20,7 @@ from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget import schematic_widget
 
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, BRANCH_TYPES
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices import VoltageLevel
 from GridCalEngine.Devices.Substation.substation import Substation
@@ -73,14 +73,9 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         self.line_container = None
         self.editor: GridMapWidget = editor  # reassign for the types to be clear
 
-        r2 = size / 2
+        r2 = size / 2.0
         x, y = editor.to_x_y(lat=lat, lon=lon)  # upper left corner
-        self.setRect(
-            x - r2,
-            y - r2,
-            self.size,
-            self.size
-        )
+        self.setRect(x - r2, y - r2, self.size, self.size)
 
         # Enable hover events for the item
         self.setAcceptHoverEvents(True)
@@ -94,16 +89,40 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         self.change_pen_width(0.05 * size)
 
         # Create a pen with reduced line width
-        self.color = QColor(self.api_object.color)
-        self.color.setAlpha(128)
-        self.hoover_color = QColor(self.api_object.color)
-        self.hoover_color.setAlpha(180)
-        self.border_color = QColor(self.api_object.color)  # No Alpha
+        self._color = QColor(self.api_object.color)
+        self._color.setAlpha(128)
+        self._hoover_color = QColor(self.api_object.color)
+        self._hoover_color.setAlpha(180)
+        self._border_color = QColor(self.api_object.color)  # No Alpha
 
         self.set_default_color()
 
         # list of voltage levels graphics
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
+
+    @property
+    def color(self) -> QColor:
+        return self._color
+
+    @color.setter
+    def color(self, val: QColor):
+        self._color = val
+
+    @property
+    def hover_color(self) -> QColor:
+        return self._hoover_color
+
+    @hover_color.setter
+    def hover_color(self, val: QColor):
+        self._hoover_color = val
+
+    @property
+    def border_color(self) -> QColor:
+        return self._border_color
+
+    @border_color.setter
+    def border_color(self, val: QColor):
+        self._border_color = val
 
     @property
     def api_object(self) -> Substation:
@@ -182,8 +201,8 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         self.color = QColor(self.api_object.color)
         self.color.setAlpha(128)
 
-        self.hoover_color = QColor(self.api_object.color)
-        self.hoover_color.setAlpha(180)
+        self.hover_color = QColor(self.api_object.color)
+        self.hover_color.setAlpha(180)
 
         self.border_color = QColor(self.api_object.color)  # No Alpha
 
@@ -315,17 +334,15 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         Event handler for when the mouse enters the item.
         """
         # self.editor.map.view.in_item = True
-        self.set_color(self.hoover_color, self.color)
+        self.color_widget(self.color, self.hover_color)
         self.hovered = True
 
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
         Event handler for when the mouse leaves the item.
         """
-        # self.editor.map.view.in_item = False
         self.hovered = False
-        self.set_default_color()
-        # QApplication.instance().restoreOverrideCursor()
+        self.color_widget(self.color, self.border_color)
 
     def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
         """
@@ -453,7 +470,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         devs = list()
         # find associated Branches in reverse order
         for obj in substation_buses:
-            for branch_list in self.editor.circuit.get_branch_lists():
+            for branch_list in self.editor.circuit.get_branch_lists(add_vsc=True, add_hvdc=True, add_switch=True):
                 for i in range(len(branch_list) - 1, -1, -1):
                     if branch_list[i].bus_from == obj:
                         devs.append(branch_list[i])
@@ -756,7 +773,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         pen.setWidthF(width)
         self.setPen(pen)
 
-    def set_color(self, inner_color: QColor = None, border_color: QColor = None) -> None:
+    def color_widget(self, inner_color: QColor = None, border_color: QColor = None) -> None:
         """
 
         :param inner_color:
@@ -778,7 +795,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         :return:
         """
         # Example: color assignment
-        self.set_color(self.color, self.border_color)
+        self.color_widget(self.color, self.border_color)
 
     def open_street_view(self):
         """
@@ -795,22 +812,53 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         :return:
         """
         associated_buses = self.editor.circuit.get_substation_buses(substation=self.api_object)
-        associated_buses_graphics = list()
         associated_lines_graphics: List[MapLineContainer] = list()
+        for line in self.editor.circuit.lines:
+            if line.bus_to in associated_buses or line.bus_from in associated_buses:
+                associated_lines_graphics.append(self.editor.graphics_manager.query(elm=line))
 
         # TODO: Connectivity nodes / busbars? Probably this is only when dealing with the schematic
 
-        for bus in associated_buses:
-            associated_buses_graphics.append(self.editor.graphics_manager.query(elm=bus))
+        # for bus in associated_buses:
+        #     associated_buses_graphics.append(self.editor.graphics_manager.query(elm=bus))
 
-        for segment in self.get_hosting_line_segments():
-            associated_lines_graphics.append(segment.container)
+        # for segment in self.get_hosting_line_segments():
+        #     associated_lines_graphics.append(segment.container)
 
         return self.voltage_level_graphics + associated_lines_graphics
+
+    def get_associated_devices(self) -> List[ALL_DEV_TYPES]:
+        """
+        This function returns all the api_object devices associated with the selected graphic object.
+        :return: List of the associated devices.
+        """
+        associated_vl = [vl.api_object for vl in self.voltage_level_graphics]
+        associated_buses = self.editor.circuit.get_substation_buses(substation=self.api_object)
+        associated_branches: List[BRANCH_TYPES] = list()
+        associated_shunts: List[INJECTION_DEVICE_TYPES] = list()
+
+        for branch in self.editor.circuit.get_branches():
+            if branch.bus_to in associated_buses or branch.bus_from in associated_buses:
+                associated_branches.append(branch)
+
+        for inj in self.editor.circuit.get_injection_devices_iter():
+            if inj.bus in associated_buses:
+                associated_shunts.append(inj)
+
+        # TODO: Connectivity nodes / busbars? Probably this is only when dealing with the schematic
+
+        # for bus in associated_buses:
+        #     associated_buses_graphics.append(self.editor.graphics_manager.query(elm=bus))
+
+        # for segment in self.get_hosting_line_segments():
+        #     associated_lines_graphics.append(segment.container)
+
+        return associated_vl + associated_branches + associated_shunts + associated_buses
 
     def delete(self):
         """
 
         :return:
         """
+
         self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)

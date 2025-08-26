@@ -24,7 +24,7 @@ Vec = npt.NDArray[np.float64]
 CxVec = npt.NDArray[np.complex128]
 StrVec = npt.NDArray[np.str_]
 ObjVec = npt.NDArray[np.object_]
-Mat = npt.NDArray[np.float64]  # no way yet to say it is 2D
+Mat = npt.NDArray[np.float64] | np.ndarray[tuple[int, int], np.dtype[np.float64]]  # no way yet to say it is 2D
 CxMat = npt.NDArray[np.complex128]  # no way yet to say it is 2D
 IntMat = npt.NDArray[np.int_]  # no way yet to say it is 2D
 StrMat = npt.NDArray[np.str_]  # no way yet to say it is 2D
@@ -304,6 +304,9 @@ class LogEntry:
                                                  self.device,
                                                  self.value,
                                                  self.expected_value)
+
+    def __repr__(self):
+        return self.msg
 
 
 class Logger:
@@ -701,6 +704,8 @@ class ConvergenceReport:
                 'Iterations': self.iterations_}
 
         return pd.DataFrame(data)
+
+
 
 
 def get_list_dim(a: List[Any]) -> int:

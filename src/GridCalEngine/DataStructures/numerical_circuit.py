@@ -53,6 +53,8 @@ ALL_STRUCTS = Union[
 ]
 
 
+
+
 @nb.njit(cache=True)
 def build_reducible_branches_C_coo(F: IntVec, T: IntVec, reducible: IntVec, active: IntVec):
     """
@@ -270,6 +272,122 @@ def build_branches_C_coo_3(bus_active: IntVec,
 
     return i[:ii], j[:ii], data[:ii], nelm
 
+@nb.njit(cache=True)
+def build_q_limits(nbus: int, Sbase: float,
+                   gen_idx, q_min_gen, q_max_gen, active_gen, controllable_gen,
+                   batt_idx, q_min_batt, q_max_batt, active_batt,controllable_batt,
+                   sh_idx, q_min_sh, q_max_sh, active_sh, controllable_sh,
+                   hvdc_f, hvdc_t, q_min_hvdc_f, q_max_hvdc_f, q_min_hvdc_t, q_max_hvdc_t, active_hvdc):
+    """
+
+    :param nbus:
+    :param Sbase:
+    :param gen_idx:
+    :param q_min_gen:
+    :param q_max_gen:
+    :param active_gen:
+    :param batt_idx:
+    :param q_min_batt:
+    :param q_max_batt:
+    :param active_batt:
+    :param sh_idx:
+    :param q_min_sh:
+    :param q_max_sh:
+    :param active_sh:
+    :param hvdc_f:
+    :param hvdc_t:
+    :param q_min_hvdc_f:
+    :param q_max_hvdc_f:
+    :param q_min_hvdc_t:
+    :param q_max_hvdc_t:
+    :param active_hvdc:
+    :return:
+    """
+    max_mask = np.zeros(nbus, dtype=nb.int32)
+    Qmax_bus = np.full(nbus, 1e-20)
+
+    min_mask = np.zeros(nbus, dtype=nb.int32)
+    Qmin_bus = np.full(nbus, 1e20)
+
+    for i, qmin, qmax, active, controllable in zip(gen_idx, q_min_gen, q_max_gen, active_gen, controllable_gen):
+
+        if active and controllable:
+            if max_mask[i] == 0:
+                Qmax_bus[i] = qmax / Sbase
+            else:
+                Qmax_bus[i] += qmax / Sbase
+
+            if min_mask[i] == 0:
+                Qmin_bus[i] = qmin / Sbase
+            else:
+                Qmin_bus[i] += qmin / Sbase
+
+            max_mask[i] += 1
+            min_mask[i] += 1
+
+    for i, qmin, qmax, active, controllable in zip(batt_idx, q_min_batt, q_max_batt, active_batt, controllable_batt):
+
+        if active and controllable:
+            if max_mask[i] == 0:
+                Qmax_bus[i] = qmax / Sbase
+            else:
+                Qmax_bus[i] += qmax / Sbase
+
+            if min_mask[i] == 0:
+                Qmin_bus[i] = qmin / Sbase
+            else:
+                Qmin_bus[i] += qmin / Sbase
+
+            max_mask[i] += 1
+            min_mask[i] += 1
+
+    for i, qmin, qmax, active, controllable in zip(sh_idx, q_min_sh, q_max_sh, active_sh, controllable_sh):
+
+        if active and controllable:
+            if max_mask[i] == 0:
+                Qmax_bus[i] = qmax / Sbase
+            else:
+                Qmax_bus[i] += qmax / Sbase
+
+            if min_mask[i] == 0:
+                Qmin_bus[i] = qmin / Sbase
+            else:
+                Qmin_bus[i] += qmin / Sbase
+
+            max_mask[i] += 1
+            min_mask[i] += 1
+
+    for f, t, qmin_f, qmax_f, qmin_t, qmax_t, active in zip(hvdc_f, hvdc_t, q_min_hvdc_f, q_max_hvdc_f,
+                                                            q_min_hvdc_t, q_max_hvdc_t, active_hvdc):
+
+        if active:
+            if max_mask[f] == 0:
+                Qmax_bus[f] = qmax_f / Sbase
+            else:
+                Qmax_bus[f] += qmax_f / Sbase
+
+            if min_mask[f] == 0:
+                Qmin_bus[f] = qmin_f / Sbase
+            else:
+                Qmin_bus[f] += qmin_f / Sbase
+
+            max_mask[f] += 1
+            min_mask[f] += 1
+
+            if max_mask[t] == 0:
+                Qmax_bus[t] = qmax_t / Sbase
+            else:
+                Qmax_bus[t] += qmax_t / Sbase
+
+            if min_mask[t] == 0:
+                Qmin_bus[t] = qmin_t / Sbase
+            else:
+                Qmin_bus[t] += qmin_t / Sbase
+
+            max_mask[t] += 1
+            min_mask[t] += 1
+
+    return Qmax_bus, Qmin_bus
 
 def check_arr(arr: Vec | IntVec | BoolVec | CxVec,
               arr_expected: Vec | IntVec | BoolVec | CxVec,
@@ -927,11 +1045,14 @@ class NumericalCircuit:
             Ct=self.passive_branch_data.Ct.tocsc(),
         )
 
-    def get_linear_admittance_matrices(self, indices: SimulationIndices) -> ycalc.LinearAdmittanceMatrices:
+    def get_linear_admittance_matrices(self, indices: SimulationIndices | None = None) -> ycalc.LinearAdmittanceMatrices:
         """
+        Get the linear admittances
+        :return:LinearAdmittanceMatrices
+        """
+        if indices is None:
+            indices = self.get_simulation_indices()
 
-        :return:
-        """
         return ycalc.compute_linear_admittances(
             nbr=self.nbr,
             X=self.passive_branch_data.X,
@@ -949,33 +1070,64 @@ class NumericalCircuit:
         compute the reactive power limits in place
         :return: Qmax_bus, Qmin_bus in per unit
         """
-        # generators
-        Qmax_bus = self.generator_data.get_qmax_per_bus()
-        Qmin_bus = self.generator_data.get_qmin_per_bus()
+        # # generators
+        # Qmax_bus = self.generator_data.get_qmax_per_bus()
+        # Qmin_bus = self.generator_data.get_qmin_per_bus()
+        #
+        # if self.nbatt > 0:
+        #     # batteries
+        #     Qmax_bus += self.battery_data.get_qmax_per_bus()
+        #     Qmin_bus += self.battery_data.get_qmin_per_bus()
+        #
+        # if self.nhvdc > 0:
+        #     # hvdc from
+        #     Qmax_bus += self.hvdc_data.get_qmax_from_per_bus()
+        #     Qmin_bus += self.hvdc_data.get_qmin_from_per_bus()
+        #
+        #     # hvdc to
+        #     Qmax_bus += self.hvdc_data.get_qmax_to_per_bus()
+        #     Qmin_bus += self.hvdc_data.get_qmin_to_per_bus()
+        #
+        # if self.nshunt > 0:
+        #     Qmax_bus += self.shunt_data.get_qmax_per_bus()
+        #     Qmin_bus += self.shunt_data.get_qmin_per_bus()
+        #
+        # # fix zero values
+        # Qmax_bus[Qmax_bus == 0] = 1e20
+        # Qmin_bus[Qmin_bus == 0] = -1e20
+        #
+        # return Qmax_bus / self.Sbase, Qmin_bus / self.Sbase
 
-        if self.nbatt > 0:
-            # batteries
-            Qmax_bus += self.battery_data.get_qmax_per_bus()
-            Qmin_bus += self.battery_data.get_qmin_per_bus()
+        Qmax_bus, Qmin_bus = build_q_limits(
+            nbus=self.bus_data.nbus,
+            Sbase=self.Sbase,
+            gen_idx=self.generator_data.bus_idx,
+            q_min_gen=self.generator_data.qmin,
+            q_max_gen=self.generator_data.qmax,
+            active_gen=self.generator_data.active,
+            controllable_gen=self.generator_data.controllable,
 
-        if self.nhvdc > 0:
-            # hvdc from
-            Qmax_bus += self.hvdc_data.get_qmax_from_per_bus()
-            Qmin_bus += self.hvdc_data.get_qmin_from_per_bus()
+            batt_idx=self.battery_data.bus_idx,
+            q_min_batt=self.battery_data.qmin,
+            q_max_batt=self.battery_data.qmax,
+            active_batt=self.battery_data.active,
+            controllable_batt=self.battery_data.controllable,
 
-            # hvdc to
-            Qmax_bus += self.hvdc_data.get_qmax_to_per_bus()
-            Qmin_bus += self.hvdc_data.get_qmin_to_per_bus()
+            sh_idx=self.shunt_data.bus_idx,
+            q_min_sh=self.shunt_data.qmin,
+            q_max_sh=self.shunt_data.qmax,
+            active_sh=self.shunt_data.active,
+            controllable_sh=self.shunt_data.controllable,
 
-        if self.nshunt > 0:
-            Qmax_bus += self.shunt_data.get_qmax_per_bus()
-            Qmin_bus += self.shunt_data.get_qmin_per_bus()
-
-        # fix zero values
-        Qmax_bus[Qmax_bus == 0] = 1e20
-        Qmin_bus[Qmin_bus == 0] = -1e20
-
-        return Qmax_bus / self.Sbase, Qmin_bus / self.Sbase
+            hvdc_f=self.hvdc_data.F,
+            hvdc_t=self.hvdc_data.T,
+            q_min_hvdc_f=self.hvdc_data.Qmin_f,
+            q_max_hvdc_f=self.hvdc_data.Qmax_f,
+            q_min_hvdc_t=self.hvdc_data.Qmin_t,
+            q_max_hvdc_t=self.hvdc_data.Qmax_t,
+            active_hvdc=self.hvdc_data.active
+        )
+        return Qmax_bus, Qmin_bus
 
     def get_structure(self, structure_type: str) -> pd.DataFrame:
         """
@@ -1134,9 +1286,9 @@ class NumericalCircuit:
             )
 
         elif structure_type == 'Yseries':
-            adm = self.get_admittance_matrices()
+            adms = self.get_series_admittance_matrices()
             df = pd.DataFrame(
-                data=adm.Yseries.toarray(),
+                data=adms.Yseries.toarray(),
                 columns=self.bus_data.names,
                 index=self.bus_data.names,
             )
@@ -1390,7 +1542,7 @@ class NumericalCircuit:
         """
 
         if consider_hvdc_as_island_links:
-            i, j, data, n_elm = build_branches_C_coo_3(
+            i, j, data, n_elm = tp.build_branches_C_coo_3(
                 bus_active=self.bus_data.active,
                 F1=self.passive_branch_data.F, T1=self.passive_branch_data.T, active1=self.passive_branch_data.active,
                 F2=self.vsc_data.F_dcp, T2=self.vsc_data.T_ac, active2=self.vsc_data.active,
@@ -1404,7 +1556,7 @@ class NumericalCircuit:
             # )
 
             # To treat VSC with a link between AC and DCP, and between DCP and DCN
-            i, j, data, n_elm = build_branches_C_coo_3(
+            i, j, data, n_elm = tp.build_branches_C_coo_3(
                 bus_active=self.bus_data.active,
                 F1=self.passive_branch_data.F, T1=self.passive_branch_data.T, active1=self.passive_branch_data.active,
                 F2=self.vsc_data.F_dcp, T2=self.vsc_data.T_ac, active2=self.vsc_data.active,
@@ -1420,7 +1572,7 @@ class NumericalCircuit:
         Process the reducible branches (i.e. reduce branches like the switches) in-place
         :return: Number of reduced branches
         """
-        i, j, data, n_red = build_reducible_branches_C_coo(
+        i, j, data, n_red = tp.build_reducible_branches_C_coo(
             F=self.passive_branch_data.F,
             T=self.passive_branch_data.T,
             reducible=self.passive_branch_data.reducible,
@@ -1589,7 +1741,7 @@ class NumericalCircuit:
         Compare this numerical circuit with another numerical circuit
         :param nc_2: other NumericalCircuit
         :param tol: tolerance for numerical values
-        :return: Logger with the errors and warning events
+        :return: all ok?, Logger with the errors and warning events
         """
 
         logger = Logger()
@@ -1625,7 +1777,7 @@ class NumericalCircuit:
         check_arr(self.bus_data.Vbus.real, nc_2.bus_data.Vbus.real, tol, 'BusData', 'V0', logger)
         check_arr(self.bus_data.installed_power, nc_2.bus_data.installed_power, tol, 'BusData', 'installed power',
                   logger)
-        check_arr(self.bus_data.bus_types, nc_2.bus_data.bus_types, tol, 'BusData', 'types', logger)
+        check_arr(self.bus_data.bus_types, nc_2.bus_data.bus_types, tol, 'BusData', 'bus_types', logger)
 
         # generator data
         check_arr(self.generator_data.active, nc_2.generator_data.active, tol, 'GenData', 'active', logger)
@@ -1650,11 +1802,13 @@ class NumericalCircuit:
         # --------------------------------------------------------------------------------------------------------------
         #  Compare arrays and data
         # --------------------------------------------------------------------------------------------------------------
-        sim_idx = self.get_simulation_indices()
-        sim_idx2 = nc_2.get_simulation_indices()
 
         Sbus = self.get_power_injections_pu()
         Sbus2 = nc_2.get_power_injections_pu()
+
+        # the .copy() is so that bus_types is not affected after using this
+        sim_idx = self.get_simulation_indices(Sbus=Sbus.copy(), bus_types=self.bus_data.bus_types.copy())
+        sim_idx2 = nc_2.get_simulation_indices(Sbus=Sbus2.copy(), bus_types=nc_2.bus_data.bus_types.copy())
 
         check_arr(Sbus.real, Sbus2.real, tol, 'Pbus', 'P', logger)
         check_arr(Sbus.imag, Sbus2.imag, tol, 'Qbus', 'Q', logger)
@@ -1688,19 +1842,17 @@ class NumericalCircuit:
     def get_structural_ntc(self, bus_a1_idx: IntVec, bus_a2_idx: IntVec) -> float:
         """
         Get the structural NTC
-        :param bus_a1_idx: list of buses of the area from
-        :param bus_a2_idx: list of buses of the area to
+        :param bus_a1_idx: array of bus indices of the area from
+        :param bus_a2_idx: array of bus indices of the area to
         :return: structural NTC in MVA
         """
-
-        inter_area_branches = self.passive_branch_data.get_inter_areas(bus_idx_from=bus_a1_idx, bus_idx_to=bus_a2_idx)
         sum_ratings = 0.0
-        for k, sense in inter_area_branches:
-            sum_ratings += self.passive_branch_data.rates[k]
 
-        inter_area_hvdcs = self.hvdc_data.get_inter_areas(bus_idx_from=bus_a1_idx, bus_idx_to=bus_a2_idx)
-        for k, sense in inter_area_hvdcs:
-            sum_ratings += self.hvdc_data.rates[k]
+        for struct in [self.passive_branch_data, self.hvdc_data, self.vsc_data]:
+
+            inter_area_branches = struct.get_inter_areas(bus_idx_from=bus_a1_idx, bus_idx_to=bus_a2_idx)
+            for k, sense in inter_area_branches:
+                sum_ratings += struct.rates[k]
 
         return sum_ratings
 

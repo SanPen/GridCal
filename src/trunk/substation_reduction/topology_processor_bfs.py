@@ -17,9 +17,9 @@ def createExampleGridDiagram1() -> MultiCircuit:
     cn_dict = {}
     for i in range(5):
         bb = dev.BusBar(name='BB{}'.format(i + 1))
-        bb.cn.name = 'T{}'.format(i + 1)
+        bb.bus.name = 'T{}'.format(i + 1)
         bus_bar_dict['BB{}'.format(i + 1)] = bb
-        cn_dict[bb.cn.name] = bb.cn  # each busbar has an internal connectivity node
+        cn_dict[bb.bus.name] = bb.bus  # each busbar has an internal connectivity node
         grid.add_bus_bar(bb)  # both the bar and the internal cn are added to the grid
 
     for i in range(5, 11):  # create the rest of terminals
@@ -75,9 +75,9 @@ def createExampleGridTest1() -> MultiCircuit:
     cn_dict = {}
     for i in range(4):
         bb = dev.BusBar(name='BB{}'.format(i + 1))
-        bb.cn.name = 'T{}'.format(i + 1)
+        bb.bus.name = 'T{}'.format(i + 1)
         bus_bar_dict['BB{}'.format(i + 1)] = bb
-        cn_dict[bb.cn.name] = bb.cn  # each busbar has an internal connectivity node
+        cn_dict[bb.bus.name] = bb.bus  # each busbar has an internal connectivity node
         grid.add_bus_bar(bb)  # both the bar and the internal cn are added to the grid
 
     for i in range(4, 7):  # create the rest of terminals
@@ -130,9 +130,9 @@ def createExampleGridTest2() -> MultiCircuit:
     cn_dict = {}
     for i in range(5):
         bb = dev.BusBar(name='BB{}'.format(i + 1))
-        bb.cn.name = 'T{}'.format(i + 1)
+        bb.bus.name = 'T{}'.format(i + 1)
         bus_bar_dict['BB{}'.format(i + 1)] = bb
-        cn_dict[bb.cn.name] = bb.cn  # each busbar has an internal connectivity node
+        cn_dict[bb.bus.name] = bb.bus  # each busbar has an internal connectivity node
         grid.add_bus_bar(bb)  # both the bar and the internal cn are added to the grid
 
     for i in range(5, 11):  # create the rest of terminals

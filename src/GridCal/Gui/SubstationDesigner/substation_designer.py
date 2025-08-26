@@ -11,26 +11,8 @@ from GridCal.Gui.SubstationDesigner.substation_designer_gui import Ui_Dialog
 from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice
-from GridCalEngine.enumerations import DeviceType, SubstationTypes
-import GridCalEngine.Devices as dev
-
-
-class VoltageLevelTemplate(EditableDevice):
-
-    def __init__(self, name='', code='', idtag: str | None = None,
-                 device_type=DeviceType.GenericArea, voltage: float = 10):
-        EditableDevice.__init__(self,
-                                name=name,
-                                code=code,
-                                idtag=idtag,
-                                device_type=device_type)
-
-        self.vl_type: SubstationTypes = SubstationTypes.SingleBar
-        self.voltage: float = voltage
-
-        self.register(key='vl_type', units='', tpe=SubstationTypes, definition='longitude.', editable=True)
-        self.register(key='voltage', units='KV', tpe=float, definition='Voltage.', editable=True)
+from GridCalEngine.Devices.Substation.voltage_level_template import VoltageLevelTemplate
+from GridCalEngine.enumerations import DeviceType
 
 
 class SubstationDesigner(QtWidgets.QDialog):
@@ -38,7 +20,10 @@ class SubstationDesigner(QtWidgets.QDialog):
     SubstationDesigner
     """
 
-    def __init__(self, grid: MultiCircuit, default_voltage: float = 10.0, parent=None):
+    def __init__(self, grid: MultiCircuit,
+                 default_voltage: float = 10.0,
+                 lat: float = 0.0, lon: float = 0.0,
+                 parent=None):
         """
 
         :param parent:
@@ -52,6 +37,9 @@ class SubstationDesigner(QtWidgets.QDialog):
 
         self.default_voltage = default_voltage
 
+        self.ui.latdoubleSpinBox.setValue(lat)
+        self.ui.londoubleSpinBox.setValue(lon)
+
         self._accepted = False
 
         self.ui.se_name_lineEdit.setText(f"Substation {self.grid.get_substation_number()}")
@@ -60,7 +48,7 @@ class SubstationDesigner(QtWidgets.QDialog):
         obj1 = VoltageLevelTemplate(name="VL", voltage=self.default_voltage,
                                     device_type=DeviceType.VoltageLevelTemplate)
 
-        self.property_list = [obj1.property_list[i] for i in [1, 5, 6]]
+        self.property_list = [obj1.property_list[i] for i in [1, 5, 6, 7, 8, 9, 10]]
 
         self.mdl = ObjectsModel(objects=[obj1],
                                 property_list=self.property_list,
@@ -144,6 +132,12 @@ class SubstationDesigner(QtWidgets.QDialog):
         """
         return self.mdl.objects
 
+    def get_latitude(self):
+        return self.ui.latdoubleSpinBox.value()
+
+    def get_longitude(self):
+        return self.ui.londoubleSpinBox.value()
+
     def was_ok(self) -> bool:
         """
         Get if to create substation
@@ -168,7 +162,8 @@ class SubstationDesigner(QtWidgets.QDialog):
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    window = SubstationDesigner(None)
+    grid_ = MultiCircuit()
+    window = SubstationDesigner(grid=grid_)
     # window.resize(int(1.61 * 700.0), int(600.0))  # golden ratio
     window.show()
     sys.exit(app.exec())

@@ -320,4 +320,5 @@ class HiGHS(LpSolver):
         :param kwargs:
         :return:
         """
-        raise constants.PulpSolverError("HiGHS: Resolving is not supported")
+        # raise constants.PulpSolverError("HiGHS: Resolving is not supported")
+        self.actualSolve(lp=lp)

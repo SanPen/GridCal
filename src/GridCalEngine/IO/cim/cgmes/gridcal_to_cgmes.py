@@ -10,63 +10,70 @@ import GridCalEngine.Devices as gcdev
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices import MultiCircuit
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
-from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, Base
+from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
+import GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_2_4_15_assets as cgmes24
+import GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_3_0_0_assets as cgmes30
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
-    (create_cgmes_dc_tp_node, create_cgmes_terminal,
-     create_cgmes_load_response_char, create_cgmes_current_limit,
-     create_cgmes_location, create_cgmes_generating_unit,
-     create_cgmes_regulating_control, create_cgmes_tap_changer_control,
-     create_sv_power_flow, create_cgmes_vsc_converter,
-     create_cgmes_dc_line_segment, create_cgmes_dc_line, create_cgmes_dc_node,
-     create_cgmes_acdc_converter_terminal,
-     create_cgmes_conform_load_group, create_cgmes_operational_limit_type,
-     create_cgmes_sub_load_area,
-     create_cgmes_non_conform_load_group, create_cgmes_nonlinear_sc_point,
-     create_sv_shunt_compensator_sections)
+from GridCalEngine.IO.cim.cgmes.cgmes_typing import CGMES_ASSETS, is_term
+from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import (create_cgmes_dc_tp_node, create_cgmes_terminal,
+                                                               create_cgmes_load_response_char,
+                                                               create_cgmes_current_limit,
+                                                               create_cgmes_location, create_cgmes_generating_unit,
+                                                               create_cgmes_regulating_control,
+                                                               create_cgmes_tap_changer_control,
+                                                               create_sv_power_flow, create_cgmes_vsc_converter,
+                                                               create_cgmes_dc_line_segment, create_cgmes_dc_line,
+                                                               create_cgmes_dc_node,
+                                                               create_cgmes_acdc_converter_terminal,
+                                                               create_cgmes_conform_load_group,
+                                                               create_cgmes_operational_limit_type,
+                                                               create_cgmes_sub_load_area,
+                                                               create_cgmes_non_conform_load_group,
+                                                               create_cgmes_nonlinear_sc_point,
+                                                               create_sv_shunt_compensator_sections)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (RegulatingControlModeKind,
                                                     TransformerControlMode)
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import (
-    SynchronousMachineOperatingMode,
-    SynchronousMachineKind,
-    LimitTypeKind, OperationalLimitDirectionKind)
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import (SynchronousMachineOperatingMode,
+                                                    SynchronousMachineKind,
+                                                    LimitTypeKind, OperationalLimitDirectionKind)
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (find_object_by_uuid,
                                                     find_object_by_vnom,
                                                     find_object_by_cond_eq_uuid,
                                                     get_ohm_values_power_transformer,
-                                                    find_tn_by_name,
                                                     find_object_by_attribute)
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import \
-    compute_zip_power
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import \
-    PowerFlowResults
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_zip_power
+from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.enumerations import (TapChangerTypes,
-                                        TapPhaseControl,
-                                        TapModuleControl)
-
-
-# region Convert functions from MC to CC
+from GridCalEngine.enumerations import CGMESVersions
+from GridCalEngine.enumerations import (TapChangerTypes, TapPhaseControl, TapModuleControl)
 
 
 def get_cgmes_geograpical_regions(multi_circuit_model: MultiCircuit,
                                   cgmes_model: CgmesCircuit,
+                                  ver: CGMESVersions,
                                   logger: DataLogger):
     """
 
     :param multi_circuit_model:
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
     for mc_class in [multi_circuit_model.countries, multi_circuit_model.areas]:
         for mc_elm in mc_class:
-            object_template = cgmes_model.get_class_type("GeographicalRegion")
-            geo_region = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+            if ver == CGMESVersions.v2_4_15:
+                geo_region = cgmes24.GeographicalRegion(rdfid=form_rdfid(mc_elm.idtag))
+            elif ver == CGMESVersions.v3_0_0:
+                geo_region = cgmes30.GeographicalRegion(rdfid=form_rdfid(mc_elm.idtag))
+            else:
+                raise NotImplemented()
+
             geo_region.name = mc_elm.name
             geo_region.description = mc_elm.code
-
             cgmes_model.add(geo_region)
+
     if len(cgmes_model.cgmes_assets.GeographicalRegion_list) == 0:
         logger.add_error(
             msg='Country or Area is not defined and GeographicalRegion cannot be exported',
@@ -74,13 +81,15 @@ def get_cgmes_geograpical_regions(multi_circuit_model: MultiCircuit,
             comment="The CGMES export will not be valid!")
 
 
-def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
-                                     cgmes_model: CgmesCircuit,
-                                     logger: DataLogger):
+def get_cgmes_sub_geographical_regions(multi_circuit_model: MultiCircuit,
+                                       cgmes_model: CgmesCircuit,
+                                       ver: CGMESVersions,
+                                       logger: DataLogger):
     """
 
     :param multi_circuit_model:
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
@@ -88,9 +97,16 @@ def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
     for mc_class in [multi_circuit_model.communities,
                      multi_circuit_model.zones]:
         for mc_elm in mc_class:
-            object_template = cgmes_model.get_class_type(
-                "SubGeographicalRegion")
-            sub_geo_region = object_template(rdfid=form_rdfid(mc_elm.idtag))
+            # object_template = cgmes_model.get_class_type("SubGeographicalRegion")
+            # sub_geo_region = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+            if ver == CGMESVersions.v2_4_15:
+                sub_geo_region = cgmes24.SubGeographicalRegion(rdfid=form_rdfid(mc_elm.idtag))
+            elif ver == CGMESVersions.v3_0_0:
+                sub_geo_region = cgmes30.SubGeographicalRegion(rdfid=form_rdfid(mc_elm.idtag))
+            else:
+                raise NotImplemented()
+
             sub_geo_region.name = mc_elm.name
             sub_geo_region.description = mc_elm.code
 
@@ -107,19 +123,19 @@ def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
                 object_list=cgmes_model.cgmes_assets.GeographicalRegion_list,
                 target_uuid=region_id
             )
-            if region is not None:
+            if isinstance(region, cgmes_model.assets.GeographicalRegion):
                 sub_geo_region.Region = region
             else:
-                try:
-                    sub_geo_region.Region = \
-                        cgmes_model.cgmes_assets.GeographicalRegion_list[0]
-                except:
+                if len(cgmes_model.cgmes_assets.GeographicalRegion_list) > 0:
+                    sub_geo_region.Region = cgmes_model.cgmes_assets.GeographicalRegion_list[0]
+                else:
                     sub_geo_region.Region = None
-                logger.add_warning(
-                    msg='GeographicalRegion not found for SubGeographicalRegion',
-                    device_class="SubGeographicalRegion")
+
+                logger.add_warning(msg='GeographicalRegion not found for SubGeographicalRegion',
+                                   device_class="SubGeographicalRegion")
 
             cgmes_model.add(sub_geo_region)
+
     if len(cgmes_model.cgmes_assets.SubGeographicalRegion_list) == 0:
         logger.add_error(
             msg='Community or Zone is not defined and SubGeographicalRegion cannot be exported',
@@ -127,11 +143,14 @@ def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
             comment="The CGMES export will not be valid!")
 
 
-def get_base_voltage_from_boundary(cgmes_model: CgmesCircuit, vnom: float):
+def get_base_voltage_from_boundary(cgmes_model: CgmesCircuit,
+                                   vnom: float,
+                                   ver: CGMESVersions, ):
     """
 
     :param cgmes_model:
     :param vnom:
+    :param ver:
     :return:
     """
     bv_list = cgmes_model.elements_by_type_boundary.get("BaseVoltage")
@@ -144,24 +163,33 @@ def get_base_voltage_from_boundary(cgmes_model: CgmesCircuit, vnom: float):
 
 def get_cgmes_base_voltages(multi_circuit_model: MultiCircuit,
                             cgmes_model: CgmesCircuit,
+                            ver: CGMESVersions,
                             logger: DataLogger) -> None:
     """
 
     :param multi_circuit_model:
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
     base_volt_set = set()
     for bus in multi_circuit_model.buses:
 
-        if bus.Vnom not in base_volt_set and get_base_voltage_from_boundary(
-                cgmes_model, vnom=bus.Vnom) is None:
+        if bus.Vnom not in base_volt_set and get_base_voltage_from_boundary(cgmes_model, bus.Vnom, ver) is None:
             base_volt_set.add(bus.Vnom)
 
             new_rdf_id = get_new_rdfid()
-            object_template = cgmes_model.get_class_type("BaseVoltage")
-            base_volt = object_template(rdfid=new_rdf_id)
+            # object_template = cgmes_model.get_class_type("BaseVoltage")
+            # base_volt = object_template(rdfid=new_rdf_id)
+
+            if ver == CGMESVersions.v2_4_15:
+                base_volt = cgmes24.BaseVoltage(rdfid=new_rdf_id)
+            elif ver == CGMESVersions.v3_0_0:
+                base_volt = cgmes30.BaseVoltage(rdfid=new_rdf_id)
+            else:
+                raise NotImplemented()
+
             base_volt.name = f'_BV_{int(bus.Vnom)}'
             base_volt.nominalVoltage = bus.Vnom
 
@@ -171,17 +199,27 @@ def get_cgmes_base_voltages(multi_circuit_model: MultiCircuit,
 
 def get_cgmes_substations(multi_circuit_model: MultiCircuit,
                           cgmes_model: CgmesCircuit,
+                          ver: CGMESVersions,
                           logger: DataLogger) -> None:
     """
 
     :param multi_circuit_model:
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
     for mc_elm in multi_circuit_model.substations:
-        object_template = cgmes_model.get_class_type("Substation")
-        substation = object_template(rdfid=form_rdfid(mc_elm.idtag))
+        # object_template = cgmes_model.get_class_type("Substation")
+        # substation = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+        if ver == CGMESVersions.v2_4_15:
+            substation = cgmes24.Substation(rdfid=form_rdfid(mc_elm.idtag))
+        elif ver == CGMESVersions.v3_0_0:
+            substation = cgmes30.Substation(rdfid=form_rdfid(mc_elm.idtag))
+        else:
+            raise NotImplemented()
+
         substation.name = mc_elm.name
         region = find_object_by_uuid(
             cgmes_model=cgmes_model,
@@ -190,13 +228,12 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
             # TODO Community.idtag!
         )
 
-        if region is not None:
+        if isinstance(region, cgmes_model.assets.GeographicalRegion):
             substation.Region = region
         else:
-            try:
-                substation.Region = \
-                cgmes_model.cgmes_assets.SubGeographicalRegion_list[0]
-            except:
+            if len(cgmes_model.cgmes_assets.SubGeographicalRegion_list) > 0:
+                substation.Region = cgmes_model.cgmes_assets.SubGeographicalRegion_list[0]
+            else:
                 substation.Region = None
                 logger.add_warning(msg='Region not found for Substation',
                                    device_class="SubGeographicalRegion")
@@ -205,6 +242,7 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
                               device=substation,
                               longitude=mc_elm.longitude,
                               latitude=mc_elm.latitude,
+                              ver=ver,
                               logger=logger)
 
         cgmes_model.add(substation)
@@ -212,17 +250,28 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
 
 def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
                              cgmes_model: CgmesCircuit,
+                             ver: CGMESVersions,
                              logger: DataLogger) -> None:
     """
 
     :param multi_circuit_model:
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
     for mc_elm in multi_circuit_model.voltage_levels:
-        object_template = cgmes_model.get_class_type("VoltageLevel")
-        vl = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+        # object_template = cgmes_model.get_class_type("VoltageLevel")
+        # vl = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+        if ver == CGMESVersions.v2_4_15:
+            vl = cgmes24.VoltageLevel(rdfid=form_rdfid(mc_elm.idtag))
+        elif ver == CGMESVersions.v3_0_0:
+            vl = cgmes30.VoltageLevel(rdfid=form_rdfid(mc_elm.idtag))
+        else:
+            raise NotImplemented()
+
         vl.name = mc_elm.name
         vl.BaseVoltage = find_object_by_vnom(
             cgmes_model=cgmes_model,
@@ -239,14 +288,15 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
                 target_uuid=mc_elm.substation.idtag
             )
 
-            if isinstance(substation,
-                          cgmes_model.get_class_type("Substation")):
+            if isinstance(substation, cgmes_model.assets.VoltageLevel):
                 vl.Substation = substation
 
                 # link back
                 if substation.VoltageLevels is None:
                     substation.VoltageLevels = list()
+
                 substation.VoltageLevels.append(vl)
+
             else:
                 logger.add_error(
                     msg=f'Substation not found for VoltageLevel',
@@ -259,12 +309,14 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
 
 def get_cgmes_tp_nodes(multi_circuit_model: MultiCircuit,
                        cgmes_model: CgmesCircuit,
+                       ver: CGMESVersions,
                        logger: DataLogger) -> None:
     """
     Convert gcdev Buses to CGMES Topological Nodes
 
     :param multi_circuit_model:
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
@@ -274,6 +326,7 @@ def get_cgmes_tp_nodes(multi_circuit_model: MultiCircuit,
             create_cgmes_dc_tp_node(tp_name=bus.name,
                                     tp_description=bus.code,
                                     cgmes_model=cgmes_model,
+                                    ver=ver,
                                     logger=logger)
 
         else:
@@ -288,8 +341,16 @@ def get_cgmes_tp_nodes(multi_circuit_model: MultiCircuit,
                     # Skipping already added buses
                     continue
 
-                object_template = cgmes_model.get_class_type("TopologicalNode")
-                tn = object_template(rdfid=form_rdfid(bus.idtag))
+                # object_template = cgmes_model.get_class_type("TopologicalNode")
+                # tn = object_template(rdfid=form_rdfid(bus.idtag))
+
+                if ver == CGMESVersions.v2_4_15:
+                    tn = cgmes24.TopologicalNode(rdfid=form_rdfid(bus.idtag))
+                elif ver == CGMESVersions.v3_0_0:
+                    tn = cgmes30.TopologicalNode(rdfid=form_rdfid(bus.idtag))
+                else:
+                    raise NotImplemented()
+
                 tn.name = bus.name
                 tn.shortName = bus.name
                 tn.description = bus.code
@@ -305,9 +366,11 @@ def get_cgmes_tp_nodes(multi_circuit_model: MultiCircuit,
                         object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
                         target_uuid=bus.voltage_level.idtag
                     )
-                    tn.ConnectivityNodeContainer = vl
-                    # link back
-                    vl.TopologicalNode = tn
+
+                    if isinstance(vl, cgmes_model.assets.VoltageLevel):
+                        tn.ConnectivityNodeContainer = vl
+                        vl.TopologicalNode = tn  # link back
+
                 else:
                     logger.add_error(
                         msg=f'No Voltage Level found',
@@ -321,6 +384,7 @@ def get_cgmes_tp_nodes(multi_circuit_model: MultiCircuit,
                                           device=tn,
                                           longitude=bus.longitude,
                                           latitude=bus.latitude,
+                                          ver=ver,
                                           logger=logger)
 
                 cgmes_model.add(tn)
@@ -330,19 +394,30 @@ def get_cgmes_tp_nodes(multi_circuit_model: MultiCircuit,
 
 def get_cgmes_cn_nodes_from_tp_nodes(multi_circuit_model: MultiCircuit,
                                      cgmes_model: CgmesCircuit,
+                                     ver: CGMESVersions,
                                      logger: DataLogger) -> None:
     """
     Export one ConnectivityNode for every TopologicalNode
 
     :param multi_circuit_model:
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
     for tn in cgmes_model.cgmes_assets.TopologicalNode_list:
         new_rdf_id = get_new_rdfid()
-        object_template = cgmes_model.get_class_type("ConnectivityNode")
-        cn = object_template(rdfid=new_rdf_id)
+
+        # object_template = cgmes_model.get_class_type("ConnectivityNode")
+        # cn = object_template(rdfid=new_rdf_id)
+
+        if ver == CGMESVersions.v2_4_15:
+            cn = cgmes24.ConnectivityNode(rdfid=new_rdf_id)
+        elif ver == CGMESVersions.v3_0_0:
+            cn = cgmes30.ConnectivityNode(rdfid=new_rdf_id)
+        else:
+            raise NotImplemented()
+
         cn.name = tn.name
         cn.shortName = tn.shortName
         cn.description = tn.description
@@ -367,77 +442,61 @@ def get_cgmes_cn_nodes_from_tp_nodes(multi_circuit_model: MultiCircuit,
         cgmes_model.add(cn)
 
 
-# def get_cgmes_cn_nodes_from_cns(multi_circuit_model: MultiCircuit,
-#                                 cgmes_model: CgmesCircuit,
-#                                 logger: DataLogger) -> None:
-#     if not multi_circuit_model.connectivity_nodes:
-#         get_cgmes_cn_nodes_from_buses(multi_circuit_model, cgmes_model, logger)
-#         return
-#
-#     for mc_elm in multi_circuit_model.connectivity_nodes:
-#         object_template = cgmes_model.get_class_type("ConnectivityNode")
-#         cn = object_template(rdfid=form_rdfid(mc_elm.idtag))
-#         cn.name = mc_elm.name
-#         if mc_elm.default_bus is not None:
-#             tn = find_object_by_uuid(
-#                 cgmes_model=cgmes_model,
-#                 object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
-#                 target_uuid=mc_elm.default_bus.idtag
-#             )
-#             if tn is not None:
-#                 cn.TopologicalNode = tn
-#                 cn.ConnectivityNodeContainer = tn.ConnectivityNodeContainer
-#                 tn.ConnectivityNodes = cn  # link back
-#             else:
-#                 logger.add_error(msg='No TopologinalNode found',
-#                                  device=cn.name,
-#                                  device_class=cn.tpe)
-#         else:
-#             logger.add_error(msg='Connectivity Node has no default bus',
-#                              device=mc_elm.name,
-#                              device_class=mc_elm.device_type.value)
-#             # print(f'Topological node not found for cn: {cn.name}')
-#
-#         cgmes_model.add(cn)
-#
-#     return
-
-
 def get_cgmes_loads(multicircuit_model: MultiCircuit,
                     cgmes_model: CgmesCircuit,
+                    ver: CGMESVersions,
                     logger: DataLogger):
     """
     Converts every Multi Circuit load into CGMES ConformLoad.
 
     :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
 
-    create_cgmes_sub_load_area(cgmes_model, logger)
-    c_load_group = create_cgmes_conform_load_group(cgmes_model, logger)
-    nc_load_group = create_cgmes_non_conform_load_group(cgmes_model, logger)
+    create_cgmes_sub_load_area(cgmes_model, ver, logger)
+    c_load_group = create_cgmes_conform_load_group(cgmes_model, ver, logger)
+    nc_load_group = create_cgmes_non_conform_load_group(cgmes_model, ver, logger)
 
     for mc_elm in multicircuit_model.loads:
-        if mc_elm.scalable:
-            object_template = cgmes_model.get_class_type("ConformLoad")
-        else:
-            object_template = cgmes_model.get_class_type("NonConformLoad")
-        load = object_template(rdfid=form_rdfid(mc_elm.idtag))
 
-        load.Terminals = create_cgmes_terminal(mc_elm.bus, None, load,
-                                               cgmes_model,
-                                               logger)
+        if mc_elm.scalable:
+            # object_template = cgmes_model.get_class_type("ConformLoad")
+            # load = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+            if ver == CGMESVersions.v2_4_15:
+                load = cgmes24.ConformLoad(rdfid=form_rdfid(mc_elm.idtag))
+            elif ver == CGMESVersions.v3_0_0:
+                load = cgmes30.ConformLoad(rdfid=form_rdfid(mc_elm.idtag))
+            else:
+                raise NotImplemented()
+
+
+        else:
+            # object_template = cgmes_model.get_class_type("NonConformLoad")
+            # load = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+            if ver == CGMESVersions.v2_4_15:
+                load = cgmes24.NonConformLoad(rdfid=form_rdfid(mc_elm.idtag))
+            elif ver == CGMESVersions.v3_0_0:
+                load = cgmes30.NonConformLoad(rdfid=form_rdfid(mc_elm.idtag))
+            else:
+                raise NotImplemented()
+
+        load.Terminals = create_cgmes_terminal(mc_elm.bus, None, load, cgmes_model, ver, logger)
         load.name = mc_elm.name
 
         if mc_elm.bus.voltage_level:
+
             vl = find_object_by_uuid(
                 cgmes_model=cgmes_model,
                 object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
                 target_uuid=mc_elm.bus.voltage_level.idtag
             )
-            load.EquipmentContainer = vl
+            if isinstance(vl, cgmes_model.assets.VoltageLevel):
+                load.EquipmentContainer = vl
 
         load.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
                                                object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
@@ -446,7 +505,7 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
         if mc_elm.Ii != 0.0:
             load.LoadResponse = create_cgmes_load_response_char(load=mc_elm,
                                                                 cgmes_model=cgmes_model,
-                                                                logger=logger)
+                                                                ver=ver)
             load.p = mc_elm.P / load.LoadResponse.pConstantPower
             load.q = mc_elm.Q / load.LoadResponse.qConstantPower
         else:
@@ -467,6 +526,7 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
 
 def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
                                     cgmes_model: CgmesCircuit,
+                                    ver: CGMESVersions,
                                     logger: DataLogger):
     """
     Converts every Multi Circuit external grid
@@ -474,13 +534,23 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
 
     :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
 
     for mc_elm in multicircuit_model.external_grids:
-        object_template = cgmes_model.get_class_type("EquivalentInjection")
-        ei = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+        # object_template = cgmes_model.get_class_type("EquivalentInjection")
+        # ei = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+        if ver == CGMESVersions.v2_4_15:
+            ei = cgmes24.EquivalentInjection(rdfid=form_rdfid(mc_elm.idtag))
+        elif ver == CGMESVersions.v3_0_0:
+            ei = cgmes30.EquivalentInjection(rdfid=form_rdfid(mc_elm.idtag))
+        else:
+            raise NotImplemented()
+
         ei.description = mc_elm.code
         ei.name = mc_elm.name
         ei.p = mc_elm.P
@@ -488,8 +558,8 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
         ei.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
                                              object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                              target_vnom=mc_elm.bus.Vnom)
-        ei.Terminals = create_cgmes_terminal(mc_elm.bus, None, ei, cgmes_model,
-                                             logger)
+
+        ei.Terminals = create_cgmes_terminal(mc_elm.bus, None, ei, cgmes_model, ver, logger)
         ei.regulationCapability = False
 
         cgmes_model.add(ei)
@@ -498,6 +568,7 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
 def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
                                cgmes_model: CgmesCircuit,
                                op_lim_types: List,
+                               ver: CGMESVersions,
                                logger: DataLogger):
     """
     Converts every Multi Circuit line
@@ -506,13 +577,23 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
     :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model: CgmesModel
     :param op_lim_types: Operational Limit types like PATL and TATL900, TATL60
+    :param ver:
     :param logger: DataLogger
     :return:
     """
     sbase = multicircuit_model.Sbase
     for mc_elm in multicircuit_model.lines:
-        object_template = cgmes_model.get_class_type("ACLineSegment")
-        line = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+        # object_template = cgmes_model.get_class_type("ACLineSegment")
+        # line = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+        if ver == CGMESVersions.v2_4_15:
+            line = cgmes24.ACLineSegment(rdfid=form_rdfid(mc_elm.idtag))
+        elif ver == CGMESVersions.v3_0_0:
+            line = cgmes30.ACLineSegment(rdfid=form_rdfid(mc_elm.idtag))
+        else:
+            raise NotImplemented()
+
         line.description = mc_elm.code
         line.name = mc_elm.name
         line.BaseVoltage = find_object_by_vnom(
@@ -520,17 +601,20 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
             object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
             target_vnom=mc_elm.get_max_bus_nominal_voltage()
         )  # which Vnom we need?
+
         # Terminals
         line.Terminals = [
             create_cgmes_terminal(mc_bus=mc_elm.bus_from,
                                   seq_num=1,
                                   cond_eq=line,
                                   cgmes_model=cgmes_model,
+                                  ver=ver,
                                   logger=logger),
             create_cgmes_terminal(mc_bus=mc_elm.bus_to,
                                   seq_num=2,
                                   cond_eq=line,
                                   cgmes_model=cgmes_model,
+                                  ver=ver,
                                   logger=logger)
         ]
         line.length = mc_elm.length
@@ -540,6 +624,7 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
                                  cgmes_elm=line,
                                  mc_elm=mc_elm,
                                  op_lim_types=op_lim_types,
+                                 ver=ver,
                                  logger=logger)
 
         vnom = line.BaseVoltage.nominalVoltage
@@ -563,24 +648,25 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
 
 def get_cgmes_generators(multicircuit_model: MultiCircuit,
                          cgmes_model: CgmesCircuit,
+                         ver: CGMESVersions,
                          logger: DataLogger):
     """
     Converts Multi Circuit generators
-    into approriate CGMES Generating Unit.
+    into appropriate CGMES Generating Unit.
 
     :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
 
     for mc_elm in multicircuit_model.generators:
         # Generating Units ---------------------------------------------------
-        cgmes_gen = create_cgmes_generating_unit(
-            gen=mc_elm, cgmes_model=cgmes_model
-        )
+        cgmes_gen = create_cgmes_generating_unit(gen=mc_elm, cgmes_model=cgmes_model, ver=ver)
         cgmes_gen.name = mc_elm.name
         cgmes_gen.description = mc_elm.code
+
         # cgmes_gen.EquipmentContainer: cgmes.Substation
         if cgmes_model.cgmes_assets.Substation_list and mc_elm.bus.substation:
             subs = find_object_by_uuid(
@@ -588,7 +674,9 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
                 object_list=cgmes_model.cgmes_assets.Substation_list,
                 target_uuid=mc_elm.bus.substation.idtag
             )
-            if subs is not None:
+
+            if isinstance(subs, cgmes_model.assets.Substation):
+
                 cgmes_gen.EquipmentContainer = subs
                 # link back
                 if isinstance(subs.Equipments, list):
@@ -614,8 +702,16 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_gen.minOperatingP = mc_elm.Pmin
 
         # Synchronous Machine ------------------------------------------------
-        object_template = cgmes_model.get_class_type("SynchronousMachine")
-        cgmes_syn = object_template(rdfid=form_rdfid(mc_elm.idtag))
+        # object_template = cgmes_model.get_class_type("SynchronousMachine")
+        # cgmes_syn = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+        if ver == CGMESVersions.v2_4_15:
+            cgmes_syn = cgmes24.SynchronousMachine(rdfid=form_rdfid(mc_elm.idtag))
+        elif ver == CGMESVersions.v3_0_0:
+            cgmes_syn = cgmes30.SynchronousMachine(rdfid=form_rdfid(mc_elm.idtag))
+        else:
+            raise NotImplemented()
+
         cgmes_syn.description = mc_elm.code
         cgmes_syn.name = mc_elm.name
         # cgmes_syn.aggregate is optional, not exported
@@ -632,6 +728,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
                                                     seq_num=1,
                                                     cond_eq=cgmes_syn,
                                                     cgmes_model=cgmes_model,
+                                                    ver=ver,
                                                     logger=logger)
 
         # CONTROL : has_control: do we have control?
@@ -639,8 +736,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # is_controlled: enabling flag (already have)
         if mc_elm.is_controlled:
             cgmes_syn.RegulatingControl = (
-                create_cgmes_regulating_control(cgmes_syn, mc_elm, cgmes_model,
-                                                logger))
+                create_cgmes_regulating_control(cgmes_syn, mc_elm, cgmes_model, ver, logger))
             cgmes_syn.controlEnabled = True
         else:
             cgmes_syn.controlEnabled = False
@@ -706,41 +802,65 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_model.add(cgmes_syn)
 
 
-def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
+def get_cgmes_power_transformers(grid: MultiCircuit,
                                  cgmes_model: CgmesCircuit,
                                  op_lim_types: List,
+                                 ver: CGMESVersions,
                                  logger: DataLogger):
     """
     Creates all transformer related CGMES classes from GridCal transformer.
 
-    :param multicircuit_model: MultiCircuit model in GridCal
+    :param grid: MultiCircuit model in GridCal
     :param cgmes_model: CgmesModel
+    :param op_lim_types:
+    :param ver:
     :param logger: DataLogger
     :return:
     """
-    for mc_elm in multicircuit_model.transformers2w:
-        object_template = cgmes_model.get_class_type("PowerTransformer")
-        cm_transformer = object_template(rdfid=form_rdfid(mc_elm.idtag))
+    for mc_elm in grid.transformers2w:
+
+        # object_template = cgmes_model.get_class_type("PowerTransformer")
+        # cm_transformer = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+        if ver == CGMESVersions.v2_4_15:
+            cm_transformer = cgmes24.PowerTransformer(rdfid=form_rdfid(mc_elm.idtag))
+        elif ver == CGMESVersions.v3_0_0:
+            cm_transformer = cgmes30.PowerTransformer(rdfid=form_rdfid(mc_elm.idtag))
+        else:
+            raise NotImplemented()
+
         cm_transformer.uuid = mc_elm.idtag
         cm_transformer.description = mc_elm.code
         cm_transformer.name = mc_elm.name
         cm_transformer.Terminals = [
-            create_cgmes_terminal(mc_elm.bus_from, 1, cm_transformer,
-                                  cgmes_model, logger),
-            create_cgmes_terminal(mc_elm.bus_to, 2, cm_transformer,
-                                  cgmes_model, logger)]
+            create_cgmes_terminal(mc_elm.bus_from, 1, cm_transformer, cgmes_model, ver, logger),
+            create_cgmes_terminal(mc_elm.bus_to, 2, cm_transformer, cgmes_model, ver, logger)
+        ]
         cm_transformer.aggregate = False  # what is this?
         if mc_elm.bus_from.substation:
-            cm_transformer.EquipmentContainer = find_object_by_uuid(
+            substation = find_object_by_uuid(
                 cgmes_model=cgmes_model,
                 object_list=cgmes_model.cgmes_assets.Substation_list,
                 target_uuid=mc_elm.bus_from.substation.idtag
             )
 
+            if isinstance(substation, cgmes_model.assets.Substation):
+                cm_transformer.EquipmentContainer = substation
+
         cm_transformer.PowerTransformerEnd = list()
         # Winding 1 ---------------------------------------------------------
-        object_template = cgmes_model.get_class_type("PowerTransformerEnd")
-        pte1 = object_template()
+
+        if ver == CGMESVersions.v2_4_15:
+            pte1 = cgmes24.PowerTransformerEnd()
+            pte2 = cgmes24.PowerTransformerEnd()
+
+        elif ver == CGMESVersions.v3_0_0:
+            pte1 = cgmes30.PowerTransformerEnd()
+            pte2 = cgmes24.PowerTransformerEnd()
+
+        else:
+            raise NotImplemented()
+
         pte1.name = f"Winding 1 - {mc_elm.name}"
         pte1.PowerTransformer = cm_transformer
         pte1.Terminal = cm_transformer.Terminals[0]
@@ -755,6 +875,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                  cgmes_elm=cm_transformer,
                                  mc_elm=mc_elm,
                                  op_lim_types=op_lim_types,
+                                 ver=ver,
                                  logger=logger)
 
         (pte1.r,
@@ -773,14 +894,14 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                                      g0=mc_elm.G0,
                                                      b0=mc_elm.B0,
                                                      nominal_power=mc_elm.Sn,
-                                                     rated_voltage=mc_elm.HV)
+                                                     rated_voltage=mc_elm.HV,
+                                                     Sbase=grid.Sbase)
 
         pte1.ratedU = mc_elm.HV
         pte1.ratedS = mc_elm.Sn
         pte1.endNumber = 1
 
         # Winding 2 ---------------------------------------------------------
-        pte2 = object_template()
         pte2.name = f"Winding 2 - {mc_elm.name}"
         pte2.PowerTransformer = cm_transformer
         pte2.Terminal = cm_transformer.Terminals[1]
@@ -814,23 +935,46 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         tcc_enabled = False
 
         if mc_elm.tap_changer.tc_type == TapChangerTypes.NoRegulation:
-            object_template = cgmes_model.get_class_type("RatioTapChanger")
+            if ver == CGMESVersions.v2_4_15:
+                tap_changer = cgmes24.RatioTapChanger(rdfid=get_new_rdfid())
+            elif ver == CGMESVersions.v3_0_0:
+                tap_changer = cgmes30.RatioTapChanger(rdfid=get_new_rdfid())
+            else:
+                raise NotImplemented()
 
         elif mc_elm.tap_changer.tc_type == TapChangerTypes.VoltageRegulation:
-            object_template = cgmes_model.get_class_type("RatioTapChanger")
+            if ver == CGMESVersions.v2_4_15:
+                tap_changer = cgmes24.RatioTapChanger(rdfid=get_new_rdfid())
+            elif ver == CGMESVersions.v3_0_0:
+                tap_changer = cgmes30.RatioTapChanger(rdfid=get_new_rdfid())
+            else:
+                raise NotImplemented()
+
             if mc_elm.tap_module_control_mode != TapModuleControl.fixed:
                 # if fixed, it should be disabled
                 tcc_enabled = True
 
         elif mc_elm.tap_changer.tc_type == TapChangerTypes.Symmetrical:
-            object_template = cgmes_model.get_class_type("PhaseTapChangerSymmetrical")
+            if ver == CGMESVersions.v2_4_15:
+                tap_changer = cgmes24.PhaseTapChangerSymmetrical(rdfid=get_new_rdfid())
+            elif ver == CGMESVersions.v3_0_0:
+                tap_changer = cgmes30.PhaseTapChangerSymmetrical(rdfid=get_new_rdfid())
+            else:
+                raise NotImplemented()
+
             if mc_elm.tap_phase_control_mode != TapPhaseControl.fixed:
                 # if fixed, it should be disabled
                 tcc_enabled = True
             tcc_mode = RegulatingControlModeKind.activePower
 
         elif mc_elm.tap_changer.tc_type == TapChangerTypes.Asymmetrical:
-            object_template = cgmes_model.get_class_type("PhaseTapChangerAsymmetrical")
+            if ver == CGMESVersions.v2_4_15:
+                tap_changer = cgmes24.PhaseTapChangerAsymmetrical(rdfid=get_new_rdfid())
+            elif ver == CGMESVersions.v3_0_0:
+                tap_changer = cgmes30.PhaseTapChangerAsymmetrical(rdfid=get_new_rdfid())
+            else:
+                raise NotImplemented()
+
             if (mc_elm.tap_module_control_mode != TapModuleControl.fixed or
                     mc_elm.tap_phase_control_mode != TapPhaseControl.fixed):
                 # if fixed, it should be disabled
@@ -838,112 +982,131 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             tcc_mode = RegulatingControlModeKind.activePower
 
         else:
+            tap_changer = None
             logger.add_error(msg='No TapChangerType found for TapChanger',
                              device=mc_elm.tap_changer,
                              device_class=mc_elm.device_type.value,
                              value=mc_elm.tap_changer)
 
-        new_rdf_id = get_new_rdfid()
-        tap_changer = object_template(rdfid=new_rdf_id)
-        tap_changer.name = f'_tc_{mc_elm.name}'
-        tap_changer.shortName = f'_tc_{mc_elm.name}'
+        if tap_changer is not None:
+            tap_changer.name = f'_tc_{mc_elm.name}'
+            tap_changer.shortName = f'_tc_{mc_elm.name}'
+            tap_changer.neutralU = pte1.ratedU
+            tap_changer.TransformerEnd = pte1
 
-        tap_changer.neutralU = pte1.ratedU
-        tap_changer.TransformerEnd = pte1
+            # STEPs
+            tap_changer.total_pos = mc_elm.tap_changer.total_positions
 
-        # STEPs
-        tap_changer.total_pos = mc_elm.tap_changer.total_positions
-        (tap_changer.lowStep,
-         tap_changer.highStep,
-         tap_changer.normalStep,
-         tap_changer.neutralStep,
-         voltageIncr,
-         tap_changer.step) = mc_elm.tap_changer.get_cgmes_values()
+            (tap_changer.lowStep,
+             tap_changer.highStep,
+             tap_changer.normalStep,
+             tap_changer.neutralStep,
+             voltageIncr,
+             tap_changer.step) = mc_elm.tap_changer.get_cgmes_values()
 
-        if isinstance(tap_changer,
-                      cgmes_model.get_class_type("RatioTapChanger")):
-            tap_changer.stepVoltageIncrement = voltageIncr
-        elif isinstance(tap_changer, cgmes_model.get_class_type(
-                "PhaseTapChangerNonLinear")):
-            # PhaseTapChangerSymmetrical or PhaseTapChangerAsymmetrical
-            tap_changer.voltageStepIncrement = voltageIncr
-            tap_changer.xMin = mc_elm.X
-            # TODO tap_changer.xMax from Impedance corr table
-            tap_changer.xMax = mc_elm.X     # just to have it in the export
+            if isinstance(tap_changer, (cgmes24.RatioTapChanger, cgmes30.RatioTapChanger)):
+
+                tap_changer.stepVoltageIncrement = voltageIncr
+
+            elif isinstance(tap_changer, (cgmes24.PhaseTapChangerNonLinear, cgmes30.PhaseTapChangerNonLinear)):
+
+                # PhaseTapChangerSymmetrical or PhaseTapChangerAsymmetrical
+                tap_changer.voltageStepIncrement = voltageIncr
+                tap_changer.xMin = mc_elm.X
+                # TODO tap_changer.xMax from Impedance corr table
+                tap_changer.xMax = mc_elm.X  # just to have it in the export
+
+            else:
+                logger.add_error(
+                    msg='stepVoltageIncrement cannot be filled for TapChanger',
+                    device=mc_elm,
+                    device_class=mc_elm.device_type.value,
+                    value=mc_elm.idtag,
+                    comment="get_cgmes_power_transformers")
+
+            if isinstance(tap_changer, (cgmes24.PhaseTapChangerAsymmetrical, cgmes30.PhaseTapChangerAsymmetrical)):
+                tap_changer.windingConnectionAngle = mc_elm.tap_changer.asymmetry_angle
+
+            # CONTROL
+            tap_changer.ltcFlag = True  # load tap changing capability
+            tap_changer.TapChangerControl = create_cgmes_tap_changer_control(
+                tap_changer=tap_changer,
+                tcc_mode=tcc_mode,
+                tcc_enabled=tcc_enabled,
+                mc_trafo=mc_elm,
+                cgmes_model=cgmes_model,
+                ver=ver,
+                logger=logger
+            )
+            # tculControlMode not used, but has to be set to something: volt/react ..
+            tap_changer.tculControlMode = TransformerControlMode.volt
+            #                   TAP Changer SSH
+            tap_changer.controlEnabled = tcc_enabled
+            # Specifies the regulation status of the equipment.  True is regulating, false is not regulating.
+            # why, why not?
+
+            #                   TAP Changer SV
+
+            # object_template = cgmes_model.get_class_type("SvTapStep")
+            # sv_tap_step = object_template(rdfid=new_rdf_id, tpe="SvTapStep")
+            if ver == CGMESVersions.v2_4_15:
+                sv_tap_step = cgmes24.SvTapStep(rdfid=get_new_rdfid(), tpe="SvTapStep")
+            elif ver == CGMESVersions.v3_0_0:
+                sv_tap_step = cgmes30.SvTapStep(rdfid=get_new_rdfid(), tpe="SvTapStep")
+            else:
+                raise NotImplemented()
+
+            # TODO def EA same as step? should it come from the results?
+            # PowerFlowResults: tap_module, tap_angle (for SvTapStep), get the closest tap pos for the object.
+            sv_tap_step.position = mc_elm.tap_changer.tap_position
+            sv_tap_step.TapChanger = tap_changer
+
+            # -----------------------------------------------------------------
+            cgmes_model.add(tap_changer)
+            cgmes_model.add(sv_tap_step)
         else:
-            logger.add_error(
-                msg='stepVoltageIncrement cannot be filled for TapChanger',
-                device=mc_elm,
-                device_class=mc_elm.device_type.value,
-                value=mc_elm.idtag,
-                comment="get_cgmes_power_transformers")
-
-        if isinstance(tap_changer, cgmes_model.get_class_type(
-                "PhaseTapChangerAsymmetrical")):
-            tap_changer.windingConnectionAngle = mc_elm.tap_changer.asymmetry_angle
-
-        # CONTROL
-        tap_changer.ltcFlag = True  # load tap changing capability
-        tap_changer.TapChangerControl = create_cgmes_tap_changer_control(
-            tap_changer=tap_changer,
-            tcc_mode=tcc_mode,
-            tcc_enabled=tcc_enabled,
-            mc_trafo=mc_elm,
-            cgmes_model=cgmes_model,
-            logger=logger
-        )
-        # tculControlMode not used, but has to be set to something: volt/react ..
-        tap_changer.tculControlMode = TransformerControlMode.volt
-        #                   TAP Changer SSH
-        tap_changer.controlEnabled = tcc_enabled
-        # Specifies the regulation status of the equipment.  True is regulating, false is not regulating.
-        # why, why not?
-
-        #                   TAP Changer SV
-        new_rdf_id = get_new_rdfid()
-        object_template = cgmes_model.get_class_type("SvTapStep")
-        sv_tap_step = object_template(rdfid=new_rdf_id, tpe="SvTapStep")
-        # TODO def EA same as step? should it come from the results?
-        # PowerFlowResults: tap_module, tap_angle (for SvTapStep), get the closest tap pos for the object.
-        sv_tap_step.position = mc_elm.tap_changer.tap_position
-        sv_tap_step.TapChanger = tap_changer
-
-        # -----------------------------------------------------------------
-        cgmes_model.add(tap_changer)
-        cgmes_model.add(sv_tap_step)
+            # No tap changer
+            pass
 
         cm_transformer.PowerTransformerEnd.append(pte1)
         cgmes_model.add(pte1)
         cm_transformer.PowerTransformerEnd.append(pte2)
         cgmes_model.add(pte2)
-
         cgmes_model.add(cm_transformer)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Create the 3W transformers
     # ------------------------------------------------------------------------------------------------------------------
 
-    for mc_elm in multicircuit_model.transformers3w:
-        object_template = cgmes_model.get_class_type("PowerTransformer")
-        cm_transformer = object_template(rdfid=form_rdfid(mc_elm.idtag))
+    for mc_elm in grid.transformers3w:
+
+        # object_template = cgmes_model.get_class_type("PowerTransformer")
+        # cm_transformer = object_template(rdfid=form_rdfid(mc_elm.idtag))
+        if ver == CGMESVersions.v2_4_15:
+            cm_transformer = cgmes24.PowerTransformer(rdfid=form_rdfid(mc_elm.idtag))
+        elif ver == CGMESVersions.v3_0_0:
+            cm_transformer = cgmes30.PowerTransformer(rdfid=form_rdfid(mc_elm.idtag))
+        else:
+            raise NotImplemented()
+
         cm_transformer.uuid = mc_elm.idtag
         cm_transformer.description = mc_elm.code
         cm_transformer.name = mc_elm.name
         cm_transformer.Terminals = [
-            create_cgmes_terminal(mc_elm.bus1, 1, cm_transformer, cgmes_model,
-                                  logger),
-            create_cgmes_terminal(mc_elm.bus2, 2, cm_transformer, cgmes_model,
-                                  logger),
-            create_cgmes_terminal(mc_elm.bus3, 3, cm_transformer, cgmes_model,
-                                  logger)
+            create_cgmes_terminal(mc_elm.bus1, 1, cm_transformer, cgmes_model, ver, logger),
+            create_cgmes_terminal(mc_elm.bus2, 2, cm_transformer, cgmes_model, ver, logger),
+            create_cgmes_terminal(mc_elm.bus3, 3, cm_transformer, cgmes_model, ver, logger)
         ]
 
         if mc_elm.bus1.substation:
-            cm_transformer.EquipmentContainer = find_object_by_uuid(
+            substation = find_object_by_uuid(
                 cgmes_model=cgmes_model,
                 object_list=cgmes_model.cgmes_assets.Substation_list,
                 target_uuid=mc_elm.bus1.substation.idtag
             )
+
+            if isinstance(substation, cgmes_model.assets.Substation):
+                cm_transformer.EquipmentContainer = substation
 
         # TODO tr3w rates?
         # current_rate = mc_elm.rate * 1e3 / (mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
@@ -952,9 +1115,18 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         # create_cgmes_current_limit(cm_transformer.Terminals[1], current_rate, cgmes_model, logger)
 
         cm_transformer.PowerTransformerEnd = []
-        object_template = cgmes_model.get_class_type("PowerTransformerEnd")
+        if ver == CGMESVersions.v2_4_15:
+            pte1 = cgmes24.PowerTransformerEnd()
+            pte2 = cgmes24.PowerTransformerEnd()
+            pte3 = cgmes24.PowerTransformerEnd()
+        elif ver == CGMESVersions.v3_0_0:
+            pte1 = cgmes30.PowerTransformerEnd()
+            pte2 = cgmes30.PowerTransformerEnd()
+            pte3 = cgmes30.PowerTransformerEnd()
+        else:
+            raise NotImplemented()
+
         # Winding 1 ---------------------------------------------------------
-        pte1 = object_template()
         pte1.name = mc_elm.name
         pte1.PowerTransformer = cm_transformer
         pte1.Terminal = cm_transformer.Terminals[0]
@@ -983,10 +1155,10 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                                      g0=mc_elm.winding1.G0,
                                                      b0=mc_elm.winding1.B0,
                                                      nominal_power=mc_elm.winding1.rate,
-                                                     rated_voltage=mc_elm.winding1.HV)
+                                                     rated_voltage=mc_elm.winding1.HV,
+                                                     Sbase=grid.Sbase)
 
         # Winding 2 ---------------------------------------------------------
-        pte2 = object_template()
         pte2.name = mc_elm.name
         pte2.PowerTransformer = cm_transformer
         pte2.Terminal = cm_transformer.Terminals[1]
@@ -1015,10 +1187,10 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                                      g0=mc_elm.winding2.G0,
                                                      b0=mc_elm.winding2.B0,
                                                      nominal_power=mc_elm.winding2.rate,
-                                                     rated_voltage=mc_elm.winding2.HV)
+                                                     rated_voltage=mc_elm.winding2.HV,
+                                                     Sbase=grid.Sbase)
 
         # Winding 3 ---------------------------------------------------------
-        pte3 = object_template()
         pte3.name = mc_elm.name
         pte3.PowerTransformer = cm_transformer
         pte3.Terminal = cm_transformer.Terminals[2]
@@ -1047,7 +1219,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                                      g0=mc_elm.winding3.G0,
                                                      b0=mc_elm.winding3.B0,
                                                      nominal_power=mc_elm.winding3.rate,
-                                                     rated_voltage=mc_elm.winding3.HV)
+                                                     rated_voltage=mc_elm.winding3.HV,
+                                                     Sbase=grid.Sbase)
 
         # compose transformer ------------------------------------------------------------------------------------------
         cm_transformer.PowerTransformerEnd.append(pte1)
@@ -1061,9 +1234,10 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 
 
 def get_cgmes_current_limits(cgmes_model: CgmesCircuit,
-                             cgmes_elm: Base,
+                             cgmes_elm: CGMES_ASSETS,
                              mc_elm: BranchParent,
                              op_lim_types: List,
+                             ver: CGMESVersions,
                              logger: DataLogger):
     """
     Export Current Limits to CGMES for Branches.
@@ -1072,6 +1246,7 @@ def get_cgmes_current_limits(cgmes_model: CgmesCircuit,
     :param mc_elm: GcDev Transformer 2W/3W or ACLineSegment
     :param cgmes_elm: CGMES Transformer 2W or ACLineSegment
     :param op_lim_types: list of used OperationalLimitTypes
+    :param ver:
     :param logger: DataLogger
     :return: None
     """
@@ -1086,12 +1261,12 @@ def get_cgmes_current_limits(cgmes_model: CgmesCircuit,
         for rate_mw, op_limit_type in rate_and_type:
 
             if rate_mw != 0.0:
-
                 create_cgmes_current_limit(
                     terminal=termnl,
                     rate_mw=rate_mw,
                     op_limit_type=op_limit_type,
                     cgmes_model=cgmes_model,
+                    ver=ver,
                     logger=logger
                 )
 
@@ -1114,15 +1289,16 @@ def get_cgmes_current_limits(cgmes_model: CgmesCircuit,
             create_limits_for_terminal(terminal, rates)
 
 
-def get_cgmes_operational_limit_types(cgmes_model: CgmesCircuit):
+def get_cgmes_operational_limit_types(cgmes_model: CgmesCircuit, ver: CGMESVersions):
     """
     Creates three kind of Operational limit type for Cgmes Export.
 
     :param cgmes_model: CgmesModel
+    :param ver:
     :return:
     """
     # PATL      -----
-    patl = create_cgmes_operational_limit_type(cgmes_model)
+    patl = create_cgmes_operational_limit_type(cgmes_model, ver)
     patl.name = "Normal rating"
     patl.shortName = "PATL"
     patl.description = "Permanent Admissible Transmission Loading"
@@ -1132,7 +1308,7 @@ def get_cgmes_operational_limit_types(cgmes_model: CgmesCircuit):
     patl.direction = OperationalLimitDirectionKind.absoluteValue
 
     # TATL 900  ------
-    tatl_900 = create_cgmes_operational_limit_type(cgmes_model)
+    tatl_900 = create_cgmes_operational_limit_type(cgmes_model, ver)
     tatl_900.name = "Contingency rating in GridCal"
     tatl_900.shortName = "TATL"
     tatl_900.description = "Temporarily Admissible Transmission Loading"
@@ -1142,7 +1318,7 @@ def get_cgmes_operational_limit_types(cgmes_model: CgmesCircuit):
     tatl_900.direction = OperationalLimitDirectionKind.absoluteValue
 
     # TATL 60   ------
-    tatl_60 = create_cgmes_operational_limit_type(cgmes_model)
+    tatl_60 = create_cgmes_operational_limit_type(cgmes_model, ver)
     tatl_60.name = "Protection rating in GridCal"
     tatl_60.shortName = "TATL"
     tatl_60.description = "Temporarily Admissible Transmission Loading"
@@ -1156,6 +1332,7 @@ def get_cgmes_operational_limit_types(cgmes_model: CgmesCircuit):
 
 def get_cgmes_equivalent_shunts(multicircuit_model: MultiCircuit,
                                 cgmes_model: CgmesCircuit,
+                                ver: CGMESVersions,
                                 logger: DataLogger):
     """
     Converts Multi Circuit shunts
@@ -1164,24 +1341,32 @@ def get_cgmes_equivalent_shunts(multicircuit_model: MultiCircuit,
 
     :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
 
     for mc_elm in multicircuit_model.shunts:
 
-        object_template = cgmes_model.get_class_type("EquivalentShunt")
-        eq_shunt = object_template(rdfid=form_rdfid(mc_elm.idtag))
+        if ver == CGMESVersions.v2_4_15:
+            eq_shunt = cgmes24.EquivalentShunt(rdfid=form_rdfid(mc_elm.idtag))
+        elif ver == CGMESVersions.v3_0_0:
+            eq_shunt = cgmes30.EquivalentShunt(rdfid=form_rdfid(mc_elm.idtag))
+        else:
+            raise NotImplemented()
+
         eq_shunt.name = mc_elm.name
         eq_shunt.description = mc_elm.code
 
         if mc_elm.bus.voltage_level:
+
             vl = find_object_by_uuid(
                 cgmes_model=cgmes_model,
                 object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
                 target_uuid=mc_elm.bus.voltage_level.idtag
             )
-            if vl is not None:
+
+            if isinstance(vl, cgmes_model.assets.VoltageLevel):
                 eq_shunt.EquipmentContainer = vl
 
         base_voltage = find_object_by_vnom(
@@ -1198,6 +1383,7 @@ def get_cgmes_equivalent_shunts(multicircuit_model: MultiCircuit,
                               seq_num=1,
                               cond_eq=eq_shunt,
                               cgmes_model=cgmes_model,
+                              ver=ver,
                               logger=logger)
 
         cgmes_model.add(eq_shunt)
@@ -1205,6 +1391,7 @@ def get_cgmes_equivalent_shunts(multicircuit_model: MultiCircuit,
 
 def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
                                            cgmes_model: CgmesCircuit,
+                                           ver: CGMESVersions,
                                            logger: DataLogger):
     """
     Converts Multi Circuit Controllable Shunts
@@ -1213,18 +1400,22 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
 
     :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model: CgmesModel
+    :param ver:
     :param logger: DataLogger
     :return:
     """
-    lin_templ = cgmes_model.get_class_type("LinearShuntCompensator")
-
-    nl_sc_templ = cgmes_model.get_class_type("NonlinearShuntCompensator")
 
     for mc_elm in multicircuit_model.controllable_shunts:
 
         if mc_elm.is_nonlinear:
 
-            non_lin_sc = nl_sc_templ(rdfid=form_rdfid(mc_elm.idtag))
+            if ver == CGMESVersions.v2_4_15:
+                non_lin_sc = cgmes24.NonlinearShuntCompensator(rdfid=form_rdfid(mc_elm.idtag))
+            elif ver == CGMESVersions.v3_0_0:
+                non_lin_sc = cgmes30.NonlinearShuntCompensator(rdfid=form_rdfid(mc_elm.idtag))
+            else:
+                raise NotImplemented()
+
             non_lin_sc.name = mc_elm.name
             non_lin_sc.description = mc_elm.code
             if mc_elm.bus.voltage_level:
@@ -1233,7 +1424,7 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
                     object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
                     target_uuid=mc_elm.bus.voltage_level.idtag
                 )
-                if vl is not None:
+                if isinstance(vl, cgmes_model.assets.VoltageLevel):
                     non_lin_sc.EquipmentContainer = vl
 
             non_lin_sc.BaseVoltage = find_object_by_vnom(
@@ -1246,15 +1437,16 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
                                       seq_num=1,
                                       cond_eq=non_lin_sc,
                                       cgmes_model=cgmes_model,
-                                      logger=logger))
+                                      ver=ver,
+                                      logger=logger)
+            )
 
             # CONTROL
             # control_type: voltage or power control, ..
             # is_controlled: enabling flag (already have)
             if mc_elm.is_controlled:
                 non_lin_sc.RegulatingControl = (
-                    create_cgmes_regulating_control(non_lin_sc, mc_elm,
-                                                    cgmes_model, logger)
+                    create_cgmes_regulating_control(non_lin_sc, mc_elm, cgmes_model, ver, logger)
                 )
                 non_lin_sc.controlEnabled = True
             else:
@@ -1277,7 +1469,8 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
                     b=b_points[i],
                     g=g_points[i],
                     nl_sc=non_lin_sc,
-                    cgmes_model=cgmes_model
+                    cgmes_model=cgmes_model,
+                    ver=ver
                 )
             non_lin_sc.normalSections = non_lin_sc.sections
             non_lin_sc.maximumSections = len(b_points)
@@ -1297,7 +1490,13 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
         else:  # LINEAR controllable shunts
 
             # object_template = cgmes_model.get_class_type("LinearShuntCompensator")
-            lsc = lin_templ(rdfid=form_rdfid(mc_elm.idtag))
+            if ver == CGMESVersions.v2_4_15:
+                lsc = cgmes24.LinearShuntCompensator(rdfid=form_rdfid(mc_elm.idtag))
+            elif ver == CGMESVersions.v3_0_0:
+                lsc = cgmes30.LinearShuntCompensator(rdfid=form_rdfid(mc_elm.idtag))
+            else:
+                raise NotImplemented()
+
             lsc.name = mc_elm.name
             lsc.description = mc_elm.code
             if mc_elm.bus.voltage_level:
@@ -1306,11 +1505,16 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
                     object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
                     target_uuid=mc_elm.bus.voltage_level.idtag
                 )
-                lsc.EquipmentContainer = vl
 
-            lsc.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
-                                                  object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
-                                                  target_vnom=mc_elm.bus.Vnom)
+                if isinstance(vl, cgmes_model.assets.VoltageLevel):
+                    lsc.EquipmentContainer = vl
+
+            base_voltage = find_object_by_vnom(cgmes_model=cgmes_model,
+                                               object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+                                               target_vnom=mc_elm.bus.Vnom)
+
+            if isinstance(base_voltage, cgmes_model.assets.BaseVoltage):
+                lsc.BaseVoltage = base_voltage
 
             if mc_elm.active:
                 lsc.sections = mc_elm.step + 1
@@ -1339,13 +1543,14 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
                                       seq_num=1,
                                       cond_eq=lsc,
                                       cgmes_model=cgmes_model,
-                                      logger=logger))
+                                      ver=ver,
+                                      logger=logger)
+            )
 
             # CONTROL
             if mc_elm.is_controlled:
                 lsc.RegulatingControl = (
-                    create_cgmes_regulating_control(lsc, mc_elm,
-                                                    cgmes_model, logger)
+                    create_cgmes_regulating_control(lsc, mc_elm, cgmes_model, ver, logger)
                 )
                 lsc.controlEnabled = True
             else:
@@ -1356,24 +1561,31 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
 
 def get_cgmes_breakers(multicircuit_model: MultiCircuit,
                        cgmes_model: CgmesCircuit,
+                       ver: CGMESVersions,
                        logger: DataLogger):
     """
     Converts every Multi Circuit Switch into CGMES Breaker.
 
     :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
 
     for mc_elm in multicircuit_model.switch_devices:
-        object_template = cgmes_model.get_class_type("Breaker")
-        br = object_template(rdfid=form_rdfid(mc_elm.idtag))
+        if ver == CGMESVersions.v2_4_15:
+            br = cgmes24.Breaker(rdfid=form_rdfid(mc_elm.idtag))
+        elif ver == CGMESVersions.v3_0_0:
+            br = cgmes30.Breaker(rdfid=form_rdfid(mc_elm.idtag))
+        else:
+            raise NotImplemented()
+
         br.Terminals = [
-            create_cgmes_terminal(mc_elm.bus_from, None, br, cgmes_model,
-                                  logger),
-            create_cgmes_terminal(mc_elm.bus_to, None, br, cgmes_model,
-                                  logger)]
+            create_cgmes_terminal(mc_elm.bus_from, None, br, cgmes_model, ver, logger),
+            create_cgmes_terminal(mc_elm.bus_to, None, br, cgmes_model, ver, logger)
+        ]
+
         br.name = mc_elm.name
         br.description = mc_elm.code
         br.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
@@ -1408,6 +1620,7 @@ def get_cgmes_sv_voltages(
         multi_circuit_model: MultiCircuit,
         cgmes_model: CgmesCircuit,
         pf_results: PowerFlowResults,
+        ver: CGMESVersions,
         logger: DataLogger) -> None:
     """
     Creates a CgmesCircuit SvVoltage_list
@@ -1416,6 +1629,7 @@ def get_cgmes_sv_voltages(
     :param multi_circuit_model:
     :param cgmes_model:
     :param pf_results:
+    :param ver:
     :param logger:
     :return:
     """
@@ -1430,10 +1644,15 @@ def get_cgmes_sv_voltages(
                 object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
                 target_uuid=bus.idtag
             )
-            if tp_node:
-                object_template = cgmes_model.get_class_type("SvVoltage")
-                new_rdf_id = get_new_rdfid()
-                sv_voltage = object_template(rdfid=new_rdf_id, tpe='SvVoltage')
+
+            if isinstance(tp_node, cgmes_model.assets.TopologicalNode):
+
+                if ver == CGMESVersions.v2_4_15:
+                    sv_voltage = cgmes24.SvVoltage(rdfid=get_new_rdfid(), tpe='SvVoltage')
+                elif ver == CGMESVersions.v3_0_0:
+                    sv_voltage = cgmes30.SvVoltage(rdfid=get_new_rdfid(), tpe='SvVoltage')
+                else:
+                    raise NotImplemented()
 
                 sv_voltage.TopologicalNode = tp_node
 
@@ -1444,6 +1663,7 @@ def get_cgmes_sv_voltages(
 
                 # Add the SvVoltage instance to the SvVoltage_list
                 cgmes_model.add(sv_voltage)
+
             else:
                 logger.add_info(
                     msg="TP Node not found for bus",
@@ -1457,39 +1677,12 @@ def get_cgmes_sv_voltages(
                 value=voltage,
             )
 
-    # if len(pf_results.voltage) == len(cgmes_model.cgmes_assets.TopologicalNode_list):
-    #
-    #     for i, tp_node in enumerate(cgmes_model.cgmes_assets.TopologicalNode_list):
-    #
-    #         object_template = cgmes_model.get_class_type("SvVoltage")
-    #         new_rdf_id = get_new_rdfid()
-    #         sv_voltage = object_template(rdfid=new_rdf_id, tpe='SvVoltage')
-    #
-    #         sv_voltage.TopologicalNode = tp_node
-    #
-    #         voltage = pf_results.voltage[i]
-    #         # as the ORDER of the results is the same as the order of buses (=tn)
-    #         bv = tp_node.BaseVoltage
-    #         sv_voltage.v = np.abs(voltage) * bv.nominalVoltage
-    #         sv_voltage.angle = np.angle(voltage, deg=True)
-    #
-    #         # Add the SvVoltage instance to the SvVoltage_list
-    #         cgmes_model.add(sv_voltage)
-    #
-    # else:
-    #
-    #     logger.add_error(
-    #         msg="Length mismatch: PF.res Voltages != TP node list, SvVoltage cannot be exported.",
-    #         value=len(pf_results.voltage),
-    #         expected_value=len(cgmes_model.cgmes_assets.TopologicalNode_list),
-    #         comment="SvVoltage cannot be exported",
-    #     )
-
 
 def get_cgmes_sv_power_flow_1(multi_circuit: MultiCircuit,
                               nc: NumericalCircuit,
                               cgmes_model: CgmesCircuit,
                               pf_results: PowerFlowResults,
+                              ver: CGMESVersions,
                               logger: DataLogger) -> None:
     """
     For single-terminal devices:
@@ -1499,6 +1692,7 @@ def get_cgmes_sv_power_flow_1(multi_circuit: MultiCircuit,
     :param nc:
     :param cgmes_model:
     :param pf_results:
+    :param ver:
     :param logger:
     :return: SvVoltage_list is populated in CgmesCircuit.
     """
@@ -1523,13 +1717,15 @@ def get_cgmes_sv_power_flow_1(multi_circuit: MultiCircuit,
             object_list=cgmes_model.cgmes_assets.Terminal_list,
             cond_eq_target_uuid=gen.idtag
         )
-        if isinstance(term, cgmes_model.get_class_type("Terminal")):
+
+        if is_term(term):
 
             create_sv_power_flow(
                 cgmes_model=cgmes_model,
                 p=gen_p,
                 q=gen_q,
-                terminal=term
+                terminal=term,
+                ver=ver
             )
 
         else:
@@ -1555,13 +1751,15 @@ def get_cgmes_sv_power_flow_1(multi_circuit: MultiCircuit,
             object_list=cgmes_model.cgmes_assets.Terminal_list,
             cond_eq_target_uuid=mc_load_like.idtag  # missing Load uuid
         )
-        if isinstance(term, cgmes_model.get_class_type("Terminal")):
+
+        if is_term(term):
 
             create_sv_power_flow(
                 cgmes_model=cgmes_model,
                 p=load_power.real,
                 q=load_power.imag,
-                terminal=term
+                terminal=term,
+                ver=ver
             )
 
         else:
@@ -1582,13 +1780,14 @@ def get_cgmes_sv_power_flow_1(multi_circuit: MultiCircuit,
             object_list=cgmes_model.cgmes_assets.Terminal_list,
             cond_eq_target_uuid=mc_shunt_like.idtag  # missing Load uuid
         )
-        if isinstance(term, cgmes_model.get_class_type("Terminal")):
+        if is_term(term):
 
             create_sv_power_flow(
                 cgmes_model=cgmes_model,
                 p=0.0,
                 q=shunt_q,
-                terminal=term
+                terminal=term,
+                ver=ver
             )
 
         else:
@@ -1603,6 +1802,7 @@ def get_cgmes_sv_power_flow_2(multi_circuit: MultiCircuit,
                               nc: NumericalCircuit,
                               cgmes_model: CgmesCircuit,
                               pf_results: PowerFlowResults,
+                              ver: CGMESVersions,
                               logger: DataLogger) -> None:
     """
     For Branches:
@@ -1612,6 +1812,7 @@ def get_cgmes_sv_power_flow_2(multi_circuit: MultiCircuit,
     :param nc:
     :param cgmes_model:
     :param pf_results:
+    :param ver:
     :param logger:
     :return: SvVoltage_list is populated in CgmesCircuit.
     """
@@ -1626,24 +1827,22 @@ def get_cgmes_sv_power_flow_2(multi_circuit: MultiCircuit,
     # 	- cim:Switch where cim:Switch.retained is true.
 
     # Branches ------------------------------------------------------------
-    branch_objects = (multi_circuit.lines +
-                      multi_circuit.transformers2w +
-                      multi_circuit.transformers3w)
+    branch_objects = multi_circuit.get_branches(add_vsc=False, add_hvdc=False, add_switch=True)
 
-    for (branch, pf_res_from, pf_res_to) \
-            in zip(branch_objects, pf_results.Sf, pf_results.St):
+    for (branch, pf_res_from, pf_res_to) in zip(branch_objects, pf_results.Sf, pf_results.St):
 
         term = find_object_by_cond_eq_uuid(
             object_list=cgmes_model.cgmes_assets.Terminal_list,
             cond_eq_target_uuid=branch.idtag
         )
-        if isinstance(term[0], cgmes_model.get_class_type("Terminal")):
+        if is_term(term[0]):
 
             create_sv_power_flow(
                 cgmes_model=cgmes_model,
                 p=pf_res_from.real,
                 q=pf_res_from.imag,
-                terminal=term
+                terminal=term,
+                ver=ver
             )
 
         else:
@@ -1658,8 +1857,19 @@ def get_cgmes_sv_tap_step(multi_circuit: MultiCircuit,
                           nc: NumericalCircuit,
                           cgmes_model: CgmesCircuit,
                           pf_results: PowerFlowResults,
+                          ver: CGMESVersions,
                           logger: DataLogger) -> None:
-    branch_objects = multi_circuit.get_branches_wo_hvdc()
+    """
+
+    :param multi_circuit:
+    :param nc:
+    :param cgmes_model:
+    :param pf_results:
+    :param ver:
+    :param logger:
+    :return:
+    """
+    branch_objects = multi_circuit.get_branches(add_vsc=False, add_hvdc=False, add_switch=True)
 
     tap_modules = pf_results.tap_module
 
@@ -1672,10 +1882,12 @@ def get_cgmes_sv_tap_step(multi_circuit: MultiCircuit,
     pass
 
 
-def get_cgmes_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit) -> None:
+def get_cgmes_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit,
+                                            ver: CGMESVersions) -> None:
     """
 
     :param cgmes_model:
+    :param ver:
     :return:
     """
 
@@ -1683,24 +1895,41 @@ def get_cgmes_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit) -> None:
                    cgmes_model.cgmes_assets.NonlinearShuntCompensator_list]:
 
         for shunt in shunts:
-
             create_sv_shunt_compensator_sections(
                 cgmes_model=cgmes_model,
                 sections=shunt.sections if shunt.sections is not None else 0,
                 cgmes_shunt_compensator=shunt,
+                ver=ver,
             )
 
 
 def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
                                  nc: NumericalCircuit,
                                  cgmes_model: CgmesCircuit,
+                                 ver: CGMESVersions,
                                  logger: DataLogger):
+    """
+
+    :param multicircuit_model:
+    :param nc:
+    :param cgmes_model:
+    :param ver:
+    :param logger:
+    :return:
+    """
     nc_islands = nc.split_into_islands()
-    tpi_template = cgmes_model.get_class_type("TopologicalIsland")
+
     i = 0
     for nc_i in nc_islands:
         i = i + 1
-        new_island = tpi_template(get_new_rdfid())
+
+        if ver == CGMESVersions.v2_4_15:
+            new_island = cgmes24.TopologicalIsland(get_new_rdfid())
+        elif ver == CGMESVersions.v3_0_0:
+            new_island = cgmes30.TopologicalIsland(get_new_rdfid())
+        else:
+            raise NotImplemented()
+
         new_island.name = "TopologicalIsland" + str(i)
         new_island.TopologicalNodes = []
         bus_idtags = nc_i.bus_data.idtag
@@ -1709,25 +1938,26 @@ def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
             tn = find_object_by_uuid(cgmes_model=cgmes_model,
                                      object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
                                      target_uuid=tn_idtag)
-            if tn:
+
+            if isinstance(tn, cgmes_model.assets.TopologicalNode):
                 new_island.TopologicalNodes.append(tn)
-                mc_bus = find_object_by_attribute(multicircuit_model.buses,
-                                                  "idtag", tn_idtag)
+                mc_bus = find_object_by_attribute(multicircuit_model.buses, "idtag", tn_idtag)
                 mc_buses.append(mc_bus)
             else:
-                logger.add_warning(
-                    msg="TopologicalNode missing from TopologicalIsland!",
-                    device=new_island.name,
-                    device_property="TopologicalNode")
+                logger.add_warning(msg="TopologicalNode missing from TopologicalIsland!",
+                                   device=new_island.name,
+                                   device_property="TopologicalNode")
         if mc_buses:
             slack_bus = find_object_by_attribute(mc_buses, "is_slack", True)
             if slack_bus:
                 slack_tn = find_object_by_uuid(cgmes_model,
                                                cgmes_model.cgmes_assets.TopologicalNode_list,
                                                slack_bus.idtag)
-                new_island.AngleRefTopologicalNode = slack_tn
-                for tn in new_island.TopologicalNodes:
-                    tn.AngleRefTopologicalIsland = slack_tn
+
+                if isinstance(slack_tn, cgmes_model.assets.TopologicalNode):
+                    new_island.AngleRefTopologicalNode = slack_tn
+                    for tn in new_island.TopologicalNodes:
+                        tn.AngleRefTopologicalIsland = slack_tn
             else:
                 logger.add_warning(
                     msg="AngleRefTopologicalNode missing from TopologicalIsland!",
@@ -1742,9 +1972,21 @@ def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
 
 
 def make_coordinate_system(cgmes_model: CgmesCircuit,
+                           ver: CGMESVersions,
                            logger: DataLogger):
-    object_template = cgmes_model.get_class_type("CoordinateSystem")
-    coo_sys = object_template(rdfid=get_new_rdfid())
+    """
+
+    :param cgmes_model:
+    :param ver:
+    :param logger:
+    :return:
+    """
+    if ver == CGMESVersions.v2_4_15:
+        coo_sys = cgmes24.CoordinateSystem(rdfid=get_new_rdfid())
+    elif ver == CGMESVersions.v3_0_0:
+        coo_sys = cgmes30.CoordinateSystem(rdfid=get_new_rdfid())
+    else:
+        raise NotImplemented()
 
     coo_sys.name = "EPSG4326"
     coo_sys.crsUrn = "urn:ogc:def:crs:EPSG::4326"
@@ -1755,6 +1997,7 @@ def make_coordinate_system(cgmes_model: CgmesCircuit,
 
 def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
                                cgmes_model: CgmesCircuit,
+                               ver: CGMESVersions,
                                logger: DataLogger):
     """
     Converts simplified HVDC line to two VSConverters inside DCConverterUnits,
@@ -1765,6 +2008,7 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
 
     :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model:
+    :param ver:
     :param logger:
     :return:
     """
@@ -1776,12 +2020,14 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
             gc_vsc=None,
             p_set=hvdc_line.Pset,
             v_set=hvdc_line.Vset_f,
+            ver=ver,
             logger=logger
         )
         dc_tp_1 = create_cgmes_dc_tp_node(
             tp_name=f'DC_side_{hvdc_line.bus_from.name}',
             tp_description=f'DC_for_{hvdc_line.bus_from.code}',
             cgmes_model=cgmes_model,
+            ver=ver,
             logger=logger
         )
         dc_node_1 = create_cgmes_dc_node(cn_name='DC_node_name',
@@ -1789,20 +2035,25 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
                                          cgmes_model=cgmes_model,
                                          dc_tp=dc_tp_1,
                                          dc_ec=dc_conv_unit_1,
+                                         ver=ver,
                                          logger=logger)
+
         create_cgmes_acdc_converter_terminal(
             cgmes_model=cgmes_model,
             mc_dc_bus=None,
             seq_num=2,
             dc_node=dc_node_1,
             dc_cond_eq=vsc_1,
+            ver=ver,
             logger=logger
         )
+
         create_cgmes_terminal(
             cgmes_model=cgmes_model,
             mc_bus=hvdc_line.bus_from,
             seq_num=None,
             cond_eq=vsc_1,
+            ver=ver,
             logger=logger
         )
 
@@ -1812,12 +2063,14 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
             gc_vsc=None,
             p_set=-hvdc_line.Pset,
             v_set=hvdc_line.Vset_t,
+            ver=ver,
             logger=logger
         )
         dc_tp_2 = create_cgmes_dc_tp_node(
             tp_name=f'DC_side_{hvdc_line.bus_to.name}',
             tp_description=f'DC_for_{hvdc_line.bus_to.code}',
             cgmes_model=cgmes_model,
+            ver=ver,
             logger=logger
         )
         dc_node_2 = create_cgmes_dc_node(cn_name='DC_node_name_2',
@@ -1825,26 +2078,30 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
                                          cgmes_model=cgmes_model,
                                          dc_tp=dc_tp_2,
                                          dc_ec=dc_conv_unit_2,
+                                         ver=ver,
                                          logger=logger)
+
         create_cgmes_acdc_converter_terminal(
             cgmes_model=cgmes_model,
             mc_dc_bus=None,
             seq_num=2,
             dc_node=dc_node_2,
             dc_cond_eq=vsc_2,
+            ver=ver,
             logger=logger
         )
+
         create_cgmes_terminal(
             cgmes_model=cgmes_model,
             mc_bus=hvdc_line.bus_to,
             seq_num=None,
             cond_eq=vsc_2,
+            ver=ver,
             logger=logger
         )
 
         # DC Line
-        dc_line = create_cgmes_dc_line(cgmes_model=cgmes_model,
-                                       logger=logger)
+        dc_line = create_cgmes_dc_line(cgmes_model=cgmes_model, ver=ver, logger=logger)
         create_cgmes_dc_line_segment(cgmes_model=cgmes_model,
                                      mc_elm=hvdc_line,
                                      dc_tp_1=dc_tp_1,
@@ -1852,6 +2109,7 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
                                      dc_tp_2=dc_tp_2,
                                      dc_node_2=dc_node_2,
                                      eq_cont=dc_line,
+                                     ver=ver,
                                      logger=logger)
 
     return
@@ -1875,45 +2133,47 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     :param logger: Logger object
     :return: CGMES circuit (as a new object)
     """
+    ver = cgmes_model.cgmes_version
 
-    get_cgmes_geograpical_regions(gc_model, cgmes_model, logger)
-    get_cgmes_subgeograpical_regions(gc_model, cgmes_model, logger)
+    get_cgmes_geograpical_regions(gc_model, cgmes_model, ver, logger)
+    get_cgmes_sub_geographical_regions(gc_model, cgmes_model, ver, logger)
 
-    make_coordinate_system(cgmes_model, logger)
+    make_coordinate_system(cgmes_model, ver, logger)
 
-    get_cgmes_base_voltages(gc_model, cgmes_model, logger)
+    get_cgmes_base_voltages(gc_model, cgmes_model, ver, logger)
 
-    get_cgmes_substations(gc_model, cgmes_model, logger)
-    get_cgmes_voltage_levels(gc_model, cgmes_model, logger)
+    get_cgmes_substations(gc_model, cgmes_model, ver, logger)
+    get_cgmes_voltage_levels(gc_model, cgmes_model, ver, logger)
 
-    get_cgmes_tp_nodes(gc_model, cgmes_model, logger)
-    get_cgmes_cn_nodes_from_tp_nodes(gc_model, cgmes_model, logger)
+    get_cgmes_tp_nodes(gc_model, cgmes_model, ver, logger)
+    get_cgmes_cn_nodes_from_tp_nodes(gc_model, cgmes_model, ver, logger)
+
     # TODO BusbarSection
     # get_cgmes_cn_nodes_from_cns(gc_model, cgmes_model, logger)
 
-    get_cgmes_loads(gc_model, cgmes_model, logger)
-    get_cgmes_equivalent_injections(gc_model, cgmes_model, logger)
-    get_cgmes_generators(gc_model, cgmes_model, logger)
+    get_cgmes_loads(gc_model, cgmes_model, ver, logger)
+    get_cgmes_equivalent_injections(gc_model, cgmes_model, ver, logger)
+    get_cgmes_generators(gc_model, cgmes_model, ver, logger)
 
     # Get operational limit types
-    operational_limit_type_list = get_cgmes_operational_limit_types(cgmes_model)
+    operational_limit_type_list = get_cgmes_operational_limit_types(cgmes_model, ver)
     # patl, tatl_900, tatl_60
 
     # BRANCHES
     # lines
-    get_cgmes_ac_line_segments(gc_model, cgmes_model, operational_limit_type_list, logger)
+    get_cgmes_ac_line_segments(gc_model, cgmes_model, operational_limit_type_list, ver, logger)
     # transformers, windings
-    get_cgmes_power_transformers(gc_model, cgmes_model, operational_limit_type_list, logger)
+    get_cgmes_power_transformers(gc_model, cgmes_model, operational_limit_type_list, ver, logger)
 
     # SHUNTS
-    get_cgmes_equivalent_shunts(gc_model, cgmes_model, logger)
-    get_cgmes_linear_and_non_linear_shunts(gc_model, cgmes_model, logger)
+    get_cgmes_equivalent_shunts(gc_model, cgmes_model, ver, logger)
+    get_cgmes_linear_and_non_linear_shunts(gc_model, cgmes_model, ver, logger)
 
     # Switches (Breakers)
-    get_cgmes_breakers(gc_model, cgmes_model, logger)
+    get_cgmes_breakers(gc_model, cgmes_model, ver, logger)
 
     # DC elements
-    convert_hvdc_line_to_cgmes(gc_model, cgmes_model, logger)
+    convert_hvdc_line_to_cgmes(gc_model, cgmes_model, ver, logger)
     # TODO get_cgmes_vsc_from_vsc()
     # TODO get_dc_line_from_dc_line()
 
@@ -1922,11 +2182,10 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
         # if converged == True...
 
         # SvVoltage for every TopoNode
-        get_cgmes_sv_voltages(gc_model, cgmes_model, pf_results, logger)
+        get_cgmes_sv_voltages(gc_model, cgmes_model, pf_results, ver, logger)
 
         # PowerFlow: P, Q results for every terminal
-        get_cgmes_sv_power_flow_1(gc_model, num_circ, cgmes_model, pf_results,
-                                  logger)
+        get_cgmes_sv_power_flow_1(gc_model, num_circ, cgmes_model, pf_results, ver, logger)
         # get_cgmes_sv_power_flow_2(gc_model, num_circ, cgmes_model, pf_results,
         #                           logger)
 
@@ -1935,14 +2194,13 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
 
         # SVTapStep: handled at transformer function
         # TODO get it from results
-        get_cgmes_sv_tap_step(gc_model, num_circ, cgmes_model, pf_results,
-                              logger)
+        get_cgmes_sv_tap_step(gc_model, num_circ, cgmes_model, pf_results, ver, logger)
 
         # SvShuntCompensatorSections:
-        get_cgmes_sv_shunt_compensator_sections(cgmes_model)
+        get_cgmes_sv_shunt_compensator_sections(cgmes_model, ver)
 
         # Topological Islands
-        get_cgmes_topological_island(gc_model, num_circ, cgmes_model, logger)
+        get_cgmes_topological_island(gc_model, num_circ, cgmes_model, ver, logger)
 
     else:
         logger.add_error(msg="Missing power flow result for CGMES export.")

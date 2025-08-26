@@ -239,7 +239,7 @@ def get_psse_transformer2w(transformer: dev.Transformer2W,
     psse_transformer.WINDV1 = transformer.tap_module * mf / mt
     psse_transformer.WINDV2 = 1.0
 
-    V1, V2 = transformer.get_from_to_nominal_voltages()
+    V1, V2, _ = transformer.get_from_to_nominal_voltages()
     psse_transformer.NOMV1 = V1
     psse_transformer.NOMV2 = V2 if V2 != V1 else 0.0
 

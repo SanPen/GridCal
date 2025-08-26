@@ -49,6 +49,39 @@ class ObjectSelectWindow(QtWidgets.QDialog):
             self.close()
 
 
+class ListSelectWindow(QtWidgets.QDialog):
+    def __init__(self, title, elements, parent=None):
+        QtWidgets.QDialog.__init__(self, parent)
+
+        self.setWindowTitle(title)
+
+        layout = QtWidgets.QGridLayout()
+        self.setLayout(layout)
+        self.object_list = elements
+        self.list_widget = QtWidgets.QListWidget()
+
+        self.selected_object = None
+
+        for i, obj in enumerate(elements):
+            self.list_widget.insertItem(i, obj)
+
+        # self.list_widget.clicked.connect(self.clicked)
+        self.list_widget.itemDoubleClicked.connect(self.dbl_clicked)
+        layout.addWidget(self.list_widget)
+
+    def dbl_clicked(self, qmodelindex):
+        """
+        Double clicked selection
+        :param qmodelindex:
+        :return:
+        """
+        idx = self.list_widget.currentIndex().row()
+        if idx > -1:
+            print(self.object_list[idx])
+            self.selected_object = self.object_list[idx]
+            self.close()
+
+
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     lst = [SampleObject(name='Object {}'.format(i)) for i in range(5)]

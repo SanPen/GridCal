@@ -3,8 +3,10 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 # from GridCalEngine.Devices.Parents.editable_device import EditableDevice
-from GridCalEngine.Devices.measurement import (PiMeasurement, PfMeasurement, QiMeasurement, QfMeasurement,
-                                               VmMeasurement, VmMeasurement, IfMeasurement, IfMeasurement)
+from GridCalEngine.Devices.measurement import (PiMeasurement, PfMeasurement, PtMeasurement,
+                                               QiMeasurement, QfMeasurement, QtMeasurement,
+                                               VmMeasurement, VaMeasurement,
+                                               IfMeasurement, ItMeasurement)
 
 from GridCalEngine.Devices.Aggregation import *
 from GridCalEngine.Devices.Branches import *
@@ -14,3 +16,4 @@ from GridCalEngine.Devices.Associations import *
 from GridCalEngine.Devices.Diagrams import *
 from GridCalEngine.Devices.Fluid import *
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.admittance_matrix import AdmittanceMatrix

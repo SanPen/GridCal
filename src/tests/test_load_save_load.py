@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import os
+import numpy as np
 import GridCalEngine.api as gce
 
 
@@ -62,7 +63,7 @@ def test_load_save_load2() -> None:
     :return:
     """
     grid1 = gce.MultiCircuit(Sbase=45)
-    grid1.set_unix_time([0, 3600])
+    grid1.set_unix_time(np.array([0, 3600]))
     b1 = grid1.add_bus()
     b2 = grid1.add_bus()
     b3 = grid1.add_bus()

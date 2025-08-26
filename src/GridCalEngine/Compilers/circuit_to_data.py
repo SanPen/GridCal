@@ -10,9 +10,9 @@ from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode, DeviceType,
-                                        TapModuleControl, TapPhaseControl, HvdcControlType, ConverterControlType)
+                                        TapModuleControl, TapPhaseControl, HvdcControlType, ConverterControlType,
+                                        ShuntConnectionType)
 from GridCalEngine.basic_structures import BoolVec, IntVec
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.DataStructures.battery_data import BatteryData
@@ -32,6 +32,7 @@ from GridCalEngine.DataStructures.fluid_path_data import FluidPathData
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Devices.multi_circuit import MultiCircuit
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
     from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
     from GridCalEngine.Simulations.NTC.ntc_results import OptimalNetTransferCapacityResults
@@ -44,6 +45,23 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
         OptimalNetTransferCapacityResults,
         OptimalNetTransferCapacityTimeSeriesResults
     ]
+
+
+def delta2StarAdmittance(Yab: complex,
+                         Ybc: complex,
+                         Yca: complex):
+    """
+    Converts Delta to Star in admittances
+    :param Yab:
+    :param Ybc:
+    :param Yca:
+    :return: Ya, Yb, Yc
+    """
+    return 1 / 3 * np.array([
+        [Yab + Yca, -Yab, -Yca],
+        [-Yab, Yab + Ybc, -Ybc],
+        [-Yca, -Ybc, Ybc + Yca]
+    ])
 
 
 def set_bus_control_voltage(i: int,
@@ -207,7 +225,8 @@ def get_bus_data(bus_data: BusData,
                  areas_dict: Dict[Area, int],
                  t_idx: int = -1,
                  time_series=False,
-                 use_stored_guess=False) -> None:
+                 use_stored_guess=False,
+                 fill_three_phase: bool = False) -> None:
     """
 
     :param bus_data: BusData
@@ -270,7 +289,8 @@ def get_load_data(data: LoadData,
                   t_idx=-1,
                   opf_results: Union[OptimalPowerFlowResults, None] = None,
                   time_series=False,
-                  use_stored_guess=False) -> LoadData:
+                  use_stored_guess=False,
+                  fill_three_phase: bool = False) -> LoadData:
     """
 
     :param data:
@@ -283,9 +303,10 @@ def get_load_data(data: LoadData,
     :param opf_results:
     :param time_series:
     :param use_stored_guess:
+    :param fill_three_phase: Fill the tree phase info?
     :return:
     """
-
+    idx3 = np.array([0, 1, 2])
     ii = 0
     for elm in circuit.get_loads():
 
@@ -301,6 +322,7 @@ def get_load_data(data: LoadData,
             data.original_idx[ii] = ii
             data.mttf[ii] = elm.mttf
             data.mttr[ii] = elm.mttr
+            data.scalable[ii] = elm.scalable
 
             if time_series:
                 if opf_results is not None:
@@ -308,11 +330,49 @@ def get_load_data(data: LoadData,
                 else:
                     data.S[ii] = complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
 
+                if fill_three_phase:
+                    if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
+                        data.S3_star[3 * ii + 0] = complex(elm.Pa_prof[t_idx], elm.Qa_prof[t_idx])
+                        data.S3_star[3 * ii + 1] = complex(elm.Pb_prof[t_idx], elm.Qb_prof[t_idx])
+                        data.S3_star[3 * ii + 2] = complex(elm.Pc_prof[t_idx], elm.Qc_prof[t_idx])
+
+                        data.I3_star[3 * ii + 0] = complex(elm.Ir1_prof[t_idx], elm.Ii1_prof[t_idx])
+                        data.I3_star[3 * ii + 1] = complex(elm.Ir2_prof[t_idx], elm.Ii2_prof[t_idx])
+                        data.I3_star[3 * ii + 2] = complex(elm.Ir3_prof[t_idx], elm.Ii3_prof[t_idx])
+
+                        data.Y3_star[3 * ii + 0, 0] = complex(elm.G1_prof[t_idx], elm.B1_prof[t_idx])
+                        data.Y3_star[3 * ii + 1, 1] = complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx])
+                        data.Y3_star[3 * ii + 2, 2] = complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
+
+                    elif elm.conn == ShuntConnectionType.Delta:
+                        data.S3_delta[3 * ii + 0] = complex(elm.Pa_prof[t_idx], elm.Qa_prof[t_idx])
+                        data.S3_delta[3 * ii + 1] = complex(elm.Pb_prof[t_idx], elm.Qb_prof[t_idx])
+                        data.S3_delta[3 * ii + 2] = complex(elm.Pc_prof[t_idx], elm.Qc_prof[t_idx])
+
+                        if elm.G1 > 0 and elm.G2 > 0 and elm.G3 > 0:
+                            data.Y3_star[3 * ii:3 * ii + 3, [0, 1, 2]] = delta2StarAdmittance(
+                                Yab=complex(elm.G1_prof[t_idx], -elm.B1_prof[t_idx]),
+                                Ybc=complex(elm.G2_prof[t_idx], -elm.B2_prof[t_idx]),
+                                Yca=complex(elm.G3_prof[t_idx], -elm.B3_prof[t_idx])
+                            )
+                        else:
+                            data.Y3_delta[3 * ii + 0] = complex(elm.G1_prof[t_idx], -elm.B1_prof[t_idx])
+                            data.Y3_delta[3 * ii + 1] = complex(elm.G2_prof[t_idx], -elm.B2_prof[t_idx])
+                            data.Y3_delta[3 * ii + 2] = complex(elm.G3_prof[t_idx], -elm.B3_prof[t_idx])
+
+                        data.I3_delta[3 * ii + 0] = complex(elm.Ir1_prof[t_idx], elm.Ii1_prof[t_idx])
+                        data.I3_delta[3 * ii + 1] = complex(elm.Ir2_prof[t_idx], elm.Ii2_prof[t_idx])
+                        data.I3_delta[3 * ii + 2] = complex(elm.Ir3_prof[t_idx], elm.Ii3_prof[t_idx])
+
+                    else:
+                        raise Exception(f"Unhandled connection type {elm.conn}")
+
                 data.I[ii] = complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
                 data.Y[ii] = complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
 
                 data.active[ii] = elm.active_prof[t_idx]
                 data.cost[ii] = elm.Cost_prof[t_idx]
+                data.shift_key[ii] = elm.shift_key_prof[t_idx]
 
             else:
                 if opf_results is not None:
@@ -320,10 +380,49 @@ def get_load_data(data: LoadData,
                 else:
                     data.S[ii] = complex(elm.P, elm.Q)
 
+                    if fill_three_phase:
+
+                        if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
+                            data.S3_star[3 * ii + 0] = complex(elm.Pa, elm.Qa)
+                            data.S3_star[3 * ii + 1] = complex(elm.Pb, elm.Qb)
+                            data.S3_star[3 * ii + 2] = complex(elm.Pc, elm.Qc)
+
+                            data.I3_star[3 * ii + 0] = complex(elm.Ir1, elm.Ii1)
+                            data.I3_star[3 * ii + 1] = complex(elm.Ir2, elm.Ii2)
+                            data.I3_star[3 * ii + 2] = complex(elm.Ir3, elm.Ii3)
+
+                            data.Y3_star[3 * ii + 0, 0] = complex(elm.G1, -elm.B1)
+                            data.Y3_star[3 * ii + 1, 1] = complex(elm.G2, -elm.B2)
+                            data.Y3_star[3 * ii + 2, 2] = complex(elm.G3, -elm.B3)
+
+                        elif elm.conn == ShuntConnectionType.Delta:
+                            data.S3_delta[3 * ii + 0] = complex(elm.Pa, elm.Qa)
+                            data.S3_delta[3 * ii + 1] = complex(elm.Pb, elm.Qb)
+                            data.S3_delta[3 * ii + 2] = complex(elm.Pc, elm.Qc)
+
+                            if elm.G1 > 0 and elm.G2 > 0 and elm.G3 > 0:
+                                data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                                    Yab=complex(elm.G1, -elm.B1),
+                                    Ybc=complex(elm.G2, -elm.B2),
+                                    Yca=complex(elm.G3, -elm.B3)
+                                )
+                            else:
+                                data.Y3_delta[3 * ii + 0] = complex(elm.G1, -elm.B1)
+                                data.Y3_delta[3 * ii + 1] = complex(elm.G2, -elm.B2)
+                                data.Y3_delta[3 * ii + 2] = complex(elm.G3, -elm.B3)
+
+                            data.I3_delta[3 * ii + 0] = complex(elm.Ir1, elm.Ii1)
+                            data.I3_delta[3 * ii + 1] = complex(elm.Ir2, elm.Ii2)
+                            data.I3_delta[3 * ii + 2] = complex(elm.Ir3, elm.Ii3)
+
+                        else:
+                            raise Exception(f"Unhandled connection type {elm.conn}")
+
                 data.I[ii] = complex(elm.Ir, elm.Ii)
                 data.Y[ii] = complex(elm.G, elm.B)
                 data.active[ii] = elm.active
                 data.cost[ii] = elm.Cost
+                data.shift_key[ii] = elm.shift_key
 
             if elm.use_kw:
                 # pass kW to MW
@@ -352,16 +451,49 @@ def get_load_data(data: LoadData,
             data.names[ii] = elm.name
             data.idtag[ii] = elm.idtag
             data.original_idx[ii] = ii
+            data.scalable[ii] = elm.scalable
 
             if time_series:
                 data.S[ii] -= complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
                 data.active[ii] = elm.active_prof[t_idx]
                 data.cost[ii] = elm.Cost_prof[t_idx]
+                data.shift_key[ii] = elm.shift_key_prof[t_idx]
+
+                if fill_three_phase:
+                    if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
+                        data.S3_star[3 * ii + 0] -= complex(elm.Pa_prof[t_idx], elm.Qa_prof[t_idx])
+                        data.S3_star[3 * ii + 1] -= complex(elm.Pb_prof[t_idx], elm.Qb_prof[t_idx])
+                        data.S3_star[3 * ii + 2] -= complex(elm.Pc_prof[t_idx], elm.Qc_prof[t_idx])
+
+
+                    elif elm.conn == ShuntConnectionType.Delta:
+                        data.S3_delta[3 * ii + 0] -= complex(elm.Pa_prof[t_idx], elm.Qa_prof[t_idx])
+                        data.S3_delta[3 * ii + 1] -= complex(elm.Pb_prof[t_idx], elm.Qb_prof[t_idx])
+                        data.S3_delta[3 * ii + 2] -= complex(elm.Pc_prof[t_idx], elm.Qc_prof[t_idx])
+
+                    else:
+                        raise Exception(f"Unhandled connection type {elm.conn}")
 
             else:
                 data.S[ii] -= complex(elm.P, elm.Q)
+
+                if fill_three_phase:
+                    if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
+                        data.S3_star[3 * ii + 0] -= complex(elm.Pa, elm.Qa)
+                        data.S3_star[3 * ii + 1] -= complex(elm.Pb, elm.Qb)
+                        data.S3_star[3 * ii + 2] -= complex(elm.Pc, elm.Qc)
+
+                    elif elm.conn == ShuntConnectionType.Delta:
+                        data.S3_delta[3 * ii + 0] -= complex(elm.Pa, elm.Qa)
+                        data.S3_delta[3 * ii + 1] -= complex(elm.Pb, elm.Qb)
+                        data.S3_delta[3 * ii + 2] -= complex(elm.Pc, elm.Qc)
+
+                    else:
+                        raise Exception(f"Unhandled connection type {elm.conn}")
+
                 data.active[ii] = elm.active
                 data.cost[ii] = elm.Cost
+                data.shift_key[ii] = elm.shift_key
 
             if elm.use_kw:
                 # pass kW to MW
@@ -387,6 +519,7 @@ def get_load_data(data: LoadData,
             data.bus_idx[ii] = i
             data.names[ii] = elm.name
             data.idtag[ii] = elm.idtag
+            data.scalable[ii] = elm.scalable
             data.original_idx[ii] = ii
 
             # change stuff depending on the modes
@@ -418,11 +551,44 @@ def get_load_data(data: LoadData,
 
             if time_series:
                 data.S[ii] += complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
+
+                if fill_three_phase:
+                    if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
+                        data.S3_star[3 * ii + 0] += complex(elm.Pa_prof[t_idx], elm.Qa_prof[t_idx])
+                        data.S3_star[3 * ii + 1] += complex(elm.Pb_prof[t_idx], elm.Qb_prof[t_idx])
+                        data.S3_star[3 * ii + 2] += complex(elm.Pc_prof[t_idx], elm.Qc_prof[t_idx])
+
+
+                    elif elm.conn == ShuntConnectionType.Delta:
+                        data.S3_delta[3 * ii + 0] += complex(elm.Pa_prof[t_idx], elm.Qa_prof[t_idx])
+                        data.S3_delta[3 * ii + 1] += complex(elm.Pb_prof[t_idx], elm.Qb_prof[t_idx])
+                        data.S3_delta[3 * ii + 2] += complex(elm.Pc_prof[t_idx], elm.Qc_prof[t_idx])
+
+                    else:
+                        raise Exception(f"Unhandled connection type {elm.conn}")
+
                 data.active[ii] = elm.active_prof[t_idx]
+                data.shift_key[ii] = elm.shift_key_prof[t_idx]
 
             else:
                 data.S[ii] += complex(elm.P, elm.Q)
+
+                if fill_three_phase:
+                    if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
+                        data.S3_star[3 * ii + 0] += complex(elm.Pa, elm.Qa)
+                        data.S3_star[3 * ii + 1] += complex(elm.Pb, elm.Qb)
+                        data.S3_star[3 * ii + 2] += complex(elm.Pc, elm.Qc)
+
+                    elif elm.conn == ShuntConnectionType.Delta:
+                        data.S3_delta[3 * ii + 0] += complex(elm.Pa, elm.Qa)
+                        data.S3_delta[3 * ii + 1] += complex(elm.Pb, elm.Qb)
+                        data.S3_delta[3 * ii + 2] += complex(elm.Pc, elm.Qc)
+
+                    else:
+                        raise Exception(f"Unhandled connection type {elm.conn}")
+
                 data.active[ii] = elm.active
+                data.shift_key[ii] = elm.shift_key
 
             if elm.use_kw:
                 # pass kW to MW
@@ -451,16 +617,55 @@ def get_load_data(data: LoadData,
             data.original_idx[ii] = ii
             data.mttf[ii] = elm.mttf
             data.mttr[ii] = elm.mttr
+            data.scalable[ii] = elm.scalable
 
             if time_series:
                 data.I[ii] += complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
+
+                if fill_three_phase:
+                    if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
+
+                        data.I3_star[3 * ii + 0] += complex(elm.Ir1_prof[t_idx], elm.Ii1_prof[t_idx])
+                        data.I3_star[3 * ii + 1] += complex(elm.Ir2_prof[t_idx], elm.Ii2_prof[t_idx])
+                        data.I3_star[3 * ii + 2] += complex(elm.Ir3_prof[t_idx], elm.Ii3_prof[t_idx])
+
+
+                    elif elm.conn == ShuntConnectionType.Delta:
+
+                        data.I3_delta[3 * ii + 0] += complex(elm.Ir1_prof[t_idx], elm.Ii1_prof[t_idx])
+                        data.I3_delta[3 * ii + 1] += complex(elm.Ir2_prof[t_idx], elm.Ii2_prof[t_idx])
+                        data.I3_delta[3 * ii + 2] += complex(elm.Ir3_prof[t_idx], elm.Ii3_prof[t_idx])
+
+                    else:
+                        raise Exception(f"Unhandled connection type {elm.conn}")
+
                 data.active[ii] = elm.active_prof[t_idx]
                 data.cost[ii] = elm.Cost_prof[t_idx]
+                data.shift_key[ii] = elm.shift_key_prof[t_idx]
 
             else:
                 data.I[ii] += complex(elm.Ir, elm.Ii)
+
+                if fill_three_phase:
+
+                    if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
+
+                        data.I3_star[3 * ii + 0] += complex(elm.Ir1, elm.Ii1)
+                        data.I3_star[3 * ii + 1] += complex(elm.Ir2, elm.Ii2)
+                        data.I3_star[3 * ii + 2] += complex(elm.Ir3, elm.Ii3)
+
+                    elif elm.conn == ShuntConnectionType.Delta:
+
+                        data.I3_delta[3 * ii + 0] += complex(elm.Ir1, elm.Ii1)
+                        data.I3_delta[3 * ii + 1] += complex(elm.Ir2, elm.Ii2)
+                        data.I3_delta[3 * ii + 2] += complex(elm.Ir3, elm.Ii3)
+
+                    else:
+                        raise Exception(f"Unhandled connection type {elm.conn}")
+
                 data.active[ii] = elm.active
                 data.cost[ii] = elm.Cost
+                data.shift_key[ii] = elm.shift_key
 
             if elm.use_kw:
                 # pass kW to MW
@@ -490,6 +695,7 @@ def get_shunt_data(
         time_series=False,
         use_stored_guess=False,
         control_remote_voltage: bool = True,
+        fill_three_phase: bool = False
 ) -> None:
     """
 
@@ -503,8 +709,10 @@ def get_shunt_data(
     :param time_series:
     :param use_stored_guess:
     :param control_remote_voltage:
+    :param fill_three_phase:
     :return:
     """
+    idx3 = np.array([0, 1, 2])
 
     ii = 0
     for k, elm in enumerate(circuit.get_shunts()):
@@ -525,9 +733,47 @@ def get_shunt_data(
             if time_series:
                 data.active[k] = elm.active_prof[t_idx]
                 data.Y[k] = complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
+
+                if fill_three_phase:
+                    if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
+
+                        data.Y3_star[3 * ii + 0, 0] = complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx])
+                        data.Y3_star[3 * ii + 1, 1] = complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx])
+                        data.Y3_star[3 * ii + 2, 2] = complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
+
+                    elif elm.conn == ShuntConnectionType.Delta:
+
+                        data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                            Yab=complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx]),
+                            Ybc=complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx]),
+                            Yca=complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
+                        )
+
+                    else:
+                        raise Exception(f"Unhandled connection type {elm.conn}")
+
             else:
                 data.active[k] = elm.active
                 data.Y[k] = complex(elm.G, elm.B)
+
+                if fill_three_phase:
+
+                    if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
+
+                        data.Y3_star[3 * ii + 0, 0] = complex(elm.Ga, elm.Ba)
+                        data.Y3_star[3 * ii + 1, 1] = complex(elm.Gb, elm.Bb)
+                        data.Y3_star[3 * ii + 2, 2] = complex(elm.Gc, elm.Bc)
+
+                    elif elm.conn == ShuntConnectionType.Delta:
+
+                        data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                            Yab=complex(elm.Ga, elm.Ba),
+                            Ybc=complex(elm.Gb, elm.Bb),
+                            Yca=complex(elm.Gc, elm.Bc)
+                        )
+
+                    else:
+                        raise Exception(f"Unhandled connection type {elm.conn}")
 
             if elm.use_kw:
                 # pass kW to MW
@@ -564,6 +810,24 @@ def get_shunt_data(
                 data.active[ii] = elm.active_prof[t_idx]
                 data.cost[ii] = elm.Cost_prof[t_idx]
 
+                if fill_three_phase:
+                    if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
+
+                        data.Y3_star[3 * ii + 0, 0] = complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx])
+                        data.Y3_star[3 * ii + 1, 1] = complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx])
+                        data.Y3_star[3 * ii + 2, 2] = complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
+
+                    elif elm.conn == ShuntConnectionType.Delta:
+
+                        data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                            Yab=complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx]),
+                            Ybc=complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx]),
+                            Yca=complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
+                        )
+
+                    else:
+                        raise Exception(f"Unhandled connection type {elm.conn}")
+
                 if elm.is_controlled and elm.active_prof[t_idx]:
 
                     if elm.control_bus_prof[t_idx] is not None:
@@ -589,6 +853,25 @@ def get_shunt_data(
                 data.Y[ii] += complex(elm.G, elm.B)
                 data.active[ii] = elm.active
                 data.cost[ii] = elm.Cost
+
+                if fill_three_phase:
+
+                    if elm.conn == ShuntConnectionType.Star or elm.conn == ShuntConnectionType.GroundedStar:
+
+                        data.Y3_star[3 * ii + 0, 0] = complex(elm.Ga, elm.Ba)
+                        data.Y3_star[3 * ii + 1, 1] = complex(elm.Gb, elm.Bb)
+                        data.Y3_star[3 * ii + 2, 2] = complex(elm.Gc, elm.Bc)
+
+                    elif elm.conn == ShuntConnectionType.Delta:
+
+                        data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                            Yab=complex(elm.Ga, elm.Ba),
+                            Ybc=complex(elm.Gb, elm.Bb),
+                            Yca=complex(elm.Gc, elm.Bc)
+                        )
+
+                    else:
+                        raise Exception(f"Unhandled connection type {elm.conn}")
 
                 if elm.is_controlled and elm.active:
                     if elm.control_bus is not None:
@@ -638,6 +921,7 @@ def fill_generator_parent(
         time_series=False,
         use_stored_guess=False,
         control_remote_voltage: bool = True,
+        fill_three_phase: bool = False
 ) -> None:
     """
     Fill the common ancestor of generation and batteries
@@ -652,6 +936,7 @@ def fill_generator_parent(
     :param time_series:
     :param use_stored_guess:
     :param control_remote_voltage:
+    :param fill_three_phase:
     :return:
     """
     if elm.bus is None:
@@ -659,6 +944,7 @@ def fill_generator_parent(
         data.active[k] = False
         return
 
+    idx3 = np.arange(3)
     i = bus_dict[elm.bus]
     data.bus_idx[k] = i
     data.names[k] = elm.name
@@ -688,6 +974,7 @@ def fill_generator_parent(
     data.capex[k] = elm.capex
 
     data.snom[k] = elm.Snom
+    data.scalable[k] = elm.scalable
 
     if time_series:
         data.p[k] = elm.P_prof[t_idx]
@@ -707,6 +994,7 @@ def fill_generator_parent(
         data.cost_0[k] = elm.Cost0_prof[t_idx]
         data.cost_1[k] = elm.Cost_prof[t_idx]
         data.cost_2[k] = elm.Cost2_prof[t_idx]
+        data.shift_key[k] = elm.shift_key_prof[t_idx]
 
         if elm.active_prof[t_idx]:
 
@@ -753,6 +1041,7 @@ def fill_generator_parent(
         data.cost_0[k] = elm.Cost0
         data.cost_1[k] = elm.Cost
         data.cost_2[k] = elm.Cost2
+        data.shift_key[k] = elm.shift_key
 
         if elm.active:
 
@@ -791,6 +1080,11 @@ def fill_generator_parent(
         data.cost_1[k] /= 1000.0
         data.cost_2[k] /= 1e6  # this is because of MW^2
 
+    if fill_three_phase:
+        # Note: for a generator that is balanced, the delta and star configurations
+        # translate to the same values in star
+        data.p3_star[3 * k + idx3] = data.p[k] / 3.0
+
     # reactive power-sharing data
     if data.active[k]:
         if data.controllable[k]:
@@ -812,6 +1106,7 @@ def get_generator_data(
         time_series=False,
         use_stored_guess=False,
         control_remote_voltage: bool = True,
+        fill_three_phase: bool = False
 ) -> Dict[str, int]:
     """
 
@@ -844,7 +1139,8 @@ def get_generator_data(
                               t_idx=t_idx,
                               time_series=time_series,
                               use_stored_guess=use_stored_guess,
-                              control_remote_voltage=control_remote_voltage)
+                              control_remote_voltage=control_remote_voltage,
+                              fill_three_phase=fill_three_phase)
 
         if opf_results is not None:
             # overwrite P with the OPF results
@@ -868,6 +1164,7 @@ def get_battery_data(
         time_series=False,
         use_stored_guess=False,
         control_remote_voltage: bool = True,
+        fill_three_phase: bool = False
 ) -> None:
     """
 
@@ -897,7 +1194,8 @@ def get_battery_data(
                               t_idx=t_idx,
                               time_series=time_series,
                               use_stored_guess=use_stored_guess,
-                              control_remote_voltage=control_remote_voltage)
+                              control_remote_voltage=control_remote_voltage,
+                              fill_three_phase=fill_three_phase)
 
         data.enom[k] = elm.Enom
         data.min_soc[k] = elm.min_soc
@@ -921,7 +1219,7 @@ def fill_parent_branch(i: int,
                        data: PassiveBranchData,
                        bus_dict: Dict[Bus, int],
                        t_idx: int = -1,
-                       time_series: bool = False, ):
+                       time_series: bool = False):
     """
 
     :param i:
@@ -1130,7 +1428,8 @@ def get_branch_data(
         control_taps_modules: bool = True,
         control_taps_phase: bool = True,
         control_remote_voltage: bool = True,
-        logger: Logger = Logger()
+        logger: Logger = Logger(),
+        fill_three_phase: bool = False
 ) -> Dict[BRANCH_TYPES, int]:
     """
     Compile BranchData for a time step or the snapshot
@@ -1150,10 +1449,12 @@ def get_branch_data(
     :param control_taps_phase: Control TapsPhase
     :param control_remote_voltage: Control RemoteVoltage
     :param logger: Logger
+    :param fill_three_phase: Fill the tree phase info?
     :return: BranchData
     """
 
     branch_dict: Dict[BRANCH_TYPES, int] = dict()
+    idx3 = np.array(range(3))
 
     ii = 0
 
@@ -1184,6 +1485,26 @@ def get_branch_data(
         data.R2[ii] = elm.R2
         data.X2[ii] = elm.X2
         data.B2[ii] = elm.B2
+
+        if fill_three_phase:
+            """
+            yff = ys_abc + ysh_abc / 2
+            yft = - ys_abc
+            ytf = - ys_abc
+            ytt = ys_abc + ysh_abc / 2
+            """
+            k3 = 3 * ii + idx3
+            y1 = elm.ys.values + elm.ysh.values / 2.0 * 1e-6
+            y2 = - elm.ys.values
+            data.Yff3[k3, :] = y1
+            data.Yft3[k3, :] = y2
+            data.Ytf3[k3, :] = y2
+            data.Ytt3[k3, :] = y1
+
+            """ Save the phases of each line """
+            data.phA[ii] = elm.ys.phA
+            data.phB[ii] = elm.ys.phB
+            data.phC[ii] = elm.ys.phC
 
         # store for later
         branch_dict[elm] = ii
@@ -1258,6 +1579,18 @@ def get_branch_data(
         data.X2[ii] = elm.X2
         data.G2[ii] = elm.G2
         data.B2[ii] = elm.B2
+
+        if fill_three_phase:
+            k3 = 3 * ii + idx3
+            (data.Yff3[k3, :],
+             data.Yft3[k3, :],
+             data.Ytf3[k3, :],
+             data.Ytt3[k3, :]) = elm.transformer_admittance(vtap_f=data.virtual_tap_f[ii],
+                                                            vtap_t=data.virtual_tap_t[ii],
+                                                            logger=logger)
+            data.phA[ii] = 1
+            data.phB[ii] = 1
+            data.phC[ii] = 1
 
         data.conn[ii] = elm.conn
         data.m_taps[ii] = elm.tap_changer.tap_modules_array
@@ -1414,6 +1747,11 @@ def get_branch_data(
                            bus_dict=bus_dict,
                            t_idx=t_idx,
                            time_series=time_series)
+
+        if fill_three_phase:
+            data.phA[ii] = 1
+            data.phB[ii] = 1
+            data.phC[ii] = 1
 
         data.R[ii] = elm.R
         data.X[ii] = elm.X
@@ -1703,7 +2041,6 @@ def get_hvdc_data(data: HvdcData,
         data.names[i] = elm.name
         data.idtag[i] = elm.idtag
 
-
         if time_series:
             data.active[i] = elm.active_prof[t_idx]
             data.rates[i] = elm.rate_prof[t_idx]
@@ -1953,6 +2290,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  control_taps_phase: bool = True,
                                  control_remote_voltage: bool = True,
                                  fill_gep: bool = False,
+                                 fill_three_phase: bool = False,
                                  logger=Logger()) -> NumericalCircuit:
     """
     Compile a NumericalCircuit from a MultiCircuit
@@ -1968,6 +2306,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     :param control_taps_phase: control taps phase?
     :param control_remote_voltage: control remote voltage?
     :param fill_gep: fill generation expansion planning parameters?
+    :param fill_three_phase:
     :param logger: Logger instance
     :return: NumericalCircuit instance
     """
@@ -2011,7 +2350,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         t_idx=t_idx,
         time_series=time_series,
         areas_dict=areas_dict,
-        use_stored_guess=use_stored_guess
+        use_stored_guess=use_stored_guess,
+        fill_three_phase=fill_three_phase
     )
 
     gen_dict = get_generator_data(
@@ -2025,7 +2365,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         logger=logger,
         opf_results=opf_results,
         use_stored_guess=use_stored_guess,
-        control_remote_voltage=control_remote_voltage
+        control_remote_voltage=control_remote_voltage,
+        fill_three_phase=fill_three_phase
     )
 
     get_battery_data(
@@ -2039,7 +2380,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         logger=logger,
         opf_results=opf_results,
         use_stored_guess=use_stored_guess,
-        control_remote_voltage=control_remote_voltage
+        control_remote_voltage=control_remote_voltage,
+        fill_three_phase=fill_three_phase
     )
 
     get_shunt_data(
@@ -2052,7 +2394,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         time_series=time_series,
         logger=logger,
         use_stored_guess=use_stored_guess,
-        control_remote_voltage=control_remote_voltage
+        control_remote_voltage=control_remote_voltage,
+        fill_three_phase=fill_three_phase
     )
 
     get_load_data(
@@ -2065,7 +2408,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         t_idx=t_idx,
         time_series=time_series,
         opf_results=opf_results,
-        use_stored_guess=use_stored_guess
+        use_stored_guess=use_stored_guess,
+        fill_three_phase=fill_three_phase
     )
 
     branch_dict = get_branch_data(
@@ -2084,6 +2428,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         control_taps_modules=control_taps_modules,
         control_taps_phase=control_taps_phase,
         control_remote_voltage=control_remote_voltage,
+        fill_three_phase=fill_three_phase
     )
 
     get_vsc_data(

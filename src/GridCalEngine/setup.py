@@ -73,6 +73,7 @@ dependencies = ['setuptools>=41.0.1',
                 "h5py>=3.12.0",
                 "numba>=0.61",  # to compile routines natively
                 'pyproj',
+                'pulp',
                 'pyarrow>=15',
                 "windpowerlib>=0.2.2",
                 "pvlib>=0.11",
@@ -98,9 +99,8 @@ setup(
     long_description_content_type='text/markdown',  # Optional (see note above)
     url='https://github.com/SanPen/GridCal',  # Optional
     author='Santiago Peñate Vera et. Al.',  # Optional
-    author_email='santiago@gridcal.org',  # Optional
+    author_email='spenate@eroots.tech',  # Optional
     classifiers=[
-        'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Programming Language :: Python :: 3.8',
     ],
     keywords='power systems planning',  # Optional

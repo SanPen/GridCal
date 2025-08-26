@@ -17,7 +17,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath('../src'))
 sys.path.append("..")
-from doc.auto_document_models import write_models_to_rst
+sys.setrecursionlimit(5000)
+from doc.auto_document_models import write_models_to_md
 from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 
 # -- Project information -----------------------------------------------------
@@ -56,12 +57,15 @@ extensions.append('sphinx.ext.mathjax')
 extensions.append('sphinx.ext.viewcode')
 extensions.append('sphinx.ext.graphviz')
 extensions.append('sphinx_rtd_theme')
+#extensions.append("sphinxawesome_theme")
 # extensions.append('sphinx_build_compatibility.extension')
+extensions.append('myst_parser')  # markdown
 
 autosummary_generate = True
+myst_dmath_allow_labels = True
 
 # generate CGMES, PSSe and GridCal data models' rst files
-write_models_to_rst(os.path.join('rst_source', 'development', 'data_models.rst'))
+write_models_to_md(os.path.join('md_source', 'data_models.md'))
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -69,8 +73,24 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
+
+myst_enable_extensions = [
+    "amsmath",
+    "attrs_inline",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "fieldlist",
+    "html_admonition",
+    "html_image",
+    "linkify",
+    "replacements",
+    "smartquotes",
+    "strikethrough",
+    "substitution",
+    "tasklist",
+]
 
 # The master toctree document.
 master_doc = 'index'
@@ -97,6 +117,24 @@ pygments_style = None
 #
 # html_theme = 'nature'
 html_theme = 'sphinx_rtd_theme'
+# html_theme = 'sphinxawesome_theme'
+
+html_theme_options = {
+    "show_prev_next": False,
+    "show_breadcrumbs": False,
+    "breadcrumbs_separator": "·",
+    "awesome_headerlinks": False,
+    "show_scrolltop": True,
+    "show_permalinks": False,
+    "awesome_external_links": True,
+    "main_nav_links": { "GitHub": "https://github.com/SanPen/GridCal"},
+    "extra_header_link_icons": {
+        "Discord": {"link": "https://discord.gg/xxx", "icon": "<svg>...</svg>"}
+    },
+    "logo_light": "img/GridCal3_icon.svg",
+    "logo_dark": "img/GridCal3_icon.svg",
+    "globaltoc_includehidden": False,
+}
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
 import json
+import pandas as pd
 
 
 def parse_config_df(df, data=None):
@@ -55,4 +56,7 @@ class CustomJSONizer(json.JSONEncoder):
             return bool(obj)
         elif isinstance(obj, np.ndarray):  # Convert NumPy arrays to lists
             return obj.tolist()
+        elif isinstance(obj, pd.Index):  # Convert NumPy arrays to lists
+            raise ValueError("No pandas index is supposed to get this far...")
+
         return super().default(obj)

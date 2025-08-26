@@ -3,10 +3,12 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
+from GridCalEngine.basic_structures import Vec, IntVec
 
 
 def random_trial(obj_func,
-                 n_var: int = 1,
+                 n_var: int,
+                 lb: Vec | IntVec, ub: Vec | IntVec,
                  n_obj: int = 2,
                  max_evals: int = 3000):
     """

@@ -8,18 +8,37 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
 
 
 class UPFC(BranchParent):
+    __slots__ = (
+        'R',
+        'X',
+        'Rsh',
+        'Xsh',
+        'R0',
+        'X0',
+        'Rsh0',
+        'Xsh0',
+        'R2',
+        'X2',
+        'Rsh2',
+        'Xsh2',
+        'Vsh',
+        'Pfset',
+        'Qfset',
+    )
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None,
-                 cn_from: ConnectivityNode = None,
-                 cn_to: ConnectivityNode = None,
-                 name='UPFC', code='', idtag=None, active=True,
+    def __init__(self,
+                 bus_from: Bus = None,
+                 bus_to: Bus = None,
+                 name='UPFC',
+                 code='',
+                 idtag=None,
+                 active=True,
                  rs=0.0, xs=0.00001, rp=0.0, xp=0.0, vp=1.0, Pset=0.0, Qset=0.0, rate=9999,
                  mttf=0, mttr=0, cost=100, contingency_factor=1.0, protection_rating_factor: float = 1.4,
                  contingency_enabled=True, monitor_loading=True,
@@ -67,8 +86,6 @@ class UPFC(BranchParent):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=cn_from,
-                              cn_to=cn_to,
                               active=active,
                               reducible=False,
                               rate=rate,
