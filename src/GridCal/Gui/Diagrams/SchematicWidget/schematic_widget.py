@@ -1176,7 +1176,8 @@ class SchematicWidget(BaseDiagramWidget):
                         # if isinstance(self.started_branch.get_terminal_from(), RoundTerminalItem) \
                         #         and isinstance(self.started_branch.get_terminal_from_parent(), VscGraphicItem3Term):
 
-                        if isinstance(self.started_branch.get_terminal_from_parent(), VscGraphicItem3Term):
+                        if isinstance(self.started_branch.get_terminal_from_parent(), VscGraphicItem3Term) \
+                                or isinstance(arriving_widget.get_parent(), VscGraphicItem3Term):
 
                             target_object = arriving_widget.parent.api_object
 
@@ -1187,7 +1188,7 @@ class SchematicWidget(BaseDiagramWidget):
                                 editor=self)
 
                             # Set the connection in the VSC graphics/API
-                            if isinstance(target_object, Bus):
+                            if isinstance(target_object, Bus) or isinstance(target_object, VSC):
                                 self.add_to_scene(conn_line)
 
                             self._remove_from_scene(self.started_branch)
@@ -1195,46 +1196,6 @@ class SchematicWidget(BaseDiagramWidget):
                             self.started_branch = None
 
                             break  # Exit the inner loop once connection is handled
-
-                        elif isinstance(arriving_widget.get_parent(), VscGraphicItem3Term):
-
-                            target_object = arriving_widget.parent.api_object
-
-                            # Create the visual line
-                            conn_line = LineGraphicTemplateItem(
-                                from_port=self.started_branch.get_terminal_from(),
-                                to_port=arriving_widget,
-                                editor=self)
-
-                            # Set the connection in the VSC graphics/API
-                            if isinstance(target_object, Bus):
-                                self.add_to_scene(conn_line)
-
-                            self._remove_from_scene(self.started_branch)
-
-                            self.started_branch = None
-
-                            break  # Exit the inner loop once connection is handled
-
-                        # elif isinstance(self.started_branch.get_terminal_from(), VscGraphicItem3Term) \
-                        #         and isinstance(self.started_branch.get_terminal_from_parent(), RoundTerminalItem):
-                        #     target_object = arriving_widget.parent.api_object
-                        #
-                        #     # Create the visual line
-                        #     conn_line = LineGraphicTemplateItem(
-                        #         from_port=self.started_branch.get_terminal_from(),
-                        #         to_port=arriving_widget,
-                        #         editor=self)
-                        #
-                        #     # Set the connection in the VSC graphics/API
-                        #     if isinstance(target_object, Bus):
-                        #         self.add_to_scene(conn_line)
-                        #
-                        #     self._remove_from_scene(self.started_branch)
-                        #
-                        #     self.started_branch = None
-                        #
-                        #     break  # Exit the inner loop once connection is handled
 
                         else:
                             pass
