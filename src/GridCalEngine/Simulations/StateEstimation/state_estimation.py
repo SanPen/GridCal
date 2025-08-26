@@ -238,9 +238,9 @@ def b_test(sigma2: Vec,
     # Factorize G once, then solve G y = H_i^T for each i
     # Use LU so we can reuse for many RHS
     lu = factorized(HtWH.tocsc())
-    # For the system to be observable the eigenvalues should be greater than zero -> matric pos definate
+    # For the system to be observable the eigenvalues should be greater than zero -> matrix pos definate
     eigvals = np.linalg.eigvalsh(HtWH.toarray())
-    assert np.all(eigvals > 0)
+    assert np.all(eigvals > 0), "Unobservable-System"
 
     # Compute h_i = H_i G^{-1} H_i^T and then Pii = sigma_i^2 - h_i
     # Do it row-by-row but reusing the factorization

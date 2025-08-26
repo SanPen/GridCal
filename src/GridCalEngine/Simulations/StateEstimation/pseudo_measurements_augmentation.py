@@ -1,8 +1,14 @@
+
+
 import numpy as np
 
+from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.measurement import MeasurementTemplate
+from GridCalEngine.enumerations import DeviceType
 
-class PseudoMeasurement:
-    def __init__(self, value, sigma, bus, mtype="p_inj"):
+class PseudoMeasurement(MeasurementTemplate):
+    def __init__(self, value, sigma, api_obj: Bus, name="",
+                 idtag = None):
         """
         Parameters
         ----------
@@ -15,10 +21,17 @@ class PseudoMeasurement:
         mtype : str
             Measurement type, e.g. "p_inj", "q_inj"
         """
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=sigma,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.NoDevice)
         self.value = value
         self.sigma = sigma
-        self.bus = bus
-        self.mtype = mtype
+        self.bus = Bus
+
 
     def get_value_pu(self, Sbase: float):
         return self.value / Sbase
@@ -74,29 +87,45 @@ def compute_power_injection(bus, V, Ybus, neighbors):
     return Pi, Qi
 
 
-def add_pseudo_measurements(se_input, unobservable_buses, V, Ybus, neighbors,
-                            sigma_pseudo=1.0, logger=None):
+def add_pseudo_measurements(se_input, unobservable_buses, V, Ybus, neighbors,bus_dict,
+                            sigma_pseudo=1.0,Sbase=100,logger=None, ):
     """
     Extend se_input with pseudo-measurements for unobservable buses.
     neighbors: prebuilt neighbor list per bus
     """
-    for bus in unobservable_buses:
-        Pi, Qi = compute_power_injection(bus, V, Ybus, neighbors)
+    # Build reverse lookup: idx -> Bus object
+    idx_to_bus = {idx: bus for bus, idx in bus_dict.items()}
+    for bus_idx in unobservable_buses:
+        Pi, Qi = compute_power_injection(bus_idx, V, Ybus, neighbors)
 
-        pm_p = PseudoMeasurement(Pi, sigma_pseudo, bus, mtype="p_inj")
-        pm_q = PseudoMeasurement(Qi, sigma_pseudo, bus, mtype="q_inj")
+        # Fallback for zero pseudo-measurements
+        if abs(Pi) < 1e-6:
+            # Use average of neighboring line flows (approximation)
+            if neighbors[bus_idx]:
+                Pi = sum(abs(Ybus[bus_idx, nb]) * abs(V[bus_idx]) * abs(V[nb]) for nb in neighbors[bus_idx]) / len(neighbors[bus_idx])
+            else:
+                Pi = 0.1  # small default non-zero value
 
+        if abs(Qi) < 1e-6:
+            Qi = 0.0  # often reactive load is unknown; can keep 0 or small value
+
+        # Get the Bus object for this bus_idx
+        bus_obj = idx_to_bus[bus_idx]
+        pm_p = PseudoMeasurement(Pi*Sbase, sigma_pseudo, bus_obj,"pseudo")
+        pm_q = PseudoMeasurement(Qi*Sbase, sigma_pseudo, bus_obj, "pseudo",)# converted later to pu in get_measurements
+        se_input.p_idx.append(bus_idx)  # or appropriate index mapping
         se_input.p_inj.append(pm_p)
+
+        se_input.q_idx.append(bus_idx)
         se_input.q_inj.append(pm_q)
 
         if logger:
             logger.add_info(
-                f"Pseudo-measurement added at bus {bus}",
+                f"Pseudo-measurement added at bus {bus_obj}",
                 device="pseudo",
                 device_class="virtual",
                 device_property="P, Q",
-                value=(Pi, Qi),
-                sigma=sigma_pseudo
+                value=(Pi, Qi)
             )
 
     return se_input

@@ -1,124 +1,86 @@
 import numpy as np
-from scipy.sparse import csc_matrix
 
-from GridCalEngine.Simulations.StateEstimation.observability_analysis import \
-    check_for_observability_and_return_unobservable_buses, add_pseudo_measurements_for_unobservable_buses
-from GridCalEngine.Simulations.StateEstimation.pseudo_measurements_augmentation import build_neighbors, \
-    add_pseudo_measurements, PseudoMeasurement
+import GridCalEngine as gce
+from GridCalEngine import MultiCircuit, Bus, Line, PiMeasurement, QiMeasurement, VmMeasurement, StateEstimationOptions, \
+    StateEstimation, QfMeasurement, PfMeasurement
 
 
-class DummyLogger:
-    def __init__(self):
-        self.logs = []
-    def add_info(self, *args, **kwargs):
-        self.logs.append(("INFO", args, kwargs))
-    def add_warning(self, *args, **kwargs):
-        self.logs.append(("WARN", args, kwargs))
+def test_se_with_and_without_pseudo_measurements():
+    grid = MultiCircuit()
 
-# --- Dummy SE input structure ---
-class DummyMeasurementList:
-    def __init__(self):
-        self.p_inj = []
-        self.q_inj = []
-        self.pg_inj = []
-        self.qg_inj = []
-        self.pf_value = []
-        self.pt_value = []
-        self.qf_value = []
-        self.qt_value = []
-        self.if_value = []
-        self.it_value = []
-        self.vm_value = []
-        self.va_value = []
+    # --- Buses ---
+    b1 = Bus(name='B1', is_slack=True)
+    b2 = Bus(name='B2')
+    b3 = Bus(name='B3')
+    grid.add_bus(b1)
+    grid.add_bus(b2)
+    grid.add_bus(b3)
 
-        # Indices for SE code
-        self.p_idx = []
-        self.q_idx = []
-        self.pg_idx = []
-        self.qg_idx = []
-        self.pf_idx = []
-        self.pt_idx = []
-        self.qf_idx = []
-        self.qt_idx = []
-        self.if_idx = []
-        self.it_idx = []
-        self.vm_idx = []
-        self.va_idx = []
-    def slice(self, **kwargs):
-        return self
+    # --- Lines ---
+    br1 = Line(bus_from=b1, bus_to=b2, r=0.01, x=0.03)
+    br2 = Line(bus_from=b1, bus_to=b3, r=0.02, x=0.05)
+    br3 = Line(bus_from=b2, bus_to=b3, r=0.03, x=0.08)
+    grid.add_line(br1)
+    grid.add_line(br2)
+    grid.add_line(br3)
 
-# --- Test ---
-def test_observability_and_pseudo_measurements():
-    logger = DummyLogger()
+    Sb = 100.0
 
-    # 3-bus system
-    n_bus = 3
-    Ybus = np.array([[10-30j, -5+15j, -5+15j],
-                     [-5+15j, 5-15j, 0+0j],
-                     [-5+15j, 0+0j, 5-15j]], dtype=complex)
-    Ybus_sparse = csc_matrix(Ybus)
+    # --- Sparse measurements (insufficient) ---
+    grid.add_pf_measurement(PfMeasurement(0.888 * Sb, 0.008 * Sb, br1))
+   # grid.add_pf_measurement(PfMeasurement(1.173 * Sb, 0.008 * Sb, br2))
+    #grid.add_pi_measurement(PiMeasurement(-0.501 * Sb, 0.01 * Sb, b2))
 
-    # Branch connectivity matrices
-    Cf = csc_matrix([[1,0,0],
-                     [0,1,0]])
-    Ct = csc_matrix([[0,1,0],
-                     [0,0,1]])
+    grid.add_qf_measurement(QfMeasurement(0.568 * Sb, 0.008 * Sb, br1))
+    grid.add_qf_measurement(QfMeasurement(0.663 * Sb, 0.008 * Sb, br2))
+    #grid.add_qi_measurement(QiMeasurement(-0.286 * Sb, 0.01 * Sb, b2))
+    grid.add_vm_measurement(VmMeasurement(1.006, 0.004, b1))
+    grid.add_vm_measurement(VmMeasurement(0.968, 0.004, b2))
 
-    # Construct simple Yf and Yt for each branch (3-bus, 2 branches)
-    # These are diagonal matrices with branch admittances
-    branch_adm = np.array([5-15j, 5-15j])  # from Ybus off-diagonal magnitudes
-    n_br = len(branch_adm)
-    # Yf[i, j] = branch i from bus j admittance
-    Yf_data = np.array(branch_adm)
-    Yt_data = np.array(branch_adm)
 
-    Yf = csc_matrix((Yf_data, (np.arange(n_br), [0, 1])), shape=(n_br, n_bus))
-    Yt = csc_matrix((Yt_data, (np.arange(n_br), [1, 2])), shape=(n_br, n_bus))
-
-    V = np.array([1+0j, 1+0j, 1+0j])
-    no_slack = [1, 2]
-
-    se_input = DummyMeasurementList()
-
-    # --- Observability check ---
-    class DummyNC:
-        bus_data = type("BD", (), {"Vbus": V})
-        load_data = type("LD", (), {"get_injections_per_bus": lambda: np.array([1.0,1.0,1.0])})
-        Sbase = 1.0
-
-    unobservable_buses, V,bus_contrib = check_for_observability_and_return_unobservable_buses(
-        nc=DummyNC(),
-        Ybus=Ybus_sparse,
-        Yf=Yf,
-        Yt=Yt,
-        no_slack = [1, 2],
-        F=np.array([0, 1]),
-        T=np.array([1, 2]),
-        Cf=Cf,
-        Ct=Ct,
-        se_input=DummyMeasurementList(),
-        fixed_slack=True,
-        logger=logger
+    # --- SE without pseudo-measurements ---
+    se_options_no_pseudo = StateEstimationOptions(
+        fixed_slack=False,
+        run_observability_analyis=True,
+        add_pseudo_measurements=False,  # no pseudo
+        pseudo_meas_std=1.0,
+        solver=gce.SolverType.NR, # NR used because in LM and GN we have relaxations that tend the
+        # solution to converge
+        verbose=0
     )
+    se_no_pseudo = StateEstimation(circuit=grid, options=se_options_no_pseudo)
+    se_no_pseudo.run()
+    report_no_pseudo = se_no_pseudo.results.convergence_reports[0]
 
-    assert isinstance(unobservable_buses, list)
+    # Expect: no convergence
+    assert not report_no_pseudo.converged(), "SE should NOT converge without pseudo-measurements."
 
-    # --- Add pseudo-measurements ---
-    se_input_island = add_pseudo_measurements_for_unobservable_buses(unobservable_buses, V=V,
-                                                  Ybus=Ybus_sparse,
-                                                  Cf=Cf,
-                                                  Ct=Ct,
-                                                  se_input=se_input,
-                                                  sigma_pseudo_meas_value=1,
-                                                  logger=logger)
+    # --- SE with pseudo-measurements ---
+    se_options_pseudo = StateEstimationOptions(
+        fixed_slack=False,
+        run_observability_analyis=True,
+        add_pseudo_measurements=True,  # add pseudo
+        pseudo_meas_std=1,
+        solver=gce.SolverType.NR,
+        verbose=2
+    )
+    se_pseudo = StateEstimation(circuit=grid, options=se_options_pseudo)
+    se_pseudo.run()
+    report_pseudo = se_pseudo.results.convergence_reports[0]
 
-    # Check that pseudo-measurements were added
-    for bus in unobservable_buses:
-        p_exists = any(isinstance(m, PseudoMeasurement) and m.bus == bus for m in se_input.p_inj)
-        q_exists = any(isinstance(m, PseudoMeasurement) and m.bus == bus for m in se_input.q_inj)
-        assert p_exists and q_exists, f"Pseudo-measurements missing for bus {bus}"
+    # Expect: convergence
+    assert report_pseudo.converged(), "SE should converge once pseudo-measurements are added."
 
-    print("Test passed: Observability, pseudo-measurements, and measurement integration successful.")
+    # --- Additional sanity checks ---
+    # At least 1 pseudo-measurement was created
+    pseudo_meas = report_pseudo.get_pseudo_measurements()
+    assert np.isclose(report_pseudo.get_pseudo_measurements()[0].value, 1513.6824, rtol=1e-6)
+    assert len(pseudo_meas) > 0, "Expected pseudo-measurements to be added."
 
-if __name__ == "__main__":
-    test_observability_and_pseudo_measurements()
+    # Unobservable buses were made observable
+    unobs_before = report_no_pseudo.get_unobservable_buses()
+
+    unobs_after = report_pseudo.get_unobservable_buses()
+    assert len(unobs_before[0]) > 0, "Expected unobservable buses without pseudo-measurements."
+    assert unobs_after[0]==unobs_before[0], "Expected unobservable buses without pseudo-measurements."
+    print("Test passed: SE fails without pseudo-measurements but converges when they are added.")
