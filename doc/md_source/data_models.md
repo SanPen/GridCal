@@ -43,6 +43,7 @@
 |shift_key               |float                   |       |False    |         |Shift key for net transfer capacity                                       |True       |       |
 |use_kw                  |bool                    |       |False    |         |Consider the injections in kW and kVAr?                                   |False      |       |
 |conn                    |enum ShuntConnectionType|       |False    |         |Connection type for 3-phase studies                                       |False      |       |
+|rms_model               |DynamicModuleHost       |       |False    |         |RMS dynamic model                                                         |False      |       |
 |control_bus             |Bus                     |       |False    |         |Control bus                                                               |True       |       |
 |P                       |float                   |MW     |False    |         |Active power                                                              |True       |       |
 |Pmin                    |float                   |MW     |False    |         |Minimum active power. Used in OPF.                                        |True       |       |
@@ -111,6 +112,7 @@
 |opex                    |float              |e/MWh|False    |         |Cost of operation. Used in expansion planning.                                                                                                                                                                                          |False      |       |
 |group                   |Branch group       |     |False    |         |Group where this branch belongs                                                                                                                                                                                                         |False      |       |
 |color                   |str                |     |False    |         |Color to paint the element in the map diagram                                                                                                                                                                                           |False      |       |
+|rms_model               |DynamicModuleHost  |     |False    |         |RMS dynamic model                                                                                                                                                                                                                       |False      |       |
 |R                       |float              |p.u. |False    |         |Total positive sequence resistance.                                                                                                                                                                                                     |False      |       |
 |X                       |float              |p.u. |False    |         |Total positive sequence reactance.                                                                                                                                                                                                      |False      |       |
 |B                       |float              |p.u. |False    |         |Total positive sequence shunt susceptance.                                                                                                                                                                                              |False      |       |
@@ -187,6 +189,7 @@
 |ph_c               |bool               |      |False    |         |Has phase C?                                                   |False      |       |
 |ph_n               |bool               |      |False    |         |Has phase N?                                                   |False      |       |
 |is_grounded        |bool               |      |False    |         |Is this bus neutral grounded?.                                 |False      |       |
+|rms_model          |DynamicModuleHost  |      |False    |         |RMS dynamic model                                              |False      |       |
 
 
 ### BusBar
@@ -278,6 +281,7 @@
 |shift_key          |float                   |            |False    |         |Shift key for net transfer capacity                                  |True       |       |
 |use_kw             |bool                    |            |False    |         |Consider the injections in kW and kVAr?                              |False      |       |
 |conn               |enum ShuntConnectionType|            |False    |         |Connection type for 3-phase studies                                  |False      |       |
+|rms_model          |DynamicModuleHost       |            |False    |         |RMS dynamic model                                                    |False      |       |
 |G                  |float                   |MW          |False    |         |Active power                                                         |True       |       |
 |G0                 |float                   |MW          |False    |         |Zero sequence active power of the impedance component at V=1.0 p.u.  |True       |       |
 |Ga                 |float                   |MW          |False    |         |Active power                                                         |True       |       |
@@ -290,6 +294,7 @@
 |Bc                 |float                   |MVAr        |False    |         |Reactive power                                                       |True       |       |
 |ysh                |Admittance Matrix       |p.u.        |False    |         |Shunt admittance matrix of the branch                                |False      |       |
 |is_nonlinear       |bool                    |            |False    |         |Is non-linear?                                                       |False      |       |
+|control_bus        |Bus                     |            |False    |         |Alternative control bus                                              |False      |       |
 |g_steps            |Array                   |MW@v=1p.u.  |False    |         |Conductance steps                                                    |False      |       |
 |b_steps            |Array                   |MVAr@v=1p.u.|False    |         |Susceptance steps                                                    |False      |       |
 |Gmax               |float                   |MW          |False    |         |Maximum conductance                                                  |False      |       |
@@ -343,6 +348,7 @@
 |shift_key          |float                   |     |False    |         |Shift key for net transfer capacity                   |True       |       |
 |use_kw             |bool                    |     |False    |         |Consider the injections in kW and kVAr?               |False      |       |
 |conn               |enum ShuntConnectionType|     |False    |         |Connection type for 3-phase studies                   |False      |       |
+|rms_model          |DynamicModuleHost       |     |False    |         |RMS dynamic model                                     |False      |       |
 |Ir                 |float                   |MW   |False    |         |Active power of the current component at V=1.0 p.u.   |True       |       |
 |Ir1                |float                   |MW   |False    |         |Active power of the current component at V=1.0 p.u.   |True       |       |
 |Ir2                |float                   |MW   |False    |         |Active power of the current component at V=1.0 p.u.   |True       |       |
@@ -382,6 +388,7 @@
 |opex                    |float              |e/MWh|False    |         |Cost of operation. Used in expansion planning.                                                                             |False      |       |
 |group                   |Branch group       |     |False    |         |Group where this branch belongs                                                                                            |False      |       |
 |color                   |str                |     |False    |         |Color to paint the element in the map diagram                                                                              |False      |       |
+|rms_model               |DynamicModuleHost  |     |False    |         |RMS dynamic model                                                                                                          |False      |       |
 |R                       |float              |p.u. |False    |         |Total positive sequence resistance.                                                                                        |False      |       |
 |length                  |float              |km   |False    |         |Length of the line (not used for calculation)                                                                              |False      |       |
 |r_fault                 |float              |p.u. |False    |         |Resistance of the mid-line fault.Used in short circuit studies.                                                            |False      |       |
@@ -431,6 +438,7 @@
 |shift_key            |float                   |       |False    |         |Shift key for net transfer capacity                                      |True       |       |
 |use_kw               |bool                    |       |False    |         |Consider the injections in kW and kVAr?                                  |False      |       |
 |conn                 |enum ShuntConnectionType|       |False    |         |Connection type for 3-phase studies                                      |False      |       |
+|rms_model            |DynamicModuleHost       |       |False    |         |RMS dynamic model                                                        |False      |       |
 |P                    |float                   |MW     |False    |         |Active power                                                             |True       |       |
 |Pa                   |float                   |MW     |False    |         |Phase A active power                                                     |True       |       |
 |Pb                   |float                   |MW     |False    |         |Phase B active power                                                     |True       |       |
@@ -613,6 +621,7 @@
 |shift_key               |float                   |       |False    |         |Shift key for net transfer capacity                                       |True       |       |
 |use_kw                  |bool                    |       |False    |         |Consider the injections in kW and kVAr?                                   |False      |       |
 |conn                    |enum ShuntConnectionType|       |False    |         |Connection type for 3-phase studies                                       |False      |       |
+|rms_model               |DynamicModuleHost       |       |False    |         |RMS dynamic model                                                         |False      |       |
 |control_bus             |Bus                     |       |False    |         |Control bus                                                               |True       |       |
 |P                       |float                   |MW     |False    |         |Active power                                                              |True       |       |
 |Pmin                    |float                   |MW     |False    |         |Minimum active power. Used in OPF.                                        |True       |       |
@@ -674,6 +683,7 @@
 |opex                    |float               |e/MWh |False    |         |Cost of operation. Used in expansion planning.                                   |False      |       |
 |group                   |Branch group        |      |False    |         |Group where this branch belongs                                                  |False      |       |
 |color                   |str                 |      |False    |         |Color to paint the element in the map diagram                                    |False      |       |
+|rms_model               |DynamicModuleHost   |      |False    |         |RMS dynamic model                                                                |False      |       |
 |dispatchable            |bool                |      |False    |         |Is the line power optimizable?                                                   |False      |       |
 |control_mode            |enum HvdcControlType|-     |False    |         |Control type.                                                                    |False      |       |
 |Pset                    |float               |MW    |False    |         |Set power flow.                                                                  |True       |       |
@@ -751,6 +761,7 @@
 |opex                           |float              |e/MWh|False    |         |Cost of operation. Used in expansion planning.                                                                                                                                                                                           |False      |       |
 |group                          |Branch group       |     |False    |         |Group where this branch belongs                                                                                                                                                                                                          |False      |       |
 |color                          |str                |     |False    |         |Color to paint the element in the map diagram                                                                                                                                                                                            |False      |       |
+|rms_model                      |DynamicModuleHost  |     |False    |         |RMS dynamic model                                                                                                                                                                                                                        |False      |       |
 |R                              |float              |p.u. |False    |         |Total positive sequence resistance.                                                                                                                                                                                                      |False      |       |
 |X                              |float              |p.u. |False    |         |Total positive sequence reactance.                                                                                                                                                                                                       |False      |       |
 |B                              |float              |p.u. |False    |         |Total positive sequence shunt susceptance.                                                                                                                                                                                               |False      |       |
@@ -805,6 +816,7 @@
 |shift_key          |float                   |     |False    |         |Shift key for net transfer capacity                            |True       |       |
 |use_kw             |bool                    |     |False    |         |Consider the injections in kW and kVAr?                        |False      |       |
 |conn               |enum ShuntConnectionType|     |False    |         |Connection type for 3-phase studies                            |False      |       |
+|rms_model          |DynamicModuleHost       |     |False    |         |RMS dynamic model                                              |False      |       |
 |P                  |float                   |MW   |False    |         |Active power                                                   |True       |       |
 |Pa                 |float                   |MW   |False    |         |Phase A active power                                           |True       |       |
 |Pb                 |float                   |MW   |False    |         |Phase B active power                                           |True       |       |
@@ -976,6 +988,7 @@
 |opex                    |float              |e/MWh|False    |         |Cost of operation. Used in expansion planning.                                                                                                                                                                                          |False      |       |
 |group                   |Branch group       |     |False    |         |Group where this branch belongs                                                                                                                                                                                                         |False      |       |
 |color                   |str                |     |False    |         |Color to paint the element in the map diagram                                                                                                                                                                                           |False      |       |
+|rms_model               |DynamicModuleHost  |     |False    |         |RMS dynamic model                                                                                                                                                                                                                       |False      |       |
 |R                       |float              |p.u. |False    |         |Total positive sequence resistance.                                                                                                                                                                                                     |False      |       |
 |X                       |float              |p.u. |False    |         |Total positive sequence reactance.                                                                                                                                                                                                      |False      |       |
 |R0                      |float              |p.u. |False    |         |Total zero sequence resistance.                                                                                                                                                                                                         |False      |       |
@@ -1018,6 +1031,7 @@
 |shift_key          |float                   |     |False    |         |Shift key for net transfer capacity                                  |True       |       |
 |use_kw             |bool                    |     |False    |         |Consider the injections in kW and kVAr?                              |False      |       |
 |conn               |enum ShuntConnectionType|     |False    |         |Connection type for 3-phase studies                                  |False      |       |
+|rms_model          |DynamicModuleHost       |     |False    |         |RMS dynamic model                                                    |False      |       |
 |G                  |float                   |MW   |False    |         |Active power                                                         |True       |       |
 |G0                 |float                   |MW   |False    |         |Zero sequence active power of the impedance component at V=1.0 p.u.  |True       |       |
 |Ga                 |float                   |MW   |False    |         |Active power                                                         |True       |       |
@@ -1058,6 +1072,7 @@
 |shift_key          |float                   |     |False    |         |Shift key for net transfer capacity                   |True       |       |
 |use_kw             |bool                    |     |False    |         |Consider the injections in kW and kVAr?               |False      |       |
 |conn               |enum ShuntConnectionType|     |False    |         |Connection type for 3-phase studies                   |False      |       |
+|rms_model          |DynamicModuleHost       |     |False    |         |RMS dynamic model                                     |False      |       |
 |P                  |float                   |MW   |False    |         |Active power                                          |True       |       |
 |Pa                 |float                   |MW   |False    |         |Phase A active power                                  |True       |       |
 |Pb                 |float                   |MW   |False    |         |Phase B active power                                  |True       |       |
@@ -1124,6 +1139,7 @@
 |opex                    |float                 |e/MWh|False    |         |Cost of operation. Used in expansion planning.                                   |False      |       |
 |group                   |Branch group          |     |False    |         |Group where this branch belongs                                                  |False      |       |
 |color                   |str                   |     |False    |         |Color to paint the element in the map diagram                                    |False      |       |
+|rms_model               |DynamicModuleHost     |     |False    |         |RMS dynamic model                                                                |False      |       |
 |R                       |float                 |pu   |False    |         |Positive-sequence resistance                                                     |False      |       |
 |X                       |float                 |pu   |False    |         |Positive-sequence reactance                                                      |False      |       |
 |retained                |bool                  |     |False    |         |Switch is retained                                                               |False      |       |
@@ -1177,6 +1193,7 @@
 |opex                    |float                  |e/MWh|False    |         |Cost of operation. Used in expansion planning.                                                                                                                                                                                           |False      |       |
 |group                   |Branch group           |     |False    |         |Group where this branch belongs                                                                                                                                                                                                          |False      |       |
 |color                   |str                    |     |False    |         |Color to paint the element in the map diagram                                                                                                                                                                                            |False      |       |
+|rms_model               |DynamicModuleHost      |     |False    |         |RMS dynamic model                                                                                                                                                                                                                        |False      |       |
 |R                       |float                  |p.u. |False    |         |Total positive sequence resistance.                                                                                                                                                                                                      |False      |       |
 |X                       |float                  |p.u. |False    |         |Total positive sequence reactance.                                                                                                                                                                                                       |False      |       |
 |G                       |float                  |p.u. |False    |         |Total positive sequence shunt conductance.                                                                                                                                                                                               |False      |       |
@@ -1325,6 +1342,7 @@
 |opex                    |float              |e/MWh|False    |         |Cost of operation. Used in expansion planning.                                   |False      |       |
 |group                   |Branch group       |     |False    |         |Group where this branch belongs                                                  |False      |       |
 |color                   |str                |     |False    |         |Color to paint the element in the map diagram                                    |False      |       |
+|rms_model               |DynamicModuleHost  |     |False    |         |RMS dynamic model                                                                |False      |       |
 |R                       |float              |p.u. |False    |         |Series positive sequence resistance.                                             |False      |       |
 |X                       |float              |p.u. |False    |         |Series positive sequence reactance.                                              |False      |       |
 |Rsh                     |float              |p.u. |False    |         |Shunt positive sequence resistance.                                              |False      |       |
@@ -1392,6 +1410,8 @@
 |opex                    |float                    |e/MWh    |False    |         |Cost of operation. Used in expansion planning.                                   |False      |       |
 |group                   |Branch group             |         |False    |         |Group where this branch belongs                                                  |False      |       |
 |color                   |str                      |         |False    |         |Color to paint the element in the map diagram                                    |False      |       |
+|rms_model               |DynamicModuleHost        |         |False    |         |RMS dynamic model                                                                |False      |       |
+|bus_dc_n                |Bus                      |         |False    |         |DC negative bus                                                                  |False      |       |
 |alpha1                  |float                    |         |False    |         |Losses constant parameter (IEC 62751-2 loss Correction).                         |False      |       |
 |alpha2                  |float                    |         |False    |         |Losses linear parameter (IEC 62751-2 loss Correction).                           |False      |       |
 |alpha3                  |float                    |         |False    |         |Losses quadratic parameter (IEC 62751-2 loss Correction).                        |False      |       |
@@ -1402,6 +1422,8 @@
 |control2_val            |float                    |         |False    |         |Control value 2.p.u. for voltage rad for angles MW for P MVAr for Q              |True       |       |
 |control1_dev            |BusOrBranch              |         |False    |         |Controlled device, None to apply to this converter                               |True       |       |
 |control2_dev            |BusOrBranch              |         |False    |         |Controlled device, None to apply to this converter                               |True       |       |
+|x                       |float                    |px       |False    |         |x position                                                                       |False      |       |
+|y                       |float                    |px       |False    |         |y position                                                                       |False      |       |
 
 
 ### VoltageLevel
@@ -1450,6 +1472,7 @@
 |opex                    |float                  |e/MWh|False    |         |Cost of operation. Used in expansion planning.                                                                                                                                                                                           |False      |       |
 |group                   |Branch group           |     |False    |         |Group where this branch belongs                                                                                                                                                                                                          |False      |       |
 |color                   |str                    |     |False    |         |Color to paint the element in the map diagram                                                                                                                                                                                            |False      |       |
+|rms_model               |DynamicModuleHost      |     |False    |         |RMS dynamic model                                                                                                                                                                                                                        |False      |       |
 |R                       |float                  |p.u. |False    |         |Total positive sequence resistance.                                                                                                                                                                                                      |False      |       |
 |X                       |float                  |p.u. |False    |         |Total positive sequence reactance.                                                                                                                                                                                                       |False      |       |
 |G                       |float                  |p.u. |False    |         |Total positive sequence shunt conductance.                                                                                                                                                                                               |False      |       |
