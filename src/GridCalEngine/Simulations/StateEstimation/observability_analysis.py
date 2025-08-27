@@ -3,6 +3,7 @@ from typing import List
 
 import numpy as np
 import networkx as nx
+from matplotlib import pyplot as plt
 from numpy.linalg import matrix_rank, inv
 from scipy.sparse import csc_matrix, diags
 from scipy.sparse.linalg import splu
@@ -12,6 +13,7 @@ from GridCalEngine.Simulations.StateEstimation.pseudo_measurements_augmentation 
 from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
 from GridCalEngine.basic_structures import CscMat, IntVec, Logger
 from GridCalEngine.Simulations.StateEstimation.state_estimation import Jacobian_SE
+from collections import defaultdict
 
 
 def check_for_observability_and_return_unobservable_buses(nc: NumericalCircuit,
@@ -26,45 +28,70 @@ def check_for_observability_and_return_unobservable_buses(nc: NumericalCircuit,
                                                           se_input: StateEstimationInput,
                                                           fixed_slack: bool = True,
                                                           tolerance_for_observability_score=1e-6,
+                                                          do_profiling_of_measurements: bool = False,
+                                                          include_line_measurements_on_both_ends:bool=True,
                                                           logger: Logger | None = None):
     """
     Fast decoupled WLS state estimator using LU decomposition based observability analysis
     Active power -> angles
     Reactive power -> voltage magnitudes
     """
-    logger if logger is not None else Logger()
+    logger = logger if logger is not None else Logger()
     V = nc.bus_data.Vbus.copy()
     # Identify non-slack buses
     non_slack_buses = no_slack  # Your no_slack variable
     n_non_slack = len(non_slack_buses)
-    bus_contrib = {}
-    # --- Create measurement type mapping based on processing order ---
-    # The measurements are processed in this fixed order:
-    # 1. p_inj, 2. q_inj, 3. pg_inj, 4. qg_inj,
-    # 5. pf_value, 6. pt_value, 7. qf_value, 8. qt_value,
-    # 9. if_value, 10. it_value, 11. vm_value, 12. va_value
+    bus_contrib = {}  # dictionary: bus index -> total contribution
 
-    # Count measurements in each category
-    counts = [
-        len(se_input.p_inj), len(se_input.q_inj),
-        len(se_input.pg_inj), len(se_input.qg_inj),
-        len(se_input.pf_value), len(se_input.pt_value),
-        len(se_input.qf_value), len(se_input.qt_value),
-        len(se_input.if_value), len(se_input.it_value),
-        len(se_input.vm_value), len(se_input.va_value)
-    ]
-
-    # Create measurement type array
+    # --- Build measurement type mapping with api_objects ---
     measurement_types = []
-    unobservable_buses=[]
-    for i, count in enumerate(counts):
-        if i in [0, 2, 4, 5]:  # p_inj, pg_inj, pf_value, pt_value
-            measurement_types.extend(['P'] * count)
+    measurement_ids = []  # (category_name, api_object)
+
+    for meas in se_input.p_inj:
+        measurement_types.append("P")
+        measurement_ids.append(("p_inj", meas.api_object))
+    for meas in se_input.q_inj:
+        measurement_types.append("Q")
+        measurement_ids.append(("q_inj", meas.api_object))
+    for meas in se_input.pg_inj:
+        measurement_types.append("P")
+        measurement_ids.append(("pg_inj", meas.api_object))
+    for meas in se_input.qg_inj:
+        measurement_types.append("Q")
+        measurement_ids.append(("qg_inj", meas.api_object))
+    for meas in se_input.pf_value:
+        measurement_types.append("P")
+        measurement_ids.append(("pf_value", meas.api_object))
+    for meas in se_input.pt_value:
+        measurement_types.append("P")
+        measurement_ids.append(("pt_value", meas.api_object))
+    for meas in se_input.qf_value:
+        measurement_types.append("Q")
+        measurement_ids.append(("qf_value", meas.api_object))
+    for meas in se_input.qt_value:
+        measurement_types.append("Q")
+        measurement_ids.append(("qt_value", meas.api_object))
+    for meas in se_input.if_value:
+        measurement_types.append("I")
+        measurement_ids.append(("if_value", meas.api_object))
+    for meas in se_input.it_value:
+        measurement_types.append("I")
+        measurement_ids.append(("it_value", meas.api_object))
+    for meas in se_input.vm_value:
+        measurement_types.append("V")
+        measurement_ids.append(("vm_value", meas.api_object))
+    for meas in se_input.va_value:
+        measurement_types.append("V")
+        measurement_ids.append(("va_value", meas.api_object))
+
+    measurement_types = np.array(measurement_types)
+    measurement_ids = np.array(measurement_ids, dtype=object)
+    unobservable_buses = []
 
     measurement_types = np.array(measurement_types)
 
     # Create indices for active and reactive measurements
-    a_idx = np.where(measurement_types == 'P')[0]  # Active power measurements
+    a_idx = np.where(measurement_types == "P")[0]  # Active power measurements
     load_per_bus = nc.load_data.get_injections_per_bus() / nc.Sbase
     H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, Cf, Ct,
                               se_input, non_slack_buses, load_per_bus, fixed_slack)
@@ -78,6 +105,34 @@ def check_for_observability_and_return_unobservable_buses(nc: NumericalCircuit,
 
     if rank == n:
         logger.add_info("System is fully observable")
+        # Here we can continue with measurement profiling (classification
+        # The idea is to find out which measurement set is critical, which has local redundancy and which has global
+        # redundancy
+
+        # To do this we must remove one measurement at a time and check observability again, if rank decreases
+        # meas is critical.Local and/or Global redundancy will be based oon graph theoritic observability
+        if do_profiling_of_measurements:
+            r_idx = np.where(measurement_types == "Q")[0]
+            v_idx = np.where(measurement_types == "V")[0]
+            i_idx = np.where(measurement_types == "I")[0]
+            Hr = H.tocsr()[r_idx, n_non_slack:]
+            Hv = H.tocsr()[v_idx, :]
+            Hi = H.tocsr()[i_idx, :]
+
+            measurement_profile = {
+                "active": profile_measurements(Ha, measurement_ids[a_idx],include_line_measurements_on_both_ends=include_line_measurements_on_both_ends),
+                "reactive": profile_measurements(Hr, measurement_ids[r_idx],include_line_measurements_on_both_ends=include_line_measurements_on_both_ends),
+                "voltage": profile_measurements(Hv, measurement_ids[v_idx],include_line_measurements_on_both_ends=include_line_measurements_on_both_ends),
+                "current": profile_measurements(Hi, measurement_ids[i_idx],include_line_measurements_on_both_ends=include_line_measurements_on_both_ends),
+            }
+            bus_status = bus_observability_profile(measurement_profile)
+            plot_bus_observability(bus_status)
+            logger.add_info("Measurement profiling completed")
+            return True, [], measurement_profile, V, bus_contrib
+        else:
+            # Observable but no profiling
+            return True, [], None, V, bus_contrib
+
     else:
         logger.add_warning("System is NOT fully observable")
         # find unobservable directions
@@ -87,7 +142,6 @@ def check_for_observability_and_return_unobservable_buses(nc: NumericalCircuit,
         logger.add_info("Nullspace dimension:", nullspace.shape[1])
 
         # map nullspace to buses ---
-        bus_contrib = {}  # dictionary: bus index -> total contribution
         for idx, bus in enumerate(non_slack_buses):
             # contribution of this bus to all nullspace directions
             contrib = np.sqrt(np.sum(nullspace[idx, :] ** 2))
@@ -102,11 +156,12 @@ def check_for_observability_and_return_unobservable_buses(nc: NumericalCircuit,
             # return list of unobservable buses with contribution > threshold
             if score > tolerance_for_observability_score:
                 unobservable_buses.append(bus)
-    return unobservable_buses, V, bus_contrib
+        return False, unobservable_buses, None, V, bus_contrib
 
 
-def add_pseudo_measurements_for_unobservable_buses(bus_dict,unobservable_buses: object, se_input: object, V: object, Ybus: object, Cf: object, Ct: object,
-                                                   sigma_pseudo_meas_value: object = 1.0,Sbase=100,
+def add_pseudo_measurements_for_unobservable_buses(bus_dict, unobservable_buses: object, se_input: object, V: object,
+                                                   Ybus: object, Cf: object, Ct: object,
+                                                   sigma_pseudo_meas_value: object = 1.0, Sbase=100,
                                                    logger: object = None) -> StateEstimationInput:
     """
     Full preprocessing: detect unobservable buses and add pseudo-measurements
@@ -126,3 +181,172 @@ def add_pseudo_measurements_for_unobservable_buses(bus_dict,unobservable_buses: 
         Sbase=100,
         logger=logger
     )
+
+
+def profile_measurements(Hsub, ids, tol=1e-9,include_line_measurements_on_both_ends=True):
+    """
+    Condition	            System rank	            Local rank	            Classification
+    Rank drops system-wide	    ↓	                    –	                Critical
+    System rank full           full	                   full	                Locally redundant
+    (local rank unchanged)
+    System rank full	       full                 	↓	                Globally redundant
+    ( local rank ↓)
+    """
+    n = Hsub.shape[1]
+    prof = {}
+    # Ensure IDs are tuples for hashable dict keys
+    ids = [tuple(id_) for id_ in ids]
+    groups = build_local_groups(ids,include_line_measurements_on_both_ends=include_line_measurements_on_both_ends)
+    # Convert Hsub to dense once if it's sparse
+    H_dense = Hsub.toarray() if hasattr(Hsub, "toarray") else Hsub
+    # Precompute G = H.T @ H once
+    G = H_dense.T @ H_dense
+    for idx, meas_id in enumerate(ids):
+        # this is slower but understandable
+        #mask = np.arange(Hsub.shape[0]) != idx
+        #H_reduced = Hsub[mask, :]
+        #G_reduced = H_reduced.T @ H_reduced
+        #rank_reduced = np.linalg.matrix_rank(G_reduced.toarray(), tol=tol)
+
+        # Compute rank using rank-1 downdate instead of full recomputation
+        # Extract the measurement row
+        h_i = H_dense[idx, :].reshape(-1, 1)
+        G_reduced = G - h_i @ h_i.T
+        rank_reduced = np.linalg.matrix_rank(G_reduced, tol=tol)
+        if rank_reduced < n:
+            prof[meas_id] = "critical"
+        else:
+            # --- Redundant: distinguish local vs global ---
+            (cat, api_obj) = meas_id
+            # Determine the correct key
+            if cat in ["pf_value", "qf_value", "if_value"]:
+                key = f"bus_{api_obj.bus_from}"
+            elif cat in ["pt_value", "qt_value", "it_value"]:
+                key = f"bus_{api_obj.bus_to}"
+            else:
+                key = f"bus_{api_obj}"
+
+            related_idxs = groups[key]
+
+            if len(related_idxs) > 1:
+                # Build local Jacobian restricted to this group
+                H_local = H_dense[related_idxs, :]
+                rank_local = np.linalg.matrix_rank(H_local, tol=tol)
+                H_local_reduced = np.delete(H_local, related_idxs.index(idx), axis=0)
+                rank_local_minus_one = np.linalg.matrix_rank(H_local_reduced, tol=tol)
+
+                if rank_local == rank_local_minus_one:
+                    prof[meas_id] = "locally redundant"
+                else:
+                    prof[meas_id] = "globally redundant"
+            else:
+                # No other local measurement to compare → global redundancy
+                prof[meas_id] = "globally redundant"
+
+    return prof
+
+
+def build_local_groups(measurement_ids,include_line_measurements_on_both_ends=True ):
+    groups = defaultdict(list)
+
+    for idx, (cat, api_obj) in enumerate(measurement_ids):
+        # Bus measurements
+        if cat in ["p_inj", "q_inj", "pg_inj", "qg_inj", "vm_value", "va_value"]:
+            bus = api_obj  # for bus measurements, api_object itself identifies the bus
+            groups[f"bus_{bus}"].append(idx)
+
+        # Line/transformer flow measurements
+        elif cat in ["pf_value", "qf_value", "pt_value", "qt_value", "if_value", "it_value"]:
+            # Decide which bus side this measurement belongs to
+            if include_line_measurements_on_both_ends:
+                bus_from = api_obj.bus_from
+                bus_to = api_obj.bus_to
+                groups[f"bus_{bus_from}"].append(idx)
+                groups[f"bus_{bus_to}"].append(idx)
+            else:
+                if cat in ["pf_value", "qf_value", "if_value"]:
+                    bus = api_obj.bus_from
+                else:
+                    bus = api_obj.bus_to
+                groups[f"bus_{bus}"].append(idx)
+
+    return groups
+
+
+def bus_observability_profile(measurement_profile):
+    """
+    Convert measurement_profile (from profile_measurements) into a nested dict:
+    {measurement_type: {bus: worst_status}}
+    """
+    bus_status_per_type = {}
+
+    for meas_type, prof_dict in measurement_profile.items():
+        bus_profile = defaultdict(list)
+
+        for (cat, api_obj), status in prof_dict.items():
+            # Determine which bus this measurement belongs to
+            if cat in ["pf_value", "qf_value", "if_value"]:
+                bus = api_obj.bus_from
+            elif cat in ["pt_value", "qt_value", "it_value"]:
+                bus = api_obj.bus_to
+            else:
+                bus = api_obj  # bus measurement
+
+            bus_profile[bus].append(status)
+
+        # Aggregate: pick the "worst" status for the bus
+        def worst_status(status_list):
+            if "critical" in status_list:
+                return "critical"
+            elif "globally redundant" in status_list:
+                return "globally redundant"
+            else:
+                return "locally redundant"
+
+        bus_status_per_type[meas_type] = {bus: worst_status(statuses) for bus, statuses in bus_profile.items()}
+
+    return bus_status_per_type
+
+
+def plot_bus_observability(bus_status_per_type):
+    """
+    bus_status_per_type: dict of dicts
+    Example:
+    {
+        'active': {'bus_1': 'critical', 'bus_2': 'globally redundant', ...},
+        'reactive': {...},
+        'voltage': {...},
+        'current': {...}
+    }
+    """
+    measurement_types = list(bus_status_per_type.keys())
+    buses = list(next(iter(bus_status_per_type.values())).keys())
+    n_buses = len(buses)
+    n_types = len(measurement_types)
+
+    # Color map
+    color_map = {
+        "critical": "red",
+        "globally redundant": "orange",
+        "locally redundant": "yellow",
+        "none": "gray"  # add default for missing measurements
+    }
+
+    x = np.arange(n_buses)
+    width = 0.2  # width of each bar
+
+    plt.figure(figsize=(12, 5))
+
+    for i, m_type in enumerate(measurement_types):
+        statuses = [
+            bus_status_per_type[m_type].get(b, "none")  # use .get() with default
+            for b in buses
+        ]
+        colors = [color_map[s] for s in statuses]
+        plt.bar(x + i * width, [1] * n_buses, width=width, color=colors, label=m_type)
+
+    plt.xticks(x + width * (n_types - 1) / 2, buses, rotation=90)
+    plt.ylabel("Observability")
+    plt.title("Bus Observability Profile by Measurement Type")
+    plt.legend()
+    plt.show()

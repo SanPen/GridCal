@@ -25,7 +25,8 @@ class StateEstimationOptions:
                  tol: float = 1e-8, max_iter: int = 100, verbose: int = 0,
                  prefer_correct: bool = True, c_threshold: int = 4.0,
                  fixed_slack: bool = False, run_observability_analyis: bool = False,
-                 add_pseudo_measurements: bool = False,
+                 add_pseudo_measurements: bool = False,run_measurement_profiling:bool=False,
+                 include_line_measurements_on_both_ends:bool=True,
                  pseudo_meas_std: float = 1.0):
         """
         StateEstimationOptions
@@ -42,10 +43,12 @@ class StateEstimationOptions:
         self.verbose = verbose
         self.prefer_correct = prefer_correct
         self.c_threshold = c_threshold
-        self.fixed_slack: bool = fixed_slack
-        self.observability_analysis: bool = run_observability_analyis
-        self.add_pseudo_measurements: bool = add_pseudo_measurements
-        self.pseudo_meas_std: float = pseudo_meas_std
+        self.fixed_slack= fixed_slack
+        self.observability_analysis = run_observability_analyis
+        self.add_pseudo_measurements = add_pseudo_measurements
+        self.pseudo_meas_std= pseudo_meas_std
+        self.run_meas_profiling= run_measurement_profiling
+        self.include_line_measurements_on_both_ends = include_line_measurements_on_both_ends
 
 
 class StateEstimationConvergenceReport(ConvergenceReport):
@@ -58,13 +61,20 @@ class StateEstimationConvergenceReport(ConvergenceReport):
         self.unobservable_buses = list()
         self.bus_contribution = list()
         self.pseudo_measurements = list()
+        self.is_observable = list()
+        self.measurement_profile = list()
 
     def add_se(self, method,
                converged: bool,
                error: float,
                elapsed: float,
                iterations: int,
-               bad_data_detected: bool):
+               bad_data_detected: bool,
+               is_observable: bool,
+               bus_contribution,
+               pseudo_measurements,
+               unobservable_buses: list,
+               measurement_profile:dict):
         """
 
         :param method:
@@ -78,6 +88,18 @@ class StateEstimationConvergenceReport(ConvergenceReport):
         # Call parent's add method for common parameters
         self.add(method, converged, error, elapsed, iterations)
         self.bad_data_detected.append(bad_data_detected)
+        self.is_observable.append(is_observable)
+        self.add_bus_contribution(bus_contribution)
+        self.add_pseudo_measurements(pseudo_measurements)
+        self.add_unobservable_buses(unobservable_buses)
+        self.measurement_profile.append(measurement_profile)
+
+    def is_observable(self) -> list:
+        """
+        Get info is the island was observable
+        :return: List of is_obsevable booleans
+        """
+        return self.is_observable
 
     def get_bad_data_detected(self) -> list:
         """
@@ -105,6 +127,12 @@ class StateEstimationConvergenceReport(ConvergenceReport):
         for m in se_input.p_inj:
             if isinstance(m, PseudoMeasurement):
                 self.pseudo_measurements.append(m)
+
+    def add_measurement_profile(self, meas_profile):
+        self.measurement_profile.append(meas_profile)
+
+    def get_measurement_profile(self) -> list:
+        return self.measurement_profile
 
 
 class StateEstimation(DriverTemplate):
@@ -230,6 +258,12 @@ class StateEstimation(DriverTemplate):
 
             report = StateEstimationConvergenceReport()
 
+            is_observable = True
+            solution = None  # initialized so observability results can be saved without running SE
+            unobservable_buses=[]
+            bus_contrib={}
+            measurement_profile={}
+
             # the idea is to first run observability analysis uif user wants then the normal SE
             if self.options.observability_analysis:
                 # this will provide the result of unobservable branches
@@ -237,32 +271,32 @@ class StateEstimation(DriverTemplate):
                 # State estimation calculations
                 # if pseudo meas is allowed it will create meas at the unobser branches so that the net is observable
                 # in that case Jacobian needs to be called again in SE formulations(needs to be worked upon)
-                unobservable_buses, V, bus_contrib = check_for_observability_and_return_unobservable_buses(nc=island,
-                                                                                                           Ybus=adm.Ybus,
-                                                                                                           Yf=adm.Yf,
-                                                                                                           Yt=adm.Yt,
-                                                                                                           no_slack=idx.no_slack,
-                                                                                                           F=island.passive_branch_data.F,
-                                                                                                           T=island.passive_branch_data.T,
-                                                                                                           Cf=conn.Cf,
-                                                                                                           Ct=conn.Ct,
-                                                                                                           se_input=se_input_island,
-                                                                                                           fixed_slack=self.options.fixed_slack,
-                                                                                                           logger=self.logger)
-                if unobservable_buses:
-                    report.add_unobservable_buses(unobservable_buses)
-                    report.add_bus_contribution(bus_contrib)
-
-                    if self.options.add_pseudo_measurements:
-                        se_input_island = add_pseudo_measurements_for_unobservable_buses(bus_dict=nc.bus_dict,unobservable_buses=unobservable_buses,se_input=se_input, V=V,
-                                                                                         Ybus=adm.Ybus,
-                                                                                         Cf=conn.Cf,
-                                                                                         Ct=conn.Ct,
-                                                                                         sigma_pseudo_meas_value=
-                                                                                         self.options.pseudo_meas_std,
-                                                                                         Sbase=nc.Sbase,
-                                                                                         logger=self.logger)
-                        report.add_pseudo_measurements(se_input_island)
+                is_observable, unobservable_buses, measurement_profile, V, bus_contrib = check_for_observability_and_return_unobservable_buses(
+                    nc=island,
+                    Ybus=adm.Ybus,
+                    Yf=adm.Yf,
+                    Yt=adm.Yt,
+                    no_slack=idx.no_slack,
+                    F=island.passive_branch_data.F,
+                    T=island.passive_branch_data.T,
+                    Cf=conn.Cf,
+                    Ct=conn.Ct,
+                    se_input=se_input_island,
+                    fixed_slack=self.options.fixed_slack,
+                    do_profiling_of_measurements=self.options.run_meas_profiling,
+                    include_line_measurements_on_both_ends=self.options.include_line_measurements_on_both_ends,
+                    logger=self.logger)
+                if unobservable_buses and self.options.add_pseudo_measurements:
+                    se_input_island = add_pseudo_measurements_for_unobservable_buses(bus_dict=nc.bus_dict,
+                                                                                     unobservable_buses=unobservable_buses,
+                                                                                     se_input=se_input, V=V,
+                                                                                     Ybus=adm.Ybus,
+                                                                                     Cf=conn.Cf,
+                                                                                     Ct=conn.Ct,
+                                                                                     sigma_pseudo_meas_value=
+                                                                                     self.options.pseudo_meas_std,
+                                                                                     Sbase=nc.Sbase,
+                                                                                     logger=self.logger)
             # run Solver
             if self.options.solver == SolverType.NR:
                 solution = solve_se_nr(nc=island,
@@ -355,12 +389,17 @@ class StateEstimation(DriverTemplate):
             else:
                 raise ValueError(f"State Estimation solver type not recognized: {self.options.solver.value}")
 
-            report.add_se(method=SolverType.LM,
-                          converged=solution.converged,
+            report.add_se(method=self.options.solver,
+                          converged=solution.converged if solution else False,
                           error=solution.norm_f,
                           elapsed=solution.elapsed,
                           iterations=solution.iterations,
-                          bad_data_detected=solution.bad_data_detected)
+                          bad_data_detected=solution.bad_data_detected,
+                          is_observable=is_observable,
+                          unobservable_buses=unobservable_buses,
+                          bus_contribution=bus_contrib,
+                          measurement_profile=measurement_profile,
+                          pseudo_measurements=se_input_island)
 
             self.results.convergence_reports.append(report)
 
