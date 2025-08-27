@@ -570,7 +570,15 @@ class Transformer2W(ControllableBranchParent):
         conn_y_from = self.conn_f == WindingType.Star or self.conn_f == WindingType.GroundedStar
         conn_y_to = self.conn_t == WindingType.Star or self.conn_t == WindingType.GroundedStar
 
-        phase_displacement = np.deg2rad(self.vector_group_number * 30.0)
+        # phase_displacement = np.deg2rad(self.vector_group_number * 30.0)
+        if self.conn_f == WindingType.Delta and conn_y_to: # Dy
+            phase_displacement = np.deg2rad(60.0)
+
+        elif conn_y_from and self.conn_t == WindingType.Delta: # Yd
+            phase_displacement = np.deg2rad(0.0)
+
+        else:
+            phase_displacement = 0.0
 
         ys = 1.0 / (self.R + 1j * self.X + 1e-20)
         ysh = self.G + 1j * self.B
