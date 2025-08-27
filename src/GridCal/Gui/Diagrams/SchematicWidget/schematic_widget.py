@@ -114,7 +114,7 @@ class SchematicLibraryModel(QStandardItemModel):
         self.add(name=self.cn_name, icon_name="cn_icon")
         self.add(name=self.transformer3w_name, icon_name="transformer3w")
         self.add(name=self.fluid_node_name, icon_name="dam")
-        self.add(name=self.vsc_name, icon_name="vsc_icon")  # Add VSC
+        # self.add(name=self.vsc_name, icon_name="vsc_icon")  # Add VSC TODO: for the future release
 
     def add(self, name: str, icon_name: str):
         """
