@@ -7,6 +7,7 @@ from typing import List, Union, Any, TYPE_CHECKING, Callable, Dict
 from PySide6.QtCore import Qt, QPointF, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import (QGraphicsRectItem, QGraphicsItem, QGraphicsEllipseItem, QGraphicsSceneMouseEvent)
+from GridCalEngine.enumerations import TerminalType
 
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE
 
@@ -14,6 +15,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+    from GridCal.Gui.Diagrams.SchematicWidget.Branches.vsc_graphics_3term import VscGraphicItem3Term
     from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
     from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 
@@ -61,7 +63,7 @@ class BarTerminalItem(QGraphicsRectItem):
         self.name = name
         self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemSendsScenePositionChanges, True)
 
-    def get_parent(self) -> Union[None, BusGraphicItem, Transformer3WGraphicItem]:
+    def get_parent(self) -> Union[None, BusGraphicItem, Transformer3WGraphicItem, VscGraphicItem3Term]:
         """
         Returns the parent object
         :return: Union[None, BusGraphicItem, Transformer3WGraphicItem]
@@ -153,7 +155,8 @@ class BarTerminalItem(QGraphicsRectItem):
         :param rect:
         :return:
         """
-        self.process_callbacks(self.parent.pos() + self.pos())
+        # TODO: Take into account that the parent may be rotated, try to use Qt's translation formulas
+        self.process_callbacks(self.scenePos())
 
     def get_center_pos(self, value: QPointF):
         h2 = self.h / 2.0
@@ -229,7 +232,8 @@ class RoundTerminalItem(QGraphicsEllipseItem):
     def __init__(self,
                  name: str,
                  editor: SchematicWidget,
-                 parent: Union[BusGraphicItem, Transformer3WGraphicItem],
+                 parent: Union[Transformer3WGraphicItem, VscGraphicItem3Term],
+                 terminal_type: TerminalType = TerminalType.OTHER,
                  h=10.0,
                  w=10.0):
         """
@@ -237,6 +241,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         :param name:
         :param editor:
         :param parent:
+        :param terminal_type:
         :param h:
         :param w:
         """
@@ -250,6 +255,8 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         self.style = ACTIVE['style']
         self.setBrush(Qt.GlobalColor.darkGray)
         self.setPen(QPen(self.color, self.pen_width, self.style))
+
+        self.terminal_type = terminal_type
 
         h2 = self.h / 2.0
         w2 = self.w / 2.0
@@ -359,7 +366,8 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         :param rect:
         :return:
         """
-        self.process_callbacks(self.parent.pos() + self.pos())
+        # TODO: Take into account that the parent may be rotated, try to use Qt's translation formulas
+        self.process_callbacks(self.scenePos())
 
     def get_center_pos(self, value: QPointF):
         return value + self.center

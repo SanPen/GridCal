@@ -37,6 +37,7 @@ class BusData:
         self.installed_power: Vec = np.zeros(nbus, dtype=float)
         self.srap_availbale_power: Vec = np.zeros(nbus, dtype=float)
         self.is_dc: BoolVec = np.empty(nbus, dtype=bool)
+        self.is_grounded: BoolVec = np.empty(nbus, dtype=bool)
         self.areas: IntVec = np.empty(nbus, dtype=int)
         self.substations: IntVec = np.empty(nbus, dtype=int)
 
@@ -80,6 +81,7 @@ class BusData:
         data.installed_power = self.installed_power[elm_idx]
         data.srap_availbale_power = self.srap_availbale_power[elm_idx]
         data.is_dc = self.is_dc[elm_idx]
+        data.is_grounded = self.is_grounded[elm_idx]
         data.areas = self.areas[elm_idx]
         data.substations = self.substations[elm_idx]
 
@@ -128,6 +130,7 @@ class BusData:
         data.installed_power = self.installed_power.copy()
         data.srap_availbale_power = self.srap_availbale_power.copy()
         data.is_dc = self.is_dc.copy()
+        data.is_grounded = self.is_grounded.copy()
         data.areas = self.areas.copy()
         data.substations = self.substations.copy()
 
@@ -155,6 +158,100 @@ class BusData:
         :param idx: int
         :param val: BusMode
         """
+        # self.bus_types[idx] = val.value
+        # is_dc = self.is_dc[idx]
+        # is_grounded = self.is_grounded[idx]
+        #
+        # if val == BusMode.PQ_tpe:
+        #     if is_dc and not is_grounded:
+        #         self.is_p_controlled[idx] = True
+        #         self.is_q_controlled[idx] = False
+        #         self.is_vm_controlled[idx] = False
+        #         self.is_va_controlled[idx] = True
+        #     elif is_grounded:
+        #         self.is_p_controlled[idx] = False
+        #         self.is_q_controlled[idx] = False
+        #         self.is_vm_controlled[idx] = True
+        #         self.is_va_controlled[idx] = True
+        #     else:
+        #         self.is_p_controlled[idx] = True
+        #         self.is_q_controlled[idx] = True
+        #         self.is_vm_controlled[idx] = False
+        #         self.is_va_controlled[idx] = False
+        #
+        # elif val == BusMode.PV_tpe:
+        #     if is_dc and not is_grounded:
+        #         self.is_p_controlled[idx] = True
+        #         self.is_q_controlled[idx] = False
+        #         self.is_vm_controlled[idx] = True
+        #         self.is_va_controlled[idx] = True
+        #     elif is_grounded:
+        #         self.is_p_controlled[idx] = False
+        #         self.is_q_controlled[idx] = False
+        #         self.is_vm_controlled[idx] = True
+        #         self.is_va_controlled[idx] = True
+        #     else:
+        #         self.is_p_controlled[idx] = True
+        #         self.is_q_controlled[idx] = False
+        #         self.is_vm_controlled[idx] = True
+        #         self.is_va_controlled[idx] = False
+        #
+        # elif val == BusMode.Slack_tpe:
+        #     if is_dc and not is_grounded:
+        #         self.is_p_controlled[idx] = False
+        #         self.is_q_controlled[idx] = False
+        #         self.is_vm_controlled[idx] = True
+        #         self.is_va_controlled[idx] = True
+        #     elif is_grounded:
+        #         self.is_p_controlled[idx] = False
+        #         self.is_q_controlled[idx] = False
+        #         self.is_vm_controlled[idx] = True
+        #         self.is_va_controlled[idx] = True
+        #     else:
+        #         self.is_p_controlled[idx] = False
+        #         self.is_q_controlled[idx] = False
+        #         self.is_vm_controlled[idx] = True
+        #         self.is_va_controlled[idx] = True
+        #
+        # elif val == BusMode.PQV_tpe:
+        #     if is_dc and not is_grounded:
+        #         self.is_p_controlled[idx] = True
+        #         self.is_q_controlled[idx] = False
+        #         self.is_vm_controlled[idx] = True
+        #         self.is_va_controlled[idx] = True
+        #     elif is_grounded:
+        #         self.is_p_controlled[idx] = False
+        #         self.is_q_controlled[idx] = False
+        #         self.is_vm_controlled[idx] = True
+        #         self.is_va_controlled[idx] = True
+        #     else:
+        #         self.is_p_controlled[idx] = True
+        #         self.is_q_controlled[idx] = True
+        #         self.is_vm_controlled[idx] = True
+        #         self.is_va_controlled[idx] = False
+        #
+        # elif val == BusMode.P_tpe:
+        #     if is_dc and not is_grounded:
+        #         self.is_p_controlled[idx] = True
+        #         self.is_q_controlled[idx] = False
+        #         self.is_vm_controlled[idx] = False
+        #         self.is_va_controlled[idx] = True
+        #     elif is_grounded:
+        #         self.is_p_controlled[idx] = False
+        #         self.is_q_controlled[idx] = False
+        #         self.is_vm_controlled[idx] = True
+        #         self.is_va_controlled[idx] = True
+        #     else:
+        #         self.is_p_controlled[idx] = True
+        #         self.is_q_controlled[idx] = False
+        #         self.is_vm_controlled[idx] = False
+        #         self.is_va_controlled[idx] = False
+        #
+        # else:
+        #     raise ValueError("Unexpected bus mode")
+
+        # TODO: Think how the commented code can be adapted to work as before
+
         self.bus_types[idx] = val.value
         is_dc = self.is_dc[idx]
         if val == BusMode.PQ_tpe:
@@ -221,6 +318,10 @@ class BusData:
         return self.nbus
 
     def get_3ph_names(self):
+        """
+        Get the 3-phase names
+        :return:
+        """
         names3: StrVec = np.empty(self.nbus * 3, dtype=object)
         for i in range(self.nbus):
             names3[3 * i + 0] = self.names[i] + "_A"

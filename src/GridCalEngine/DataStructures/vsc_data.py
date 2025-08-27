@@ -24,6 +24,8 @@ class VscData(BranchParentData):
         """
         BranchParentData.__init__(self, nelm=nelm, nbus=nbus)
 
+        self.F_dcn = np.zeros(self.nelm, dtype=int)
+
         self.Kdp: Vec = np.ones(self.nelm, dtype=float)
         self.alpha1: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha1)
         self.alpha2: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha2)
@@ -53,6 +55,10 @@ class VscData(BranchParentData):
         data, bus_map = super().slice(elm_idx, bus_idx, bus_map, logger)
         data: VscData = data
         data.__class__ = VscData
+
+        # data.F_dcp = self.F_dcp[elm_idx]
+        data.F_dcn = self.F_dcn[elm_idx]
+        # data.T_ac = self.T_ac[elm_idx]
 
         data.Kdp = self.Kdp[elm_idx]
         data.alpha1 = self.alpha1[elm_idx]
@@ -99,6 +105,8 @@ class VscData(BranchParentData):
         data: VscData = super().copy()
         data.__class__ = VscData
 
+        data.F_dcn = self.F_dcn.copy()
+
         data.Kdp = self.Kdp.copy()
         data.dc = self.dc.copy()
         data.alpha1 = self.alpha1.copy()
@@ -117,3 +125,10 @@ class VscData(BranchParentData):
         data.control2_branch_idx = self.control2_branch_idx.copy()
 
         return data
+
+    def __len__(self) -> int:
+        """
+        Get vsc count
+        :return:
+        """
+        return self.nelm
