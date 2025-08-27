@@ -221,9 +221,15 @@ class BusData:
         return self.nbus
 
     def get_3ph_names(self):
-        names3: StrVec = np.empty(self.nbus * 3, dtype=object)
+
+        # names3: StrVec = np.empty(self.nbus * 3, dtype=object)
+        # for i in range(self.nbus):
+        #     names3[3 * i + 0] = self.names[i] + "_A"
+        #     names3[3 * i + 1] = self.names[i] + "_B"
+        #     names3[3 * i + 2] = self.names[i] + "_C"
+
+        names3: StrVec = np.empty(self.nbus, dtype=object)
         for i in range(self.nbus):
-            names3[3 * i + 0] = self.names[i] + "_A"
-            names3[3 * i + 1] = self.names[i] + "_B"
-            names3[3 * i + 2] = self.names[i] + "_C"
+            names3[i] = self.names[i]
+
         return names3

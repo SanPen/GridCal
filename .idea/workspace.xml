@@ -28,10 +28,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Solving the exact position of the VSC terminals.">
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/full_trafo_validation.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Saving the connected buses to the corresponding terminals of the VSC.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/bus_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/bus_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_results_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_results_3ph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/case14_merge1.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/case14_merge1.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/case14_merge2.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/case14_merge2.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/full_trafo_validation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/full_trafo_validation.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,7 +75,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="fda8dd8203988fa9ffdef45be01f25d4ab5480a9" />
+        <entry key="$PROJECT_DIR$" value="59ebd660cc31c05f417e27e338ba67e863cd6235" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -91,13 +94,6 @@
       <filtered-out-file-type name="TAG" />
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
-  </component>
-  <component name="GithubProjectSettings">
-    <option name="branchProtectionPatterns">
-      <list>
-        <option value="master" />
-      </list>
-    </option>
   </component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
@@ -215,6 +211,7 @@
     "Python.AnalysisDialogue.executor": "Run",
     "Python.ExecuteGridCal.executor": "Debug",
     "Python.GridCalMain.executor": "Run",
+    "Python.IEEE 13-bus Test Feeder Case worker.executor": "Run",
     "Python.LineBuilderDialogue.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.circuit_to_optimods.executor": "Run",
@@ -2364,7 +2361,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="727" />
+    <option name="localTasksCounter" value="726" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2382,21 +2379,6 @@
     </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
-    <option name="RECENT_FILTERS">
-      <map>
-        <entry key="Branch">
-          <value>
-            <list>
-              <RecentGroup>
-                <option name="FILTER_VALUES">
-                  <option value="392_Multiterminal_HVDC" />
-                </option>
-              </RecentGroup>
-            </list>
-          </value>
-        </entry>
-      </map>
-    </option>
     <option name="TAB_STATES">
       <map>
         <entry key="1">
@@ -2412,7 +2394,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/392_Multiterminal_HVDC" />
+                        <option value="immprove_map_performance" />
                       </list>
                     </value>
                   </entry>
@@ -2425,6 +2407,7 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <MESSAGE value="minor change in the test_fubm_new voltage comparison, now checking also the imaginary part" />
     <MESSAGE value="5.3.37" />
     <MESSAGE value="gslv interface improvements" />
     <MESSAGE value="initiated tests" />
@@ -2449,8 +2432,7 @@
     <MESSAGE value="Creating two and three terminal VSC." />
     <MESSAGE value="Solving three-terminal VSC GUI" />
     <MESSAGE value="Saving the connected buses to the corresponding terminals of the VSC." />
-    <MESSAGE value="Solving the exact position of the VSC terminals." />
-    <option name="LAST_COMMIT_MESSAGE" value="Solving the exact position of the VSC terminals." />
+    <option name="LAST_COMMIT_MESSAGE" value="Saving the connected buses to the corresponding terminals of the VSC." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
