@@ -8,7 +8,7 @@ import os
 import json
 import numpy as np
 import pandas as pd
-from typing import List, Set, Dict, Union, Tuple, TYPE_CHECKING
+from typing import List, Set, Dict, Union, Tuple, TYPE_CHECKING, cast
 from collections.abc import Callable
 from warnings import warn
 import networkx as nx
@@ -41,7 +41,7 @@ from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
-from GridCalEngine.enumerations import DeviceType, ResultTypes, BusGraphicType
+from GridCalEngine.enumerations import DeviceType, ResultTypes, TerminalType, BusGraphicType
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
@@ -53,6 +53,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.winding_graphics import Windi
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.dc_line_graphics import DcLineGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer2w_graphics import TransformerGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.hvdc_graphics import HvdcGraphicItem
+from GridCal.Gui.Diagrams.SchematicWidget.Branches.vsc_graphics_3term import VscGraphicItem3Term
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.vsc_graphics import VscGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.upfc_graphics import UpfcGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.series_reactance_graphics import SeriesReactanceGraphicItem
@@ -66,6 +67,9 @@ from GridCal.Gui.general_dialogues import InputNumberDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.messages import error_msg, warning_msg, yes_no_question
+
+from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
+from GridCalEngine.enumerations import TerminalType
 
 if TYPE_CHECKING:
     from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -104,11 +108,13 @@ class SchematicLibraryModel(QStandardItemModel):
         self.cn_name = "Connectivity bus"
         self.transformer3w_name = "3W-Transformer"
         self.fluid_node_name = "Fluid-node"
+        self.vsc_name = "VSC"  # Add VSC name
 
         self.add(name=self.bus_name, icon_name="bus_icon")
         self.add(name=self.cn_name, icon_name="cn_icon")
         self.add(name=self.transformer3w_name, icon_name="transformer3w")
         self.add(name=self.fluid_node_name, icon_name="dam")
+        self.add(name=self.vsc_name, icon_name="vsc_icon")  # Add VSC
 
     def add(self, name: str, icon_name: str):
         """
@@ -169,6 +175,13 @@ class SchematicLibraryModel(QStandardItemModel):
         @return:
         """
         return ['component/name']
+
+    def get_vsc_mime_data(self) -> QByteArray:
+        """
+        Get mime data for VSC.
+        :return:
+        """
+        return self.to_bytes_array(self.vsc_name)
 
     def mimeData(self, idxs: List[QModelIndex]) -> QMimeData:
         """
@@ -436,6 +449,12 @@ class SchematicWidget(BaseDiagramWidget):
                 graphic_object = self.create_fluid_node_graphics(node=obj, x=x0, y=y0, h=20, w=80)
                 self.circuit.add_fluid_node(obj)
 
+            elif obj_type == self.library_model.get_vsc_mime_data():
+                # Create VSC API object
+                obj = VSC(name=f'VSC {len(self.circuit.vsc_devices)}')
+                graphic_object = self.create_vsc_graphics_3term(elm=obj, x=x0, y=y0)
+                self.circuit.add_vsc(obj)
+
             else:
                 # unrecognized drop
                 return
@@ -544,6 +563,18 @@ class SchematicWidget(BaseDiagramWidget):
 
         graphic_object = FluidNodeGraphicItem(editor=self, fluid_node=node, x=x, y=y, h=h, w=w,
                                               draw_labels=draw_labels)
+        return graphic_object
+
+    def create_vsc_graphics_3term(self, elm: VSC, x: float, y: float) -> VscGraphicItem3Term:
+        """
+        Add VSC to the graphics
+        :param elm: VSC
+        :param x: x coordinate
+        :param y: y coordinate
+        :return: VscGraphicItem3Term
+        """
+        graphic_object = VscGraphicItem3Term(editor=self, api_object=elm)
+        graphic_object.setPos(QPointF(x, y))
         return graphic_object
 
     def draw_additional_diagram(self,
@@ -693,8 +724,11 @@ class SchematicWidget(BaseDiagramWidget):
             elif category == DeviceType.VscDevice.value:
 
                 for idtag, location in points_group.locations.items():
-                    self.add_api_vsc(branch=location.api_object,
-                                     draw_labels=location.draw_labels,
+                    # Use add_api_vsc to create VSC with connections instead of just graphics
+                    self.add_api_vsc(elm=location.api_object,
+                                     x=location.x,
+                                     y=location.y,
+                                     r=location.r,
                                      logger=logger)
 
             elif category == DeviceType.UpfcDevice.value:
@@ -1052,7 +1086,8 @@ class SchematicWidget(BaseDiagramWidget):
         # set the connection placement
         graphic_object.setZValue(-1)
 
-    def create_vsc(self, bus_from: Bus, bus_to: Bus, from_port: BarTerminalItem, to_port: BarTerminalItem):
+    def create_vsc_graphics_2term(self, bus_from: Bus, bus_to: Bus, from_port: BarTerminalItem,
+                                  to_port: BarTerminalItem):
         """
 
         :param bus_from:
@@ -1081,7 +1116,7 @@ class SchematicWidget(BaseDiagramWidget):
         self.circuit.add_vsc(obj)
 
         # update the connection placement
-        graphic_object.update_ports()
+        # graphic_object.update_ports()
 
         # set the connection placement
         graphic_object.setZValue(-1)
@@ -1134,23 +1169,69 @@ class SchematicWidget(BaseDiagramWidget):
 
             for arriving_widget in items:
                 if isinstance(arriving_widget,
-                              Union[BarTerminalItem, RoundTerminalItem]):  # arrivinf to a bus or bus-bar
+                              Union[BarTerminalItem, RoundTerminalItem]):  # arriving to a bus or bus-bar
 
                     if arriving_widget.get_parent() is not self.started_branch.get_terminal_from_parent():  # forbid connecting to itself
 
+                        # Check if starting from VSC terminal
+                        # if isinstance(self.started_branch.get_terminal_from(), RoundTerminalItem) \
+                        #         and isinstance(self.started_branch.get_terminal_from_parent(), VscGraphicItem3Term):
+
+                        if isinstance(self.started_branch.get_terminal_from_parent(), VscGraphicItem3Term) \
+                                or isinstance(arriving_widget.get_parent(), VscGraphicItem3Term):
+
+                            target_object = arriving_widget.parent.api_object
+
+                            # Create the visual line
+                            conn_line = LineGraphicTemplateItem(
+                                from_port=self.started_branch.get_terminal_from(),
+                                to_port=arriving_widget,
+                                editor=self)
+
+                            # Set the connection in the VSC graphics/API
+                            if isinstance(target_object, Bus):
+                                success = self.started_branch.get_terminal_from_parent().assign_bus_to_vsc(
+                                    terminal_vsc=self.started_branch.get_terminal_from(),
+                                    bus_vsc=arriving_widget
+                                )
+
+                            elif isinstance(target_object, VSC):
+                                success = arriving_widget.get_parent().assign_bus_to_vsc(
+                                    terminal_vsc=arriving_widget,
+                                    bus_vsc=self.started_branch.get_terminal_from()
+                                )
+                            else:
+                                success = False
+
+                            if success:
+                                self.add_to_scene(conn_line)
+
+                            self._remove_from_scene(self.started_branch)
+
+                            self.started_branch = None
+
+                            break  # Exit the inner loop once connection is handled
+
+                        else:
+                            pass
+
+                        # --- Handle VSC Terminal Connection --- END
+
+                        # Set the target port for the temporary line *after* VSC check
+                        # if self.started_branch: # Check if it wasn't already cleared by VSC logic
                         self.started_branch.set_to_port(arriving_widget)
 
                         if self.started_branch.connected_between_buses():  # electrical branch between electrical buses
 
-                            if self.started_branch.should_be_a_converter():
-                                # different DC status -> VSC
+                            # if self.started_branch.should_be_a_converter():
+                            #     # different DC status -> VSC
 
-                                self.create_vsc(bus_from=self.started_branch.get_bus_from(),
-                                                bus_to=self.started_branch.get_bus_to(),
-                                                from_port=self.started_branch.get_terminal_from(),
-                                                to_port=self.started_branch.get_terminal_to())
+                            #     self.create_vsc(bus_from=self.started_branch.get_bus_from(),
+                            #                     bus_to=self.started_branch.get_bus_to(),
+                            #                     from_port=self.started_branch.get_terminal_from(),
+                            #                     to_port=self.started_branch.get_terminal_to())
 
-                            elif self.started_branch.should_be_a_dc_line():
+                            if self.started_branch.should_be_a_dc_line():
                                 # both buses are DC
 
                                 self.create_dc_line(bus_from=self.started_branch.get_bus_from(),
@@ -1292,13 +1373,14 @@ class SchematicWidget(BaseDiagramWidget):
                         else:
                             warn('unknown connection')
 
-            # delete from the hosted connections
-            self.started_branch.unregister_port_from()
-            self.started_branch.unregister_port_to()
-            self._remove_from_scene(self.started_branch)
+                # If a VSC connection was made, the temporary line might still be the 'started_branch'
+                if self.started_branch is not None:
+                    self.started_branch.unregister_port_from()
+                    self.started_branch.unregister_port_to()
+                    self._remove_from_scene(self.started_branch)
 
-            # release this pointer
-            self.started_branch = None
+                # release this pointer
+                self.started_branch = None
 
     def apply_expansion_factor(self, factor: float):
         """
@@ -1954,27 +2036,113 @@ class SchematicWidget(BaseDiagramWidget):
                                    logger=logger)
 
     def add_api_vsc(self,
-                    branch: VSC,
-                    from_port: OPTIONAL_PORT = None,
-                    to_port: OPTIONAL_PORT = None,
-                    draw_labels: bool = True,
+                    elm: VSC,
+                    x: float,
+                    y: float,
+                    r: float = 0.0,
                     logger: Logger = Logger()) -> Union[VscGraphicItem, None]:
         """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        :param draw_labels: Draw labels?
+        add API VSC to the Scene
+        :param elm: VSC instance
+        :param x: Optional x position (if None, uses elm.x)
+        :param y: Optional y position (if None, uses elm.y)
+        :param r: Rotation in degrees
         :param logger: Logger
-        :return: SeriesReactanceGraphicItem or None
+        :return: VscGraphicItem or None
         """
 
-        return self.add_api_branch(branch=branch,
-                                   new_graphic_func=VscGraphicItem,
-                                   from_port=from_port,
-                                   to_port=to_port,
-                                   draw_labels=draw_labels,
-                                   logger=logger)
+        # search for the api object, because it may be created already
+        graphic_object = self.graphics_manager.query(elm=elm)
+
+        if graphic_object is None:
+            if elm.is_3term():
+                # Create new VSC graphics
+                graphic_object = self.create_vsc_graphics_3term(elm=elm, x=x, y=y)
+
+                # Register in graphics manager
+                self.graphics_manager.add_device(elm=elm, graphic=graphic_object)
+
+                # Add to scene
+                self.add_to_scene(graphic_object=graphic_object)
+
+                # Find ports for all three terminals
+                port_ac = self.find_port(bus=elm.bus_to)
+                port_dcp = self.find_port(bus=elm.bus_from)
+                port_dcn = self.find_port(bus=elm.bus_dc_n)
+
+                # Create connection lines (following the same pattern as interactive creation)
+                if port_ac is not None:
+                    # Create line from bus port to VSC AC terminal
+                    conn_line_ac = LineGraphicTemplateItem(
+                        from_port=port_ac,  # from bus port
+                        to_port=graphic_object.terminal_ac,  # to VSC terminal
+                        editor=self
+                    )
+
+                    # Set connection in VSC
+                    if elm.bus_to is not None:
+                        graphic_object.set_connection(TerminalType.AC, elm.bus_to, conn_line_ac)
+
+                    # Add connection line to scene
+                    self.add_to_scene(conn_line_ac)
+
+                if port_dcp is not None:
+                    # Create line from bus port to VSC DC+ terminal
+                    conn_line_dcp = LineGraphicTemplateItem(
+                        from_port=port_dcp,  # from bus port
+                        to_port=graphic_object.terminal_dc_p,  # to VSC terminal
+                        editor=self
+                    )
+
+                    # Set connection in VSC
+                    if elm.bus_from is not None:
+                        graphic_object.set_connection(TerminalType.DC_P, elm.bus_from, conn_line_dcp)
+
+                    # Add connection line to scene
+                    self.add_to_scene(conn_line_dcp)
+
+                if port_dcn is not None:
+                    # Create line from bus port to VSC DC- terminal
+                    conn_line_dcn = LineGraphicTemplateItem(
+                        from_port=port_dcn,  # from bus port
+                        to_port=graphic_object.terminal_dc_n,  # to VSC terminal
+                        editor=self
+                    )
+
+                    # Set connection in VSC
+                    if elm.bus_dc_n is not None:
+                        graphic_object.set_connection(TerminalType.DC_N, elm.bus_dc_n, conn_line_dcn)
+
+                    # Add connection line to scene
+                    self.add_to_scene(conn_line_dcn)
+
+                graphic_object.setRotation(r)
+                graphic_object.update_conn()
+
+                # Update diagram element
+                self.update_diagram_element(device=elm,
+                                            x=x,
+                                            y=y,
+                                            w=graphic_object.w,
+                                            h=graphic_object.h,
+                                            r=r,
+                                            draw_labels=graphic_object.draw_labels,
+                                            graphic_object=graphic_object)
+            else:
+                # Find ports for the terminals
+                from_port = self.find_port(bus=elm.bus_to)
+                to_port = self.find_port(bus=elm.bus_from)
+
+                self.add_api_branch(branch=elm,
+                                    new_graphic_func=VscGraphicItem,
+                                    from_port=from_port,
+                                    to_port=to_port,
+                                    draw_labels=True,
+                                    logger=logger)
+        else:
+            logger.add_info("VSC graphics already exist", device=elm.name)
+
+        return graphic_object
 
     def add_api_upfc(self,
                      branch: UPFC,
@@ -2252,10 +2420,9 @@ class SchematicWidget(BaseDiagramWidget):
         vsc = self.circuit.convert_line_to_vsc(line)
 
         # add device to the schematic
-        graphic_object = self.add_api_vsc(branch=vsc,
-                                          from_port=line_graphic.get_terminal_from(),
-                                          to_port=line_graphic.get_terminal_to(),
-                                          draw_labels=line_graphic.draw_labels)
+        graphic_object = self.add_api_vsc(elm=vsc,
+                                          x=vsc.x,
+                                          y=vsc.y)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2465,7 +2632,9 @@ class SchematicWidget(BaseDiagramWidget):
                 graphic_obj = self.add_api_switch(elm)
 
             elif isinstance(elm, VSC):
-                graphic_obj = self.add_api_vsc(elm)
+                graphic_obj = self.add_api_vsc(elm=elm,
+                                               x=elm.x,
+                                               y=elm.y)
 
             elif isinstance(elm, UPFC):
                 graphic_obj = self.add_api_upfc(elm)
@@ -2626,7 +2795,9 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            graphic_obj = self.add_api_vsc(branch)
+            graphic_obj = self.add_api_vsc(elm=branch,
+                                           x=branch.x,
+                                           y=branch.y)
             self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
@@ -2918,7 +3089,7 @@ class SchematicWidget(BaseDiagramWidget):
         max_flow = 1
         ph = np.array([0, 1, 2])
 
-        if (nbus == len(vnorm) and not is_three_phase) or (3 * nbus == len(vnorm) and is_three_phase):
+        if nbus == len(vnorm):
             for i, bus in enumerate(self.circuit.buses):
 
                 # try to find the diagram object of the DB object
@@ -2978,7 +3149,6 @@ class SchematicWidget(BaseDiagramWidget):
         else:
             error_msg("Bus results length differs from the number of Bus results. \n"
                       "Did you change the number of devices? If so, re-run the simulation.")
-            return
 
         # color Branches
         if Sf is not None:
@@ -3040,7 +3210,8 @@ class SchematicWidget(BaseDiagramWidget):
                                 else:
                                     l_color_val = lnorm[i]
                                     tooltip = str(i) + ': ' + branch.name
-                                    tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
+                                    tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
+                                        lnorm[i] * 100) + ' [%]'
 
                                     tooltip += '\nPower (from):\t' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
 
@@ -3168,6 +3339,16 @@ class SchematicWidget(BaseDiagramWidget):
                                 abs(vsc_loading[i]) * 100) + ' [%]'
 
                             tooltip += '\nPower (from):\t' + "{:10.4f}".format(vsc_Pf[i]) + ' [MW]'
+
+                            # if vsc_losses is not None:
+                            #     tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Pt[i]) + ' [MW]'
+                            #     tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Qt[i]) + ' [Mvar]'
+                            #     tooltip += '\nLosses: \t\t' + "{:10.4f}".format(vsc_losses[i]) + ' [MW]'
+                            #     graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
+                            #                                        St=vsc_Pt[i] + 1j * vsc_Qt[i])
+                            # else:
+                            #     graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
+                            #                                        St=-vsc_Pf[i] + 1j * vsc_Qt[i])
 
                             if vsc_Qt is None:
                                 if vsc_losses is not None:
@@ -3316,6 +3497,426 @@ class SchematicWidget(BaseDiagramWidget):
                             fluid_node_flow_in=fluid_node_flow_in[i] if fluid_node_flow_in is not None else None,
                             fluid_node_flow_out=fluid_node_flow_out[i] if fluid_node_flow_out is not None else None,
                         )
+
+    def colour_results_3ph(self,
+                           SbusA: CxVec,
+                           SbusB: CxVec,
+                           SbusC: CxVec,
+                           voltagesA: CxVec,
+                           voltagesB: CxVec,
+                           voltagesC: CxVec,
+                           bus_active: IntVec,
+                           types: IntVec,
+                           SfA: CxVec,
+                           SfB: CxVec,
+                           SfC: CxVec,
+                           StA: CxVec,
+                           StB: CxVec,
+                           StC: CxVec,
+                           loadingsA: CxVec,
+                           loadingsB: CxVec,
+                           loadingsC: CxVec,
+                           lossesA: CxVec,
+                           lossesB: CxVec,
+                           lossesC: CxVec,
+                           br_active: IntVec,
+                           ma: Vec,
+                           tau: Vec,
+                           hvdc_PfA: Vec,
+                           hvdc_PfB: Vec,
+                           hvdc_PfC: Vec,
+                           hvdc_PtA: Vec,
+                           hvdc_PtB: Vec,
+                           hvdc_PtC: Vec,
+                           hvdc_losses: Vec,
+                           hvdc_loading: Vec,
+                           hvdc_active: IntVec,
+                           vsc_Pf: Vec,
+                           vsc_PtA: Vec,
+                           vsc_PtB: Vec,
+                           vsc_PtC: Vec,
+                           vsc_QtA: Vec,
+                           vsc_QtB: Vec,
+                           vsc_QtC: Vec,
+                           vsc_losses: Vec,
+                           vsc_loading: Vec,
+                           vsc_active: IntVec,
+                           loading_label: str = 'loading',
+                           use_flow_based_width: bool = False,
+                           min_branch_width: int = 5,
+                           max_branch_width=5,
+                           min_bus_width=20,
+                           max_bus_width=20,
+                           cmap: palettes.Colormaps = None):
+        """
+        Color objects based on the results passed
+        :param Sbus: Buses power (MVA)
+        :param bus_active: Bus active status
+        :param Sf: Branches power from the "from" bus (MVA)
+        :param St: Branches power from the "to" bus (MVA)
+        :param voltages: Buses voltage
+        :param loadings: Branches load (%)
+        :param types: Buses type [PQ: 1, PV: 2, REF: 3, NONE: 4, STO_DISPATCH: 5, PVB: 6]
+        :param losses: Branches losses [%]
+        :param br_active: Branches active status
+        :param hvdc_Pf: HVDC branch flows "from" [MW]
+        :param hvdc_Pt: HVDC branch flows "to" [MW]
+        :param hvdc_losses: HVDC branch losses [MW]
+        :param hvdc_loading: HVDC Branch loading [%]
+        :param hvdc_active: HVDC Branch status
+        :param vsc_Pf: VSC branch flows "from" [MW]
+        :param vsc_Pt: VSC branch flows "to" [MW]
+        :param vsc_Qt: VSC branch flows "to" [Mvar]
+        :param vsc_losses: VSC branch losses [MW]
+        :param vsc_loading: VSC Branch loading [%]
+        :param vsc_active: VSC Branch status
+        :param loading_label: String saying whatever the loading label means
+        :param ma: branch phase shift angle (rad)
+        :param tau: branch tap module (p.u.)
+        :param use_flow_based_width: use branch width based on the actual flow?
+        :param min_branch_width: Minimum branch width [px]
+        :param max_branch_width: Maximum branch width [px]
+        :param min_bus_width: Minimum bus width [px]
+        :param max_bus_width: Maximum bus width [px]
+        :param cmap: Color map [palettes.Colormaps]
+        """
+
+        # color nodes
+        vmin = 0
+        vmax = 1.2
+        vrng = vmax - vmin
+        VmA = np.abs(voltagesA)
+        VmB = np.abs(voltagesB)
+        VmC = np.abs(voltagesC)
+        VaA = np.angle(voltagesA, deg=True)
+        VaB = np.angle(voltagesB, deg=True)
+        VaC = np.angle(voltagesC, deg=True)
+        vnorm = (VmA - vmin) / vrng
+        nbus = self.circuit.get_bus_number()
+        nbr = self.circuit.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=True)
+
+        voltage_cmap = viz.get_voltage_color_map()
+        loading_cmap = viz.get_loading_color_map()
+
+        """
+        class BusMode(Enum):
+        PQ = 1,
+        PV = 2,
+        REF = 3,
+        NONE = 4,
+        STO_DISPATCH = 5
+        PVB = 6
+        """
+
+        bus_types = ['', 'PQ', 'PV', 'Slack', 'PQV', 'P']
+        max_flow = 1
+        ph = np.array([0, 1, 2])
+
+        if nbus == len(vnorm):
+            for i, bus in enumerate(self.circuit.buses):
+
+                # try to find the diagram object of the DB object
+                graphic_object: BusGraphicItem = self.graphics_manager.query(bus)
+
+                if graphic_object is not None:
+                    if bus_active[i]:
+
+                        graphic_object.set_values_3ph(i=i,
+                                                      VmA=VmA[i], VmB=VmB[i], VmC=VmC[i],
+                                                      VaA=VaA[i], VaB=VaB[i], VaC=VaC[i],
+                                                      PA=SbusA[i].real, PB=SbusB[i].real, PC=SbusC[i].real,
+                                                      QA=SbusA[i].imag, QB=SbusB[i].imag, QC=SbusC[i].imag,
+                                                      tpe=bus_types[int(types[i])])
+
+                        v_to_colour = vnorm[i]
+
+                        a = 255
+                        if cmap == palettes.Colormaps.Green2Red:
+                            b, g, r = palettes.green_to_red_bgr(v_to_colour)
+
+                        elif cmap == palettes.Colormaps.Heatmap:
+                            b, g, r = palettes.heatmap_palette_bgr(v_to_colour)
+
+                        elif cmap == palettes.Colormaps.TSO:
+                            b, g, r = palettes.tso_substation_palette_bgr(v_to_colour)
+
+                        else:
+                            r, g, b, a = voltage_cmap(v_to_colour)
+                            r *= 255
+                            g *= 255
+                            b *= 255
+                            a *= 255
+
+                        graphic_object.set_tile_color(QColor(r, g, b, a))
+
+                        if use_flow_based_width:
+                            graphic_object.change_size(w=graphic_object.w)
+
+                    else:
+                        graphic_object.set_tile_color(QColor(115, 115, 115, 255))  # gray
+                        graphic_object.clear_label()
+                else:
+                    pass  # the graphic is None
+
+        else:
+            error_msg("Bus results length differs from the number of Bus results. \n"
+                      "Did you change the number of devices? If so, re-run the simulation.")
+
+        # color Branches
+        if len(SfA) > 0:
+            lnormA = np.abs(loadingsA)
+            lnormA[lnormA == np.inf] = 0
+            SfA_abs = np.abs(SfA)
+
+            lnormB = np.abs(loadingsB)
+            lnormB[lnormB == np.inf] = 0
+            SfB_abs = np.abs(SfB)
+
+            lnormC = np.abs(loadingsC)
+            lnormC[lnormC == np.inf] = 0
+            SfC_abs = np.abs(SfC)
+
+            max_flow = np.max([SfA_abs.max(), SfB_abs.max(), SfC_abs.max(),
+                               np.abs(hvdc_PfA).max(), np.abs(hvdc_PfB).max(), np.abs(hvdc_PfC).max()])
+
+            if max_flow != 0:
+                Sfnorm = np.maximum(np.maximum(SfA_abs, SfB_abs), SfC_abs) / max_flow
+            else:
+                Sfnorm = np.maximum(np.maximum(SfA_abs, SfB_abs), SfC_abs)
+
+            for i, branch in enumerate(self.circuit.get_branches_iter(add_vsc=False,
+                                                                      add_hvdc=False,
+                                                                      add_switch=True)):
+
+                # try to find the diagram object of the DB object
+                graphic_object: BRANCH_GRAPHICS = self.graphics_manager.query(branch)
+
+                if graphic_object is not None:
+
+                    if br_active[i]:
+
+                        l_color_val = lnormA[i]
+                        tooltip = str(i) + ': ' + branch.name
+                        tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnormA[i] * 100) + ' [%]'
+
+                        tooltip += '\nPower A (from):\t' + "{:10.4f}".format(SfA[i]) + ' [MVA]'
+                        tooltip += '\nPower B (from):\t' + "{:10.4f}".format(SfB[i]) + ' [MVA]'
+                        tooltip += '\nPower C (from):\t' + "{:10.4f}".format(SfC[i]) + ' [MVA]'
+
+                        tooltip += '\nPower A (to):\t' + "{:10.4f}".format(StA[i]) + ' [MVA]'
+                        tooltip += '\nPower B (to):\t' + "{:10.4f}".format(StB[i]) + ' [MVA]'
+                        tooltip += '\nPower C (to):\t' + "{:10.4f}".format(StC[i]) + ' [MVA]'
+
+                        tooltip += '\nLoss A:\t\t' + "{:10.4f}".format(lossesA[i]) + ' [MVA]'
+                        tooltip += '\nLoss B:\t\t' + "{:10.4f}".format(lossesB[i]) + ' [MVA]'
+                        tooltip += '\nLoss C:\t\t' + "{:10.4f}".format(lossesC[i]) + ' [MVA]'
+
+                        if branch.device_type == DeviceType.Transformer2WDevice:
+                            tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
+                            tooltip += '\ntap angle:\t' + "{:10.4f}".format(tau[i]) + ' rad'
+
+                        if use_flow_based_width:
+                            w = int((np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width))))
+                        else:
+                            w = graphic_object.pen_width
+
+                        style = Qt.PenStyle.SolidLine
+
+                        a = 255
+                        if cmap == palettes.Colormaps.Green2Red:
+                            b, g, r = palettes.green_to_red_bgr(l_color_val)
+
+                        elif cmap == palettes.Colormaps.Heatmap:
+                            b, g, r = palettes.heatmap_palette_bgr(l_color_val)
+
+                        elif cmap == palettes.Colormaps.TSO:
+                            b, g, r = palettes.tso_line_palette_bgr(branch.get_max_bus_nominal_voltage(),
+                                                                    l_color_val)
+
+                        else:
+                            r, g, b, a = loading_cmap(l_color_val)
+                            r *= 255
+                            g *= 255
+                            b *= 255
+                            a *= 255
+
+                        color = QColor(r, g, b, a)
+
+                        graphic_object.setToolTipText(tooltip)
+                        graphic_object.set_colour(color, w, style)
+
+                        if hasattr(graphic_object, 'set_arrows_with_power'):
+                            graphic_object.set_arrows_with_power(
+                                Sf=np.max([SfA[i], SfB[i], SfC[i]]),
+                                St=np.max([StA[i], StB[i], StC[i]])
+                            )
+                    else:
+                        w = graphic_object.pen_width
+                        style = Qt.PenStyle.DashLine
+                        color = QColor(115, 115, 115, 255)  # gray
+                        graphic_object.set_pen(QPen(color, w, style))
+                        graphic_object.setToolTipText("")
+                        if hasattr(graphic_object, 'set_arrows_with_power'):
+                            graphic_object.set_arrows_with_power(Sf=None, St=None)
+
+                else:
+                    # No diagram object
+                    pass
+
+        # VSC lines
+        if vsc_Pf is not None:
+
+            vsc_sending_power_norm = np.abs(vsc_PtA + 1j * vsc_QtA) / (max_flow + 1e-20)
+
+            if self.circuit.get_vsc_number() == len(vsc_Pf):
+                for i, elm in enumerate(self.circuit.vsc_devices):
+
+                    # try to find the diagram object of the DB object
+                    graphic_object: VscGraphicItem = self.graphics_manager.query(elm)
+
+                    if graphic_object is not None:
+
+                        if vsc_active[i]:
+
+                            if use_flow_based_width:
+                                w = int(np.floor(
+                                    min_branch_width + vsc_sending_power_norm[i] * (
+                                            max_branch_width - min_branch_width)))
+                            else:
+                                w = graphic_object.pen_width
+
+                            if elm.active:
+                                style = Qt.PenStyle.SolidLine
+
+                                a = 1
+                                if cmap == palettes.Colormaps.Green2Red:
+                                    b, g, r = palettes.green_to_red_bgr(abs(vsc_loading[i]))
+
+                                elif cmap == palettes.Colormaps.Heatmap:
+                                    b, g, r = palettes.heatmap_palette_bgr(abs(vsc_loading[i]))
+
+                                elif cmap == palettes.Colormaps.TSO:
+                                    b, g, r = palettes.tso_line_palette_bgr(elm.get_max_bus_nominal_voltage(),
+                                                                            abs(vsc_loading[i]))
+
+                                else:
+                                    r, g, b, a = loading_cmap(abs(vsc_loading[i]))
+                                    r *= 255
+                                    g *= 255
+                                    b *= 255
+                                    a *= 255
+
+                                color = QColor(r, g, b, a)
+                            else:
+                                style = Qt.PenStyle.DashLine
+                                color = QColor(115, 115, 115, 255)  # gray
+
+                            tooltip = str(i) + ': ' + elm.name
+                            tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
+                                abs(vsc_loading[i]) * 100) + ' [%]'
+
+                            tooltip += '\nPower DC (from):\t' + "{:10.4f}".format(vsc_Pf[i]) + ' [MW]'
+
+                            tooltip += '\nPower A (to):\t' + "{:10.4f}".format(vsc_PtA[i]) + ' [MW]'
+                            tooltip += '\nPower B (to):\t' + "{:10.4f}".format(vsc_PtB[i]) + ' [MW]'
+                            tooltip += '\nPower C (to):\t' + "{:10.4f}".format(vsc_PtC[i]) + ' [MW]'
+
+                            tooltip += '\nPower A (to):\t' + "{:10.4f}".format(vsc_QtA[i]) + ' [Mvar]'
+                            tooltip += '\nPower B (to):\t' + "{:10.4f}".format(vsc_QtB[i]) + ' [Mvar]'
+                            tooltip += '\nPower C (to):\t' + "{:10.4f}".format(vsc_QtC[i]) + ' [Mvar]'
+
+                            tooltip += '\nLosses: \t\t' + "{:10.4f}".format(vsc_losses[i]) + ' [MW]'
+                            graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
+                                                                 St=vsc_PtA[i] + 1j * vsc_QtA[i])
+
+                            graphic_object.setToolTipText(tooltip)
+                            graphic_object.set_colour(color, w, style)
+                        else:
+                            w = graphic_object.pen_width
+                            style = Qt.PenStyle.DashLine
+                            color = QColor(115, 115, 115, 255)  # gray
+                            graphic_object.set_pen(QPen(color, w, style))
+                    else:
+                        # No diagram object
+                        pass
+            else:
+                error_msg("VSC results length differs from the number of VSC results. \n"
+                          "Did you change the number of devices? If so, re-run the simulation.")
+
+        # HVDC lines
+        if len(hvdc_PfA) > 0:
+
+            hvdc_sending_power_norm = np.abs(hvdc_PfA) / (max_flow + 1e-20)
+
+            if self.circuit.get_hvdc_number() == len(hvdc_PfA):
+                for i, elm in enumerate(self.circuit.hvdc_lines):
+
+                    # try to find the diagram object of the DB object
+                    graphic_object: HvdcGraphicItem = self.graphics_manager.query(elm)
+
+                    if graphic_object is not None:
+
+                        if hvdc_active[i]:
+
+                            if use_flow_based_width:
+                                w = int(np.floor(
+                                    min_branch_width + hvdc_sending_power_norm[i] * (
+                                            max_branch_width - min_branch_width)))
+                            else:
+                                w = graphic_object.pen_width
+
+                            if elm.active:
+                                style = Qt.PenStyle.SolidLine
+
+                                a = 1
+                                if cmap == palettes.Colormaps.Green2Red:
+                                    b, g, r = palettes.green_to_red_bgr(abs(hvdc_loading[i]))
+
+                                elif cmap == palettes.Colormaps.Heatmap:
+                                    b, g, r = palettes.heatmap_palette_bgr(abs(hvdc_loading[i]))
+
+                                elif cmap == palettes.Colormaps.TSO:
+                                    b, g, r = palettes.tso_line_palette_bgr(elm.get_max_bus_nominal_voltage(),
+                                                                            abs(hvdc_loading[i]))
+
+                                else:
+                                    r, g, b, a = loading_cmap(abs(hvdc_loading[i]))
+                                    r *= 255
+                                    g *= 255
+                                    b *= 255
+                                    a *= 255
+
+                                color = QColor(r, g, b, a)
+                            else:
+                                style = Qt.PenStyle.DashLine
+                                color = QColor(115, 115, 115, 255)  # gray
+
+                            tooltip = str(i) + ': ' + elm.name
+                            tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
+                                abs(hvdc_loading[i]) * 100) + ' [%]'
+
+                            tooltip += '\nPower (from):\t' + "{:10.4f}".format(hvdc_PfA[i]) + ' [MW]'
+
+                            if hvdc_losses is not None:
+                                tooltip += '\nPower (to):\t' + "{:10.4f}".format(hvdc_PtA[i]) + ' [MW]'
+                                tooltip += '\nLosses: \t\t' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
+                                graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_PfA[i], Pt=hvdc_PtA[i])
+                            else:
+                                graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_PfA[i], Pt=-hvdc_PfA[i])
+
+                            graphic_object.setToolTipText(tooltip)
+                            graphic_object.set_colour(color, w, style)
+                        else:
+                            w = graphic_object.pen_width
+                            style = Qt.PenStyle.DashLine
+                            color = QColor(115, 115, 115, 255)  # gray
+                            graphic_object.set_pen(QPen(color, w, style))
+                    else:
+                        # No diagram object
+                        pass
+            else:
+                error_msg("HVDC results length differs from the number of HVDC results. \n"
+                          "Did you change the number of devices? If so, re-run the simulation.")
 
     def recolour(self, use_api_color: bool):
         """
@@ -4083,7 +4684,26 @@ def generate_schematic_diagram(buses: List[Bus],
     add_devices_list(cls="switches", dev_lst=switches)
     add_devices_list(cls="windings", dev_lst=windings)
     add_devices_list(cls="hvdc_lines", dev_lst=hvdc_lines)
+
+    # TODO: Review this merge
     add_devices_list(cls="vsc_devices", dev_lst=vsc_devices)
+
+    # Handle VSC devices specially to preserve their coordinates
+    # if text_func is not None:
+    #     text_func('Adding VSC devices to the diagram')
+    #
+    # nn = len(vsc_devices)
+    # for i, elm in enumerate(vsc_devices):
+    #     if prog_func is not None:
+    #         prog_func((i + 1) / nn * 100.0)
+    #
+    #     # Preserve VSC coordinates like buses do
+    #     x = int(elm.x * explode_factor) if not np.isnan(elm.x) else 0
+    #     y = int(elm.y * explode_factor) if not np.isnan(elm.y) else 0
+    #     diagram.set_point(device=elm, location=GraphicLocation(x=x, y=y))
+
+    # TODO: End review here
+
     add_devices_list(cls="upfc_devices", dev_lst=upfc_devices)
     add_devices_list(cls="fluid_paths", dev_lst=fluid_paths)
 

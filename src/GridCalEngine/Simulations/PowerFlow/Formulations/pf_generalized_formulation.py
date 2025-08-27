@@ -379,7 +379,7 @@ def calc_flows_summation_per_bus(nbus: int,
                                  F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec) -> CxVec:
     """
     Summation of magnitudes per bus (complex)
-    Includes everything: VSCs, HVDCs, and all 
+    Includes everything: VSCs, HVDCs, and all
     traditional branches (lines and controllable transformers)
     :param nbus:
     :param F_br:
@@ -423,7 +423,7 @@ def calc_flows_active_branch_per_bus(nbus: int,
                                      F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec) -> CxVec:
     """
     Summation of magnitudes per bus (complex)
-    Used to add effects of VSCs and HVDCs to 
+    Used to add effects of VSCs and HVDCs to
     the traditional branches (lines and controllable transformers)
     :param nbus:
     :param F_hvdc:

@@ -48,7 +48,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                          ResultTypes.BusActivePowerIncrement,
                                      ],
                                      ResultTypes.BranchResults: [
-                                         ResultTypes.BranchPower,
+                                         ResultTypes.BranchActivePowerFrom,
                                          ResultTypes.BranchLoading,
                                          ResultTypes.BranchTapAngle,
                                          ResultTypes.BranchMonitoring,
@@ -250,7 +250,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 idx_device_type=DeviceType.BusDevice
             )
 
-        elif result_type == ResultTypes.BranchPower:
+        elif result_type == ResultTypes.BranchActivePowerFrom:
             return ResultsTable(
                 data=self.Sf.real,
                 columns=['Sf'],

@@ -567,6 +567,9 @@ class Transformer2W(ControllableBranchParent):
         :return: 3x3 matrices -> Yff, Yft, Ytf, Ytt
         """
 
+        conn_y_from = self.conn_f == WindingType.Star or self.conn_f == WindingType.GroundedStar
+        conn_y_to = self.conn_t == WindingType.Star or self.conn_t == WindingType.GroundedStar
+
         phase_displacement = np.deg2rad(self.vector_group_number * 30.0)
 
         ys = 1.0 / (self.R + 1j * self.X + 1e-20)
@@ -576,9 +579,6 @@ class Transformer2W(ControllableBranchParent):
         yft = -ys / (self.tap_module * np.exp(-1.0j * (self.tap_phase + phase_displacement)) * vtap_f * vtap_t)
         ytf = -ys / (self.tap_module * np.exp(1.0j * (self.tap_phase + phase_displacement)) * vtap_t * vtap_f)
         ytt = (ys + ysh / 2) / (vtap_t * vtap_t)
-
-        conn_y_from = self.conn_f == WindingType.Star or self.conn_f == WindingType.GroundedStar
-        conn_y_to = self.conn_t == WindingType.Star or self.conn_t == WindingType.GroundedStar
 
         if conn_y_from and conn_y_to:  # Yy
             Yff = np.array([
@@ -646,7 +646,7 @@ class Transformer2W(ControllableBranchParent):
                 [0, 0, ytt]
             ])
 
-        elif self.conn_f == WindingType.Delta and conn_y_to:  # 'Dy':
+        elif self.conn_f == WindingType.Delta and conn_y_to:  # 'Dy'
             Yff = np.array([
                 [2 * yff / 3, -yff / 3, -yff / 3],
                 [-yff / 3, 2 * yff / 3, -yff / 3],
@@ -668,7 +668,7 @@ class Transformer2W(ControllableBranchParent):
                 [0, 0, ytt]
             ])
 
-        elif self.conn_f == WindingType.Delta and self.conn_t == WindingType.Delta:  # 'Dd':
+        elif self.conn_f == WindingType.Delta and self.conn_t == WindingType.Delta:  # 'Dd'
             Yff = np.array([
                 [2 * yff / 3, -yff / 3, -yff / 3],
                 [-yff / 3, 2 * yff / 3, -yff / 3],

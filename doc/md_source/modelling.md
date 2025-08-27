@@ -1,61 +1,57 @@
 # 📐 Grid Modelling
 
-## Three-phase Modelling
-Three-phase AC systems dominate power transmission and distribution due to efficiency, capacity, and compatibility.
-While ideal systems are balanced and can be analysed using positive-sequence models, real networks often experience
-asymmetries from factors like untransposed lines, uneven loads, single-phase connections, and converter-based resources. 
-Also, the classical method of symmetrical components simplifies unbalanced fault analysis under linear conditions but
-struggles with strong sequence coupling, non-linearities, and complex network topologies.
+Three-phase AC systems dominate power transmission and distribution for their efficiency, capacity, and compatibility.
+While ideal systems are balanced and suitable for positive-sequence analysis, real networks often experience asymmetries
+from untransposed lines, uneven loads, single-phase connections, and converter-based resources. The classical
+symmetrical components method simplifies unbalanced fault analysis but struggles with strong sequence coupling,
+non-linearities, and complex topologies.
 
 Direct phase-domain (abc) modelling overcomes these limitations by representing actual phase quantities, naturally
-handling asymmetry, non-linearities, single-phase, two-phase and three-phase systems, as well as symmetrical and
-asymmetrical faults. It is well-suited for transient and time-domain simulations, EMTP-type tools, and control design,
-making it applicable from large power plants, through transmission and distribution, to finally low-voltage networks.
+handling asymmetry, non-linearities, and all fault types. It is particularly suited for transient simulations, EMTP
+tools, and control design across all voltage levels.
 
-The conventional elements of the electrical power system are generators, loads, transformers, and lines, as well as the
-necessary reactive power compensation equipment. These elements are suitably interconnected to enable the generation,
-transportation and consumption of electricity to meet system demand at any given point in time.
-The electrical power network may then be divided into generation, transmission, distribution, and customer subsystems,
-as represented in figure bellow. Transmission networks operate at high voltages (HV) to minimise
-transport losses. Conversely, electricity is generated at medium voltages (MV), and step-up transformers are employed
-at the generator substation to raise the voltage to transmission levels. In contrast, step-down transformers are used
-to reduce the high transmission voltages to levels suitable for distribution (MV), and eventually for industrial,
-commercial, and residential applications at low voltages (LV).
+Power systems comprise generators, transformers, lines, loads, and compensation equipment, interconnected from
+generation through transmission and distribution to end users. Transmission operates at high voltages to reduce losses,
+with transformers stepping voltages up or down as required. Transmission circuits often include series and shunt
+compensation, while transformer winding configurations must be carefully modelled under unbalanced conditions. At the
+distribution level, load points can be highly unbalanced due to single-phase connections.
 
-![Electrical power system network](figures/3ph_PowerSystem.png "Electrical power system network")
+<div style="text-align: center;">
+    <img src="figures/3ph_PowerSystem.png"
+    alt="Electrical power system network"
+    title="Electrical power system network"
+    width="90%"/>
+</div>
 
-Three-phase synchronous generators are used to produce electrical power, which is delivered to demand points via 
-alternating current (AC) three-phase transmission and distribution lines. The geometrical arrangement of these lines
-introduces some impedance unbalance between phases. Often, long-distance transmission circuits consist of more than one
-three-phase circuit and include series and shunt compensation to enable stable operation. It should also be noted that
-the windings of three-phase transformers can be connected in various ways to suit specific requirements, and that
-transformer connections must be modeled in detail when system imbalances cannot be neglected in power system studies.
-Additionally, distribution load points may be highly unbalanced due to the prevalence of individual single-phase loads.
+## Lines
 
-### Three-phase Overhead Lines
+Power lines are essential in delivering electricity from generation to loads. They consist of phase conductors
+positioned above the ground, sometimes using it as a return path, which must be considered in parameter calculations.
+Transmission lines may use bundled conductors and ground wires, while distribution lines can include a neutral return.
+Both types can introduce geometric and electrical unbalances. Accurate modelling aims to calculate voltage drops and
+losses, based on determining the per-unit-length parameters: resistance $R$, inductance $L$, conductance $G$,
+and capacitance $C$.
 
-Power lines are fundamental components of power systems, responsible for transmitting
-electrical energy from generation sources to loads. They consist of a group of phase conductors
-located at a finite distance from the earth’s surface and may use the ground as a
-return path. Accordingly, it becomes necessary to account for this effect when calculating
-the line parameters. High-voltage transmission lines may contain several conductors
-per phase (known as bundled conductors) and ground wires, while distribution lines may
-include a neutral wire as a return path. Both transmission and distribution circuits may
-introduce considerable geometric unbalances, hence electrical unbalances, depending on
-their layout. The main objective is to develop an overhead power line model that
-enables precise calculation of voltage drops and losses during the power transmission process.
-The basis of power line modelling is to determine the resistance $R$, inductance $L$,
-conductance $G$, and capacitance $C$ per unit length.
+<div style="text-align: center;">
+    <img src="figures/3ph_power_line.png"
+    alt="Power line geometric arrangement"
+    title="Power line geometric arrangement"
+    width="30%"/>
+</div>
 
-#### π model
+### π model
 
-Lines can be represented using mathematical models that describe their electrical behaviour.
-It is a current practice to model the inductive and resistive effects of multiconductor
-transmission lines as a series impedance matrix, and the capacitive effects as a
-shunt admittance matrix. The overall transmission line model then can be represented by
-the π equivalent model, as shown in the figure bellow.
+Transmission lines are mathematically modelled to describe their electrical behaviour. The inductive and resistive
+effects of multiconductor lines are represented by a series impedance matrix, while capacitive effects are modelled as
+a shunt admittance matrix. Together, these form the basis of the $\pi$-equivalent model commonly used in power system
+studies.
 
-![Line π equivalent circuit](figures/3ph_pi_model.png "Line π equivalent circuit")
+<div style="text-align: center;">
+    <img src="figures/3ph_pi_model.png"
+    alt="Line π equivalent circuit"
+    title="Line π equivalent circuit"
+    width="60%"/>
+</div>
 
 It consists of:
 
@@ -63,27 +59,12 @@ It consists of:
 
 - Shunt admittance: $Y_{\text{shunt}} = G + jB$
 
-Where $R$ is the series equivalent resistance of the conductors, $X$ is the series self and mutual inductive
-reactances resulting from the magnetic fields surrounding the conductors, $G$ is the shunt conductance through
-insulating materials and $B$ represents the shunt susceptance derived from the line capacitance due to the induced
-electric fields.
-
-The line capacitance is split between the two connection points with the resistance and the reactance in the middle,
-whose shape gives the so-called π-model. Although this single-phase simplification is a widely used technique, when
-modeling unbalanced systems it is needed to consider a 5-wire approach, that later becomes a 3-wire equivalent.
-This 5-wire model is that including the three phases, the neutral and the ground:
-
-- The first three wires are the three-phase $abc$ conductors. These carry the alternating current (AC) electricity and
-are used to distribute power efficiently.
-- The fourth wire is the neutral conductor $n$. It provides a return path for unbalanced current and is often grounded
-at substations to stabilize the system voltage.
-- The fifth wire is typically a ground wire $g$, which is connected to earth to protect equipment and people by providing
-a low-resistance path for fault currents, ensuring safety and system stability.
-
-Not all physical lines will have neutral, and the ”ground return” is certainly not a wire, but it is represented as one
-in order to close the electrical circuit. Each wire has its own impedance, however, other impedances arise from the 
-electromagnetic coupling of the wires, such that it is necessary to use a 5x5 matrix to represent the total line
-impedance or admittance:
+In the $\pi$-model, $R$ represents conductor resistance, $X$ the self and mutual inductive reactances, $G$ the shunt
+conductance through insulation, and $B$ the shunt susceptance from line capacitance. Shunt admittance is divided between
+the ends, with series impedance in the middle. While the single-phase model is common, unbalanced systems require a 5-wire
+representation, the three-phase conductors ($a$, $b$, $c$), the neutral ($n$), and the ground ($g$). The neutral returns
+unbalanced current and stabilises voltage, while the ground provides a fault current path for safety. Each conductor
+has its own impedance, and mutual coupling between all conductors requires a $5\times 5$ impedance or admittance matrix.
 
 $$
 \vec{Z} =
@@ -96,9 +77,8 @@ $$
 \end{bmatrix}
 $$
 
-Most transmission power lines do not carry the neutral, since that one is normally earthed at both ends of the line.
-Also, the ground return effect can be incorporated into the phase impedance as it will be detailed later. Then, it can
-be simply expressed as a 3x3 matrix:
+In most transmission lines, the neutral conductor is absent as it is earthed at both ends. The ground return effect can
+be incorporated into the phase impedance, allowing the line to be represented with a simplified $3\times 3$ matrix.
 
 $$
 \vec{Z} =
@@ -109,25 +89,19 @@ $$
 \end{bmatrix}
 $$
 
-#### Series Impedance
+### Series Impedance
 
-Carson’s equations are used in power system analysis to calculate the series self and mutual impedances of overhead
-transmission lines, taking into account the effects of the ground return path.
-They are based on the following assumptions:
+Carson’s equations calculate the series self and mutual impedances of overhead transmission lines, accounting for the
+ground return path. They assume long, horizontally arranged conductors with average height for sag effects, homogeneous
+and lossless free space, uniform earth properties, and conductor spacing much greater than conductor radius to neglect
+proximity effects. The impedance matrix elements are derived from the tower geometry and conductor characteristics.
 
-- The conductors are perfectly horizontal above ground and are long enough so that three-dimensional end effects can be
-neglected. This makes the field problem two-dimensional. The sag is taken into account indirectly by using an average 
-height above ground.
-- The free space is homogeneous and lossless, with permeability $\mu_0$ and permittivity $\varepsilon_0$.
-- The earth is homogeneous, with uniform resistivity $\rho$, permeability $\mu_0$, and permittivity $\varepsilon_0$,
-bounded by a flat plane of infinite extent. 
-- The spacing between conductors is at least one order of magnitude larger than the conductor radius, so that proximity
-effects can be ignored.
-
-The elements of the series impedance matrix can then be calculated from the geometry of the tower configuration and
-from characteristics of the conductors:
-
-![Carson’s geometry data of the tower](figures/3ph_carson.png "Carson’s geometry data of the tower")
+<div style="text-align: center;">
+    <img src="figures/3ph_carson.png"
+    alt="Carson’s geometry data of the tower"
+    title="Carson’s geometry data of the tower"
+    width="30%"/>
+</div>
 
 Then, the following equations are implemented to obtain the self and mutual values:
 
@@ -153,18 +127,14 @@ Where:
 - $D_{ij}$ is the distance between conductor $i$ and the image of conductor $j$ in m.
 
 The correction terms $R^c$ and $X^c$ are derived from an infinite integral representing the impedance contribution due
-to the earth return path. For a more indepth explanation of the Carson's equations, as well as of its parameters,
-the reader is kindly referred to the bellow example calculation code of the Series impedance, Shunt admittance and
-Kron's reduction.
+to the earth return path.
 
-#### Shunt Admittance
+### Shunt Admittance
 
-Just as the calculation of the series impedance has accounted for the resistance and inductance, the shunt admittance
-must incorporate the capacitance between the conductor and the ground, as well as between conductors, as previously
-explained. These effects can be mathematically modelled using the following equations, given that the air is lossless,
-the earth is uniformly at zero potential and the conductor radius is at least an order of magnitude smaller that the
-distance among the conductors, which it is reasonable for overhead lines. Therefore, the shunt admittance between a
-conductor and the ground, and the shunt admittance between two conductors, should be calculated using:
+Just as series impedance accounts for resistance and inductance, shunt admittance includes capacitance between
+conductors and ground, and between conductors themselves. Under the assumptions of lossless air, uniformly grounded
+earth, and conductor radii much smaller than inter-conductor spacing, these capacitances can be modelled mathematically
+to compute the corresponding shunt admittances.
 
 $$
     \vec{Y}_{ii} = j\frac{\omega}{2 \pi \varepsilon_0} \ln{\frac{2 h_i}{r_i}}
@@ -178,7 +148,7 @@ $$
 
 Where $\varepsilon_0 = \dfrac{1}{\mu_0 c^2} \approx 8,85 \cdot 10^{-12}$ F/m is the free space permittivity.
 
-#### Kron's reduction
+### Kron's reduction
 
 Kron's reduction, or node elimination, is a technique from network theory used to simplify a multi-node electrical
 network by eliminating certain nodes, often called internal or passive nodes, while preserving the electrical
@@ -241,542 +211,154 @@ $$
 This new matrix allows to describe the electrical behaviour of the remaining phase nodes $p$, while implicitly
 incorporating the effect of the eliminated ground nodes $g$, which were assumed to be held at 0 V.
 
-####  Example calculation code of the Series impedance, Shunt admittance and Kron's reduction
-
-The following code is provided in order to compute the series impedance and the shunt admittances matrices, by using the
-where the Kron's reduction is also implemented. The calculation process is detailed during the code, as well as the 
-conductor's properties, with the following power line geometry used as an example:
-
-![Power line geometric arrangement](figures/3ph_power_line.png "Power line geometric arrangement")
+### Line definition example
 
 ```python
-"""
-Overhead Line Constants Calculation Library
-
-Reference:
-    [1] Dommel, H. W., "Electromagnetic Transients Program Reference Manual (EMTP Theory Book)",
-    Chapter 4, "Overhead Transmission Lines".
-    
-    [2] Arrillaga, J., and Watson, N. R., "Computer Modelling of Electrical Power Systems",
-    2nd Edition, Wiley, 2005, Chapter 2.6.
-    
-    [3] J. Susanto, “line-constants: Overhead line constants calculation library,”
-    https://github.com/susantoj/line-constants, 2017.
-
-Functions:
-    calc_L_int          Calculates internal inductance of solid or tubular conductor
-    calc_GMR            Calculates geometric mean radius (GMR) of solid or tubular conductor
-    carsons             Calculates Carson's earth return correction factors Rp and Xp for self or mutual terms
-    calc_self_Z         Calculates self impedance term (in Ohm/km)
-    calc_mutual_Z       Calculates mutual impedance term (in Ohm/km)
-    calc_Dubanton_Z     Calculates Dubanton approximation for self or mutual impedance (in Ohm/km)
-    calc_Z_matrix       Calculates primitive impedance matrix
-    calc_Y_matrix       Calculates primitive admittance matrix
-    calc_kron_Z         Calculates Kron reduced matrix
-"""
-
+import GridCalEngine.api as gce
 import numpy as np
 
-def calc_L_int(type, r, q):
-    """
-    Calculates internal inductance of solid or tubular conductor
-    Note that calculations assume uniform current distribution in the conductor,
-    thus conductor stranding is not taken into account.
-
-    Usage:
-        L_int = calc_L_int(type, r, q)
-
-    where:
-       type is 'solid' or 'tube'
-        r is the radius of the conductor [m]
-        q is the radius of the inner tube [m]
-
-    Returns:
-        L_int the internal inductance of the conductor [H/m]
-    """
-    mu_0 = 4 * np.pi * 1e-7 # Permeability of free space [H/m]
-
-    if type == 'solid':
-        L_int = mu_0 / 8 / np.pi # Solid conductor internal inductance [H/m]
-    else:
-        L_int = mu_0 / 2 / np.pi * (q ** 4 / (r ** 2 - q ** 2) ** 2 * np.log(r / q)
-                                    - (3 * q ** 2 - r ** 2) / (4 * (r ** 2 - q ** 2)))
-                                    # Tubular conductor internal inductance [H/m]
-
-    return L_int
-
-
-def calc_GMR(type, r, q):
-    """
-    Calculates geometric mean radius (GMR) of solid or tubular conductor
-    Note that calculations assume uniform current distribution in the conductor,
-    thus conductor stranding is not taken into account.
-
-    Usage:
-        GMR = calc_GMR(type, r, q)
-
-    where   type is 'solid' or 'tube'
-            r is the radius of the conductor [m]
-            q is the radius of the inner tube [m]
-
-    Returns:
-            GMR the geometric mean radius [m]
-    """
-    if type == 'solid':
-        GMR = r * np.exp(-0.25) # Solid conductor GMR [m]
-    else:
-        GMR = r * np.exp((3 * q ** 2 - r ** 2) / (4 * (r ** 2 - q ** 2))
-                         - q ** 4 / (r ** 2 - q ** 2) ** 2 * np.log(r / q)) # Tubular conductor GMR [m]
-
-    return GMR
-
-
-def carsons(type, h_i, h_k, x_ik, f, rho, err_tol=1e-6):
-    """
-    Calculates Carson's earth return correction factors Rp and Xp for both self and mutual terms.
-    The number of terms evaluated in the infinite loop is based on convergence to the desired error tolerance.
-
-    Usage:
-        Rp, Xp = carsons(type, h_i, h_k, x_ik, f, rho, err_tol)
-
-    where   type is 'self' or 'mutual'
-            h_i is the height of conductor i above ground (m)
-            h_k is the height of conductor k above ground (m)
-            x_ik is the horizontal distance between conductors i and k (m)
-            f is the frequency (Hz)
-            rho is the earth resistivity (Ohm.m)
-            err_tol is the error tolerance for the calculation (default = 1e-6)
-
-    Returns:
-            Rp, Xp the Carson earth return correction factors (in Ohm/km)
-    """
-    # Geometrical calculations - See Figure 4.4. of EMTP Theory Book
-    if type == 'self':
-        D = 2 * h_i # Distance between conductor i and its image [m]
-        cos_phi = 1
-        sin_phi = 0
-        phi = 0
-    else:
-        D = np.sqrt((h_i + h_k) ** 2 + x_ik ** 2)  # Distance between conductor i and image of conductor k [m]
-        cos_phi = (h_i + h_k) / D
-        sin_phi = (x_ik) / D
-        phi = np.arccos(cos_phi)
-
-    # Initialise parameters
-    i = 1
-    err = 1
-    sgn = 1
-
-    # Initial values and constants for calculation
-    omega = 2 * np.pi * f
-    a = 4 * np.pi * np.sqrt(5) * 1e-4 * D * np.sqrt(f / rho) # Equation 4.10 EMTP
-    acosphi = a * cos_phi
-    asinphi = a * sin_phi
-    b = np.array([np.sqrt(2) / 6, 1 / 16]) # Equation 4.12 EMTP
-    c = np.array([0, 1.3659315])
-    d = np.pi / 4 * b
-
-    # First two terms of carson correction factor
-    Rp = np.pi / 8 - b[0] * acosphi
-    Xp = 0.5 * (0.6159315 - np.log(a)) + b[0] * acosphi
-
-    # Loop through carson coefficient terms starting with i = 2
-    while (err > err_tol):
-        term = np.mod(i, 4)
-        # Check sign for b term
-        if term == 0:
-            sgn = -1 * sgn
-
-        # Calculate coefficients
-        bi = b[i - 1] * sgn / ((i + 1) * (i + 3))
-        ci = c[i - 1] + 1 / (i + 1) + 1 / (i + 3)
-        di = np.pi / 4 * bi
-        b = np.append(b, bi)
-        c = np.append(c, ci)
-        d = np.append(d, di)
-
-        # Recursively calculate powers of acosphi and asinphi
-        acosphi_prev = acosphi
-        asinphi_prev = asinphi
-        acosphi = (acosphi_prev * cos_phi - asinphi_prev * sin_phi) * a
-        asinphi = (acosphi_prev * sin_phi + asinphi_prev * cos_phi) * a
-
-        Rp_prev = Rp
-        Xp_prev = Xp
-
-        # First term
-        if term == 0:
-            Rp = Rp - bi * acosphi
-            Xp = Xp + bi * acosphi
-
-        # Second term
-        elif term == 1:
-            Rp = Rp + bi * ((ci - np.log(a)) * acosphi + phi * asinphi)
-            Xp = Xp - di * acosphi
-
-        # Third term
-        elif term == 2:
-            Rp = Rp + bi * acosphi
-            Xp = Xp + bi * acosphi
-
-        # Fourth term
-        else:
-            Rp = Rp - di * acosphi
-            Xp = Xp - bi * ((ci - np.log(a)) * acosphi + phi * asinphi)
-
-        i = i = 1
-        err = np.sqrt((Rp - Rp_prev) ** 2 + (Xp - Xp_prev) ** 2)
-
-    Rp = 4 * omega * 1e-04 * Rp
-    Xp = 4 * omega * 1e-04 * Xp
-    return Rp, Xp
-
-
-def calc_self_Z(R_int, cond_type, r, q, h_i, f, rho, err_tol=1e-6):
-    """
-    Calculates self impedance term [Ohm/km]
-    NOTE: No allowance has been made for skin effects
-
-    Usage:
-        self_Z = calc_self_Z(R_int, cond_type, r, q, h_i, f, rho, err_tol=1e-6)
-
-    where   R_int is the AC conductor resistance [Ohm/km]
-            cond_type is the conductor type ('solid' or 'tube')
-            r is the radius of the conductor [m]
-            q is the radius of the inner tube [m]
-            h_i is the height of conductor i above ground [m]
-            f is the frequency [Hz]
-            rho is the earth resistivity [Ohm.m]
-            err_tol is the error tolerance for the calculation (default = 1e-6)
-
-    Returns:
-            self_Z the self impedance term of line impedance matrix [Ohm/km]
-    """
-    # Constants
-    omega = 2 * np.pi * f  # Nominal angular frequency [rad/s]
-    mu_0 = 4 * np.pi * 1e-7  # Permeability of free space [H/m]
-
-    # Calculate internal conductor reactance (in Ohm/km)
-    X_int = 1000 * omega * calc_L_int(cond_type, r, q)
-
-    # Calculate geometrical reactance (in Ohm/km) - Equation 4.15 EMTP
-    X_geo = 1000 * omega * mu_0 / 2 / np.pi * np.log(2 * h_i / r)
-
-    # Calculate Carson's correction factors (in Ohm/km)
-    Rp, Xp = carsons('self', h_i, 0, 0, f, rho, err_tol)
-
-    self_Z = complex(R_int + Rp, X_int + X_geo + Xp)
-
-    return self_Z
-
-
-def calc_mutual_Z(cond_type, r, q, h_i, h_k, x_ik, f, rho, err_tol=1e-6):
-    """
-    Calculates mutual impedance term [Ohm/km]
-
-    Usage:
-        mutual_Z = calc_mutual_Z(cond_type, r, q, h_i, h_k, x_ik, f, rho, err_tol=1e-6)
-
-    where   cond_type is the conductor type ('solid' or 'tube')
-            r is the radius of the conductor [m]
-            q is the radius of the inner tube [m]
-            h_i is the height of conductor i above ground [m]
-            h_k is the height of conductor k above ground [m]
-            x_ik is the horizontal distance between conductors i and k [m]
-            f is the frequency [Hz]
-            rho is the earth resistivity [Ohm.m]
-            err_tol is the error tolerance for the calculation (default = 1e-6)
-
-    Returns:
-            mutual_Z the self impedance term of line impedance matrix (Ohm/km)
-    """
-    # Constants
-    omega = 2 * np.pi * f  # Nominal angular frequency [rad/s]
-    mu_0 = 4 * np.pi * 1e-7  # Permeability of free space [H/m]
-    # See Figure 4.4. EMTP
-    D = np.sqrt((h_i + h_k) ** 2 + x_ik ** 2)  # Distance between conductor i and image of conductor k [m]
-    d = np.sqrt((h_i - h_k) ** 2 + x_ik ** 2)  # Distance between conductors i and k [m]
-
-    # Calculate geometrical mutual reactance (in Ohm/km)
-    X_geo = 1000 * omega * mu_0 / 2 / np.pi * np.log(D / d)
-
-    # Calculate Carson's correction factors (in Ohm/km)
-    Rp, Xp = carsons('mutual', h_i, h_k, x_ik, f, rho, err_tol)
-
-    mutual_Z = complex(Rp, X_geo + Xp)
-
-    return mutual_Z
-
-
-def calc_Dubanton_Z(type, R_int, cond_type, r, q, h_i, h_k, x_ik, f, rho):
-    """
-    Calculates Dubanton approximation for self or mutual impedance (in Ohm/km)
-
-    Usage:
-        Dubanton_Z = calc_Dubanton_Z(type, R_int, cond_type, r, q, h_i, h_k, x_ik, f, rho)
-
-    where   type is 'self' or 'mutual'
-            cond_type is the conductor type ('solid' or 'tube')
-            r is the radius of the conductor [m]
-            q is the radius of the inner tube [m]
-            h_i is the height of conductor i above ground [m]
-            h_k is the height of conductor k above ground [m]
-            x_ik is the horizontal distance between conductors i and k [m]
-            f is the frequency [Hz]
-            rho is the earth resistivity [Ohm.m]
-
-    Returns:
-            Dubanton_Z the self or mutual impedance term of line impedance matrix (Ohm/km)
-    """
-    # Constants
-    omega = 2 * np.pi * f  # Nominal angular frequency [rad/s]
-    mu_0 = 4 * np.pi * 10**(-7)  # Permeability of free space [H/km]
-    p = np.sqrt( rho / (1j * omega * mu_0) )  # Complex depth below earth
-
-    if type == 'self':
-        # Self impedance
-        # Calculate internal conductor reactance (in Ohm/km)
-        X_int = 1000 * omega * calc_L_int(cond_type, r, q)
-
-        # Calculate geometrical reactance (in Ohm/km)
-        X_geo = 1000 * omega * mu_0 / 2 / np.pi * np.log((h_i + p) / r)
-
-        Dubanton_Z = complex(R_int, X_int + X_geo)
-
-    else:
-        # Mutual impedance
-        d = np.sqrt((h_i - h_k) ** 2 + x_ik ** 2)  # Distance between conductors i and k [m]
-        X_geo = 1000 * omega * mu_0 / 2 / np.pi * np.log(np.sqrt((h_i + h_k + 2 * p) ** 2 + x_ik ** 2) / d)
-
-        Dubanton_Z = complex(0, X_geo)
-
-    return Dubanton_Z
-
-
-def calc_Z_matrix(line_dict):
-    """
-    Calculates primitive impedance matrix
-    NOTE: all phase conductor vectors must be the same size. No checks are made to enforce this.
-    Same goes for earth conductor vectors.
-
-    Usage:
-        Z = calc_Z_matrix(line_dict)
-
-    where   line_dict is a dictionary of overhead line parameters:
-                'mode' is the calculate mode ('carson' or 'dubanton')
-                'f' is the nominal frequency (Hz)
-                'rho' is the earth resistivity (Ohm.m)
-                'err_tol' is the error tolerance for the calculation (default = 1e-6)
-                'phase_h' is a vector of phase conductor heights above ground (m)
-                'phase_x' is a vector of phase conductor horizontal spacings with arbitrary reference point (m)
-                'phase_cond' is a vector of phase conductor types ('solid' or 'tube')
-                'phase_R' is a vector of phase conductor AC resistances (Ohm/km)
-                'phase_r' is a vector of phase conductor radii [m]
-                'phase_q' is a vector of phase conductor inner tube radii [m] - use 0 for solid conductors
-                'earth_h' is a vector of earth conductor heights above ground (m)
-                'earth_x' is a vector of earth conductor horizontal spacings with arbitrary reference point (m)
-                'earth_cond' is a vector of earth conductor types ('solid' or 'tube')
-                'earth_R' is a vector of earth conductor AC resistances (Ohm/km)
-                'earth_r' is a vector of earth conductor radii [m]
-                'earth_q' is a vector of earth conductor inner tube radii [m] - use 0 for solid conductors
-
-    Returns:
-            Z is the primitive impedance matrix (with earth conductors shown first)
-            n_p is the number of phase conductors
-            n_e is the number of earth conductors
-    """
-    # Unpack line dictionary
-    mode = line_dict['mode']
-    f = line_dict['f']
-    rho = line_dict['rho']
-    cond_h = line_dict['earth_h'] + line_dict['phase_h']
-    cond_x = line_dict['earth_x'] + line_dict['phase_x']
-    cond_type = line_dict['earth_cond'] + line_dict['phase_cond']
-    cond_R = line_dict['earth_R'] + line_dict['phase_R']
-    cond_r = line_dict['earth_r'] + line_dict['phase_r']
-    cond_q = line_dict['earth_q'] + line_dict['phase_q']
-
-    # Set error tolerance for carsons equations
-    if 'err_tol' in line_dict:
-        err_tol = line_dict['err_tol']
-    else:
-        err_tol = 1e-6
-
-    # Number of phase and earth conductors
-    n_p = len(line_dict['phase_h'])
-    n_e = len(line_dict['earth_h'])
-    n_c = n_p + n_e
-
-    # Set up primitive Z matrix
-    Z = np.asmatrix(np.zeros((n_c, n_c)), dtype='complex') # [Ohm/km]
-    if mode == 'carson':
-        for i in range(n_c):
-            for j in range(n_c):
-                if i == j:
-                    Z[i, j] = calc_self_Z(cond_R[i], cond_type[i], cond_r[i], cond_q[i], cond_h[i],
-                                          f, rho, err_tol)
-                else:
-                    Z[i, j] = calc_mutual_Z(cond_type[i], cond_r[i], cond_q[i], cond_h[i], cond_h[j],
-                                            cond_x[i] - cond_x[j], f, rho, err_tol)
-    else:
-        for i in range(n_c):
-            for j in range(n_c):
-                if i == j:
-                    Z[i, j] = calc_Dubanton_Z('self', cond_R[i], cond_type[i], cond_r[i], cond_q[i],
-                                              cond_h[i], cond_h[j], cond_x[i] - cond_x[j], f, rho)
-                else:
-                    Z[i, j] = calc_Dubanton_Z('mutual', cond_R[i], cond_type[i], cond_r[i], cond_q[i],
-                                              cond_h[i], cond_h[j], cond_x[i] - cond_x[j], f, rho)
-
-    return Z, n_p, n_e
-
-
-def calc_Y_matrix(line_dict):
-    """
-    Calculates primitive admittance matrix
-    Assumes that conductance of air is zero.
-    NOTE: all phase conductor vectors must be the same size. No checks are made to enforce this. Same goes for earth
-    conductor vectors.
-
-    Usage:
-        Y = calc_Y_matrix(line_dict)
-
-    where   line_dict is a dictionary of overhead line parameters:
-                'f' is the nominal frequency [Hz]
-                'rho' is the earth resistivity [Ohm.m]
-                'err_tol' is the error tolerance for the calculation (default = 1e-6)
-                'phase_h' is a vector of phase conductor heights above ground [m]
-                'phase_x' is a vector of phase conductor horizontal spacings with arbitrary reference point [m]
-                'phase_r' is a vector of phase conductor radii [m]
-                'earth_h' is a vector of earth conductor heights above ground [m]
-                'earth_x' is a vector of earth conductor horizontal spacings with arbitrary reference point [m]
-                'earth_r' is a vector of earth conductor radii [m]
-
-    Returns:
-            Y is the primitive admittance matrix (with earth conductors shown first)
-            n_p is the number of phase conductors
-            n_e is the number of earth conductors
-    """
-    # Unpack line dictionary
-    f = line_dict['f']
-    rho = line_dict['rho']
-    cond_h = line_dict['earth_h'] + line_dict['phase_h']
-    cond_x = line_dict['earth_x'] + line_dict['phase_x']
-    cond_r = line_dict['earth_r'] + line_dict['phase_r']
-
-    # Number of phase and earth conductors
-    n_p = len(line_dict['phase_h'])
-    n_e = len(line_dict['earth_h'])
-    n_c = n_p + n_e
-
-    # Constants
-    omega = 2 * np.pi * f  # Nominal angular frequency [rad/s]
-    e_0 = 8.85418782 * 1e-12  # Permittivity of free space [F/m]
-
-    # Set up primitive Y matrix
-    Y = np.asmatrix(np.zeros((n_c, n_c)), dtype='complex')
-    # Build up potential coefficients
-    for i in range(n_c):
-        for j in range(n_c):
-            if i == j:
-                # Self potential coefficient
-                Y[i, j] = (1 / 2 / np.pi / e_0) * np.log(2 * cond_h[i] / cond_r[i])
-            else:
-                # Mutual potential coefficient
-                D = np.sqrt((cond_h[i] + cond_h[j]) ** 2 + (
-                            cond_x[i] - cond_x[j]) ** 2)  # Distance between conductor i and image of conductor k [m]
-                d = np.sqrt(
-                    (cond_h[i] - cond_h[j]) ** 2 + (cond_x[i] - cond_x[j]) ** 2) # Distance between conductors i & k [m]
-                Y[i, j] = (1 / 2 / np.pi / e_0) * np.log(D / d)
-
-    Y = 1000j * omega * Y.I # [S/km]
-
-    return Y, n_p, n_e
-
-
-def calc_kron_Z(Z, n_e):
-    """
-    Calculates Kron reduced matrix
-    Reduction can be used for impedance or admittance matrix reductions
-
-    Usage:
-        kron_Z = calc_kron_Z(Z, n_e)
-
-    where   Z is the primitive matrix (with earth conductors shown first)
-            n_e is the number of earth conductors
-
-    Returns:
-            kron_Z is the kron reduced matrix
-    """
-    # Slice up primtive matrix into constituent parts
-    Zee = Z[0:n_e, 0:n_e]
-    Zep = Z[0:n_e, n_e:]
-    Zpe = Z[n_e:, 0:n_e]
-    Zpp = Z[n_e:, n_e:]
-
-    # Calculate Kron reduced matrix # [ /km]
-    kron_Z = Zpp - Zpe * Zee.I * Zep
-
-    return kron_Z
-
-# Definition of the overhead line parameters
-line_dict = {
-    'mode': 'carson', # carson or dubanton
-    'f': 50,  # Nominal frequency [Hz]
-    'rho': 100,  # Earth resistivity [Ohm.m]
-    'phase_h': [27.5, 27.5, 27.5],  # Phase conductor heights [m]
-    'phase_x': [-12.65, 0, 12.65],  # Phase conductor x-axis coordinates [m]
-    'phase_cond': ['tube', 'tube', 'tube'],  # Phase conductor types ('tube' or 'solid')
-    'phase_R': [0.1363, 0.1363, 0.1363],  # Phase conductor AC resistances [Ohm/km]
-    'phase_r': [0.0105, 0.0105, 0.0105],  # Phase conductor radi [m]
-    'phase_q': [0.0045, 0.0045, 0.0045],  # Phase conductor inner tube radii [m]
-    'earth_h': [],  # Earth conductor heights [m]
-    'earth_x': [],  # Earth conductor x-axis coordinates [m]
-    'earth_cond': [],  # Earth conductor types ('tube' or 'solid')
-    'earth_R': [],  # Earth conductor AC resistances [Ohm/km]
-    'earth_r': [],  # Earth conductor radi [m]
-    'earth_q': []  # Earth conductor inner tube radii [m]
-}
-
-# Impedance and admittance matrices
-Zseries, n_p, n_e = calc_Z_matrix(line_dict)
-Yshunt, n_p, n_e = calc_Z_matrix(line_dict)
-
-np.set_printoptions(precision=4, suppress=True)
-print('Series Impedance Zs =\n', Zseries)
-print('Shunt Admittance Ysh =\n', Yshunt)
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+grid.fBase = 60
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=0)
+bus_632.is_slack = True
+grid.add_bus(obj=bus_632)
+
+bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100*5)
+grid.add_bus(obj=bus_671)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Impedance [Ohm/km] and Admittance [S/km]
+# ----------------------------------------------------------------------------------------------------------------------
+z_601 = np.array([
+    [0.3465 + 1j * 1.0179, 0.1560 + 1j * 0.5017, 0.1580 + 1j * 0.4236],
+    [0.1560 + 1j * 0.5017, 0.3375 + 1j * 1.0478, 0.1535 + 1j * 0.3849],
+    [0.1580 + 1j * 0.4236, 0.1535 + 1j * 0.3849, 0.3414 + 1j * 1.0348]
+], dtype=complex) / 1.60934
+
+y_601 = np.array([
+    [1j * 6.2998, 1j * -1.9958, 1j * -1.2595],
+    [1j * -1.9958, 1j * 5.9597, 1j * -0.7417],
+    [1j * -1.2595, 1j * -0.7417, 1j * 5.6386]
+], dtype=complex) / 10**6 / 1.60934
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Line Configuration
+# ----------------------------------------------------------------------------------------------------------------------
+config_601 = gce.create_known_abc_overhead_template(name='Config. 601',
+                                                    z_abc=z_601,
+                                                    ysh_abc=y_601,
+                                                    phases=np.array([1, 2, 3]),
+                                                    Vnom=4.16,
+                                                    frequency=60)
+grid.add_overhead_line(config_601)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Lines Definition
+# ----------------------------------------------------------------------------------------------------------------------
+line_632_671 = gce.Line(bus_from=bus_632,
+                        bus_to=bus_671,
+                        length= 2000 * 0.0003048)
+line_632_671.apply_template(config_601, grid.Sbase, grid.fBase, logger)
+grid.add_line(obj=line_632_671)
 ```
 
-### Three-phase Transformers
+### Definition of a line from the wire configuration
 
-Power transformers are essential components of the power system. In general, they provide an interface between sections
-of the network that operate at different rated voltages, for example, between a generating plant and the transmission
-network. In this section, two-winding, three-phase transformers will be modelled. Therefore, it is convenient to treat 
-the electric circuit, formed by the copper windings, separately from the magnetic circuit, formed by the iron core.
-The winding impedance $\vec{Z}_s$ is obtained from a short-circuit test, whereas the iron-core shunt admittance
-$\vec{Y}_{sh}$ is determined from open-circuit tests.
+**Definition of the exercise**
 
-The starting point for developing comprehensive steady-state transformer models is the schematic representation of the
-basic two-winding transformer shown in the following figure:
+In this tutorial we are going to define a 3-phase line with 4 wires of two different types.
 
-![Two-winding transformer](figures/3ph_single_phase_transformer.png "Two-winding transformer")
+The cable types are the following:
 
-The two transformer windings, termed the primary and secondary, contain $N_p$ and $N_s$ turns, respectively.
-The voltages and currents in both windings are related by a matrix of short-circuit and open-circuit admittance
-parameters, represented in the following electrical equivalent circuit:
+| name         | r        | x   | gmr      | max_current |
+|--------------|----------|-----|----------|-------------|
+| ACSR 6/1     | 1.050117 | 0.0 | 0.001274 | 180.0       |
+| Class A / AA | 0.379658 | 0.0 | 0.004267 | 263.0       |
 
-![Transformer electrical equivalent circuit](figures/3ph_transformer_electrical_circuit.png "Transformer electrical equivalent circuit")
+These are taken from the data_sheets__ section
 
-Representing the transformer parameters in the per-unit system, it converts the original voltage ratio $N_p\!:\!N_s$
-into a unity ratio of $1\!:\!1$. Power transformers are, however, often fitted with a tap-changing mechanism that
-permits a degree of voltage regulation at one of their terminals. This regulation is achieved by injecting a small
-variable voltage of magnitude and phase into the ratio $\vec{m} : 1$. The implemented equivalent circuit also includes
-the tap transformers $m_f$ and $m_t$ in the branch’s $\pi$ model, as in the previous section on power lines.
-These virtual tap transformers arise solely from the per-unit normalisation of the voltages, as they reconcile the
-nominal voltage of a device at a connection point with the nominal voltage of the point itself.
+The layout is the following:
 
-Then, based on the single-phase transformer model shown in the figure above, the corresponding primitive admittance
-matrix is derived and presented bellow, which relates the primary and secondary voltages and currents:
+| Wire         | x(m) | y(m) | Phase |
+|--------------|------|------|-------|
+| ACSR 6/1     | 0    | 7    | 1 (A) |
+| ACSR 6/1     | 0.4  | 7    | 2 (B) |
+| ACSR 6/1     | 0.8  | 7    | 3 (C) |
+| Class A / AA | 0.3  | 6.5  | 0 (N) |
+
+**Practice**
+
+
+We may start with a prepared example from the ones provided in the `grids and profiles` folder.
+The example file is `Some distribution grid.xlsx`. First define the wires that you are going 
+to use in the tower. For that, we proceed to the tab `Database -> Catalogue -> Wire`.
+
+![](figures/tutorials/tower/wires.png)
+
+Then, we proceed to the tab `Database -> Catalogue -> Tower`. Then we select
+one of the existing towers or we create one with the (+) button.
+
+![](figures/tutorials/tower/tower.png)
+
+By clicking on the edit button (pencil) we open a new window with the `Tower builder` editor. 
+Here we enter the tower definition, and once we are done, we click on the compute button (calculator). 
+Then the tower cross-section will
+be displayed and the results will appear in the following tabs.
+
+![](figures/tutorials/tower/editor1.png)
+
+This tab shows the series impedance matrix ($\Omega / km$) in several forms:
+
+- Per phase without reduction.
+- Per phase with the neutral embedded.
+- Sequence reduction.
+
+![](figures/tutorials/tower/editorZ.png)
+
+This tab shows the series shunt admittance matrix ($\mu S / km$) in several forms:
+
+- Per phase without reduction.
+- Per phase with the neutral embedded.
+- Sequence reduction.
+
+![](figures/tutorials/tower/editorY.png)
+
+When closed, the values are applied to the overhead line catalogue type that we were editing.
+
+## Transformers
+
+Power transformers link network sections operating at different voltages, such as generators and transmission systems.
+For two-winding, three-phase transformers, the winding impedance $\vec{Z}_s$ is derived from short-circuit tests, and
+the iron-core shunt admittance $\vec{Y}_{sh}$ from open-circuit tests. Modelling begins with the schematic of the basic
+two-winding transformer:
+
+<div style="text-align: center;">
+    <img src="figures/3ph_single_phase_transformer.png"
+    alt="Two-winding transformer"
+    title="Two-winding transformer"
+    width="50%"/>
+</div>
+
+A transformer’s primary and secondary windings, with $N_p$ and $N_s$ turns respectively, have their voltages and
+currents related through short-circuit and open-circuit admittance parameters. These relationships are represented in
+the transformer’s electrical equivalent circuit:
+
+<div style="text-align: center;">
+    <img src="figures/3ph_transformer_electrical_circuit.png"
+    alt="Transformer electrical equivalent circuit"
+    title="Transformer electrical equivalent circuit"
+    width="90%"/>
+</div>
+
+In the per-unit system, the transformer voltage ratio $N_p:N_s$ becomes $1:1$. Many transformers include tap
+changers to regulate voltage by adjusting the ratio to $\vec{m}:1$. In the $\pi$-model, virtual tap transformers
+$m_f$ and $m_t$ reconcile device and bus nominal voltages. From the single-phase transformer model, the corresponding
+primitive admittance matrix is then derived to relate primary and secondary voltages and currents.
 
 $$
     \begin{bmatrix}
@@ -794,11 +376,9 @@ $$
     \end{bmatrix}
 $$
 
-Using nodal analysis, general models for multi-winding and multi-phase transformers can be derived. The essence of the
-method is to transform the single-phase voltages and currents at each winding, denoted “$1\,2\,3\,4\,5\,6$”, into the
-“$A\,B\,C\,a\,b\,c$” phase reference frame, where consecutive numbers refer to the primary and secondary windings of
-each phase (e.g., $1$ and $2$ correspond to phase $Aa$). The primitive parameters of three identical single-phase
-transformers are arranged as follows:
+Using nodal analysis, single-phase transformer models can be extended to multi-winding, multi-phase configurations by
+mapping winding voltages and currents (e.g., “$1,2,3,4,5,6$”) into the “$A,B,C,a,b,c$” phase frame. The primitive
+parameters of three identical single-phase units are then combined to represent the full three-phase transformer.
 
 $$
     \begin{bmatrix}
@@ -854,13 +434,21 @@ The three-phase windings of power transformers may be connected in several ways.
 popular connections are star and delta, although the zig-zag connection is also used in distribution systems, depicted
 in figure bellow. Consequently, connectivity matrices must be computed for each configuration.
 
-![Zig-zag transformer](figures/3ph_zigzag.png "Zig-zag transformer")
+<div style="text-align: center;">
+    <img src="figures/3ph_zigzag.png"
+    alt="Zig-zag transformer"
+    title="Zig-zag transformer"
+    width="40%"/>
+</div>
 
-#### Delta-star (Dy) connection
+For instance, the following figure shows the three-phase delta-star (Dy) connection:
 
-The following shows the three-phase delta-star (Dy) connection:
-
-![Dy connection](figures/3ph_Dy_connection.png "Dy connection")
+<div style="text-align: center;">
+    <img src="figures/3ph_Dy_connection.png"
+    alt="Dy connection"
+    title="Dy connection"
+    width="70%"/>
+</div>
 
 The transformation matrix $C_U$, which relates the voltages of each winding to the corresponding phase voltages,
 is given explicitly in the following expression:
@@ -938,10 +526,9 @@ $$
 The full transformer admittance matrix for the Dy connection is obtained by substituting the connectivity matrices $C_U$
 and $C_I$:
 
-\begin{equation}
+$$
     \vec{Y} = C_I^{-1} \cdot \vec{Y}_\text{primitive} \cdot C_U
-    \label{eq:Dy_Compact}
-\end{equation}
+$$
 
 Finally, the transformer admittance matrix for the Dy connection is computed:
 
@@ -959,151 +546,20 @@ $$
 $$
 
 The admittance matrices for the other eight possible configurations have been obtained using exactly the same procedure.
-The final matrices are shown below.
 
-#### Star-delta (Yd) connection
-
-$$
-\vec{Y}
-=
-\begin{bmatrix}
-    \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & 0 & 0 & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & 0 \\
-    0 & \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & 0 & 0 & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} \\
-    0 & 0 & \dfrac{\vec{Y}_s+\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & 0 & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} \\
-    \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{3m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} \\
-    \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & 0 & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{3m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} \\
-    0 & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} &  \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{3m_t^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{3m_t^2} \\
-\end{bmatrix}
-$$
-
-#### Star-star (Yy) connection
-
-$$
-\begin{bmatrix}
-    \vec{I}_A \\
-    \vec{I}_B \\
-    \vec{I}_C \\
-    \vec{I}_a \\
-    \vec{I}_b \\
-    \vec{I}_c
-\end{bmatrix}
-=
-\begin{bmatrix}
-    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} & 0 & 0 \\
-    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} & 0 \\
-    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} \\
-    \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
-    0 & \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
-    0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
-\end{bmatrix}
-\begin{bmatrix}
-    \vec{U}_A \\
-    \vec{U}_B \\
-    \vec{U}_C \\
-    \vec{U}_a \\
-    \vec{U}_b \\
-    \vec{U}_c
-\end{bmatrix} \\
-$$
-
-#### Delta-delta (Dd) connection
-
-$$
-\vec{Y}
-= \frac{1}{3}
-\begin{bmatrix}
-    \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{-2\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} \\
-    \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{-2\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} \\
-    \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m^2m_f^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m^2m_f^2} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\vec{m}^*m_fm_t} & \dfrac{-2\vec{Y_s}}{\vec{m}^*m_fm_t} \\
-    \dfrac{-2\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} \\
-    \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{-2\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} \\
-    \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{-2\vec{Y_s}}{\vec{m}m_tm_f} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & \dfrac{-\vec{Y}_s-\dfrac{\vec{Y}_{sh}}{2}}{m_t^2} & \dfrac{2\vec{Y}_s+\vec{Y}_{sh}}{m_t^2} \\
-\end{bmatrix}
-$$
-
-#### Star-zigzag (Yz) connection
-
-$$
-\vec{Y}
-=
-\begin{bmatrix}
-    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} & 0 & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} \\
-    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} & 0 \\
-    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} \\
-    \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
-    0 & \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
-    \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
-\end{bmatrix}
-$$
-
-#### Zigzag-star (Zy) connection
-
-$$
-\vec{Y}
-=
-\begin{bmatrix}
-    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} & 0 \\
-    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} \\
-    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & \dfrac{\vec{Y_s}}{2\vec{m}^*m_fm_t} & 0 & \dfrac{\vec{-Y_s}}{2\vec{m}^*m_fm_t} \\
-    \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
-    \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
-    0 & \dfrac{\vec{Y_s}}{2\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
-\end{bmatrix}
-$$
-
-#### Zigzag-zigzag (Zz) connection
-
-$$
-\vec{Y}
-=
-\begin{bmatrix}
-    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} & 0 & 0 \\
-    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} & 0 \\
-    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}^*m_fm_t} \\
-    \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
-    0 & \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
-    0 & 0 & \dfrac{\vec{-Y_s}}{\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
-\end{bmatrix}
-$$
-
-#### Delta-zigzag (Dz) connection
-
-$$
-\vec{Y}
-=
-\begin{bmatrix}
-    \dfrac{2 \vec{Y_s}+\vec{Y_{sh}}} {3m^2m_f^2} & \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} &\dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} \\
-    \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{2 \vec{Y_s}+\vec{Y_{sh}}} {3m^2m_f^2} & \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} \\
-    \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{ \vec{-Y_s}-\dfrac{\vec{Y_{sh}}}{2}} {3m^2m_f^2} & \dfrac{2 \vec{Y_s}+\vec{Y_{sh}}} {3m^2m_f^2} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} \\
-    \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 & 0 \\
-    \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2} & 0 \\
-    \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & 0 & 0 & \dfrac{\vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}}{m_t^2}
-\end{bmatrix}
-$$
-
-#### Zigzag-delta (Zd) connection
-
-$$
-\vec{Y}
-=
-\begin{bmatrix}
-    \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & 0 & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} \\
-    0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & 0 & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} \\
-    0 & 0 & \dfrac{ \vec{Y_s}+\dfrac{\vec{Y_{sh}}}{2}} {m^2m_f^2} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}^*m_fm_t} \\
-    \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{2\vec{Y_s}+\vec{Y_{sh}}}{3m_t^2} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} \\
-    \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} & \dfrac{2\vec{Y_s}+\vec{Y_{sh}}}{3m_t^2} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} \\
-    \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{Y_s}}{\sqrt{3}\vec{m}m_tm_f} & \dfrac{\vec{-Y_s}}{2\sqrt{3}\vec{m}m_tm_f} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} & \dfrac{-\vec{Y_s}-\dfrac{\vec{Y_{sh}}}{2}}{3m_t^2} & \dfrac{2\vec{Y_s}+\vec{Y_{sh}}}{3m_t^2}
-\end{bmatrix}
-$$
-
-#### Vector group and clock notation
+### Vector group and clock notation
 
 The vector group and clock notation define the connection type of the high-voltage (HV) and low-voltage (LV) windings
 of a three-phase transformer, as well as the phase displacement between their voltages.
 The HV side connection is indicated first using uppercase letters, followed by the LV side in lowercase.
 The phase displacement is then specified using clock notation:
 
-![Clock notation](figures/3ph_clock_notation.png "Clock notation")
+<div style="text-align: center;">
+    <img src="figures/3ph_clock_notation.png"
+    alt="Clock notation"
+    title="Clock notation"
+    width="30%"/>
+</div>
 
 The full circumference of a clock is $360^\circ$, which, divided by its $12$ hours, assigns $30^\circ$ to each hour.
 If the high-voltage (HV) side is taken as the reference, the low-voltage (LV) side indicates the phase displacement
@@ -1111,26 +567,198 @@ between the two voltages. For instance, a \textbf{Dy5} transformer connection me
 the LV side is star-connected, and the phase displacement between them is $150^\circ$ ($5 \cdot 30^\circ$), as
 illustrated in the figure above.
 
-### Three-phase Loads and Shunts
+### Transformer definition example
 
-Owing to the large number and diversity of loads present in power networks, it is preferable to group loads and treat
-them as bulk consumption points, rather than employing distinct models for rotating, static, etc.
-The model used for the loads is the ZIP model, meaning it is considered as a combination of impedance, current, and
-power loads, as depicted in the figure bellow.
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import WindingType
 
-![ZIP model](figures/3ph_zip_model.png "ZIP model")
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+grid.fBase = 60
 
-In steady-state applications, most system loads can be effectively represented as three-phase power sinks, connected
-either in star or delta configuration depending on system requirements. The following figure illustrates a
-star-connected load with the neutral point solidly grounded, alongside a delta-connected load. As will be shown later,
-the power flow formulation operates using phase-to-neutral voltages and line currents, since the per-unit normalization
-is based on these quantities. For this reason, the developed tool models all loads as star-connected. Consequently, a
-preliminary conversion is required for delta-connected loads. The software must therefore be capable of transforming
-impedance, current, and power injections from delta to star equivalents.
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus_1 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
+grid.add_bus(obj=bus_1)
 
-![Star and delta connected loads](figures/3ph_loads_star_delta.png "Star and delta connected loads")
+bus_2 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0)
+grid.add_bus(obj=bus_2)
 
-##### Constant impedance (Z) modelling of three-phase star-connected loads and shunts
+# ----------------------------------------------------------------------------------------------------------------------
+# Transformer Definition
+# ----------------------------------------------------------------------------------------------------------------------
+trafo_1 = gce.Transformer2W(name='Transformer',
+                            bus_from=bus_1,
+                            bus_to=bus_2,
+                            HV=4.16,
+                            LV=0.48,
+                            nominal_power=0.5,
+                            rate=0.5,
+                            r=1,
+                            x=2)
+trafo_1.conn_f = WindingType.GroundedStar
+trafo_1.conn_t = WindingType.GroundedStar
+grid.add_transformer2w(trafo_1)
+```
+
+### Transformer definition from SC test values
+
+The transformers are modeled as π branches too. In order to get the series impedance and shunt admittance of
+the transformer to match the branch model, it is advised to transform the specification sheet values of the device
+into the desired values. The values to take from the specs sheet are:
+
+- $S_n$: Nominal power in MVA.
+- $HV$: Voltage at the high-voltage side in kV.
+- $LV$: Voltage at the low-voltage side in kV.
+- $V_{hv\_bus}$: Nominal voltage of the high-voltage side bus kV.
+- $V_{lv\_bus}$: Nominal voltage of the low-voltage side bus kV.
+- $V_{sc}$: Short circuit voltage in %.
+- $P_{cu}$: Copper losses in kW.
+- $I_0$: No load current in %.
+- $Share_{hv1}$: Contribution to the HV side. Value from 0 to 1.
+
+
+Short circuit impedance (p.u. of the machine)
+
+$$
+    z_{sc} = \frac{V_{sc}}{100}
+$$
+
+Short circuit resistance (p.u. of the machine)
+
+$$
+    r_{sc} = \frac{P_{cu} / 1000}{ S_n }
+$$
+
+Short circuit reactance (p.u. of the machine)
+Can only be computed if $r_{sc} < z_{sc}$
+
+$$
+    x_{sc} = \sqrt{z_{sc}^2 - r_{sc}^2}
+$$
+
+Series impedance (p.u. of the machine)
+
+$$
+    z_s = r_{sc} + j \cdot x_{sc}
+$$
+
+The issue with this is that we now must convert $zs$ from machine base to the system base.
+
+First we compute the High voltage side:
+
+$$
+    z_{base}^{HV} = \frac{HV^2}{S_n}
+$$
+
+$$
+    z_{base}^{hv\_bus} = \frac{V_{hv\_bus}^2}{S_{base}}
+$$
+
+$$
+    z_{s\_HV}^{system}  = z_s\cdot  \frac{z_{base}^{HV}}{z_{base}^{hv\_bus}} \cdot Share_{hv1}  = z_s \cdot  \frac{HV^2 \cdot S_{base}}{V_{hv\_bus}^2 \cdot S_n}  \cdot Share_{hv1}
+$$
+
+Now, we compute the Low voltage side:
+
+$$
+    z_{base}^{LV} = \frac{LV^2}{S_n}
+$$
+
+$$
+    z_{base}^{lv\_bus} = \frac{V_{lv\_bus}^2}{S_{base}}
+$$
+
+$$
+    z_{s\_LV}^{system} = z_s \cdot \frac{z_{base}^{LV}}{z_{base}^{lv\_bus}}  \cdot (1 - Share_{hv1})  = z_s \cdot  \frac{LV^2 \cdot S_{base}}{V_{lv\_bus}^2 \cdot S_n}  \cdot (1 - Share_{hv1})
+$$
+
+
+Finally, the system series impedance in p.u. is:
+
+$$
+    z_s = z_{s\_HV}^{system} + z_{s\_LV}^{system}
+$$
+
+Now, the leakage impedance (shunt of the model)
+
+$$
+    r_m = \frac{S_{base}}{P_{fe} / 1000}
+$$
+
+$$
+    z_m = \frac{100 \cdot S_{base}}{I0 \cdot S_n}
+$$
+
+$$
+    x_m = \sqrt{\frac{ - r_m^2 \cdot z_m^2}{z_m^2 - r_m^2}}
+$$
+
+Finally, the shunt admittance is (p.u. of the system):
+
+$$
+    y_{shunt} = \frac{1}{r_m} + j \cdot \frac{1}{x_m}
+$$
+
+### Inverse definition of SC values from π model
+
+In GridCal I found the need to find the short circuit values 
+($P_{cu}, V_{sc}, r_{fe}, I0$) from the branch values (*R*, *X*, *G*, *B*). Hence the following formulas:
+
+$$
+    z_{sc} = \sqrt{R^2 + X^2}
+$$
+
+$$
+    V_{sc} = 100 \cdot z_{sc}
+$$
+
+$$
+    P_{cu} = R \cdot S_n \cdot 1000
+$$
+
+
+$$
+    zl = 1 / (G + j B)
+$$
+
+$$
+    r_{fe} = zl.real
+$$
+
+$$
+    xm = zl.imag
+$$
+
+$$
+    I0 = 100 \cdot \sqrt{1 / r_{fe}^2 + 1 / xm^2}
+$$
+
+## Loads and Shunts
+
+Given the diversity of loads in power networks, they are grouped into bulk consumption points and represented using the
+ZIP model, which combines impedance, current, and power components.
+
+<div style="text-align: center;">
+    <img src="figures/3ph_zip_model.png"
+    alt="ZIP model"
+    title="ZIP model"
+    width="50%"/>
+</div>
+
+In steady-state studies, loads are represented as three-phase power sinks, connected in star or delta. Since the
+formulation uses phase-to-neutral voltages and line currents, all loads are modelled as
+star-connected, requiring delta loads to be converted to star equivalents for impedance, current, and power injections.
+
+<div style="text-align: center;">
+    <img src="figures/3ph_loads_star_delta.png"
+    title="Star and delta connected loads"
+    width="70%"/>
+</div>
+
+### Constant impedance (Z) modelling of three-phase star-connected loads and shunts
 
 Constant impedance loads and shunts are defined in terms of conductance G [MW] and susceptance B [MVAr].
 If these elements have the three-phases active, and they are connected in star, the diagonal of the 3x3 admittance
@@ -1145,9 +773,40 @@ $$
 \end{bmatrix}
 $$
 
-![Three-phase star impedance loads](figures/3ph_star_impedance.png "Three-phase star impedance loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_star_impedance.png"
+    title="Three-phase star impedance loads"
+    width="50%"/>
+</div>
 
-##### Constant impedance (Z) modelling of three-phase delta-connected loads and shunts
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Three-phase star impedance load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(G1=0.160,
+                B1=0.110,
+                G2=0.120,
+                B2=0.090,
+                G3=0.120,
+                B3=0.090)
+load.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus, api_obj=load)
+```
+
+### Constant impedance (Z) modelling of three-phase delta-connected loads and shunts
 
 However, if the load is defined in delta connection, the 3x3 matrix shown bellow will be used to mathematically
 model the load or the shunt element:
@@ -1161,9 +820,40 @@ $$
 \end{bmatrix}
 $$
 
-![Three-phase delta impedance loads](figures/3ph_delta_impedance.png "Three-phase delta impedance loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_delta_impedance.png"
+    title="Three-phase delta impedance loads"
+    width="60%"/>
+</div>
 
-##### Constant impedance (Z) modelling of two-phase loads and shunts
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Three-phase delta impedance load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(G1=0.160,
+                B1=0.110,
+                G2=0.120,
+                B2=0.090,
+                G3=0.120,
+                B3=0.090)
+load.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus, api_obj=load)
+```
+
+### Constant impedance (Z) modelling of two-phase loads and shunts
 
 Two-phase loads and shunts defined as admittances are converted to their corresponding equivalent power values in star
 configuration. This conversion is carried out using the voltage, and the resulting power values must be updated at each
@@ -1187,9 +877,40 @@ $$
 \end{bmatrix}
 $$
 
-![Two-phase impedance loads](figures/3ph_two_phase_impedance.png "Two-phase impedance loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_two_phase_impedance.png"
+    title="Two-phase impedance loads"
+    width="40%"/>
+</div>
 
-##### Constant impedance (Z) modelling of single-phase loads and shunts
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Two-phase impedance load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(G1=0.0,
+                B1=0.0,
+                G2=0.0,
+                B2=0.0,
+                G3=0.230,
+                B3=0.132)
+load.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus, api_obj=load)
+```
+
+### Constant impedance (Z) modelling of single-phase loads and shunts
 
 Finally, single-phase loads and shunt elements are modelled as in the previous three-phase star case, but only saving
 the admittance value for the active phase, for instance phase $b$:
@@ -1203,9 +924,40 @@ $$
 \end{bmatrix}
 $$
 
-![Single-phase impedance loads](figures/3ph_single_phase_impedance.png "Single-phase impedance loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_single_phase_impedance.png"
+    title="Single-phase impedance loads"
+    width="20%"/>
+</div>
 
-##### Constant current (I) modelling of three-phase star-connected loads
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Single-phase impedance load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(G1=0.0,
+                B1=0.0,
+                G2=0.128,
+                B2=0.086,
+                G3=0.0,
+                B3=0.0)
+load.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus, api_obj=load)
+```
+
+### Constant current (I) modelling of three-phase star-connected loads
 
 Traditionally, in positive sequence power flow analysis, constant current loads are directly stored in the $\vec{I}_0$
 vector. However, since we are performing a three-phase power flow, the voltage angles of phases b and c are not zero,
@@ -1221,9 +973,40 @@ $$
 \end{bmatrix}
 $$
 
-![Three-phase star current loads](figures/3ph_star_current.png "Three-phase star current loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_star_current.png"
+    title="Three-phase star current loads"
+    width="50%"/>
+</div>
 
-##### Constant current (I) modelling of three-phase delta-connected loads
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Three-phase star current load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(Ir1=0.160,
+                Ii1=0.110,
+                Ir2=0.120,
+                Ii2=0.090,
+                Ir3=0.120,
+                Ii3=0.090)
+load.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus, api_obj=load)
+```
+
+### Constant current (I) modelling of three-phase delta-connected loads
 
 However, if the current load is defined in delta connection, the vector shown bellow will be used to mathematically
 model the element:
@@ -1242,9 +1025,40 @@ phase to which the current load will be mapped, but rather the angle of the volt
 between the two phases to which the current-defined load is connected. Then, the angles
 will be updated in each iteration, adding significant complexity compared to the traditional power flow.
 
-![Three-phase delta current loads](figures/3ph_delta_current.png "Three-phase delta current loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_delta_current.png"
+    title="Three-phase delta current loads"
+    width="60%"/>
+</div>
 
-##### Constant current (I) modelling of two-phase loads
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Three-phase delta current load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(Ir1=0.160,
+                Ii1=0.110,
+                Ir2=0.120,
+                Ii2=0.090,
+                Ir3=0.120,
+                Ii3=0.090)
+load.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus, api_obj=load)
+```
+
+### Constant current (I) modelling of two-phase loads
 
 Two-phase current loads, connected for instance between phases $a$ and $c$, are modelled in the same way as three-phase
 delta-connected loads. The only difference is that, in this case, the current is defined solely as $vec{I}_{ca}$, while the
@@ -1259,9 +1073,40 @@ $$
 \end{bmatrix}
 $$
 
-![Two-phase current loads](figures/3ph_two_phase_current.png "Two-phase current loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_two_phase_current.png"
+    title="Two-phase current loads"
+    width="40%"/>
+</div>
 
-##### Constant current (I) modelling of single-phase loads
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Two-phase current load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(Ir1=0.0,
+                Ii1=0.0,
+                Ir2=0.0,
+                Ii2=0.0,
+                Ir3=0.170,
+                Ii3=0.151)
+load.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus, api_obj=load)
+```
+
+### Constant current (I) modelling of single-phase loads
 
 Finally, single-phase current loads, connected for instance to phase $b$, are modelled in the same way as three-phase
 star-connected loads. The difference lies in the fact that the absent phases are stored with a value of zero.
@@ -1275,9 +1120,40 @@ $$
 \end{bmatrix}
 $$
 
-![Single-phase current loads](figures/3ph_single_phase_current.png "Single-phase current loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_single_phase_current.png"
+    title="Single-phase current loads"
+    width="20%"/>
+</div>
 
-##### Constant power (P) modelling of three-phase star-connected loads
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Single-phase current load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(Ir1=0.0,
+                Ii1=0.0,
+                Ir2=0.170,
+                Ii2=0.080,
+                Ir3=0.0,
+                Ii3=0.0)
+load.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus, api_obj=load)
+```
+
+### Constant power (P) modelling of three-phase star-connected loads
 
 Finally, we will address the modelling of constant power loads. In the case of a three-phase power load connected in
 star, the values defined by the user are stored in the $vec{S}_0$ vector for each phase:
@@ -1291,9 +1167,40 @@ $$
 \end{bmatrix}
 $$
 
-![Three-phase star power loads](figures/3ph_star_power.png "Three-phase star power loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_star_power.png"
+    title="Three-phase star power loads"
+    width="50%"/>
+</div>
 
-##### Constant power (P) modelling of three-phase delta-connected loads
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Three-phase star power load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(P1=0.485,
+                Q1=0.190,
+                P2=0.068,
+                Q2=0.060,
+                P3=0.290,
+                Q3=0.212)
+load.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus, api_obj=load)
+```
+
+### Constant power (P) modelling of three-phase delta-connected loads
 
 In contrast, if the three-phase power load is connected in delta, the developed transformation to its star equivalent
 involves the phase-to-ground voltages. Then, the power transformation vector to star will be
@@ -1308,9 +1215,40 @@ $$
 \end{bmatrix}
 $$
 
-![Three-phase delta power loads](figures/3ph_delta_power.png "Three-phase delta power loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_delta_power.png"
+    title="Three-phase delta power loads"
+    width="60%"/>
+</div>
 
-##### Constant power (P) modelling of two-phase loads
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Three-phase delta power load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(P1=0.385,
+                Q1=0.220,
+                P2=0.385,
+                Q2=0.220,
+                P3=0.385,
+                Q3=0.220)
+load.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus, api_obj=load)
+```
+
+### Constant power (P) modelling of two-phase loads
 
 Two-phase power loads, connected for instance between phases $a$ and $c$, are modelled in the same way as three-phase
 delta-connected loads. The only difference is that, in this case, the power is defined solely as $vec{S}_{ca}$, while the
@@ -1325,9 +1263,40 @@ $$
 \end{bmatrix}
 $$
 
-![Two-phase power loads](figures/3ph_two_phase_power.png "Two-phase power loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_two_phase_power.png"
+    title="Two-phase power loads"
+    width="40%"/>
+</div>
 
-##### Constant power (P) modelling of single-phase loads
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Two-phase power load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(P1=0.0,
+                Q1=0.0,
+                P2=0.0,
+                Q2=0.0,
+                P3=0.160,
+                Q3=0.110)
+load.conn = ShuntConnectionType.Delta
+grid.add_load(bus=bus, api_obj=load)
+```
+
+### Constant power (P) modelling of single-phase loads
 
 Finally, single-phase power loads, connected for instance to phase $b$, are modelled in the same way as three-phase
 star-connected loads. The difference lies in the fact that the absent phases are stored with a value of zero:
@@ -1341,16 +1310,47 @@ $$
 \end{bmatrix}
 $$
 
-![Single-phase power loads](figures/3ph_single_phase_power.png "Single-phase power loads")
+<div style="text-align: center;">
+    <img src="figures/3ph_single_phase_power.png"
+    title="Single-phase power loads"
+    width="20%"/>
+</div>
 
-### Three-phase Generators
+#### Example
+```python
+import GridCalEngine.api as gce
+from GridCalEngine import ShuntConnectionType
+
+logger = gce.Logger()
+grid = gce.MultiCircuit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=0.48)
+grid.add_bus(obj=bus)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Single-phase power load
+# ----------------------------------------------------------------------------------------------------------------------
+load = gce.Load(P1=0.0,
+                Q1=0.0,
+                P2=0.170,
+                Q2=0.125,
+                P3=0.0,
+                Q3=0.0)
+load.conn = ShuntConnectionType.GroundedStar
+grid.add_load(bus=bus, api_obj=load)
+```
+
+## Generators
 
 For the power flow simulations, generators had been modelled as simple power injections into the system, which was
 completely valid. However, this is not sufficient when performing the short-circuit analysis, as the impedance of the
 generator must also be taken into account. GridCal has been programmed to accept a $3 \times 3$ impedance matrix, which
 includes both the self and mutual impedances between the $abc$ phases.
 
-It is also common to encounter generator impedances in the sequence domain. Therefore, Fortescue’s theorem must be
+It is also common to encounter generator impedances in the sequence domain. Therefore, Fortescue’s theorem is
 applied to obtain the equivalent values for the three phases:
 
 $$
@@ -1364,29 +1364,24 @@ $$
 
 Where the transformation eigenvector $\vec{a} = e^{j2\pi/3}$ is used.
 
-A key parameter that must be transferred from the power flow to the short-circuit analysis is the induced electromotive
-force (EMF) in the generators $\vec{E}$, as this is the only voltage that will not change during the fault. 
-The electromotive force depends on the flux induced in the machine's rotor, and therefore on the excitation current.
-It can be assumed that the internal voltage $\vec{E}$ of the generator remains constant during the duration of the fault.
-
 The generator could be modelled during the short-circuit using the classic Thévenin equivalent, that is, as an ideal
 voltage source in series with the generator’s impedance, as shown in the electrical circuit of the following figure:
 
-![Thévenin equivalent circuit](figures/3ph_thevenin.png "Thévenin equivalent circuit")
-
-This circuit allows us to obtain the value of the induced electromotive force, given the voltage $\vec{U}_{pf}$ and
-power $\vec{S}_{pf}$ before the fault (power flow results) at the generator’s output bus:
-
-$$
-\vec{E} = \vec{U}_{pf} + \vec{Z}_{gen} \cdot \vec{I}_{pf}
-    = \vec{U}_{pf} + \dfrac{\vec{S}_{pf}^*}{\vec{Y}_{gen} \cdot \vec{U}_{pf}^*}
-$$
+<div style="text-align: center;">
+    <img src="figures/3ph_thevenin.png"
+    title="Thévenin equivalent circuit"
+    width="50%"/>
+</div>
 
 However, this would require to add an additional bus to the original system between the generator’s impedance and the
-ideal voltage source. Therefore, the generator is modelled using its Norton equivalent, that is, an ideal current source
+ideal voltage source. Therefore, the generator can be also modelled using its Norton equivalent, that is, an ideal current source
 in parallel with the generator’s impedance, as shown in the schematic bellow:
 
-![Norton equivalent circuit](figures/3ph_norton.png "Norton equivalent circuit")
+<div style="text-align: center;">
+    <img src="figures/3ph_norton.png"
+    title="Norton equivalent circuit"
+    width="35%"/>
+</div>
 
 The Norton current source will take the value of the internal voltage multiplied by its admittance:
 
@@ -1394,113 +1389,31 @@ $$
 \vec{I}_{N} = \vec{Y}_{gen} \cdot \ \vec{E}
 $$
 
-### Three-phase Voltage Source Converters
+#### Example
+```python
+import GridCalEngine.api as gce
 
-## AC modelling
+logger = gce.Logger()
+grid = gce.MultiCircuit()
 
-### Universal Branch Model
+# ----------------------------------------------------------------------------------------------------------------------
+# Buses
+# ----------------------------------------------------------------------------------------------------------------------
+bus = gce.Bus(name='Bus', Vnom=4.16)
+grid.add_bus(obj=bus)
 
-This section describes the positive‑sequence branch model implemented in **GridCal**. 
-The formulation is state‑of‑the‑art and general enough to cover overhead lines, 
-cables and transformers.
+# ----------------------------------------------------------------------------------------------------------------------
+# Generator
+# ----------------------------------------------------------------------------------------------------------------------
+gen = gce.Generator(vset=1.0, r1=0.004, x1=0.5, r2=0.02, x2=0.5, r0=0.01, x0=0.08)
+grid.add_generator(bus=bus, api_obj=gen)
+```
 
-![π model of a branch](figures/BranchModel.png "π model of a branch")
+## Voltage Source Converters
 
-To define the π‑model we must specify the following quantities:
+To be done.
 
-| Magnitude | Units | Description |
-|-----------|-------|-------------|
-| $R$ | p.u. | Resistance of the equivalent branch. |
-| $X$ | p.u. | Reactance of the equivalent branch. |
-| $G$ | p.u. | Shunt conductance. |
-| $B$ | p.u. | Shunt susceptance. |
-| $|\mathrm{tap}|$ | p.u. | Transformer tap magnitude (internal voltage regulation, e.g. 0.98 or 1.05). |
-| $\delta$ | rad | Phase‑shift angle. |
-| $\mathrm{tap}_f$ | p.u. | *Virtual* tap on the high‑voltage side (difference between bus HV rating and transformer HV rating). |
-| $\mathrm{tap}_t$ | p.u. | *Virtual* tap on the low‑voltage side (difference between bus LV rating and transformer LV rating). |
-
-`GridCal` computes $\mathrm{tap}_f$ and $\mathrm{tap}_t$ automatically, taking the connection sense into account.
-
-#### Basic complex quantities
-
-$$
-Y_s = \frac{1}{R + jX}
-$$
-
-$$
-Y_{sh} = G + jB
-$$
-
-$$
-\mathrm{tap} = |\mathrm{tap}| \, e^{j\delta}
-$$
-
-$$
-\mathrm{tap}_f = \frac{V_{HV}}{V_{\text{bus, HV}}}
-$$
-
-$$
-\mathrm{tap}_t = \frac{V_{LV}}{V_{\text{bus, LV}}}
-$$
-
-#### Primitive admittances
-
-$$
-Y_{tt} = \frac{Y_s + Y_{sh}}{2\,\mathrm{tap}_t^{2}}
-$$
-
-$$
-Y_{ff} = \frac{Y_s + Y_{sh}}{2\,\mathrm{tap}_f^{2}\,\mathrm{tap}\,\mathrm{tap}^*}
-$$
-
-$$
-Y_{ft} = -\frac{Y_s}{\mathrm{tap}_f\,\mathrm{tap}_t\,\mathrm{tap}^*}
-$$
-
-$$
-Y_{tf} = -\frac{Y_s}{\mathrm{tap}_t\,\mathrm{tap}_f\,\mathrm{tap}}
-$$
-
-In the actual implementation all branch primitives are assembled simultaneously 
-in matrix form; the scalar expressions above are shown purely for clarity.
-
-
-
-#### Temperature correction
-
-`GridCal` can adjust the resistance to account for conductor temperature:
-
-$$
-R' = R \bigl(1 + \alpha\,\Delta t\bigr)
-$$
-
-where $\alpha$ depends on the conductor material and $\Delta t$ is the 
-temperature rise above the reference value (commonly 20 °C).
-
-| Material | Reference T (°C) | $\alpha$ (1/°C) |
-|----------|-----------------|------------------|
-| Copper | 20 | 0.004041 |
-| Copper | 75 | 0.00323 |
-| Annealed copper | 20 | 0.00393 |
-| Aluminum | 20 | 0.004308 |
-| Aluminum | 75 | 0.00330 |
-
-
-
-#### Embedded tap‑changer
-
-The general branch model includes a **discrete tap changer** so that the 
-magnitude $|\mathrm{tap}|$ can be regulated manually or automatically by 
-the power‑flow routines, enabling realistic transformer control within simulations.
-
-
-## AC-DC modelling
-
-
-## Substations modelling
-
-
-## Distribution Grid example
+## Distribution Grid Example in the Sequence Reference Frame
 
 This tutorial shows a step by step guide on how to build distribution grid 
 system that contains: 13 Buses, 4 Transformers, 4 Loads. 
@@ -2013,12 +1926,11 @@ From the result plots you can do various things with the plot:
 
 ![](figures/tutorials/dg/plotoptions.png)
 
-## 5 Node example (API)
+## Power Flow on the 5-Node Example Grid
 
 This example creates the five-node grid from the fantastic book
 "Power System Load Flow Analysis" and runs a power flow. After the power flow is executed,
 the results are printed on the console.
-
 
 ```python
 import GridCalEngine.api as gce
@@ -2072,199 +1984,10 @@ print(results.get_bus_df())
 print(results.get_branch_df())
 ```
 
+## AC-DC modelling
 
+To be done.
 
+## Substations modelling
 
-
-## Definition of a line from the wire configuration
-
-
-**Definition of the exercise**
-
-
-In this tutorial we are going to define a 3-phase line with 4 wires of two different types.
-
-The cable types are the following:
-
-| name         | r        | x   | gmr      | max_current |
-|--------------|----------|-----|----------|-------------|
-| ACSR 6/1     | 1.050117 | 0.0 | 0.001274 | 180.0       |
-| Class A / AA | 0.379658 | 0.0 | 0.004267 | 263.0       |
-
-These are taken from the data_sheets__ section
-
-The layout is the following:
-
-| Wire         | x(m) | y(m) | Phase |
-|--------------|------|------|-------|
-| ACSR 6/1     | 0    | 7    | 1 (A) |
-| ACSR 6/1     | 0.4  | 7    | 2 (B) |
-| ACSR 6/1     | 0.8  | 7    | 3 (C) |
-| Class A / AA | 0.3  | 6.5  | 0 (N) |
-
-**Practice**
-
-
-We may start with a prepared example from the ones provided in the `grids and profiles` folder.
-The example file is `Some distribution grid.xlsx`. First define the wires that you are going 
-to use in the tower. For that, we proceed to the tab `Database -> Catalogue -> Wire`.
-
-![](figures/tutorials/tower/wires.png)
-
-Then, we proceed to the tab `Database -> Catalogue -> Tower`. Then we select
-one of the existing towers or we create one with the (+) button.
-
-![](figures/tutorials/tower/tower.png)
-
-By clicking on the edit button (pencil) we open a new window with the `Tower builder` editor. 
-Here we enter the tower definition, and once we are done, we click on the compute button (calculator). 
-Then the tower cross-section will
-be displayed and the results will appear in the following tabs.
-
-![](figures/tutorials/tower/editor1.png)
-
-This tab shows the series impedance matrix ($\Omega / km$) in several forms:
-
-- Per phase without reduction.
-- Per phase with the neutral embedded.
-- Sequence reduction.
-
-![](figures/tutorials/tower/editorZ.png)
-
-This tab shows the series shunt admittance matrix ($\mu S / km$) in several forms:
-
-- Per phase without reduction.
-- Per phase with the neutral embedded.
-- Sequence reduction.
-
-![](figures/tutorials/tower/editorY.png)
-
-When closed, the values are applied to the overhead line catalogue type that we were editing.
-
-
-
-## Transformer definition from SC test values
-
-The transformers are modeled as π branches too. In order to get the series impedance and shunt admittance of
-the transformer to match the branch model, it is advised to transform the specification sheet values of the device
-into the desired values. The values to take from the specs sheet are:
-
-- $S_n$: Nominal power in MVA.
-- $HV$: Voltage at the high-voltage side in kV.
-- $LV$: Voltage at the low-voltage side in kV.
-- $V_{hv\_bus}$: Nominal voltage of the high-voltage side bus kV.
-- $V_{lv\_bus}$: Nominal voltage of the low-voltage side bus kV.
-- $V_{sc}$: Short circuit voltage in %.
-- $P_{cu}$: Copper losses in kW.
-- $I_0$: No load current in %.
-- $Share_{hv1}$: Contribution to the HV side. Value from 0 to 1.
-
-
-Short circuit impedance (p.u. of the machine)
-
-$$
-    z_{sc} = \frac{V_{sc}}{100}
-$$
-
-Short circuit resistance (p.u. of the machine)
-
-$$
-    r_{sc} = \frac{P_{cu} / 1000}{ S_n }
-$$
-
-Short circuit reactance (p.u. of the machine)
-Can only be computed if $r_{sc} < z_{sc}$
-
-$$
-    x_{sc} = \sqrt{z_{sc}^2 - r_{sc}^2}
-$$
-
-Series impedance (p.u. of the machine)
-
-$$
-    z_s = r_{sc} + j \cdot x_{sc}
-$$
-
-The issue with this is that we now must convert $zs$ from machine base to the system base.
-
-First we compute the High voltage side:
-
-$$
-    z_{base}^{HV} = \frac{HV^2}{S_n}
-
-    z_{base}^{hv\_bus} = \frac{V_{hv\_bus}^2}{S_{base}}
-
-    z_{s\_HV}^{system}  = z_s\cdot  \frac{z_{base}^{HV}}{z_{base}^{hv\_bus}} \cdot Share_{hv1}  = z_s \cdot  \frac{HV^2 \cdot S_{base}}{V_{hv\_bus}^2 \cdot S_n}  \cdot Share_{hv1}
-$$
-
-Now, we compute the Low voltage side:
-
-$$
-    z_{base}^{LV} = \frac{LV^2}{S_n}
-
-    z_{base}^{lv\_bus} = \frac{V_{lv\_bus}^2}{S_{base}}
-
-    z_{s\_LV}^{system} = z_s \cdot \frac{z_{base}^{LV}}{z_{base}^{lv\_bus}}  \cdot (1 - Share_{hv1})  = z_s \cdot  \frac{LV^2 \cdot S_{base}}{V_{lv\_bus}^2 \cdot S_n}  \cdot (1 - Share_{hv1})
-$$
-
-
-Finally, the system series impedance in p.u. is:
-
-$$
-    z_s = z_{s\_HV}^{system} + z_{s\_LV}^{system}
-$$
-
-Now, the leakage impedance (shunt of the model)
-
-$$
-    r_m = \frac{S_{base}}{P_{fe} / 1000}
-$$
-
-$$
-    z_m = \frac{100 \cdot S_{base}}{I0 \cdot S_n}
-$$
-
-$$
-    x_m = \sqrt{\frac{ - r_m^2 \cdot z_m^2}{z_m^2 - r_m^2}}
-$$
-
-Finally, the shunt admittance is (p.u. of the system):
-
-$$
-    y_{shunt} = \frac{1}{r_m} + j \cdot \frac{1}{x_m}
-$$
-
-
-## Inverse definition of SC values from π model
-
-In GridCal I found the need to find the short circuit values 
-($P_{cu}, V_{sc}, r_{fe}, I0$) from the branch values (*R*, *X*, *G*, *B*). Hence the following formulas:
-
-$$
-    z_{sc} = \sqrt{R^2 + X^2}
-$$
-
-$$
-    V_{sc} = 100 \cdot z_{sc}
-$$
-
-$$
-    P_{cu} = R \cdot S_n \cdot 1000
-$$
-
-
-$$
-    zl = 1 / (G + j B)
-$$
-
-$$
-    r_{fe} = zl.real
-$$
-
-$$
-    xm = zl.imag
-$$
-
-$$
-    I0 = 100 \cdot \sqrt{1 / r_{fe}^2 + 1 / xm^2}
-$$
+To be done.

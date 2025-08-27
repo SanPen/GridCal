@@ -8,7 +8,7 @@ fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1
 main_circuit = FileOpen(fname).open()
 
 # get the power flow options from the GUI
-solver = SolverType.SIMPLE_OPF
+solver = SolverType.GREEDY_DISPATCH_OPF
 mip_solver = MIPSolvers.HIGHS
 grouping = TimeGrouping.Daily
 pf_options = PowerFlowOptions()

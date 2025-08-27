@@ -267,7 +267,7 @@ def build_reducible_branches_C_coo(F: IntVec, T: IntVec, reducible: IntVec, acti
 @nb.njit(cache=True)
 def build_branches_C_coo_2(bus_active: IntVec,
                            F1: IntVec, T1: IntVec, active1: BoolVec,
-                           F2: IntVec, T2: IntVec, active2: BoolVec):
+                           F2: IntVec, T2: IntVec, FN2: IntVec, active2: BoolVec):
     """
     Build the COO coordinates of the C matrix
     :param bus_active: array of bus active values
@@ -276,6 +276,7 @@ def build_branches_C_coo_2(bus_active: IntVec,
     :param active1: Passive branches active array
     :param F2: VSC from buses indices array
     :param T2: VSC to buses indices array
+    :param FN2: VSC from negative buses indices array
     :param active2: VSC active array
     :return:
     """
@@ -291,7 +292,7 @@ def build_branches_C_coo_2(bus_active: IntVec,
                     C[k, f] = 1
                     C[k, t] = 1
     """
-    nelm = len(F1) + len(F2)
+    nelm = len(F1) + 2 * len(F2)
     i = np.empty(nelm * 2, dtype=np.int64)
     j = np.empty(nelm * 2, dtype=np.int64)
     data = np.empty(nelm * 2, dtype=np.int64)
@@ -299,11 +300,12 @@ def build_branches_C_coo_2(bus_active: IntVec,
     ii = 0
     br_count = 0
 
+    # passive branches
     for k in range(len(F1)):
         if active1[k]:
             f = F1[k]
             t = T1[k]
-            if bus_active[f] and bus_active[t]:
+            if bus_active[f] and bus_active[t] and f > -1 and t > -1:
                 # C[k, f] = 1
                 i[ii] = br_count
                 j[ii] = f
@@ -317,11 +319,14 @@ def build_branches_C_coo_2(bus_active: IntVec,
                 ii += 1
         br_count += 1
 
+    # VSC Converters
     for k in range(len(F2)):
         if active2[k]:
             f = F2[k]
+            fn = FN2[k]
             t = T2[k]
-            if bus_active[f] and bus_active[t]:
+
+            if bus_active[f] and bus_active[t] and f > -1 and t > -1:
                 # C[k, f] = 1
                 i[ii] = br_count
                 j[ii] = f
@@ -333,7 +338,21 @@ def build_branches_C_coo_2(bus_active: IntVec,
                 j[ii] = t
                 data[ii] = 1
                 ii += 1
-        br_count += 1
+
+            if bus_active[f] and bus_active[fn] and f > -1 and fn > -1:
+                # C[k, f] = 1
+                i[ii] = br_count + 1
+                j[ii] = f
+                data[ii] = 1
+                ii += 1
+
+                # C[k, t] = 1
+                i[ii] = br_count + 1
+                j[ii] = fn
+                data[ii] = 1
+                ii += 1
+
+        br_count += 2
 
     return i[:ii], j[:ii], data[:ii], nelm
 
@@ -341,7 +360,7 @@ def build_branches_C_coo_2(bus_active: IntVec,
 @nb.njit(cache=True)
 def build_branches_C_coo_3(bus_active: IntVec,
                            F1: IntVec, T1: IntVec, active1: BoolVec,
-                           F2: IntVec, T2: IntVec, active2: BoolVec,
+                           F2: IntVec, T2: IntVec, FN2: IntVec, active2: BoolVec,
                            F3: IntVec, T3: IntVec, active3: BoolVec):
     """
     Build the COO coordinates of the C matrix
@@ -350,6 +369,7 @@ def build_branches_C_coo_3(bus_active: IntVec,
     :param T1: Passive branches to bus indices array
     :param active1: Passive branches active array
     :param F2: VSC from buses indices array
+    :param FN2: VSC from negative buses indices array
     :param T2: VSC to buses indices array
     :param active2: VSC active array
     :param F3: HVDC from bus indices array
@@ -369,7 +389,7 @@ def build_branches_C_coo_3(bus_active: IntVec,
                     C[k, f] = 1
                     C[k, t] = 1
     """
-    nelm = len(F1) + len(F2) + len(F3)
+    nelm = len(F1) + 2 * len(F2) + len(F3)
     i = np.empty(nelm * 2, dtype=np.int64)
     j = np.empty(nelm * 2, dtype=np.int64)
     data = np.empty(nelm * 2, dtype=np.int64)
@@ -377,11 +397,12 @@ def build_branches_C_coo_3(bus_active: IntVec,
     ii = 0
     br_count = 0
 
+    # passive branches
     for k in range(len(F1)):
         if active1[k]:
             f = F1[k]
             t = T1[k]
-            if bus_active[f] and bus_active[t]:
+            if bus_active[f] and bus_active[t] and f > -1 and t > -1:
                 # C[k, f] = 1
                 i[ii] = br_count
                 j[ii] = f
@@ -395,11 +416,13 @@ def build_branches_C_coo_3(bus_active: IntVec,
                 ii += 1
         br_count += 1
 
+    # VSC Converters
     for k in range(len(F2)):
         if active2[k]:
             f = F2[k]
+            fn = FN2[k]
             t = T2[k]
-            if bus_active[f] and bus_active[t]:
+            if bus_active[f] and bus_active[t] and f > -1 and t > -1:
                 # C[k, f] = 1
                 i[ii] = br_count
                 j[ii] = f
@@ -411,13 +434,28 @@ def build_branches_C_coo_3(bus_active: IntVec,
                 j[ii] = t
                 data[ii] = 1
                 ii += 1
-        br_count += 1
 
+            if bus_active[f] and bus_active[fn] and f > -1 and fn > -1:
+                # C[k, f] = 1
+                i[ii] = br_count + 1
+                j[ii] = f
+                data[ii] = 1
+                ii += 1
+
+                # C[k, t] = 1
+                i[ii] = br_count + 1
+                j[ii] = fn
+                data[ii] = 1
+                ii += 1
+
+        br_count += 2
+
+    # HVDC Line
     for k in range(len(F3)):
         if active3[k]:
             f = F3[k]
             t = T3[k]
-            if bus_active[f] and bus_active[t]:
+            if bus_active[f] and bus_active[t] and f > -1 and t > -1:
                 # C[k, f] = 1
                 i[ii] = br_count
                 j[ii] = f

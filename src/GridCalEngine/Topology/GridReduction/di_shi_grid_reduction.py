@@ -5,17 +5,14 @@
 from __future__ import annotations
 
 import numpy as np
-from typing import Tuple, List, Sequence, TYPE_CHECKING
+from typing import Tuple, Sequence, TYPE_CHECKING
 from scipy.sparse.linalg import factorized, spsolve
-from scipy.sparse import csc_matrix, bmat, coo_matrix
+from scipy.sparse import csc_matrix, bmat
 
 import networkx as nx
 import GridCalEngine.Devices as dev
-from GridCalEngine.basic_structures import IntVec, Mat, CxVec, Logger
-from GridCalEngine.enumerations import DeviceType, SolverType
+from GridCalEngine.basic_structures import IntVec, CxVec, Logger
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf, multi_island_pf_nc
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 
 if TYPE_CHECKING:
     from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -337,10 +334,6 @@ def di_shi_reduction(grid: MultiCircuit,
 
     nc = compile_numerical_circuit_at(grid, t_idx=None)
 
-    # run the original power flow
-    pf_options = PowerFlowOptions(solver_type=SolverType.Linear)
-    res0 = multi_island_pf_nc(nc=nc, options=pf_options)
-
     # Step 1 – First Ward reduction ------------------------------------------------------------------------------------
 
     # This first reduction is to obtain the equivalent admittance matrix Y_eq1
@@ -420,7 +413,7 @@ def di_shi_reduction(grid: MultiCircuit,
     nc_red = compile_numerical_circuit_at(grid, t_idx=0)
     adm = nc_red.get_admittance_matrices()
 
-    Vred = np.delete(res0.voltage, e_buses)
+    Vred = np.delete(pf_res.voltage, e_buses)
 
     S_expected = (Vred * np.conj(adm.Ybus @ Vred)) * grid.Sbase
 
