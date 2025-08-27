@@ -707,7 +707,7 @@ def get_logger_tree_model(logger: DataLogger) -> QtGui.QStandardItemModel:
     return model
 
 
-def get_icon_list_model(lst: List[Tuple[str, QtGui.QIcon]], checks=False,
+def get_icon_list_model(lst: List[Tuple[str, str]], checks=False,
                         check_value=False) -> QtGui.QStandardItemModel:
     """
 
@@ -719,10 +719,12 @@ def get_icon_list_model(lst: List[Tuple[str, QtGui.QIcon]], checks=False,
     list_model = QtGui.QStandardItemModel()
     if lst is not None:
         if not checks:
-            for val, icon in lst:
+            for val, icon_path in lst:
                 # for the list model
                 item = QtGui.QStandardItem(str(val))
                 item.setEditable(False)
+                icon = QtGui.QIcon()
+                icon.addPixmap(QtGui.QPixmap(icon_path))
                 item.setIcon(icon)
                 list_model.appendRow(item)
         else:

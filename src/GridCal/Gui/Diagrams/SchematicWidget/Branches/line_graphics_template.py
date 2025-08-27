@@ -35,6 +35,7 @@ from GridCalEngine.enumerations import SwitchGraphicType
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+    from GridCal.Gui.Diagrams.SchematicWidget.Branches.vsc_graphics_3term import VscGraphicItem3Term
 
 NODE_GRAPHIC = BusGraphicItem | FluidNodeGraphicItem
 
@@ -238,6 +239,7 @@ class DisconnectorSymbol(VscSymbol):
     def __init__(self, parent, pen_width, h=30, w=30):
         VscSymbol.__init__(self, parent=parent, pen_width=pen_width, h=h, w=w,
                            icon_route=":/Icons/icons/disconnector.svg")
+
 
 class HvdcSymbol(QGraphicsRectItem):
     """
@@ -566,14 +568,16 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         return self._to_port
 
-    def get_terminal_from_parent(self) -> Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem]:
+    def get_terminal_from_parent(self) -> Union[None, BusGraphicItem, Transformer3WGraphicItem,
+                                                FluidNodeGraphicItem, VscGraphicItem3Term]:
         """
         Get the terminal from parent object
         :return: TerminalItem 
         """
         return self._from_port.get_parent()
 
-    def get_terminal_to_parent(self) -> Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem]:
+    def get_terminal_to_parent(self) -> Union[None, BusGraphicItem, Transformer3WGraphicItem,
+                                              FluidNodeGraphicItem, VscGraphicItem3Term]:
         """
         Get the terminal to parent object
         :return: TerminalItem
@@ -1085,7 +1089,6 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         :return:
         """
         return self.is_from_port_a_bus() and self.is_to_port_a_fluid_node()
-
 
     def should_be_a_converter(self) -> bool:
         """

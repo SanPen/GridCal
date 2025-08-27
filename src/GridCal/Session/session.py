@@ -45,6 +45,7 @@ from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityR
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import (NodalCapacityTimeSeriesDriver,
                                                                               NodalCapacityTimeSeriesResults)
 from GridCalEngine.Simulations.Reliability.reliability_driver import ReliabilityStudyDriver, ReliabilityResults
+from GridCalEngine.Simulations.Rms.rms_driver import RmsSimulationDriver, RmsResults
 from GridCalEngine.Simulations.Topology.node_groups_driver import NodeGroupsDriver
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.results_template import DriverToSave
@@ -538,6 +539,15 @@ class SimulationSession:
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.Reliability_run)
+        return drv, results
+
+    @property
+    def rms_dynamic_simulation(self) -> Tuple[RmsSimulationDriver, RmsResults]:
+        """
+
+        :return:
+        """
+        drv, results = self.get_driver_results(SimulationTypes.RmsDynamic_run)
         return drv, results
 
     @property

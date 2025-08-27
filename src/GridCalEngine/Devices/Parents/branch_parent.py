@@ -6,6 +6,7 @@ from __future__ import annotations
 import numpy as np
 from typing import Tuple, Union, TYPE_CHECKING
 
+from GridCalEngine import SubObjectType
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
@@ -14,6 +15,7 @@ from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Aggregation.branch_group import BranchGroup
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.Dynamic.dynamic_model_host import DynamicModelHost
 
 if TYPE_CHECKING:
     from GridCalEngine.Devices.types import CONNECTION_TYPE
@@ -48,6 +50,7 @@ class BranchParent(PhysicalDevice):
         '_protection_rating_factor_prof',
         'color',
         'group',
+        '_rms_model',
     )
 
     def __init__(self,
@@ -158,6 +161,8 @@ class BranchParent(PhysicalDevice):
         # group of this branch
         self.group: Union[BranchGroup, None] = None
 
+        self._rms_model: DynamicModelHost = DynamicModelHost()
+
         self.register('bus_from', units="", tpe=DeviceType.BusDevice,
                       definition='Name of the bus at the "from" side', editable=False)
 
@@ -194,6 +199,17 @@ class BranchParent(PhysicalDevice):
 
         self.register(key='color', units='', tpe=str, definition='Color to paint the element in the map diagram',
                       is_color=True)
+        self.register(key='rms_model', units='', tpe=SubObjectType.DynamicModelHostType,
+                      definition='RMS dynamic model', display=False)
+
+    @property
+    def rms_model(self) -> DynamicModelHost:
+        return self._rms_model
+
+    @rms_model.setter
+    def rms_model(self, value: DynamicModelHost):
+        if isinstance(value, DynamicModelHost):
+            self._rms_model = value
 
     @property
     def bus_from(self) -> Bus:

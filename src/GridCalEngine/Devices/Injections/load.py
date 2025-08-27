@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import DeviceType, BuildStatus
 from GridCalEngine.Devices.Parents.load_parent import LoadParent
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Utils.Symbolic.block import Block, Var, Const, DynamicVarType
 
 
 class Load(LoadParent):
@@ -52,17 +53,21 @@ class Load(LoadParent):
         '_Ir3_prof',
         '_Ii3_prof',
 
-
         '_n_customers',
         '_n_customers_prof',
+
+        'Pl0',
+        'Ql0',
+        'init_params'
     )
 
     def __init__(self, name='Load', idtag=None, code='',
                  G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, Cost=1200.0,
                  P1=0.0, P2=0.0, P3=0.0, Q1=0.0, Q2=0.0, Q3=0.0,
                  G1=0.0, G2=0.0, G3=0.0, B1=0.0, B2=0.0, B3=0.0,
-                 Ir1=0.0, Ir2=0.0, Ir3=0.0, Ii1=0.0, Ii2=0.0, Ii3=0.0,
+                 Ir1=0.0, Ir2=0.0, Ir3=0.0, Ii1=0.0, Ii2=0.0, Ii3=0.0, Pl0=1.0, Ql0=1.0,
                  active=True, mttf=0.0, mttr=0.0, capex=0, opex=0,
+                 init_params: dict[str, float] = {},
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
         The load object implements the so-called ZIP model, in which the load can be
@@ -159,6 +164,11 @@ class Load(LoadParent):
         self._n_customers: int = 1
         self._n_customers_prof = Profile(default_value=self._n_customers, data_type=int)
 
+        self.Pl0 = Pl0
+        self.Ql0 = Ql0
+
+        self.init_params = init_params
+
         self.register(key='Ir', units='MW', tpe=float,
                       definition='Active power of the current component at V=1.0 p.u.', profile_name='Ir_prof')
         self.register(key='Ir1', units='MW', tpe=float,
@@ -170,27 +180,36 @@ class Load(LoadParent):
         self.register(key='Ii', units='MVAr', tpe=float,
                       definition='Reactive power of the current component at V=1.0 p.u.', profile_name='Ii_prof')
         self.register(key='Ii1', units='MVAr', tpe=float,
-                      definition='Reactive power of the phase 1 current component at V=1.0 p.u.', profile_name='Ii1_prof')
+                      definition='Reactive power of the phase 1 current component at V=1.0 p.u.',
+                      profile_name='Ii1_prof')
         self.register(key='Ii2', units='MVAr', tpe=float,
-                      definition='Reactive power of the phase 2 current component at V=1.0 p.u.', profile_name='Ii2_prof')
+                      definition='Reactive power of the phase 2 current component at V=1.0 p.u.',
+                      profile_name='Ii2_prof')
         self.register(key='Ii3', units='MVAr', tpe=float,
-                      definition='Reactive power of the phase 3 current component at V=1.0 p.u.', profile_name='Ii3_prof')
+                      definition='Reactive power of the phase 3 current component at V=1.0 p.u.',
+                      profile_name='Ii3_prof')
         self.register(key='G', units='MW', tpe=float,
                       definition='Active power of the impedance component at V=1.0 p.u.', profile_name='G_prof')
         self.register(key='G1', units='MW', tpe=float,
-                      definition='Active power of the phase 1 impedance component at V=1.0 p.u.', profile_name='G1_prof')
+                      definition='Active power of the phase 1 impedance component at V=1.0 p.u.',
+                      profile_name='G1_prof')
         self.register(key='G2', units='MW', tpe=float,
-                      definition='Active power of the phase 2 impedance component at V=1.0 p.u.', profile_name='G2_prof')
+                      definition='Active power of the phase 2 impedance component at V=1.0 p.u.',
+                      profile_name='G2_prof')
         self.register(key='G3', units='MW', tpe=float,
-                      definition='Active power of the phase 3 impedance component at V=1.0 p.u.', profile_name='G3_prof')
+                      definition='Active power of the phase 3 impedance component at V=1.0 p.u.',
+                      profile_name='G3_prof')
         self.register(key='B', units='MVAr', tpe=float,
                       definition='Reactive power of the impedance component at V=1.0 p.u.', profile_name='B_prof')
         self.register(key='B1', units='MVAr', tpe=float,
-                      definition='Reactive power of the phase 1 impedance component at V=1.0 p.u.', profile_name='B1_prof')
+                      definition='Reactive power of the phase 1 impedance component at V=1.0 p.u.',
+                      profile_name='B1_prof')
         self.register(key='B2', units='MVAr', tpe=float,
-                      definition='Reactive power of the phase 2 impedance component at V=1.0 p.u.', profile_name='B2_prof')
+                      definition='Reactive power of the phase 2 impedance component at V=1.0 p.u.',
+                      profile_name='B2_prof')
         self.register(key='B3', units='MVAr', tpe=float,
-                      definition='Reactive power of the phase 3 impedance component at V=1.0 p.u.', profile_name='B3_prof')
+                      definition='Reactive power of the phase 3 impedance component at V=1.0 p.u.',
+                      profile_name='B3_prof')
         self.register(key='n_customers', units='unit', tpe=int,
                       definition='Number of customers represented by this load', profile_name='n_customers_prof')
 
@@ -537,3 +556,25 @@ class Load(LoadParent):
 
             if show_fig:
                 plt.show()
+
+    def initialize_rms(self):
+        if self.rms_model.empty():
+
+            Ql = Var("Ql")
+            Pl = Var("Pl")
+
+            self.rms_model.model = Block(
+                algebraic_eqs=[
+                    Pl - self.Pl0, #TODO: consider that self.P/Q should be constant variables/objects, in order for us to create events
+                    Ql - self.Ql0
+                ],
+                algebraic_vars=[Pl, Ql],
+                init_eqs={},
+                init_vars=[],
+                init_params_eq={},
+                parameters=[],
+                external_mapping={
+                    DynamicVarType.P: Pl,
+                    DynamicVarType.Q: Ql
+                }
+            )

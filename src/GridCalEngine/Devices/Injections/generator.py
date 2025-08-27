@@ -14,6 +14,8 @@ from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.Devices.Parents.generator_parent import GeneratorParent
 from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Utils.Symbolic.block import Block, Var, Const, DynamicVarType
+from GridCalEngine.Utils.Symbolic.symbolic import cos, sin, real, imag, conj, angle, exp, log, abs
 
 
 class Generator(GeneratorParent):
@@ -46,6 +48,16 @@ class Generator(GeneratorParent):
         'emissions',
         'fuels',
         'Sbase',
+        'freq',
+        'M',
+        'D',
+        'tm0',
+        'omega_ref',
+        'vf',
+        'Kp',
+        'Ki',
+        'Kw',
+        'init_params'
     )
 
     def __init__(self,
@@ -77,9 +89,18 @@ class Generator(GeneratorParent):
                  x0: float = 1e-20,
                  r2: float = 1e-20,
                  x2: float = 1e-20,
+                 freq=60.0,
+                 tm0=0.0,
+                 M=1.0 / 100.0 * 900.0, # from Machine to System base
+                 D=4.0 / 100.0 * 900.0, # from Machine to System base
+                 omega_ref=1.0,
+                 vf=0.0,
+                 Kp=0.0,
+                 Ki=0.0,
                  capex: float = 0,
                  opex: float = 0,
                  srap_enabled: bool = True,
+                 init_params: dict[str, float] = {"tm0": 0.0, "vf": 0.0},
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
         Generator.
@@ -133,6 +154,7 @@ class Generator(GeneratorParent):
                                  device_type=DeviceType.GeneratorDevice)
 
         # is the device active for active power dispatch?
+
         self.enabled_dispatch = bool(enabled_dispatch)
 
         # positive sequence resistance
@@ -208,25 +230,18 @@ class Generator(GeneratorParent):
         self.emissions: Associations = Associations(device_type=DeviceType.EmissionGasDevice)
         self.fuels: Associations = Associations(device_type=DeviceType.FuelDevice)
 
-        # Dynamic vars
-        # self.Ra = Ra
-        # self.Xa = Xa
-        # self.Xd = Xd
-        # self.Xq = Xq
-        # self.Xdp = Xdp
-        # self.Xqp = Xqp
-        # self.Xdpp = Xdpp
-        # self.Xqpp = Xqpp
-        # self.Td0p = Td0p
-        # self.Tq0p = Tq0p
-        # self.Td0pp = Td0pp
-        # self.Tq0pp = Tq0pp
-        # self.H = H
-        # self.speed_volt = speed_volt
-        # self.base_mva = base_mva  # machine base MVA
-
         # system base power MVA
         self.Sbase = float(Sbase)
+
+        self.freq = freq
+        self.tm0 = tm0
+        self.M = M
+        self.D = D
+        self.omega_ref = omega_ref
+        self.vf = vf
+        self.Kp = Kp
+        self.Ki = Ki
+        self.init_params = init_params
 
         self.register(key='is_controlled', units='', tpe=bool, definition='Is this generator voltage-controlled?')
 
@@ -310,7 +325,6 @@ class Generator(GeneratorParent):
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a Vset_prof')
 
-
     @property
     def Qmin_prof(self) -> Profile:
         """
@@ -344,7 +358,6 @@ class Generator(GeneratorParent):
             self._Qmax_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a Qmax_prof')
-
 
     @property
     def Cost2_prof(self) -> Profile:
@@ -475,3 +488,72 @@ class Generator(GeneratorParent):
         :param val: float value
         """
         self._Snom = val
+
+    def initialize_rms(self):
+        if self.rms_model.empty():
+
+            delta = Var("delta")
+            omega = Var("omega")
+            psid = Var("psid")
+            psiq = Var("psiq")
+            i_d = Var("i_d")
+            i_q = Var("i_q")
+            v_d = Var("v_d")
+            v_q = Var("v_q")
+            te = Var("te")
+            et = Var("et")
+            tm = Var("tm")
+            P_g = Var("P_g")
+            Q_g = Var("Q_g")
+
+            Vm = self.bus.rms_model.model.E(DynamicVarType.Vm)
+            Va = self.bus.rms_model.model.E(DynamicVarType.Va)
+
+            self.rms_model.model = Block(
+                state_eqs=[
+                    (2 * np.pi * self.freq) * (omega - self.omega_ref),
+                    (tm - te - self.D * (omega - self.omega_ref)) / self.M,
+                    (omega - self.omega_ref),
+                ],
+                state_vars=[delta, omega, et],
+                algebraic_eqs=[
+                    psid - (self.R1 * i_q + v_q),
+                    psiq + (self.R1 * i_d + v_d),
+                    0 - (psid + self.X1 * i_d - self.vf),
+                    0 - (psiq + self.X1 * i_q),
+                    v_d - (Vm * sin(delta - Va)),
+                    v_q - (Vm * cos(delta - Va)),
+                    te - (psid * i_q - psiq * i_d),
+                    P_g - (v_d * i_d + v_q * i_q),
+                    Q_g - (v_q * i_d - v_d * i_q),
+                    tm - (self.tm0 + self.Kp * (omega - self.omega_ref) + self.Ki * et)
+                ],
+                algebraic_vars=[P_g, Q_g, v_d, v_q, i_d, i_q, psid, psiq, te, tm],
+                init_eqs = {
+                    # E_ = Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va))))
+
+                    # delta: angle(Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va))))),
+                    delta: imag(log((Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va)))))/(abs(Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va)))))))),
+                    omega: Const(self.omega_ref),
+                    v_d: real((Vm * exp(1j * Va)) * exp(-1j * (delta - np.pi / 2))),
+                    v_q: imag((Vm * exp(1j * Va)) * exp(-1j * (delta - np.pi / 2))),
+                    i_d: real(conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va))) * exp(-1j * (delta - np.pi / 2))),
+                    i_q: imag(conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va))) * exp(-1j * (delta - np.pi / 2))),
+                    psid: self.R1 * i_q + v_q,
+                    psiq: -self.R1 * i_d - v_d,
+                    te: psid * i_q - psiq * i_d,
+                    tm: te,
+                    et: Const(0),
+                },
+                init_vars = [delta, omega, et, v_d, v_q, i_d, i_q, psid, psiq, te, tm],
+                init_params_eq = {
+                    "tm0" : tm,
+                    "vf" : psid + self.X1 * i_d
+                },
+                parameters=[],
+
+                external_mapping={
+                    DynamicVarType.P: P_g,
+                    DynamicVarType.Q: Q_g
+                }
+            )

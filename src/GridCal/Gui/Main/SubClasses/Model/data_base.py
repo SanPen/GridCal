@@ -26,6 +26,7 @@ from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
+from GridCal.Gui.RmsModelEditor.rms_model_editor_dialogue import RmsModelEditorGUI
 from GridCal.Gui.general_dialogues import LogsDialogue
 from GridCal.Gui.SystemScaler.system_scaler import SystemScaler
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, make_diagram_from_substations
@@ -164,6 +165,7 @@ class DataBaseTableMain(DiagramsMain):
             DeviceType.UnderGroundLineDevice.value: ":/Icons/icons/ac_line.svg",
             DeviceType.SequenceLineDevice.value: ":/Icons/icons/ac_line.svg",
             DeviceType.TransformerTypeDevice.value: ":/Icons/icons/to_transformer.svg",
+            DeviceType.RmsModelTemplateDevice.value: ":/Icons/icons/dyn_gray.svg",
         }
 
         db_tree_model = gf.get_tree_model(d=self.circuit.get_template_objects_str_dict(),
@@ -818,6 +820,12 @@ class DataBaseTableMain(DiagramsMain):
                 obj = dev.Facility(name=name)
                 self.circuit.add_facility(obj)
 
+            elif elm_type == DeviceType.RmsModelTemplateDevice.value:
+
+                name = f'RMS model {self.circuit.get_rms_models_number()}'
+                obj = dev.RmsModelTemplate(name=name)
+                self.circuit.add_rms_model(obj)
+
             else:
                 info_msg("This object does not support table-like addition.\nUse the schematic instead.")
                 return
@@ -852,6 +860,12 @@ class DataBaseTableMain(DiagramsMain):
                         self.tower_builder_window.setModal(True)
                         self.tower_builder_window.resize(int(1.81 * 700.0), 700)
                         self.tower_builder_window.exec()
+
+                    elif elm_type == DeviceType.RmsModelTemplateDevice.value:
+
+                        self.rms_model_Editor_window = RmsModelEditorGUI(model=self.circuit.rms_models[idx].block, )
+                        self.rms_model_Editor_window.resize(int(1.81 * 700.0), 700)
+                        self.rms_model_Editor_window.show()
 
                     else:
 
@@ -1276,7 +1290,7 @@ class DataBaseTableMain(DiagramsMain):
                           function_ptr=self.crop_model_to_buses_selection)
 
         gf.add_menu_entry(menu=context_menu,
-                          text="Ward reduction",
+                          text="Grid reduction",
                           icon_path=":/Icons/icons/schematic.svg",
                           function_ptr=self.grid_reduction_from_table_selection)
 

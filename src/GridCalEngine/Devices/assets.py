@@ -104,6 +104,7 @@ class Assets:
         '_pumps',
         '_p2xs',
         '_diagrams',
+        '_rms_models',
         'template_objects_dict',
         'profile_magnitudes',
         'device_type_name_dict',
@@ -269,6 +270,9 @@ class Assets:
         # list of power to gas devices
         self._p2xs: List[dev.FluidP2x] = list()
 
+        # list of wire types
+        self._rms_models: List[dev.RmsModelTemplate] = list()
+
         # list of declared diagrams
         self._diagrams: List[Union[dev.MapDiagram, dev.SchematicDiagram]] = list()
 
@@ -338,7 +342,8 @@ class Assets:
                 dev.OverheadLineType(),
                 dev.UndergroundLineType(),
                 dev.SequenceLineType(),
-                dev.TransformerType()
+                dev.TransformerType(),
+                dev.RmsModelTemplate()
             ]
         }
 
@@ -4960,6 +4965,58 @@ class Assets:
             print(e)
 
     # ------------------------------------------------------------------------------------------------------------------
+    # DynamicModel
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @property
+    def rms_models(self) -> List[dev.RmsModelTemplate]:
+        """
+        list of rms models
+        :return:
+        """
+        return self._rms_models
+
+    @rms_models.setter
+    def rms_models(self, value: List[dev.RmsModelTemplate]):
+        self._rms_models = value
+
+    def get_rms_models_number(self) -> int:
+        return len(self._rms_models)
+
+    def add_rms_model(self, obj: dev.RmsModelTemplate):
+        """
+        Add rms model to the collection
+        :param obj: DynamicModel instance
+        """
+        if obj is not None:
+            if isinstance(obj, dev.RmsModelTemplate):
+                self._rms_models.append(obj)
+            else:
+                print('The template is not a DynamicModel!')
+
+    def delete_rms_model(self, obj: dev.RmsModelTemplate):
+        """
+        Delete RMS model from the collection
+        :param obj: DynamicModel object
+        """
+        for elm in self.buses:
+            if elm.rms_model.template == obj:
+                elm.rms_model.template = None
+
+        for elm in self.get_injection_devices_iter():
+            if elm.rms_model.template == obj:
+                elm.rms_model.template = None
+
+        for elm in self.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
+            if elm.rms_model.template == obj:
+                elm.rms_model.template = None
+
+        try:
+            self._rms_models.remove(obj)
+        except ValueError:
+            pass
+
+    # ------------------------------------------------------------------------------------------------------------------
     #
     #
     # Functions of aggregations of devices
@@ -5687,6 +5744,9 @@ class Assets:
         elif device_type == DeviceType.LambdaDevice:
             return list()
 
+        elif device_type == DeviceType.RmsModelTemplateDevice:
+            return self.rms_models
+
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
@@ -5747,8 +5807,8 @@ class Assets:
             self._upfc_devices = devices
 
         elif device_type == DeviceType.VscDevice:
-            for elm in devices:
-                elm.correct_buses_connection()
+            # for elm in devices:  # TODO SANPEN: Why not?
+            #     elm.correct_buses_connection()
             self._vsc_devices = devices
 
         elif device_type == DeviceType.BranchGroupDevice:
@@ -5892,6 +5952,9 @@ class Assets:
 
         elif device_type == DeviceType.FacilityDevice:
             self._facilities = devices
+
+        elif device_type == DeviceType.RmsModelTemplateDevice:
+            self._rms_models = devices
 
         else:
             raise Exception('Element type not understood ' + str(device_type))
@@ -6085,6 +6148,9 @@ class Assets:
 
         elif obj.device_type == DeviceType.FacilityDevice:
             self.add_facility(obj=obj)
+
+        elif obj.device_type == DeviceType.RmsModelTemplateDevice:
+            self.add_rms_model(obj=obj)
 
         else:
             raise Exception('Element type not understood ' + str(obj.device_type))
@@ -6281,6 +6347,9 @@ class Assets:
 
         elif obj.device_type == DeviceType.LineLocation:
             pass
+
+        elif obj.device_type == DeviceType.RmsModelTemplateDevice:
+            self.delete_rms_model(obj=obj)
 
         else:
             raise Exception('Element type not understood ' + str(obj.device_type))
@@ -6729,6 +6798,10 @@ class Assets:
 
         elif elm_type == DeviceType.FacilityDevice:
             elm = dev.Facility()
+            dictionary_of_lists = dict()
+
+        elif elm_type == DeviceType.RmsModelTemplateDevice:
+            elm = dev.RmsModelTemplate()
             dictionary_of_lists = dict()
 
         else:

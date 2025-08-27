@@ -52,13 +52,15 @@ class ResultsTemplate:
             available_results: Union[Dict[ResultTypes, List[ResultTypes]], List[ResultTypes]],
             time_array: Union[DateVec, None],
             clustering_results: Union[ClusteringResults, None],
-            study_results_type: StudyResultsType):
+            study_results_type: StudyResultsType,
+            is_3ph: bool = False):
         """
         Results template class
         :param name: Name of the class
         :param available_results: list of stuff to represent the results
         :param clustering_results: ClusteringResults object (optional)
         :param study_results_type: StudyResultsType Instance
+        :param is_3ph: is this a 3-phase result?
         """
         self.name: str = name
 
@@ -69,6 +71,8 @@ class ResultsTemplate:
         self._data_variables: Dict[str, ResultsProperty] = dict()
 
         self._time_array: Union[DateVec, None] = time_array
+
+        self._is_3ph = is_3ph
 
         if clustering_results:
             self.clustering_results = clustering_results
@@ -108,6 +112,10 @@ class ResultsTemplate:
     @time_array.setter
     def time_array(self, time_array: DateVec):
         self._time_array = time_array
+
+    @property
+    def is_3ph(self):
+        return self._is_3ph
 
     def plotting_allowed(self) -> bool:
         """

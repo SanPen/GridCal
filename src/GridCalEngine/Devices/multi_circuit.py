@@ -9,7 +9,7 @@ import cmath
 import copy
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union, Set, Sequence, TYPE_CHECKING
+from typing import List, Dict, Tuple, Union, Set, Callable, Sequence, Any, TYPE_CHECKING
 from uuid import getnode as get_mac, uuid4
 import networkx as nx
 from matplotlib import pyplot as plt
@@ -23,7 +23,8 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, AREA_TYPES
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Topology.topology import find_different_states
-from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType
+from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType, DynamicVarType
+
 
 if TYPE_CHECKING:
     from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
