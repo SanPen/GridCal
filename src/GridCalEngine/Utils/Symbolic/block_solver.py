@@ -278,7 +278,7 @@ class BlockSolver:
 
         return x
 
-    def sort_vars_from_uid(self, mapping: dict[int, float]) -> np.ndarray:
+    def sort_vars_from_uid(self, mapping: dict[tuple[int, str], float]) -> np.ndarray:
         """
         Helper function to build the initial vector
         :param mapping: var->initial value mapping
@@ -287,8 +287,9 @@ class BlockSolver:
         x = np.zeros(len(self._state_vars) + len(self._algebraic_vars), dtype=object)
 
         for key, val in mapping.items():
-            i = self.uid2idx_vars[key]
-            x[i] = key
+            uid, name = key
+            i = self.uid2idx_vars[uid]
+            x[i] = uid
 
         return x
 
@@ -309,7 +310,7 @@ class BlockSolver:
 
         return x
 
-    def build_init_vars_vector_from_uid(self, mapping: dict[int, float]) -> np.ndarray:
+    def build_init_vars_vector_from_uid(self, mapping: dict[tuple[int, str], float]) -> np.ndarray:
         """
         Helper function to build the initial vector
         :param mapping: var->initial value mapping
@@ -318,8 +319,9 @@ class BlockSolver:
         x = np.zeros(len(self._state_vars) + len(self._algebraic_vars))
 
         for key, val in mapping.items():
-            if key in self.uid2idx_vars.keys():
-                i = self.uid2idx_vars[key]
+            uid, name = key
+            if uid in self.uid2idx_vars.keys():
+                i = self.uid2idx_vars[uid]
                 x[i] = val
             else:
                 raise ValueError(f"Missing uid {key} definition")

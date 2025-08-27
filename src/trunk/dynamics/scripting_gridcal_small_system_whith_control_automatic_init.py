@@ -25,86 +25,86 @@ import GridCalEngine.api as gce
 # ----------------------------------------------------------------------------------------------------------------------
 # Constants
 # ----------------------------------------------------------------------------------------------------------------------
+
+# for the lines
+
 # line0
-g_0 = Const(5)
-b_0 = Const(-12)
-bsh_0 = Const(0.03)
+r_0, x_0, bsh_0 = 0.005,   0.05,   0.02187
 
 # line1
-g_1 = Const(5)
-b_1 = Const(-12)
-bsh_1 = Const(0.03)
+r_1, x_1, bsh_1 = 0.005,   0.05,   0.02187
 
 pi = Const(math.pi)
 
 # Generator 0
-fn_0 = Const(50.0)
-M_0 = Const(10.0)
-D_0 = Const(1.0)
-ra_0 = Const(0.3)
-xd_0 = Const(0.86138701)
-
-omega_ref_0 = Const(1.0)
-Kp_0 = Const(0.0)
-Ki_0 = Const(0.0)
+fn_0 = 60.0
+M_0 = 4.0
+D_0 = 1.0
+ra_0 = 0.0
+xd_0 = 0.3
+omega_ref_0 = 1.0
+Kp_0 = 0.0
+Kp_0 = 0.0
+Ki_0 = 0.0
 
 # Generator 1
-fn_1 = Const(50.0)
-M_1 = Const(10.0)
-D_1 = Const(1.0)
-ra_1 = Const(0.3)
-xd_1 = Const(0.86138701)
+fn_1 = 60.0
+M_1 = 4.0
+D_1 = 1.0
+ra_1 = 0.0
+xd_1 = 0.3
+omega_ref_1 = 1.0
+Kp_1 = 0.0
+Kp_1 = 0.0
+Ki_1 = 0.0
 
-omega_ref_1 = Const(1.0)
-Kp_1 = Const(0.0)
-Ki_1 = Const(0.0)
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Power flow
+# Build the system
 # ----------------------------------------------------------------------------------------------------------------------
-# Build the system to compute the powerflow
-grid = gce.MultiCircuit(Sbase=100, fbase=50.0)
+
+grid = gce.MultiCircuit(Sbase=100, fbase=60.0)
 
 # Buses
-bus0 = gce.Bus(name="Bus0", Vnom=10, is_slack=True)
-bus2 = gce.Bus(name="Bus2", Vnom=10)
-bus1 = gce.Bus(name="Bus1", Vnom=10)
+bus0 = gce.Bus(name="Bus0", Vnom=20, is_slack=True)
+bus2 = gce.Bus(name="Bus2", Vnom=20)
+bus1 = gce.Bus(name="Bus1", Vnom=20)
 grid.add_bus(bus0)
-grid.add_bus(bus2)
 grid.add_bus(bus1)
+grid.add_bus(bus2)
 
-# Line
-line0 = grid.add_line(
-    gce.Line(name="line 0-2", bus_from=bus0, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03,
-             rate=900.0))
-line1 = grid.add_line(
-    gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2, r=0.029585798816568046, x=0.07100591715976332, b=0.03,
-             rate=900.0))
+# Lines
+line0 = gce.Line(name="line 0-2", bus_from=bus0, bus_to=bus2, r=0.005, x=0.05, b=0.02187, rate=900.0)
+line1 = gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2, r=0.005, x=0.05, b=0.02187, rate=900.0)
+grid.add_line(line0)
+grid.add_line(line1)
 
 # load
-load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P=10, Q=10))
+load0 = gce.Load(P= 7.5, Q= 1.0, Pl0= -0.075000000001172, Ql0= -0.009999999862208533)
+# load0 = gce.Load(P= -0.075000000001172, Q= -0.009999999862208533)
+grid.add_load(bus=bus2, api_obj=load0)
 
 # Generators
-gen0 = gce.Generator(name="Gen0", P=10, vset=1.0, Snom=900,
-                     x1=0.86138701, r1=0.3, freq=50.0,
-                     # m_torque0=0.1,
-                     M=10.0,
-                     D=1.0,
-                     omega_ref=1.0,
-                     Kp=1.0,
-                     Ki=10.0,
-                     # Kw=10.0
+gen0 = gce.Generator(name="Gen0", P=4, vset=1.0, Snom=900,
+                     x1=xd_0, r1=ra_0, freq=fn_0,
+                     vf=0.9949586567266662,
+                     tm0=0.04001447535676884,
+                     M=M_0,
+                     D=D_0,
+                     omega_ref=omega_ref_0,
+                     Kp=Kp_0,
+                     Ki=Ki_0,
                      )
 
-gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom=900,
-                     x1=0.86138701, r1=0.3, freq=50.0,
-                     # m_torque0=0.1,
-                     M=10.0,
-                     D=1.0,
-                     omega_ref=1.0,
-                     Kp=1.0,
-                     Ki=10.0,
-                     # Kw=10.0
+gen1 = gce.Generator(name="Gen1", P=3.5, vset=1.0, Snom=900,
+                     x1=xd_1, r1=ra_1, freq=fn_1,
+                     vf=0.9950891766401684,
+                     tm0=0.035000000019606944,
+                     M=M_1,
+                     D=D_1,
+                     omega_ref=omega_ref_1,
+                     Kp=Kp_1,
+                     Ki=Ki_1,
                      )
 grid.add_generator(bus=bus0, api_obj=gen0)
 grid.add_generator(bus=bus1, api_obj=gen1)
@@ -134,16 +134,19 @@ options = gce.PowerFlowOptions(
 )
 res = gce.power_flow(grid, options=options)
 
+# print power flow results
+
 print(f"Converged: {res.converged}")
 print(res.get_bus_df())
-
-bus_df = res.get_bus_df()
-value = bus_df.loc['Bus1', 'Va']
-print(value)
-
 print(res.get_branch_df())
 
 logger = gce.Logger()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Build init guess and solver
+# ----------------------------------------------------------------------------------------------------------------------
+
 sys_block, init_guess = gce.initialize_rms(grid, res)
 print(init_guess)
 

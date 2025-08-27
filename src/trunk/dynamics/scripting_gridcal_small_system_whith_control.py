@@ -27,6 +27,8 @@ import GridCalEngine.api as gce
 # ----------------------------------------------------------------------------------------------------------------------
 pi = Const(math.pi)
 
+# for the lines
+
 r_0, x_0, bsh_0 = 0.005,   0.05,   0.02187
 r_1, x_1, bsh_1 = 0.005,   0.05,   0.02187
 
@@ -38,12 +40,12 @@ def compute_gb(r, x):
 g_0, b_0 = compute_gb(r_0, x_0)
 g_1, b_1 = compute_gb(r_1, x_1)
 
-# Line 1
+# Line 0
 g_0 = Const(g_0)
 b_0 = Const(b_0)
 bsh_0 = Const(bsh_0)
 
-# Line 2
+# Line 1
 g_1 = Const(g_1)
 b_1 = Const(b_1)
 bsh_1 = Const(bsh_1)
@@ -71,7 +73,7 @@ Kp_1 = Const(0.0)
 Ki_1 = Const(0.0)
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Power flow
+# Build system
 # ----------------------------------------------------------------------------------------------------------------------
 
 # Build the system to compute the powerflow
@@ -85,7 +87,7 @@ grid.add_bus(bus0)
 grid.add_bus(bus1)
 grid.add_bus(bus2)
 
-# Line
+# Lines
 line0 = gce.Line(name="line 0-2", bus_from=bus0, bus_to=bus2, r=0.005, x=0.05, b=0.02187, rate=900.0)
 line1 = gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2, r=0.005, x=0.05, b=0.02187, rate=900.0)
 grid.add_line(line0)
@@ -97,19 +99,44 @@ grid.add_load(bus=bus2, api_obj=load0)
 
 # Generators
 gen0 = gce.Generator(name="Gen0", P=4.0, vset=1.0, Snom = 900)
-gen1 = gce.Generator(name="Gen1", P=3.5, vset=1.0, Snom = 900)
+gen1 = gce.Generator(name="Gen2", P=3.5, vset=1.0, Snom = 900)
 grid.add_generator(bus=bus0, api_obj=gen0)
 grid.add_generator(bus=bus1, api_obj=gen1)
 
 # Run PF
-res = gce.power_flow(grid)
+options = gce.PowerFlowOptions(
+    solver_type=gce.SolverType.NR,
+    retry_with_other_methods=False,
+    verbose=0,
+    initialize_with_existing_solution=True,
+    tolerance=1e-6,
+    max_iter=25,
+    control_q=False,
+    control_taps_modules=True,
+    control_taps_phase=True,
+    control_remote_voltage=True,
+    orthogonalize_controls=True,
+    apply_temperature_correction=True,
+    branch_impedance_tolerance_mode=gce.BranchImpedanceMode.Specified,
+    distributed_slack=False,
+    ignore_single_node_islands=False,
+    trust_radius=1.0,
+    backtracking_parameter=0.05,
+    use_stored_guess=False,
+    initialize_angles=False,
+    generate_report=False,
+    three_phase_unbalanced=False
+)
+res = gce.power_flow(grid, options=options)
+
+# print power flow results
 
 print(f"Converged: {res.converged}")
 print(res.get_bus_df())
 print(res.get_branch_df())
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Intialization
+# Build init guess and solver
 # ----------------------------------------------------------------------------------------------------------------------
 # Voltages
 v0 = res.voltage[0]
@@ -158,6 +185,12 @@ te0_0 = psid0_0 * i_q0_0 - psiq0_0 * i_d0_0
 tm0_0 = Const(te0_0)
 vf_0 = Const(vf0_0)
 
+print("tm0")
+print(tm0_0)
+
+print("vf_0")
+print(vf_0)
+
 # Generator 1
 # Delta angle
 delta0_1 = np.angle(v1 + (ra_1.value + 1j * xd_1.value) * i1)
@@ -176,6 +209,12 @@ te0_1 = psid0_1 * i_q0_1 - psiq0_1 * i_d0_1
 
 tm0_1 = Const(te0_1)
 vf_1 = Const(vf0_1)
+
+print("tm1")
+print(tm0_1)
+
+print("vf_1")
+print(vf_1)
 
 # -----------------------------------------------------
 # Variables
@@ -351,7 +390,7 @@ generator1_block = Block(
         t_e_1 - (psid_1 * i_q_1 - psiq_1 * i_d_1),
         P_g_1 - (v_d_1 * i_d_1 + v_q_1 * i_q_1),
         Q_g_1 - (v_q_1 * i_d_1 - v_d_1 * i_q_1),
-        (tm_1 - tm0_1) + (Kp_1 * (omega_1 - omega_ref_1) + Ki_1 * et_1),
+        tm_1 - (tm0_1 + Kp_1 * (omega_1 - omega_ref_1) + Ki_1 * et_1),
     ],
     algebraic_vars=[psid_1, psiq_1, i_d_1, i_q_1, v_d_1, v_q_1, t_e_1, P_g_1, Q_g_1, tm_1],
     parameters=[]
@@ -360,9 +399,15 @@ generator1_block = Block(
 # -------------------------------------------------------------
 # Load
 # -------------------------------------------------------------
-Pl0 = Var("Pl0")
-# Pl0 = Const(Sb2.real)
+# Pl0 = Var("Pl0")
+Pl0 = Const(Sb2.real)
 Ql0 = Const(Sb2.imag)
+
+print("Pl0")
+print(Pl0)
+
+print("Ql0")
+print(Ql0)
 
 load = Block(
     algebraic_eqs=[
@@ -370,7 +415,7 @@ load = Block(
         Ql - Ql0
     ],
     algebraic_vars=[Ql, Pl],
-    parameters=[Pl0] #Pl0
+    parameters=[] #Pl0
 )
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -381,15 +426,7 @@ sys = Block(
     in_vars=[]
 )
 
-# ----------------------------------------------------------------------------------------------------------------------
-# Solver
-# ----------------------------------------------------------------------------------------------------------------------
-slv = BlockSolver(sys)
 
-params_mapping = {
-    Pl0: Sb2.real,
-    # Ql0: 0.1
-}
 
 vars_mapping = {
     dline_from_0: np.angle(v0),
@@ -447,6 +484,20 @@ vars_mapping = {
 
 }
 
+init_guess = vars_mapping
+print(init_guess)
+# ----------------------------------------------------------------------------------------------------------------------
+# Solver
+# ----------------------------------------------------------------------------------------------------------------------
+slv = BlockSolver(sys)
+
+
+
+params_mapping = {
+    #Pl0: Sb2.real,
+    # Ql0: 0.1
+}
+
 # Check residuals
 residuals = {
     "GEN 0 f1_0: (2 * pi * fn_0) * (omega_0 - omega_ref_0)": (2 * pi.value * fn_0.value) * (1.0 - omega_ref_0.value),
@@ -489,7 +540,7 @@ print(vars_mapping)
 # Events
 # ---------------------------------------------------------------------------------------
 event1 = RmsEvent('Load', Pl0, 2500, -5.0 / grid.Sbase)
-my_events = RmsEvents([event1])
+my_events = RmsEvents([])
 
 params0 = slv.build_init_params_vector(params_mapping)
 x0 = slv.build_init_vars_vector(vars_mapping)

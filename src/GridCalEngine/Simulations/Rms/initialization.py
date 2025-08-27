@@ -70,6 +70,8 @@ def compose_system_block(grid: MultiCircuit,
 
     # buses
     for i, elm in enumerate(grid.buses):
+
+        # get model and model vars
         mdl = elm.rms_model.model
         mdl_vars = mdl.state_vars + mdl.algebraic_vars
 
@@ -168,8 +170,7 @@ def compose_system_block(grid: MultiCircuit,
                 x[uid2idx_vars[uid]] = init_guess[key]
 
         # compute and assign missing init_vars
-        # TODO: check the result init_val. For the generator didn't wokr properly and I couldn't find out if
-        # it was a problem of the id system, the way we handle complex system or other
+
         for var in mdl.init_vars:
             key = (var.uid, var.name)
             if key in init_guess:
@@ -180,8 +181,23 @@ def compose_system_block(grid: MultiCircuit,
                 init_val = float(eq_fn(x))
                 init_guess[key] = init_val
                 x[uid2idx_vars[var.uid]] = init_val
+        # for param in elm.init_params:
+        #     prm, val = param
+        #     eq = mdl.init_params_eq[param]
+        #     eq_fn = _compile_equation([eq], uid2sym_vars)
+        #     init_val = float(eq_fn(x))
+        #     mdl.param = init_val
+        #
 
         sys_block.children.append(mdl)
+
+    # del buses P, Q
+    for i, elm in enumerate(grid.buses):
+            mdl = elm.rms_model.model
+            del init_guess[(mdl.external_mapping[DynamicVarType.P].uid,
+                        mdl.external_mapping[DynamicVarType.P].name)]
+            del init_guess[(mdl.external_mapping[DynamicVarType.Q].uid,
+                        mdl.external_mapping[DynamicVarType.Q].name)]
 
     return sys_block, init_guess
 

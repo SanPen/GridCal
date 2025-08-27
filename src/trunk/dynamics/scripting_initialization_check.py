@@ -23,7 +23,7 @@ import GridCalEngine.api as gce
 # ----------------------------------------------------------------------------------------------------------------------
 pi = Const(math.pi)
 fn = Const(50)
-M = Const(1.0)
+M = Const(10.0)
 D = Const(1.0)
 ra = Const(0.3)
 xd = Const(0.86138701)
@@ -33,7 +33,6 @@ tm0 = Const(0.0)
 omega_ref = Const(1)
 Kp = Const(1.0)
 Ki = Const(10.0)
-Kw = Const(10.0)
 
 g = Const(5)
 b = Const(-12)
@@ -58,20 +57,18 @@ line0 = grid.add_line(gce.Line(name="line 1-2", bus_from=bus1, bus_to=bus2, r=0.
 
 
 # load
-load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P= 10, Q= 10))
+load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P= -10, Q= -10))
 
 # Generators
 gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom=900,
                      x1=0.86138701, r1=0.3, freq=50.0,
-                     # m_torque0=0.10508619605291579,
                      vf=1.093704253855166,
                      tm0=0.10508619605291579,
                      M=10.0,
                      D=1.0,
                      omega_ref=1.0,
                      Kp=1.0,
-                     Ki=10.0,
-                     # Kw=10.0
+                     Ki=10.0
                      )
 
 grid.add_generator(bus=bus1, api_obj=gen1)
@@ -213,7 +210,7 @@ et = Var("et")
 generator_block = Block(
     state_eqs=[
         (2 * pi * fn) * (omega - omega_ref),  # dδ/dt
-        (tm0  - t_e - D * (omega - omega_ref)) / M,  # dω/dt
+        (tm  - t_e - D * (omega - omega_ref)) / M,  # dω/dt
         (omega - omega_ref)
     ],
     state_vars=[delta, omega, et], # , et
@@ -295,7 +292,8 @@ vars_mapping = {
     t_e: te0,  # electromagnetic torque (pu)
     P_g: Sb1.real,
     Q_g: Sb1.imag,
-    # tm: te0
+    tm: te0,
+    et: 0.0
 }
 print(vars_mapping)
 # Consistency check 
@@ -330,10 +328,12 @@ for eq, val in residuals.items():
 
 event1 = RmsEvent('Load', Pl0, 2500, 0.15)
 #event2 = Event(Ql0, 5000, 0.3)
-my_events = RmsEvents([event1])
+my_events = RmsEvents([])
 
 params0 = slv.build_init_params_vector(params_mapping)
 x0 = slv.build_init_vars_vector(vars_mapping)
+print("x0")
+print(x0)
 
 
 
@@ -379,6 +379,11 @@ fig = plt.figure(figsize=(14, 10))
 
 #Generator state variables
 plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)", color='red')
+# plt.plot(t, y[:, slv.get_var_idx(dline_from)], label="dline_from (pu)", color='blue')
+# plt.plot(t, y[:, slv.get_var_idx(dline_to)], label="dline_to (pu)", color='green')
+# plt.plot(t, y[:, slv.get_var_idx(Vline_from)], label="Vline_from (pu)", color='black')
+# plt.plot(t, y[:, slv.get_var_idx(Vline_to)], label="Vline_topu)", color='orange')
+
 # plt.plot(t, y[:, slv.get_var_idx(t_e)], label="Te (pu)")
 #plt.plot(t, y[:, slv.get_var_idx(delta)], label="δ (rad)")
 #plt.plot(t, y[:, slv.get_var_idx(et)], label="et (pu)")
@@ -415,8 +420,8 @@ plt.legend(loc='upper right', ncol=2)
 plt.xlabel("Time (s)")
 plt.ylabel("Values (pu)")
 plt.title("Small System: Control Proof")
-plt.xlim(0, 10)
-plt.ylim(0.85, 1.15)
+# plt.xlim(0, 10)
+# plt.ylim(0.85, 1.15)
 plt.grid(True)
 plt.tight_layout()
 plt.show()

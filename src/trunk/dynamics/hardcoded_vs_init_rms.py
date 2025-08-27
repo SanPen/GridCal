@@ -50,7 +50,7 @@ def merge_simulation_results_by_time(csv1, csv2, output_csv= 'merged_data_hardco
 
     return merged_df
 
-comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_results_init_rms.csv')
+comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_results_automatic_init.csv')
 # andes is automatic
 # Load merged CSV
 i = 1
@@ -58,18 +58,12 @@ merged_df = comparison
 # merged_df['Pl_Gridcal'] = merged_df['Pl_Gridcal'] * (-100)
 
 variable_pairs = [
-     [f"Vline_to_G1_Gridcal", f"v_andes_Bus_1"],
-     [f"Vline_to_G2_Gridcal", f"v_andes_Bus_2"],
-     [f"Vline_to_G3_Gridcal", f"v_andes_Bus_3"],
-     [f"Vline_to_G4_Gridcal", f"v_andes_Bus_4"],
-     [f"dline_to_G1_Gridcal", f"a_andes_Bus_1"],
-     [f"dline_to_G2_Gridcal", f"a_andes_Bus_2"],
-     [f"dline_to_G3_Gridcal", f"a_andes_Bus_3"],
-     [f"dline_to_G4_Gridcal", f"a_andes_Bus_4"],
-     [f"omega_1_Gridcal", f"omega_andes_gen_1"],
-     [f"omega_2_Gridcal", f"omega_andes_gen_2"],
-     [f"omega_3_Gridcal", f"omega_andes_gen_3"],
-     [f"omega_4_Gridcal", f"omega_andes_gen_4"]
+     [f"omega_0_Gridcal", f"omega_Gridcal"],
+     [f"omega_1_Gridcal", f"omega_Gridcal.1"],
+     # [f"Vline_to_Gridcal", f"Vm_Gridcal.1"],
+     # [f"dline_to_Gridcal", f"Va_Gridcal.1"],
+     # [f"dline_from_Gridcal", f"Va_Gridcal"],
+     # [f"Vline_from_Gridcal", f"Vm_Gridcal"]
     ]
 
 

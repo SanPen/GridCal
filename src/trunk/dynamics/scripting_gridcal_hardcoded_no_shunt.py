@@ -10,6 +10,8 @@ from matplotlib import pyplot as plt
 
 import sys
 import os
+
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
@@ -22,7 +24,7 @@ import GridCalEngine.api as gce
 # Power flow
 # ----------------------------------------------------------------------------------------------------------------------
 # Load system
-grid = gce.open_file('Two_Areas_PSS_E/Benchmark_4ger_33_2015.raw')
+grid = gce.open_file('Two_Areas_PSS_E/Benchmark_4ger_33_2015_noshunt.raw')
 # Run power flow
 res = gce.power_flow(grid)
 # # Print results
@@ -573,13 +575,13 @@ Qload_7 = Var("Qload_7")
 Pload_9 = Var("Pload_9")
 Qload_9 = Var("Qload_9")
 
-# Shunt 7
-Pshunt_7 = Var("Pshunt_7")
-Qshunt_7 = Var("Qshunt_7")
-
-# Shunt 9
-Pshunt_9 = Var("Pshunt_9")
-Qshunt_9 = Var("Qshunt_9")
+# # Shunt 7
+# Pshunt_7 = Var("Pshunt_7")
+# Qshunt_7 = Var("Qshunt_7")
+#
+# # Shunt 9
+# Pshunt_9 = Var("Pshunt_9")
+# Qshunt_9 = Var("Qshunt_9")
 
 # -----------------------------------------------------
 # Buses
@@ -656,8 +658,8 @@ bus6_block = Block(
 
 bus7_block = Block(
     algebraic_eqs=[
-        - Pline_to_2 - Pline_to_3 - Pline_to_4 - Pline_from_5 - Pline_from_6 + Pload_7 + Pshunt_7, # 
-        - Qline_to_2 - Qline_to_3 - Qline_to_4 - Qline_from_5 - Qline_from_6 + Qload_7 + Qshunt_7, # 
+        - Pline_to_2 - Pline_to_3 - Pline_to_4 - Pline_from_5 - Pline_from_6 + Pload_7, #
+        - Qline_to_2 - Qline_to_3 - Qline_to_4 - Qline_from_5 - Qline_from_6 + Qload_7, #
         Vline_to_2 - Vline_from_5,
         Vline_to_2 - Vline_from_6,
         Vline_to_2 - Vline_to_3,
@@ -686,8 +688,8 @@ bus8_block = Block(
 
 bus9_block = Block(
     algebraic_eqs=[
-        - Pline_to_7 - Pline_to_8 - Pline_from_9 - Pline_from_10 - Pline_from_11 + Pload_9 + Pshunt_9, # 
-        - Qline_to_7 - Qline_to_8 - Qline_from_9 - Qline_from_10 - Qline_from_11 + Qload_9 + Qshunt_9, # 
+        - Pline_to_7 - Pline_to_8 - Pline_from_9 - Pline_from_10 - Pline_from_11 + Pload_9, #
+        - Qline_to_7 - Qline_to_8 - Qline_from_9 - Qline_from_10 - Qline_from_11 + Qload_9, #
         Vline_to_7 - Vline_from_9,
         Vline_to_7 - Vline_from_10,
         Vline_to_7 - Vline_from_11,
@@ -1121,32 +1123,32 @@ Qs0_7 = Const(np.abs(v7)**2 * b_s7.value)
 Ps0_9 = Const(np.abs(v9)**2 * g_s9.value)
 Qs0_9 = Const(np.abs(v9)**2 * b_s9.value)
 
-shunt_7 = Block(
-    algebraic_eqs=[
-        Pshunt_7 - g_s7 * Vline_to_2 ** 2,
-        Qshunt_7 - b_s7 * Vline_to_2 ** 2
-    ],
-    algebraic_vars=[Pshunt_7, Qshunt_7],
-    parameters=[]
-)
-
-shunt_9 = Block(
-    algebraic_eqs=[
-        Pshunt_9 - g_s9 * Vline_to_7 ** 2,
-        Qshunt_9 - b_s9 * Vline_to_7 ** 2
-    ],
-    algebraic_vars=[Pshunt_9, Qshunt_9],
-    parameters=[]
-)
+# shunt_7 = Block(
+#     algebraic_eqs=[
+#         Pshunt_7 - g_s7 * Vline_to_2 ** 2,
+#         Qshunt_7 - b_s7 * Vline_to_2 ** 2
+#     ],
+#     algebraic_vars=[Pshunt_7, Qshunt_7],
+#     parameters=[]
+# )
+#
+# shunt_9 = Block(
+#     algebraic_eqs=[
+#         Pshunt_9 - g_s9 * Vline_to_7 ** 2,
+#         Qshunt_9 - b_s9 * Vline_to_7 ** 2
+#     ],
+#     algebraic_vars=[Pshunt_9, Qshunt_9],
+#     parameters=[]
+# )
 
 # -----
 # Load
 # -----
-Pl0_7 = Var('Pl0_7')
-# Pl0_7 = Const(Sb7.real + Ps0_7.value)
-Ql0_7 = Const(Sb7.imag + Qs0_7.value) # 
-Pl0_9 = Const(Sb9.real + Ps0_9.value) # 
-Ql0_9 = Const(Sb9.imag + Qs0_9.value) # 
+# Pl0_7 = Var('Pl0_7')
+Pl0_7 = Const(Sb7.real)
+Ql0_7 = Const(Sb7.imag) #
+Pl0_9 = Const(Sb9.real) #
+Ql0_9 = Const(Sb9.imag) #
 
 load_7 = Block(
     algebraic_eqs=[
@@ -1172,7 +1174,7 @@ load_9 = Block(
 sys = Block(
     children=[line_0_block, line_1_block, line_2_block, line_3_block, line_4_block, line_5_block, line_6_block, line_7_block, line_8_block, line_9_block, line_10_block, line_11_block, line_12_block, line_13_block, 
               line_G1_block, line_G2_block, line_G3_block, line_G4_block, 
-              load_7, load_9, shunt_7, shunt_9,
+              load_7, load_9,
               generator_block_1, generator_block_2, generator_block_3, generator_block_4, 
               bus1_block, bus2_block, bus3_block, bus4_block, bus5_block, bus6_block, bus7_block, bus8_block, bus9_block, bus10_block, bus11_block], #
     in_vars=[]
@@ -1183,11 +1185,13 @@ sys = Block(
 # ----------------------------------------------------------------------------------------------------------------------
 slv = BlockSolver(sys)
 
-params_mapping = {
-    Pl0_7: Sb7.real + Ps0_7.value , #  
-    # u: 1.0
-    #Ql0: 0.1
-}
+# params_mapping = {
+#     Pl0_7: Sb7.real + Ps0_7.value , #
+#     # u: 1.0
+#     #Ql0: 0.1
+# }
+
+params_mapping = {}
 
 vars_mapping = {
 
@@ -1420,12 +1424,7 @@ vars_mapping = {
     Pload_7: Sb7.real + Ps0_7.value, # 
     Qload_7: Sb7.imag + Qs0_7.value, # 
     Pload_9: Sb9.real + Ps0_9.value, # 
-    Qload_9: Sb9.imag + Qs0_9.value, # 
-
-    Pshunt_7: Ps0_7.value,
-    Qshunt_7: Qs0_7.value,
-    Pshunt_9: Ps0_9.value, 
-    Qshunt_9: Qs0_9.value
+    Qload_9: Sb9.imag + Qs0_9.value, #
 }
 
 init_guess = vars_mapping
@@ -1436,7 +1435,7 @@ print(init_guess)
 # Events
 # ---------------------------------------------------------------------------------------
 event1 = RmsEvent('Load', Pl0_7, 2500, -9.0)
-my_events = RmsEvents([event1])
+my_events = RmsEvents([])
 
 params0 = slv.build_init_params_vector(params_mapping)
 x0 = slv.build_init_vars_vector(vars_mapping)
