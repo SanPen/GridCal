@@ -57,7 +57,8 @@ class Load(LoadParent):
         '_n_customers_prof',
 
         'Pl0',
-        'Ql0'
+        'Ql0',
+        'init_params'
     )
 
     def __init__(self, name='Load', idtag=None, code='',
@@ -66,6 +67,7 @@ class Load(LoadParent):
                  G1=0.0, G2=0.0, G3=0.0, B1=0.0, B2=0.0, B3=0.0,
                  Ir1=0.0, Ir2=0.0, Ir3=0.0, Ii1=0.0, Ii2=0.0, Ii3=0.0, Pl0=1.0, Ql0=1.0,
                  active=True, mttf=0.0, mttr=0.0, capex=0, opex=0,
+                 init_params: dict[str, float] = {},
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
         The load object implements the so-called ZIP model, in which the load can be
@@ -164,6 +166,8 @@ class Load(LoadParent):
 
         self.Pl0 = Pl0
         self.Ql0 = Ql0
+
+        self.init_params = init_params
 
         self.register(key='Ir', units='MW', tpe=float,
                       definition='Active power of the current component at V=1.0 p.u.', profile_name='Ir_prof')
@@ -567,6 +571,7 @@ class Load(LoadParent):
                 algebraic_vars=[Pl, Ql],
                 init_eqs={},
                 init_vars=[],
+                init_params_eq={},
                 parameters=[],
                 external_mapping={
                     DynamicVarType.P: Pl,

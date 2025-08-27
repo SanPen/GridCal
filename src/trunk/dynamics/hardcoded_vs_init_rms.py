@@ -50,7 +50,7 @@ def merge_simulation_results_by_time(csv1, csv2, output_csv= 'merged_data_hardco
 
     return merged_df
 
-comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_results_automatic_init.csv')
+comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_results_Ieee_automatic_init.csv')
 # andes is automatic
 # Load merged CSV
 i = 1
@@ -58,8 +58,10 @@ merged_df = comparison
 # merged_df['Pl_Gridcal'] = merged_df['Pl_Gridcal'] * (-100)
 
 variable_pairs = [
-     [f"omega_0_Gridcal", f"omega_Gridcal"],
-     [f"omega_1_Gridcal", f"omega_Gridcal.1"],
+     [f"omega_1_Gridcal", f"omega_Gridcal"],
+     [f"omega_2_Gridcal", f"omega_Gridcal.1"],
+     [f"omega_3_Gridcal", f"omega_Gridcal.2"],
+     [f"omega_4_Gridcal", f"omega_Gridcal.3"],
      # [f"Vline_to_Gridcal", f"Vm_Gridcal.1"],
      # [f"dline_to_Gridcal", f"Va_Gridcal.1"],
      # [f"dline_from_Gridcal", f"Va_Gridcal"],

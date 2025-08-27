@@ -467,6 +467,7 @@ class Func(Expr):
         "imag": np.imag,
         "conj": np.conj,
         "angle": np.angle,
+        "abs": np.abs,
 
         "stepwise": _stepwise,
         "heaviside": _heaviside
@@ -564,6 +565,7 @@ real = _make_unary("real")
 imag = _make_unary("imag")
 conj = _make_unary("conj")
 angle = _make_unary("angle")
+abs = _make_unary("abs")
 stepwise = _make_unary("stepwise")
 heaviside = _make_unary("heaviside")
 
@@ -832,6 +834,7 @@ __all__ = [
     "real",
     "imag",
     "conj",
+    "abs",
     "angle",
     "stepwise",
     "heaviside"

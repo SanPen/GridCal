@@ -15,7 +15,7 @@ from GridCalEngine.Devices.Parents.generator_parent import GeneratorParent
 from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Utils.Symbolic.block import Block, Var, Const, DynamicVarType
-from GridCalEngine.Utils.Symbolic.symbolic import cos, sin, real, imag, conj, angle, exp
+from GridCalEngine.Utils.Symbolic.symbolic import cos, sin, real, imag, conj, angle, exp, log, abs
 
 
 class Generator(GeneratorParent):
@@ -56,7 +56,8 @@ class Generator(GeneratorParent):
         'vf',
         'Kp',
         'Ki',
-        'Kw'
+        'Kw',
+        'init_params'
     )
 
     def __init__(self,
@@ -99,6 +100,7 @@ class Generator(GeneratorParent):
                  capex: float = 0,
                  opex: float = 0,
                  srap_enabled: bool = True,
+                 init_params: dict[str, float] = {"tm0": 0.0, "vf": 0.0},
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
         Generator.
@@ -152,6 +154,7 @@ class Generator(GeneratorParent):
                                  device_type=DeviceType.GeneratorDevice)
 
         # is the device active for active power dispatch?
+
         self.enabled_dispatch = bool(enabled_dispatch)
 
         # positive sequence resistance
@@ -238,6 +241,7 @@ class Generator(GeneratorParent):
         self.vf = vf
         self.Kp = Kp
         self.Ki = Ki
+        self.init_params = init_params
 
         self.register(key='is_controlled', units='', tpe=bool, definition='Is this generator voltage-controlled?')
 
@@ -526,8 +530,10 @@ class Generator(GeneratorParent):
                 ],
                 algebraic_vars=[P_g, Q_g, v_d, v_q, i_d, i_q, psid, psiq, te, tm],
                 init_eqs = {
+                    # E_ = Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va))))
 
-                    delta: angle(Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va))))),
+                    # delta: angle(Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va))))),
+                    delta: imag(log((Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va)))))/(abs(Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va)))))))),
                     omega: Const(self.omega_ref),
                     v_d: real((Vm * exp(1j * Va)) * exp(-1j * (delta - np.pi / 2))),
                     v_q: imag((Vm * exp(1j * Va)) * exp(-1j * (delta - np.pi / 2))),
@@ -537,15 +543,13 @@ class Generator(GeneratorParent):
                     psiq: -self.R1 * i_d - v_d,
                     te: psid * i_q - psiq * i_d,
                     tm: te,
-                    et: Const(0), 
-                    self.tm0 : tm,
-                    self.vf : psid + self.X1 * i_d
+                    et: Const(0),
                 },
                 init_vars = [delta, omega, et, v_d, v_q, i_d, i_q, psid, psiq, te, tm],
-                # init_params_eq = {
-                #     "tm0" : tm,
-                #     "vf" : psid + self.X1 * i_d
-                # },
+                init_params_eq = {
+                    "tm0" : tm,
+                    "vf" : psid + self.X1 * i_d
+                },
                 parameters=[],
 
                 external_mapping={

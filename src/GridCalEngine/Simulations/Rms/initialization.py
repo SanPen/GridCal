@@ -181,13 +181,12 @@ def compose_system_block(grid: MultiCircuit,
                 init_val = float(eq_fn(x))
                 init_guess[key] = init_val
                 x[uid2idx_vars[var.uid]] = init_val
-        # for param in elm.init_params:
-        #     prm, val = param
-        #     eq = mdl.init_params_eq[param]
-        #     eq_fn = _compile_equation([eq], uid2sym_vars)
-        #     init_val = float(eq_fn(x))
-        #     mdl.param = init_val
-        #
+        for param, value in elm.init_params.items():
+            eq = mdl.init_params_eq[param]
+            eq_fn = _compile_equation([eq], uid2sym_vars)
+            init_val = float(eq_fn(x))
+            elm.init_params[param] = init_val
+
 
         sys_block.children.append(mdl)
 
