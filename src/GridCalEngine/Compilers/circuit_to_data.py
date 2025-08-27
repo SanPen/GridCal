@@ -1911,7 +1911,7 @@ def get_vsc_data(
         data.original_idx[i] = i
 
         data.F[i] = f_dcp
-        data.F_dcn[i] = bus_dict[elm.bus_dc_n] if elm.bus_dc_n is not None else -1  # TODO SANPEN: Handle the -1 everywhere for this
+        data.F_dcn[i] = -1 if elm.bus_dc_n is None else bus_dict[elm.bus_dc_n]  # TODO SANPEN: Handle the -1 everywhere for this
         data.T[i] = t_ac
 
         if time_series:

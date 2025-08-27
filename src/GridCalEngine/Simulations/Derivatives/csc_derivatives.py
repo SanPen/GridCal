@@ -49,7 +49,7 @@ def dSbus_dV_numba_sparse_csc(Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, Vm: V
     for j in range(n):  # for each column ...
 
         # compute the unitary vector of the voltage
-        if Vm[j] != 0.0:  # TODO SANPEN: does this makes sense, in devel it is if Vm[j] > 0.0:
+        if Vm[j] != 0.0:  # this is because now we can have negative voltages at the negative DC poles
             E[j] /= Vm[j]
 
         for k in range(Yp[j], Yp[j + 1]):  # for each row ...

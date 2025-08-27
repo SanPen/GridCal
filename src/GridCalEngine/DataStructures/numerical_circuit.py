@@ -53,12 +53,10 @@ ALL_STRUCTS = Union[
 ]
 
 
-
-
 @nb.njit(cache=True)
 def build_q_limits(nbus: int, Sbase: float,
                    gen_idx, q_min_gen, q_max_gen, active_gen, controllable_gen,
-                   batt_idx, q_min_batt, q_max_batt, active_batt,controllable_batt,
+                   batt_idx, q_min_batt, q_max_batt, active_batt, controllable_batt,
                    sh_idx, q_min_sh, q_max_sh, active_sh, controllable_sh,
                    hvdc_f, hvdc_t, q_min_hvdc_f, q_max_hvdc_f, q_min_hvdc_t, q_max_hvdc_t, active_hvdc):
     """
@@ -171,6 +169,7 @@ def build_q_limits(nbus: int, Sbase: float,
             min_mask[t] += 1
 
     return Qmax_bus, Qmin_bus
+
 
 def check_arr(arr: Vec | IntVec | BoolVec | CxVec,
               arr_expected: Vec | IntVec | BoolVec | CxVec,
@@ -828,7 +827,8 @@ class NumericalCircuit:
             Ct=self.passive_branch_data.Ct.tocsc(),
         )
 
-    def get_linear_admittance_matrices(self, indices: SimulationIndices | None = None) -> ycalc.LinearAdmittanceMatrices:
+    def get_linear_admittance_matrices(self,
+                                       indices: SimulationIndices | None = None) -> ycalc.LinearAdmittanceMatrices:
         """
         Get the linear admittances
         :return:LinearAdmittanceMatrices
@@ -1325,18 +1325,21 @@ class NumericalCircuit:
         """
 
         if consider_hvdc_as_island_links:
+
+            # We want to consider HVDC lines as part of the graph for ACOPF simulations
             i, j, data, n_elm = tp.build_branches_C_coo_3(
                 bus_active=self.bus_data.active,
                 F1=self.passive_branch_data.F, T1=self.passive_branch_data.T, active1=self.passive_branch_data.active,
-                F2=self.vsc_data.F, T2=self.vsc_data.T, active2=self.vsc_data.active,
+                F2=self.vsc_data.F, T2=self.vsc_data.T, FN2=self.vsc_data.F_dcn, active2=self.vsc_data.active,
                 F3=self.hvdc_data.F, T3=self.hvdc_data.T, active3=self.hvdc_data.active,
             )
         else:
-            i, j, data, n_elm = tp.build_branches_C_coo_3(
+
+            # Case for most other simulations, where HvdcLine splits the islands
+            i, j, data, n_elm = tp.build_branches_C_coo_2(
                 bus_active=self.bus_data.active,
                 F1=self.passive_branch_data.F, T1=self.passive_branch_data.T, active1=self.passive_branch_data.active,
-                F2=self.vsc_data.F, T2=self.vsc_data.T, active2=self.vsc_data.active,
-                F3=self.vsc_data.F_dcn, T3=self.vsc_data.F, active3=self.vsc_data.active,
+                F2=self.vsc_data.F, T2=self.vsc_data.T, FN2=self.vsc_data.F_dcn, active2=self.vsc_data.active,
             )
 
         C = sp.coo_matrix((data, (i, j)), shape=(n_elm, self.bus_data.nbus), dtype=int)
