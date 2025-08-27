@@ -110,3 +110,6 @@ class PhysicalDevice(EditableDevice):
         :return:
         """
         return datetime.datetime.fromtimestamp(self._decommissioned_date)
+
+    def initialize_rms(self):
+        pass

@@ -14,6 +14,8 @@ from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapPhas
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType, reverse_transformer_short_circuit_study
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
+from GridCalEngine.Utils.Symbolic.block import Block, Var, Const, DynamicVarType
+from GridCalEngine.Utils.Symbolic.symbolic import cos, sin
 
 
 class Transformer2W(ControllableBranchParent):
@@ -565,7 +567,18 @@ class Transformer2W(ControllableBranchParent):
         :return: 3x3 matrices -> Yff, Yft, Ytf, Ytt
         """
 
-        phase_displacement = np.deg2rad(self.vector_group_number * 30.0)
+        conn_y_from = self.conn_f == WindingType.Star or self.conn_f == WindingType.GroundedStar
+        conn_y_to = self.conn_t == WindingType.Star or self.conn_t == WindingType.GroundedStar
+
+        # phase_displacement = np.deg2rad(self.vector_group_number * 30.0)
+        if self.conn_f == WindingType.Delta and conn_y_to: # Dy
+            phase_displacement = np.deg2rad(60.0)
+
+        elif conn_y_from and self.conn_t == WindingType.Delta: # Yd
+            phase_displacement = np.deg2rad(0.0)
+
+        else:
+            phase_displacement = 0.0
 
         ys = 1.0 / (self.R + 1j * self.X + 1e-20)
         ysh = self.G + 1j * self.B
@@ -574,9 +587,6 @@ class Transformer2W(ControllableBranchParent):
         yft = -ys / (self.tap_module * np.exp(-1.0j * (self.tap_phase + phase_displacement)) * vtap_f * vtap_t)
         ytf = -ys / (self.tap_module * np.exp(1.0j * (self.tap_phase + phase_displacement)) * vtap_t * vtap_f)
         ytt = (ys + ysh / 2) / (vtap_t * vtap_t)
-
-        conn_y_from = self.conn_f == WindingType.Star or self.conn_f == WindingType.GroundedStar
-        conn_y_to = self.conn_t == WindingType.Star or self.conn_t == WindingType.GroundedStar
 
         if conn_y_from and conn_y_to:  # Yy
             Yff = np.array([
@@ -644,7 +654,7 @@ class Transformer2W(ControllableBranchParent):
                 [0, 0, ytt]
             ])
 
-        elif self.conn_f == WindingType.Delta and conn_y_to:  # 'Dy':
+        elif self.conn_f == WindingType.Delta and conn_y_to:  # 'Dy'
             Yff = np.array([
                 [2 * yff / 3, -yff / 3, -yff / 3],
                 [-yff / 3, 2 * yff / 3, -yff / 3],
@@ -666,7 +676,7 @@ class Transformer2W(ControllableBranchParent):
                 [0, 0, ytt]
             ])
 
-        elif self.conn_f == WindingType.Delta and self.conn_t == WindingType.Delta:  # 'Dd':
+        elif self.conn_f == WindingType.Delta and self.conn_t == WindingType.Delta:  # 'Dd'
             Yff = np.array([
                 [2 * yff / 3, -yff / 3, -yff / 3],
                 [-yff / 3, 2 * yff / 3, -yff / 3],
@@ -782,3 +792,40 @@ class Transformer2W(ControllableBranchParent):
             return zeros, zeros, zeros, zeros
 
         return Yff, Yft, Ytf, Ytt
+    
+    def initialize_rms(self):
+        # NOTE: accurate model considering phase shift and tap change still need to be implemented!
+        if self.rms_model.empty():
+            Qf = Var("Qf")
+            Qt = Var("Qt")
+            Pf = Var("Pf")
+            Pt = Var("Pt")
+
+            ys = 1.0 / complex(self.R, self.X)
+            g = Const(ys.real)
+            b = Const(ys.imag)
+            bsh = Const(self.B)
+
+            Vmf = self.bus_from.rms_model.model.E(DynamicVarType.Vm)
+            Vaf = self.bus_from.rms_model.model.E(DynamicVarType.Va)
+            Vmt = self.bus_to.rms_model.model.E(DynamicVarType.Vm)
+            Vat = self.bus_to.rms_model.model.E(DynamicVarType.Va)
+
+            self.rms_model.model = Block(
+                algebraic_eqs=[
+                    Pf - ((Vmf ** 2 * g) - g * Vmf * Vmt * cos(Vaf - Vat) + b * Vmf * Vmt * cos(Vaf - Vat + np.pi / 2)),
+                    Qf - (Vmf ** 2 * (-bsh / 2 - b) - g * Vmf * Vmt * sin(Vaf - Vat) + b * Vmf * Vmt * sin(Vaf - Vat + np.pi / 2)),
+                    Pt - ((Vmt ** 2 * g) - g * Vmt * Vmf * cos(Vat - Vaf) + b * Vmt * Vmf * cos(Vat - Vaf + np.pi / 2)),
+                    Qt - (Vmt ** 2 * (-bsh / 2 - b) - g * Vmt * Vmf * sin(Vat - Vaf) + b * Vmt * Vmf * sin(Vat - Vaf + np.pi / 2)),
+                ],
+                algebraic_vars=[Pf, Pt, Qf, Qt],
+                init_eqs={},
+                init_vars=[],
+                parameters=[],
+                external_mapping={
+                    DynamicVarType.Pf: Pf,
+                    DynamicVarType.Pt: Pt,
+                    DynamicVarType.Qf: Qf,
+                    DynamicVarType.Qt: Qt,
+                }
+            )

@@ -8,13 +8,15 @@ from typing import Tuple, Union
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCalEngine.enumerations import BusMode, DeviceType, BusGraphicType
+from GridCalEngine.enumerations import BusMode, DeviceType, BusGraphicType, SubObjectType
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Aggregation import Area, Zone, Country
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.busbar import BusBar
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.Dynamic.dynamic_model_host import DynamicModelHost
+from GridCalEngine.Utils.Symbolic.block import Block, Var, DynamicVarType
 
 
 class Bus(PhysicalDevice):
@@ -56,7 +58,8 @@ class Bus(PhysicalDevice):
         'ph_n',
         'is_grounded',
         'graphic_type',
-        '_bus_bar'
+        '_bus_bar',
+        '_rms_model',
     )
 
     def __init__(self, name="Bus",
@@ -77,6 +80,7 @@ class Bus(PhysicalDevice):
                  is_slack=False,
                  is_dc=False,
                  is_internal=False,
+                 is_grounded=False,
                  area: Area = None,
                  zone: Zone = None,
                  substation: Substation = None,
@@ -111,6 +115,7 @@ class Bus(PhysicalDevice):
         :param is_dc: Is this bus a DC bus?
         :param is_internal: Is this bus an internal bus?
                             (i.e. the central bus on a 3W transformer, or the bus of a FluidNode)
+        :param is_grounded: Is this bus grounded, i.e., at V=0? Sometimes used for DC buses connected to a VSC
         :param area: Area object
         :param zone: Zone object
         :param substation: Substation object
@@ -205,6 +210,9 @@ class Bus(PhysicalDevice):
         # determined if this bus is an AC or DC bus
         self.is_dc = bool(is_dc)
 
+        # determine if the bus is solidly grounded
+        self.is_grounded = bool(is_grounded)
+
         # position and dimensions
         self.x = float(xpos)
         self.y = float(ypos)
@@ -218,6 +226,8 @@ class Bus(PhysicalDevice):
         self.ph_c: bool = True
         self.ph_n: bool = True
         self.is_grounded: bool = True
+
+        self._rms_model: DynamicModelHost = DynamicModelHost()
 
         self.register(key='active', units='', tpe=bool, definition='Is the bus active? used to disable the bus.',
                       profile_name='active_prof')
@@ -270,6 +280,17 @@ class Bus(PhysicalDevice):
         self.register(key='ph_c', units='', tpe=bool, definition='Has phase C?')
         self.register(key='ph_n', units='', tpe=bool, definition='Has phase N?')
         self.register(key='is_grounded', units='', tpe=bool, definition='Is this bus neutral grounded?.')
+        self.register(key='rms_model', units='', tpe=SubObjectType.DynamicModelHostType,
+                      definition='RMS dynamic model', display=False)
+
+    @property
+    def rms_model(self) -> DynamicModelHost:
+        return self._rms_model
+
+    @rms_model.setter
+    def rms_model(self, value: DynamicModelHost):
+        if isinstance(value, DynamicModelHost):
+            self._rms_model = value
 
     @property
     def active_prof(self) -> Profile:
@@ -471,3 +492,28 @@ class Bus(PhysicalDevice):
             self._bus_bar = val
         else:
             raise ValueError("The value must be a BusBar")
+
+    def initialize_rms(self):
+
+        if self.rms_model.empty():
+            Vm = Var("Vm")
+            Va = Var("Va")
+            P = Var("P")
+            Q = Var("Q")
+
+            self.rms_model.model = Block(
+                state_eqs=[],
+                state_vars=[],
+                algebraic_eqs=[
+                ],
+                algebraic_vars=[Vm, Va],
+
+                init_eqs={},
+                init_vars=[],
+                external_mapping={
+                    DynamicVarType.Vm: Vm,
+                    DynamicVarType.Va: Va,
+                    DynamicVarType.P: P,
+                    DynamicVarType.Q: Q
+                }
+            )

@@ -553,7 +553,7 @@ def solve_se_lm(nc: NumericalCircuit,
         from matplotlib import pyplot as plt
         plt.plot(error_list)
         plt.yscale('log')
-        plt.show()
+        # plt.show()
 
     return NumericStateEstimationResults(V=V,
                                          Scalc=Scalc,
@@ -788,7 +788,7 @@ def solve_se_nr(nc: NumericalCircuit,
         from matplotlib import pyplot as plt
         plt.plot(error_list)
         plt.yscale('log')
-        plt.show()
+        # plt.show()
 
     return NumericStateEstimationResults(V=V,
                                          Scalc=Scalc,
@@ -974,7 +974,7 @@ def solve_se_gauss_newton(nc: NumericalCircuit,
         from matplotlib import pyplot as plt
         plt.plot(error_list)
         plt.yscale('log')
-        plt.show()
+        # plt.show()
 
     return NumericStateEstimationResults(V=V,
                                          Scalc=Scalc,

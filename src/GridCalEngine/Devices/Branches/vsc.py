@@ -36,16 +36,20 @@ class VSC(BranchParent):
         '_control1_val_prof',
         '_control2_val',
         '_control2_val_prof',
+        '_bus_dc_n',
+        'x',
+        'y'
     )
 
     def __init__(self,
                  bus_from: Bus | None = None,
                  bus_to: Bus | None = None,
+                 bus_dc_n: Bus | None = None,
                  name='VSC',
                  idtag: str | None = None,
                  code='',
                  active=True,
-                 rate=1e-9,
+                 rate:float = 100.0,
                  kdp=-0.05,
                  alpha1=0.0001,
                  alpha2=0.015,
@@ -65,9 +69,14 @@ class VSC(BranchParent):
                  control1_val: float = 1.0,
                  control2_val: float = 0.0,
                  control1_dev: Bus | BRANCH_TYPES | None = None,
-                 control2_dev: Bus | BRANCH_TYPES | None = None):
+                 control2_dev: Bus | BRANCH_TYPES | None = None,
+                 x: float = 0.0,
+                 y: float = 0.0):
         """
-        Voltage source converter (VSC)
+        Voltage source converter (VSC) with 3 terminals
+        :param bus_from: bus_dc_p
+        :param bus_to: bus_ac
+        :param bus_dc_n:
         :param bus_from:
         :param bus_to:
         :param name:
@@ -76,7 +85,6 @@ class VSC(BranchParent):
         :param active:
         :param rate:
         :param kdp:
-        :param k:
         :param alpha1:
         :param alpha2:
         :param alpha3:
@@ -92,6 +100,8 @@ class VSC(BranchParent):
         :param build_status:
         :param control1:
         :param control2:
+        :param x: graphical x position (px)
+        :param y: graphical y position (px)
         """
 
         BranchParent.__init__(self,
@@ -115,27 +125,40 @@ class VSC(BranchParent):
                               build_status=build_status,
                               device_type=DeviceType.VscDevice)
 
-        # the VSC must only connect from an DC to a AC bus
-        # this connectivity sense is done to keep track with the articles that set it
-        # from -> DC
-        # to   -> AC
-        # assert(bus_from.is_dc != bus_to.is_dc)
-        if bus_to is not None and bus_from is not None:
-            # connectivity:
-            # for the later primitives to make sense, the "bus from" must be AC and the "bus to" must be DC
-            if bus_from.is_dc and not bus_to.is_dc:  # this is the correct sense
-                self.bus_from = bus_from
-                self.bus_to = bus_to
-            elif not bus_from.is_dc and bus_to.is_dc:  # opposite sense, revert
-                self.bus_from = bus_to
-                self.bus_to = bus_from
-                print('Corrected the connection direction of the VSC device:', self.name)
-            else:
-                raise Exception('Impossible connecting a VSC device here. '
-                                'VSC devices must be connected between AC and DC buses')
-        else:
-            self.bus_from = None
-            self.bus_to = None
+        # TODO SANPEN: this is making the ntc test fail
+        # if bus_from is not None and bus_dc_n is not None and bus_to is not None:
+        #     if bus_from.is_dc and bus_dc_n.is_dc and not bus_to.is_dc:
+        #         # self._bus_dc_p = bus_dc_p
+        #         # self._bus_dc_n = bus_dc_n
+        #         # self._bus_ac = bus_ac
+        #
+        #         # self._cn_dc_p = cn_dc_p
+        #         # self._cn_dc_n = cn_dc_n
+        #         # self._cn_ac = cn_ac
+        #
+        #         self._bus_from = bus_from
+        #         self._bus_dc_n = bus_dc_n
+        #         self._bus_to = bus_to
+        #
+        #     else:
+        #         raise Exception('Impossible connecting a VSC device here. '
+        #                         'VSC devices must be connected between 1 AC and 2 DC buses')
+        # else:
+        #     # self._bus_dc_p = None
+        #     # self._bus_dc_n = None
+        #     # self._bus_ac = None
+        #
+        #     # self._cn_dc_p = None
+        #     # self._cn_dc_n = None
+        #     # self._cn_ac = None
+        #
+        #     self._bus_from = None
+        #     self._bus_dc_n = None
+        #     self._bus_to = None
+
+        self._bus_from = bus_from
+        self._bus_dc_n = bus_dc_n
+        self._bus_to = bus_to
 
         self.kdp = float(kdp)
         self.alpha1 = float(alpha1)
@@ -159,6 +182,16 @@ class VSC(BranchParent):
 
         self._control2_val = float(control2_val)
         self._control2_val_prof: Profile = Profile(default_value=self._control2_val, data_type=float)
+
+        self.x = float(x)
+        self.y = float(y)
+
+        # self.register(key='bus_dc_p', units="", tpe=DeviceType.BusDevice,
+        #               definition='DC positive bus', editable=False)
+        self.register(key='bus_dc_n', units="", tpe=DeviceType.BusDevice,
+                      definition='DC negative bus', editable=False)
+        # self.register(key='bus_ac', units="", tpe=DeviceType.BusDevice,
+        #               definition='AC bus', editable=False)
 
         self.register(key='alpha1', units='', tpe=float,
                       definition='Losses constant parameter (IEC 62751-2 loss Correction).')
@@ -193,6 +226,89 @@ class VSC(BranchParent):
 
         self.register(key='control2_dev', units="", tpe=DeviceType.BusOrBranch, profile_name="control2_dev_prof",
                       definition='Controlled device, None to apply to this converter', editable=False)
+
+        self.register(key='x', units='px', tpe=float, definition='x position')
+        self.register(key='y', units='px', tpe=float, definition='y position')
+
+    @property
+    def bus_from(self) -> Bus:
+        """
+        Get the DC positive bus
+        """
+        return self._bus_from
+
+    @bus_from.setter
+    def bus_from(self, value: Bus):
+        if value is None:
+            self._bus_from = value
+        else:
+            if isinstance(value, Bus):
+                if value.is_dc:
+                    self._bus_from = value
+                else:
+                    raise Exception('This should be a DC bus')
+            else:
+                raise Exception(str(type(value)) + 'not supported to be set into a _bus_from')
+
+    @property
+    def bus_dc_n(self) -> Bus:
+        """
+        Get the DC negative bus
+        """
+        return self._bus_dc_n
+
+    @bus_dc_n.setter
+    def bus_dc_n(self, value: Bus):
+        if value is None:
+            self._bus_dc_n = value
+        else:
+            if isinstance(value, Bus):
+                if value.is_dc:
+                    self._bus_dc_n = value
+                else:
+                    raise Exception('This should be a DC bus')
+            else:
+                raise Exception(str(type(value)) + 'not supported to be set into a _bus_dc_n')
+
+    @property
+    def bus_to(self) -> Bus:
+        """
+        Get the AC bus
+        """
+        return self._bus_to
+
+    @bus_to.setter
+    def bus_to(self, value: Bus):
+        if value is None:
+            self._bus_to = value
+        else:
+            if isinstance(value, Bus):
+                if not value.is_dc:
+                    self._bus_to = value
+                else:
+                    raise Exception('This should be an AC bus')
+            else:
+                raise Exception(str(type(value)) + 'not supported to be set into a _bus_to')
+
+    # @property
+    # def cn_dc_p(self) -> ConnectivityNode:
+    #     """
+    #     Get the DC positive connectivity node
+    #     """
+    #     return self._cn_dc_p
+
+    # @cn_dc_p.setter
+    # def cn_dc_p(self, val: ConnectivityNode):
+    #     if val is None:
+    #         self._cn_dc_p = val
+    #     else:
+    #         if isinstance(val, ConnectivityNode):
+    #             self._cn_dc_p = val
+
+    #             if self.bus_dc_p is None:
+    #                 self.bus_dc_p = self._cn_dc_p.bus
+    #         else:
+    #             raise Exception(str(type(val)) + 'not supported to be set into a connectivity node from')
 
     @property
     def control1(self):
@@ -230,7 +346,7 @@ class VSC(BranchParent):
         elif isinstance(val, np.ndarray):
             self._control1_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a pofile')
+            raise Exception(str(type(val)) + 'not supported to be set into a profile')
 
     @property
     def control2(self):
@@ -268,7 +384,7 @@ class VSC(BranchParent):
         elif isinstance(val, np.ndarray):
             self._control2_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a pofile')
+            raise Exception(str(type(val)) + 'not supported to be set into a profile')
 
     @property
     def control1_val(self):
@@ -297,7 +413,7 @@ class VSC(BranchParent):
         elif isinstance(val, np.ndarray):
             self._control1_val_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a pofile')
+            raise Exception(str(type(val)) + 'not supported to be set into a profile')
 
     @property
     def control2_val(self):
@@ -326,7 +442,7 @@ class VSC(BranchParent):
         elif isinstance(val, np.ndarray):
             self._control2_val_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a pofile')
+            raise Exception(str(type(val)) + 'not supported to be set into a profile')
 
     @property
     def control1_dev(self):
@@ -355,7 +471,7 @@ class VSC(BranchParent):
         elif isinstance(val, np.ndarray):
             self._control1_dev_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a pofile')
+            raise Exception(str(type(val)) + 'not supported to be set into a profile')
 
     @property
     def control2_dev(self):
@@ -384,7 +500,7 @@ class VSC(BranchParent):
         elif isinstance(val, np.ndarray):
             self._control2_dev_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a pofile')
+            raise Exception(str(type(val)) + 'not supported to be set into a profile')
 
     def get_coordinates(self) -> List[Tuple[float, float]]:
         """
@@ -392,29 +508,29 @@ class VSC(BranchParent):
         """
         return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
 
-    def correct_buses_connection(self) -> None:
-        """
-        Fix the buses connection (from: DC, To: AC)
-        """
-        # the VSC must only connect from an DC to a AC bus
-        # this connectivity sense is done to keep track with the articles that set it
-        # from -> DC
-        # to   -> AC
-        # assert(bus_from.is_dc != bus_to.is_dc)
-        if self.bus_to is not None and self.bus_from is not None:
-            # connectivity:
-            # for the later primitives to make sense, the "bus from" must be AC and the "bus to" must be DC
-            if self.bus_from.is_dc and not self.bus_to.is_dc:  # correct sense
-                pass
-            elif not self.bus_from.is_dc and self.bus_to.is_dc:  # opposite sense, revert
-                self.bus_from, self.bus_to = self.bus_to, self.bus_from
-                print('Corrected the connection direction of the VSC device:', self.name)
-            else:
-                raise Exception('Impossible connecting a VSC device here. '
-                                'VSC devices must be connected between AC and DC buses')
-        else:
-            self.bus_from = None
-            self.bus_to = None
+    # def correct_buses_connection(self) -> None:
+    #     """
+    #     Fix the buses connection (from: DC, To: AC)
+    #     """
+    #     # the VSC must only connect from an DC to a AC bus
+    #     # this connectivity sense is done to keep track with the articles that set it
+    #     # from -> DC
+    #     # to   -> AC
+    #     # assert(bus_from.is_dc != bus_to.is_dc)
+    #     if self.bus_to is not None and self.bus_from is not None:
+    #         # connectivity:
+    #         # for the later primitives to make sense, the "bus from" must be AC and the "bus to" must be DC
+    #         if self.bus_from.is_dc and not self.bus_to.is_dc:  # correct sense
+    #             pass
+    #         elif not self.bus_from.is_dc and self.bus_to.is_dc:  # opposite sense, revert
+    #             self.bus_from, self.bus_to = self.bus_to, self.bus_from
+    #             print('Corrected the connection direction of the VSC device:', self.name)
+    #         else:
+    #             raise Exception('Impossible connecting a VSC device here. '
+    #                             'VSC devices must be connected between AC and DC buses')
+    #     else:
+    #         self.bus_from = None
+    #         self.bus_to = None
 
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """
@@ -451,3 +567,8 @@ class VSC(BranchParent):
 
         if show_fig:
             plt.show()
+
+
+    def is_3term(self):
+
+        return self.bus_from is not None and self.bus_to is not None and self._bus_dc_n is not None

@@ -88,7 +88,7 @@ class SimulationsMain(TimeEventsMain):
         self.lp_solvers_dict = OrderedDict()
         self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
         self.lp_solvers_dict[SolverType.NONLINEAR_OPF.value] = SolverType.NONLINEAR_OPF
-        self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
+        self.lp_solvers_dict[SolverType.GREEDY_DISPATCH_OPF.value] = SolverType.GREEDY_DISPATCH_OPF
         self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
         # ips solvers dictionary
@@ -299,7 +299,7 @@ class SimulationsMain(TimeEventsMain):
             self.lp_solvers_dict = OrderedDict()
             self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
             self.lp_solvers_dict[SolverType.NONLINEAR_OPF.value] = SolverType.NONLINEAR_OPF
-            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
+            self.lp_solvers_dict[SolverType.GREEDY_DISPATCH_OPF.value] = SolverType.GREEDY_DISPATCH_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
@@ -325,7 +325,7 @@ class SimulationsMain(TimeEventsMain):
             self.lp_solvers_dict = OrderedDict()
             self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
             self.lp_solvers_dict[SolverType.NONLINEAR_OPF.value] = SolverType.NONLINEAR_OPF
-            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
+            self.lp_solvers_dict[SolverType.GREEDY_DISPATCH_OPF.value] = SolverType.GREEDY_DISPATCH_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
@@ -352,7 +352,7 @@ class SimulationsMain(TimeEventsMain):
             self.lp_solvers_dict = OrderedDict()
             self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
             self.lp_solvers_dict[SolverType.NONLINEAR_OPF.value] = SolverType.NONLINEAR_OPF
-            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
+            self.lp_solvers_dict[SolverType.GREEDY_DISPATCH_OPF.value] = SolverType.GREEDY_DISPATCH_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
@@ -380,7 +380,7 @@ class SimulationsMain(TimeEventsMain):
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
             self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
-            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
+            self.lp_solvers_dict[SolverType.GREEDY_DISPATCH_OPF.value] = SolverType.GREEDY_DISPATCH_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
@@ -403,7 +403,7 @@ class SimulationsMain(TimeEventsMain):
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
             self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
-            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
+            self.lp_solvers_dict[SolverType.GREEDY_DISPATCH_OPF.value] = SolverType.GREEDY_DISPATCH_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
@@ -944,6 +944,18 @@ class SimulationsMain(TimeEventsMain):
 
         else:
             self.run_reliability()
+
+    def rms_dispatcher(self):
+        """
+        Dispatch the reliability action
+        :return:
+        """
+        if self.server_driver.is_running():
+            instruction = RemoteInstruction(operation=SimulationTypes.RmsDynamic_run)
+            self.run_remote(instruction=instruction)
+
+        else:
+            self.run_rms()
 
     def run_power_flow(self):
         """
@@ -2974,6 +2986,62 @@ class SimulationsMain(TimeEventsMain):
 
             # delete from the current simulations
             self.remove_simulation(SimulationTypes.Reliability_run)
+
+            if results is not None:
+                self.update_available_results()
+                self.colour_diagrams()
+        else:
+            pass
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()
+
+    def run_rms(self):
+        """
+        Run reliability study
+        :return:
+        """
+        if self.circuit.valid_for_simulation():
+
+            if self.circuit.get_time_number() > 0:
+
+                if not self.session.is_this_running(SimulationTypes.RmsDynamic_run):
+
+                    self.add_simulation(SimulationTypes.RmsDynamic_run)
+
+                    self.LOCK()
+
+                    # Compile the grid
+                    self.ui.progress_label.setText('Compiling the grid...')
+                    QtGui.QGuiApplication.processEvents()
+
+                    options = sim.RmsOptions()
+
+                    drv = sim.RmsSimulationDriver(grid=self.circuit, options=options)
+
+                    self.session.run(drv,
+                                     post_func=self.post_reliability,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
+
+                else:
+                    self.show_warning_toast('Another reliability study is running already...')
+            else:
+                self.show_warning_toast('Reliability studies need time data...')
+        else:
+            pass
+
+    def post_rms(self):
+        """
+
+        :return:
+        """
+        _, results = self.session.rms_dynamic_simulation
+
+        if results is not None:
+
+            # delete from the current simulations
+            self.remove_simulation(SimulationTypes.RmsDynamic_run)
 
             if results is not None:
                 self.update_available_results()

@@ -15,6 +15,7 @@ from GridCalEngine.Topology.topology import find_islands, build_branches_C_coo_3
 
 if TYPE_CHECKING:
     from GridCalEngine.Devices.multi_circuit import MultiCircuit
+    from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 
 
 def ptdf_reduction(grid: MultiCircuit,

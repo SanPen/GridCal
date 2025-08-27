@@ -14,7 +14,8 @@ from GridCal.Gui.gui_functions import get_list_model
 from GridCal.Session.session import SimulationSession
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Topology.grid_reduction import di_shi_reduction, ptdf_reduction
+from GridCalEngine.Topology.GridReduction.di_shi_grid_reduction import di_shi_reduction
+from GridCalEngine.Topology.GridReduction.ptdf_grid_reduction import ptdf_reduction
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import GridReductionMethod
 
@@ -41,7 +42,7 @@ class GridReduceDialogue(QtWidgets.QDialog):
         lmdl = get_list_model(list(selected_buses_set))
         self.ui.listView.setModel(lmdl)
 
-        methods = [GridReductionMethod.Ward, GridReductionMethod.WardLinear, GridReductionMethod.PTDF]
+        methods = [GridReductionMethod.DiShi, GridReductionMethod.PTDF]
         self.methods_dict = {m.value: m for m in methods}
         cmdl = get_list_model([m.value for m in methods])
         self.ui.methodComboBox.setModel(cmdl)
@@ -72,7 +73,7 @@ class GridReduceDialogue(QtWidgets.QDialog):
                 reduction_bus_indices = np.array([self._grid.buses.index(b) for b in self._selected_buses_set],
                                                  dtype=int)
 
-                if method == GridReductionMethod.Ward:
+                if method == GridReductionMethod.DiShi:
 
                     # get the previous power flow
                     _, pf_res = self._session.power_flow
@@ -81,21 +82,12 @@ class GridReduceDialogue(QtWidgets.QDialog):
                         warning_msg("Run a power flow first! or select another method", "Grid reduction")
                         return
 
-                    logger = di_shi_reduction(
+                    grid_reduced, logger = di_shi_reduction(
                         grid=self._grid,
                         reduction_bus_indices=reduction_bus_indices,
                         pf_res=pf_res,
                         add_power_loads=True,
                         use_linear=False
-                    )
-
-                elif method == GridReductionMethod.Ward:
-                    logger = di_shi_reduction(
-                        grid=self._grid,
-                        reduction_bus_indices=reduction_bus_indices,
-                        pf_res=None,
-                        add_power_loads=True,
-                        use_linear=True
                     )
 
                 elif method == GridReductionMethod.PTDF:

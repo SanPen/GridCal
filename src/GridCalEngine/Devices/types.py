@@ -11,6 +11,7 @@ from GridCalEngine.Devices.Injections import *
 from GridCalEngine.Devices.Substation import *
 from GridCalEngine.Devices.Fluid import *
 from GridCalEngine.Devices.measurement import *
+from GridCalEngine.Devices.Dynamic import *
 
 INJECTION_DEVICE_TYPES = Union[
     Generator,
@@ -109,7 +110,8 @@ ALL_DEV_TYPES = Union[
     RemedialActionGroup,
     Technology,
     UndergroundLineType,
-    SequenceLineType
+    SequenceLineType,
+    RmsModelTemplate
 ]
 
 CONNECTION_TYPE = Union[Bus, None]

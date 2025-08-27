@@ -132,7 +132,7 @@ def sort_by_crowding(fronts: List[List[int]], population: Mat) -> Tuple[Mat, Int
             sorting_indices.extend(sorted_front[:remaining_slots])
             break  # The new population is now full
 
-    return population[sorting_indices, :], sorting_indices
+    return population[sorting_indices, :], np.array(sorting_indices, dtype=int)
 
 
 def non_dominated_sorting(y_values: Mat, x_values: Mat) -> Tuple[Mat, Mat, IntVec]:
@@ -146,7 +146,7 @@ def non_dominated_sorting(y_values: Mat, x_values: Mat) -> Tuple[Mat, Mat, IntVe
     # obtain the sorting fronts
     fronts = get_non_dominated_fronts(y_values)
 
-    # use the fronts to sort using the crowded sortig algorithm
+    # use the fronts to sort using the crowded sorting algorithm
     # sorted_population, sorting_indices = sort_by_crowding(fronts=fronts, population=y_values)
     sorted_population, sorting_indices = sort_by_crowding(fronts=[fronts[0]], population=y_values)
 

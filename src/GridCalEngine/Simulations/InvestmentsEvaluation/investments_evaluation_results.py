@@ -402,6 +402,9 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             # Create subplots
             fig, ax = plt.subplots(1, 1, figsize=(16, 6), sharey=False)
 
+            # _x is (max_eval, n_investments)
+            # X is (pareto solutions, n_investments)
+
             X = self._x[self.sorting_indices, :].astype(int)
 
             max_years = np.max(X)
@@ -424,10 +427,10 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             fig.tight_layout()
             plt.show()
 
-            return ResultsTable(data=X,
-                                index=index[self.sorting_indices],
+            return ResultsTable(data=mat,
+                                index=self.x_names,
                                 idx_device_type=DeviceType.NoDevice,
-                                columns=self.f_names,
+                                columns=np.array([str(y) for y in range(max_years)]),
                                 cols_device_type=DeviceType.NoDevice.NoDevice,
                                 title=str(result_type.value),
                                 ylabel="",
