@@ -828,27 +828,6 @@ def get_shunt_data(
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")
 
-                if elm.is_controlled and elm.active_prof[t_idx]:
-
-                    if elm.control_bus_prof[t_idx] is not None:
-                        remote_control = True
-                        j = bus_dict[elm.control_bus_prof[t_idx]]
-                    else:
-                        remote_control = False
-                        j = -1
-
-                    data.controllable_bus_idx[ii] = j
-
-                    set_bus_control_voltage(i=i,
-                                            j=j,
-                                            remote_control=remote_control and control_remote_voltage,
-                                            bus_name=elm.bus.name,
-                                            bus_data=bus_data,
-                                            bus_voltage_used=bus_voltage_used,
-                                            candidate_Vm=elm.Vset_prof[t_idx],
-                                            use_stored_guess=use_stored_guess,
-                                            logger=logger)
-
             else:
                 data.Y[ii] += complex(elm.G, elm.B)
                 data.active[ii] = elm.active
@@ -873,25 +852,25 @@ def get_shunt_data(
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")
 
-                if elm.is_controlled and elm.active:
-                    if elm.control_bus is not None:
-                        remote_control = True
-                        j = bus_dict[elm.control_bus]
-                    else:
-                        remote_control = False
-                        j = -1
+            if elm.is_controlled and elm.active:
+                if elm.control_bus is not None:
+                    remote_control = True
+                    j = bus_dict[elm.control_bus]
+                else:
+                    remote_control = False
+                    j = -1
 
-                    data.controllable_bus_idx[ii] = j
+                data.controllable_bus_idx[ii] = j
 
-                    set_bus_control_voltage(i=i,
-                                            j=j,
-                                            remote_control=remote_control and control_remote_voltage,
-                                            bus_name=elm.bus.name,
-                                            bus_data=bus_data,
-                                            bus_voltage_used=bus_voltage_used,
-                                            candidate_Vm=elm.Vset,
-                                            use_stored_guess=use_stored_guess,
-                                            logger=logger)
+                set_bus_control_voltage(i=i,
+                                        j=j,
+                                        remote_control=remote_control and control_remote_voltage,
+                                        bus_name=elm.bus.name,
+                                        bus_data=bus_data,
+                                        bus_voltage_used=bus_voltage_used,
+                                        candidate_Vm=elm.Vset,
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
 
             if elm.use_kw:
                 # pass kW to MW

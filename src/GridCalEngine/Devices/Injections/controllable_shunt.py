@@ -131,7 +131,6 @@ class ControllableShunt(ShuntParent):
         self._step_prof = Profile(default_value=self._step, data_type=int)
 
         self.control_bus = control_bus
-        self._control_bus_prof = Profile(default_value=control_bus, data_type=DeviceType.BusDevice)
 
         # Voltage module set point (p.u.)
         self.Vset = float(vset)
@@ -140,6 +139,8 @@ class ControllableShunt(ShuntParent):
         self._Vset_prof = Profile(default_value=self.Vset, data_type=float)
 
         self.register(key='is_nonlinear', units='', tpe=bool, definition='Is non-linear?')
+
+        self.register(key='control_bus', units='', tpe=DeviceType.BusDevice, definition='Alternative control bus')
 
         self.register(key='g_steps', units='MW@v=1p.u.', tpe=SubObjectType.Array,
                       definition='Conductance steps', editable=False)
@@ -349,19 +350,3 @@ class ControllableShunt(ShuntParent):
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a step_prof')
 
-    @property
-    def control_bus_prof(self) -> Profile:
-        """
-        Control bus profile
-        :return: Profile
-        """
-        return self._control_bus_prof
-
-    @control_bus_prof.setter
-    def control_bus_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._control_bus_prof = val
-        elif isinstance(val, np.ndarray):
-            self._control_bus_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into control_bus_prof')
