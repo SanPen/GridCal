@@ -728,6 +728,7 @@ class SchematicWidget(BaseDiagramWidget):
                     self.add_api_vsc(elm=location.api_object,
                                      x=location.x,
                                      y=location.y,
+                                     r=location.r,
                                      logger=logger)
 
             elif category == DeviceType.UpfcDevice.value:
@@ -2038,12 +2039,14 @@ class SchematicWidget(BaseDiagramWidget):
                     elm: VSC,
                     x: float,
                     y: float,
+                    r: float = 0.0,
                     logger: Logger = Logger()) -> Union[VscGraphicItem, None]:
         """
         add API VSC to the Scene
         :param elm: VSC instance
         :param x: Optional x position (if None, uses elm.x)
         :param y: Optional y position (if None, uses elm.y)
+        :param r: Rotation in degrees
         :param logger: Logger
         :return: VscGraphicItem or None
         """
@@ -2113,13 +2116,16 @@ class SchematicWidget(BaseDiagramWidget):
                     # Add connection line to scene
                     self.add_to_scene(conn_line_dcn)
 
+                graphic_object.setRotation(r)
+                graphic_object.update_conn()
+
                 # Update diagram element
                 self.update_diagram_element(device=elm,
                                             x=x,
                                             y=y,
                                             w=graphic_object.w,
                                             h=graphic_object.h,
-                                            r=0,
+                                            r=r,
                                             draw_labels=graphic_object.draw_labels,
                                             graphic_object=graphic_object)
             else:

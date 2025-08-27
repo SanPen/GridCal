@@ -155,7 +155,8 @@ class BarTerminalItem(QGraphicsRectItem):
         :param rect:
         :return:
         """
-        self.process_callbacks(self.parent.pos() + self.pos())
+        # TODO: Take into account that the parent may be rotated, try to use Qt's translation formulas
+        self.process_callbacks(self.scenePos())
 
     def get_center_pos(self, value: QPointF):
         h2 = self.h / 2.0
@@ -231,7 +232,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
     def __init__(self,
                  name: str,
                  editor: SchematicWidget,
-                 parent: Union[Transformer3WGraphicItem],
+                 parent: Union[Transformer3WGraphicItem, VscGraphicItem3Term],
                  terminal_type: TerminalType = TerminalType.OTHER,
                  h=10.0,
                  w=10.0):
@@ -365,7 +366,8 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         :param rect:
         :return:
         """
-        self.process_callbacks(self.parent.pos() + self.pos())
+        # TODO: Take into account that the parent may be rotated, try to use Qt's translation formulas
+        self.process_callbacks(self.scenePos())
 
     def get_center_pos(self, value: QPointF):
         return value + self.center

@@ -78,11 +78,11 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
         # --- Create Terminals ---
         # Terminal positions (relative to the item's top-left corner 0,0)
         # AC terminal on the right middle
-        t_ac_pos = QPoint(self.w, self.h / 2)
+        t_ac_pos = QPointF(self.w, self.h / 2)
         # DC+ terminal on the left top
-        t_dc_p_pos = QPoint(0, self.h * 0.2)
+        t_dc_p_pos = QPointF(-10, self.h * 0.2)
         # DC- terminal on the left bottom
-        t_dc_n_pos = QPoint(0, self.h * 0.8)
+        t_dc_n_pos = QPointF(-10, self.h * 0.8)
 
         # self.terminals: List[RoundTerminalItem] = list()
         self.terminal_ac: RoundTerminalItem | None = None
@@ -101,16 +101,18 @@ class VscGraphicItem3Term(GenericDiagramWidget, QGraphicsRectItem):
         # DC+ Terminal (Index 1)
         self.terminal_dc_p = RoundTerminalItem("dc_p", parent=self, editor=self.editor, terminal_type=TerminalType.DC_P)
         self.terminal_dc_p.setPos(t_dc_p_pos)
-        self.terminal_dc_p.setRotation(180)  # Points left
+        self.terminal_dc_p.setRotation(0)  # Points left
         self.terminal_dc_p.setPen(QPen(self.color, self.pen_width, self.style))
 
         # DC- Terminal (Index 2)
         self.terminal_dc_n = RoundTerminalItem("dc_n", parent=self, editor=self.editor, terminal_type=TerminalType.DC_N)
         self.terminal_dc_n.setPos(t_dc_n_pos)
-        self.terminal_dc_n.setRotation(180)  # Points left
+        self.terminal_dc_n.setRotation(0)  # Points left
         self.terminal_dc_n.setPen(QPen(self.color, self.pen_width, self.style))
 
         self.set_terminal_tooltips()
+
+        # self.setRotation(180)
 
     @property
     def api_object(self) -> VSC:
