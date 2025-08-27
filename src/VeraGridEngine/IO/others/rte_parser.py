@@ -14,6 +14,7 @@ from VeraGridEngine.Devices import Bus, Generator, Load, Transformer2W, Line, Su
 import re
 import numpy as np
 
+
 def read_cgmes_files(cim_files: Union[List[str], str], logger: DataLogger) -> Dict[str, List[str]]:
     """
     Reads a list of .zip or xml into a dictionary of file name -> list of text lines
@@ -62,6 +63,7 @@ def read_cgmes_files(cim_files: Union[List[str], str], logger: DataLogger) -> Di
 
     return data
 
+
 def parse_xml_text(text_lines: List[str]) -> Dict:
     """
     Fill the XML into the objects
@@ -73,6 +75,7 @@ def parse_xml_text(text_lines: List[str]) -> Dict:
 
     root = ET.fromstring(xml_string)
     return parse_xml_to_dict(root)
+
 
 def find_id(child: ET.Element):
     """
@@ -100,6 +103,7 @@ def find_id(child: ET.Element):
 
     return obj_id.replace('_', '').replace('#', '')
 
+
 def find_class_name(child: ET.Element):
     """
     Try to find the CIM class name
@@ -116,6 +120,7 @@ def find_class_name(child: ET.Element):
 
     return class_name
 
+
 def fix_child_result_datatype(child_result: Dict):
     for key, val in child_result.items():
         if val == "true":
@@ -123,6 +128,7 @@ def fix_child_result_datatype(child_result: Dict):
         elif val == "false":
             child_result[key] = False
     return child_result
+
 
 def parse_xml_to_dict(xml_element: ET.Element):
     """
@@ -136,12 +142,16 @@ def parse_xml_to_dict(xml_element: ET.Element):
         obj_id = find_id(child)
         class_name = find_class_name(child)
 
-        generally_handled_classes_list = ['postes', 'donneesQuadripoles', 'listePays', 'donneesNoeuds', 'donneesGroupes', 'donneesConsos', 'donneesShunts', 'donneesLois', 'donneesRegleurs', 'donneesDephaseurs', 'donneesCsprs', 'donneesHvdcs', 'stationsLcc', 'stationsVsc', 'lccs', 'vscs' ]
-        classes_containing_variables_list = ['quadripole', 'noeud', 'groupe', 'conso', 'shunt', 'loi', 'regleur', 'dephaseur', 'cspr' , 'stationVsc', 'vsc']
+        generally_handled_classes_list = ['postes', 'donneesQuadripoles', 'listePays', 'donneesNoeuds',
+                                          'donneesGroupes', 'donneesConsos', 'donneesShunts', 'donneesLois',
+                                          'donneesRegleurs', 'donneesDephaseurs', 'donneesCsprs', 'donneesHvdcs',
+                                          'stationsLcc', 'stationsVsc', 'lccs', 'vscs']
+        classes_containing_variables_list = ['quadripole', 'noeud', 'groupe', 'conso', 'shunt', 'loi', 'regleur',
+                                             'dephaseur', 'cspr', 'stationVsc', 'vsc']
         standard_leaf_list = ['variables', 'compens', 'homliaison', 'diagramme', 'repriseQ', 'seuil', 'poste', 'pays']
         if len(child) > 0:
             if class_name == 'reseau':
-                grid_data= dict(child.attrib)
+                grid_data = dict(child.attrib)
                 grid_data.update(parse_xml_to_dict(child))
                 return grid_data
 
@@ -172,7 +182,7 @@ def parse_xml_to_dict(xml_element: ET.Element):
                 result[class_name][cote] = seuil_data
                 continue
 
-        else: # leaf nodes
+        else:  # leaf nodes
             if class_name == 'variables':
                 result.update(child.attrib)
                 continue
@@ -209,9 +219,7 @@ def parse_xml_to_dict(xml_element: ET.Element):
     return result
 
 
-
-
-def rte2gridcal(file_name: str, logger: Logger) -> (MultiCircuit, bool):
+def rte2veragrid(file_name: str, logger: Logger) -> (MultiCircuit, bool):
     """
     Read the RTE internal grid format
     :param file_name: xml file name
@@ -279,7 +287,8 @@ def rte2gridcal(file_name: str, logger: Logger) -> (MultiCircuit, bool):
                 circuit.add_substation(substation)
 
             if voltage_level_idx not in vl_dict_by_idx:
-                vl = VoltageLevel(name=voltage_level_name, substation=substation_dict[substation_name], Vnom=float(substation_data['unom']))
+                vl = VoltageLevel(name=voltage_level_name, substation=substation_dict[substation_name],
+                                  Vnom=float(substation_data['unom']))
                 vl_dict_by_idx[voltage_level_idx] = vl
                 circuit.add_voltage_level(vl)
 
@@ -303,7 +312,7 @@ def rte2gridcal(file_name: str, logger: Logger) -> (MultiCircuit, bool):
             bus_id_to = line_data['nex']
 
             if int(bus_id_from) < 0 or int(bus_id_to) < 0:
-                #the line is disconnected
+                # the line is disconnected
                 continue
 
             bus_f = bus_dict[bus_id_from]
@@ -313,8 +322,8 @@ def rte2gridcal(file_name: str, logger: Logger) -> (MultiCircuit, bool):
 
             is_trafo = True if bus_f.voltage_level.substation == bus_t.voltage_level.substation else False
 
-            r = float(line_data['resistance'])/z_base
-            x = float(line_data['reactance'])/z_base
+            r = float(line_data['resistance']) / z_base
+            x = float(line_data['reactance']) / z_base
             rating = line_data['imap']
 
             if is_trafo:
@@ -340,7 +349,7 @@ def rte2gridcal(file_name: str, logger: Logger) -> (MultiCircuit, bool):
                 continue
             bus = bus_dict[bus_idx]
             P = float(generator_data['pc'])
-            vset = float(generator_data['vc'])/bus.Vnom
+            vset = float(generator_data['vc']) / bus.Vnom
             Pmin = float(generator_data['pmin'])
             Pmax = float(generator_data['pmax'])
             Qmin = np.max([float(generator_data['qminPmax']), float(generator_data['qminPmin'])])
@@ -356,7 +365,6 @@ def rte2gridcal(file_name: str, logger: Logger) -> (MultiCircuit, bool):
 
             circuit.add_generator(bus, generator)
 
-
     if shunts is not None:
         for shunt_id, shunt_data in shunts.items():
             bus_idx = generator_data['noeud']
@@ -365,9 +373,8 @@ def rte2gridcal(file_name: str, logger: Logger) -> (MultiCircuit, bool):
             bus = bus_dict[bus_idx]
             B = float(shunt_data['valnom'])
             shunt = Shunt(name=shunt_data['nom'],
-                         B=B)
+                          B=B)
             circuit.add_shunt(bus, shunt)
-
 
     if loads is not None:
         for load_id, load_data in loads.items():
@@ -375,17 +382,15 @@ def rte2gridcal(file_name: str, logger: Logger) -> (MultiCircuit, bool):
             if bus_idx == '-1':
                 continue
             bus = bus_dict[bus_idx]
-            P_var = float(load_data['peAff'])/circuit.Sbase
-            Q_var = float(load_data['qeAff'])/circuit.Sbase
-            P_fixed = float(load_data['peFixe'])/circuit.Sbase
-            Q_fixed = float(load_data['qeFixe'])/circuit.Sbase
+            P_var = float(load_data['peAff']) / circuit.Sbase
+            Q_var = float(load_data['qeAff']) / circuit.Sbase
+            P_fixed = float(load_data['peFixe']) / circuit.Sbase
+            Q_fixed = float(load_data['qeFixe']) / circuit.Sbase
 
             load = Load(name=load_data['nom'],
                         P=P_var,
                         Q=Q_var)
             circuit.add_load(bus, load)
 
-
     # return the circuit
     return circuit, is_valid
-

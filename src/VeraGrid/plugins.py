@@ -111,7 +111,7 @@ class PluginInfo:
         self.code_file_path = ""
         self.icon_path = ""
         self.version = "0.0.0"
-        self.gridcal_version = "5.2.0"
+        self.veragrid_version = "5.4.0"
 
         self.main_fcn: PluginFunction = PluginFunction()
 
@@ -139,7 +139,7 @@ class PluginInfo:
         return {
             "name": self.name,
             "version": self.version,
-            "gridcal_version": self.gridcal_version,
+            "veragrid_version": self.veragrid_version,
             "path": self.code_file_path,
             "icon_path": self.icon_path,
             "main_fcn": self.main_fcn.to_dict(),
@@ -153,7 +153,7 @@ class PluginInfo:
         """
         self.name = data.get('name', '')
         self.version = data.get('version', '0.0.0')
-        self.gridcal_version = data.get('gridcal_version', '5.2.0')
+        self.veragrid_version = data.get('veragrid_version', '5.2.0')
         self.code_file_path = data.get('path', '')
         self.icon_path = data.get('icon_path', '')
 
@@ -190,7 +190,11 @@ class PluginInfo:
             print(f"Plugin {self.name}: Path {icon_path} not found :/")
 
     def is_greater(self, other: "PluginInfo") -> int:
+        """
 
+        :param other:
+        :return:
+        """
         v1_tuple = tuple(map(int, self.version.split(".")))
         v2_tuple = tuple(map(int, other.version.split(".")))
 
@@ -208,7 +212,7 @@ class PluginInfo:
         :return:
         """
         v1_tuple = tuple(map(int, __VeraGrid_VERSION__.split(".")))
-        v2_tuple = tuple(map(int, self.gridcal_version.split(".")))
+        v2_tuple = tuple(map(int, self.veragrid_version.split(".")))
 
         # Compare the tuples
         if v1_tuple < v2_tuple:
@@ -318,7 +322,7 @@ def pack_plugin(name: str,
                 icon_file: str,
                 version: str,
                 call_gui: bool,
-                gridcal_version: str = "5.2.10"):
+                veragrid_version: str = "5.2.10"):
     """
     Create plugin package
     :param name: Name of the plugin
@@ -328,7 +332,7 @@ def pack_plugin(name: str,
     :param icon_file: icon file (relative to pkg_folder)
     :param version: Version of the plugin
     :param call_gui: does the main function
-    :param gridcal_version: gridcal version of the plugin
+    :param veragrid_version: veragrid version of the plugin
     :return: final name of the plugin
     """
     plugin_data = {
@@ -337,7 +341,7 @@ def pack_plugin(name: str,
         "path": python_file,
         "icon_path": icon_file,
         "version": version,
-        "gridcal_version": gridcal_version,
+        "veragrid_version": veragrid_version,
         "main_fcn": {
             "name": main_name,
             "alias": name,

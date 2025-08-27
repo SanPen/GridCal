@@ -8,9 +8,9 @@ flow method. Trias originally developed a version with no voltage controlled nod
 (PV), in which the convergence properties are excellent (With this software try to
 solve any grid without PV nodes to check this affirmation). 
 
-The version programmed in GridCal has been adapted from the outstanding contribution
+The version programmed in VeraGrid has been adapted from the outstanding contribution
 by Josep Fanals Batllori. This version includes a formulation of the voltage controlled nodes
-that is competitive with the traditional methods. It is safe to say that now GridCal features
+that is competitive with the traditional methods. It is safe to say that now VeraGrid features
 the first source code holomorphic embedding open that works for real life grids.
 
 
@@ -404,7 +404,7 @@ our case the domain is :math:`\alpha=[0,1]`. The method requires the function to
 continuous and differentiable for :math:`\alpha=0`. Hence the Cauchy-Riemann condition.
 And yes, our function meets this condition, we tested it before.
 
-GridCal implements two algorithms that perform the Padè approximation; The Padè
+VeraGrid implements two algorithms that perform the Padè approximation; The Padè
 canonical algorithm, and Wynn's Padè approximation.
 
 **Padè approximation algorithm**
@@ -478,7 +478,7 @@ obtain the Padè approximation. This method is based on a table. Weniger in 1989
 publishes his thesis [5]_ where a faster version of Wynn's algorithm is provided in
 Fortran code.
 
-That very Fortran piece of code has been translated into Python and included in GridCal.
+That very Fortran piece of code has been translated into Python and included in VeraGrid.
 
 One of the advantages of this method over the canonical Padè approximation
 implementation is that it can be used for every iteration. In the beginning I thought

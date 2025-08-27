@@ -1,4 +1,4 @@
-GridCalEngine.IO.matpower package
+VeraGridEngine.IO.matpower package
 =================================
 
 Subpackages
@@ -7,87 +7,87 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.IO.matpower.legacy
+   VeraGridEngine.IO.matpower.legacy
 
 Submodules
 ----------
 
-GridCalEngine.IO.matpower.area module
+VeraGridEngine.IO.matpower.area module
 -------------------------------------
 
-.. automodule:: GridCalEngine.IO.matpower.area
+.. automodule:: VeraGridEngine.IO.matpower.area
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.matpower.branch module
+VeraGridEngine.IO.matpower.branch module
 ---------------------------------------
 
-.. automodule:: GridCalEngine.IO.matpower.branch
+.. automodule:: VeraGridEngine.IO.matpower.branch
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.matpower.branch\_dc module
+VeraGridEngine.IO.matpower.branch\_dc module
 -------------------------------------------
 
-.. automodule:: GridCalEngine.IO.matpower.branch_dc
+.. automodule:: VeraGridEngine.IO.matpower.branch_dc
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.matpower.bus module
+VeraGridEngine.IO.matpower.bus module
 ------------------------------------
 
-.. automodule:: GridCalEngine.IO.matpower.bus
+.. automodule:: VeraGridEngine.IO.matpower.bus
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.matpower.bus\_dc module
+VeraGridEngine.IO.matpower.bus\_dc module
 ----------------------------------------
 
-.. automodule:: GridCalEngine.IO.matpower.bus_dc
+.. automodule:: VeraGridEngine.IO.matpower.bus_dc
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.matpower.converter\_dc module
+VeraGridEngine.IO.matpower.converter\_dc module
 ----------------------------------------------
 
-.. automodule:: GridCalEngine.IO.matpower.converter_dc
+.. automodule:: VeraGridEngine.IO.matpower.converter_dc
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.matpower.generator module
+VeraGridEngine.IO.matpower.generator module
 ------------------------------------------
 
-.. automodule:: GridCalEngine.IO.matpower.generator
+.. automodule:: VeraGridEngine.IO.matpower.generator
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.matpower.matpower\_circuit module
+VeraGridEngine.IO.matpower.matpower\_circuit module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.matpower.matpower_circuit
+.. automodule:: VeraGridEngine.IO.matpower.matpower_circuit
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.matpower.matpower\_to\_gridcal module
+VeraGridEngine.IO.matpower.matpower\_to\_gridcal module
 ------------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.matpower.matpower_to_gridcal
+.. automodule:: VeraGridEngine.IO.matpower.matpower_to_gridcal
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.matpower.matpower\_utils module
+VeraGridEngine.IO.matpower.matpower\_utils module
 ------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.matpower.matpower_utils
+.. automodule:: VeraGridEngine.IO.matpower.matpower_utils
    :members:
    :show-inheritance:
    :undoc-members:
@@ -95,7 +95,7 @@ GridCalEngine.IO.matpower.matpower\_utils module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.IO.matpower
+.. automodule:: VeraGridEngine.IO.matpower
    :members:
    :show-inheritance:
    :undoc-members:

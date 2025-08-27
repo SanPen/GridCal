@@ -98,7 +98,7 @@ def case14_ctrlQ_shunts() -> NonlinearOPFResults:
     grid.add_controllable_shunt(bus=grid.buses[3], api_obj=csh)
     grid.generators[2].Snom = 25.0
 
-    file_path_csh = os.path.join('data', 'output', 'case14_csh.gridcal')
+    file_path_csh = os.path.join('data', 'output', 'case14_csh.veragrid')
     gce.save_file(grid, filename=file_path_csh)
 
     grid = gce.FileOpen(file_path_csh).open()

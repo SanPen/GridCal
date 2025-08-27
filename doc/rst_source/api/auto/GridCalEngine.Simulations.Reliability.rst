@@ -1,53 +1,53 @@
-GridCalEngine.Simulations.Reliability package
+VeraGridEngine.Simulations.Reliability package
 =============================================
 
 Submodules
 ----------
 
-GridCalEngine.Simulations.Reliability.blackout\_driver module
+VeraGridEngine.Simulations.Reliability.blackout\_driver module
 -------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.Reliability.blackout_driver
+.. automodule:: VeraGridEngine.Simulations.Reliability.blackout_driver
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.Reliability.reliability module
+VeraGridEngine.Simulations.Reliability.reliability module
 --------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.Reliability.reliability
+.. automodule:: VeraGridEngine.Simulations.Reliability.reliability
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.Reliability.reliability2 module
+VeraGridEngine.Simulations.Reliability.reliability2 module
 ---------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.Reliability.reliability2
+.. automodule:: VeraGridEngine.Simulations.Reliability.reliability2
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.Reliability.reliability\_driver module
+VeraGridEngine.Simulations.Reliability.reliability\_driver module
 ----------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.Reliability.reliability_driver
+.. automodule:: VeraGridEngine.Simulations.Reliability.reliability_driver
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.Reliability.reliability\_iterable module
+VeraGridEngine.Simulations.Reliability.reliability\_iterable module
 ------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.Reliability.reliability_iterable
+.. automodule:: VeraGridEngine.Simulations.Reliability.reliability_iterable
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.Reliability.reliability\_results module
+VeraGridEngine.Simulations.Reliability.reliability\_results module
 -----------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.Reliability.reliability_results
+.. automodule:: VeraGridEngine.Simulations.Reliability.reliability_results
    :members:
    :show-inheritance:
    :undoc-members:
@@ -55,7 +55,7 @@ GridCalEngine.Simulations.Reliability.reliability\_results module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Simulations.Reliability
+.. automodule:: VeraGridEngine.Simulations.Reliability
    :members:
    :show-inheritance:
    :undoc-members:

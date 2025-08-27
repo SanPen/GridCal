@@ -13,14 +13,14 @@ equipment failures and human error.
 
 ## Short-Circuit in the Phase Reference Frame
 
-In GridCal, modelling the network directly in the phase reference frame allows short-circuit faults of any type to be
+In VeraGrid, modelling the network directly in the phase reference frame allows short-circuit faults of any type to be
 simulated by adding a fault impedance at the desired bus. This avoids sequence transformations and provides voltage and
 current results directly in their real phase values, simplifying both setup and analysis.
 
 ### Linearisation
 
 The first step in performing the short-circuit calculation is to determine the state of the network prior to the fault.
-To achieve this, GridCal will perform the three-phase power flow calculation, which has been developed to determine
+To achieve this, VeraGrid will perform the three-phase power flow calculation, which has been developed to determine
 the voltage at each bus before the fault $\vec{U}_{pf}$. This initial step will also provide the other electrical
 magnitudes of the system, such as the admittance matrix of the branches $\vec{Y}_b$, the power $\vec{S}_0$,
 current $\vec{I}_0$, and admittance $\vec{Y}_0$ matrices of the loads or shunt elements, and the complex power vector
@@ -54,7 +54,7 @@ $$
 
 In the unbalanced three-phase power flow simulation, the generators had been modelled as simple power injections into
 the system, which was completely valid. However, this is not sufficient when performing the short-circuit analysis, as
-the impedance of the generator must also be taken into account. GridCal has been programmed to accept a $3 \times 3$
+the impedance of the generator must also be taken into account. VeraGrid has been programmed to accept a $3 \times 3$
 impedance matrix, which includes both the self and mutual impedances between the $abc$ phases. Furthermore, it is
 common to encounter generator impedances in the sequence domain. Therefore, Fortescue’s theorem must be applied to
 obtain the equivalent values for the three phases:
@@ -77,7 +77,7 @@ $$
 
 Finally, the only remaining admittance to be obtained is that of the fault itself. For instance, in the case of a
 phase-to-earth fault, this impedance must be connected between the affected phase and earth. This fault impedance
-$\vec{Z}_{f}$ shall be specified by the GridCal user on the bus on which the short-circuit is to be simulated, as well
+$\vec{Z}_{f}$ shall be specified by the VeraGrid user on the bus on which the short-circuit is to be simulated, as well
 as the short-circuit type and the affected phases. Again, this impedance will be inverted to obtain the fault admittance:
 
 $$
@@ -708,7 +708,7 @@ res_sc = sc_driver.results
 print(res_sc.get_voltage_3ph_df())
 ```
 
-The following figure shows the GridCal results for the voltage magnitude across the various system buses in the faulted
+The following figure shows the VeraGrid results for the voltage magnitude across the various system buses in the faulted
 phase a. As expected, there is a sharp voltage drop at the affected bus (634), as well as a significant reduction at
 the bus immediately upstream of the fault (633), which becomes more pronounced as the fault resistance decreases.
 
@@ -739,7 +739,7 @@ remaining buses in the network.
 
 ## Short-Circuit in the Sequence Components
 
-GridCal has also unbalanced short-circuit calculations in the sequence and rectangular components.
+VeraGrid has also unbalanced short-circuit calculations in the sequence and rectangular components.
 
 ### API
 
@@ -752,7 +752,7 @@ import os
 import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
+fname = os.path.join(folder, 'South Island of New Zealand.veragrid')
 
 grid = gce.open_file(filename=fname)
 
@@ -773,7 +773,7 @@ import os
 import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
+fname = os.path.join(folder, 'South Island of New Zealand.veragrid')
 
 grid = gce.open_file(filename=fname)
 

@@ -1,77 +1,77 @@
-GridCalEngine.Devices.Parents package
+VeraGridEngine.Devices.Parents package
 =====================================
 
 Submodules
 ----------
 
-GridCalEngine.Devices.Parents.branch\_parent module
+VeraGridEngine.Devices.Parents.branch\_parent module
 ---------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Parents.branch_parent
+.. automodule:: VeraGridEngine.Devices.Parents.branch_parent
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Parents.controllable\_branch\_parent module
+VeraGridEngine.Devices.Parents.controllable\_branch\_parent module
 -----------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Parents.controllable_branch_parent
+.. automodule:: VeraGridEngine.Devices.Parents.controllable_branch_parent
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Parents.editable\_device module
+VeraGridEngine.Devices.Parents.editable\_device module
 -----------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Parents.editable_device
+.. automodule:: VeraGridEngine.Devices.Parents.editable_device
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Parents.generator\_parent module
+VeraGridEngine.Devices.Parents.generator\_parent module
 ------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Parents.generator_parent
+.. automodule:: VeraGridEngine.Devices.Parents.generator_parent
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Parents.injection\_parent module
+VeraGridEngine.Devices.Parents.injection\_parent module
 ------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Parents.injection_parent
+.. automodule:: VeraGridEngine.Devices.Parents.injection_parent
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Parents.load\_parent module
+VeraGridEngine.Devices.Parents.load\_parent module
 -------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Parents.load_parent
+.. automodule:: VeraGridEngine.Devices.Parents.load_parent
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Parents.physical\_device module
+VeraGridEngine.Devices.Parents.physical\_device module
 -----------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Parents.physical_device
+.. automodule:: VeraGridEngine.Devices.Parents.physical_device
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Parents.pointer\_device\_parent module
+VeraGridEngine.Devices.Parents.pointer\_device\_parent module
 ------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Parents.pointer_device_parent
+.. automodule:: VeraGridEngine.Devices.Parents.pointer_device_parent
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Parents.shunt\_parent module
+VeraGridEngine.Devices.Parents.shunt\_parent module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Parents.shunt_parent
+.. automodule:: VeraGridEngine.Devices.Parents.shunt_parent
    :members:
    :show-inheritance:
    :undoc-members:
@@ -79,7 +79,7 @@ GridCalEngine.Devices.Parents.shunt\_parent module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Devices.Parents
+.. automodule:: VeraGridEngine.Devices.Parents
    :members:
    :show-inheritance:
    :undoc-members:

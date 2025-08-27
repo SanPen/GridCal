@@ -17,7 +17,7 @@ from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 
 from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
 
-from VeraGridEngine.IO.file_system import get_create_gridcal_folder
+from VeraGridEngine.IO.file_system import get_create_veragrid_folder
 from VeraGridEngine.basic_structures import ConvergenceReport
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -39,7 +39,7 @@ try:
     if not npa.isLicenseActivated():
 
         # search for the license
-        npa_license = os.path.join(get_create_gridcal_folder(), 'newton.lic')
+        npa_license = os.path.join(get_create_veragrid_folder(), 'newton.lic')
         if os.path.exists(npa_license):
 
             # license found
@@ -1598,26 +1598,26 @@ def translate_newton_pa_opf_results(grid: MultiCircuit, res: "npa.NonlinearOpfRe
     return results
 
 
-def translate_contingency_report(newton_report, gridcal_report):
+def translate_contingency_report(newton_report, veragrid_report):
     """
     Translate contingency report
     :param newton_report:
-    :param gridcal_report:
+    :param veragrid_report:
     :return:
     """
     for entry in newton_report.entries:
-        gridcal_report.add(time_index=entry.time_index,
-                           base_name=entry.base_name,
-                           base_uuid=entry.base_uuid,
-                           base_flow=np.abs(entry.base_flow),
-                           base_rating=entry.base_rating,
-                           base_loading=entry.base_loading,
-                           contingency_idx=entry.contingency_idx,
-                           contingency_name=entry.contingency_name,
-                           contingency_uuid=entry.contingency_uuid,
-                           post_contingency_flow=np.abs(entry.post_contingency_flow),
-                           contingency_rating=entry.contingency_rating,
-                           post_contingency_loading=entry.post_contingency_loading)
+        veragrid_report.add(time_index=entry.time_index,
+                            base_name=entry.base_name,
+                            base_uuid=entry.base_uuid,
+                            base_flow=np.abs(entry.base_flow),
+                            base_rating=entry.base_rating,
+                            base_loading=entry.base_loading,
+                            contingency_idx=entry.contingency_idx,
+                            contingency_name=entry.contingency_name,
+                            contingency_uuid=entry.contingency_uuid,
+                            post_contingency_flow=np.abs(entry.post_contingency_flow),
+                            contingency_rating=entry.contingency_rating,
+                            post_contingency_loading=entry.post_contingency_loading)
 
 
 def translate_newton_pa_contingencies(grid: MultiCircuit,
@@ -1654,7 +1654,7 @@ def translate_newton_pa_contingencies(grid: MultiCircuit,
     # results.Sf = con_res.contingency_flows[0]
     # results.loading = con_res.contingency_loading[0]
     translate_contingency_report(newton_report=con_res.report,
-                                 gridcal_report=results.report)
+                                 veragrid_report=results.report)
 
     return results
 

@@ -1,10 +1,10 @@
-GridCal.data package
+VeraGrid.data package
 ====================
 
 Module contents
 ---------------
 
-.. automodule:: GridCal.data
+.. automodule:: VeraGrid.data
    :members:
    :show-inheritance:
    :undoc-members:

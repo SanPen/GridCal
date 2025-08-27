@@ -189,7 +189,7 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         results.max_flows = np.abs(res.contingency_flows)
         results.max_loading = res.contingency_loading
 
-        translate_contingency_report(newton_report=res.report, gridcal_report=results.report)
+        translate_contingency_report(newton_report=res.report, veragrid_report=results.report)
 
         return results
 
@@ -221,7 +221,7 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         results.max_flows = res.max_values.Sf
         results.max_loading = res.max_values.loading
 
-        # translate_contingency_report(newton_report=res.report, gridcal_report=results.report)
+        # translate_contingency_report(newton_report=res.report, veragrid_report=results.report)
 
         return results
 

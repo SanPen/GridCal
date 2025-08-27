@@ -1,13 +1,13 @@
-GridCal.ThirdParty.qdarktheme.widget\_gallery package
+VeraGrid.ThirdParty.qdarktheme.widget\_gallery package
 =====================================================
 
 Submodules
 ----------
 
-GridCal.ThirdParty.qdarktheme.widget\_gallery.main\_window module
+VeraGrid.ThirdParty.qdarktheme.widget\_gallery.main\_window module
 -----------------------------------------------------------------
 
-.. automodule:: GridCal.ThirdParty.qdarktheme.widget_gallery.main_window
+.. automodule:: VeraGrid.ThirdParty.qdarktheme.widget_gallery.main_window
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ GridCal.ThirdParty.qdarktheme.widget\_gallery.main\_window module
 Module contents
 ---------------
 
-.. automodule:: GridCal.ThirdParty.qdarktheme.widget_gallery
+.. automodule:: VeraGrid.ThirdParty.qdarktheme.widget_gallery
    :members:
    :show-inheritance:
    :undoc-members:

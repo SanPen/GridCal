@@ -1,53 +1,53 @@
-GridCalEngine.Devices.Fluid package
+VeraGridEngine.Devices.Fluid package
 ===================================
 
 Submodules
 ----------
 
-GridCalEngine.Devices.Fluid.fluid\_injection\_template module
+VeraGridEngine.Devices.Fluid.fluid\_injection\_template module
 -------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Fluid.fluid_injection_template
+.. automodule:: VeraGridEngine.Devices.Fluid.fluid_injection_template
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Fluid.fluid\_node module
+VeraGridEngine.Devices.Fluid.fluid\_node module
 ----------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Fluid.fluid_node
+.. automodule:: VeraGridEngine.Devices.Fluid.fluid_node
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Fluid.fluid\_p2x module
+VeraGridEngine.Devices.Fluid.fluid\_p2x module
 ---------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Fluid.fluid_p2x
+.. automodule:: VeraGridEngine.Devices.Fluid.fluid_p2x
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Fluid.fluid\_path module
+VeraGridEngine.Devices.Fluid.fluid\_path module
 ----------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Fluid.fluid_path
+.. automodule:: VeraGridEngine.Devices.Fluid.fluid_path
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Fluid.fluid\_pump module
+VeraGridEngine.Devices.Fluid.fluid\_pump module
 ----------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Fluid.fluid_pump
+.. automodule:: VeraGridEngine.Devices.Fluid.fluid_pump
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Fluid.fluid\_turbine module
+VeraGridEngine.Devices.Fluid.fluid\_turbine module
 -------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Fluid.fluid_turbine
+.. automodule:: VeraGridEngine.Devices.Fluid.fluid_turbine
    :members:
    :show-inheritance:
    :undoc-members:
@@ -55,7 +55,7 @@ GridCalEngine.Devices.Fluid.fluid\_turbine module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Devices.Fluid
+.. automodule:: VeraGridEngine.Devices.Fluid
    :members:
    :show-inheritance:
    :undoc-members:

@@ -1,4 +1,4 @@
-GridCal.ThirdParty package
+VeraGrid.ThirdParty package
 ==========================
 
 Subpackages
@@ -7,13 +7,13 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCal.ThirdParty.darkdetect
-   GridCal.ThirdParty.qdarktheme
+   VeraGrid.ThirdParty.darkdetect
+   VeraGrid.ThirdParty.qdarktheme
 
 Module contents
 ---------------
 
-.. automodule:: GridCal.ThirdParty
+.. automodule:: VeraGrid.ThirdParty
    :members:
    :show-inheritance:
    :undoc-members:

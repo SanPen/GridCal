@@ -9,7 +9,7 @@ from VeraGridEngine.enumerations import SolverType, HvdcControlType
 from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
-from VeraGridEngine.IO.file_system import get_create_gridcal_folder
+from VeraGridEngine.IO.file_system import get_create_veragrid_folder
 from VeraGridEngine.basic_structures import ConvergenceReport
 
 
@@ -21,7 +21,7 @@ try:
 
     # activate
     if not btg.is_license_activated():
-        btg_license = os.path.join(get_create_gridcal_folder(), 'bentayga.lic')
+        btg_license = os.path.join(get_create_veragrid_folder(), 'bentayga.lic')
         if os.path.exists(btg_license):
 
             try:

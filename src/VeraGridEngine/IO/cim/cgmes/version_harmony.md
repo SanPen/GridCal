@@ -1,16 +1,16 @@
 ## Files affected by the modification.
 
 ### src\VeraGridEngine\IO\cim\cgmes
-- cgmes_to_gridcal.py
+- cgmes_to_veragrid.py
 - cgmes_circuit.py
 - cgmes_utils.py
 - cgmes_writer.py
-- gridcal_to_cgmes.py
+- veragrid_to_cgmes.py
 
 ### src\tests
-- test_cgmes_to_gridcal_ac_lines.py
-- test_cgmes_to_gridcal_ac_transformers.py
-- test_cgmes_to_gridcal_generators.py
+- test_cgmes_to_veragrid_ac_lines.py
+- test_cgmes_to_veragrid_ac_transformers.py
+- test_cgmes_to_veragrid_generators.py
 - test_cgmes_utils.py
 
 ## Method 1 - Duplication of methods and CgmesCircuit class.
@@ -110,7 +110,7 @@ Disadvantage:
 - No real IDE assistance (IntelliSense for only one version).
 - Harder to read and debug.
 
-### cgmes_to_gridcal.py
+### cgmes_to_veragrid.py
 
 ```python
 from VeraGridEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit

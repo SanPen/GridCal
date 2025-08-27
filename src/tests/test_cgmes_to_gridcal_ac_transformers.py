@@ -8,7 +8,7 @@ import VeraGridEngine.Devices as gcdev
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.DataStructures import BusData
 from VeraGridEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from VeraGridEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_ac_transformers, get_gcdev_device_to_terminal_dict
+from VeraGridEngine.IO.cim.cgmes.cgmes_to_veragrid import get_gcdev_ac_transformers, get_gcdev_device_to_terminal_dict
 from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.connectivity_node import ConnectivityNode
 from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import PowerTransformer
 from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd

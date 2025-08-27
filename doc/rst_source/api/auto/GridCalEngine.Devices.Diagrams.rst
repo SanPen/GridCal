@@ -1,53 +1,53 @@
-GridCalEngine.Devices.Diagrams package
+VeraGridEngine.Devices.Diagrams package
 ======================================
 
 Submodules
 ----------
 
-GridCalEngine.Devices.Diagrams.base\_diagram module
+VeraGridEngine.Devices.Diagrams.base\_diagram module
 ---------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Diagrams.base_diagram
+.. automodule:: VeraGridEngine.Devices.Diagrams.base_diagram
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Diagrams.graphic\_location module
+VeraGridEngine.Devices.Diagrams.graphic\_location module
 -------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Diagrams.graphic_location
+.. automodule:: VeraGridEngine.Devices.Diagrams.graphic_location
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Diagrams.map\_diagram module
+VeraGridEngine.Devices.Diagrams.map\_diagram module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Diagrams.map_diagram
+.. automodule:: VeraGridEngine.Devices.Diagrams.map_diagram
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Diagrams.map\_location module
+VeraGridEngine.Devices.Diagrams.map\_location module
 ---------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Diagrams.map_location
+.. automodule:: VeraGridEngine.Devices.Diagrams.map_location
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Diagrams.palettes module
+VeraGridEngine.Devices.Diagrams.palettes module
 ----------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Diagrams.palettes
+.. automodule:: VeraGridEngine.Devices.Diagrams.palettes
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Diagrams.schematic\_diagram module
+VeraGridEngine.Devices.Diagrams.schematic\_diagram module
 --------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Diagrams.schematic_diagram
+.. automodule:: VeraGridEngine.Devices.Diagrams.schematic_diagram
    :members:
    :show-inheritance:
    :undoc-members:
@@ -55,7 +55,7 @@ GridCalEngine.Devices.Diagrams.schematic\_diagram module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Devices.Diagrams
+.. automodule:: VeraGridEngine.Devices.Diagrams
    :members:
    :show-inheritance:
    :undoc-members:

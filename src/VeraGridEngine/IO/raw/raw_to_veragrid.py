@@ -23,10 +23,10 @@ from VeraGridEngine.IO.raw.devices.psse_circuit import PsseCircuit
 from VeraGridEngine.enumerations import TapChangerTypes, TapPhaseControl, TapModuleControl
 
 
-def get_gridcal_bus(psse_bus: RawBus,
-                    area_dict: Dict[int, dev.Area],
-                    zone_dict: Dict[int, dev.Zone],
-                    logger: Logger) -> Tuple[dev.Bus, Union[dev.Shunt, None]]:
+def get_veragrid_bus(psse_bus: RawBus,
+                     area_dict: Dict[int, dev.Area],
+                     zone_dict: Dict[int, dev.Zone],
+                     logger: Logger) -> Tuple[dev.Bus, Union[dev.Shunt, None]]:
     """
 
     :return:
@@ -120,7 +120,7 @@ def get_gridcal_bus(psse_bus: RawBus,
     return bus, sh
 
 
-def get_gridcal_load(psse_load: RawLoad, bus: dev.Bus, logger: Logger) -> dev.Load:
+def get_veragrid_load(psse_load: RawLoad, bus: dev.Bus, logger: Logger) -> dev.Load:
     """
     Return VeraGrid Load object
     Returns:
@@ -156,7 +156,7 @@ def get_gridcal_load(psse_load: RawLoad, bus: dev.Bus, logger: Logger) -> dev.Lo
     return elm
 
 
-def get_gridcal_shunt_fixed(psse_elm: RawFixedShunt, bus: dev.Bus, logger: Logger):
+def get_veragrid_shunt_fixed(psse_elm: RawFixedShunt, bus: dev.Bus, logger: Logger):
     """
     Return VeraGrid Shunt object
     Returns:
@@ -184,7 +184,7 @@ def get_gridcal_shunt_fixed(psse_elm: RawFixedShunt, bus: dev.Bus, logger: Logge
     return elm
 
 
-def get_gridcal_shunt_switched(
+def get_veragrid_shunt_switched(
         psse_elm: RawSwitchedShunt,
         bus: dev.Bus,
         psse_bus_dict: Dict[int, dev.Bus],
@@ -269,7 +269,7 @@ def get_gridcal_shunt_switched(
     return elm
 
 
-def get_gridcal_generator(psse_elm: RawGenerator, psse_bus_dict: Dict[int, dev.Bus], logger: Logger) -> dev.Generator:
+def get_veragrid_generator(psse_elm: RawGenerator, psse_bus_dict: Dict[int, dev.Bus], logger: Logger) -> dev.Generator:
     """
 
     :param psse_elm:
@@ -299,7 +299,7 @@ def get_gridcal_generator(psse_elm: RawGenerator, psse_bus_dict: Dict[int, dev.B
     return elm
 
 
-def get_gridcal_transformer(
+def get_veragrid_transformer(
         psse_elm: RawTransformer,
         psse_bus_dict: Dict[int, dev.Bus],
         Sbase: float,
@@ -688,10 +688,10 @@ def get_gridcal_transformer(
         raise Exception(str(psse_elm.windings) + ' number of windings!')
 
 
-def get_gridcal_line(psse_elm: RawBranch,
-                     psse_bus_dict: Dict[int, dev.Bus],
-                     Sbase: float,
-                     logger: Logger) -> dev.Line:
+def get_veragrid_line(psse_elm: RawBranch,
+                      psse_bus_dict: Dict[int, dev.Bus],
+                      Sbase: float,
+                      logger: Logger) -> dev.Line:
     """
 
     :param psse_elm:
@@ -1011,10 +1011,10 @@ def psse_to_veragrid(psse_circuit: PsseCircuit,
             zones_dict[abs(psse_bus.ZONE)] = dev.Zone(name='Z' + str(abs(psse_bus.ZONE)))
             missing_zones = True
 
-        bus, bus_shunt = get_gridcal_bus(psse_bus=psse_bus,
-                                         area_dict=area_dict,
-                                         zone_dict=zones_dict,
-                                         logger=logger)
+        bus, bus_shunt = get_veragrid_bus(psse_bus=psse_bus,
+                                          area_dict=area_dict,
+                                          zone_dict=zones_dict,
+                                          logger=logger)
 
         # bus.ensure_area_objects(circuit)
 
@@ -1043,7 +1043,7 @@ def psse_to_veragrid(psse_circuit: PsseCircuit,
     for psse_load in psse_circuit.loads:
         if psse_load.I in psse_bus_dict:
             bus = psse_bus_dict[psse_load.I]
-            api_obj = get_gridcal_load(psse_load, bus, logger)
+            api_obj = get_veragrid_load(psse_load, bus, logger)
 
             circuit.add_load(bus, api_obj)
         else:
@@ -1053,7 +1053,7 @@ def psse_to_veragrid(psse_circuit: PsseCircuit,
     for psse_shunt in psse_circuit.fixed_shunts:
         if psse_shunt.I in psse_bus_dict:
             bus = psse_bus_dict[psse_shunt.I]
-            api_obj = get_gridcal_shunt_fixed(psse_shunt, bus, logger)
+            api_obj = get_veragrid_shunt_fixed(psse_shunt, bus, logger)
             circuit.add_shunt(bus, api_obj)
         else:
             logger.add_error("Shunt bus missing", psse_shunt.I, psse_shunt.I)
@@ -1061,7 +1061,7 @@ def psse_to_veragrid(psse_circuit: PsseCircuit,
     for psse_shunt in psse_circuit.switched_shunts:
         if psse_shunt.I in psse_bus_dict:
             bus = psse_bus_dict[psse_shunt.I]
-            api_obj = get_gridcal_shunt_switched(psse_shunt, bus, psse_bus_dict, logger)
+            api_obj = get_veragrid_shunt_switched(psse_shunt, bus, psse_bus_dict, logger)
             circuit.add_controllable_shunt(bus, api_obj)
         else:
             logger.add_error("Switched shunt bus missing", psse_shunt.I, psse_shunt.I)
@@ -1069,7 +1069,7 @@ def psse_to_veragrid(psse_circuit: PsseCircuit,
     # Go through generators
     for psse_gen in psse_circuit.generators:
         bus = psse_bus_dict[psse_gen.I]
-        api_obj = get_gridcal_generator(psse_gen, psse_bus_dict, logger)
+        api_obj = get_veragrid_generator(psse_gen, psse_bus_dict, logger)
 
         circuit.add_generator(bus, api_obj)
         api_obj.is_controlled = psse_gen.WMOD == 0 or psse_gen.WMOD == 1
@@ -1080,7 +1080,7 @@ def psse_to_veragrid(psse_circuit: PsseCircuit,
     # Go through Transformers
     for psse_transformer in psse_circuit.transformers:
         # get the object
-        transformer, n_windings = get_gridcal_transformer(
+        transformer, n_windings = get_veragrid_transformer(
             psse_elm=psse_transformer,
             psse_bus_dict=psse_bus_dict,
             Sbase=psse_circuit.SBASE,
@@ -1105,7 +1105,7 @@ def psse_to_veragrid(psse_circuit: PsseCircuit,
     # Go through the Branches
     for psse_branch in psse_circuit.branches:
         # get the object
-        branch = get_gridcal_line(psse_branch, psse_bus_dict, psse_circuit.SBASE, logger)
+        branch = get_veragrid_line(psse_branch, psse_bus_dict, psse_circuit.SBASE, logger)
 
         # detect if this branch is actually a transformer
         if branch.should_this_be_a_transformer(branch_connection_voltage_tolerance, logger=logger):

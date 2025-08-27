@@ -1,77 +1,77 @@
-GridCalEngine.IO.ucte.devices package
+VeraGridEngine.IO.ucte.devices package
 =====================================
 
 Submodules
 ----------
 
-GridCalEngine.IO.ucte.devices.ucte\_base module
+VeraGridEngine.IO.ucte.devices.ucte\_base module
 -----------------------------------------------
 
-.. automodule:: GridCalEngine.IO.ucte.devices.ucte_base
+.. automodule:: VeraGridEngine.IO.ucte.devices.ucte_base
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.ucte.devices.ucte\_circuit module
+VeraGridEngine.IO.ucte.devices.ucte\_circuit module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.ucte.devices.ucte_circuit
+.. automodule:: VeraGridEngine.IO.ucte.devices.ucte_circuit
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.ucte.devices.ucte\_comment module
+VeraGridEngine.IO.ucte.devices.ucte\_comment module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.ucte.devices.ucte_comment
+.. automodule:: VeraGridEngine.IO.ucte.devices.ucte_comment
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.ucte.devices.ucte\_exchange\_power module
+VeraGridEngine.IO.ucte.devices.ucte\_exchange\_power module
 ----------------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.ucte.devices.ucte_exchange_power
+.. automodule:: VeraGridEngine.IO.ucte.devices.ucte_exchange_power
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.ucte.devices.ucte\_line module
+VeraGridEngine.IO.ucte.devices.ucte\_line module
 -----------------------------------------------
 
-.. automodule:: GridCalEngine.IO.ucte.devices.ucte_line
+.. automodule:: VeraGridEngine.IO.ucte.devices.ucte_line
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.ucte.devices.ucte\_node module
+VeraGridEngine.IO.ucte.devices.ucte\_node module
 -----------------------------------------------
 
-.. automodule:: GridCalEngine.IO.ucte.devices.ucte_node
+.. automodule:: VeraGridEngine.IO.ucte.devices.ucte_node
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.ucte.devices.ucte\_transformer module
+VeraGridEngine.IO.ucte.devices.ucte\_transformer module
 ------------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.ucte.devices.ucte_transformer
+.. automodule:: VeraGridEngine.IO.ucte.devices.ucte_transformer
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.ucte.devices.ucte\_transformer\_regulation module
+VeraGridEngine.IO.ucte.devices.ucte\_transformer\_regulation module
 ------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.ucte.devices.ucte_transformer_regulation
+.. automodule:: VeraGridEngine.IO.ucte.devices.ucte_transformer_regulation
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.ucte.devices.ucte\_transformer\_tap\_table module
+VeraGridEngine.IO.ucte.devices.ucte\_transformer\_tap\_table module
 ------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.ucte.devices.ucte_transformer_tap_table
+.. automodule:: VeraGridEngine.IO.ucte.devices.ucte_transformer_tap_table
    :members:
    :show-inheritance:
    :undoc-members:
@@ -79,7 +79,7 @@ GridCalEngine.IO.ucte.devices.ucte\_transformer\_tap\_table module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.IO.ucte.devices
+.. automodule:: VeraGridEngine.IO.ucte.devices
    :members:
    :show-inheritance:
    :undoc-members:

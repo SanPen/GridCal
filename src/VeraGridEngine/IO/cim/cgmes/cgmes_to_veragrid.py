@@ -2470,9 +2470,9 @@ def get_header_mas(cgmes_model: CgmesCircuit,
         gcdev_model.add_modelling_authority(gcdev_elm)
 
 
-def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
-                     map_dc_to_hvdc_line: bool,
-                     logger: DataLogger) -> MultiCircuit:
+def cgmes_to_veragrid(cgmes_model: CgmesCircuit,
+                      map_dc_to_hvdc_line: bool,
+                      logger: DataLogger) -> MultiCircuit:
     """
     Convert CGMES model to gcdev
 
@@ -2486,7 +2486,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     gc_model.comments = 'Converted from a CGMES file'
     Sbase = gc_model.Sbase
     cgmes_model.emit_progress(70)
-    cgmes_model.emit_text("Converting CGMES to Gridcal")
+    cgmes_model.emit_text("Converting CGMES to VeraGrid")
 
     get_header_mas(cgmes_model, gc_model, logger)
 
@@ -2513,7 +2513,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
         logger=logger
     )
 
-    # NOTE: In gridCal there are only buses (as it should be)
+    # NOTE: In VeraGrid there are only buses (as it should be)
     # hence, the ConnectivityNodes and TopologicalNodes are
     # converted to buses giving priority to the ConnectivityNodes
     bus_dict, fatal_error = get_gcdev_buses(cgmes_model=cgmes_model,
@@ -2601,7 +2601,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
                        logger=logger, )
 
     cgmes_model.emit_progress(91)
-    cgmes_model.emit_text("Converting CGMES to Gridcal - HVDC")
+    cgmes_model.emit_text("Converting CGMES to VeraGrid - HVDC")
 
     # DC elements  ---------------------------------------------------------
 

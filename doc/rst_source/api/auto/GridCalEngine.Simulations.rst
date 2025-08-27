@@ -1,4 +1,4 @@
-GridCalEngine.Simulations package
+VeraGridEngine.Simulations package
 =================================
 
 Subpackages
@@ -7,74 +7,74 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.Simulations.AI
-   GridCalEngine.Simulations.ATC
-   GridCalEngine.Simulations.Clustering
-   GridCalEngine.Simulations.ContingencyAnalysis
-   GridCalEngine.Simulations.ContinuationPowerFlow
-   GridCalEngine.Simulations.Derivatives
-   GridCalEngine.Simulations.Dynamics
-   GridCalEngine.Simulations.InputsAnalysis
-   GridCalEngine.Simulations.InvestmentsEvaluation
-   GridCalEngine.Simulations.LinearFactors
-   GridCalEngine.Simulations.NTC
-   GridCalEngine.Simulations.NodalCapacity
-   GridCalEngine.Simulations.OPF
-   GridCalEngine.Simulations.PowerFlow
-   GridCalEngine.Simulations.Reliability
-   GridCalEngine.Simulations.ShortCircuitStudies
-   GridCalEngine.Simulations.SigmaAnalysis
-   GridCalEngine.Simulations.StateEstimation
-   GridCalEngine.Simulations.Stochastic
-   GridCalEngine.Simulations.Topology
+   VeraGridEngine.Simulations.AI
+   VeraGridEngine.Simulations.ATC
+   VeraGridEngine.Simulations.Clustering
+   VeraGridEngine.Simulations.ContingencyAnalysis
+   VeraGridEngine.Simulations.ContinuationPowerFlow
+   VeraGridEngine.Simulations.Derivatives
+   VeraGridEngine.Simulations.Dynamics
+   VeraGridEngine.Simulations.InputsAnalysis
+   VeraGridEngine.Simulations.InvestmentsEvaluation
+   VeraGridEngine.Simulations.LinearFactors
+   VeraGridEngine.Simulations.NTC
+   VeraGridEngine.Simulations.NodalCapacity
+   VeraGridEngine.Simulations.OPF
+   VeraGridEngine.Simulations.PowerFlow
+   VeraGridEngine.Simulations.Reliability
+   VeraGridEngine.Simulations.ShortCircuitStudies
+   VeraGridEngine.Simulations.SigmaAnalysis
+   VeraGridEngine.Simulations.StateEstimation
+   VeraGridEngine.Simulations.Stochastic
+   VeraGridEngine.Simulations.Topology
 
 Submodules
 ----------
 
-GridCalEngine.Simulations.driver\_handler module
+VeraGridEngine.Simulations.driver\_handler module
 ------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.driver_handler
+.. automodule:: VeraGridEngine.Simulations.driver_handler
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.driver\_template module
+VeraGridEngine.Simulations.driver\_template module
 -------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.driver_template
+.. automodule:: VeraGridEngine.Simulations.driver_template
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.options\_template module
+VeraGridEngine.Simulations.options\_template module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.options_template
+.. automodule:: VeraGridEngine.Simulations.options_template
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.results\_table module
+VeraGridEngine.Simulations.results\_table module
 -----------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.results_table
+.. automodule:: VeraGridEngine.Simulations.results_table
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.results\_template module
+VeraGridEngine.Simulations.results\_template module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.results_template
+.. automodule:: VeraGridEngine.Simulations.results_template
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.types module
+VeraGridEngine.Simulations.types module
 --------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.types
+.. automodule:: VeraGridEngine.Simulations.types
    :members:
    :show-inheritance:
    :undoc-members:
@@ -82,7 +82,7 @@ GridCalEngine.Simulations.types module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Simulations
+.. automodule:: VeraGridEngine.Simulations
    :members:
    :show-inheritance:
    :undoc-members:

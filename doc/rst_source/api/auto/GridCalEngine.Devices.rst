@@ -1,4 +1,4 @@
-GridCalEngine.Devices package
+VeraGridEngine.Devices package
 =============================
 
 Subpackages
@@ -7,70 +7,70 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.Devices.Aggregation
-   GridCalEngine.Devices.Associations
-   GridCalEngine.Devices.Branches
-   GridCalEngine.Devices.Diagrams
-   GridCalEngine.Devices.Fluid
-   GridCalEngine.Devices.Injections
-   GridCalEngine.Devices.Parents
-   GridCalEngine.Devices.Substation
+   VeraGridEngine.Devices.Aggregation
+   VeraGridEngine.Devices.Associations
+   VeraGridEngine.Devices.Branches
+   VeraGridEngine.Devices.Diagrams
+   VeraGridEngine.Devices.Fluid
+   VeraGridEngine.Devices.Injections
+   VeraGridEngine.Devices.Parents
+   VeraGridEngine.Devices.Substation
 
 Submodules
 ----------
 
-GridCalEngine.Devices.admittance\_matrix module
+VeraGridEngine.Devices.admittance\_matrix module
 -----------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.admittance_matrix
+.. automodule:: VeraGridEngine.Devices.admittance_matrix
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.assets module
+VeraGridEngine.Devices.assets module
 -----------------------------------
 
-.. automodule:: GridCalEngine.Devices.assets
+.. automodule:: VeraGridEngine.Devices.assets
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.comparison module
+VeraGridEngine.Devices.comparison module
 ---------------------------------------
 
-.. automodule:: GridCalEngine.Devices.comparison
+.. automodule:: VeraGridEngine.Devices.comparison
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.measurement module
+VeraGridEngine.Devices.measurement module
 ----------------------------------------
 
-.. automodule:: GridCalEngine.Devices.measurement
+.. automodule:: VeraGridEngine.Devices.measurement
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.multi\_circuit module
+VeraGridEngine.Devices.multi\_circuit module
 -------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.multi_circuit
+.. automodule:: VeraGridEngine.Devices.multi_circuit
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.profile module
+VeraGridEngine.Devices.profile module
 ------------------------------------
 
-.. automodule:: GridCalEngine.Devices.profile
+.. automodule:: VeraGridEngine.Devices.profile
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.types module
+VeraGridEngine.Devices.types module
 ----------------------------------
 
-.. automodule:: GridCalEngine.Devices.types
+.. automodule:: VeraGridEngine.Devices.types
    :members:
    :show-inheritance:
    :undoc-members:
@@ -78,7 +78,7 @@ GridCalEngine.Devices.types module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Devices
+.. automodule:: VeraGridEngine.Devices
    :members:
    :show-inheritance:
    :undoc-members:

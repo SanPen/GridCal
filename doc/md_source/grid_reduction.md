@@ -1,6 +1,6 @@
 # 👾 Grid Reduction
 
-GridCal has the ability to perform planning-style grid reductions.
+VeraGrid has the ability to perform planning-style grid reductions.
 
 A) From the schematic:
 

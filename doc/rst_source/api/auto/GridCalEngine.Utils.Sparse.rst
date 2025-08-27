@@ -1,45 +1,45 @@
-GridCalEngine.Utils.Sparse package
+VeraGridEngine.Utils.Sparse package
 ==================================
 
 Submodules
 ----------
 
-GridCalEngine.Utils.Sparse.csc module
+VeraGridEngine.Utils.Sparse.csc module
 -------------------------------------
 
-.. automodule:: GridCalEngine.Utils.Sparse.csc
+.. automodule:: VeraGridEngine.Utils.Sparse.csc
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.Sparse.csc2 module
+VeraGridEngine.Utils.Sparse.csc2 module
 --------------------------------------
 
-.. automodule:: GridCalEngine.Utils.Sparse.csc2
+.. automodule:: VeraGridEngine.Utils.Sparse.csc2
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.Sparse.csc\_numba module
+VeraGridEngine.Utils.Sparse.csc\_numba module
 --------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.Sparse.csc_numba
+.. automodule:: VeraGridEngine.Utils.Sparse.csc_numba
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.Sparse.sparse\_array module
+VeraGridEngine.Utils.Sparse.sparse\_array module
 -----------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.Sparse.sparse_array
+.. automodule:: VeraGridEngine.Utils.Sparse.sparse_array
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.Sparse.utils module
+VeraGridEngine.Utils.Sparse.utils module
 ---------------------------------------
 
-.. automodule:: GridCalEngine.Utils.Sparse.utils
+.. automodule:: VeraGridEngine.Utils.Sparse.utils
    :members:
    :show-inheritance:
    :undoc-members:
@@ -47,7 +47,7 @@ GridCalEngine.Utils.Sparse.utils module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Utils.Sparse
+.. automodule:: VeraGridEngine.Utils.Sparse
    :members:
    :show-inheritance:
    :undoc-members:

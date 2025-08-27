@@ -1,29 +1,29 @@
-GridCalEngine.Utils.MIP.SimpleMip package
+VeraGridEngine.Utils.MIP.SimpleMip package
 =========================================
 
 Submodules
 ----------
 
-GridCalEngine.Utils.MIP.SimpleMip.highs module
+VeraGridEngine.Utils.MIP.SimpleMip.highs module
 ----------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.MIP.SimpleMip.highs
+.. automodule:: VeraGridEngine.Utils.MIP.SimpleMip.highs
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.MIP.SimpleMip.lpmodel module
+VeraGridEngine.Utils.MIP.SimpleMip.lpmodel module
 ------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.MIP.SimpleMip.lpmodel
+.. automodule:: VeraGridEngine.Utils.MIP.SimpleMip.lpmodel
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.MIP.SimpleMip.lpobjects module
+VeraGridEngine.Utils.MIP.SimpleMip.lpobjects module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.MIP.SimpleMip.lpobjects
+.. automodule:: VeraGridEngine.Utils.MIP.SimpleMip.lpobjects
    :members:
    :show-inheritance:
    :undoc-members:
@@ -31,7 +31,7 @@ GridCalEngine.Utils.MIP.SimpleMip.lpobjects module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Utils.MIP.SimpleMip
+.. automodule:: VeraGridEngine.Utils.MIP.SimpleMip
    :members:
    :show-inheritance:
    :undoc-members:

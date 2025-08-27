@@ -1,10 +1,10 @@
-GridCal.ThirdParty.qdarktheme.qtpy.QtSvg package
+VeraGrid.ThirdParty.qdarktheme.qtpy.QtSvg package
 ================================================
 
 Module contents
 ---------------
 
-.. automodule:: GridCal.ThirdParty.qdarktheme.qtpy.QtSvg
+.. automodule:: VeraGrid.ThirdParty.qdarktheme.qtpy.QtSvg
    :members:
    :show-inheritance:
    :undoc-members:

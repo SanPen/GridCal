@@ -1,37 +1,37 @@
-GridCalEngine.Devices.Associations package
+VeraGridEngine.Devices.Associations package
 ==========================================
 
 Submodules
 ----------
 
-GridCalEngine.Devices.Associations.association module
+VeraGridEngine.Devices.Associations.association module
 -----------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Associations.association
+.. automodule:: VeraGridEngine.Devices.Associations.association
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Associations.emission\_gas module
+VeraGridEngine.Devices.Associations.emission\_gas module
 -------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Associations.emission_gas
+.. automodule:: VeraGridEngine.Devices.Associations.emission_gas
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Associations.fuel module
+VeraGridEngine.Devices.Associations.fuel module
 ----------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Associations.fuel
+.. automodule:: VeraGridEngine.Devices.Associations.fuel
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Associations.technology module
+VeraGridEngine.Devices.Associations.technology module
 ----------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Associations.technology
+.. automodule:: VeraGridEngine.Devices.Associations.technology
    :members:
    :show-inheritance:
    :undoc-members:
@@ -39,7 +39,7 @@ GridCalEngine.Devices.Associations.technology module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Devices.Associations
+.. automodule:: VeraGridEngine.Devices.Associations
    :members:
    :show-inheritance:
    :undoc-members:

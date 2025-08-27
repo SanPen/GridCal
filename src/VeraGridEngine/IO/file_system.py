@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 
-def get_create_gridcal_folder() -> str:
+def get_create_veragrid_folder() -> str:
     """
     Get the home folder of VeraGrid, and if it does not exist, create it
     :return: folder path string
@@ -26,7 +26,7 @@ def opf_file_path() -> str:
     get the OPF files folder path
     :return: str
     """
-    d = os.path.join(get_create_gridcal_folder(), 'mip_files')
+    d = os.path.join(get_create_veragrid_folder(), 'mip_files')
 
     if not os.path.exists(d):
         os.makedirs(d)
@@ -38,7 +38,7 @@ def plugins_path() -> str:
     get the plugins file path
     :return: plugins file path
     """
-    pth = os.path.join(get_create_gridcal_folder(), 'plugins')
+    pth = os.path.join(get_create_veragrid_folder(), 'plugins')
 
     if not os.path.exists(pth):
         os.makedirs(pth)
@@ -51,7 +51,7 @@ def tiles_path() -> str:
     get the tiles file path
     :return: tiles file path
     """
-    pth = os.path.join(get_create_gridcal_folder(), 'tiles')
+    pth = os.path.join(get_create_veragrid_folder(), 'tiles')
 
     if not os.path.exists(pth):
         os.makedirs(pth)
@@ -64,7 +64,7 @@ def scripts_path() -> str:
     get the scripts file path
     :return: scripts file path
     """
-    pth = os.path.join(get_create_gridcal_folder(), 'scripts')
+    pth = os.path.join(get_create_veragrid_folder(), 'scripts')
 
     if not os.path.exists(pth):
         os.makedirs(pth)
@@ -77,7 +77,7 @@ def api_keys_path() -> str:
     get the api keys file path
     :return: api keys file path
     """
-    pth = os.path.join(get_create_gridcal_folder(), 'api_keys')
+    pth = os.path.join(get_create_veragrid_folder(), 'api_keys')
 
     if not os.path.exists(pth):
         os.makedirs(pth)

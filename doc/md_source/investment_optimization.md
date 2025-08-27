@@ -29,7 +29,7 @@ the curse of dimensionality. The methodology we have adopted here consists of:
 import VeraGridEngine as gce
 
 # some grid with investments declared
-gce.open_file("my_grid.gridcal")
+gce.open_file("my_grid.veragrid")
 
 # run a investment evaluation
 problem = gce.AdequacyInvestmentProblem(
@@ -406,7 +406,7 @@ for multi-objective minimization, such as the application of NSGA-III.
 ### Improving the NSGA-3 investments
 
 In continuation to prior advancements in solving the power grid optimisation problem, this report presents the NSGA-III
-machine learning algorithm, which has been researched, developed and implemented into GridCal with the aim of improving
+machine learning algorithm, which has been researched, developed and implemented into VeraGrid with the aim of improving
 investment evaluation performance.
 
 This multi-objective optimisation problem is currently defined by two objective functions, (Equations 1 & 2).
@@ -421,7 +421,7 @@ $$
     f_2(x) = \sum C_l(x)_{br} + \sum C_o(x)_{br} + \sum C_{vm}(x)_b + \sum C_{va}(x)_b
 $$
 
-Please see the investment evaluation documentation on GridCal’s GitHub for their
+Please see the investment evaluation documentation on VeraGrid’s GitHub for their
 detailed definitions [1].
 
 Previously, the Mixed-Variable ReLU-based Surrogate Modelling (MVRSM) algorithm
@@ -625,7 +625,7 @@ and more complex and larger systems.
 
 References
 _____________________
-[1] https://github.com/SanPen/GridCal/blob/204_investments_evaluation/doc/rst_source/theory/investments_evaluation.rst
+[1] https://github.com/SanPen/VeraGrid/blob/204_investments_evaluation/doc/rst_source/theory/investments_evaluation.rst
 
 [2] https://pymoo.org/algorithms/moo/nsga3.html
 

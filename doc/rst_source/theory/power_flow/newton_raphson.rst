@@ -5,7 +5,7 @@ Newton-Raphson
 ==============
 
 All the explanations on this section are implemented `here
-<https://github.com/SanPen/GridCal/blob/master/src/GridCal/Engine/Numerical/jacobian_based_power_flow.py>`_.
+<https://github.com/SanPen/VeraGrid/blob/master/src/VeraGrid/Engine/Numerical/jacobian_based_power_flow.py>`_.
 
 .. _canonical_nr:
 
@@ -13,7 +13,7 @@ Canonical Newton-Raphson
 ------------------------
 
 The Newton-Raphson method is the standard power flow method tough at schools.
-**GridCal** implements slight but important modifications of this method that turns it
+**VeraGrid** implements slight but important modifications of this method that turns it
 into a more robust, industry-standard algorithm. The Newton-Raphson method is the first
 order Taylor approximation of the power flow equation.
 
@@ -97,7 +97,7 @@ Newton-Raphson-Iwamoto
 
 In 1982 S. Iwamoto and Y. Tamura present a method [1]_  where the
 :ref:`Jacobian<jacobian>` matrix *J* is only computed at the beginning, and the
-iteration control parameter *µ* is computed on every iteration. In **GridCal**, *J* and
+iteration control parameter *µ* is computed on every iteration. In **VeraGrid**, *J* and
 *µ* are computed on every iteration getting a more robust method on the expense of a
 greater computational effort.
 

@@ -704,7 +704,7 @@ $$
 
 ### Inverse definition of SC values from π model
 
-In GridCal I found the need to find the short circuit values 
+In VeraGrid I found the need to find the short circuit values 
 ($P_{cu}, V_{sc}, r_{fe}, I0$) from the branch values (*R*, *X*, *G*, *B*). Hence the following formulas:
 
 $$
@@ -1359,7 +1359,7 @@ grid.add_load(bus=bus, api_obj=load)
 
 For the power flow simulations, generators had been modelled as simple power injections into the system, which was
 completely valid. However, this is not sufficient when performing the short-circuit analysis, as the impedance of the
-generator must also be taken into account. GridCal has been programmed to accept a $3 \times 3$ impedance matrix, which
+generator must also be taken into account. VeraGrid has been programmed to accept a $3 \times 3$ impedance matrix, which
 includes both the self and mutual impedances between the $abc$ phases.
 
 It is also common to encounter generator impedances in the sequence domain. Therefore, Fortescue’s theorem is
@@ -1447,9 +1447,9 @@ The tutorial also contains:
 
 A video tutorial can be found [here](https://www.youtube.com/watch?v=Yx3zRYRbe04&t=404s)
 
-Note: this tutorial was made with GridCal v 4.0.0
+Note: this tutorial was made with VeraGrid v 4.0.0
 
-However, we will do this using the GridCal GUI.
+However, we will do this using the VeraGrid GUI.
 
 ### Step 0: System Overview
 
@@ -1465,13 +1465,13 @@ The system features:
 - 7 Lines.
 
 Solution file of the grid system can be found in 
-[GitHub](https://github.com/SanPen/GridCal/blob/devel/Grids_and_profiles/grids/Some%20distribution%20grid%20(Video).gridcal)
+[GitHub](https://github.com/SanPen/VeraGrid/blob/devel/Grids_and_profiles/grids/Some%20distribution%20grid%20(Video).veragrid)
 
 
 
 ### Step 1: Create a Transformer
 
-Open GridCal:
+Open VeraGrid:
 
 1. 'Drag and drop' 2 'Bus' element to the diagram canvas:
 
@@ -1619,7 +1619,7 @@ The full system topology looks like:
 
 ### Step 6: Defining the Main Transformer
 
-In order to define the type of transformer a catalogue is available within the GridCal repository.
+In order to define the type of transformer a catalogue is available within the VeraGrid repository.
 
 This transformer is the transformer between HV Bus and Bus 2. The transformer is: 25 MV 20/10 kV.
 
@@ -1666,7 +1666,7 @@ following parameters (based on the model selected):
 8. Once the parameters are placed, right click and select 'Add to catalogue'. 
 This way the branch p.u. values are calculated from the template values.
 
-> Note: In the new GridCal version, a transformer can be defined by just 
+> Note: In the new VeraGrid version, a transformer can be defined by just 
   right clicking on the desired transformer and selecting the type from the drop down menu.
 
 > Note: All of the element types can be found under the 'Types catalogue' 
@@ -1716,7 +1716,7 @@ The name is a '0.016 MVA 10/0.4 kV ET 16/23 SGB'.
 7. Select the transformer that has the characteristics of the 10 to 0.4 kV transformer and 
 rename it to 'House trafo'. Now you have defined a transformer type that can be added to many transformers.
 
-> Note: In the new GridCal version, a transformer can be defined by just right clicking on 
+> Note: In the new VeraGrid version, a transformer can be defined by just right clicking on 
   the desired transformer and selecting the type from the drop down menu.
 
 ### Step 8: Defining Other Transformers
@@ -1808,7 +1808,7 @@ Now that 'House trafo' has been created, other transformers can be set to the sa
 
 2. Click on 'Import file' box on the left. This will bring up a file explorer tab.
 
-3. In the installation location head to '../GridCal/Grids_and_Profiles/profiles/..' then select the Excel file called: 'Total_profiles_1W_1H.xlsx'.
+3. In the installation location head to '../VeraGrid/Grids_and_Profiles/profiles/..' then select the Excel file called: 'Total_profiles_1W_1H.xlsx'.
 
 ![](figures/tutorials/dg/filelocation.png)
 
@@ -1910,7 +1910,7 @@ In order to run the power flow, we must select the slack bus. If you try run wit
 
 ### Step 12: Results & Features
 
-Here are some of the few results and features that are available with GridCal. All results can be found in the 'Results' tab. Here you can see a list of all studies perfomed and their respective results:
+Here are some of the few results and features that are available with VeraGrid. All results can be found in the 'Results' tab. Here you can see a list of all studies perfomed and their respective results:
 
 ![](figures/tutorials/dg/results.png)
 

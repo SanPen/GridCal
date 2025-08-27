@@ -1,4 +1,4 @@
-# ward_reduce_gridcal.py
+# ward_reduce_veragrid.py
 # Pivot-free Ward reduction + generator relocation using SciPy sparse and (optionally) VeraGrid
 # Now with:
 #   - 10× original-reactance pruning rule
@@ -246,7 +246,7 @@ def _dc_theta(B: sp.spmatrix, Pinj: np.ndarray, slack_idx: int) -> np.ndarray:
 # Optional: VeraGrid convenience integration
 # -----------------------------------------
 
-def _gridcal_get_Y_and_names(circuit: MultiCircuit) -> Tuple[sp.csc_matrix, Iterable[str]]:
+def _veragrid_get_Y_and_names(circuit: MultiCircuit) -> Tuple[sp.csc_matrix, Iterable[str]]:
     """
     Obtain Y-bus and bus names from a VeraGrid circuit.
     :param circuit:
@@ -259,7 +259,13 @@ def _gridcal_get_Y_and_names(circuit: MultiCircuit) -> Tuple[sp.csc_matrix, Iter
     return adm.Ybus, bus_names
 
 
-def _gridcal_indices_from_names(all_names: List[str], target_names: Iterable[str]) -> List[int]:
+def _veragrid_indices_from_names(all_names: List[str], target_names: Iterable[str]) -> List[int]:
+    """
+
+    :param all_names:
+    :param target_names:
+    :return:
+    """
     idx_map = {name: k for k, name in enumerate(all_names)}
     out = []
     for nm in target_names:
@@ -269,7 +275,7 @@ def _gridcal_indices_from_names(all_names: List[str], target_names: Iterable[str
     return out
 
 
-def _gridcal_generator_bus_indices_in_Y_order(circuit, y_order_names: List[str]) -> Tuple[List[int], List[object]]:
+def _veragrid_generator_bus_indices_in_Y_order(circuit, y_order_names: List[str]) -> Tuple[List[int], List[object]]:
     """
     Return generator bus indices aligned to Y order, and the generator objects in the same order.
     """
@@ -318,7 +324,7 @@ def _get_float_attr(obj, candidates: Sequence[str], default: float = 0.0) -> flo
     return default
 
 
-def _gridcal_system_base_MVA(circuit) -> float:
+def _veragrid_system_base_MVA(circuit) -> float:
     for attr in ["Sbase", "S_base", "Sbase_MVA", "S_base_MVA", "base_MVA", "baseMVA"]:
         if hasattr(circuit, attr):
             try:
@@ -331,7 +337,7 @@ def _gridcal_system_base_MVA(circuit) -> float:
     return 100.0
 
 
-def _gridcal_Pinj_pu(circuit, y_order_names: List[str]) -> np.ndarray:
+def _veragrid_Pinj_pu(circuit, y_order_names: List[str]) -> np.ndarray:
     """
     Build P injection vector (per unit, +gen -load) aligned with Y order.
     """
@@ -361,7 +367,7 @@ def _gridcal_Pinj_pu(circuit, y_order_names: List[str]) -> np.ndarray:
         Pl = _get_float_attr(ld, ["P", "p", "p_set", "p_mw", "P_MW"], default=0.0)
         P_MW[k] -= Pl
 
-    Sbase = _gridcal_system_base_MVA(circuit)
+    Sbase = _veragrid_system_base_MVA(circuit)
     return P_MW / max(Sbase, 1e-6)
 
 
@@ -427,14 +433,14 @@ def _B_from_Yeq_G1(Yeq_G1: sp.csc_matrix) -> sp.csr_matrix:
     return _build_B_from_Y(Yeq_G1)
 
 
-def build_Y_from_gridcal(circuit):
+def build_Y_from_veragrid(circuit):
     """Return Y-bus (CSR) and ensure it is consistent with circuit bus index order."""
     nc = compile_numerical_circuit_at(circuit, t_idx=None)
     adm = nc.get_admittance_matrices()
     return adm.Ybus
 
 
-def get_boundary_sets_from_gridcal(grid, reduction_bus_indices: List[int]):
+def get_boundary_sets_from_veragrid(grid, reduction_bus_indices: List[int]):
     """
     Thin wrapper over VeraGrid's built-in reduction set finder.
     Returns (e_buses, b_buses, i_buses, b_branches) — all as index arrays (Python lists).
@@ -487,7 +493,7 @@ def dc_inverse_pf_redistribution(
     """
     # 1) Full network DC solve
     B_full = _build_B_from_Y(Y_full)
-    Pinj = _gridcal_Pinj_pu(circuit, y_order_names)
+    Pinj = _veragrid_Pinj_pu(circuit, y_order_names)
     # choose a slack: the first boundary bus in Y order is sensible for alignment
     slack_y = int(boundary_idx_in_Y[0])
     theta_full = _dc_theta(B_full, Pinj, slack_y)
@@ -504,10 +510,10 @@ def dc_inverse_pf_redistribution(
     pos_map = {k: p for p, k in enumerate(retain2_idx_in_Y)}
 
     # gen_idx_in_G2 is in the same order as generators in VeraGrid (from our helper)
-    gen_idx_in_Y, gen_objs = _gridcal_generator_bus_indices_in_Y_order(circuit, y_order_names)
+    gen_idx_in_Y, gen_objs = _veragrid_generator_bus_indices_in_Y_order(circuit, y_order_names)
 
     # Build array of generator P (pu) in same order as gen_idx_in_Y
-    Sbase = _gridcal_system_base_MVA(circuit)
+    Sbase = _veragrid_system_base_MVA(circuit)
     Pg_pu = []
     for g in gen_objs:
         Pg = _get_float_attr(g, ["Pg", "P", "p", "p_set", "p_mw", "P_MW"], default=0.0)
@@ -596,10 +602,10 @@ class ReductionOutputsByIndex:
     dc_fit: Optional[DCInversePFResult]
 
 
-def reduce_with_gridcal_by_indices(grid: MultiCircuit,
-                                   reduction_bus_indices: Sequence[int],
-                                   relocation_mode: str = "dc",  # 'dc' uses |x|, 'ac' uses |z|
-                                   do_dc_inverse_pf: bool = True) -> ReductionOutputsByIndex:
+def reduce_with_veragrid_by_indices(grid: MultiCircuit,
+                                    reduction_bus_indices: Sequence[int],
+                                    relocation_mode: str = "dc",  # 'dc' uses |x|, 'ac' uses |z|
+                                    do_dc_inverse_pf: bool = True) -> ReductionOutputsByIndex:
     """
 
     :param grid:
@@ -732,7 +738,7 @@ if __name__ == '__main__':
     grid_ = gce.open_file(fname)
     grid_expected = gce.open_file(fname_expected)
 
-    reduce_with_gridcal_by_indices(grid=grid_,
-                                   reduction_bus_indices=reduction_bus_indices_,
-                                   relocation_mode="dc",  # 'dc' uses |x|, 'ac' uses |z|
-                                   do_dc_inverse_pf=True)
+    reduce_with_veragrid_by_indices(grid=grid_,
+                                    reduction_bus_indices=reduction_bus_indices_,
+                                    relocation_mode="dc",  # 'dc' uses |x|, 'ac' uses |z|
+                                    do_dc_inverse_pf=True)

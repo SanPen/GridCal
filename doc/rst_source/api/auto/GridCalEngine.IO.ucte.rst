@@ -1,4 +1,4 @@
-GridCalEngine.IO.ucte package
+VeraGridEngine.IO.ucte package
 =============================
 
 Subpackages
@@ -7,15 +7,15 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.IO.ucte.devices
+   VeraGridEngine.IO.ucte.devices
 
 Submodules
 ----------
 
-GridCalEngine.IO.ucte.ucte\_to\_gridcal module
+VeraGridEngine.IO.ucte.ucte\_to\_gridcal module
 ----------------------------------------------
 
-.. automodule:: GridCalEngine.IO.ucte.ucte_to_gridcal
+.. automodule:: VeraGridEngine.IO.ucte.ucte_to_gridcal
    :members:
    :show-inheritance:
    :undoc-members:
@@ -23,7 +23,7 @@ GridCalEngine.IO.ucte.ucte\_to\_gridcal module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.IO.ucte
+.. automodule:: VeraGridEngine.IO.ucte
    :members:
    :show-inheritance:
    :undoc-members:

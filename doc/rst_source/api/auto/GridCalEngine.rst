@@ -1,4 +1,4 @@
-GridCalEngine package
+VeraGridEngine package
 =====================
 
 Subpackages
@@ -7,53 +7,53 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.Compilers
-   GridCalEngine.DataStructures
-   GridCalEngine.Devices
-   GridCalEngine.IO
-   GridCalEngine.Simulations
-   GridCalEngine.Topology
-   GridCalEngine.Utils
+   VeraGridEngine.Compilers
+   VeraGridEngine.DataStructures
+   VeraGridEngine.Devices
+   VeraGridEngine.IO
+   VeraGridEngine.Simulations
+   VeraGridEngine.Topology
+   VeraGridEngine.Utils
 
 Submodules
 ----------
 
-GridCalEngine.api module
+VeraGridEngine.api module
 ------------------------
 
-.. automodule:: GridCalEngine.api
+.. automodule:: VeraGridEngine.api
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.basic\_structures module
+VeraGridEngine.basic\_structures module
 --------------------------------------
 
-.. automodule:: GridCalEngine.basic_structures
+.. automodule:: VeraGridEngine.basic_structures
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.data\_logger module
+VeraGridEngine.data\_logger module
 ---------------------------------
 
-.. automodule:: GridCalEngine.data_logger
+.. automodule:: VeraGridEngine.data_logger
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.enumerations module
+VeraGridEngine.enumerations module
 ---------------------------------
 
-.. automodule:: GridCalEngine.enumerations
+.. automodule:: VeraGridEngine.enumerations
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.setup module
+VeraGridEngine.setup module
 --------------------------
 
-.. automodule:: GridCalEngine.setup
+.. automodule:: VeraGridEngine.setup
    :members:
    :show-inheritance:
    :undoc-members:
@@ -61,7 +61,7 @@ GridCalEngine.setup module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine
+.. automodule:: VeraGridEngine
    :members:
    :show-inheritance:
    :undoc-members:

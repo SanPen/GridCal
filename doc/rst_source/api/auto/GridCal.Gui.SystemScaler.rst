@@ -1,37 +1,37 @@
-GridCal.Gui.SystemScaler package
+VeraGrid.Gui.SystemScaler package
 ================================
 
 Submodules
 ----------
 
-GridCal.Gui.SystemScaler.icons\_rc module
+VeraGrid.Gui.SystemScaler.icons\_rc module
 -----------------------------------------
 
-.. automodule:: GridCal.Gui.SystemScaler.icons_rc
+.. automodule:: VeraGrid.Gui.SystemScaler.icons_rc
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.SystemScaler.system\_scaler module
+VeraGrid.Gui.SystemScaler.system\_scaler module
 ----------------------------------------------
 
-.. automodule:: GridCal.Gui.SystemScaler.system_scaler
+.. automodule:: VeraGrid.Gui.SystemScaler.system_scaler
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.SystemScaler.system\_scaler\_ui module
+VeraGrid.Gui.SystemScaler.system\_scaler\_ui module
 --------------------------------------------------
 
-.. automodule:: GridCal.Gui.SystemScaler.system_scaler_ui
+.. automodule:: VeraGrid.Gui.SystemScaler.system_scaler_ui
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.SystemScaler.update\_gui\_file module
+VeraGrid.Gui.SystemScaler.update\_gui\_file module
 -------------------------------------------------
 
-.. automodule:: GridCal.Gui.SystemScaler.update_gui_file
+.. automodule:: VeraGrid.Gui.SystemScaler.update_gui_file
    :members:
    :show-inheritance:
    :undoc-members:
@@ -39,7 +39,7 @@ GridCal.Gui.SystemScaler.update\_gui\_file module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.SystemScaler
+.. automodule:: VeraGrid.Gui.SystemScaler
    :members:
    :show-inheritance:
    :undoc-members:

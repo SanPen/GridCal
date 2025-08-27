@@ -1,4 +1,4 @@
-GridCal.ThirdParty.qdarktheme package
+VeraGrid.ThirdParty.qdarktheme package
 =====================================
 
 Subpackages
@@ -7,13 +7,13 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCal.ThirdParty.qdarktheme.qtpy
-   GridCal.ThirdParty.qdarktheme.widget_gallery
+   VeraGrid.ThirdParty.qdarktheme.qtpy
+   VeraGrid.ThirdParty.qdarktheme.widget_gallery
 
 Module contents
 ---------------
 
-.. automodule:: GridCal.ThirdParty.qdarktheme
+.. automodule:: VeraGrid.ThirdParty.qdarktheme
    :members:
    :show-inheritance:
    :undoc-members:

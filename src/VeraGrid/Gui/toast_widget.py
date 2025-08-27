@@ -4,14 +4,15 @@ from PySide6.QtCore import QTimer, Qt, QPoint
 
 
 class ToastWidget(QWidget):
+
     def __init__(self, parent: QWidget,
-        message: str,
-        duration: int = 2000,
-        toast_type: str = "gridcal",
-        max_width: Optional[int] = None,
-        offset_y: int = 0,
-        position_top: bool = False,
-        on_close: Optional[Callable[['ToastWidget'], None]] = None):
+                 message: str,
+                 duration: int = 2000,
+                 toast_type: str = "veragrid",
+                 max_width: Optional[int] = None,
+                 offset_y: int = 0,
+                 position_top: bool = False,
+                 on_close: Optional[Callable[['ToastWidget'], None]] = None):
         """
 
         :param parent:
@@ -32,14 +33,14 @@ class ToastWidget(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
         background_color = {
-            "gridcal": "rgba(16, 191, 137, 160)",   # gridcal color
+            "veragrid": "rgba(16, 191, 137, 160)",  # veragrid color
             "info": "rgba(46, 204, 113, 220)",  # green
             "warning": "rgba(241, 196, 15, 220)",  # yellow
             "error": "rgba(231, 76, 60, 220)"  # red
         }.get(toast_type, "rgba(50, 50, 50, 220)")  # fallback
 
         text_color = {
-            "gridcal": "white",
+            "veragrid": "white",
             "info": "white",
             "warning": "black",
             "error": "white"
@@ -54,7 +55,6 @@ class ToastWidget(QWidget):
                         font-size: 12pt;
                     }}
                 """)
-
 
         layout: QVBoxLayout = QVBoxLayout(self)
         label: QLabel = QLabel(message)
@@ -114,7 +114,6 @@ class ToastWidget(QWidget):
             self._on_close(self)
 
 
-
 class ToastManager:
 
     def __init__(self, parent: QWidget, position_top: bool = False) -> None:
@@ -127,12 +126,12 @@ class ToastManager:
         self.position_top: bool = position_top
         self.active_toasts: List[ToastWidget] = []
 
-    def show_toast(self, message: str, duration: int = 2000, toast_type: str = "gridcal") -> None:
+    def show_toast(self, message: str, duration: int = 2000, toast_type: str = "veragrid") -> None:
         """
         Show toast
         :param message: Message to display
         :param duration: duration in ms
-        :param toast_type: type of toast (gridcal, info, error, warning)
+        :param toast_type: type of toast (veragrid, info, error, warning)
         """
         offset_y: int = sum(toast.height() + 10 for toast in self.active_toasts)
         toast: ToastWidget = ToastWidget(

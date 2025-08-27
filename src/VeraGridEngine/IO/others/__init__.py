@@ -5,6 +5,6 @@
 
 from VeraGridEngine.IO.others.dpx_parser import load_dpx
 from VeraGridEngine.IO.others.ipa_parser import load_iPA
-from VeraGridEngine.IO.others.plx_parser import plx_to_gridcal
-from VeraGridEngine.IO.others.pypsa_parser import pypsa2gridcal
-from VeraGridEngine.IO.others.rte_parser import rte2gridcal
+from VeraGridEngine.IO.others.plx_parser import plx_to_veragrid
+from VeraGridEngine.IO.others.pypsa_parser import pypsa2veragrid
+from VeraGridEngine.IO.others.rte_parser import rte2veragrid

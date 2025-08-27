@@ -487,7 +487,7 @@ class PyPSAParser:
         return self.grid
 
 
-def pypsa2gridcal(network: 'pypsa.Network', logger: Logger) -> MultiCircuit:
+def pypsa2veragrid(network: 'pypsa.Network', logger: Logger) -> MultiCircuit:
     """
 
     :param network:
@@ -511,7 +511,7 @@ def parse_pypsa_netcdf(file_path: str, logger: Logger) -> MultiCircuit:
     else:
         network = pypsa.Network()
         network.import_from_netcdf(file_path)
-        return pypsa2gridcal(network, logger)
+        return pypsa2veragrid(network, logger)
 
 
 def parse_pypsa_hdf5(file_path: str, logger: Logger) -> MultiCircuit:
@@ -527,4 +527,4 @@ def parse_pypsa_hdf5(file_path: str, logger: Logger) -> MultiCircuit:
     else:
         network = pypsa.Network()
         network.import_from_hdf5(file_path)
-        return pypsa2gridcal(network, logger)
+        return pypsa2veragrid(network, logger)

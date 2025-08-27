@@ -1,133 +1,133 @@
-GridCalEngine.Devices.Aggregation package
+VeraGridEngine.Devices.Aggregation package
 =========================================
 
 Submodules
 ----------
 
-GridCalEngine.Devices.Aggregation.area module
+VeraGridEngine.Devices.Aggregation.area module
 ---------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.area
+.. automodule:: VeraGridEngine.Devices.Aggregation.area
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.branch\_group module
+VeraGridEngine.Devices.Aggregation.branch\_group module
 ------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.branch_group
+.. automodule:: VeraGridEngine.Devices.Aggregation.branch_group
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.community module
+VeraGridEngine.Devices.Aggregation.community module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.community
+.. automodule:: VeraGridEngine.Devices.Aggregation.community
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.contingency module
+VeraGridEngine.Devices.Aggregation.contingency module
 ----------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.contingency
+.. automodule:: VeraGridEngine.Devices.Aggregation.contingency
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.contingency\_group module
+VeraGridEngine.Devices.Aggregation.contingency\_group module
 -----------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.contingency_group
+.. automodule:: VeraGridEngine.Devices.Aggregation.contingency_group
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.country module
+VeraGridEngine.Devices.Aggregation.country module
 ------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.country
+.. automodule:: VeraGridEngine.Devices.Aggregation.country
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.facility module
+VeraGridEngine.Devices.Aggregation.facility module
 -------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.facility
+.. automodule:: VeraGridEngine.Devices.Aggregation.facility
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.inter\_aggregation\_info module
+VeraGridEngine.Devices.Aggregation.inter\_aggregation\_info module
 -----------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.inter_aggregation_info
+.. automodule:: VeraGridEngine.Devices.Aggregation.inter_aggregation_info
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.investment module
+VeraGridEngine.Devices.Aggregation.investment module
 ---------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.investment
+.. automodule:: VeraGridEngine.Devices.Aggregation.investment
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.investments\_group module
+VeraGridEngine.Devices.Aggregation.investments\_group module
 -----------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.investments_group
+.. automodule:: VeraGridEngine.Devices.Aggregation.investments_group
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.modelling\_authority module
+VeraGridEngine.Devices.Aggregation.modelling\_authority module
 -------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.modelling_authority
+.. automodule:: VeraGridEngine.Devices.Aggregation.modelling_authority
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.municipality module
+VeraGridEngine.Devices.Aggregation.municipality module
 -----------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.municipality
+.. automodule:: VeraGridEngine.Devices.Aggregation.municipality
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.region module
+VeraGridEngine.Devices.Aggregation.region module
 -----------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.region
+.. automodule:: VeraGridEngine.Devices.Aggregation.region
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.remedial\_action module
+VeraGridEngine.Devices.Aggregation.remedial\_action module
 ---------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.remedial_action
+.. automodule:: VeraGridEngine.Devices.Aggregation.remedial_action
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.remedial\_action\_group module
+VeraGridEngine.Devices.Aggregation.remedial\_action\_group module
 ----------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.remedial_action_group
+.. automodule:: VeraGridEngine.Devices.Aggregation.remedial_action_group
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Aggregation.zone module
+VeraGridEngine.Devices.Aggregation.zone module
 ---------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation.zone
+.. automodule:: VeraGridEngine.Devices.Aggregation.zone
    :members:
    :show-inheritance:
    :undoc-members:
@@ -135,7 +135,7 @@ GridCalEngine.Devices.Aggregation.zone module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Devices.Aggregation
+.. automodule:: VeraGridEngine.Devices.Aggregation
    :members:
    :show-inheritance:
    :undoc-members:

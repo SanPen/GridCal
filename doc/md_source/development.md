@@ -2,9 +2,9 @@
 
 ## Contributing
 
-Have you found a bug in **GridCal** or have a suggestion for a new functionality? Then
+Have you found a bug in **VeraGrid** or have a suggestion for a new functionality? Then
 get in touch with us by opening up an issue on the 
-[issue board](https://github.com/SanPen/GridCal/issues) 
+[issue board](https://github.com/SanPen/VeraGrid/issues) 
 or [join the community discord chat](https://discord.com/invite/dzxctaNbvu) 
 to discuss possible new
 developments with the community and the maintainers.
@@ -20,18 +20,18 @@ If you want to contribute for the first time, you can set up your environment li
 this:
 
 - If you have not done it yet: install git and create a GitHub account;
-- Create a fork of the official **GridCal** repository by clicking on "Fork" in the official repository;
-- Clone the forked repository to your local machine: `git clone https://github.com/YOUR-USERNAME/GridCal.git`
-- Copy the following configuration at the bottom of to the `gridcal/.git/config` file (the .git folder is hidden, 
+- Create a fork of the official **VeraGrid** repository by clicking on "Fork" in the official repository;
+- Clone the forked repository to your local machine: `git clone https://github.com/YOUR-USERNAME/VeraGrid.git`
+- Copy the following configuration at the bottom of to the `veragrid/.git/config` file (the .git folder is hidden, 
 so you might have to enable showing hidden folders) and insert your github username:
 
 ```
 [remote "origin"]
-    url = https://github.com/YOUR-USERNAME/GridCal.git
+    url = https://github.com/YOUR-USERNAME/VeraGrid.git
     fetch = +refs/heads/*:refs/remotes/origin/*
-    pushurl = https://github.com/YOUR-USERNAME/GridCal.git
+    pushurl = https://github.com/YOUR-USERNAME/VeraGrid.git
 [remote "upstream"]
-    url = https://github.com/SanPen/GridCal.git
+    url = https://github.com/SanPen/VeraGrid.git
     fetch = +refs/heads/*:refs/remotes/upstream/*
 [branch "master"]
     remote = origin
@@ -39,7 +39,7 @@ so you might have to enable showing hidden folders) and insert your github usern
 ```
     
 
-The `master` branch is now configured to automatically track the official **GridCal**
+The `master` branch is now configured to automatically track the official **VeraGrid**
 master branch. So if you are on the `master` branch and use:
 
 ```bash
@@ -48,21 +48,21 @@ git merge upstream/master
 ```
 
 ...your local repository will be updated with the newest changes in the official
-**GridCal** repository.
+**VeraGrid** repository.
 
-Since you cannot push directly to the official **GridCal** repository, if you are on
+Since you cannot push directly to the official **VeraGrid** repository, if you are on
 `master` and do:
 
 ```bash
 git push
 ```
 
-...your push is by default routed to your own fork instead of the official **GridCal**
+...your push is by default routed to your own fork instead of the official **VeraGrid**
 repository with the setting as defined above.
 
 ### Contribute
 
-All contributions to the **GridCal** repository are made through pull requests to the
+All contributions to the **VeraGrid** repository are made through pull requests to the
 `devel` branch. You can either submit a pull request from the develop branch of your
 fork or create a special feature branch that you keep the changes on. A feature branch
 is the way to go if you have multiple issues that you are working on in parallel and
@@ -78,9 +78,9 @@ submitted, create an issue in the official repository and link to your own fork.
 
 ### Test Suite
 
-**GridCal** uses pytest for automatic software testing.
+**VeraGrid** uses pytest for automatic software testing.
 
-If you make changes to **GridCal** that you plan to submit, first make sure that all
+If you make changes to **VeraGrid** that you plan to submit, first make sure that all
 tests are still passing. You can do this locally with:
 
 ```bash

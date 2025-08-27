@@ -1,21 +1,21 @@
-GridCalEngine.Simulations.Topology package
+VeraGridEngine.Simulations.Topology package
 ==========================================
 
 Submodules
 ----------
 
-GridCalEngine.Simulations.Topology.node\_groups\_driver module
+VeraGridEngine.Simulations.Topology.node\_groups\_driver module
 --------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.Topology.node_groups_driver
+.. automodule:: VeraGridEngine.Simulations.Topology.node_groups_driver
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.Topology.topology\_reduction\_driver module
+VeraGridEngine.Simulations.Topology.topology\_reduction\_driver module
 ---------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.Topology.topology_reduction_driver
+.. automodule:: VeraGridEngine.Simulations.Topology.topology_reduction_driver
    :members:
    :show-inheritance:
    :undoc-members:
@@ -23,7 +23,7 @@ GridCalEngine.Simulations.Topology.topology\_reduction\_driver module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Simulations.Topology
+.. automodule:: VeraGridEngine.Simulations.Topology
    :members:
    :show-inheritance:
    :undoc-members:

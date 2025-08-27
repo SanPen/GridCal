@@ -11,7 +11,7 @@ import pandas as pd
 import zipfile
 from warnings import warn
 from typing import List, Dict, Union, Callable, Tuple, Any
-from VeraGridEngine.Devices.types import GRIDCAL_FILE_TYPE
+from VeraGridEngine.Devices.types import VERAGRID_FILE_TYPE
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.IO.veragrid.generic_io_functions import parse_config_df, CustomJSONizer
 from VeraGridEngine.Simulations.results_template import DriverToSave
@@ -80,15 +80,15 @@ def save_results_in_zip(f_zip_ptr: zipfile.ZipFile,
                 f_zip_ptr.writestr(filename, buffer.getvalue())
 
 
-def save_gridcal_data_to_zip(dfs: Dict[str, pd.DataFrame],
-                             filename_zip: str,
-                             model_data: Dict[str, Dict[str, str]],
-                             sessions_data: List[DriverToSave],
-                             diagrams: List[Union[dev.MapDiagram, dev.SchematicDiagram]],
-                             json_files: Dict[str, dict],
-                             text_func: Union[None, Callable[[str], None]] = None,
-                             progress_func: Union[None, Callable[[float], None]] = None,
-                             logger=Logger()):
+def save_veragrid_data_to_zip(dfs: Dict[str, pd.DataFrame],
+                              filename_zip: str,
+                              model_data: Dict[str, Dict[str, str]],
+                              sessions_data: List[DriverToSave],
+                              diagrams: List[Union[dev.MapDiagram, dev.SchematicDiagram]],
+                              json_files: Dict[str, dict],
+                              text_func: Union[None, Callable[[str], None]] = None,
+                              progress_func: Union[None, Callable[[float], None]] = None,
+                              logger=Logger()):
     """
     Save a list of DataFrames to a zip file without saving to disk the csv files
     :param dfs: dictionary of pandas dataFrames {name: DataFrame}
@@ -270,7 +270,7 @@ def read_data_frame_from_zip(file_pointer,
 def get_frames_from_zip(file_name_zip: str,
                         text_func: Union[None, Callable[[str], None]] = None,
                         progress_func: Union[None, Callable[[float], None]] = None,
-                        logger=Logger()) -> Tuple[GRIDCAL_FILE_TYPE, Dict[str, Any]]:
+                        logger=Logger()) -> Tuple[VERAGRID_FILE_TYPE, Dict[str, Any]]:
     """
     Open the csv files from a zip file
     :param file_name_zip: name of the zip file
@@ -353,7 +353,7 @@ def get_frames_from_zip(file_name_zip: str,
                     logger.add_error(str(e) + ' Upgrading pandas might help.', device=file_pointer.name)
 
             else:
-                logger.add_info("Unsupported file type inside .gridcal", value=file_name)
+                logger.add_info("Unsupported file type inside .veragrid", value=file_name)
 
         except EOFError:
             logger.add_error("EOF error", device=file_pointer.name)

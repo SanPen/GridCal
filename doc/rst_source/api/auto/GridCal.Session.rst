@@ -1,45 +1,45 @@
-GridCal.Session package
+VeraGrid.Session package
 =======================
 
 Submodules
 ----------
 
-GridCal.Session.export\_results\_driver module
+VeraGrid.Session.export\_results\_driver module
 ----------------------------------------------
 
-.. automodule:: GridCal.Session.export_results_driver
+.. automodule:: VeraGrid.Session.export_results_driver
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Session.file\_handler module
+VeraGrid.Session.file\_handler module
 ------------------------------------
 
-.. automodule:: GridCal.Session.file_handler
+.. automodule:: VeraGrid.Session.file_handler
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Session.server\_driver module
+VeraGrid.Session.server\_driver module
 -------------------------------------
 
-.. automodule:: GridCal.Session.server_driver
+.. automodule:: VeraGrid.Session.server_driver
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Session.session module
+VeraGrid.Session.session module
 ------------------------------
 
-.. automodule:: GridCal.Session.session
+.. automodule:: VeraGrid.Session.session
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Session.synchronization\_driver module
+VeraGrid.Session.synchronization\_driver module
 ----------------------------------------------
 
-.. automodule:: GridCal.Session.synchronization_driver
+.. automodule:: VeraGrid.Session.synchronization_driver
    :members:
    :show-inheritance:
    :undoc-members:
@@ -47,7 +47,7 @@ GridCal.Session.synchronization\_driver module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Session
+.. automodule:: VeraGrid.Session
    :members:
    :show-inheritance:
    :undoc-members:

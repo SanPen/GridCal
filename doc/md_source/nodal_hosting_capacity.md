@@ -1,6 +1,6 @@
 # 🏭 Nodal hosting capacity
 
-The hosting capacity on GridCal is just a modification that lives in the respective
+The hosting capacity on VeraGrid is just a modification that lives in the respective
 linear and non-linear optimal power flow routines.
 
 ![](figures/settings-opf.png)
@@ -20,7 +20,7 @@ The key parameters are:
 ```python
 import VeraGridEngine as gce
 
-fname = os.path.join('data', 'grids', 'IEEE 14 zip costs.gridcal')
+fname = os.path.join('data', 'grids', 'IEEE 14 zip costs.veragrid')
 grid = gce.FileOpen(fname).open()
 
 # Linear OPF
@@ -45,7 +45,7 @@ Here, the key parameters are passed onto the `OptimalPowerFlowOptions object.
 ```python
 import VeraGridEngine as gce
 
-fname = os.path.join('data', 'grids', 'IEEE 14 zip costs.gridcal')
+fname = os.path.join('data', 'grids', 'IEEE 14 zip costs.veragrid')
 grid = gce.FileOpen(fname).open()
 
 # Nonlinear OPF

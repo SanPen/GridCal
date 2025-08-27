@@ -1,4 +1,4 @@
-GridCalEngine.IO.iidm package
+VeraGridEngine.IO.iidm package
 =============================
 
 Subpackages
@@ -7,15 +7,15 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.IO.iidm.devices
+   VeraGridEngine.IO.iidm.devices
 
 Submodules
 ----------
 
-GridCalEngine.IO.iidm.iidm\_parser module
+VeraGridEngine.IO.iidm.iidm\_parser module
 -----------------------------------------
 
-.. automodule:: GridCalEngine.IO.iidm.iidm_parser
+.. automodule:: VeraGridEngine.IO.iidm.iidm_parser
    :members:
    :show-inheritance:
    :undoc-members:
@@ -23,7 +23,7 @@ GridCalEngine.IO.iidm.iidm\_parser module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.IO.iidm
+.. automodule:: VeraGridEngine.IO.iidm
    :members:
    :show-inheritance:
    :undoc-members:

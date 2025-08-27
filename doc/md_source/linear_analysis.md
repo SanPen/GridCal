@@ -100,7 +100,7 @@ import VeraGridEngine as gce
 plt.style.use('fivethirtyeight')
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+fname = os.path.join(folder, 'IEEE39_1W.veragrid')
 main_circuit = gce.open_file(fname)
 
 ptdf_driver = gce.LinearAnalysisTimeSeriesDriver(grid=main_circuit)

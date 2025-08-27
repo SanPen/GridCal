@@ -9,7 +9,7 @@ import pytest
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.IO.cim.cgmes import cgmes_enums
 from VeraGridEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from VeraGridEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_generators
+from VeraGridEngine.IO.cim.cgmes.cgmes_to_veragrid import get_gcdev_generators
 import VeraGridEngine.Devices as gcdev
 from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
 from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.connectivity_node import ConnectivityNode

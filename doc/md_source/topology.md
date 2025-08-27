@@ -1,6 +1,6 @@
 # 🌵 Topology
 
-The topology processing in GridCal is handled automatically, and you need to do nothing for it to work.
+The topology processing in VeraGrid is handled automatically, and you need to do nothing for it to work.
 
 Branches with the `reducible` flag enabled are candidates for disappearing at the 
 `NumericalCircuit level when computing any simulation. Typically, switches will be reduced, but if not they will
@@ -15,7 +15,7 @@ There are some other topological functions that can be accessed through the GUI 
 ![](figures/settings-topology.png)
 
 Select branch types to reduce
-    The topological reduction is a top feature of GridCal. With it you can remove the influence of the redundant
+    The topological reduction is a top feature of VeraGrid. With it you can remove the influence of the redundant
     branches. This is specially relevant when you are provided with grids that have thousands of switches and
     connection branches that add no simulation value. Those can be removed in a very smart way.
 
@@ -24,7 +24,7 @@ Filter by r+x under threshold
     is lower than a threshold. The threshold is given by the exponent number. i.e. 5 corresponds to `r+x < 1e-5`.
 
 Automatic layout algorithm
-    Another nice feature in GridCal is the ability to sort bus bar locations according to a graph algorithm.
+    Another nice feature in VeraGrid is the ability to sort bus bar locations according to a graph algorithm.
     This is especially useful when you are provided with a grid that has no schematic, where the graphical
     representation depict all the bus bars in the same place.
 
@@ -32,7 +32,7 @@ Ask before applying
     Raise a question before applying the graph layout algorithm.
 
 Node expansion factor
-    The nodes in GridCal can be expanded (far from each other) or shrink (closer) this parameter
+    The nodes in VeraGrid can be expanded (far from each other) or shrink (closer) this parameter
     set the "explosion" factor that determines how far from each other shall the nodes become.
 
 Branch rating factor
@@ -460,7 +460,7 @@ One would imagine that the intent behind CIM’s design philosophy is to model
 grids using **ConnectivityNodes**, with **TopologicalNodes** emerging naturally
 through topological reductions (e.g., simplifying branches).
 This implies that we should not share TopologicalNodes, since those are
-internal artifacts of a calculation software such as GridCal.
+internal artifacts of a calculation software such as VeraGrid.
 
 Over time, the practice of treating detailed models as node-breaker models
 and processed, less-detailed models as bus-branch has created an
@@ -481,9 +481,9 @@ complexity to modeling workflows. By adhering to this perspective, we can
 simplify processes and focus on building more efficient and accurate models.
 
 
-### How is it done in GridCal?
+### How is it done in VeraGrid?
 
-In GridCal, the **MultiCircuit** serves as the grid's in-memory database. It is
+In VeraGrid, the **MultiCircuit** serves as the grid's in-memory database. It is
 crucial that no topological processing is ever performed directly on the
 MultiCircuit. Doing so risks altering the topology of elements, potentially
 breaking the consistency of the original configuration.
@@ -498,12 +498,12 @@ making it impossible to restore the original topology. In CIM, this is probably 
 there are two distinct sets of objects; ConnectivityNode to maintain the structure
 and TopologicalNode to represent the final connectivity. This reinforces the idea
 that we must only model with ConnectivityNodes, which for simplicity are always
-buses in the end in GridCal.
+buses in the end in VeraGrid.
 
 **The Role of NumericalCircuit**
 
 If topology processing should not occur over the database, then where should it
-be done? The solution in GridCal is to provide the **NumericalCircuit**, a snapshot of
+be done? The solution in VeraGrid is to provide the **NumericalCircuit**, a snapshot of
 the MultiCircuit at a specific state. This snapshot is **fungible**, meaning any
 modifications made to it will not impact the original MultiCircuit and will
 vanish after the calculation. As such, all topology processing steps are
@@ -534,7 +534,7 @@ allowing for compatibility with the so-called legacy models.
 
 
 - Bus-branch and node-breaker modelling styles are the same thing.
-- In GridCal, always model with buses, you'll thank me later.
+- In VeraGrid, always model with buses, you'll thank me later.
 - In CIM/CGMES, model always with ConnectivityNodes and forget
   about the TopologicalNodes, you'll thank me later.
 - In topology processing, we use the find-islands algorithm, combined

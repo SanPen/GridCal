@@ -92,7 +92,7 @@ import os
 import VeraGridEngine as gce
 
 folder = os.path.join('Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+fname = os.path.join(folder, 'IEEE39_1W.veragrid')
 main_circuit = gce.open_file(fname)
 
 results = gce.contingencies_ts(circuit=main_circuit,

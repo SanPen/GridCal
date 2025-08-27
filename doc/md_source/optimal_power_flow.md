@@ -7,7 +7,7 @@ Solver
     Optimal power flow solver to use
 
     DC OPF: classic optimal power flow mixing active power with lines reactance.
-    AC OPF: Innovative linear AC optimal power flow based on the AC linear power flow implemented in GridCal.
+    AC OPF: Innovative linear AC optimal power flow based on the AC linear power flow implemented in VeraGrid.
 
 Load shedding
     This option activates the load shedding slack.
@@ -34,7 +34,7 @@ import numpy as np
 import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+fname = os.path.join(folder, 'IEEE39_1W.veragrid')
 
 main_circuit = gce.open_file(fname)
 
@@ -67,7 +67,7 @@ print('Nodal prices \n', opf_ts_driver.results.bus_shadow_prices)
 ### Run a linear optimization and verify with power flow
 
 Often ties, you want to dispatch the generation using a linear optimization, to then _verify_ the
-results using the power exact power flow. With GridCal, to do so is as easy as passing the results of the OPF into the
+results using the power exact power flow. With VeraGrid, to do so is as easy as passing the results of the OPF into the
 PowerFlowDriver:
 
 ```python
@@ -75,7 +75,7 @@ import os
 import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+fname = os.path.join(folder, 'IEEE39_1W.veragrid')
 
 main_circuit = gce.open_file(fname)
 
@@ -361,7 +361,7 @@ import os
 import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'hydro_simple.gridcal')
+fname = os.path.join(folder, 'hydro_simple.veragrid')
 grid = gce.open_file(fname)
 
 # Run the simulation
@@ -556,7 +556,7 @@ $$
 
 ### Linear optimal power flow considering hydro plants
 
-Just as power systems can be optimized by accounting for all their electrical assets, the same applies to hydropower infrastructure. In practice the operator ends up managing **two coupled networks of different natures**: one where electrons flow and another where fluid is transported. These networks must therefore be **simultaneously optimized**. GridCal now integrates models for a fluid (hydro‑electric) grid and extends the optimization routines to include them.
+Just as power systems can be optimized by accounting for all their electrical assets, the same applies to hydropower infrastructure. In practice the operator ends up managing **two coupled networks of different natures**: one where electrons flow and another where fluid is transported. These networks must therefore be **simultaneously optimized**. VeraGrid now integrates models for a fluid (hydro‑electric) grid and extends the optimization routines to include them.
 
 This document outlines the main additions:
 
@@ -745,13 +745,13 @@ Planning the generation for a given power network is typically done with **DC-Op
 which approximates the power-flow problem as a linear program to gain speed at the expense of accuracy.  
 Several works tackle the full non-linear **AC-OPF** instead, the most notable being the **MATPOWER** package.
 
-This technical note describes how the MATPOWER interior-point solver is integrated into the **GridCal** 
+This technical note describes how the MATPOWER interior-point solver is integrated into the **VeraGrid** 
 environment (Python) in order to add new modelling capabilities (e.g. transformer tap optimisation or 
 soft constraints for faster studies).
 
 The document is structured as follows:
 
-- Model construction from a GridCal object
+- Model construction from a VeraGrid object
 - Objective function and constraints
 - KKT conditions and Newton-Raphson method
 - Interior-Point algorithm
@@ -775,7 +775,7 @@ a subset with large/firm capacity is chosen as slack.  Each generator has a (qua
 
 All operational limits (voltages, flows, generation) enter the optimisation as constraints.
 
-##### 1.1 `NumericalCircuit` data extracted from GridCal
+##### 1.1 `NumericalCircuit` data extracted from VeraGrid
 
 | name | class / type | unit | description (size)                                     |
 |------|--------------|------|--------------------------------------------------------|

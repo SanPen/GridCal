@@ -36,7 +36,7 @@ def test_load_save_load() -> None:
 
         name, ext = os.path.splitext(os.path.basename(fname))
 
-        fname2 = os.path.join("output", name + '_to_save' + ext)
+        fname2 = os.path.join("output", name + '_to_save.veragrid')
 
         gce.save_file(grid=grid1, filename=fname2)
 
@@ -91,7 +91,7 @@ def test_load_save_load2() -> None:
     if not os.path.exists("output"):
         os.makedirs("output")
 
-    o_file = os.path.join("output", "test_load_save_load2.gridcal")
+    o_file = os.path.join("output", "test_load_save_load2.veragrid")
 
     gce.save_file(grid=grid1, filename=o_file)
 

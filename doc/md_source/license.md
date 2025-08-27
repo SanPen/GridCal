@@ -1,15 +1,15 @@
 # 📜 License
 
 
-GridCal is licensed under the [Mozilla Public License 2.0 (MPLv2)](https://mozilla.org/MPL/2.0/) 
+VeraGrid is licensed under the [Mozilla Public License 2.0 (MPLv2)](https://mozilla.org/MPL/2.0/) 
 
 In practical terms this means that:
 
-- You can use GridCal for commercial work.
-- You can sell commercial services based on GridCal.
-- If you distribute GridCal, you must distribute GridCal's source code as well.
+- You can use VeraGrid for commercial work.
+- You can sell commercial services based on VeraGrid.
+- If you distribute VeraGrid, you must distribute VeraGrid's source code as well.
   That is always achieved in practice with python code.
-- GridCal license does not propagate, even if you use GridCal or pieces of it in your code.
+- VeraGrid license does not propagate, even if you use VeraGrid or pieces of it in your code.
   However, you must retain the individual files licensing.
 
 Nonetheless, read the license carefully.
@@ -53,8 +53,8 @@ Nonetheless, read the license carefully.
 ## Dependency map
 
 ```
-gridcal                                   GridCal is a Power Systems simulation program intended for professional use and research
-├── GridCalEngine==5.3.53                 GridCal is a Power Systems simulation program intended for professional use and research
+gridcal                                   VeraGrid is a Power Systems simulation program intended for professional use and research
+├── VeraGridEngine==5.3.53                 VeraGrid is a Power Systems simulation program intended for professional use and research
 │   ├── autograd>=1.7.0                   Efficiently computes derivatives of NumPy code.
 │   │   └── numpy<3                       Fundamental package for array computing in Python
 │   ├── brotli                            Python bindings for the Brotli compression library

@@ -1,6 +1,6 @@
 # 🔥 Power flow
 
-GridCal has the most power flow features in any open-source software.
+VeraGrid has the most power flow features in any open-source software.
 This is the power flow settings page:
 
 ![](figures/settings-pf.png)
@@ -53,7 +53,7 @@ Flags:
 - **Retry with other methods is failed**:
     This option tries other numerical solvers to try to find a power flow solution.
     This option is relevant because different numerical algorithms may be more suited to certain grid configurations.
-    In general the Newton-Raphson implementation in GridCal includes back-tracing and other innovations that make it
+    In general the Newton-Raphson implementation in VeraGrid includes back-tracing and other innovations that make it
     a very competitive method to consider by default.
 
 - **Use initial guess**: In the buses there are two properties `Vm0`and `Va0` both serve to 
@@ -88,7 +88,7 @@ import os
 import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+fname = os.path.join(folder, 'IEEE39_1W.veragrid')
 main_circuit = gce.open_file(fname)
 
 results = gce.power_flow(main_circuit)
@@ -106,7 +106,7 @@ import os
 import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE14_from_raw.gridcal')
+fname = os.path.join(folder, 'IEEE14_from_raw.veragrid')
 main_circuit = gce.open_file(fname)
 
 options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
@@ -173,12 +173,12 @@ Branch results:
 
 ### Running Matpower grids
 
-![GridCal](figures/n_buses_vs_time.png)
+![VeraGrid](figures/n_buses_vs_time.png)
 
 Matpower's excellent formulations and consistency has allowed this and other
-projects to develop, relying on its sound math. That is why GridCal reads Matpower
+projects to develop, relying on its sound math. That is why VeraGrid reads Matpower
 cases out of the box, without you having to do anything special.
-And of course, GridCal solves all Matpower 8 provided grids,
+And of course, VeraGrid solves all Matpower 8 provided grids,
 solving the continental USA case in about 1 second:
 
 | name                    | n_buses | n_branches | P imbalance (%) | Flat start | converged | error (p.u.) | iterations | time (ms) |
@@ -487,7 +487,7 @@ number of buses by three, to account for the $abc$ phases. While this assumption
 it does not hold true when we enter the domain of distribution networks. In such systems, all kinds of elements can be
 present, with three-phase, two-phase, and single-phase components.
 
-Since GridCal aims to address both transmission and distribution systems, the assumption of simply tripling the number
+Since VeraGrid aims to address both transmission and distribution systems, the assumption of simply tripling the number
 of buses is not sufficient. A more advanced method must be implemented to accurately detect the real number of buses,
 taking into account the presence or absence of the three phases.
 
@@ -534,7 +534,7 @@ applied in a manner equivalent to the traditional single-phase power flow.
 
 ### Benchmark - IEEE 13 Node Test Feeder
 
-To validate the implementation in GridCal of the three-phase power flow algorithm, the IEEE 13 Node Test Feeder has 
+To validate the implementation in VeraGrid of the three-phase power flow algorithm, the IEEE 13 Node Test Feeder has 
 been selected as a reference benchmark. This distribution system model, published by the IEEE Distribution System
 Analysis Subcommittee, represents a typical North American urban radial distribution network.
 
@@ -552,7 +552,7 @@ downstream low-voltage level of 0,48 kV at bus 634. The total nominal load is ar
 residential, commercial, and industrial consumers. Due to the network's unbalanced and mixed-phase nature, this test feeder is widely recognised as a challenging yet
 representative case for validating unbalanced power flow solvers.
 
-The following code can be used to model the IEEE 13 Node Test Feeder in GridCal and to perform the three-phase
+The following code can be used to model the IEEE 13 Node Test Feeder in VeraGrid and to perform the three-phase
 unbalanced power flow, obtaining the voltage results depicted bellow.
 
 ```python
@@ -938,7 +938,7 @@ print(res.get_bus_df())
 # ----------------------------------------------------------------------------------------------------------------------
 # Save the grid
 # ----------------------------------------------------------------------------------------------------------------------
-gce.save_file(grid, "IEEE 13 Node Test Feeder.gridcal")
+gce.save_file(grid, "IEEE 13 Node Test Feeder.veragrid")
 ```
 
 #### Phase A

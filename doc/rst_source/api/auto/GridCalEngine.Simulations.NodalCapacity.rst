@@ -1,29 +1,29 @@
-GridCalEngine.Simulations.NodalCapacity package
+VeraGridEngine.Simulations.NodalCapacity package
 ===============================================
 
 Submodules
 ----------
 
-GridCalEngine.Simulations.NodalCapacity.nodal\_capacity\_options module
+VeraGridEngine.Simulations.NodalCapacity.nodal\_capacity\_options module
 -----------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.NodalCapacity.nodal_capacity_options
+.. automodule:: VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_options
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.NodalCapacity.nodal\_capacity\_ts\_driver module
+VeraGridEngine.Simulations.NodalCapacity.nodal\_capacity\_ts\_driver module
 --------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver
+.. automodule:: VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.NodalCapacity.nodal\_capacity\_ts\_results module
+VeraGridEngine.Simulations.NodalCapacity.nodal\_capacity\_ts\_results module
 ---------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_results
+.. automodule:: VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_results
    :members:
    :show-inheritance:
    :undoc-members:
@@ -31,7 +31,7 @@ GridCalEngine.Simulations.NodalCapacity.nodal\_capacity\_ts\_results module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Simulations.NodalCapacity
+.. automodule:: VeraGridEngine.Simulations.NodalCapacity
    :members:
    :show-inheritance:
    :undoc-members:

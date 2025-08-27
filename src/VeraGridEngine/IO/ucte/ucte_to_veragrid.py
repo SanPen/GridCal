@@ -139,8 +139,8 @@ def parse_transformer(ucte_grid: UcteCircuit, grid: MultiCircuit, bus_dict: Dict
     :return:
     """
     for ucte_elm in ucte_grid.transformers:
-        bus_f = bus_dict.get(ucte_elm.node2, None)  # regulated winding (in gridcal always the "from" bus)
-        bus_t = bus_dict.get(ucte_elm.node1, None)  # non-regulated winding (in gridcal always the "to" bus)
+        bus_f = bus_dict.get(ucte_elm.node2, None)  # regulated winding (in veragrid always the "from" bus)
+        bus_t = bus_dict.get(ucte_elm.node1, None)  # non-regulated winding (in veragrid always the "to" bus)
 
         if bus_f is not None and bus_t is not None:
             active, reducible = ucte_elm.is_active_and_reducible()
@@ -215,7 +215,7 @@ def parse_exchange_power(ucte_grid: UcteCircuit, grid: MultiCircuit, bus_dict: D
     pass
 
 
-def convert_ucte_to_gridcal(ucte_grid: UcteCircuit, logger: Logger) -> MultiCircuit:
+def convert_ucte_to_veragrid(ucte_grid: UcteCircuit, logger: Logger) -> MultiCircuit:
     """
     Convert UCTE grid to VeraGrid
     :param ucte_grid: UCTECircuit

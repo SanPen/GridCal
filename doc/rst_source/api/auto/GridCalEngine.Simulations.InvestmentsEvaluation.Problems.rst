@@ -1,37 +1,37 @@
-GridCalEngine.Simulations.InvestmentsEvaluation.Problems package
+VeraGridEngine.Simulations.InvestmentsEvaluation.Problems package
 ================================================================
 
 Submodules
 ----------
 
-GridCalEngine.Simulations.InvestmentsEvaluation.Problems.adequacy\_problem module
+VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.adequacy\_problem module
 ---------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.InvestmentsEvaluation.Problems.adequacy_problem
+.. automodule:: VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.adequacy_problem
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.InvestmentsEvaluation.Problems.black\_box\_problem\_template module
+VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.black\_box\_problem\_template module
 ---------------------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.InvestmentsEvaluation.Problems.black_box_problem_template
+.. automodule:: VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.black_box_problem_template
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.InvestmentsEvaluation.Problems.power\_flow\_problem module
+VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.power\_flow\_problem module
 ------------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.InvestmentsEvaluation.Problems.power_flow_problem
+.. automodule:: VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.power_flow_problem
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.InvestmentsEvaluation.Problems.power\_flow\_ts\_problem module
+VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.power\_flow\_ts\_problem module
 ----------------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.InvestmentsEvaluation.Problems.power_flow_ts_problem
+.. automodule:: VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.power_flow_ts_problem
    :members:
    :show-inheritance:
    :undoc-members:
@@ -39,7 +39,7 @@ GridCalEngine.Simulations.InvestmentsEvaluation.Problems.power\_flow\_ts\_proble
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Simulations.InvestmentsEvaluation.Problems
+.. automodule:: VeraGridEngine.Simulations.InvestmentsEvaluation.Problems
    :members:
    :show-inheritance:
    :undoc-members:

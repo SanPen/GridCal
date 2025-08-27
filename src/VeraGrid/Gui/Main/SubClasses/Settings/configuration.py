@@ -8,7 +8,7 @@ from typing import Dict, Union, Any
 from PySide6 import QtWidgets
 
 import VeraGrid.ThirdParty.qdarktheme as qdarktheme
-from VeraGridEngine.IO.file_system import get_create_gridcal_folder
+from VeraGridEngine.IO.file_system import get_create_veragrid_folder
 from VeraGrid.Gui.Main.SubClasses.Results.results import ResultsMain
 from VeraGrid.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from VeraGrid.Gui.Diagrams.generic_graphics import set_dark_mode, set_light_mode
@@ -168,7 +168,7 @@ class ConfigurationMain(ResultsMain):
         get the config file path
         :return: config file path
         """
-        return os.path.join(get_create_gridcal_folder(), 'gui_config.json')
+        return os.path.join(get_create_veragrid_folder(), 'gui_config.json')
 
     def config_file_exists(self) -> bool:
         """

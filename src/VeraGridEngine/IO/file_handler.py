@@ -11,17 +11,17 @@ from datetime import datetime
 from typing import Union, List, Any, Dict, TYPE_CHECKING
 
 from VeraGridEngine.IO.cim.cgmes.cgmes_create_instances import create_cgmes_headers
-from VeraGridEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes
+from VeraGridEngine.IO.cim.cgmes.veragrid_to_cgmes import veragrid_to_cgmes
 from VeraGridEngine.IO.cim.cgmes.cgmes_export import CimExporter
 from VeraGridEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.data_logger import DataLogger
 from VeraGridEngine.IO.veragrid.json_parser import save_json_file_v3
 from VeraGridEngine.IO.veragrid.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
-from VeraGridEngine.IO.veragrid.pack_unpack import gather_model_as_data_frames, parse_gridcal_data, gather_model_as_jsons
+from VeraGridEngine.IO.veragrid.pack_unpack import gather_model_as_data_frames, parse_veragrid_data, gather_model_as_jsons
 from VeraGridEngine.IO.matpower.legacy.matpower_parser import interpret_data_v1
 from VeraGridEngine.IO.matpower.matpower_circuit import MatpowerCircuit
-from VeraGridEngine.IO.matpower.matpower_to_gridcal import matpower_to_gridcal
+from VeraGridEngine.IO.matpower.matpower_to_veragrid import matpower_to_veragrid
 from VeraGridEngine.IO.dgs.dgs_parser import dgs_to_circuit
 from VeraGridEngine.IO.others.dpx_parser import load_dpx
 from VeraGridEngine.IO.others.ipa_parser import load_iPA
@@ -32,8 +32,8 @@ from VeraGridEngine.IO.raw.veragrid_to_raw import veragrid_to_raw
 from VeraGridEngine.IO.epc.epc_parser import PowerWorldParser
 from VeraGridEngine.IO.cim.cim16.cim_parser import CIMImport, CIMExport
 from VeraGridEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, is_valid_cgmes
-from VeraGridEngine.IO.cim.cgmes.cgmes_to_gridcal import cgmes_to_gridcal
-from VeraGridEngine.IO.veragrid.zip_interface import save_gridcal_data_to_zip, get_frames_from_zip
+from VeraGridEngine.IO.cim.cgmes.cgmes_to_veragrid import cgmes_to_veragrid
+from VeraGridEngine.IO.veragrid.zip_interface import save_veragrid_data_to_zip, get_frames_from_zip
 from VeraGridEngine.IO.veragrid.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from VeraGridEngine.IO.veragrid.h5_interface import save_h5, open_h5
 from VeraGridEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
@@ -41,8 +41,8 @@ from VeraGridEngine.IO.others.pypsa_parser import parse_pypsa_netcdf, parse_pyps
 from VeraGridEngine.IO.others.pandapower_parser import Panda2VeraGrid
 from VeraGridEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
 from VeraGridEngine.IO.ucte.devices.ucte_circuit import UcteCircuit
-from VeraGridEngine.IO.ucte.ucte_to_gridcal import convert_ucte_to_gridcal
-from VeraGridEngine.IO.others.rte_parser import rte2gridcal
+from VeraGridEngine.IO.ucte.ucte_to_veragrid import convert_ucte_to_veragrid
+from VeraGridEngine.IO.others.rte_parser import rte2veragrid
 
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Simulations.results_template import DriverToSave
@@ -92,7 +92,7 @@ class FileSavingOptions:
 
         self.dictionary_of_json_files = dictionary_of_json_files if dictionary_of_json_files else dict()
 
-        # File type description as it appears in the file saving dialogue i.e. VeraGrid zip (*.gridcal)
+        # File type description as it appears in the file saving dialogue i.e. VeraGrid zip (*.veragrid)
         self.type_selected: str = ""
 
         # CGMES profile list
@@ -233,15 +233,15 @@ class FileOpen:
                                                   cgmes_map_areas_like_raw=self.options.cgmes_map_areas_like_raw,
                                                   progress_func=progress_func, logger=self.cgmes_logger)
                 self.cgmes_circuit.parse_files(data_parser=data_parser)
-                self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit,
-                                                map_dc_to_hvdc_line=self.options.try_to_map_dc_to_hvdc_line,
-                                                logger=self.cgmes_logger)
+                self.circuit = cgmes_to_veragrid(cgmes_model=self.cgmes_circuit,
+                                                 map_dc_to_hvdc_line=self.options.try_to_map_dc_to_hvdc_line,
+                                                 logger=self.cgmes_logger)
 
             elif looks_like_ucte:
 
                 ucte_grid = UcteCircuit()
                 ucte_grid.parse_file(files=self.file_name, logger=self.logger)
-                self.circuit = convert_ucte_to_gridcal(ucte_grid=ucte_grid, logger=self.logger)
+                self.circuit = convert_ucte_to_veragrid(ucte_grid=ucte_grid, logger=self.logger)
 
             else:
                 for f in self.file_name:
@@ -271,17 +271,17 @@ class FileOpen:
 
                     elif data_dictionary['version'] == 4.0:
                         if data_dictionary is not None:
-                            self.circuit = parse_gridcal_data(data=data_dictionary,
-                                                              text_func=text_func,
-                                                              progress_func=progress_func,
-                                                              logger=self.logger)
+                            self.circuit = parse_veragrid_data(data=data_dictionary,
+                                                               text_func=text_func,
+                                                               progress_func=progress_func,
+                                                               logger=self.logger)
                         else:
                             self.logger.add("Error while reading the file :(")
                             return None
                     else:
                         self.logger.add('The file could not be processed')
 
-                elif file_extension.lower() in ['.gridcal']:
+                elif file_extension.lower() in ['.gridcal', '.veragrid']:
 
                     # open file content
                     data_dictionary, self.json_files = get_frames_from_zip(self.file_name,
@@ -290,15 +290,15 @@ class FileOpen:
                                                                            logger=self.logger)
                     # interpret file content
                     if data_dictionary is not None:
-                        self.circuit = parse_gridcal_data(data=data_dictionary,
-                                                          text_func=text_func,
-                                                          progress_func=progress_func,
-                                                          logger=self.logger)
+                        self.circuit = parse_veragrid_data(data=data_dictionary,
+                                                           text_func=text_func,
+                                                           progress_func=progress_func,
+                                                           logger=self.logger)
                     else:
                         self.logger.add("Error while reading the file :(")
                         return None
 
-                elif file_extension.lower() in ['.dgridcal']:
+                elif file_extension.lower() in ['.dgridcal', '.dveragrid']:
 
                     # open file content
                     data_dictionary, self.json_files = get_frames_from_zip(self.file_name,
@@ -307,11 +307,11 @@ class FileOpen:
                                                                            logger=self.logger)
                     # interpret file content
                     if data_dictionary is not None:
-                        self.circuit = parse_gridcal_data(data=data_dictionary,
-                                                          previous_circuit=self._previous_circuit,
-                                                          text_func=text_func,
-                                                          progress_func=progress_func,
-                                                          logger=self.logger)
+                        self.circuit = parse_veragrid_data(data=data_dictionary,
+                                                           previous_circuit=self._previous_circuit,
+                                                           text_func=text_func,
+                                                           progress_func=progress_func,
+                                                           logger=self.logger)
                     else:
                         self.logger.add("Error while reading the file :(")
                         return None
@@ -324,7 +324,7 @@ class FileOpen:
                                                                    progress_func=progress_func)
                     # interpret file content
                     if data_dictionary is not None:
-                        self.circuit = parse_gridcal_data(data_dictionary, logger=self.logger)
+                        self.circuit = parse_veragrid_data(data_dictionary, logger=self.logger)
                     else:
                         self.logger.add("Error while reading the file :(")
                         return None
@@ -339,7 +339,7 @@ class FileOpen:
                     # self.circuit, log = parse_matpower_file(self.file_name)
                     m_grid = MatpowerCircuit()
                     m_grid.read_file(file_name=self.file_name)
-                    self.circuit = matpower_to_gridcal(m_grid, self.logger)
+                    self.circuit = matpower_to_veragrid(m_grid, self.logger)
 
                 elif file_extension.lower() == '.dpx':
                     self.circuit, log = load_dpx(self.file_name)
@@ -364,7 +364,7 @@ class FileOpen:
                                     elif version == 3:
                                         self.circuit = parse_json_data_v3(data, self.logger)
                                     else:
-                                        self.logger.add_error('Recognised as a gridCal compatible Json '
+                                        self.logger.add_error('Recognised as a VeraGrid compatible Json '
                                                               'but the version is not supported')
 
                             else:
@@ -422,7 +422,7 @@ class FileOpen:
                             logger=self.cgmes_logger
                         )
                         self.cgmes_circuit.parse_files(data_parser=data_parser)
-                        self.circuit = cgmes_to_gridcal(
+                        self.circuit = cgmes_to_veragrid(
                             cgmes_model=self.cgmes_circuit,
                             map_dc_to_hvdc_line=self.options.try_to_map_dc_to_hvdc_line,
                             logger=self.cgmes_logger
@@ -433,7 +433,7 @@ class FileOpen:
 
                     else:
                         # try RTE format
-                        circuit, is_valid_rte = rte2gridcal(self.file_name, self.logger)
+                        circuit, is_valid_rte = rte2veragrid(self.file_name, self.logger)
                         if is_valid_rte:
                             self.circuit = circuit
                         else:
@@ -454,7 +454,7 @@ class FileOpen:
                 elif file_extension.lower() == '.uct' or file_extension.lower() == '.ucte':
                     ucte_grid = UcteCircuit()
                     ucte_grid.parse_file(files=[self.file_name], logger=self.logger)
-                    self.circuit = convert_ucte_to_gridcal(ucte_grid=ucte_grid, logger=self.logger)
+                    self.circuit = convert_ucte_to_veragrid(ucte_grid=ucte_grid, logger=self.logger)
 
             else:
                 # warn('The file does not exist.')
@@ -519,7 +519,7 @@ class FileSave:
         if self.file_name.endswith('.xlsx'):
             logger = self.save_excel()
 
-        elif self.file_name.endswith('.gridcal') or self.file_name.endswith('.dgridcal'):
+        elif self.file_name.endswith('.veragrid') or self.file_name.endswith('.dveragrid'):
             logger = self.save_zip()
 
         elif self.file_name.endswith('.sqlite'):
@@ -579,15 +579,15 @@ class FileSave:
 
         model_data = gather_model_as_jsons(self.circuit)
 
-        save_gridcal_data_to_zip(dfs=dfs,
-                                 filename_zip=self.file_name,
-                                 model_data=model_data,
-                                 sessions_data=self.options.sessions_data,
-                                 diagrams=self.circuit.diagrams,
-                                 json_files=self.options.dictionary_of_json_files,
-                                 text_func=self.text_func,
-                                 progress_func=self.progress_func,
-                                 logger=logger)
+        save_veragrid_data_to_zip(dfs=dfs,
+                                  filename_zip=self.file_name,
+                                  model_data=model_data,
+                                  sessions_data=self.options.sessions_data,
+                                  diagrams=self.circuit.diagrams,
+                                  json_files=self.options.dictionary_of_json_files,
+                                  text_func=self.text_func,
+                                  progress_func=self.progress_func,
+                                  logger=logger)
 
         return logger
 
@@ -654,11 +654,11 @@ class FileSave:
         nc = compile_numerical_circuit_at(self.circuit)
         pf_results = self.options.get_power_flow_results()
 
-        cgmes_circuit = gridcal_to_cgmes(gc_model=self.circuit,
-                                         num_circ=nc,
-                                         cgmes_model=cgmes_circuit,
-                                         pf_results=pf_results,
-                                         logger=logger)
+        cgmes_circuit = veragrid_to_cgmes(gc_model=self.circuit,
+                                          num_circ=nc,
+                                          cgmes_model=cgmes_circuit,
+                                          pf_results=pf_results,
+                                          logger=logger)
 
         fn, _ = os.path.splitext(os.path.basename(self.file_name))
         filename_in_parts = fn.split('_')

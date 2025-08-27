@@ -122,7 +122,7 @@ class CustomInstall(install):
                 [Desktop Entry]
                 Name=VeraGrid
                 Comment=Power systems done right
-                Exec=gridcal
+                Exec=veragrid
                 Icon=~/.local/share/icons/hicolor/scalable/apps/VeraGrid.svg
                 Terminal=false
                 Type=Application

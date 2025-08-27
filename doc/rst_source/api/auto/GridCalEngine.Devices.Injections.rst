@@ -1,77 +1,77 @@
-GridCalEngine.Devices.Injections package
+VeraGridEngine.Devices.Injections package
 ========================================
 
 Submodules
 ----------
 
-GridCalEngine.Devices.Injections.battery module
+VeraGridEngine.Devices.Injections.battery module
 -----------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Injections.battery
+.. automodule:: VeraGridEngine.Devices.Injections.battery
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Injections.controllable\_shunt module
+VeraGridEngine.Devices.Injections.controllable\_shunt module
 -----------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Injections.controllable_shunt
+.. automodule:: VeraGridEngine.Devices.Injections.controllable_shunt
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Injections.current\_injection module
+VeraGridEngine.Devices.Injections.current\_injection module
 ----------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Injections.current_injection
+.. automodule:: VeraGridEngine.Devices.Injections.current_injection
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Injections.external\_grid module
+VeraGridEngine.Devices.Injections.external\_grid module
 ------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Injections.external_grid
+.. automodule:: VeraGridEngine.Devices.Injections.external_grid
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Injections.generator module
+VeraGridEngine.Devices.Injections.generator module
 -------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Injections.generator
+.. automodule:: VeraGridEngine.Devices.Injections.generator
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Injections.generator\_q\_curve module
+VeraGridEngine.Devices.Injections.generator\_q\_curve module
 -----------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Injections.generator_q_curve
+.. automodule:: VeraGridEngine.Devices.Injections.generator_q_curve
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Injections.load module
+VeraGridEngine.Devices.Injections.load module
 --------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Injections.load
+.. automodule:: VeraGridEngine.Devices.Injections.load
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Injections.shunt module
+VeraGridEngine.Devices.Injections.shunt module
 ---------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Injections.shunt
+.. automodule:: VeraGridEngine.Devices.Injections.shunt
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Injections.static\_generator module
+VeraGridEngine.Devices.Injections.static\_generator module
 ---------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Injections.static_generator
+.. automodule:: VeraGridEngine.Devices.Injections.static_generator
    :members:
    :show-inheritance:
    :undoc-members:
@@ -79,7 +79,7 @@ GridCalEngine.Devices.Injections.static\_generator module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Devices.Injections
+.. automodule:: VeraGridEngine.Devices.Injections
    :members:
    :show-inheritance:
    :undoc-members:

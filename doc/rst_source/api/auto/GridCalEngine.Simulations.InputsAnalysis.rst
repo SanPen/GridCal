@@ -1,13 +1,13 @@
-GridCalEngine.Simulations.InputsAnalysis package
+VeraGridEngine.Simulations.InputsAnalysis package
 ================================================
 
 Submodules
 ----------
 
-GridCalEngine.Simulations.InputsAnalysis.inputs\_analysis\_driver module
+VeraGridEngine.Simulations.InputsAnalysis.inputs\_analysis\_driver module
 ------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.InputsAnalysis.inputs_analysis_driver
+.. automodule:: VeraGridEngine.Simulations.InputsAnalysis.inputs_analysis_driver
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ GridCalEngine.Simulations.InputsAnalysis.inputs\_analysis\_driver module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Simulations.InputsAnalysis
+.. automodule:: VeraGridEngine.Simulations.InputsAnalysis
    :members:
    :show-inheritance:
    :undoc-members:

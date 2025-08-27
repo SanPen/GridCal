@@ -1,53 +1,53 @@
-GridCalEngine.Compilers package
+VeraGridEngine.Compilers package
 ===============================
 
 Submodules
 ----------
 
-GridCalEngine.Compilers.circuit\_to\_bentayga module
+VeraGridEngine.Compilers.circuit\_to\_bentayga module
 ----------------------------------------------------
 
-.. automodule:: GridCalEngine.Compilers.circuit_to_bentayga
+.. automodule:: VeraGridEngine.Compilers.circuit_to_bentayga
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Compilers.circuit\_to\_data module
+VeraGridEngine.Compilers.circuit\_to\_data module
 ------------------------------------------------
 
-.. automodule:: GridCalEngine.Compilers.circuit_to_data
+.. automodule:: VeraGridEngine.Compilers.circuit_to_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Compilers.circuit\_to\_gslv module
+VeraGridEngine.Compilers.circuit\_to\_gslv module
 ------------------------------------------------
 
-.. automodule:: GridCalEngine.Compilers.circuit_to_gslv
+.. automodule:: VeraGridEngine.Compilers.circuit_to_gslv
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Compilers.circuit\_to\_newton\_pa module
+VeraGridEngine.Compilers.circuit\_to\_newton\_pa module
 ------------------------------------------------------
 
-.. automodule:: GridCalEngine.Compilers.circuit_to_newton_pa
+.. automodule:: VeraGridEngine.Compilers.circuit_to_newton_pa
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Compilers.circuit\_to\_optimods module
+VeraGridEngine.Compilers.circuit\_to\_optimods module
 ----------------------------------------------------
 
-.. automodule:: GridCalEngine.Compilers.circuit_to_optimods
+.. automodule:: VeraGridEngine.Compilers.circuit_to_optimods
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Compilers.circuit\_to\_pgm module
+VeraGridEngine.Compilers.circuit\_to\_pgm module
 -----------------------------------------------
 
-.. automodule:: GridCalEngine.Compilers.circuit_to_pgm
+.. automodule:: VeraGridEngine.Compilers.circuit_to_pgm
    :members:
    :show-inheritance:
    :undoc-members:
@@ -55,7 +55,7 @@ GridCalEngine.Compilers.circuit\_to\_pgm module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Compilers
+.. automodule:: VeraGridEngine.Compilers
    :members:
    :show-inheritance:
    :undoc-members:

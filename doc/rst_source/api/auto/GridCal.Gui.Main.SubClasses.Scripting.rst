@@ -1,13 +1,13 @@
-GridCal.Gui.Main.SubClasses.Scripting package
+VeraGrid.Gui.Main.SubClasses.Scripting package
 =============================================
 
 Submodules
 ----------
 
-GridCal.Gui.Main.SubClasses.Scripting.scripting module
+VeraGrid.Gui.Main.SubClasses.Scripting.scripting module
 ------------------------------------------------------
 
-.. automodule:: GridCal.Gui.Main.SubClasses.Scripting.scripting
+.. automodule:: VeraGrid.Gui.Main.SubClasses.Scripting.scripting
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ GridCal.Gui.Main.SubClasses.Scripting.scripting module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.Main.SubClasses.Scripting
+.. automodule:: VeraGrid.Gui.Main.SubClasses.Scripting
    :members:
    :show-inheritance:
    :undoc-members:

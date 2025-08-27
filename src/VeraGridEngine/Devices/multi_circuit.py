@@ -2464,7 +2464,7 @@ class MultiCircuit(Assets):
         original_line.active = False
         original_line.active_prof.fill(False)
 
-        # add to gridcal the new 2 lines and the bus
+        # add to veragrid the new 2 lines and the bus
         self.add_substation(obj=mid_sub)
         self.add_voltage_level(obj=mid_vl)
         self.add_bus(mid_bus)
@@ -2619,7 +2619,7 @@ class MultiCircuit(Assets):
         original_line.active = False
         original_line.active_prof.fill(False)
 
-        # add to gridcal the new 2 lines and the bus
+        # add to veragrid the new 2 lines and the bus
         self.add_substation(obj=mid_sub)
         self.add_voltage_level(obj=mid_vl)
         self.add_bus(B1)

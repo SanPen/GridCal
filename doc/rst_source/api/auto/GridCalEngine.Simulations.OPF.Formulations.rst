@@ -1,13 +1,13 @@
-GridCalEngine.Simulations.OPF.Formulations package
+VeraGridEngine.Simulations.OPF.Formulations package
 ==================================================
 
 Submodules
 ----------
 
-GridCalEngine.Simulations.OPF.Formulations.ac\_opf\_problem module
+VeraGridEngine.Simulations.OPF.Formulations.ac\_opf\_problem module
 ------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.OPF.Formulations.ac_opf_problem
+.. automodule:: VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ GridCalEngine.Simulations.OPF.Formulations.ac\_opf\_problem module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Simulations.OPF.Formulations
+.. automodule:: VeraGridEngine.Simulations.OPF.Formulations
    :members:
    :show-inheritance:
    :undoc-members:

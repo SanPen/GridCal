@@ -135,7 +135,7 @@ class IoMain(ConfigurationMain):
                     if file_extension.lower() in self.accepted_extensions:
                         file_names.append(file_name)
 
-                        if file_name.endswith('.dgridcal'):
+                        if file_name.endswith('.dgridcal') or file_name.endswith('.dveragrid'):
                             any_grid_delta = True
                         elif file_name.endswith('.gcplugin'):
                             self.install_plugin_now(file_name)
@@ -253,10 +253,10 @@ class IoMain(ConfigurationMain):
         :param title: Title of the open window
         """
 
-        files_types = "*.gridcal "
+        files_types = "*.gridcal *.veragrid"
 
         if allow_diff_file_format:
-            files_types += "*.dgridcal "
+            files_types += "*.dgridcal *.dveragrid"
 
         files_types += "*.gch5 *.xlsx *.xls *.sqlite *.dgs "
         files_types += "*.m *.raw *.RAW *.rawx *.uct *.json *.ejson2 *.ejson3 *.xml "
@@ -449,7 +449,7 @@ class IoMain(ConfigurationMain):
             if info is not None:
 
                 if not info.is_compatible():
-                    error_msg(f"{info.name} {info.version} requires VeraGrid {info.gridcal_version}",
+                    error_msg(f"{info.name} {info.version} requires VeraGrid {info.veragrid_version}",
                               "Plugin install")
                     return
 
@@ -713,7 +713,7 @@ class IoMain(ConfigurationMain):
         Save the file right now, without questions
         :param filename: filename to save to
         :param type_selected: File type description as it appears
-                              in the file saving dialogue i.e. VeraGrid zip (*.gridcal)
+                              in the file saving dialogue i.e. VeraGrid zip (*.veragrid)
         :param grid: MultiCircuit or None, if None, self.circuit is taken
         """
 

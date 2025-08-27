@@ -15,7 +15,7 @@ import VeraGridEngine.Devices as dev
 from VeraGridEngine.Devices.Parents.editable_device import GCProp
 from VeraGridEngine.Devices.profile import Profile
 from VeraGridEngine.Devices.Dynamic.dynamic_model_host import DynamicModelHost
-from VeraGridEngine.Devices.types import ALL_DEV_TYPES, GRIDCAL_FILE_TYPE
+from VeraGridEngine.Devices.types import ALL_DEV_TYPES, VERAGRID_FILE_TYPE
 from VeraGridEngine.enumerations import (DiagramType, DeviceType, SubObjectType, TapPhaseControl, TapModuleControl,
                                          ContingencyOperationTypes)
 
@@ -378,7 +378,7 @@ def get_profile_from_dict(profile: Profile,
     profile.set_initialized()
 
 
-def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
+def veragrid_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
     """
 
     :param elm:
@@ -464,7 +464,7 @@ def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
         if len(lists_of_objects) > 0:
 
             for k, elm in enumerate(lists_of_objects):
-                obj_data = gridcal_object_to_json(elm)
+                obj_data = veragrid_object_to_json(elm)
                 object_json.append(obj_data)
 
         data[object_type_name] = object_json
@@ -1318,15 +1318,15 @@ def handle_legacy_jsons(model_data: Dict[str, List],
                                 value=f"{generator.name} -> {emission.name} at {rate}")
 
 
-def parse_gridcal_data(data: GRIDCAL_FILE_TYPE,
-                       previous_circuit: Union[MultiCircuit, None] = None,
-                       text_func: Union[Callable, None] = None,
-                       progress_func: Union[Callable, None] = None,
-                       logger: Logger = Logger()) -> MultiCircuit:
+def parse_veragrid_data(data: VERAGRID_FILE_TYPE,
+                        previous_circuit: Union[MultiCircuit, None] = None,
+                        text_func: Union[Callable, None] = None,
+                        progress_func: Union[Callable, None] = None,
+                        logger: Logger = Logger()) -> MultiCircuit:
     """
     Interpret data
     :param data: dictionary of data frames and other information
-    :param previous_circuit: Optional previous gridcal circuit. This is relevant in case of loading grid increments
+    :param previous_circuit: Optional previous VeraGrid circuit. This is relevant in case of loading grid increments
     :param text_func: text callback function
     :param progress_func: progress callback function
     :param logger: Logger to register events

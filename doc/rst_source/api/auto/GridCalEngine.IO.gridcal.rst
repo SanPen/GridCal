@@ -1,93 +1,93 @@
-GridCalEngine.IO.gridcal package
+VeraGridEngine.IO.veragrid package
 ================================
 
 Submodules
 ----------
 
-GridCalEngine.IO.gridcal.catalogue module
+VeraGridEngine.IO.veragrid.catalogue module
 -----------------------------------------
 
-.. automodule:: GridCalEngine.IO.gridcal.catalogue
+.. automodule:: VeraGridEngine.IO.veragrid.catalogue
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.gridcal.contingency\_parser module
+VeraGridEngine.IO.veragrid.contingency\_parser module
 ---------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.gridcal.contingency_parser
+.. automodule:: VeraGridEngine.IO.veragrid.contingency_parser
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.gridcal.excel\_interface module
+VeraGridEngine.IO.veragrid.excel\_interface module
 ------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.gridcal.excel_interface
+.. automodule:: VeraGridEngine.IO.veragrid.excel_interface
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.gridcal.generic\_io\_functions module
+VeraGridEngine.IO.veragrid.generic\_io\_functions module
 ------------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.gridcal.generic_io_functions
+.. automodule:: VeraGridEngine.IO.veragrid.generic_io_functions
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.gridcal.h5\_interface module
+VeraGridEngine.IO.veragrid.h5\_interface module
 ---------------------------------------------
 
-.. automodule:: GridCalEngine.IO.gridcal.h5_interface
+.. automodule:: VeraGridEngine.IO.veragrid.h5_interface
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.gridcal.json\_parser module
+VeraGridEngine.IO.veragrid.json\_parser module
 --------------------------------------------
 
-.. automodule:: GridCalEngine.IO.gridcal.json_parser
+.. automodule:: VeraGridEngine.IO.veragrid.json_parser
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.gridcal.pack\_unpack module
+VeraGridEngine.IO.veragrid.pack\_unpack module
 --------------------------------------------
 
-.. automodule:: GridCalEngine.IO.gridcal.pack_unpack
+.. automodule:: VeraGridEngine.IO.veragrid.pack_unpack
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.gridcal.remote module
+VeraGridEngine.IO.veragrid.remote module
 --------------------------------------
 
-.. automodule:: GridCalEngine.IO.gridcal.remote
+.. automodule:: VeraGridEngine.IO.veragrid.remote
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.gridcal.results\_export module
+VeraGridEngine.IO.veragrid.results\_export module
 -----------------------------------------------
 
-.. automodule:: GridCalEngine.IO.gridcal.results_export
+.. automodule:: VeraGridEngine.IO.veragrid.results_export
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.gridcal.sqlite\_interface module
+VeraGridEngine.IO.veragrid.sqlite\_interface module
 -------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.gridcal.sqlite_interface
+.. automodule:: VeraGridEngine.IO.veragrid.sqlite_interface
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.gridcal.zip\_interface module
+VeraGridEngine.IO.veragrid.zip\_interface module
 ----------------------------------------------
 
-.. automodule:: GridCalEngine.IO.gridcal.zip_interface
+.. automodule:: VeraGridEngine.IO.veragrid.zip_interface
    :members:
    :show-inheritance:
    :undoc-members:
@@ -95,7 +95,7 @@ GridCalEngine.IO.gridcal.zip\_interface module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.IO.gridcal
+.. automodule:: VeraGridEngine.IO.veragrid
    :members:
    :show-inheritance:
    :undoc-members:

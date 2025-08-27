@@ -119,4 +119,4 @@ CONNECTION_TYPE = Union[Bus, None]
 ASSOCIATION_TYPES = Union[Fuel, Technology, EmissionGas]
 
 # this is the data type of the VeraGrid Json
-GRIDCAL_FILE_TYPE = Dict[str, Union[str, float, pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]]
+VERAGRID_FILE_TYPE = Dict[str, Union[str, float, pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]]

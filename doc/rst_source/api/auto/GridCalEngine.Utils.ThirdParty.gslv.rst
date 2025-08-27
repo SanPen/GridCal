@@ -1,13 +1,13 @@
-GridCalEngine.Utils.ThirdParty.gslv package
+VeraGridEngine.Utils.ThirdParty.gslv package
 ===========================================
 
 Submodules
 ----------
 
-GridCalEngine.Utils.ThirdParty.gslv.gslv\_activation module
+VeraGridEngine.Utils.ThirdParty.gslv.gslv\_activation module
 -----------------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.ThirdParty.gslv.gslv_activation
+.. automodule:: VeraGridEngine.Utils.ThirdParty.gslv.gslv_activation
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ GridCalEngine.Utils.ThirdParty.gslv.gslv\_activation module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Utils.ThirdParty.gslv
+.. automodule:: VeraGridEngine.Utils.ThirdParty.gslv
    :members:
    :show-inheritance:
    :undoc-members:

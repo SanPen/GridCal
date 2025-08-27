@@ -1,13 +1,13 @@
 # 📊 User interface
 
 
-The user interface of GridCal is written using the Qt graphical interface
-framework. This allows GridCal to be multi-platform and to have sufficient
+The user interface of VeraGrid is written using the Qt graphical interface
+framework. This allows VeraGrid to be multi-platform and to have sufficient
 performance to handle thousands of graphical items in the editor, to be
 responsive and plenty of other attributes of consumer software.
 
-![](figures/gridcal_gui.png)    
-    GridCal user interface representing  a zoom of a ~600 node distribution grid.
+![](figures/veragrid_gui.png)    
+    VeraGrid user interface representing  a zoom of a ~600 node distribution grid.
 
 The graphical user interface (GUI) makes extensive use of tooltip texts. These area yellow tags that appear
 when you hover the mouse cursor over a button from the interface. The tooltip texts are meant to be explanatory
@@ -23,7 +23,7 @@ The model view is where all the editing is done.
 ## Schematic editor
 
 
-The schematic view is where you construct the grid in GridCal. The usage is quite simple:
+The schematic view is where you construct the grid in VeraGrid. The usage is quite simple:
 
 - Drag & Drop the buses from the left upper side into the main panel.
 - Click on a bus bar (black line) and drag the link into another bus bar, a branch will be created.
@@ -49,7 +49,7 @@ allow you to visualize each individual step of the simulation and navigate throu
 
 ## Tabular editor
 
-Sometimes is far more practical to edit the objects in bulk. For that, GridCal features the tabular view
+Sometimes is far more practical to edit the objects in bulk. For that, VeraGrid features the tabular view
 of the objects. All the static properties of the objects can be edited here. For the properties with time series
 we have the "time events" tab.
 
@@ -73,7 +73,7 @@ The database and the results tab contain search boxes to perform advanced search
 
 Here we explain how to compose a search query.
 
-Queries in GridCal are made by using the following synthax:
+Queries in VeraGrid are made by using the following synthax:
 
 ```
     [subject] [operation] [value] [and/or] [subject] [operation] [value] [and/or] ...
@@ -113,7 +113,7 @@ or a list of values provided between brackets [val1, val2, ...]
 
 ## Grid analysis and diagnostic
 
-GridCal features an analysis and diagnostics tool (F8) that allows to inspect at a glance the main magnitudes
+VeraGrid features an analysis and diagnostics tool (F8) that allows to inspect at a glance the main magnitudes
 of the grid objects. For instance if there were outliers in the branches resistance, it would be evident
 from the histogram charts.
 
@@ -160,7 +160,7 @@ various magnitudes of the program.
 
 ![](figures/model-time.png)
 
-The time series is what make GridCal what it is. To handle time series efficiently by design is what made me
+The time series is what make VeraGrid what it is. To handle time series efficiently by design is what made me
 design this program.
 
 ## Profiles importer
@@ -214,7 +214,7 @@ copy it to a spreadsheet software, or save them for later use.
 ## Console
 
 
-The console in GridCal is a very nice addition that allows some degree of automation within the graphical
+The console in VeraGrid is a very nice addition that allows some degree of automation within the graphical
 user interface. The console is a normal python console (embedded in a python program!) where the circuit declared
 in the user interface (app) is accessible (App.circuit).
 
@@ -228,7 +228,7 @@ perform with scripts can be done here.
 The general settings are:
 
 Base power
-    GridCal works with the magnitudes in per unit.
+    VeraGrid works with the magnitudes in per unit.
     In the per unit system the base magnitude is set in advance.
     This is the base value of the power in MVA. It is advised not to be changed.
 

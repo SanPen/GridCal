@@ -10,7 +10,7 @@ from sphinx.cmd.build import build_main
 # source_dir = os.path.join('.', 'rst_source')
 build_dir = './build'
 confdir = '.'
-# doctreedir = os.path.abspath('../src/GridCal')
+# doctreedir = os.path.abspath('../src/VeraGrid')
 builder = 'html'
 
 # Call the build_main function

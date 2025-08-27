@@ -673,7 +673,7 @@ def convert_converters(circuit: MultiCircuit,
         logger.add_info('Branch as 2w transformer', f'Branch {code}')
 
 
-def matpower_to_gridcal(m_grid: MatpowerCircuit, logger: Logger) -> MultiCircuit:
+def matpower_to_veragrid(m_grid: MatpowerCircuit, logger: Logger) -> MultiCircuit:
     """
 
     :param m_grid:

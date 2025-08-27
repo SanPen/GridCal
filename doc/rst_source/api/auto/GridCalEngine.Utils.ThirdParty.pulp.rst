@@ -1,4 +1,4 @@
-GridCalEngine.Utils.ThirdParty.pulp package
+VeraGridEngine.Utils.ThirdParty.pulp package
 ===========================================
 
 Subpackages
@@ -7,56 +7,56 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.Utils.ThirdParty.pulp.apis
-   GridCalEngine.Utils.ThirdParty.pulp.model
+   VeraGridEngine.Utils.ThirdParty.pulp.apis
+   VeraGridEngine.Utils.ThirdParty.pulp.model
 
 Submodules
 ----------
 
-GridCalEngine.Utils.ThirdParty.pulp.constants module
+VeraGridEngine.Utils.ThirdParty.pulp.constants module
 ----------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.ThirdParty.pulp.constants
+.. automodule:: VeraGridEngine.Utils.ThirdParty.pulp.constants
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.ThirdParty.pulp.mps\_lp module
+VeraGridEngine.Utils.ThirdParty.pulp.mps\_lp module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.ThirdParty.pulp.mps_lp
+.. automodule:: VeraGridEngine.Utils.ThirdParty.pulp.mps_lp
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.ThirdParty.pulp.paths module
+VeraGridEngine.Utils.ThirdParty.pulp.paths module
 ------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.ThirdParty.pulp.paths
+.. automodule:: VeraGridEngine.Utils.ThirdParty.pulp.paths
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.ThirdParty.pulp.pulp module
+VeraGridEngine.Utils.ThirdParty.pulp.pulp module
 -----------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.ThirdParty.pulp.pulp
+.. automodule:: VeraGridEngine.Utils.ThirdParty.pulp.pulp
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.ThirdParty.pulp.sparse module
+VeraGridEngine.Utils.ThirdParty.pulp.sparse module
 -------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.ThirdParty.pulp.sparse
+.. automodule:: VeraGridEngine.Utils.ThirdParty.pulp.sparse
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.ThirdParty.pulp.utilities module
+VeraGridEngine.Utils.ThirdParty.pulp.utilities module
 ----------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.ThirdParty.pulp.utilities
+.. automodule:: VeraGridEngine.Utils.ThirdParty.pulp.utilities
    :members:
    :show-inheritance:
    :undoc-members:
@@ -64,7 +64,7 @@ GridCalEngine.Utils.ThirdParty.pulp.utilities module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Utils.ThirdParty.pulp
+.. automodule:: VeraGridEngine.Utils.ThirdParty.pulp
    :members:
    :show-inheritance:
    :undoc-members:

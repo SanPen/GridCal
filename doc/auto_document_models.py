@@ -329,7 +329,7 @@ def write_models_to_rst(filename):
 
         write_dataframes_to_rst2(w, cgmes_info, "CGMES")
         write_dataframes_to_rst2(w, psse_info, "PSSE")
-        write_dataframes_to_rst2(w, gridcal_info, "GridCal")
+        write_dataframes_to_rst2(w, gridcal_info, "VeraGrid")
 
 
 def write_models_to_md(filename):
@@ -344,7 +344,7 @@ def write_models_to_md(filename):
         cgmes_info = get_cgmes_data_frames()
         gridcal_info = get_gridcal_data_frames()
 
-        write_dataframes_to_md(w, gridcal_info, "GridCal")
+        write_dataframes_to_md(w, gridcal_info, "VeraGrid")
         write_dataframes_to_md(w, cgmes_info, "CGMES")
 
 

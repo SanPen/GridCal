@@ -1,37 +1,37 @@
-GridCal.Gui.LoadDesigner package
+VeraGrid.Gui.LoadDesigner package
 ================================
 
 Submodules
 ----------
 
-GridCal.Gui.LoadDesigner.icons\_rc module
+VeraGrid.Gui.LoadDesigner.icons\_rc module
 -----------------------------------------
 
-.. automodule:: GridCal.Gui.LoadDesigner.icons_rc
+.. automodule:: VeraGrid.Gui.LoadDesigner.icons_rc
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.LoadDesigner.load\_designer module
+VeraGrid.Gui.LoadDesigner.load\_designer module
 ----------------------------------------------
 
-.. automodule:: GridCal.Gui.LoadDesigner.load_designer
+.. automodule:: VeraGrid.Gui.LoadDesigner.load_designer
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.LoadDesigner.load\_designer\_ui module
+VeraGrid.Gui.LoadDesigner.load\_designer\_ui module
 --------------------------------------------------
 
-.. automodule:: GridCal.Gui.LoadDesigner.load_designer_ui
+.. automodule:: VeraGrid.Gui.LoadDesigner.load_designer_ui
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.LoadDesigner.update\_gui\_file module
+VeraGrid.Gui.LoadDesigner.update\_gui\_file module
 -------------------------------------------------
 
-.. automodule:: GridCal.Gui.LoadDesigner.update_gui_file
+.. automodule:: VeraGrid.Gui.LoadDesigner.update_gui_file
    :members:
    :show-inheritance:
    :undoc-members:
@@ -39,7 +39,7 @@ GridCal.Gui.LoadDesigner.update\_gui\_file module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.LoadDesigner
+.. automodule:: VeraGrid.Gui.LoadDesigner
    :members:
    :show-inheritance:
    :undoc-members:

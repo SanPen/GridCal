@@ -2637,7 +2637,7 @@
                    <item>
                     <widget class="QPushButton" name="loadResultFromDiskButton">
                      <property name="toolTip">
-                      <string>Load result from the gridcal file</string>
+                      <string>Load result from the VeraGrid file</string>
                      </property>
                      <property name="text">
                       <string/>
@@ -9686,10 +9686,10 @@
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>If checked, the results are stored inside the gridcal file in a compressed format.</string>
+                  <string>If checked, the results are stored inside the VeraGrid file in a compressed format.</string>
                  </property>
                  <property name="text">
-                  <string>Save results in .gridcal files</string>
+                  <string>Save results in .veragrid files</string>
                  </property>
                 </widget>
                </item>

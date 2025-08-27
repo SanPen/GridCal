@@ -1,37 +1,37 @@
-GridCal.Gui.TreeModelViewer package
+VeraGrid.Gui.TreeModelViewer package
 ===================================
 
 Submodules
 ----------
 
-GridCal.Gui.TreeModelViewer.MainWindow module
+VeraGrid.Gui.TreeModelViewer.MainWindow module
 ---------------------------------------------
 
-.. automodule:: GridCal.Gui.TreeModelViewer.MainWindow
+.. automodule:: VeraGrid.Gui.TreeModelViewer.MainWindow
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.TreeModelViewer.TreeModelViewer module
+VeraGrid.Gui.TreeModelViewer.TreeModelViewer module
 --------------------------------------------------
 
-.. automodule:: GridCal.Gui.TreeModelViewer.TreeModelViewer
+.. automodule:: VeraGrid.Gui.TreeModelViewer.TreeModelViewer
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.TreeModelViewer.icons\_rc module
+VeraGrid.Gui.TreeModelViewer.icons\_rc module
 --------------------------------------------
 
-.. automodule:: GridCal.Gui.TreeModelViewer.icons_rc
+.. automodule:: VeraGrid.Gui.TreeModelViewer.icons_rc
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.TreeModelViewer.update\_gui\_file module
+VeraGrid.Gui.TreeModelViewer.update\_gui\_file module
 ----------------------------------------------------
 
-.. automodule:: GridCal.Gui.TreeModelViewer.update_gui_file
+.. automodule:: VeraGrid.Gui.TreeModelViewer.update_gui_file
    :members:
    :show-inheritance:
    :undoc-members:
@@ -39,7 +39,7 @@ GridCal.Gui.TreeModelViewer.update\_gui\_file module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.TreeModelViewer
+.. automodule:: VeraGrid.Gui.TreeModelViewer
    :members:
    :show-inheritance:
    :undoc-members:

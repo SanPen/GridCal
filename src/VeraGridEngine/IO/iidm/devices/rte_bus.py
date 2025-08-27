@@ -17,7 +17,7 @@ class RteBus(RteObject):
 
         self.register_property("id", str, description="Bus ID")
 
-    def to_gridcal(self, area_dict: Dict[int, Area]) -> Bus:
+    def to_veragrid(self, area_dict: Dict[int, Area]) -> Bus:
         """
         Convert
         """

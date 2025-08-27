@@ -1,4 +1,4 @@
-GridCalEngine.IO package
+VeraGridEngine.IO package
 ========================
 
 Subpackages
@@ -7,32 +7,32 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.IO.base
-   GridCalEngine.IO.cim
-   GridCalEngine.IO.dgs
-   GridCalEngine.IO.epc
-   GridCalEngine.IO.gridcal
-   GridCalEngine.IO.iidm
-   GridCalEngine.IO.matpower
-   GridCalEngine.IO.others
-   GridCalEngine.IO.raw
-   GridCalEngine.IO.ucte
+   VeraGridEngine.IO.base
+   VeraGridEngine.IO.cim
+   VeraGridEngine.IO.dgs
+   VeraGridEngine.IO.epc
+   VeraGridEngine.IO.veragrid
+   VeraGridEngine.IO.iidm
+   VeraGridEngine.IO.matpower
+   VeraGridEngine.IO.others
+   VeraGridEngine.IO.raw
+   VeraGridEngine.IO.ucte
 
 Submodules
 ----------
 
-GridCalEngine.IO.file\_handler module
+VeraGridEngine.IO.file\_handler module
 -------------------------------------
 
-.. automodule:: GridCalEngine.IO.file_handler
+.. automodule:: VeraGridEngine.IO.file_handler
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.file\_system module
+VeraGridEngine.IO.file\_system module
 ------------------------------------
 
-.. automodule:: GridCalEngine.IO.file_system
+.. automodule:: VeraGridEngine.IO.file_system
    :members:
    :show-inheritance:
    :undoc-members:
@@ -40,7 +40,7 @@ GridCalEngine.IO.file\_system module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.IO
+.. automodule:: VeraGridEngine.IO
    :members:
    :show-inheritance:
    :undoc-members:

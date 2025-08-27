@@ -1,29 +1,29 @@
-GridCal.Gui.GridReduce package
+VeraGrid.Gui.GridReduce package
 ==============================
 
 Submodules
 ----------
 
-GridCal.Gui.GridReduce.grid\_reduce module
+VeraGrid.Gui.GridReduce.grid\_reduce module
 ------------------------------------------
 
-.. automodule:: GridCal.Gui.GridReduce.grid_reduce
+.. automodule:: VeraGrid.Gui.GridReduce.grid_reduce
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.GridReduce.grid\_reduce\_gui module
+VeraGrid.Gui.GridReduce.grid\_reduce\_gui module
 -----------------------------------------------
 
-.. automodule:: GridCal.Gui.GridReduce.grid_reduce_gui
+.. automodule:: VeraGrid.Gui.GridReduce.grid_reduce_gui
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.GridReduce.update\_gui\_file module
+VeraGrid.Gui.GridReduce.update\_gui\_file module
 -----------------------------------------------
 
-.. automodule:: GridCal.Gui.GridReduce.update_gui_file
+.. automodule:: VeraGrid.Gui.GridReduce.update_gui_file
    :members:
    :show-inheritance:
    :undoc-members:
@@ -31,7 +31,7 @@ GridCal.Gui.GridReduce.update\_gui\_file module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.GridReduce
+.. automodule:: VeraGrid.Gui.GridReduce
    :members:
    :show-inheritance:
    :undoc-members:

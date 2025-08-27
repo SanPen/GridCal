@@ -93,7 +93,7 @@ def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg
     """
     Generates a default time series
     :param gslv_profile: Profile from gslv to fill in
-    :param gc_profile: Profile from gridcal to convert
+    :param gc_profile: Profile from veragrid to convert
     :param use_time_series: use time series?
     :param time_indices: time series indices if any (optional)
     :param n_time: number of time steps

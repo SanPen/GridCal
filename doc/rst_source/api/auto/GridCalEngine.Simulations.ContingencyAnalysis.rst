@@ -1,4 +1,4 @@
-GridCalEngine.Simulations.ContingencyAnalysis package
+VeraGridEngine.Simulations.ContingencyAnalysis package
 =====================================================
 
 Subpackages
@@ -7,63 +7,63 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.Simulations.ContingencyAnalysis.Methods
+   VeraGridEngine.Simulations.ContingencyAnalysis.Methods
 
 Submodules
 ----------
 
-GridCalEngine.Simulations.ContingencyAnalysis.contingencies\_report module
+VeraGridEngine.Simulations.ContingencyAnalysis.contingencies\_report module
 --------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.ContingencyAnalysis.contingencies_report
+.. automodule:: VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.ContingencyAnalysis.contingency\_analysis\_driver module
+VeraGridEngine.Simulations.ContingencyAnalysis.contingency\_analysis\_driver module
 ----------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver
+.. automodule:: VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.ContingencyAnalysis.contingency\_analysis\_options module
+VeraGridEngine.Simulations.ContingencyAnalysis.contingency\_analysis\_options module
 -----------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options
+.. automodule:: VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_options
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.ContingencyAnalysis.contingency\_analysis\_results module
+VeraGridEngine.Simulations.ContingencyAnalysis.contingency\_analysis\_results module
 -----------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results
+.. automodule:: VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_results
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.ContingencyAnalysis.contingency\_analysis\_ts\_driver module
+VeraGridEngine.Simulations.ContingencyAnalysis.contingency\_analysis\_ts\_driver module
 --------------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_ts_driver
+.. automodule:: VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_ts_driver
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.ContingencyAnalysis.contingency\_analysis\_ts\_results module
+VeraGridEngine.Simulations.ContingencyAnalysis.contingency\_analysis\_ts\_results module
 ---------------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results
+.. automodule:: VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.ContingencyAnalysis.contingency\_plan module
+VeraGridEngine.Simulations.ContingencyAnalysis.contingency\_plan module
 ----------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.ContingencyAnalysis.contingency_plan
+.. automodule:: VeraGridEngine.Simulations.ContingencyAnalysis.contingency_plan
    :members:
    :show-inheritance:
    :undoc-members:
@@ -71,7 +71,7 @@ GridCalEngine.Simulations.ContingencyAnalysis.contingency\_plan module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Simulations.ContingencyAnalysis
+.. automodule:: VeraGridEngine.Simulations.ContingencyAnalysis
    :members:
    :show-inheritance:
    :undoc-members:

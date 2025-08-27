@@ -5,7 +5,7 @@
 from __future__ import annotations
 import os.path
 import warnings
-from VeraGridEngine.IO.file_system import get_create_gridcal_folder
+from VeraGridEngine.IO.file_system import get_create_veragrid_folder
 from VeraGridEngine import TapModuleControl, TapPhaseControl, BusMode
 from VeraGridEngine.enumerations import (HvdcControlType, SolverType, TimeGrouping,
                                          ZonalGrouping, MIPSolvers, ContingencyMethod, ContingencyOperationTypes,
@@ -15,7 +15,7 @@ GSLV_VERSION = ''
 GSLV_AVAILABLE = False
 try:
     import pygslv as pg
-    pg.activate(os.path.join(get_create_gridcal_folder(), "license.gslv"), verbose=False)
+    pg.activate(os.path.join(get_create_veragrid_folder(), "license.gslv"), verbose=False)
 
     # activate
     if not pg.isLicensed():

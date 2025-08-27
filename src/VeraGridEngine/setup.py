@@ -22,7 +22,7 @@ This software aims to be a complete platform for power systems research and simu
 
 [Watch the video https](https://youtu.be/SY66WgLGo54)
 
-[Check out the documentation](https://gridcal.readthedocs.io)
+[Check out the documentation](https://veragrid.readthedocs.io)
 
 
 ## Installation
@@ -30,8 +30,8 @@ This software aims to be a complete platform for power systems research and simu
 pip install VeraGridEngine
 
 For more options (including a standalone setup one), follow the
-[installation instructions]( https://gridcal.readthedocs.io/en/latest/getting_started/install.html)
-from the project's [documentation](https://gridcal.readthedocs.io)
+[installation instructions]( https://veragrid.readthedocs.io/en/latest/getting_started/install.html)
+from the project's [documentation](https://veragrid.readthedocs.io)
 """
 
 description = 'VeraGrid is a Power Systems simulation program intended for professional use and research'

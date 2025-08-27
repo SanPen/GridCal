@@ -1,4 +1,4 @@
-GridCal package
+VeraGrid package
 ===============
 
 Subpackages
@@ -7,50 +7,50 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCal.Gui
-   GridCal.Session
-   GridCal.ThirdParty
-   GridCal.data
+   VeraGrid.Gui
+   VeraGrid.Session
+   VeraGrid.ThirdParty
+   VeraGrid.data
 
 Submodules
 ----------
 
-GridCal.ExecuteGridCal module
+VeraGrid.ExecuteVeraGrid module
 -----------------------------
 
-.. automodule:: GridCal.ExecuteGridCal
+.. automodule:: VeraGrid.ExecuteVeraGrid
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.plugins module
+VeraGrid.plugins module
 ----------------------
 
-.. automodule:: GridCal.plugins
+.. automodule:: VeraGrid.plugins
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.setup module
+VeraGrid.setup module
 --------------------
 
-.. automodule:: GridCal.setup
+.. automodule:: VeraGrid.setup
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.templates module
+VeraGrid.templates module
 ------------------------
 
-.. automodule:: GridCal.templates
+.. automodule:: VeraGrid.templates
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.update module
+VeraGrid.update module
 ---------------------
 
-.. automodule:: GridCal.update
+.. automodule:: VeraGrid.update
    :members:
    :show-inheritance:
    :undoc-members:
@@ -58,7 +58,7 @@ GridCal.update module
 Module contents
 ---------------
 
-.. automodule:: GridCal
+.. automodule:: VeraGrid
    :members:
    :show-inheritance:
    :undoc-members:

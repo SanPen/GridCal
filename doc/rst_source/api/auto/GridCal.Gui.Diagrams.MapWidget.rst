@@ -1,4 +1,4 @@
-GridCal.Gui.Diagrams.MapWidget package
+VeraGrid.Gui.Diagrams.MapWidget package
 ======================================
 
 Subpackages
@@ -7,25 +7,25 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCal.Gui.Diagrams.MapWidget.Branches
-   GridCal.Gui.Diagrams.MapWidget.Substation
-   GridCal.Gui.Diagrams.MapWidget.Tiles
+   VeraGrid.Gui.Diagrams.MapWidget.Branches
+   VeraGrid.Gui.Diagrams.MapWidget.Substation
+   VeraGrid.Gui.Diagrams.MapWidget.Tiles
 
 Submodules
 ----------
 
-GridCal.Gui.Diagrams.MapWidget.grid\_map\_widget module
+VeraGrid.Gui.Diagrams.MapWidget.grid\_map\_widget module
 -------------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.grid_map_widget
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.grid_map_widget
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.MapWidget.map\_widget module
+VeraGrid.Gui.Diagrams.MapWidget.map\_widget module
 -------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.map_widget
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.map_widget
    :members:
    :show-inheritance:
    :undoc-members:
@@ -33,7 +33,7 @@ GridCal.Gui.Diagrams.MapWidget.map\_widget module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget
    :members:
    :show-inheritance:
    :undoc-members:

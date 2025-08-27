@@ -1,37 +1,37 @@
-GridCal.Gui.CoordinatesInput package
+VeraGrid.Gui.CoordinatesInput package
 ====================================
 
 Submodules
 ----------
 
-GridCal.Gui.CoordinatesInput.coordinates\_dialogue module
+VeraGrid.Gui.CoordinatesInput.coordinates\_dialogue module
 ---------------------------------------------------------
 
-.. automodule:: GridCal.Gui.CoordinatesInput.coordinates_dialogue
+.. automodule:: VeraGrid.Gui.CoordinatesInput.coordinates_dialogue
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.CoordinatesInput.gui module
+VeraGrid.Gui.CoordinatesInput.gui module
 ---------------------------------------
 
-.. automodule:: GridCal.Gui.CoordinatesInput.gui
+.. automodule:: VeraGrid.Gui.CoordinatesInput.gui
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.CoordinatesInput.icons\_rc module
+VeraGrid.Gui.CoordinatesInput.icons\_rc module
 ---------------------------------------------
 
-.. automodule:: GridCal.Gui.CoordinatesInput.icons_rc
+.. automodule:: VeraGrid.Gui.CoordinatesInput.icons_rc
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.CoordinatesInput.update\_gui\_file module
+VeraGrid.Gui.CoordinatesInput.update\_gui\_file module
 -----------------------------------------------------
 
-.. automodule:: GridCal.Gui.CoordinatesInput.update_gui_file
+.. automodule:: VeraGrid.Gui.CoordinatesInput.update_gui_file
    :members:
    :show-inheritance:
    :undoc-members:
@@ -39,7 +39,7 @@ GridCal.Gui.CoordinatesInput.update\_gui\_file module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.CoordinatesInput
+.. automodule:: VeraGrid.Gui.CoordinatesInput
    :members:
    :show-inheritance:
    :undoc-members:

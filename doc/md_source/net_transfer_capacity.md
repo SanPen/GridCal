@@ -11,7 +11,7 @@ This optimization is done using linear programming.
 ```python
 import VeraGridEngine as gce
 
-fname = os.path.join('test', 'data', 'grids', 'ACTIVSg2000.gridcal')
+fname = os.path.join('test', 'data', 'grids', 'ACTIVSg2000.veragrid')
 grid = gce.open_file(fname)
 
 info = grid.get_inter_aggregation_info(

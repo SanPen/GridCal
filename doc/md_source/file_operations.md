@@ -5,15 +5,15 @@ To load a grid, just drag & drop the file (or files) into the user interface.
 Alternatively, use the open dialogue and select the file or files.
 You may be presented with a logs dialogue, and in the case of CGMES a 
 new window showing the CGMES information.
-Regardless of the file format, whenever you load a file into GridCal it gets converted to the
+Regardless of the file format, whenever you load a file into VeraGrid it gets converted to the
 native internal object structures (MultiCircuit). 
 From there you may further edit or export in any of the supported formats.
 
-GridCal supports a great deal of file formats. 
+VeraGrid supports a great deal of file formats. 
 
 |                    |read   | write |
 |--------------------|-------|-------|
-| GridCal            |✅      | ✅     |
+| VeraGrid            |✅      | ✅     |
 | Json               |✅      | ✅     |
 | CIM                |✅      | ✅     |
 | CGMES 2.4.15       |✅      | ✅     |
@@ -48,8 +48,8 @@ These are specially relevant for CGMES and raw/rawx formats.
 ```python
 import VeraGridEngine as gce
 
-# load a grid (.gridcal, .m (Matpower), .raw (PSS/e) .rawx (PSS/e), .epc (PSLF), .dgs (PowerFactory)
-my_grid = gce.open_file("my_file.gridcal")
+# load a grid (.veragrid, .m (Matpower), .raw (PSS/e) .rawx (PSS/e), .epc (PSLF), .dgs (PowerFactory)
+my_grid = gce.open_file("my_file.veragrid")
 ```
 
 In the case of CIM/CGMES, you may need to pass a list of files or a single zip file:
@@ -89,7 +89,7 @@ for ac_line_segment in cgmes_circuit.cgmes_assets.ACLineSegment_list:
 logger.print()
 ```
 
-GridCal supports many file formats:
+VeraGrid supports many file formats:
 
 - CIM 16 (.zip and .xml)
 - UCTE.
@@ -107,10 +107,10 @@ Similarly to CGMES you may be able to use the conversion objects to explore the 
 import VeraGridEngine as gce
 
 # load a grid
-my_grid = gce.open_file("my_file.gridcal")
+my_grid = gce.open_file("my_file.veragrid")
 
 # save
-gce.save_file(my_grid, "my_file_2.gridcal")
+gce.save_file(my_grid, "my_file_2.veragrid")
 ```
 
 In the case of saving a model in CGMES mode, we need to specify some extra parameters.
@@ -120,7 +120,7 @@ To simplify we can use the API function `save_cgmes_file`:
 import VeraGridEngine as gce
 
 # load a grid
-my_grid = gce.open_file("my_file.gridcal")
+my_grid = gce.open_file("my_file.veragrid")
 
 # run power flow (this is optional and it is used to generate the SV profile)
 pf_results = gce.power_flow(my_grid)
@@ -143,7 +143,7 @@ A simple function is available to export the results of a driver.
 import os
 import VeraGridEngine as gce
 
-fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
+fname = os.path.join("data", "grids", "IEEE39_1W.veragrid")
 grid = gce.open_file(fname)
 
 # create the driver
@@ -165,7 +165,7 @@ Also there is a function to save from the results objects themselves:
 import os
 import VeraGridEngine as gce
 
-fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
+fname = os.path.join("data", "grids", "IEEE39_1W.veragrid")
 grid = gce.open_file(fname)
 
 # run with the API shortcut functions
@@ -179,9 +179,9 @@ gce.export_results(results_list=[pf_results, pf_ts_results], file_name="IEEE39_1
 
 ### Client - Server operation
 
-To use the gridcal server, you need to install the `GridCalServer` python package. Once this is done,
+To use the gridcal server, you need to install the `VeraGridServer` python package. Once this is done,
 the `gridcalserver`command will be available on the system.
-To launch the server, simply type `gridcalserver`. This will launch a GridCal server on the machine,
+To launch the server, simply type `gridcalserver`. This will launch a VeraGrid server on the machine,
 on port 8000. This is `https://localhost:8000`
 
 An example on how to send a grid from a script to the server:
@@ -192,7 +192,7 @@ import asyncio
 import VeraGridEngine as gce
 
 # path to your file
-fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "IEEE57.gridcal")
+fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "IEEE57.veragrid")
 
 # read gridcal file
 grid_ = gce.open_file(fname)

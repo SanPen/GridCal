@@ -1,13 +1,13 @@
-GridCalEngine.Utils.ThirdParty.SyntheticNetworks package
+VeraGridEngine.Utils.ThirdParty.SyntheticNetworks package
 ========================================================
 
 Submodules
 ----------
 
-GridCalEngine.Utils.ThirdParty.SyntheticNetworks.rpgm\_algo module
+VeraGridEngine.Utils.ThirdParty.SyntheticNetworks.rpgm\_algo module
 ------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.ThirdParty.SyntheticNetworks.rpgm_algo
+.. automodule:: VeraGridEngine.Utils.ThirdParty.SyntheticNetworks.rpgm_algo
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ GridCalEngine.Utils.ThirdParty.SyntheticNetworks.rpgm\_algo module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Utils.ThirdParty.SyntheticNetworks
+.. automodule:: VeraGridEngine.Utils.ThirdParty.SyntheticNetworks
    :members:
    :show-inheritance:
    :undoc-members:

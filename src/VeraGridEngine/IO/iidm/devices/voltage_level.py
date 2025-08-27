@@ -20,7 +20,11 @@ class RteVoltageLevel(RteObject):
         self.register_property("nominalV", float, unit=Unit.get_kv(), description="Nominal voltage")
         self.register_property("topologyKind", str, description="Topology type")
 
-    def to_gridcal(self) -> VoltageLevel:
+    def to_veragrid(self) -> VoltageLevel:
+        """
+
+        :return:
+        """
         return VoltageLevel(
             name=self.name,
             idtag=None,

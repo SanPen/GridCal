@@ -1,45 +1,45 @@
-GridCal.Gui.Analysis package
+VeraGrid.Gui.Analysis package
 ============================
 
 Submodules
 ----------
 
-GridCal.Gui.Analysis.AnalysisDialogue module
+VeraGrid.Gui.Analysis.AnalysisDialogue module
 --------------------------------------------
 
-.. automodule:: GridCal.Gui.Analysis.AnalysisDialogue
+.. automodule:: VeraGrid.Gui.Analysis.AnalysisDialogue
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Analysis.gui module
+VeraGrid.Gui.Analysis.gui module
 -------------------------------
 
-.. automodule:: GridCal.Gui.Analysis.gui
+.. automodule:: VeraGrid.Gui.Analysis.gui
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Analysis.icons\_rc module
+VeraGrid.Gui.Analysis.icons\_rc module
 -------------------------------------
 
-.. automodule:: GridCal.Gui.Analysis.icons_rc
+.. automodule:: VeraGrid.Gui.Analysis.icons_rc
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Analysis.object\_plot\_analysis module
+VeraGrid.Gui.Analysis.object\_plot\_analysis module
 --------------------------------------------------
 
-.. automodule:: GridCal.Gui.Analysis.object_plot_analysis
+.. automodule:: VeraGrid.Gui.Analysis.object_plot_analysis
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Analysis.update\_gui\_file module
+VeraGrid.Gui.Analysis.update\_gui\_file module
 ---------------------------------------------
 
-.. automodule:: GridCal.Gui.Analysis.update_gui_file
+.. automodule:: VeraGrid.Gui.Analysis.update_gui_file
    :members:
    :show-inheritance:
    :undoc-members:
@@ -47,7 +47,7 @@ GridCal.Gui.Analysis.update\_gui\_file module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.Analysis
+.. automodule:: VeraGrid.Gui.Analysis
    :members:
    :show-inheritance:
    :undoc-members:

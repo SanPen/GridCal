@@ -5,7 +5,7 @@
 import os
 import json
 from typing import Dict, Union
-from VeraGridEngine.IO.file_system import get_create_gridcal_folder
+from VeraGridEngine.IO.file_system import get_create_veragrid_folder
 
 from VeraGrid.Gui.Main.SubClasses.base_gui import BaseMainGui
 from VeraGrid.Session.server_driver import ServerDriver
@@ -44,7 +44,7 @@ class ServerMain(BaseMainGui):
         get the config file path
         :return: config file path
         """
-        return os.path.join(get_create_gridcal_folder(), 'server_config.json')
+        return os.path.join(get_create_veragrid_folder(), 'server_config.json')
 
     def server_config_file_exists(self) -> bool:
         """

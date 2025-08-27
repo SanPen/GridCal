@@ -20,7 +20,7 @@ class RteArea(RteObject):
         self.register_property("interchange_target", float,
                                description="The optional target interchange of this area in MW, using load sign convention (negative is export, positive is import)")
 
-    def to_gridcal(self) -> Area:
+    def to_veragrid(self) -> Area:
         """
         Convert
         """

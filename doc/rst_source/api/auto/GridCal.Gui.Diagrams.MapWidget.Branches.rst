@@ -1,61 +1,61 @@
-GridCal.Gui.Diagrams.MapWidget.Branches package
+VeraGrid.Gui.Diagrams.MapWidget.Branches package
 ===============================================
 
 Submodules
 ----------
 
-GridCal.Gui.Diagrams.MapWidget.Branches.line\_location\_graphic\_item module
+VeraGrid.Gui.Diagrams.MapWidget.Branches.line\_location\_graphic\_item module
 ----------------------------------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.MapWidget.Branches.map\_ac\_line module
+VeraGrid.Gui.Diagrams.MapWidget.Branches.map\_ac\_line module
 ------------------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Branches.map_ac_line
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Branches.map_ac_line
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.MapWidget.Branches.map\_dc\_line module
+VeraGrid.Gui.Diagrams.MapWidget.Branches.map\_dc\_line module
 ------------------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Branches.map_dc_line
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Branches.map_dc_line
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.MapWidget.Branches.map\_fluid\_path module
+VeraGrid.Gui.Diagrams.MapWidget.Branches.map\_fluid\_path module
 ---------------------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Branches.map_fluid_path
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Branches.map_fluid_path
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.MapWidget.Branches.map\_hvdc\_line module
+VeraGrid.Gui.Diagrams.MapWidget.Branches.map\_hvdc\_line module
 --------------------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Branches.map_hvdc_line
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Branches.map_hvdc_line
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.MapWidget.Branches.map\_line\_container module
+VeraGrid.Gui.Diagrams.MapWidget.Branches.map\_line\_container module
 -------------------------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Branches.map_line_container
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.MapWidget.Branches.map\_line\_segment module
+VeraGrid.Gui.Diagrams.MapWidget.Branches.map\_line\_segment module
 -----------------------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Branches.map_line_segment
    :members:
    :show-inheritance:
    :undoc-members:
@@ -63,7 +63,7 @@ GridCal.Gui.Diagrams.MapWidget.Branches.map\_line\_segment module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Branches
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Branches
    :members:
    :show-inheritance:
    :undoc-members:

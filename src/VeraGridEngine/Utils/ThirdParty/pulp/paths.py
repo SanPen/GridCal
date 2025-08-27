@@ -6,7 +6,7 @@ import os
 import json
 from typing import Dict
 
-from VeraGridEngine.IO.file_system import get_create_gridcal_folder
+from VeraGridEngine.IO.file_system import get_create_veragrid_folder
 
 
 def solvers_config_file_path() -> str:
@@ -14,7 +14,7 @@ def solvers_config_file_path() -> str:
     get the config file path
     :return: config file path
     """
-    return os.path.join(get_create_gridcal_folder(), 'solvers_config.json')
+    return os.path.join(get_create_veragrid_folder(), 'solvers_config.json')
 
 
 def solvers_config_file_exists() -> bool:

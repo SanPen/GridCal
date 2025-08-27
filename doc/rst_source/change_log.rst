@@ -10,7 +10,7 @@ Version 5.0.2 (The great split)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Massive refactor to allow multiple bus-branch diagrams and maps.
-- The great split: Now there are two packages: `GridCal` which deals with the graphical user interface and `GridCalEngine` that provides all the engine functionality without Qt dependencies.
+- The great split: Now there are two packages: `VeraGrid` which deals with the graphical user interface and `VeraGridEngine` that provides all the engine functionality without Qt dependencies.
 
 - MIP auto-healing: OPF simulations are always feasible by properly relaxing infeasible ones.
 - Added cutting edge investments evaluation. This will be evolved in future releases.
@@ -212,7 +212,7 @@ Version 4.1.0
 
 - Added HDF file format .gch5
 
-- Much faster read and write of .gridcal files due to the saving of the profiles in pandas "pickles"
+- Much faster read and write of .veragrid files due to the saving of the profiles in pandas "pickles"
 
 - Fixed Areas not loading properly
 
@@ -579,7 +579,7 @@ Version 3.3.0
 
 - Added undo / redo to the profiles editor. This improves usability quite a bit.
 
-- Added csv files into zip files as the GridCal default format. This allows to use the same logic
+- Added csv files into zip files as the VeraGrid default format. This allows to use the same logic
   as with the excel files but with much faster saving and loading times.
   Especially suited for large grids with large profiles.
 

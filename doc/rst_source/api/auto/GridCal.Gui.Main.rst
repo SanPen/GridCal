@@ -1,4 +1,4 @@
-GridCal.Gui.Main package
+VeraGrid.Gui.Main package
 ========================
 
 Subpackages
@@ -7,63 +7,63 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCal.Gui.Main.SubClasses
+   VeraGrid.Gui.Main.SubClasses
 
 Submodules
 ----------
 
-GridCal.Gui.Main.ConsoleLog module
+VeraGrid.Gui.Main.ConsoleLog module
 ----------------------------------
 
-.. automodule:: GridCal.Gui.Main.ConsoleLog
+.. automodule:: VeraGrid.Gui.Main.ConsoleLog
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Main.ConsoleLogController module
+VeraGrid.Gui.Main.ConsoleLogController module
 --------------------------------------------
 
-.. automodule:: GridCal.Gui.Main.ConsoleLogController
+.. automodule:: VeraGrid.Gui.Main.ConsoleLogController
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Main.GridCalMain module
+VeraGrid.Gui.Main.VeraGridMain module
 -----------------------------------
 
-.. automodule:: GridCal.Gui.Main.GridCalMain
+.. automodule:: VeraGrid.Gui.Main.VeraGridMain
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Main.MainWindow module
+VeraGrid.Gui.Main.MainWindow module
 ----------------------------------
 
-.. automodule:: GridCal.Gui.Main.MainWindow
+.. automodule:: VeraGrid.Gui.Main.MainWindow
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Main.icons\_rc module
+VeraGrid.Gui.Main.icons\_rc module
 ---------------------------------
 
-.. automodule:: GridCal.Gui.Main.icons_rc
+.. automodule:: VeraGrid.Gui.Main.icons_rc
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Main.object\_select\_window module
+VeraGrid.Gui.Main.object\_select\_window module
 ----------------------------------------------
 
-.. automodule:: GridCal.Gui.Main.object_select_window
+.. automodule:: VeraGrid.Gui.Main.object_select_window
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Main.update\_gui\_file module
+VeraGrid.Gui.Main.update\_gui\_file module
 -----------------------------------------
 
-.. automodule:: GridCal.Gui.Main.update_gui_file
+.. automodule:: VeraGrid.Gui.Main.update_gui_file
    :members:
    :show-inheritance:
    :undoc-members:
@@ -71,7 +71,7 @@ GridCal.Gui.Main.update\_gui\_file module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.Main
+.. automodule:: VeraGrid.Gui.Main
    :members:
    :show-inheritance:
    :undoc-members:

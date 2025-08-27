@@ -1,13 +1,13 @@
-GridCal.Gui.Main.SubClasses.Results package
+VeraGrid.Gui.Main.SubClasses.Results package
 ===========================================
 
 Submodules
 ----------
 
-GridCal.Gui.Main.SubClasses.Results.results module
+VeraGrid.Gui.Main.SubClasses.Results.results module
 --------------------------------------------------
 
-.. automodule:: GridCal.Gui.Main.SubClasses.Results.results
+.. automodule:: VeraGrid.Gui.Main.SubClasses.Results.results
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ GridCal.Gui.Main.SubClasses.Results.results module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.Main.SubClasses.Results
+.. automodule:: VeraGrid.Gui.Main.SubClasses.Results
    :members:
    :show-inheritance:
    :undoc-members:

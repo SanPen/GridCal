@@ -1,8 +1,8 @@
-GridCal
+VeraGrid
 =======
 
 .. toctree::
    :maxdepth: 4
 
-   GridCal
-   GridCalEngine
+   VeraGrid
+   VeraGridEngine

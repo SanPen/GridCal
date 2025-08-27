@@ -1,45 +1,45 @@
-GridCal.Gui.TowerBuilder package
+VeraGrid.Gui.TowerBuilder package
 ================================
 
 Submodules
 ----------
 
-GridCal.Gui.TowerBuilder.LineBuilderDialogue module
+VeraGrid.Gui.TowerBuilder.LineBuilderDialogue module
 ---------------------------------------------------
 
-.. automodule:: GridCal.Gui.TowerBuilder.LineBuilderDialogue
+.. automodule:: VeraGrid.Gui.TowerBuilder.LineBuilderDialogue
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.TowerBuilder.icons\_rc module
+VeraGrid.Gui.TowerBuilder.icons\_rc module
 -----------------------------------------
 
-.. automodule:: GridCal.Gui.TowerBuilder.icons_rc
+.. automodule:: VeraGrid.Gui.TowerBuilder.icons_rc
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.TowerBuilder.table\_models module
+VeraGrid.Gui.TowerBuilder.table\_models module
 ---------------------------------------------
 
-.. automodule:: GridCal.Gui.TowerBuilder.table_models
+.. automodule:: VeraGrid.Gui.TowerBuilder.table_models
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.TowerBuilder.tower\_builder module
+VeraGrid.Gui.TowerBuilder.tower\_builder module
 ----------------------------------------------
 
-.. automodule:: GridCal.Gui.TowerBuilder.tower_builder
+.. automodule:: VeraGrid.Gui.TowerBuilder.tower_builder
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.TowerBuilder.update\_gui\_file module
+VeraGrid.Gui.TowerBuilder.update\_gui\_file module
 -------------------------------------------------
 
-.. automodule:: GridCal.Gui.TowerBuilder.update_gui_file
+.. automodule:: VeraGrid.Gui.TowerBuilder.update_gui_file
    :members:
    :show-inheritance:
    :undoc-members:
@@ -47,7 +47,7 @@ GridCal.Gui.TowerBuilder.update\_gui\_file module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.TowerBuilder
+.. automodule:: VeraGrid.Gui.TowerBuilder
    :members:
    :show-inheritance:
    :undoc-members:

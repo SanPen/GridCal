@@ -1,13 +1,13 @@
-GridCalEngine.Simulations.SigmaAnalysis package
+VeraGridEngine.Simulations.SigmaAnalysis package
 ===============================================
 
 Submodules
 ----------
 
-GridCalEngine.Simulations.SigmaAnalysis.sigma\_analysis\_driver module
+VeraGridEngine.Simulations.SigmaAnalysis.sigma\_analysis\_driver module
 ----------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver
+.. automodule:: VeraGridEngine.Simulations.SigmaAnalysis.sigma_analysis_driver
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ GridCalEngine.Simulations.SigmaAnalysis.sigma\_analysis\_driver module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Simulations.SigmaAnalysis
+.. automodule:: VeraGridEngine.Simulations.SigmaAnalysis
    :members:
    :show-inheritance:
    :undoc-members:

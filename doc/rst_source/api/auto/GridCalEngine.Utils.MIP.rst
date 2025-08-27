@@ -1,4 +1,4 @@
-GridCalEngine.Utils.MIP package
+VeraGridEngine.Utils.MIP package
 ===============================
 
 Subpackages
@@ -7,23 +7,23 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.Utils.MIP.SimpleMip
+   VeraGridEngine.Utils.MIP.SimpleMip
 
 Submodules
 ----------
 
-GridCalEngine.Utils.MIP.pulp\_interface module
+VeraGridEngine.Utils.MIP.pulp\_interface module
 ----------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.MIP.pulp_interface
+.. automodule:: VeraGridEngine.Utils.MIP.pulp_interface
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.MIP.selected\_interface module
+VeraGridEngine.Utils.MIP.selected\_interface module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.MIP.selected_interface
+.. automodule:: VeraGridEngine.Utils.MIP.selected_interface
    :members:
    :show-inheritance:
    :undoc-members:
@@ -31,7 +31,7 @@ GridCalEngine.Utils.MIP.selected\_interface module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Utils.MIP
+.. automodule:: VeraGridEngine.Utils.MIP
    :members:
    :show-inheritance:
    :undoc-members:

@@ -1,4 +1,4 @@
-GridCalEngine.IO.raw package
+VeraGridEngine.IO.raw package
 ============================
 
 Subpackages
@@ -7,55 +7,55 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.IO.raw.devices
+   VeraGridEngine.IO.raw.devices
 
 Submodules
 ----------
 
-GridCalEngine.IO.raw.gridcal\_to\_raw module
+VeraGridEngine.IO.raw.veragrid\_to\_raw module
 --------------------------------------------
 
-.. automodule:: GridCalEngine.IO.raw.gridcal_to_raw
+.. automodule:: VeraGridEngine.IO.raw.veragrid_to_raw
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.raw.raw\_functions module
+VeraGridEngine.IO.raw.raw\_functions module
 ------------------------------------------
 
-.. automodule:: GridCalEngine.IO.raw.raw_functions
+.. automodule:: VeraGridEngine.IO.raw.raw_functions
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.raw.raw\_parser\_writer module
+VeraGridEngine.IO.raw.raw\_parser\_writer module
 -----------------------------------------------
 
-.. automodule:: GridCalEngine.IO.raw.raw_parser_writer
+.. automodule:: VeraGridEngine.IO.raw.raw_parser_writer
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.raw.raw\_to\_gridcal module
+VeraGridEngine.IO.raw.raw\_to\_gridcal module
 --------------------------------------------
 
-.. automodule:: GridCalEngine.IO.raw.raw_to_gridcal
+.. automodule:: VeraGridEngine.IO.raw.raw_to_gridcal
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.raw.raw\_writer\_comment\_map module
+VeraGridEngine.IO.raw.raw\_writer\_comment\_map module
 -----------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.raw.raw_writer_comment_map
+.. automodule:: VeraGridEngine.IO.raw.raw_writer_comment_map
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.raw.rawx\_parser\_writer module
+VeraGridEngine.IO.raw.rawx\_parser\_writer module
 ------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.raw.rawx_parser_writer
+.. automodule:: VeraGridEngine.IO.raw.rawx_parser_writer
    :members:
    :show-inheritance:
    :undoc-members:
@@ -63,7 +63,7 @@ GridCalEngine.IO.raw.rawx\_parser\_writer module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.IO.raw
+.. automodule:: VeraGridEngine.IO.raw
    :members:
    :show-inheritance:
    :undoc-members:

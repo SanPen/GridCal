@@ -1,4 +1,4 @@
-GridCalEngine.Utils.ThirdParty package
+VeraGridEngine.Utils.ThirdParty package
 ======================================
 
 Subpackages
@@ -7,14 +7,14 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.Utils.ThirdParty.SyntheticNetworks
-   GridCalEngine.Utils.ThirdParty.gslv
-   GridCalEngine.Utils.ThirdParty.pulp
+   VeraGridEngine.Utils.ThirdParty.SyntheticNetworks
+   VeraGridEngine.Utils.ThirdParty.gslv
+   VeraGridEngine.Utils.ThirdParty.pulp
 
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Utils.ThirdParty
+.. automodule:: VeraGridEngine.Utils.ThirdParty
    :members:
    :show-inheritance:
    :undoc-members:

@@ -1,17 +1,17 @@
-# 🌁 Structure of GridCal
+# 🌁 Structure of VeraGrid
 
-GridCal is arranged in three packages: 
+VeraGrid is arranged in three packages: 
 
-- GridCalEngine: A package with the database and calculations logic.
-- GridCalServer: A package that serves an API-rest to use GridCalEngine remotely.
-- GridCal: A package that contains the Graphical User Interface (GUI) and operates with `GridCalEngine` and
-  `GridCalServer` seamlessly.
+- VeraGridEngine: A package with the database and calculations logic.
+- VeraGridServer: A package that serves an API-rest to use VeraGridEngine remotely.
+- VeraGrid: A package that contains the Graphical User Interface (GUI) and operates with `VeraGridEngine` and
+  `VeraGridServer` seamlessly.
 
 ![](figures/Packages.png)
 
-The information in GridCal is stored in objects, arranged in a database (`MultiCircuit`) that gets compiled into
+The information in VeraGrid is stored in objects, arranged in a database (`MultiCircuit`) that gets compiled into
 simpler  structures (`NumericalCircuit`) that contains arrays ready for calculation.
-All simulations in GridCalEngine are managed by simulation "drivers". The structure is as follows:
+All simulations in VeraGridEngine are managed by simulation "drivers". The structure is as follows:
 
 ![](figures/DataModelSimulation.png)
 
@@ -22,7 +22,7 @@ Although this may seem overly complicated, it has proven to be maintainable and 
 
 ## Snapshot vs. time series
 
-GridCal has a dual structure to handle legacy cases (snapshot), as well as cases with many variations (time series)
+VeraGrid has a dual structure to handle legacy cases (snapshot), as well as cases with many variations (time series)
 
 - A **snapshot** is the grid for a particular moment in time.
   This includes the infrastructure plus the variable values of that infrastructure
@@ -31,7 +31,7 @@ GridCal has a dual structure to handle legacy cases (snapshot), as well as cases
 - The **time series** record the variations of the magnitudes that can vary. These are applied along with
   the infrastructure definition.
 
-In GridCal, the inputs do not get modified by the simulation results. This very important concept, helps
+In VeraGrid, the inputs do not get modified by the simulation results. This very important concept, helps
 to maintain the independence of the inputs and outputs, allowing the replicability of the results.
 This key feature is not true for other open-source of commercial programs.
 
@@ -43,14 +43,14 @@ For those simulations that require many time steps, a collection of `NumericalCi
 
 It may seem that this extra step is redundant. However, the compilation step is composed by mere copy operations,
 which are fast. This steps benefits greatly the efficiency of the numerical calculations since the arrays are
-aligned in memory. The GridCal data model is object-oriented, while the numerical circuit is array-oriented
+aligned in memory. The VeraGrid data model is object-oriented, while the numerical circuit is array-oriented
 (despite being packed into objects)
 
 
-Over the years, we have observed that the number one thing that prevents the usage of GridCal
+Over the years, we have observed that the number one thing that prevents the usage of VeraGrid
 among power systems researchers is the usage of an object-oriented design. Incidentally,
 this is exactly why people with formal programming background love it. This section
-explains the design of GridCal departing from a table-based design which is how it started,
+explains the design of VeraGrid departing from a table-based design which is how it started,
 until reaching the multidimensional object-oriented design of today.
 
 ## From tables to objects: The entry level barrier
@@ -105,7 +105,7 @@ most flexible.
 ```
 
 
-GridCal started like this; Using tables with a simple indexing and using Pandas.
+VeraGrid started like this; Using tables with a simple indexing and using Pandas.
 In the next sections we will show how these decisions are objectively harmful in
 the long term.
 
@@ -212,14 +212,14 @@ modification required is dividing the power by Sbase.
 
 ### The MultiCircuit
 
-By GridCal v2 everything was migrated from tables to lists of objects living in
+By VeraGrid v2 everything was migrated from tables to lists of objects living in
 another object called the `MultiCircuit`. You may think of the `MultiCircuit as a database. 
 The benefits of this were apparent pretty soon.
 
 Compared to tables, now we are able to:
 
 - Have easier CRUD (Create, Read, Update, Delete) management of the data. This is specially
-  important since GridCal has an interactive user interface.
+  important since VeraGrid has an interactive user interface.
 - Easier handling of the objects evolution over time; Yes code evolves!
 - We could have objects within objects. In table terms, this would be equivalent to having a table inside a cell.
   For instance, it is natural to have a tap changer object inside the transformer object.
@@ -227,7 +227,7 @@ Compared to tables, now we are able to:
 - The use of objects allows to reference an object from another object.
   For instance a line will have pointers to the "from" and "to" buses that it connects.
 - Because objects within objects are possible, we can store the profiles of properties within the object.
-  In GridCal, the loads active power is P and P_prof is the property that stores the active power profile.
+  In VeraGrid, the loads active power is P and P_prof is the property that stores the active power profile.
   That is far easier, cleaner, maintainable and extensible than having a P table with the profiles somewhere.
   It is however, less evident for people accustomed to tables.
 
@@ -280,7 +280,7 @@ nc = compile_numerical_circuit_at(circuit=my_grid, t_idx=None)
 
 ### The Driver
 
-A driver in GridCal is the central mechanism that orchestrates simulations.
+A driver in VeraGrid is the central mechanism that orchestrates simulations.
 There is a driver for each simulation type.
 A Driver is responsible for preparing the inputs, executing the calculations, and providing
 the necessary configurations to run a specific analysis. Think of the driver
@@ -346,14 +346,14 @@ Let's recapitulate the design mistakes avoided:
 This is just an initial list, because there are plenty of design errors that 
 come from using tables not as a storage means but as the software structure.
 
-In order to avoid those design pitfalls, GridCal's internals have undergone
+In order to avoid those design pitfalls, VeraGrid's internals have undergone
 significant refactoring over the past decade. This iterative process
 has been essential for ensuring the software's ability to evolve and incorporate
 new features without compromising maintainability. By adhering to a principled
 development approach, we can focus on delivering a robust and scalable solution
 without cutting corners.
 
-This commitment has allowed GridCal to grow from a humble beginning into a
+This commitment has allowed VeraGrid to grow from a humble beginning into a
 professional-grade tool trusted by experts worldwide for critical real-world
 applications—all while remaining open source.
 

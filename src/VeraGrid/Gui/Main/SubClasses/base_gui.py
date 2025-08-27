@@ -15,7 +15,7 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from VeraGridEngine.IO.file_system import get_create_gridcal_folder
+from VeraGridEngine.IO.file_system import get_create_veragrid_folder
 
 # GUI imports
 from PySide6 import QtGui, QtWidgets, QtCore
@@ -539,7 +539,7 @@ class BaseMainGui(QMainWindow):
         """
         Open the online documentation in a web browser
         """
-        webbrowser.open('https://gridcal.readthedocs.io/en/latest/', new=2)
+        webbrowser.open('https://veragrid.readthedocs.io/en/latest/', new=2)
 
     @staticmethod
     def report_a_bug():
@@ -787,7 +787,7 @@ class BaseMainGui(QMainWindow):
         self.console.add_var("clc", self.clear_console)
         self.console.add_var('app', self)
         self.console.add_var('circuit', self.circuit)
-        self.console.add_var('user_folder', get_create_gridcal_folder)
+        self.console.add_var('user_folder', get_create_veragrid_folder)
 
     def show_toast(self, message: str, duration: int = 2000):
         """
@@ -795,7 +795,7 @@ class BaseMainGui(QMainWindow):
         :param message: Message to display
         :param duration: duration in ms
         """
-        self.toast_manager.show_toast(message=message, duration=duration, toast_type="gridcal")
+        self.toast_manager.show_toast(message=message, duration=duration, toast_type="veragrid")
 
     def show_error_toast(self, message: str, duration: int = 2000):
         """

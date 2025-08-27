@@ -1,10 +1,10 @@
-GridCal.ThirdParty.darkdetect package
+VeraGrid.ThirdParty.darkdetect package
 =====================================
 
 Module contents
 ---------------
 
-.. automodule:: GridCal.ThirdParty.darkdetect
+.. automodule:: VeraGrid.ThirdParty.darkdetect
    :members:
    :show-inheritance:
    :undoc-members:

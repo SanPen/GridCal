@@ -1,7 +1,7 @@
 # 🌀 State estimation
 
-GridCal has the ability to run state estimation simulations, however not 
-from the interface since GridCal is not (yet) made to be coupled to SCADA measurements.
+VeraGrid has the ability to run state estimation simulations, however not 
+from the interface since VeraGrid is not (yet) made to be coupled to SCADA measurements.
 Hence, the state estimation calculations will only be available through the API.
 
 ## API

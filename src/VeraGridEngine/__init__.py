@@ -31,7 +31,7 @@ if PROPERLY_LOADED_API:
     def open_file(filename: Union[str, List[str]]) -> MultiCircuit:
         """
         Open file
-        :param filename: name of the file (.gridcal, .ejson, .m, .xml, .zip, etc.) or list of files (.xml, .zip)
+        :param filename: name of the file (.veragrid, .ejson, .m, .xml, .zip, etc.) or list of files (.xml, .zip)
         :return: MultiCircuit instance
         """
         return FileOpen(file_name=filename).open()
@@ -41,7 +41,7 @@ if PROPERLY_LOADED_API:
         """
         Save file
         :param grid: MultiCircuit instance
-        :param filename: name of the file (.gridcal, .ejson)
+        :param filename: name of the file (.veragrid, .ejson)
         """
         FileSave(circuit=grid, file_name=filename).save()
 

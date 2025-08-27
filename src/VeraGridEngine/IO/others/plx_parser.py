@@ -810,7 +810,7 @@ def get_st_node_load(plexos_results_folder, parse_dates=False):
     return df
 
 
-def plx_to_gridcal(mdl: PlxModel, plexos_results_folder, time_indices=None, text_func=None, prog_func=None):
+def plx_to_veragrid(mdl: PlxModel, plexos_results_folder, time_indices=None, text_func=None, prog_func=None):
     """
     Reads plexos model with results and creates a VeraGrid model
     :param mdl: Plexos model instance

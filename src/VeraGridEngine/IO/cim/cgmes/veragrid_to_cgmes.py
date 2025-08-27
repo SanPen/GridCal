@@ -717,7 +717,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # cgmes_syn.aggregate is optional, not exported
         if mc_elm.bus.is_slack:
             cgmes_syn.referencePriority = 1
-            cgmes_gen.normalPF = 1  # in gridcal the participation factor is the cost
+            cgmes_gen.normalPF = 1  # in veragrid the participation factor is the cost
         else:
             cgmes_syn.referencePriority = 0
             cgmes_gen.normalPF = 0
@@ -2118,11 +2118,11 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
 # endregion
 
 
-def gridcal_to_cgmes(gc_model: MultiCircuit,
-                     num_circ: NumericalCircuit,
-                     pf_results: Union[None, PowerFlowResults],
-                     cgmes_model: CgmesCircuit,
-                     logger: DataLogger) -> CgmesCircuit:
+def veragrid_to_cgmes(gc_model: MultiCircuit,
+                      num_circ: NumericalCircuit,
+                      pf_results: Union[None, PowerFlowResults],
+                      cgmes_model: CgmesCircuit,
+                      logger: DataLogger) -> CgmesCircuit:
     """
     Converts the input Multi circuit to a new CGMES Circuit.
 

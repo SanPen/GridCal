@@ -1,29 +1,29 @@
-GridCalEngine.Simulations.StateEstimation package
+VeraGridEngine.Simulations.StateEstimation package
 =================================================
 
 Submodules
 ----------
 
-GridCalEngine.Simulations.StateEstimation.state\_estimation module
+VeraGridEngine.Simulations.StateEstimation.state\_estimation module
 ------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.StateEstimation.state_estimation
+.. automodule:: VeraGridEngine.Simulations.StateEstimation.state_estimation
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.StateEstimation.state\_estimation\_inputs module
+VeraGridEngine.Simulations.StateEstimation.state\_estimation\_inputs module
 --------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.StateEstimation.state_estimation_inputs
+.. automodule:: VeraGridEngine.Simulations.StateEstimation.state_estimation_inputs
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.StateEstimation.state\_stimation\_driver module
+VeraGridEngine.Simulations.StateEstimation.state\_stimation\_driver module
 -------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.StateEstimation.state_stimation_driver
+.. automodule:: VeraGridEngine.Simulations.StateEstimation.state_stimation_driver
    :members:
    :show-inheritance:
    :undoc-members:
@@ -31,7 +31,7 @@ GridCalEngine.Simulations.StateEstimation.state\_stimation\_driver module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Simulations.StateEstimation
+.. automodule:: VeraGridEngine.Simulations.StateEstimation
    :members:
    :show-inheritance:
    :undoc-members:

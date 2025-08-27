@@ -10,6 +10,7 @@ from VeraGridEngine.IO.file_handler import FileOpen
 from VeraGridEngine.enumerations import FaultType
 import VeraGridEngine as gce
 
+
 def test_vsc_save_integration():
     """
     Test case24_7_jb.m containing 7 converters
@@ -51,8 +52,8 @@ def test_vsc_save_integration():
     control2_val_vsc6 = grid.vsc_devices[6].control2_val
 
     # save and reload grid
-    gce.save_file(grid, "test_vsc_save_integration_temp.gridcal")
-    grid_reload = gce.open_file("test_vsc_save_integration_temp.gridcal")
+    gce.save_file(grid, "test_vsc_save_integration_temp.veragrid")
+    grid_reload = gce.open_file("test_vsc_save_integration_temp.veragrid")
 
     try:
         assert control1_vsc0 == grid_reload.vsc_devices[0].control1
@@ -87,14 +88,13 @@ def test_vsc_save_integration():
         assert control2_val_vsc5 == grid_reload.vsc_devices[5].control2_val
         assert control2_val_vsc6 == grid_reload.vsc_devices[6].control2_val
 
-        #delete the temp file
-        os.remove("test_vsc_save_integration_temp.gridcal")
+        # delete the temp file
+        os.remove("test_vsc_save_integration_temp.veragrid")
 
     except Exception as e:
-        os.remove("test_vsc_save_integration_temp.gridcal")
+        os.remove("test_vsc_save_integration_temp.veragrid")
         raise e
 
 
 if __name__ == '__main__':
     test_vsc_save_integration()
-

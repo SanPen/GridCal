@@ -1,29 +1,29 @@
-GridCal.Gui.SubstationDesigner package
+VeraGrid.Gui.SubstationDesigner package
 ======================================
 
 Submodules
 ----------
 
-GridCal.Gui.SubstationDesigner.substation\_designer module
+VeraGrid.Gui.SubstationDesigner.substation\_designer module
 ----------------------------------------------------------
 
-.. automodule:: GridCal.Gui.SubstationDesigner.substation_designer
+.. automodule:: VeraGrid.Gui.SubstationDesigner.substation_designer
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.SubstationDesigner.substation\_designer\_gui module
+VeraGrid.Gui.SubstationDesigner.substation\_designer\_gui module
 ---------------------------------------------------------------
 
-.. automodule:: GridCal.Gui.SubstationDesigner.substation_designer_gui
+.. automodule:: VeraGrid.Gui.SubstationDesigner.substation_designer_gui
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.SubstationDesigner.update\_gui\_file module
+VeraGrid.Gui.SubstationDesigner.update\_gui\_file module
 -------------------------------------------------------
 
-.. automodule:: GridCal.Gui.SubstationDesigner.update_gui_file
+.. automodule:: VeraGrid.Gui.SubstationDesigner.update_gui_file
    :members:
    :show-inheritance:
    :undoc-members:
@@ -31,7 +31,7 @@ GridCal.Gui.SubstationDesigner.update\_gui\_file module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.SubstationDesigner
+.. automodule:: VeraGrid.Gui.SubstationDesigner
    :members:
    :show-inheritance:
    :undoc-members:

@@ -104,7 +104,7 @@ Finally the shunt admittance is (p.u. of the system):
 Inverse definition of SC values from π model
 --------------------------------------------
 
-In GridCal I found the need to find the short circuit values (:math:`P_{cu}, V_{sc}, r_{fe}, I0`) from the branch values (*R*, *X*, *G*, *B*). Hence the following formulas:
+In VeraGrid I found the need to find the short circuit values (:math:`P_{cu}, V_{sc}, r_{fe}, I0`) from the branch values (*R*, *X*, *G*, *B*). Hence the following formulas:
 
 .. math::
 

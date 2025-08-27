@@ -1,53 +1,53 @@
-GridCalEngine.Topology package
+VeraGridEngine.Topology package
 ==============================
 
 Submodules
 ----------
 
-GridCalEngine.Topology.admittance\_matrices module
+VeraGridEngine.Topology.admittance\_matrices module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.Topology.admittance_matrices
+.. automodule:: VeraGridEngine.Topology.admittance_matrices
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Topology.detect\_substations module
+VeraGridEngine.Topology.detect\_substations module
 -------------------------------------------------
 
-.. automodule:: GridCalEngine.Topology.detect_substations
+.. automodule:: VeraGridEngine.Topology.detect_substations
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Topology.grid\_reduction module
+VeraGridEngine.Topology.grid\_reduction module
 ---------------------------------------------
 
-.. automodule:: GridCalEngine.Topology.grid_reduction
+.. automodule:: VeraGridEngine.Topology.grid_reduction
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Topology.simulation\_indices module
+VeraGridEngine.Topology.simulation\_indices module
 -------------------------------------------------
 
-.. automodule:: GridCalEngine.Topology.simulation_indices
+.. automodule:: VeraGridEngine.Topology.simulation_indices
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Topology.substation\_wizards module
+VeraGridEngine.Topology.substation\_wizards module
 -------------------------------------------------
 
-.. automodule:: GridCalEngine.Topology.substation_wizards
+.. automodule:: VeraGridEngine.Topology.substation_wizards
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Topology.topology module
+VeraGridEngine.Topology.topology module
 --------------------------------------
 
-.. automodule:: GridCalEngine.Topology.topology
+.. automodule:: VeraGridEngine.Topology.topology
    :members:
    :show-inheritance:
    :undoc-members:
@@ -55,7 +55,7 @@ GridCalEngine.Topology.topology module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Topology
+.. automodule:: VeraGridEngine.Topology
    :members:
    :show-inheritance:
    :undoc-members:

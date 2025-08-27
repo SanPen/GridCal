@@ -1,4 +1,4 @@
-GridCal.Gui.Diagrams package
+VeraGrid.Gui.Diagrams package
 ============================
 
 Subpackages
@@ -7,41 +7,41 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCal.Gui.Diagrams.Editors
-   GridCal.Gui.Diagrams.MapWidget
-   GridCal.Gui.Diagrams.SchematicWidget
+   VeraGrid.Gui.Diagrams.Editors
+   VeraGrid.Gui.Diagrams.MapWidget
+   VeraGrid.Gui.Diagrams.SchematicWidget
 
 Submodules
 ----------
 
-GridCal.Gui.Diagrams.base\_diagram\_widget module
+VeraGrid.Gui.Diagrams.base\_diagram\_widget module
 -------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.base_diagram_widget
+.. automodule:: VeraGrid.Gui.Diagrams.base_diagram_widget
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.diagrams\_model module
+VeraGrid.Gui.Diagrams.diagrams\_model module
 -------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.diagrams_model
+.. automodule:: VeraGrid.Gui.Diagrams.diagrams_model
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.generic\_graphics module
+VeraGrid.Gui.Diagrams.generic\_graphics module
 ---------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.generic_graphics
+.. automodule:: VeraGrid.Gui.Diagrams.generic_graphics
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.graphics\_manager module
+VeraGrid.Gui.Diagrams.graphics\_manager module
 ---------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.graphics_manager
+.. automodule:: VeraGrid.Gui.Diagrams.graphics_manager
    :members:
    :show-inheritance:
    :undoc-members:
@@ -49,7 +49,7 @@ GridCal.Gui.Diagrams.graphics\_manager module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.Diagrams
+.. automodule:: VeraGrid.Gui.Diagrams
    :members:
    :show-inheritance:
    :undoc-members:

@@ -1,13 +1,13 @@
-GridCalEngine.Simulations.AI package
+VeraGridEngine.Simulations.AI package
 ====================================
 
 Submodules
 ----------
 
-GridCalEngine.Simulations.AI.ai\_trainer\_iterable module
+VeraGridEngine.Simulations.AI.ai\_trainer\_iterable module
 ---------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.AI.ai_trainer_iterable
+.. automodule:: VeraGridEngine.Simulations.AI.ai_trainer_iterable
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ GridCalEngine.Simulations.AI.ai\_trainer\_iterable module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Simulations.AI
+.. automodule:: VeraGridEngine.Simulations.AI
    :members:
    :show-inheritance:
    :undoc-members:

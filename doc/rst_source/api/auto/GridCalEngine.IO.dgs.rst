@@ -1,13 +1,13 @@
-GridCalEngine.IO.dgs package
+VeraGridEngine.IO.dgs package
 ============================
 
 Submodules
 ----------
 
-GridCalEngine.IO.dgs.dgs\_parser module
+VeraGridEngine.IO.dgs.dgs\_parser module
 ---------------------------------------
 
-.. automodule:: GridCalEngine.IO.dgs.dgs_parser
+.. automodule:: VeraGridEngine.IO.dgs.dgs_parser
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ GridCalEngine.IO.dgs.dgs\_parser module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.IO.dgs
+.. automodule:: VeraGridEngine.IO.dgs
    :members:
    :show-inheritance:
    :undoc-members:

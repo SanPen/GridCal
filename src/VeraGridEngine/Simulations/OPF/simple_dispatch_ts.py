@@ -809,7 +809,7 @@ if __name__ == '__main__':
     import VeraGridEngine.api as gce
     from matplotlib import pyplot as plt
 
-    fname = "/home/santi/Documentos/Git/eRoots/tonga_planning/model_conversion_and_validation/Tongatapu/models/Tongatapu_v4_2024_ts.gridcal"
+    fname = "/home/santi/Documentos/Git/eRoots/tonga_planning/model_conversion_and_validation/Tongatapu/models/Tongatapu_v4_2024_ts.veragrid"
 
     grid_ = gce.open_file(fname)
 

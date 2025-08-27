@@ -1,133 +1,133 @@
-GridCalEngine.DataStructures package
+VeraGridEngine.DataStructures package
 ====================================
 
 Submodules
 ----------
 
-GridCalEngine.DataStructures.active\_branch\_data module
+VeraGridEngine.DataStructures.active\_branch\_data module
 --------------------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.active_branch_data
+.. automodule:: VeraGridEngine.DataStructures.active_branch_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.battery\_data module
+VeraGridEngine.DataStructures.battery\_data module
 -------------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.battery_data
+.. automodule:: VeraGridEngine.DataStructures.battery_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.branch\_parent\_data module
+VeraGridEngine.DataStructures.branch\_parent\_data module
 --------------------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.branch_parent_data
+.. automodule:: VeraGridEngine.DataStructures.branch_parent_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.bus\_data module
+VeraGridEngine.DataStructures.bus\_data module
 ---------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.bus_data
+.. automodule:: VeraGridEngine.DataStructures.bus_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.fluid\_node\_data module
+VeraGridEngine.DataStructures.fluid\_node\_data module
 -----------------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.fluid_node_data
+.. automodule:: VeraGridEngine.DataStructures.fluid_node_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.fluid\_p2x\_data module
+VeraGridEngine.DataStructures.fluid\_p2x\_data module
 ----------------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.fluid_p2x_data
+.. automodule:: VeraGridEngine.DataStructures.fluid_p2x_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.fluid\_path\_data module
+VeraGridEngine.DataStructures.fluid\_path\_data module
 -----------------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.fluid_path_data
+.. automodule:: VeraGridEngine.DataStructures.fluid_path_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.fluid\_pump\_data module
+VeraGridEngine.DataStructures.fluid\_pump\_data module
 -----------------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.fluid_pump_data
+.. automodule:: VeraGridEngine.DataStructures.fluid_pump_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.fluid\_turbine\_data module
+VeraGridEngine.DataStructures.fluid\_turbine\_data module
 --------------------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.fluid_turbine_data
+.. automodule:: VeraGridEngine.DataStructures.fluid_turbine_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.generator\_data module
+VeraGridEngine.DataStructures.generator\_data module
 ---------------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.generator_data
+.. automodule:: VeraGridEngine.DataStructures.generator_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.hvdc\_data module
+VeraGridEngine.DataStructures.hvdc\_data module
 ----------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.hvdc_data
+.. automodule:: VeraGridEngine.DataStructures.hvdc_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.load\_data module
+VeraGridEngine.DataStructures.load\_data module
 ----------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.load_data
+.. automodule:: VeraGridEngine.DataStructures.load_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.numerical\_circuit module
+VeraGridEngine.DataStructures.numerical\_circuit module
 ------------------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.numerical_circuit
+.. automodule:: VeraGridEngine.DataStructures.numerical_circuit
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.passive\_branch\_data module
+VeraGridEngine.DataStructures.passive\_branch\_data module
 ---------------------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.passive_branch_data
+.. automodule:: VeraGridEngine.DataStructures.passive_branch_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.shunt\_data module
+VeraGridEngine.DataStructures.shunt\_data module
 -----------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.shunt_data
+.. automodule:: VeraGridEngine.DataStructures.shunt_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.DataStructures.vsc\_data module
+VeraGridEngine.DataStructures.vsc\_data module
 ---------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.vsc_data
+.. automodule:: VeraGridEngine.DataStructures.vsc_data
    :members:
    :show-inheritance:
    :undoc-members:
@@ -135,7 +135,7 @@ GridCalEngine.DataStructures.vsc\_data module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.DataStructures
+.. automodule:: VeraGridEngine.DataStructures
    :members:
    :show-inheritance:
    :undoc-members:

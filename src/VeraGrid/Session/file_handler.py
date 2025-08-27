@@ -62,7 +62,7 @@ class FileOpenThread(QThread):
         :return:
         """
         if isinstance(self.file_name, str):
-            if self.file_name.endswith('.gridcal'):
+            if self.file_name.endswith('.gridcal') or self.file_name.endswith('.veragrid'):
                 return get_session_tree(self.file_name)
             else:
                 return dict()
@@ -77,7 +77,7 @@ class FileOpenThread(QThread):
         :return: Dictionary (name: array)
         """
         if isinstance(self.file_name, str):
-            if self.file_name.endswith('.gridcal'):
+            if self.file_name.endswith('.gridcal') or self.file_name.endswith('.veragrid'):
                 return load_session_driver_objects(file_name_zip=self.file_name,
                                                    session_name=session_name,
                                                    study_name=study_name)
@@ -179,7 +179,7 @@ class FileSaveThread(QThread):
         :return:
         """
         if isinstance(self.file_name, str):
-            if self.file_name.endswith('.gridcal'):
+            if self.file_name.endswith('.gridcal') or self.file_name.endswith('.veragrid'):
                 return get_session_tree(self.file_name)
             else:
                 return dict()
@@ -194,7 +194,7 @@ class FileSaveThread(QThread):
         :return: Dictionary (name: array)
         """
         if isinstance(self.file_name, str):
-            if self.file_name.endswith('.gridcal'):
+            if self.file_name.endswith('.gridcal') or self.file_name.endswith('.veragrid'):
                 return load_session_driver_objects(self.file_name, session_name, study_name)
             else:
                 return dict()

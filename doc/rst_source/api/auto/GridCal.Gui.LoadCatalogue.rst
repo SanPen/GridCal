@@ -1,37 +1,37 @@
-GridCal.Gui.LoadCatalogue package
+VeraGrid.Gui.LoadCatalogue package
 =================================
 
 Submodules
 ----------
 
-GridCal.Gui.LoadCatalogue.SelectComponents module
+VeraGrid.Gui.LoadCatalogue.SelectComponents module
 -------------------------------------------------
 
-.. automodule:: GridCal.Gui.LoadCatalogue.SelectComponents
+.. automodule:: VeraGrid.Gui.LoadCatalogue.SelectComponents
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.LoadCatalogue.catalogue\_dialogue module
+VeraGrid.Gui.LoadCatalogue.catalogue\_dialogue module
 ----------------------------------------------------
 
-.. automodule:: GridCal.Gui.LoadCatalogue.catalogue_dialogue
+.. automodule:: VeraGrid.Gui.LoadCatalogue.catalogue_dialogue
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.LoadCatalogue.icons\_rc module
+VeraGrid.Gui.LoadCatalogue.icons\_rc module
 ------------------------------------------
 
-.. automodule:: GridCal.Gui.LoadCatalogue.icons_rc
+.. automodule:: VeraGrid.Gui.LoadCatalogue.icons_rc
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.LoadCatalogue.update\_gui\_file module
+VeraGrid.Gui.LoadCatalogue.update\_gui\_file module
 --------------------------------------------------
 
-.. automodule:: GridCal.Gui.LoadCatalogue.update_gui_file
+.. automodule:: VeraGrid.Gui.LoadCatalogue.update_gui_file
    :members:
    :show-inheritance:
    :undoc-members:
@@ -39,7 +39,7 @@ GridCal.Gui.LoadCatalogue.update\_gui\_file module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.LoadCatalogue
+.. automodule:: VeraGrid.Gui.LoadCatalogue
    :members:
    :show-inheritance:
    :undoc-members:

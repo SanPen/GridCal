@@ -1,7 +1,7 @@
 # ➿ Continuation power flow
 
 
-GridCal can run continuation power flows (voltage collapse studies) 
+VeraGrid can run continuation power flows (voltage collapse studies) 
 
 ![](figures/settings-cpf.png)
 
@@ -36,7 +36,7 @@ import VeraGridEngine as gce
 plt.style.use('fivethirtyeight')
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
+fname = os.path.join(folder, 'South Island of New Zealand.veragrid')
 
 # open the grid file
 main_circuit = gce.open_file(fname)
@@ -73,7 +73,7 @@ import VeraGridEngine as gce
 plt.style.use('fivethirtyeight')
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
+fname = os.path.join(folder, 'South Island of New Zealand.veragrid')
 
 # open the grid file
 main_circuit = gce.FileOpen(fname).open()

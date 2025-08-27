@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks, Response
 from starlette.responses import StreamingResponse
 
 from VeraGridEngine.IO.veragrid.remote import RemoteInstruction, RemoteJob, run_job
-from VeraGridEngine.IO.veragrid.pack_unpack import parse_gridcal_data
+from VeraGridEngine.IO.veragrid.pack_unpack import parse_veragrid_data
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.enumerations import SimulationTypes, JobStatus
 
@@ -40,7 +40,7 @@ async def process_json_data(json_data: Dict[str, Dict[str, Dict[str, str]]]):
     Action called on the upload
     :param json_data: the grid info generated with 'gather_model_as_jsons_for_communication'
     """
-    grid = parse_gridcal_data(data=json_data)
+    grid = parse_veragrid_data(data=json_data)
     print(f'Circuit loaded alright nbus{grid.get_bus_number()}, '
           f'nbr{grid.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=True)}')
 
@@ -100,7 +100,7 @@ async def upload_job(json_data: dict, background_tasks: BackgroundTasks):
     """
     background_tasks.add_task(stream_load_json, json_data)
 
-    grid: MultiCircuit = parse_gridcal_data(data=json_data)
+    grid: MultiCircuit = parse_veragrid_data(data=json_data)
 
     print(f'Circuit loaded alright nbus{grid.get_bus_number()}, '
           f'nbr{grid.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=True)}')

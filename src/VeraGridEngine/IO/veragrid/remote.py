@@ -12,7 +12,7 @@ from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.enumerations import (SimulationTypes, JobStatus)
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.IO.veragrid.pack_unpack import gather_model_as_jsons
-from VeraGridEngine.IO.file_system import get_create_gridcal_folder
+from VeraGridEngine.IO.file_system import get_create_veragrid_folder
 from VeraGridEngine.Simulations.driver_handler import create_driver
 from VeraGridEngine.Simulations.types import DRIVER_OBJECTS, RESULTS_OBJECTS
 
@@ -21,7 +21,7 @@ try:
 
     REQUESTS_AVAILABLE = True
 except AttributeError as e:
-    print(f"VeraGridEngine/IO/gridcal/remote.py: Error with requests -> {e}")
+    print(f"VeraGridEngine/IO/veragrid/remote.py: Error with requests -> {e}")
     REQUESTS_AVAILABLE = False
 
 
@@ -144,7 +144,7 @@ def get_certificate_path() -> str:
     Get a path to the certificates
     :return:
     """
-    return os.path.join(get_create_gridcal_folder(), "server_cert.pem")
+    return os.path.join(get_create_veragrid_folder(), "server_cert.pem")
 
 
 def get_certificate(base_url: str, certificate_path: str, pwd: str, logger: Logger = Logger()) -> bool:
@@ -189,7 +189,7 @@ def get_certificate(base_url: str, certificate_path: str, pwd: str, logger: Logg
 def gather_model_as_jsons_for_communication(circuit: MultiCircuit,
                                             instruction: RemoteInstruction) -> Dict[str, Dict[str, Dict[str, str]]]:
     """
-    Create a Json with the same information expected for loading with `parse_gridcal_data`
+    Create a Json with the same information expected for loading with `parse_veragrid_data`
     :param circuit: MultiCircuit
     :param instruction: RemoteInstruction
     :return: JSON like data

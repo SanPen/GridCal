@@ -1,4 +1,4 @@
-GridCal.Gui.Diagrams.MapWidget.Tiles package
+VeraGrid.Gui.Diagrams.MapWidget.Tiles package
 ============================================
 
 Subpackages
@@ -7,55 +7,55 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders
+   VeraGrid.Gui.Diagrams.MapWidget.Tiles.TileProviders
 
 Submodules
 ----------
 
-GridCal.Gui.Diagrams.MapWidget.Tiles.base\_tiles module
+VeraGrid.Gui.Diagrams.MapWidget.Tiles.base\_tiles module
 -------------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Tiles.base_tiles
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Tiles.base_tiles
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.MapWidget.Tiles.default\_tile\_data module
+VeraGrid.Gui.Diagrams.MapWidget.Tiles.default\_tile\_data module
 ---------------------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Tiles.default_tile_data
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Tiles.default_tile_data
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.MapWidget.Tiles.pycacheback module
+VeraGrid.Gui.Diagrams.MapWidget.Tiles.pycacheback module
 -------------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Tiles.pycacheback
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Tiles.pycacheback
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.MapWidget.Tiles.tile\_worker module
+VeraGrid.Gui.Diagrams.MapWidget.Tiles.tile\_worker module
 --------------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Tiles.tile_worker
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Tiles.tile_worker
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.MapWidget.Tiles.tiles module
+VeraGrid.Gui.Diagrams.MapWidget.Tiles.tiles module
 -------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Tiles.tiles
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Tiles.tiles
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Diagrams.MapWidget.Tiles.tiles\_cache module
+VeraGrid.Gui.Diagrams.MapWidget.Tiles.tiles\_cache module
 --------------------------------------------------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Tiles.tiles_cache
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Tiles.tiles_cache
    :members:
    :show-inheritance:
    :undoc-members:
@@ -63,7 +63,7 @@ GridCal.Gui.Diagrams.MapWidget.Tiles.tiles\_cache module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.Diagrams.MapWidget.Tiles
+.. automodule:: VeraGrid.Gui.Diagrams.MapWidget.Tiles
    :members:
    :show-inheritance:
    :undoc-members:

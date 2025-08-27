@@ -1,53 +1,53 @@
-GridCalEngine.IO.others package
+VeraGridEngine.IO.others package
 ===============================
 
 Submodules
 ----------
 
-GridCalEngine.IO.others.dpx\_parser module
+VeraGridEngine.IO.others.dpx\_parser module
 ------------------------------------------
 
-.. automodule:: GridCalEngine.IO.others.dpx_parser
+.. automodule:: VeraGridEngine.IO.others.dpx_parser
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.others.ipa\_parser module
+VeraGridEngine.IO.others.ipa\_parser module
 ------------------------------------------
 
-.. automodule:: GridCalEngine.IO.others.ipa_parser
+.. automodule:: VeraGridEngine.IO.others.ipa_parser
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.others.pandapower\_parser module
+VeraGridEngine.IO.others.pandapower\_parser module
 -------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.others.pandapower_parser
+.. automodule:: VeraGridEngine.IO.others.pandapower_parser
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.others.plx\_parser module
+VeraGridEngine.IO.others.plx\_parser module
 ------------------------------------------
 
-.. automodule:: GridCalEngine.IO.others.plx_parser
+.. automodule:: VeraGridEngine.IO.others.plx_parser
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.others.pypsa\_parser module
+VeraGridEngine.IO.others.pypsa\_parser module
 --------------------------------------------
 
-.. automodule:: GridCalEngine.IO.others.pypsa_parser
+.. automodule:: VeraGridEngine.IO.others.pypsa_parser
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.IO.others.rte\_parser module
+VeraGridEngine.IO.others.rte\_parser module
 ------------------------------------------
 
-.. automodule:: GridCalEngine.IO.others.rte_parser
+.. automodule:: VeraGridEngine.IO.others.rte_parser
    :members:
    :show-inheritance:
    :undoc-members:
@@ -55,7 +55,7 @@ GridCalEngine.IO.others.rte\_parser module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.IO.others
+.. automodule:: VeraGridEngine.IO.others
    :members:
    :show-inheritance:
    :undoc-members:

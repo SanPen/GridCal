@@ -1,133 +1,133 @@
-GridCalEngine.Utils.NumericalMethods package
+VeraGridEngine.Utils.NumericalMethods package
 ============================================
 
 Submodules
 ----------
 
-GridCalEngine.Utils.NumericalMethods.MVRSM\_mo\_pareto module
+VeraGridEngine.Utils.NumericalMethods.MVRSM\_mo\_pareto module
 -------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.MVRSM_mo_pareto
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.MVRSM\_mo\_scaled module
+VeraGridEngine.Utils.NumericalMethods.MVRSM\_mo\_scaled module
 -------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.MVRSM_mo_scaled
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_scaled
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.MVRSM\_original module
+VeraGridEngine.Utils.NumericalMethods.MVRSM\_original module
 -----------------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.MVRSM_original
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.MVRSM_original
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.autodiff module
+VeraGridEngine.Utils.NumericalMethods.autodiff module
 ----------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.autodiff
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.autodiff
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.common module
+VeraGridEngine.Utils.NumericalMethods.common module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.common
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.common
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.ips module
+VeraGridEngine.Utils.NumericalMethods.ips module
 -----------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.ips
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.ips
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.iwamoto module
+VeraGridEngine.Utils.NumericalMethods.iwamoto module
 ---------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.iwamoto
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.iwamoto
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.levenberg\_marquadt module
+VeraGridEngine.Utils.NumericalMethods.levenberg\_marquadt module
 ---------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.levenberg_marquadt
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.levenberg_marquadt
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.newton\_raphson module
+VeraGridEngine.Utils.NumericalMethods.newton\_raphson module
 -----------------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.newton_raphson
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.newton_raphson
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.newton\_raphson\_ode module
+VeraGridEngine.Utils.NumericalMethods.newton\_raphson\_ode module
 ----------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.newton_raphson_ode
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.newton_raphson_ode
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.non\_dominated\_sorting module
+VeraGridEngine.Utils.NumericalMethods.non\_dominated\_sorting module
 -------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.non_dominated_sorting
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.non_dominated_sorting
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.nsga3 module
+VeraGridEngine.Utils.NumericalMethods.nsga3 module
 -------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.nsga3
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.nsga3
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.numerical\_stability module
+VeraGridEngine.Utils.NumericalMethods.numerical\_stability module
 ----------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.numerical_stability
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.numerical_stability
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.powell module
+VeraGridEngine.Utils.NumericalMethods.powell module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.powell
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.powell
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.sparse\_solve module
+VeraGridEngine.Utils.NumericalMethods.sparse\_solve module
 ---------------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.sparse_solve
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.sparse_solve
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.NumericalMethods.weldorf\_online\_stddev module
+VeraGridEngine.Utils.NumericalMethods.weldorf\_online\_stddev module
 -------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods.weldorf_online_stddev
+.. automodule:: VeraGridEngine.Utils.NumericalMethods.weldorf_online_stddev
    :members:
    :show-inheritance:
    :undoc-members:
@@ -135,7 +135,7 @@ GridCalEngine.Utils.NumericalMethods.weldorf\_online\_stddev module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Utils.NumericalMethods
+.. automodule:: VeraGridEngine.Utils.NumericalMethods
    :members:
    :show-inheritance:
    :undoc-members:

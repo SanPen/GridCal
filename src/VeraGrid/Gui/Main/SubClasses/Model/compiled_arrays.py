@@ -153,7 +153,7 @@ class CompiledArraysMain(ServerMain):
                 self.calculation_inputs_to_display = ne.get_snapshots_from_newtonpa(self.circuit)
 
             else:
-                # fallback to gridcal
+                # fallback to VeraGrid
                 numerical_circuit = compile_numerical_circuit_at(circuit=self.circuit, t_idx=None)
                 calculation_inputs = numerical_circuit.split_into_islands()
                 self.calculation_inputs_to_display = calculation_inputs

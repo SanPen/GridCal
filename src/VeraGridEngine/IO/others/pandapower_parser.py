@@ -154,7 +154,7 @@ class Panda2VeraGrid:
 
     def get_api_object_by_registry(self, panda_type: str, panda_code: int) -> ALL_DEV_TYPES | None:
         """
-        Get a previously registered gridcal object from a pandapower table-key
+        Get a previously registered veragrid object from a pandapower table-key
         :param panda_type: table name
         :param panda_code: index key
         :return: VeraGrid object

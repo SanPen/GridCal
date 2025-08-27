@@ -15,8 +15,8 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
-   sodipodi:docname="GridCal_icon.svg"
-   inkscape:export-filename="/home/santi/Documentos/GitHub/GridCal/src/GridCal/Gui/Main/GridCal_icon.png"
+   sodipodi:docname="VeraGrid_icon.svg"
+   inkscape:export-filename="/home/santi/Documentos/GitHub/VeraGrid/src/VeraGrid/Gui/Main/VeraGrid_icon.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
@@ -126,7 +126,7 @@
          id="tspan4535"
          x="-576.8186"
          y="-76.537895"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'URW Gothic L';-inkscape-font-specification:'URW Gothic L';fill:#adf0d1;fill-opacity:0.65882353;stroke-width:2.11932564">GridCal</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'URW Gothic L';-inkscape-font-specification:'URW Gothic L';fill:#adf0d1;fill-opacity:0.65882353;stroke-width:2.11932564">VeraGrid</tspan></text>
     <rect
        ry="60.926529"
        y="-168.04951"
@@ -145,7 +145,7 @@
          id="tspan4535-5"
          x="17.585619"
          y="70.920334"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'URW Gothic L';-inkscape-font-specification:'URW Gothic L';fill:#00203e;fill-opacity:0.65882353;stroke-width:2.11932564">GridCal</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'URW Gothic L';-inkscape-font-specification:'URW Gothic L';fill:#00203e;fill-opacity:0.65882353;stroke-width:2.11932564">VeraGrid</tspan></text>
     <g
        id="g863-6"
        transform="matrix(4.0912642,0,0,4.0912642,-736.13113,-3124.8284)"

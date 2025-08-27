@@ -1,37 +1,37 @@
-GridCalEngine.Simulations.Clustering package
+VeraGridEngine.Simulations.Clustering package
 ============================================
 
 Submodules
 ----------
 
-GridCalEngine.Simulations.Clustering.clustering module
+VeraGridEngine.Simulations.Clustering.clustering module
 ------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.Clustering.clustering
+.. automodule:: VeraGridEngine.Simulations.Clustering.clustering
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.Clustering.clustering\_driver module
+VeraGridEngine.Simulations.Clustering.clustering\_driver module
 --------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.Clustering.clustering_driver
+.. automodule:: VeraGridEngine.Simulations.Clustering.clustering_driver
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.Clustering.clustering\_options module
+VeraGridEngine.Simulations.Clustering.clustering\_options module
 ---------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.Clustering.clustering_options
+.. automodule:: VeraGridEngine.Simulations.Clustering.clustering_options
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.Clustering.clustering\_results module
+VeraGridEngine.Simulations.Clustering.clustering\_results module
 ---------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.Clustering.clustering_results
+.. automodule:: VeraGridEngine.Simulations.Clustering.clustering_results
    :members:
    :show-inheritance:
    :undoc-members:
@@ -39,7 +39,7 @@ GridCalEngine.Simulations.Clustering.clustering\_results module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Simulations.Clustering
+.. automodule:: VeraGridEngine.Simulations.Clustering
    :members:
    :show-inheritance:
    :undoc-members:

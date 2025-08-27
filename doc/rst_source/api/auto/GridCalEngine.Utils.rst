@@ -1,4 +1,4 @@
-GridCalEngine.Utils package
+VeraGridEngine.Utils package
 ===========================
 
 Subpackages
@@ -7,35 +7,35 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.Utils.Filtering
-   GridCalEngine.Utils.MIP
-   GridCalEngine.Utils.NumericalMethods
-   GridCalEngine.Utils.Sparse
-   GridCalEngine.Utils.ThirdParty
+   VeraGridEngine.Utils.Filtering
+   VeraGridEngine.Utils.MIP
+   VeraGridEngine.Utils.NumericalMethods
+   VeraGridEngine.Utils.Sparse
+   VeraGridEngine.Utils.ThirdParty
 
 Submodules
 ----------
 
-GridCalEngine.Utils.progress\_bar module
+VeraGridEngine.Utils.progress\_bar module
 ----------------------------------------
 
-.. automodule:: GridCalEngine.Utils.progress_bar
+.. automodule:: VeraGridEngine.Utils.progress_bar
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.scores module
+VeraGridEngine.Utils.scores module
 ---------------------------------
 
-.. automodule:: GridCalEngine.Utils.scores
+.. automodule:: VeraGridEngine.Utils.scores
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Utils.zip\_file\_mgmt module
+VeraGridEngine.Utils.zip\_file\_mgmt module
 ------------------------------------------
 
-.. automodule:: GridCalEngine.Utils.zip_file_mgmt
+.. automodule:: VeraGridEngine.Utils.zip_file_mgmt
    :members:
    :show-inheritance:
    :undoc-members:
@@ -43,7 +43,7 @@ GridCalEngine.Utils.zip\_file\_mgmt module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Utils
+.. automodule:: VeraGridEngine.Utils
    :members:
    :show-inheritance:
    :undoc-members:

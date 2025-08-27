@@ -1,13 +1,13 @@
-GridCalEngine.IO.epc package
+VeraGridEngine.IO.epc package
 ============================
 
 Submodules
 ----------
 
-GridCalEngine.IO.epc.epc\_parser module
+VeraGridEngine.IO.epc.epc\_parser module
 ---------------------------------------
 
-.. automodule:: GridCalEngine.IO.epc.epc_parser
+.. automodule:: VeraGridEngine.IO.epc.epc_parser
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ GridCalEngine.IO.epc.epc\_parser module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.IO.epc
+.. automodule:: VeraGridEngine.IO.epc
    :members:
    :show-inheritance:
    :undoc-members:

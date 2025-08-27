@@ -23,7 +23,7 @@ from VeraGridEngine.__version__ import __VeraGridEngine_VERSION__
 
 # -- Project information -----------------------------------------------------
 
-project = 'GridCal'
+project = 'VeraGrid'
 copyright = '2025, Santiago Peñate Vera et. al.'
 author = 'Santiago Peñate Vera et. al.'
 
@@ -64,7 +64,7 @@ extensions.append('myst_parser')  # markdown
 autosummary_generate = True
 myst_dmath_allow_labels = True
 
-# generate CGMES, PSSe and GridCal data models' rst files
+# generate CGMES, PSSe and VeraGrid data models' rst files
 write_models_to_md(os.path.join('md_source', 'data_models.md'))
 
 # Add any paths that contain templates here, relative to this directory.
@@ -127,12 +127,12 @@ html_theme_options = {
     "show_scrolltop": True,
     "show_permalinks": False,
     "awesome_external_links": True,
-    "main_nav_links": { "GitHub": "https://github.com/SanPen/GridCal"},
+    "main_nav_links": { "GitHub": "https://github.com/SanPen/VeraGrid"},
     "extra_header_link_icons": {
         "Discord": {"link": "https://discord.gg/xxx", "icon": "<svg>...</svg>"}
     },
-    "logo_light": "img/GridCal3_icon.svg",
-    "logo_dark": "img/GridCal3_icon.svg",
+    "logo_light": "img/VeraGrid3_icon.svg",
+    "logo_dark": "img/VeraGrid3_icon.svg",
     "globaltoc_includehidden": False,
 }
 
@@ -161,7 +161,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'GridCaldoc'
+htmlhelp_basename = 'VeraGriddoc'
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -190,7 +190,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'GridCal.tex', 'GridCal Documentation', 'Santiago Peñate Vera', 'manual'),
+    (master_doc, 'VeraGrid.tex', 'VeraGrid Documentation', 'Santiago Peñate Vera', 'manual'),
 ]
 
 # -- Options for manual page output ------------------------------------------
@@ -198,7 +198,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'gridcal', 'GridCal Documentation',
+    (master_doc, 'gridcal', 'VeraGrid Documentation',
      [author], 1)
 ]
 
@@ -208,8 +208,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'GridCal', 'GridCal Documentation',
-     author, 'GridCal', 'One line description of project.',
+    (master_doc, 'VeraGrid', 'VeraGrid Documentation',
+     author, 'VeraGrid', 'One line description of project.',
      'Miscellaneous'),
 ]
 

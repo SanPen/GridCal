@@ -1,37 +1,37 @@
-GridCalEngine.Devices.Substation package
+VeraGridEngine.Devices.Substation package
 ========================================
 
 Submodules
 ----------
 
-GridCalEngine.Devices.Substation.bus module
+VeraGridEngine.Devices.Substation.bus module
 -------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Substation.bus
+.. automodule:: VeraGridEngine.Devices.Substation.bus
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Substation.busbar module
+VeraGridEngine.Devices.Substation.busbar module
 ----------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Substation.busbar
+.. automodule:: VeraGridEngine.Devices.Substation.busbar
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Substation.substation module
+VeraGridEngine.Devices.Substation.substation module
 --------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Substation.substation
+.. automodule:: VeraGridEngine.Devices.Substation.substation
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Devices.Substation.voltage\_level module
+VeraGridEngine.Devices.Substation.voltage\_level module
 ------------------------------------------------------
 
-.. automodule:: GridCalEngine.Devices.Substation.voltage_level
+.. automodule:: VeraGridEngine.Devices.Substation.voltage_level
    :members:
    :show-inheritance:
    :undoc-members:
@@ -39,7 +39,7 @@ GridCalEngine.Devices.Substation.voltage\_level module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Devices.Substation
+.. automodule:: VeraGridEngine.Devices.Substation
    :members:
    :show-inheritance:
    :undoc-members:

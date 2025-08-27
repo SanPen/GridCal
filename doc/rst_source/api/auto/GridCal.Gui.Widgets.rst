@@ -1,21 +1,21 @@
-GridCal.Gui.Widgets package
+VeraGrid.Gui.Widgets package
 ===========================
 
 Submodules
 ----------
 
-GridCal.Gui.Widgets.custom\_qrangeslider module
+VeraGrid.Gui.Widgets.custom\_qrangeslider module
 -----------------------------------------------
 
-.. automodule:: GridCal.Gui.Widgets.custom_qrangeslider
+.. automodule:: VeraGrid.Gui.Widgets.custom_qrangeslider
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.Widgets.matplotlibwidget module
+VeraGrid.Gui.Widgets.matplotlibwidget module
 -------------------------------------------
 
-.. automodule:: GridCal.Gui.Widgets.matplotlibwidget
+.. automodule:: VeraGrid.Gui.Widgets.matplotlibwidget
    :members:
    :show-inheritance:
    :undoc-members:
@@ -23,7 +23,7 @@ GridCal.Gui.Widgets.matplotlibwidget module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.Widgets
+.. automodule:: VeraGrid.Gui.Widgets
    :members:
    :show-inheritance:
    :undoc-members:

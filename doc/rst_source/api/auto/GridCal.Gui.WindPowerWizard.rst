@@ -1,37 +1,37 @@
-GridCal.Gui.WindPowerWizard package
+VeraGrid.Gui.WindPowerWizard package
 ===================================
 
 Submodules
 ----------
 
-GridCal.Gui.WindPowerWizard.gui module
+VeraGrid.Gui.WindPowerWizard.gui module
 --------------------------------------
 
-.. automodule:: GridCal.Gui.WindPowerWizard.gui
+.. automodule:: VeraGrid.Gui.WindPowerWizard.gui
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.WindPowerWizard.icons\_rc module
+VeraGrid.Gui.WindPowerWizard.icons\_rc module
 --------------------------------------------
 
-.. automodule:: GridCal.Gui.WindPowerWizard.icons_rc
+.. automodule:: VeraGrid.Gui.WindPowerWizard.icons_rc
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.WindPowerWizard.update\_gui\_file module
+VeraGrid.Gui.WindPowerWizard.update\_gui\_file module
 ----------------------------------------------------
 
-.. automodule:: GridCal.Gui.WindPowerWizard.update_gui_file
+.. automodule:: VeraGrid.Gui.WindPowerWizard.update_gui_file
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCal.Gui.WindPowerWizard.wind\_power\_wizzard module
+VeraGrid.Gui.WindPowerWizard.wind\_power\_wizzard module
 -------------------------------------------------------
 
-.. automodule:: GridCal.Gui.WindPowerWizard.wind_power_wizzard
+.. automodule:: VeraGrid.Gui.WindPowerWizard.wind_power_wizzard
    :members:
    :show-inheritance:
    :undoc-members:
@@ -39,7 +39,7 @@ GridCal.Gui.WindPowerWizard.wind\_power\_wizzard module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.WindPowerWizard
+.. automodule:: VeraGrid.Gui.WindPowerWizard
    :members:
    :show-inheritance:
    :undoc-members:

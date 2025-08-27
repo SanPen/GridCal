@@ -6,15 +6,15 @@ make.sh: "Traditional" way of calling the system declared sphinx-build command u
 
 make.py: Compile the documentation using the python distribution you use for development.
 
-Any python that executes "sphinx-build" must have installed the same dependencies that GridCal has.
+Any python that executes "sphinx-build" must have installed the same dependencies that VeraGrid has.
 
 In short, if you want to compile the documentation locally, better use make.py, the others are there for read-the-docs.
 
 
 Use:
 
-`sphinx-apidoc -o ./rst_source/api/auto ../src/GridCal --tocfile modules`
-`sphinx-apidoc -o ./rst_source/api/auto ../src/GridCalEngine --tocfile modules`
+`sphinx-apidoc -o ./rst_source/api/auto ../src/VeraGrid --tocfile modules`
+`sphinx-apidoc -o ./rst_source/api/auto ../src/VeraGridEngine --tocfile modules`
 
 to build the api rst files
 

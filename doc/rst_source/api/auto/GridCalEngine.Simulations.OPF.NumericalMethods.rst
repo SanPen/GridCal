@@ -1,37 +1,37 @@
-GridCalEngine.Simulations.OPF.NumericalMethods package
+VeraGridEngine.Simulations.OPF.NumericalMethods package
 ======================================================
 
 Submodules
 ----------
 
-GridCalEngine.Simulations.OPF.NumericalMethods.ac\_opf module
+VeraGridEngine.Simulations.OPF.NumericalMethods.ac\_opf module
 -------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf
+.. automodule:: VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.OPF.NumericalMethods.ac\_opf\_derivatives module
+VeraGridEngine.Simulations.OPF.NumericalMethods.ac\_opf\_derivatives module
 --------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives
+.. automodule:: VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.OPF.NumericalMethods.ac\_opf\_new module
+VeraGridEngine.Simulations.OPF.NumericalMethods.ac\_opf\_new module
 ------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_new
+.. automodule:: VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf_new
    :members:
    :show-inheritance:
    :undoc-members:
 
-GridCalEngine.Simulations.OPF.NumericalMethods.newton\_raphson\_ips\_fx module
+VeraGridEngine.Simulations.OPF.NumericalMethods.newton\_raphson\_ips\_fx module
 ------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx
+.. automodule:: VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx
    :members:
    :show-inheritance:
    :undoc-members:
@@ -39,7 +39,7 @@ GridCalEngine.Simulations.OPF.NumericalMethods.newton\_raphson\_ips\_fx module
 Module contents
 ---------------
 
-.. automodule:: GridCalEngine.Simulations.OPF.NumericalMethods
+.. automodule:: VeraGridEngine.Simulations.OPF.NumericalMethods
    :members:
    :show-inheritance:
    :undoc-members:

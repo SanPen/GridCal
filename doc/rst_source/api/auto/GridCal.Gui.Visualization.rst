@@ -1,13 +1,13 @@
-GridCal.Gui.Visualization package
+VeraGrid.Gui.Visualization package
 =================================
 
 Submodules
 ----------
 
-GridCal.Gui.Visualization.visualization module
+VeraGrid.Gui.Visualization.visualization module
 ----------------------------------------------
 
-.. automodule:: GridCal.Gui.Visualization.visualization
+.. automodule:: VeraGrid.Gui.Visualization.visualization
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ GridCal.Gui.Visualization.visualization module
 Module contents
 ---------------
 
-.. automodule:: GridCal.Gui.Visualization
+.. automodule:: VeraGrid.Gui.Visualization
    :members:
    :show-inheritance:
    :undoc-members:

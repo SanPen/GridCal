@@ -931,7 +931,7 @@ class BlockSolver:
         """
         # Combine state and algebraic variables
         all_vars = self._state_vars + self._algebraic_vars
-        var_names = [str(var) + '_Gridcal' for var in all_vars]
+        var_names = [str(var) + '_VeraGrid' for var in all_vars]
 
         # Create DataFrame with time and variable data
         df = pd.DataFrame(data=y, columns=var_names)
