@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import matplotlib
 import sys
-from GridCalEngine.Utils.MIP.selected_interface import *
-from GridCalEngine.enumerations import MIPSolvers
+from VeraGridEngine.Utils.MIP.selected_interface import *
+from VeraGridEngine.enumerations import MIPSolvers
 
 
 matplotlib.use('TkAgg')

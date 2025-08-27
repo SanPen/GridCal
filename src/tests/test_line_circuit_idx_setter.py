@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from unittest.mock import patch
-from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType
-from GridCalEngine.Devices.Branches.underground_line_type import UndergroundLineType
-from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType
-from GridCalEngine.Devices.Branches.line import Line
-from GridCalEngine import GridCalEngine as gce
+from VeraGridEngine.Devices.Branches.overhead_line_type import OverheadLineType
+from VeraGridEngine.Devices.Branches.underground_line_type import UndergroundLineType
+from VeraGridEngine.Devices.Branches.sequence_line_type import SequenceLineType
+from VeraGridEngine.Devices.Branches.line import Line
+from VeraGridEngine import VeraGridEngine as gce
 
 
 def test_valid_circuit_idx():

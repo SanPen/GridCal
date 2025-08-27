@@ -1,10 +1,10 @@
 import os
-import GridCalEngine as gce
-from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions, FileSave
+import VeraGridEngine as gce
+from VeraGridEngine.IO.file_handler import FileSavingOptions, FileOpenOptions, FileSave
 
 # fname = os.path.join("..", "..", "tests", "data", "grids", "CGMES_2_4_15", "IEEE 118 Bus v2.zip")
 # fname = "C:/Users/raiya/PycharmProjects/RTE_Short_Circuits/RTE_grid_04_07_2025.xml"
-fname = "C:/Users/raiya/PycharmProjects/GridCal/src/trunk/cgmes/inputCourcirc.xml"
+fname = "C:/Users/raiya/PycharmProjects/VeraGrid/src/trunk/cgmes/inputCourcirc.xml"
 # logger = gce.Logger()
 # data_parser = gce.CgmesDataParser()
 # data_parser.load_files(files=[fname])

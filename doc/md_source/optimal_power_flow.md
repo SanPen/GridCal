@@ -31,7 +31,7 @@ Control batteries
 ```python
 import os
 import numpy as np
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE39_1W.gridcal')
@@ -72,7 +72,7 @@ PowerFlowDriver:
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE39_1W.gridcal')
@@ -358,7 +358,7 @@ electrical grid.
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'hydro_simple.gridcal')

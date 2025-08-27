@@ -1,10 +1,10 @@
 """
-This script models the admittance primitives following the PSSe and GridCal ways of modelling
+This script models the admittance primitives following the PSSe and VeraGrid ways of modelling
 This serves to understand the differences between both
 """
 import numpy as np
-from GridCalEngine.IO.raw.devices.transformer import RawTransformer
-from GridCalEngine.Devices.Branches.transformer import Transformer2W, Bus, TapChangerTypes
+from VeraGridEngine.IO.raw.devices.transformer import RawTransformer
+from VeraGridEngine.Devices.Branches.transformer import Transformer2W, Bus, TapChangerTypes
 
 # ----------------------------------------------------------------------------------------------------------------------
 # PSSe modelling
@@ -63,7 +63,7 @@ print(f"ytf: {np.round(ytf)} p.u.")
 print(f"ytt: {np.round(ytt)} p.u.")
 
 # ----------------------------------------------------------------------------------------------------------------------
-# GridCal modelling from the PSSe data
+# VeraGrid modelling from the PSSe data
 # ----------------------------------------------------------------------------------------------------------------------
 
 b1 = Bus(Vnom=V1)
@@ -102,7 +102,7 @@ yft = -ys / (m * mf * mt)
 ytf = -ys / (m * mf * mt * np.exp(2j * tau))
 ytt = (ys + ysh) / (mt ** 2)
 
-print('\nGridCal')
+print('\nVeraGrid')
 print(f"mf: {np.round(mf, 4)}, "
       f"mt: {np.round(mt, 4)}, "
       f"tap module: {np.round(m, 4)}")

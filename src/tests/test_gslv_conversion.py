@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 import numpy as np
-import GridCalEngine.api as gce
-from GridCalEngine.Compilers.circuit_to_gslv import GSLV_AVAILABLE, pg, to_gslv, compare_nc, CheckArr
+import VeraGridEngine.api as gce
+from VeraGridEngine.Compilers.circuit_to_gslv import GSLV_AVAILABLE, pg, to_gslv, compare_nc, CheckArr
 
 
 def compare_inputs(grid_gslv: "pg.MultiCircuit", grid_gc: gce.MultiCircuit, tol=1e-6, t_idx=None):
@@ -256,7 +256,7 @@ def test_results_compatibility():
 
         drv_gc = gce.PowerFlowDriver(grid=grid,
                                      options=options,
-                                     engine=gce.EngineType.GridCal)
+                                     engine=gce.EngineType.VeraGrid)
         drv_gc.run()
         res_gc = drv_gc.results
 

@@ -1,7 +1,7 @@
 import numpy as np
 
-import GridCalEngine as gce
-from GridCalEngine import MultiCircuit, Bus, Line, PiMeasurement, QiMeasurement, VmMeasurement, StateEstimationOptions, \
+import VeraGridEngine as gce
+from VeraGridEngine import MultiCircuit, Bus, Line, PiMeasurement, QiMeasurement, VmMeasurement, StateEstimationOptions, \
     StateEstimation, QfMeasurement, PfMeasurement
 
 

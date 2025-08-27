@@ -4,9 +4,9 @@ import numpy as np
 import random
 from scipy import sparse as sp
 from scipy.sparse import csc_matrix, coo_matrix
-import GridCalEngine.api as gce
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.Utils.Sparse.csc import diags
+import VeraGridEngine.api as gce
+from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from VeraGridEngine.Utils.Sparse.csc import diags
 
 #
 # def test_average_speed_1(tries = 15, iter = 15):

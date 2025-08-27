@@ -1,15 +1,15 @@
 import os
 import random
 import matplotlib.pyplot as plt
-from GridCalEngine import *
-from GridCalEngine.IO.file_handler import FileOpen
-import GridCalEngine.Devices as dev
-import GridCalEngine.Simulations as sim
+from VeraGridEngine import *
+from VeraGridEngine.IO.file_handler import FileOpen
+import VeraGridEngine.Devices as dev
+import VeraGridEngine.Simulations as sim
 import trunk.investments.InvestmentsEvaluation as invsim
-from GridCalEngine.enumerations import InvestmentEvaluationMethod
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
-from GridCalEngine.enumerations import ResultTypes
+from VeraGridEngine.enumerations import InvestmentEvaluationMethod
+from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
+from VeraGridEngine.enumerations import ResultTypes
 
 
 # Define investment power lines in the grid

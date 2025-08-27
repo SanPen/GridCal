@@ -1,10 +1,10 @@
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 
 def get_grid_bus_branch() -> gce.MultiCircuit:
     """
     Example from Sergio Dorado: 3-bus grid with no switches
-    see: https://github.com/SanPen/GridCal/issues/279
+    see: https://github.com/SanPen/VeraGrid/issues/279
     :return: MultiCircuit
     """
     grid1 = gce.MultiCircuit(name="Bus-branch grid")
@@ -54,7 +54,7 @@ def get_grid_bus_branch() -> gce.MultiCircuit:
 def get_grid_node_breaker() -> gce.MultiCircuit:
     """
     Example from Sergio Dorado: 3-bus grid with switches
-    See: https://github.com/SanPen/GridCal/issues/279
+    See: https://github.com/SanPen/VeraGrid/issues/279
     :return: MultiCircuit
     """
     grid2 = gce.MultiCircuit(name="Node-breaker grid")

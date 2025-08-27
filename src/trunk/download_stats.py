@@ -161,7 +161,7 @@ def main():
     """
 
     """
-    pkg = 'GridCal'
+    pkg = 'VeraGrid'
     PyPIDownloadAggregator(pkg).stats()
 
 

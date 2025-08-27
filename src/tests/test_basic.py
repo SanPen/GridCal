@@ -3,15 +3,15 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
-from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Devices.Substation import Bus
-from GridCalEngine.Devices.Injections.generator import Generator
-from GridCalEngine.Devices.Injections.static_generator import StaticGenerator
-from GridCalEngine.Devices.Branches.transformer import TransformerType, Transformer2W
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from VeraGridEngine.basic_structures import Logger
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Devices.Substation import Bus
+from VeraGridEngine.Devices.Injections.generator import Generator
+from VeraGridEngine.Devices.Injections.static_generator import StaticGenerator
+from VeraGridEngine.Devices.Branches.transformer import TransformerType, Transformer2W
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from VeraGridEngine.Simulations.PowerFlow.power_flow_options import SolverType
+from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 
 
 def complex_impedance(z, XR):
@@ -30,7 +30,7 @@ def complex_impedance(z, XR):
 
 def test_basic():
     """
-    Basic GridCal test, also useful for a basic tutorial. In this case the
+    Basic VeraGrid test, also useful for a basic tutorial. In this case the
     magnetizing branch of the transformers is neglected by inputting 1e-20
     excitation current and iron core losses.
     The results are identical to ETAP's, which always uses this assumption in
@@ -139,7 +139,7 @@ def test_basic():
     power_flow.run()
 
     approx_volt = [round(100 * abs(v), 1) for v in power_flow.results.voltage]
-    solution = [100.0, 99.6, 102.7, 102.9]  # Expected solution from GridCal and ETAP 16.1.0, for reference
+    solution = [100.0, 99.6, 102.7, 102.9]  # Expected solution from VeraGrid and ETAP 16.1.0, for reference
 
     print()
     print(f"Test: {test_name}")
@@ -183,7 +183,7 @@ def test_basic():
 
 def test_gridcal_basic_pi():
     """
-    Basic GridCal test, also useful for a basic tutorial. In this case the
+    Basic VeraGrid test, also useful for a basic tutorial. In this case the
     magnetizing branch of the transformers is considered.
     """
     Sbase = 100  # MVA
@@ -289,7 +289,7 @@ def test_gridcal_basic_pi():
     power_flow.run()
 
     approx_volt = [round(100 * abs(v), 1) for v in power_flow.results.voltage]
-    solution = [100.0, 99.5, 102.7, 102.8]  # Expected solution from GridCal
+    solution = [100.0, 99.5, 102.7, 102.8]  # Expected solution from VeraGrid
     etap_sol = [100.0, 99.6, 102.7, 102.9]  # ETAP 16.1.0, for reference (ignores magnetizing branch)
 
     print()

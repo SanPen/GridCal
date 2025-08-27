@@ -6,14 +6,14 @@ from typing import Tuple
 import os
 import pandas as pd
 import numpy as np
-from GridCalEngine.basic_structures import Logger
-from GridCalEngine.IO.file_handler import FileOpen
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-import GridCalEngine.api as gce
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
+from VeraGridEngine.basic_structures import Logger
+from VeraGridEngine.IO.file_handler import FileOpen
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from VeraGridEngine.Simulations.PowerFlow.power_flow_options import SolverType
+from VeraGridEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+import VeraGridEngine.api as gce
+from VeraGridEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
+from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 
 TEST_FOLDER = os.path.join("")
 
@@ -77,7 +77,7 @@ def test_ieee_grids():
     Checks the .RAW files of IEEE grids against the PSS/e results
     This test checks 2 things:
     - PSS/e import fidelity
-    - PSS/e vs GridCal results
+    - PSS/e vs VeraGrid results
     :return: Nothing if ok, fails if not
     """
 

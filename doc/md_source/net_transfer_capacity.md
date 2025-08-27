@@ -9,7 +9,7 @@ This optimization is done using linear programming.
 ## API
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 fname = os.path.join('test', 'data', 'grids', 'ACTIVSg2000.gridcal')
 grid = gce.open_file(fname)

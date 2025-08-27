@@ -10,7 +10,7 @@ Now lets program the example from the state estimation reference book
 State Estimation in Electric Power Systems by A. Monticelli.
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 m_circuit = gce.MultiCircuit()
 

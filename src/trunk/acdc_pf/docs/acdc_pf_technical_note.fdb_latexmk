@@ -6,7 +6,7 @@
   "acdc_pf_technical_note.bbl"
   "acdc_pf_technical_note.blg"
   (rewritten before read)
-["pdflatex"] 1702919862 "c:/Users/a1003/Desktop/GridCal/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.tex" "acdc_pf_technical_note.pdf" "acdc_pf_technical_note" 1702919864 0
+["pdflatex"] 1702919862 "c:/Users/a1003/Desktop/VeraGrid/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.tex" "acdc_pf_technical_note.pdf" "acdc_pf_technical_note" 1702919864 0
   "C:/Users/a1003/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1702917987 157773 9822ecd8e05a3cb006776caa6aa9bbf3 ""
   "C:/Users/a1003/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1095.pk" 1702917997 12668 dacdcaeb12c9a4d48c86d9b3b170feea ""
   "C:/Users/a1003/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1680368863 23176373 5b3bde6f669750772f4652ecec661e21 ""
@@ -128,7 +128,7 @@
   "acdc_pf_technical_note.run.xml" 1702919864 2425 a428a1bb3b261bb55ea8851d11f0661f "pdflatex"
   "acdc_pf_technical_note.tex" 1702919861 10803 442e92e37b8b74578f4af0217653e764 ""
   "branch.eps" 1702917079 38473 db46d88c67483181f03203e6ad325d08 ""
-  "c:/Users/a1003/Desktop/GridCal/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.tex" 1702919861 10803 442e92e37b8b74578f4af0217653e764 ""
+  "c:/Users/a1003/Desktop/VeraGrid/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.tex" 1702919861 10803 442e92e37b8b74578f4af0217653e764 ""
   "decoupled_converter_model.eps" 1702917079 42937 cf6e8d8a445efef9896387cdfdbec01b ""
   "fubm.eps" 1702917079 65318 4a0fac632617f36964f5d172a234a7fe ""
   (generated)

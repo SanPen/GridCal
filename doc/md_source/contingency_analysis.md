@@ -13,7 +13,7 @@ The simulation then tries all the contingency groups and apply the events regist
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
@@ -24,13 +24,13 @@ branches = main_circuit.get_branches()
 
 # manually generate the contingencies
 for i, br in enumerate(branches):
-  # add a contingency group
-  group = gce.ContingencyGroup(name="contingency {}".format(i + 1))
-  main_circuit.add_contingency_group(group)
+    # add a contingency group
+    group = gce.ContingencyGroup(name="contingency {}".format(i + 1))
+    main_circuit.add_contingency_group(group)
 
-  # add the branch contingency to the groups, only groups are failed at once
-  con = gce.Contingency(device=br, name=br.name, group=group)
-  main_circuit.add_contingency(con)
+    # add the branch contingency to the groups, only groups are failed at once
+    con = gce.Contingency(device=br, name=br.name, group=group)
+    main_circuit.add_contingency(con)
 
 # add a special contingency
 group = gce.ContingencyGroup(name="Special contingency")
@@ -89,7 +89,7 @@ To perform the contingency analysis of a time series, it's easier to directly us
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE39_1W.gridcal')

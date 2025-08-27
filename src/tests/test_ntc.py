@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 import numpy as np
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 
 def test_ntc_ultra_simple() -> None:
@@ -131,7 +131,7 @@ def test_ntc_ieee_14() -> None:
 
 def test_issue_372_1():
     """
-    https://github.com/SanPen/GridCal/issues/372#issuecomment-2823645586
+    https://github.com/SanPen/VeraGrid/issues/372#issuecomment-2823645586
 
     Using the grid IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal
 
@@ -232,7 +232,7 @@ def test_issue_372_1():
 
 def test_issue_372_2():
     """
-    https://github.com/SanPen/GridCal/issues/372#issuecomment-2823683335
+    https://github.com/SanPen/VeraGrid/issues/372#issuecomment-2823683335
 
     Using the grid IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal
 
@@ -343,7 +343,7 @@ def test_issue_372_2():
 
 def test_issue_372_3():
     """
-    https://github.com/SanPen/GridCal/issues/372#issuecomment-2823722874
+    https://github.com/SanPen/VeraGrid/issues/372#issuecomment-2823722874
 
     Using the grid IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal
 
@@ -465,7 +465,7 @@ def test_issue_372_3():
 
 def test_issue_372_4():
     """
-    https://github.com/SanPen/GridCal/issues/372#issuecomment-2823729822
+    https://github.com/SanPen/VeraGrid/issues/372#issuecomment-2823729822
 
     Using the grid IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal
 
@@ -585,7 +585,7 @@ def test_issue_372_4():
 
 def test_issue_372_5():
     """
-    https://github.com/SanPen/GridCal/issues/372#issuecomment-2824174417
+    https://github.com/SanPen/VeraGrid/issues/372#issuecomment-2824174417
 
     Using the grid IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal
 

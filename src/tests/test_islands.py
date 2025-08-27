@@ -6,13 +6,13 @@ import os
 import pandas as pd
 import numpy as np
 
-from GridCalEngine.IO.file_handler import FileOpen
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.Topology.topology import find_islands
-from GridCalEngine.api import FileOpen
+from VeraGridEngine.IO.file_handler import FileOpen
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from VeraGridEngine.Simulations.PowerFlow.power_flow_options import SolverType
+from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from VeraGridEngine.Topology.topology import find_islands
+from VeraGridEngine.api import FileOpen
 
 
 def test_ieee14_islands():
@@ -20,7 +20,7 @@ def test_ieee14_islands():
     checks that the computed islands are correct
     This test checks 2 things:
     - PSS/e import fidelity
-    - PSS/e vs GridCal results
+    - PSS/e vs VeraGrid results
     :return: Nothing if ok, fails if not
     """
 

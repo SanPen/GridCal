@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import os
-from GridCalEngine.api import *
-from GridCalEngine.Utils.zip_file_mgmt import open_data_frame_from_zip
+from VeraGridEngine.api import *
+from VeraGridEngine.Utils.zip_file_mgmt import open_data_frame_from_zip
 
 
 def test_cpf():

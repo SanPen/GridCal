@@ -2,14 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Devices import Line
-from GridCalEngine.Devices import Bus
-from GridCalEngine.Devices import Generator
-from GridCalEngine.Devices import Load
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
-from GridCalEngine.enumerations import BranchImpedanceMode
+from VeraGridEngine.basic_structures import Logger
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Devices import Line
+from VeraGridEngine.Devices import Bus
+from VeraGridEngine.Devices import Generator
+from VeraGridEngine.Devices import Load
+from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
+from VeraGridEngine.enumerations import BranchImpedanceMode
 
 Sbase = 100  # MVA
 
@@ -51,7 +51,7 @@ def test_tolerance_lf_higher():
 
     # Check solution
     approx_losses = round(1000 * power_flow.results.losses[0], 3)
-    solution = complex(0.128, 0.58)  # Expected solution from GridCal
+    solution = complex(0.128, 0.58)  # Expected solution from VeraGrid
     # Tested on ETAP 16.1.0 and pandapower
 
     print("\n=================================================================")
@@ -143,7 +143,7 @@ def test_tolerance_lf_lower():
 
     # Check solution
     approx_losses = round(1000 * power_flow.results.losses[0], 3)
-    solution = complex(0.104, 0.58)  # Expected solution from GridCal
+    solution = complex(0.104, 0.58)  # Expected solution from VeraGrid
     # Tested on ETAP 16.1.0 and pandapower
 
     print("\n=================================================================")

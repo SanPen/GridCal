@@ -1,17 +1,17 @@
 import numpy as np
 import pandas as pd
 import pandapower as pp
-import GridCalEngine.api as gce  # For interfacing with the GridCal API
+import VeraGridEngine.api as gce  # For interfacing with the VeraGrid API
 from typing import Tuple
 import os
-from GridCalEngine.basic_structures import Logger
-from GridCalEngine.IO.file_handler import FileOpen
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from VeraGridEngine.basic_structures import Logger
+from VeraGridEngine.IO.file_handler import FileOpen
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from VeraGridEngine.Simulations.PowerFlow.power_flow_options import SolverType
+from VeraGridEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
+from VeraGridEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
+from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 
 
 def create_pp_network():
@@ -194,7 +194,7 @@ gridGC1 = create_gc_network()
 # Pandapower power flow
 pp.runpp(gridPP1)
 
-# GridCal network power flow
+# VeraGrid network power flow
 options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
 power_flowGC1 = gce.power_flow(gridGC1, options)
 
@@ -211,7 +211,7 @@ formulation, res = solve_generalized(gridGC1, options)
 # print(f"result from PandaPower file : {gridPP1.res_line.pl_mw.sum()*1000}+{gridPP1.res_line.ql_mvar.sum()*1000}j")
 # print(f"    {np.array(gridPP1.res_bus.vm_pu[:8])}")
 
-# print(f"result from GridCal file : Converged:{power_flowGC1.results.converged}  {power_flowGC1.results.losses.sum()/1000}")
+# print(f"result from VeraGrid file : Converged:{power_flowGC1.results.converged}  {power_flowGC1.results.losses.sum()/1000}")
 # print(f"    {power_flowGC1.results.voltage.real[:8]}")
 
 print("PP results\n", pp_df)

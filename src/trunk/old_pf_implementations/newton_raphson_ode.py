@@ -7,10 +7,10 @@ import time
 import scipy
 import numpy as np
 
-from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
-from GridCalEngine.Simulations.Derivatives.ac_jacobian import AC_jacobian
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.Utils.Sparse.csc2 import spsolve_csc
+from VeraGridEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
+from VeraGridEngine.Simulations.Derivatives.ac_jacobian import AC_jacobian
+from VeraGridEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from VeraGridEngine.Utils.Sparse.csc2 import spsolve_csc
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()

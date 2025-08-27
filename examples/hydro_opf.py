@@ -1,4 +1,4 @@
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 import numpy as np
 import pandas as pd
 import datetime as dt
@@ -208,7 +208,7 @@ print('Reservoir level\n', opf_driver.results.fluid_node_current_level)
 
 if __name__ == '__main__':
     import os
-    import GridCalEngine.api as gce
+    import VeraGridEngine.api as gce
 
     folder = os.path.join('..', 'Grids_and_profiles', 'grids')
     fname = os.path.join(folder, 'hydro_simple.gridcal')

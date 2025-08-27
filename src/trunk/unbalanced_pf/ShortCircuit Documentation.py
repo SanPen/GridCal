@@ -1,7 +1,7 @@
-import GridCalEngine.api as gce
-from GridCalEngine import WindingType, ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import WindingType, ShuntConnectionType
 import numpy as np
-from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
+from VeraGridEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
 
 logger = gce.Logger()
 

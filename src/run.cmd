@@ -1,1 +1,1 @@
-python .\GridCal\ExecuteGridCal.py
+python .\VeraGrid\ExecuteVeraGrid.py

@@ -7,9 +7,9 @@ import time
 import scipy
 import numpy as np
 import scipy.sparse as sp
-from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
-import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from VeraGridEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
+import VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
+from VeraGridEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()

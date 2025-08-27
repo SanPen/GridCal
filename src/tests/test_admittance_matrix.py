@@ -6,14 +6,14 @@
 import os
 import time
 from scipy.sparse import diags
-from GridCalEngine.api import *
-from GridCalEngine.Topology.admittance_matrices import compute_admittances, compute_admittances_fast
+from VeraGridEngine.api import *
+from VeraGridEngine.Topology.admittance_matrices import compute_admittances, compute_admittances_fast
 
 
 def __check__(fname):
     """
     Check that Ybus = Yseries + Yshunt
-    :param fname: name of the GridCal file
+    :param fname: name of the VeraGrid file
     :return: True if succeeded, exception otherwise
     """
     # load the file

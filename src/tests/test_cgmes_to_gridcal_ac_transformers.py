@@ -4,19 +4,19 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from typing import Dict, List
-import GridCalEngine.Devices as gcdev
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.DataStructures import BusData
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_ac_transformers, get_gcdev_device_to_terminal_dict
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.connectivity_node import ConnectivityNode
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import PowerTransformer
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
-from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.enumerations import CGMESVersions
+import VeraGridEngine.Devices as gcdev
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.DataStructures import BusData
+from VeraGridEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from VeraGridEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_ac_transformers, get_gcdev_device_to_terminal_dict
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.connectivity_node import ConnectivityNode
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import PowerTransformer
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
+from VeraGridEngine.data_logger import DataLogger
+from VeraGridEngine.enumerations import CGMESVersions
 
 tn_test = TopologicalNode(rdfid="tn1")
 cn_test = ConnectivityNode(rdfid="cn1")

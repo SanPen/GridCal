@@ -2,12 +2,12 @@ import os
 import pandas as pd
 import numpy as np
 
-from GridCalEngine.IO.file_handler import FileOpen
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-import GridCalEngine.api as gce
+from VeraGridEngine.IO.file_handler import FileOpen
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from VeraGridEngine.Simulations.PowerFlow.power_flow_options import SolverType
+from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+import VeraGridEngine.api as gce
 
 """
 Check that a transformer can regulate the voltage at a bus
@@ -130,9 +130,9 @@ def run_cases():
 
 def check_timing():
     import time
-    from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
-    from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
-    from GridCalEngine.basic_structures import Logger
+    from VeraGridEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
+    from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
+    from VeraGridEngine.basic_structures import Logger
 
 
 

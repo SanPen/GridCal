@@ -8,8 +8,8 @@ import math
 from pathlib import Path
 import pytest
 
-from GridCalEngine.Utils.Symbolic.lp_model import LPModel, LinExpr
-from GridCalEngine.Utils.Symbolic.symbolic import Var, Const, sin
+from VeraGridEngine.Utils.Symbolic.lp_model import LPModel, LinExpr
+from VeraGridEngine.Utils.Symbolic.symbolic import Var, Const, sin
 
 TOL = 1e-8
 

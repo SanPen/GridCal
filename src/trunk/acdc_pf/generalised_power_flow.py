@@ -5,20 +5,20 @@
 import numpy as np
 import pandas as pd
 from dataclasses import dataclass
-from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
-import GridCalEngine.Utils.NumericalMethods.autodiff as ad
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from GridCalEngine.enumerations import AcOpfMode
+from VeraGridEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
+import VeraGridEngine.Utils.NumericalMethods.autodiff as ad
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
+from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from VeraGridEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
+from VeraGridEngine.enumerations import AcOpfMode
 from typing import Union
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import (x2var, var2x, eval_f,
-                                                                               eval_g, eval_h,
-                                                                               jacobians_and_hessians)
+from VeraGridEngine.basic_structures import Vec, CxVec, IntVec, Logger
+from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import (x2var, var2x, eval_f,
+                                                                                eval_g, eval_h,
+                                                                                jacobians_and_hessians)
 
 
 def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admittances, Cg, R, X, Sd, slack, from_idx,

@@ -1,7 +1,7 @@
 import pygslv as pg
 
 print("GSLV", pg.get_version())
-pg.activate(r"C:\Users\santi\.GridCal\license.gslv", verbose=True)
+pg.activate(r"C:\Users\santi\.VeraGrid\license.gslv", verbose=True)
 
 logger = pg.Logger()
 verbose = 0

@@ -5,8 +5,8 @@
 import os
 import numpy as np
 import pandas as pd
-from GridCalEngine.api import *
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
+from VeraGridEngine.api import *
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 
 
 def test_contingency() -> None:

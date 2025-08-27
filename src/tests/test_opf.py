@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import os
-from GridCalEngine.api import *
+from VeraGridEngine.api import *
 
 
 def test_opf():

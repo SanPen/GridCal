@@ -1,4 +1,4 @@
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 # fname = "../../../Grids_and_profiles/grids/ntc_8_bus.gridcal"
 fname = "../../../Grids_and_profiles/grids/IEEE14 - ntc areas_voltages_hvdc.gridcal"

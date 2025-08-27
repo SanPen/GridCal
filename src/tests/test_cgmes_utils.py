@@ -3,24 +3,24 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import pytest
-from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_voltage_power_transformer_end, \
+from VeraGridEngine.IO.cim.cgmes.cgmes_utils import get_voltage_power_transformer_end, \
     get_pu_values_power_transformer_end, get_voltage_ac_line_segment, \
     get_pu_values_ac_line_segment, get_rate_ac_line_segment, get_voltage_terminal, get_nominal_voltage
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.busbar_section import BusbarSection
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.energy_consumer import EnergyConsumer
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.load_response_characteristic import LoadResponseCharacteristic
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import PowerTransformer
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
-from GridCalEngine.data_logger import DataLogger
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.busbar_section import BusbarSection
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.energy_consumer import EnergyConsumer
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.load_response_characteristic import LoadResponseCharacteristic
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import PowerTransformer
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
+from VeraGridEngine.data_logger import DataLogger
 
-from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_pu_values_power_transformer
+from VeraGridEngine.IO.cim.cgmes.cgmes_utils import get_pu_values_power_transformer
 
 
 def test_get_windings_no_windings_returns_no_element():

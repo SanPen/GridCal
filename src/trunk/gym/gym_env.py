@@ -8,13 +8,13 @@ import numpy as np
 import gym
 from gym import spaces
 from gym.core import ObsType
-from GridCalEngine.api import *
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc, PowerFlowResults
+from VeraGridEngine.api import *
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc, PowerFlowResults
 
 
-class GridCalEnv(gym.Env):
+class VeraGridEnv(gym.Env):
     """
-    Custom Environment for simulating electrical grid operation using GridCal and OpenAI Gym
+    Custom Environment for simulating electrical grid operation using VeraGrid and OpenAI Gym
     """
 
     metadata = {'render.modes': ['human']}
@@ -26,7 +26,7 @@ class GridCalEnv(gym.Env):
         :param forced_mttf: override the branches MTTF with this value
         :param forced_mttr: override the branches MTTR with this value
         """
-        super(GridCalEnv, self).__init__()
+        super(VeraGridEnv, self).__init__()
 
         self.grid: MultiCircuit = grid
 

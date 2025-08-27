@@ -6,9 +6,9 @@ import os
 from time import time
 import numpy as np
 from scipy.sparse import csc_matrix, random, hstack, vstack
-import GridCalEngine.api as gce
-from GridCalEngine.Utils.Sparse import csc_stack_2d_ff
-from GridCalEngine.Utils.Sparse.csc import sp_slice, sp_slice_rows, dense_to_csc
+import VeraGridEngine.api as gce
+from VeraGridEngine.Utils.Sparse import csc_stack_2d_ff
+from VeraGridEngine.Utils.Sparse.csc import sp_slice, sp_slice_rows, dense_to_csc
 
 
 def test_sp_slice():

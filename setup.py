@@ -23,7 +23,7 @@ import os
 # Python 3 only projects can skip this import
 from io import open
 
-from src.GridCal.__version__ import __GridCal_VERSION__
+from src.VeraGrid.__version__ import __VeraGrid_VERSION__
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -99,7 +99,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version=__GridCal_VERSION__,  # Required
+    version=__VeraGrid_VERSION__,  # Required
 
     # This is a one-line description or tag-line of what your project does. This
     # corresponds to the "Summary" metadata field:

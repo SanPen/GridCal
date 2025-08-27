@@ -2,13 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Devices import Bus
-from GridCalEngine.Devices import Load
-from GridCalEngine.Devices import Generator
-from GridCalEngine.Devices import Line
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
+from VeraGridEngine.basic_structures import Logger
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Devices import Bus
+from VeraGridEngine.Devices import Load
+from VeraGridEngine.Devices import Generator
+from VeraGridEngine.Devices import Line
+from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
 
 
 def test_line_losses_1():
@@ -46,7 +46,7 @@ def test_line_losses_1():
 
     # Check solution
     approx_losses = round(1000 * power_flow.results.losses[0], 3)
-    solution = complex(0.116, 0.58)  # Expected solution from GridCal
+    solution = complex(0.116, 0.58)  # Expected solution from VeraGrid
     # Tested on ETAP 16.1.0 and pandapower
 
     print("\n=================================================================")
@@ -130,7 +130,7 @@ def test_line_losses_2():
 
     # Check solution
     approx_losses = round(1000 * sum(power_flow.results.losses), 3)
-    solution = complex(0.116, 0.58)  # Expected solution from GridCal
+    solution = complex(0.116, 0.58)  # Expected solution from VeraGrid
     # Tested on ETAP 16.1.0 and pandapower
 
     print("\n=================================================================")
@@ -213,7 +213,7 @@ def test_line_losses_3():
 
     # Check solution
     approx_losses = round(1000 * sum(power_flow.results.losses), 3)
-    solution = complex(0.116, 0.58)  # Expected solution from GridCal
+    solution = complex(0.116, 0.58)  # Expected solution from VeraGrid
     # Tested on ETAP 16.1.0 and pandapower
 
     print("\n=================================================================")

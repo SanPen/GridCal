@@ -4,10 +4,10 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 
-from GridCalEngine import FileOpen
-from GridCalEngine.IO.others.pandapower_parser import Panda2GridCal, PANDAPOWER_AVAILABLE
-from GridCalEngine.Simulations.StateEstimation.state_stimation_driver import StateEstimation, StateEstimationOptions
-import GridCalEngine as gce
+from VeraGridEngine import FileOpen
+from VeraGridEngine.IO.others.pandapower_parser import Panda2VeraGrid, PANDAPOWER_AVAILABLE
+from VeraGridEngine.Simulations.StateEstimation.state_stimation_driver import StateEstimation, StateEstimationOptions
+import VeraGridEngine as gce
 
 
 def test_state_estimation_pandapower():
@@ -20,7 +20,7 @@ def test_state_estimation_pandapower():
 
         # pandapower.to_pickle(net_wns, "small_grid_gb_hv_estimate_raw_expected.p")
 
-        g = Panda2GridCal(net_wns)
+        g = Panda2VeraGrid(net_wns)
         grid = g.get_multicircuit()
 
         print()
@@ -69,7 +69,7 @@ def test_network_objects_consistency():
         file_handler = FileOpen(fname)
         circuit_cim = file_handler.open()
 
-        g = Panda2GridCal(net_wns)
+        g = Panda2VeraGrid(net_wns)
         grid = g.get_multicircuit()
 
         print()

@@ -6,14 +6,14 @@ import os
 
 import numpy as np
 
-import GridCalEngine.api as gce
-from GridCalEngine.Simulations.Clustering.clustering import kmeans_sampling
+import VeraGridEngine.api as gce
+from VeraGridEngine.Simulations.Clustering.clustering import kmeans_sampling
 
 
 def test_clustering():
     """
     This test was originated by
-    https://github.com/SanPen/GridCal/issues/403
+    https://github.com/SanPen/VeraGrid/issues/403
     :return:
     """
     # //tests/data/grids/IEEE39_1W.gridcal
@@ -31,7 +31,7 @@ def test_clustering():
 def test_clustering_ts():
     """
     This test was originated by
-    https://github.com/SanPen/GridCal/issues/403
+    https://github.com/SanPen/VeraGrid/issues/403
     :return:
     """
     # //tests/data/grids/IEEE39_1W.gridcal
@@ -66,7 +66,7 @@ def test_clustering_ts():
 def test_clustering_report():
     """
     This test was originated by
-    https://github.com/SanPen/GridCal/issues/407
+    https://github.com/SanPen/VeraGrid/issues/407
     :return:
     """
     # //tests/data/grids/IEEE39_1W.gridcal

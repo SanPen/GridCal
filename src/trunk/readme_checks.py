@@ -1,6 +1,6 @@
 import os
-import GridCalEngine as gce
-# from GridCalEngine import Contingency, SolverType, ResultTypes  # Import Contingency explicitly
+import VeraGridEngine as gce
+# from VeraGridEngine import Contingency, SolverType, ResultTypes  # Import Contingency explicitly
 
 
 folder = os.path.join('..','..', 'Grids_and_profiles', 'grids')

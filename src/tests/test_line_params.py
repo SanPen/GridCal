@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 
 def test_line_parameters():

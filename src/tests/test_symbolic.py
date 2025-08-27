@@ -6,7 +6,7 @@ import numpy as np
 from scipy.sparse import csc_matrix
 from types import MappingProxyType
 from typing import Any, Callable, Dict
-import GridCalEngine.Utils.Symbolic.symbolic as sym
+import VeraGridEngine.Utils.Symbolic.symbolic as sym
 
 # -----------------------------------------------------------------------------
 # Atomic & basic operations

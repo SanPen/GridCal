@@ -2,7 +2,7 @@ from pypower import loadcase, runpf
 import pandapower as pp
 from pandapower.converter import from_mpc
 import pandas as pd
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 fname = "/home/santi/matpower8.0b1/data/case1354pegase.m"
 

@@ -1,6 +1,6 @@
 import os
 from matplotlib import pyplot as plt
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 plt.style.use('fivethirtyeight')
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')

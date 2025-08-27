@@ -46,7 +46,7 @@ These are specially relevant for CGMES and raw/rawx formats.
 ### Loading a grid
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 # load a grid (.gridcal, .m (Matpower), .raw (PSS/e) .rawx (PSS/e), .epc (PSLF), .dgs (PowerFactory)
 my_grid = gce.open_file("my_file.gridcal")
@@ -55,7 +55,7 @@ my_grid = gce.open_file("my_file.gridcal")
 In the case of CIM/CGMES, you may need to pass a list of files or a single zip file:
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 # load a grid from many xml files
 my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", ])
@@ -70,7 +70,7 @@ my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", "boundary.
 If you need to explore the CGMEs assets before conversion, you'll need to dive deeper in the API:
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 fname = "tests/data/grids/CGMES_2_4_15/IEEE 118 Bus v2.zip"
 
@@ -78,7 +78,7 @@ logger = gce.Logger()
 data_parser = gce.CgmesDataParser()
 data_parser.load_files(files=[fname])
 cgmes_circuit = gce.CgmesCircuit(cgmes_version=data_parser.cgmes_version,
-                             cgmes_map_areas_like_raw=False, logger=logger)
+                                 cgmes_map_areas_like_raw=False, logger=logger)
 cgmes_circuit.parse_files(data_parser=data_parser)
 
 # print all the ac line segment names
@@ -104,7 +104,7 @@ Similarly to CGMES you may be able to use the conversion objects to explore the 
 ### Save a grid
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 # load a grid
 my_grid = gce.open_file("my_file.gridcal")
@@ -117,7 +117,7 @@ In the case of saving a model in CGMES mode, we need to specify some extra param
 To simplify we can use the API function `save_cgmes_file`:
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 # load a grid
 my_grid = gce.open_file("my_file.gridcal")
@@ -141,7 +141,7 @@ A simple function is available to export the results of a driver.
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
 grid = gce.open_file(fname)
@@ -163,7 +163,7 @@ Also there is a function to save from the results objects themselves:
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
 grid = gce.open_file(fname)
@@ -189,7 +189,7 @@ An example on how to send a grid from a script to the server:
 ```python
 import os
 import asyncio
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 # path to your file
 fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "IEEE57.gridcal")

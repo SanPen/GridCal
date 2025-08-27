@@ -6,13 +6,13 @@ import os
 import pytest
 import numpy as np
 import pandas as pd
-import GridCalEngine.api as gce
-from GridCalEngine.IO.file_handler import FileOpen, FileOpenOptions
+import VeraGridEngine.api as gce
+from VeraGridEngine.IO.file_handler import FileOpen, FileOpenOptions
 
 pd.set_option('display.max_colwidth', None)
 
 
-@pytest.mark.skip(reason="Not passing because GridCal ConnectivityNodes were removed and this needs rethinking")
+@pytest.mark.skip(reason="Not passing because VeraGrid ConnectivityNodes were removed and this needs rethinking")
 def test_ieee14_cgmes() -> None:
     """
     This test load two supposedly equivalent grids and compared their internal structures and their power flow
@@ -131,7 +131,7 @@ def test_ieee14_cgmes() -> None:
     #       "Vm ok:", grid3_ok)
     # print(pf_res3.get_bus_df())
 
-    print("\nDifference raw to GridCal CGMES")
+    print("\nDifference raw to VeraGrid CGMES")
     print(diff12)
     print("max err:", np.max(np.abs(diff12.values)))
 
@@ -147,7 +147,7 @@ def test_ieee14_cgmes() -> None:
 # def test_ieee_grids() -> None:
 #     """
 #     Checks the CGMES files made with cim converter are loaded
-#     This test checks that GridCal loads these CGMEs models correctly, via power flow
+#     This test checks that VeraGrid loads these CGMEs models correctly, via power flow
 #     :return: Nothing if ok, fails if not
 #     """
 #

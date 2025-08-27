@@ -5,8 +5,8 @@
 import math
 import os
 import numpy as np
-import GridCalEngine.api as gce
-from GridCalEngine.Devices.profile import Profile, SparseArray, check_if_sparse
+import VeraGridEngine.api as gce
+from VeraGridEngine.Devices.profile import Profile, SparseArray, check_if_sparse
 
 
 def test_sparse_array1():

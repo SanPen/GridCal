@@ -26,12 +26,12 @@ the curse of dimensionality. The methodology we have adopted here consists of:
 ## API
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 # some grid with investments declared
 gce.open_file("my_grid.gridcal")
 
- # run a investment evaluation
+# run a investment evaluation
 problem = gce.AdequacyInvestmentProblem(
     grid=grid,
     n_monte_carlo_sim=n_monte_carlo_sim,

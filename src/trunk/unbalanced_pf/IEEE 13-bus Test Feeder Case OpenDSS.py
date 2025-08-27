@@ -1,12 +1,12 @@
-import GridCalEngine.api as gce
-from GridCalEngine import WindingType, ShuntConnectionType, AdmittanceMatrix
+import VeraGridEngine.api as gce
+from VeraGridEngine import WindingType, ShuntConnectionType, AdmittanceMatrix
 import numpy as np
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import (PfBasicFormulation3Ph,
-                                                                                       expand3ph,
-                                                                                       expandVoltage3ph)
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
+from VeraGridEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import (PfBasicFormulation3Ph,
+                                                                                        expand3ph,
+                                                                                        expandVoltage3ph)
+from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 import pandas as pd
-from GridCalEngine.basic_structures import Vec
+from VeraGridEngine.basic_structures import Vec
 
 logger = gce.Logger()
 

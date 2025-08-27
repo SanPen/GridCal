@@ -7,12 +7,12 @@ import os
 import pandas as pd
 import numpy as np
 
-from GridCalEngine.IO.file_handler import FileOpen
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-import GridCalEngine.api as gce
+from VeraGridEngine.IO.file_handler import FileOpen
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
+from VeraGridEngine.Simulations.PowerFlow.power_flow_options import SolverType
+from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+import VeraGridEngine.api as gce
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -22,7 +22,7 @@ def test_ieee_grids():
     Checks the .RAW files of IEEE grids against the PSS/e results
     This test checks 2 things:
     - PSS/e import fidelity
-    - PSS/e vs GridCal results
+    - PSS/e vs VeraGrid results
     :return: Nothing if ok, fails if not
     """
 

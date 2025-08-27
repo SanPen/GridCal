@@ -1,6 +1,6 @@
-# https://github.com/SanPen/GridCal/issues/354
+# https://github.com/SanPen/VeraGrid/issues/354
 import numpy as np
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 # ieee9 grid
 grid9 = gce.MultiCircuit('IEEE-9', Sbase=100, fbase=50)

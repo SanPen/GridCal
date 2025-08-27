@@ -1,6 +1,6 @@
-from GridCalEngine.api import *
-import GridCalEngine.Devices as dev
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.api import *
+import VeraGridEngine.Devices as dev
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from scipy.sparse import lil_matrix, csc_matrix
 
 

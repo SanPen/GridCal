@@ -6,10 +6,10 @@
 import os
 
 import numpy as np
-import GridCalEngine.api as gce
-from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import NonlinearOPFResults
+import VeraGridEngine.api as gce
+from VeraGridEngine.enumerations import TapPhaseControl, TapModuleControl
+from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
+from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import NonlinearOPFResults
 
 
 def case9() -> NonlinearOPFResults:

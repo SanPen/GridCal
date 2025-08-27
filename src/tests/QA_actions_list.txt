@@ -126,7 +126,7 @@ Video 7: Add a profile to an object property
         - 2. Select where I want to paste it, and press paste button
     - Importing profiles:
         - 1. Database / Time series / Import profiles
-        - 2 Import profile. Select sheet. ok . The prfile should have the samde length as the original GridCal time series
+        - 2 Import profile. Select sheet. ok . The prfile should have the samde length as the original VeraGrid time series
         - 3 Find the element I want to assign the profile and select it. Double click on the Profile box
         - 4 Important! Unmark both, set unasigned to zero, and normalize.
         - 5 Accept

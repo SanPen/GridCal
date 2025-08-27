@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from GridCalEngine.Simulations.OPF.simple_dispatch_ts import greedy_dispatch
+from VeraGridEngine.Simulations.OPF.simple_dispatch_ts import greedy_dispatch
 
 # === Simulation parameters ===
 T = 24  # hours

@@ -2,9 +2,9 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from GridCalEngine.IO.file_handler import FileOpen
-import GridCalEngine.Simulations as sim
-from GridCalEngine.enumerations import InvestmentEvaluationMethod, ResultTypes
+from VeraGridEngine.IO.file_handler import FileOpen
+import VeraGridEngine.Simulations as sim
+from VeraGridEngine.enumerations import InvestmentEvaluationMethod, ResultTypes
 import time
 import cProfile
 import cProfile

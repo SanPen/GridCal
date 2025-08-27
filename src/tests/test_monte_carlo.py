@@ -6,7 +6,7 @@ import os
 
 import numpy as np
 
-from GridCalEngine.api import *
+from VeraGridEngine.api import *
 
 
 def test_monte_carlo():

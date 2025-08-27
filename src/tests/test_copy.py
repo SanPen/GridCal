@@ -1,6 +1,6 @@
 import os
 
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 
 def test_copy():

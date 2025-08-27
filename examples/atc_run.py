@@ -1,5 +1,5 @@
-from GridCalEngine.IO import FileOpen
-from GridCalEngine.api import *
+from VeraGridEngine.IO import FileOpen
+from VeraGridEngine.api import *
 
 fname = r'C:\Users\penversa\Git\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 

@@ -2,7 +2,7 @@
 
 import os
 import asyncio
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 # path to your file
 fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "IEEE57.gridcal")

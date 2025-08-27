@@ -1,5 +1,5 @@
 import os
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "IEEE39_1W.gridcal")
 # fname = '/home/santi/Escritorio/Redes/Spain_France_portugal.gridcal'

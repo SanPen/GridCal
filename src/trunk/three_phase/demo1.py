@@ -1,4 +1,4 @@
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 grid = gce.open_file("3-bus-demo.gridcal")
 

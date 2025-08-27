@@ -1,5 +1,5 @@
 import os
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 118 Bus - ntc_areas.gridcal')

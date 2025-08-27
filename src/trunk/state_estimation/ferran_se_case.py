@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import networkx as nx
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 import warnings
 

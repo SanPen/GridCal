@@ -1,6 +1,6 @@
 import numpy as np
-import GridCalEngine as gce
-from GridCalEngine.enumerations import ConverterControlType
+import VeraGridEngine as gce
+from VeraGridEngine.enumerations import ConverterControlType
 
 # Grid instantiation
 grid = gce.MultiCircuit()

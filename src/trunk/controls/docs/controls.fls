@@ -1,6 +1,6 @@
-PWD c:\Users\a1003\Desktop\GridCal\src\trunk\controls\docs
+PWD c:\Users\a1003\Desktop\VeraGrid\src\trunk\controls\docs
 INPUT C:\Users\a1003\AppData\Local\MiKTeX\miktex\data\le\pdftex\pdflatex.fmt
-INPUT c:\Users\a1003\Desktop\GridCal\src\trunk\controls\docs\controls.tex
+INPUT c:\Users\a1003\Desktop\VeraGrid\src\trunk\controls\docs\controls.tex
 OUTPUT controls.log
 INPUT C:\Users\a1003\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls
 INPUT C:\Users\a1003\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls

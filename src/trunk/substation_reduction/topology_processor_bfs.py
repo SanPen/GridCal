@@ -1,7 +1,7 @@
-from GridCalEngine.api import *
-import GridCalEngine.Devices as dev
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Topology.topology import find_islands, get_adjacency_matrix
+from VeraGridEngine.api import *
+import VeraGridEngine.Devices as dev
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Topology.topology import find_islands, get_adjacency_matrix
 from scipy.sparse import lil_matrix
 
 

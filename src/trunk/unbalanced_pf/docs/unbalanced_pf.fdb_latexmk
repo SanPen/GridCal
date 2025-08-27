@@ -11,7 +11,7 @@
   (generated)
   "unbalanced_pf.pdf"
   (rewritten before read)
-["xelatex"] 1716131405.56826 "c:/Users/J/Desktop/GridCal/src/trunk/unbalanced_pf/docs/unbalanced_pf.tex" "unbalanced_pf.xdv" "unbalanced_pf" 1716131411.96612 0
+["xelatex"] 1716131405.56826 "c:/Users/J/Desktop/VeraGrid/src/trunk/unbalanced_pf/docs/unbalanced_pf.tex" "unbalanced_pf.xdv" "unbalanced_pf" 1716131411.96612 0
   "C:/Users/J/AppData/Local/MiKTeX/miktex/data/le/xetex/xelatex.fmt" 1713691248 37557392 5934882d3489a45de6395b84bea591fa ""
   "C:/Users/J/AppData/Local/Programs/MiKTeX/fonts/tfm/adobe/zapfding/pzdr.tfm" 1136801054 1528 7e12f4c0fcf5a072cebdcfbfc610f54c ""
   "C:/Users/J/AppData/Local/Programs/MiKTeX/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1233951848 1120 1e8878807317373affa7f7bba4cf2f6a ""
@@ -242,7 +242,7 @@
   "C:/Users/J/AppData/Local/Programs/MiKTeX/tex/latex/tools/tabularx.sty" 1700599895 7147 d45559f8a31b8c53ada0640516660003 ""
   "C:/Users/J/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "C:/Users/J/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1700127522 55487 80a65caedd3722f4c20a14a69e785d8f ""
-  "c:/Users/J/Desktop/GridCal/src/trunk/unbalanced_pf/docs/unbalanced_pf.tex" 1716131404 39957 2560f404322c7e86f7e665d4573488a5 ""
+  "c:/Users/J/Desktop/VeraGrid/src/trunk/unbalanced_pf/docs/unbalanced_pf.tex" 1716131404 39957 2560f404322c7e86f7e665d4573488a5 ""
   "unbalanced_pf.aux" 1716131411 4977 4334e75e32b81a1b99b8083706a11c70 "xelatex"
   "unbalanced_pf.bbl" 1716129264 11146 f5ad2f65a8bbe6dc3d676d5270f8be7b "biber unbalanced_pf"
   "unbalanced_pf.out" 1716131411 683 0eb1df681695c79fb9c032f868ed16c8 "xelatex"

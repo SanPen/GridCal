@@ -1,10 +1,10 @@
 import os
-from GridCalEngine.api import *
-from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
+from VeraGridEngine.api import *
+from VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
 import time
-from GridCalEngine.basic_structures import BranchImpedanceMode
-from GridCalEngine.IO.file_handler import FileOpen
-from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha, compute_dP
+from VeraGridEngine.basic_structures import BranchImpedanceMode
+from VeraGridEngine.IO.file_handler import FileOpen
+from VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha, compute_dP
 
 folder = r'\\mornt4\DESRED\DPE-Internacional\Interconexiones\FRANCIA\2022 MoU\5GW 8.0\Con N-x\merged\GridCal'
 fname = os.path.join(folder, 'MOU_2022_5GW_v6f_contingencias_dc.gridcal')

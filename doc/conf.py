@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath('../src'))
 sys.path.append("..")
 sys.setrecursionlimit(5000)
 from doc.auto_document_models import write_models_to_md
-from GridCalEngine.__version__ import __GridCalEngine_VERSION__
+from VeraGridEngine.__version__ import __VeraGridEngine_VERSION__
 
 # -- Project information -----------------------------------------------------
 
@@ -28,7 +28,7 @@ copyright = '2025, Santiago Peñate Vera et. al.'
 author = 'Santiago Peñate Vera et. al.'
 
 # The full version, including alpha/beta/rc tags
-release = __GridCalEngine_VERSION__
+release = __VeraGridEngine_VERSION__
 
 
 def setup(app):

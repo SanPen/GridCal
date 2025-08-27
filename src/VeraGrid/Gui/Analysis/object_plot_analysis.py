@@ -1,0 +1,1561 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+
+import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
+from typing import List, Union, Any
+import math
+from PySide6 import QtGui
+
+from VeraGridEngine.basic_structures import LogSeverity
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Devices.Branches.line import Line
+from VeraGridEngine.Devices.Branches.transformer import Transformer2W
+from VeraGridEngine.Devices.Substation.bus import Bus
+from VeraGridEngine.Devices.Injections.generator import Generator
+from VeraGridEngine.Devices.Injections.battery import Battery
+from VeraGridEngine.Devices.Injections.static_generator import StaticGenerator
+from VeraGridEngine.Devices.Injections.load import Load
+from VeraGridEngine.basic_structures import Logger
+from VeraGridEngine.enumerations import DeviceType
+from VeraGridEngine.Devices.types import ALL_DEV_TYPES
+from VeraGridEngine.Utils.NumericalMethods.numerical_stability import (sparse_instability_svd_test,
+                                                                       sparse_instability_lu_test)
+from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+
+
+class GridErrorLog:
+    """
+    Log of grid errors
+    """
+
+    def __init__(self) -> None:
+        """
+        Constructor
+        """
+        self.logs = dict()
+
+        self.header = ['Object type',
+                       'Name',
+                       'Index',
+                       'Severity',
+                       'Property',
+                       'Lower',
+                       'Value',
+                       'Upper']
+
+    def add(self,
+            object_type,
+            element_name: Union[str, Any],
+            element_index: int,
+            severity: LogSeverity,
+            propty: str,
+            message: str,
+            lower: Union[str, float, int] = '',
+            val: Union[str, float, int] = '',
+            upper: Union[str, float, int] = ''):
+        """
+
+        :param object_type:
+        :param element_name:
+        :param element_index:
+        :param severity:
+        :param propty:
+        :param message:
+        :param lower:
+        :param val:
+        :param upper:
+        :return:
+        """
+
+        e = [object_type,
+             str(element_name),
+             element_index,
+             severity,
+             propty,
+             str(lower),
+             str(val),
+             str(upper)]
+
+        if message in self.logs.keys():
+            self.logs[message].append(e)
+        else:
+            self.logs[message] = [e]
+
+    def clear(self):
+        """
+        Delete all logs
+        """
+        self.logs.clear()
+
+    def add_normal_logger(self, logger: Logger):
+        """
+        Add normal logger
+        :param logger: Logger
+        """
+        for l in logger.entries:
+            self.add(object_type=l.device_class,
+                     element_name=l.device,
+                     element_index=0,
+                     severity=l.severity,
+                     propty=l.device_property,
+                     message=l.msg,
+                     val=l.value,
+                     lower=l.expected_object_value,
+                     upper=l.expected_value)
+
+    def get_model(self) -> "QtGui.QStandardItemModel":
+        """
+        Get TreeView Model
+        :return: QStandardItemModel
+        """
+        model = QtGui.QStandardItemModel()
+        model.setHorizontalHeaderLabels(self.header)
+
+        # populate data
+        for message_key, entries in self.logs.items():
+            parent1 = QtGui.QStandardItem(message_key)
+            for object_type, element_name, element_index, severity, prop, lower, val, upper in entries:
+                children = [QtGui.QStandardItem(str(object_type)),
+                            QtGui.QStandardItem(str(element_name)),
+                            QtGui.QStandardItem(str(element_index)),
+                            QtGui.QStandardItem(severity.value),
+                            QtGui.QStandardItem(str(prop)),
+                            QtGui.QStandardItem(str(lower)),
+                            QtGui.QStandardItem(str(val)),
+                            QtGui.QStandardItem(str(upper))]
+                for chld in children:
+                    chld.setEditable(False)
+
+                parent1.appendRow(children)
+
+            parent1.setEditable(False)
+            model.appendRow(parent1)
+
+        return model
+
+    def get_df(self):
+        """
+        Save analysis to excel
+        :return:
+        """
+        data = list()
+
+        for message in self.logs.keys():
+
+            items = self.logs[message]
+
+            for [object_type, element_name, element_index, severity, propty, lower, val, upper] in items:
+                data.append([message, object_type, element_name, element_index, severity, propty, lower, val, upper])
+
+        hdr = ['Message', 'Object type', 'Name', 'Index', 'Severity', 'Property', 'Lower', 'Value', 'Upper']
+        return pd.DataFrame(data=data, columns=hdr)
+
+    def save(self, filename):
+        """
+        Save analysis to excel
+        :param filename:
+        :return:
+        """
+        df = self.get_df()
+        df.to_excel(filename)
+
+
+class FixableErrorOutOfRange:
+    """
+    Error type for when a value is out of range
+    """
+
+    def __init__(self,
+                 grid_element: ALL_DEV_TYPES,
+                 property_name: str,
+                 value: float,
+                 lower_limit: float,
+                 upper_limit: float):
+        """
+
+        :param grid_element:
+        :param property_name:
+        :param value:
+        :param lower_limit:
+        :param upper_limit:
+        """
+        self.grid_element: ALL_DEV_TYPES = grid_element
+        self.property_name: str = property_name
+        self.value: float = value
+        self.lower_limit: float = lower_limit
+        self.upper_limit: float = upper_limit
+
+    def fix(self, logger: Logger = Logger(), fix_ts=False):
+        """
+
+        :param logger:
+        :param fix_ts:
+        :return:
+        """
+        if self.value < self.lower_limit:
+            self.grid_element.set_snapshot_value(property_name=self.property_name, value=self.lower_limit)
+            logger.add_info("Fixed " + self.property_name, device=self.grid_element.idtag, value=self.value)
+
+        elif self.value > self.upper_limit:
+            self.grid_element.set_snapshot_value(property_name=self.property_name, value=self.upper_limit)
+            logger.add_info("Fixed " + self.property_name, device=self.grid_element.idtag, value=self.value)
+
+        # fix the associated time series
+        gc_prop = self.grid_element.registered_properties.get(self.property_name, None)
+        if fix_ts and gc_prop.has_profile():
+            profile = self.grid_element.get_profile_by_prop(prop=gc_prop)
+            for i in range(profile.size()):
+                value = profile[i]
+                if value < self.lower_limit:
+                    profile[i] = self.lower_limit
+                    logger.add_info("Fixed " + self.property_name, device=self.grid_element.idtag, value=value)
+
+                elif value > self.upper_limit:
+                    profile[i] = self.upper_limit
+                    logger.add_info("Fixed " + self.property_name, device=self.grid_element.idtag, value=value)
+
+
+class FixableErrorRangeFlip:
+    """
+    Error type for when a range is reversed
+    """
+
+    def __init__(self, grid_element, property_name_low, property_name_high, value_low, value_high):
+        """
+
+        :param grid_element:
+        :param property_name_low:
+        :param property_name_high:
+        :param value_low:
+        :param value_high:
+        """
+        self.grid_element = grid_element
+        self.property_name_low = property_name_low
+        self.property_name_high = property_name_high
+        self.value_low = value_low
+        self.value_high = value_high
+
+    def fix(self, logger: Logger = Logger(), fix_ts=False):
+        """
+
+        :param logger:
+        :param fix_ts:
+        """
+        if self.value_high < self.value_low:
+            # flip the values
+            self.grid_element.set_snapshot_value(property_name=self.property_name_low, value=self.value_high)
+            self.grid_element.set_snapshot_value(property_name=self.property_name_high, value=self.value_low)
+
+
+class FixableErrorValueCorrection:
+    """
+    Error type for when a range is reversed
+    """
+
+    def __init__(self, grid_element, property_name_low, property_name_high, value_low, value_high):
+        """
+
+        :param grid_element:
+        :param property_name_low:
+        :param property_name_high:
+        :param value_low:
+        :param value_high:
+        """
+        self.grid_element = grid_element
+        self.property_name_low = property_name_low
+        self.property_name_high = property_name_high
+        self.value_low = value_low
+        self.value_high = value_high
+
+    def fix(self, logger: Logger = Logger(), fix_ts=False):
+        """
+
+        :param logger:
+        :param fix_ts:
+        """
+
+        self.grid_element.set_snapshot_value(property_name=self.property_name_low, value=self.value_low)
+        self.grid_element.set_snapshot_value(property_name=self.property_name_high, value=self.value_high)
+
+
+class FixableErrorNegative:
+    """
+    Error type for when a value is negative
+    """
+
+    def __init__(self, grid_element, property_name, value):
+        """
+
+        :param grid_element:
+        :param property_name:
+        :param value:
+        """
+        self.grid_element = grid_element
+        self.property_name = property_name
+        self.value = value
+
+    def fix(self, logger: Logger = Logger(), fix_ts=False):
+        """
+
+        :param logger:
+        :param fix_ts:
+        :return:
+        """
+        # set the same value but positive
+        if self.value < 0:
+            self.grid_element.set_snapshot_value(property_name=self.property_name, value=-self.value)
+
+
+class FixableTransformerVtaps:
+    """
+    Error type for when a transformer virtual taps are wrong
+    """
+
+    def __init__(self, grid_element, maximum_difference):
+        """
+
+        :param grid_element:
+        :param maximum_difference:
+        """
+        self.grid_element = grid_element
+        self.maximum_difference = maximum_difference
+
+    def fix(self, logger: Logger = Logger(), fix_ts=False):
+        """
+
+        :param logger:
+        :param fix_ts:
+        :return:
+        """
+        # set the same value but positive
+        self.grid_element.fix_inconsistencies(logger=logger,
+                                              maximum_difference=self.maximum_difference)
+
+
+FIXABLE_ERROR_TYPES = Union[
+    FixableTransformerVtaps,
+    FixableErrorOutOfRange,
+    FixableErrorRangeFlip,
+    FixableErrorNegative,
+    FixableErrorValueCorrection
+]
+
+
+def analyze_lines(elements: List[Line],
+                  object_type: DeviceType,
+                  branch_connection_voltage_tolerance: float,
+                  eps_min: float,
+                  eps_max: float,
+                  branch_x_threshold: float,
+                  logger: GridErrorLog,
+                  fixable_errors: List[FIXABLE_ERROR_TYPES]):
+    """
+
+    :param elements:
+    :param object_type:
+    :param branch_connection_voltage_tolerance:
+    :param eps_min:
+    :param eps_max:
+    :param branch_x_threshold:
+    :param logger:
+    :param fixable_errors:
+    :return:
+    """
+    for i, elm in enumerate(elements):
+
+        V1 = min(elm.bus_to.Vnom, elm.bus_from.Vnom)
+        V2 = max(elm.bus_to.Vnom, elm.bus_from.Vnom)
+
+        if elm.bus_from is None:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty="bus_from",
+                       message="The bus from is None")
+
+        if elm.bus_to is None:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty="bus_to",
+                       message="The bus to is None")
+
+        if elm.bus_to == elm.bus_from:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty="bus_from, bus_to",
+                       message="Branch connected in loop (bus_from = bus_to)")
+
+        if V1 > 0 and V2 > 0:
+            per = V1 / V2
+            if per < (1.0 - branch_connection_voltage_tolerance):
+                logger.add(object_type=object_type.value,
+                           element_name=elm.name,
+                           element_index=i,
+                           severity=LogSeverity.Error,
+                           propty='Connection',
+                           message='The branch is connected between voltages '
+                                   'that differ in {}% or more. Should this '
+                                   'be a transformer?'.format(int(branch_connection_voltage_tolerance * 100)),
+                           lower=V1,
+                           upper=V2)
+        else:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='Voltage',
+                       message='The branch does is connected to a bus with Vnom=0, this is terrible.')
+
+        if elm.name == '':
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Information,
+                       propty='name',
+                       message='The branch does not have a name')
+
+        if elm.rate < 0.0:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='rate',
+                       message='The rating is negative. This cannot be.',
+                       lower="0",
+                       val=elm.rate)
+            fixable_errors.append(FixableErrorNegative(grid_element=elm,
+                                                       property_name='rate',
+                                                       value=elm.rate))
+
+        elif elm.rate == 0.0:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='rate',
+                       message='There is no nominal power, this is bad.',
+                       val=elm.rate)
+
+        if elm.R < 0.0:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='R',
+                       message='The resistance is negative, that cannot be.',
+                       lower="0.0",
+                       val=elm.R)
+            fixable_errors.append(FixableErrorNegative(grid_element=elm,
+                                                       property_name='R',
+                                                       value=elm.R))
+
+        elif elm.R == 1e-20:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Information,
+                       propty='R',
+                       message='The resistance is practically zero.',
+                       val=elm.R)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='R',
+                                                         value=elm.R,
+                                                         lower_limit=eps_min,
+                                                         upper_limit=eps_max))
+
+        if elm.X == 1e-20:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='X',
+                       message='The reactance is practically zero. This hurts numerical conditioning.',
+                       val=elm.X)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='X',
+                                                         value=elm.X,
+                                                         lower_limit=eps_min,
+                                                         upper_limit=eps_max))
+
+        if elm.B == 0.0:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='B',
+                       message='There is no susceptance, this could hurt numerical conditioning.',
+                       val=elm.B)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='B',
+                                                         value=elm.B,
+                                                         lower_limit=eps_min,
+                                                         upper_limit=eps_max))
+
+        # check the reactance
+        if elm.X < branch_x_threshold:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Warning,
+                       propty='X',
+                       message='Line X is too low and can make models numerically unstable',
+                       lower=str(branch_x_threshold),
+                       upper="1e20",
+                       val=elm.X)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='X',
+                                                         value=elm.X,
+                                                         lower_limit=branch_x_threshold,
+                                                         upper_limit=1e20))
+
+
+def analyze_transformers(elements: List[Transformer2W],
+                         object_type: DeviceType,
+                         transformer_virtual_tap_tolerance: float,
+                         eps_min: float,
+                         eps_max: float,
+                         min_vcc: float,
+                         max_vcc: float,
+                         tap_min: float,
+                         tap_max: float,
+                         branch_x_threshold: float,
+                         logger: GridErrorLog,
+                         fixable_errors: List[FIXABLE_ERROR_TYPES]):
+    """
+
+    :param elements:
+    :param object_type:
+    :param transformer_virtual_tap_tolerance:
+    :param eps_min:
+    :param eps_max:
+    :param min_vcc:
+    :param max_vcc:
+    :param tap_min:
+    :param tap_max:
+    :param branch_x_threshold:
+    :param logger:
+    :param fixable_errors:
+    :return:
+    """
+    for i, elm in enumerate(elements):
+
+        if elm.bus_from is None:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty="bus_from",
+                       message="The bus from is None")
+
+        if elm.bus_to is None:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty="bus_to",
+                       message="The bus to is None")
+
+        if elm.bus_to == elm.bus_from:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty="bus_from, bus_to",
+                       message="Branch connected in loop (bus_from = bus_to)")
+
+        if elm.name == '':
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='name',
+                       message='The branch does not have a name')
+
+        if elm.rate <= 0.0:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='rate',
+                       message='The rating is negative. This cannot be.',
+                       lower="0",
+                       val=elm.rate)
+            fixable_errors.append(FixableErrorNegative(grid_element=elm,
+                                                       property_name='rate',
+                                                       value=elm.rate))
+
+        # check R and X
+        if elm.R == 0.0 and elm.X == 0.0:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='R+X',
+                       message='There is no impedance, set at least a very low value',
+                       lower="0",
+                       val=elm.R + elm.X)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='R',
+                                                         value=elm.rate,
+                                                         lower_limit=eps_min,
+                                                         upper_limit=eps_max))
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='X',
+                                                         value=elm.rate,
+                                                         lower_limit=eps_min,
+                                                         upper_limit=eps_max))
+
+        else:
+            if elm.R < 0.0:
+                logger.add(object_type=object_type.value,
+                           element_name=elm.name,
+                           element_index=i,
+                           severity=LogSeverity.Warning,
+                           propty='R',
+                           message='The resistance is negative, that cannot be.',
+                           lower="0",
+                           val=elm.R)
+                fixable_errors.append(FixableErrorNegative(grid_element=elm,
+                                                           property_name='R',
+                                                           value=elm.R))
+
+            elif elm.R == 0.0:
+                logger.add(object_type=object_type.value,
+                           element_name=elm.name,
+                           element_index=i,
+                           severity=LogSeverity.Information,
+                           propty='R',
+                           message='The resistance is exactly zero',
+                           val=elm.R)
+                fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                             property_name='R',
+                                                             value=elm.R,
+                                                             lower_limit=eps_min,
+                                                             upper_limit=eps_max))
+
+            elif elm.X == 0.0:
+                logger.add(object_type=object_type.value,
+                           element_name=elm.name,
+                           element_index=i,
+                           severity=LogSeverity.Information,
+                           propty='X',
+                           message='The reactance is exactly zero',
+                           val=elm.X)
+                fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                             property_name='X',
+                                                             value=elm.rate,
+                                                             lower_limit=eps_min,
+                                                             upper_limit=eps_max))
+
+        # check tap module
+        if elm.tap_module > tap_max:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Warning,
+                       propty='tap_module',
+                       message='Tap module too high',
+                       upper=str(tap_max),
+                       val=elm.tap_module)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='tap_module',
+                                                         value=elm.tap_module,
+                                                         lower_limit=tap_min,
+                                                         upper_limit=tap_max))
+
+        elif elm.tap_module < tap_min:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Warning,
+                       propty='tap_module',
+                       message='Tap module too low',
+                       upper=str(tap_min),
+                       val=elm.tap_module)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='tap_module',
+                                                         value=elm.tap_module,
+                                                         lower_limit=tap_min,
+                                                         upper_limit=tap_max))
+
+        # check virtual taps
+        tap_f, tap_t = elm.get_virtual_taps()
+
+        if (1.0 - transformer_virtual_tap_tolerance) > tap_f or tap_f > (
+                1.0 + transformer_virtual_tap_tolerance):
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='HV or LV',
+                       message='Large nominal voltage mismatch at the "from" bus',
+                       lower=str(1.0 - transformer_virtual_tap_tolerance),
+                       val=str(tap_f),
+                       upper=str(1.0 + transformer_virtual_tap_tolerance))
+            fixable_errors.append(FixableTransformerVtaps(grid_element=elm,
+                                                          maximum_difference=transformer_virtual_tap_tolerance))
+
+        if (1.0 - transformer_virtual_tap_tolerance) > tap_t or tap_t > (
+                1.0 + transformer_virtual_tap_tolerance):
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='HV or LV',
+                       message='Large nominal voltage mismatch at the "to" bus',
+                       lower=str(1.0 - transformer_virtual_tap_tolerance),
+                       val=str(tap_t),
+                       upper=str(1.0 + transformer_virtual_tap_tolerance))
+            fixable_errors.append(FixableTransformerVtaps(grid_element=elm,
+                                                          maximum_difference=transformer_virtual_tap_tolerance))
+
+        # check VCC
+        vcc = elm.get_vcc()
+        if vcc < min_vcc or vcc > max_vcc:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Warning,
+                       propty='Vcc',
+                       message='The short circuit value is suspicious',
+                       lower=str(min_vcc),
+                       upper=str(max_vcc),
+                       val=str(vcc))
+
+        # check the nominal power
+        if elm.Sn > 0:
+            sn_ratio = elm.rate / elm.Sn
+            if not (0.9 < sn_ratio < 1.1):
+                logger.add(object_type=object_type.value,
+                           element_name=elm.name,
+                           element_index=i,
+                           severity=LogSeverity.Warning,
+                           propty='rate / Sn',
+                           message='Transformer rating is too different from the nominal power',
+                           lower=str(elm.Sn * 0.9),
+                           upper=str(elm.Sn * 1.1),
+                           val=elm.rate)
+                fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                             property_name='rate',
+                                                             value=elm.rate,
+                                                             lower_limit=elm.Sn,
+                                                             upper_limit=elm.Sn))
+
+        # check the reactance
+        if elm.X < branch_x_threshold:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Warning,
+                       propty='X',
+                       message='Transformer X is too low and can make models numerically unstable',
+                       lower=str(branch_x_threshold),
+                       upper="1e20",
+                       val=elm.X)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='X',
+                                                         value=elm.X,
+                                                         lower_limit=branch_x_threshold,
+                                                         upper_limit=1e20))
+
+
+def analyze_buses(elements: List[Bus],
+                  object_type: DeviceType,
+                  tap_min: float,
+                  tap_max: float,
+                  v_low: float,
+                  v_high: float,
+                  logger: GridErrorLog,
+                  fixable_errors: List[FIXABLE_ERROR_TYPES]):
+    """
+
+    :param elements:
+    :param object_type:
+    :param tap_min:
+    :param tap_max:
+    :param v_low:
+    :param v_high:
+    :param logger:
+    :param fixable_errors:
+    :return:
+    """
+    names = set()
+
+    for i, elm in enumerate(elements):
+
+        if elm.Vnom <= 0.0:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='Vnom',
+                       message='The nominal voltage is <= 0, this causes problems',
+                       lower="0",
+                       val=elm.Vnom)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='Vnom',
+                                                         value=elm.Vnom,
+                                                         lower_limit=tap_min,
+                                                         upper_limit=tap_max))
+
+        if elm.Vmin == 0.0:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='Vmin',
+                       message='Vmin = 0, that affects the nonlinear OPF',
+                       lower="0",
+                       val=elm.Vmin)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='Vmin',
+                                                         value=elm.Vmin,
+                                                         lower_limit=v_low,
+                                                         upper_limit=v_low))
+
+        if elm.Vmax < elm.Vmin or elm.Vmax == 0:
+
+            if elm.Vmax == 0:
+                logger.add(object_type=object_type.value,
+                           element_name=elm.name,
+                           element_index=i,
+                           severity=LogSeverity.Error,
+                           propty='Vmax',
+                           message=' Vmax = 0, that affects the nonlinear OPF',
+                           lower="0",
+                           val=elm.Vmax)
+
+            if elm.Vmax < elm.Vmin:
+                logger.add(object_type=object_type.value,
+                           element_name=elm.name,
+                           element_index=i,
+                           severity=LogSeverity.Error,
+                           propty='Vmax',
+                           message=' Vmax <= Vmin, that affects the nonlinear OPF',
+                           lower="0",
+                           val=elm.Vmax)
+
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='Vmax',
+                                                         value=elm.Vmax,
+                                                         lower_limit=v_high,
+                                                         upper_limit=v_high))
+
+        if elm.name == '':
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='name',
+                       message='The bus does not have a name')
+
+        if elm.name in names:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Information,
+                       propty='name',
+                       message='The bus name is not unique')
+
+        # add the name to a set
+        names.add(elm.name)
+
+
+def analyze_generators(elements: List[Generator],
+                       object_type: DeviceType,
+                       time_profile,
+                       v_low: float,
+                       v_high: float,
+                       logger: GridErrorLog,
+                       fixable_errors: List[FIXABLE_ERROR_TYPES]):
+    """
+
+    :param elements:
+    :param object_type:
+    :param time_profile:
+    :param v_low:
+    :param v_high:
+    :param logger:
+    :param fixable_errors:
+    :return:
+    """
+    Pg = 0
+    Pg_prof = 0
+
+    for k, obj in enumerate(elements):
+        Pg += obj.P * obj.active
+
+        if time_profile is not None:
+            Pg_prof += obj.P_prof.toarray() * obj.active_prof.toarray()
+
+        if obj.bus is None:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty="bus",
+                       message="The bus is None")
+
+        if obj.Vset < v_low:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Warning,
+                       propty='Vset',
+                       message='The set point looks too low',
+                       lower=str(v_low),
+                       val=obj.Vset)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=obj,
+                                                         property_name='Vset',
+                                                         value=obj.Vset,
+                                                         lower_limit=v_low,
+                                                         upper_limit=v_high))
+
+        elif obj.Vset > v_high:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Warning,
+                       propty='Vset',
+                       message='The set point looks too high',
+                       val=obj.Vset,
+                       upper=str(v_high))
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=obj,
+                                                         property_name='Vset',
+                                                         value=obj.Vset,
+                                                         lower_limit=v_low,
+                                                         upper_limit=v_high))
+
+        if obj.Qmax < obj.Qmin:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty='Qmax < Qmin',
+                       message='Wrong Q limit bounds',
+                       upper=obj.Qmax,
+                       lower=obj.Qmin)
+            fixable_errors.append(FixableErrorRangeFlip(grid_element=obj,
+                                                        property_name_low='Qmin',
+                                                        property_name_high='Qmax',
+                                                        value_low=obj.Qmin,
+                                                        value_high=obj.Qmax))
+
+        # elif obj.Qmax == obj.Qmin and obj.is_controlled:
+        elif obj.Qmax == obj.Qmin:
+
+            if obj.Qmax == 0.0:
+                propty = 'Qmax == Qmin == 0'
+                message = 'Q limits equal to zero'
+
+            else:
+                propty = 'Qmax == Qmin'
+                message = 'Inflexible Q limit bounds'
+
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty=propty,
+                       message=message,
+                       upper=obj.Qmax,
+                       lower=obj.Qmin)
+            val = np.round(obj.Snom * 0.8, 2)
+            fixable_errors.append(FixableErrorValueCorrection(grid_element=obj,
+                                                              property_name_low='Qmin',
+                                                              property_name_high='Qmax',
+                                                              value_low=-val,
+                                                              value_high=val))
+
+        if obj.Pmax < obj.Pmin:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty='Pmax < Pmin',
+                       message='Wrong P limit bounds',
+                       upper=obj.Pmax,
+                       lower=obj.Pmin)
+            fixable_errors.append(FixableErrorRangeFlip(grid_element=obj,
+                                                        property_name_low='Pmin',
+                                                        property_name_high='Pmax',
+                                                        value_low=obj.Pmin,
+                                                        value_high=obj.Pmax))
+        elif obj.Pmax == obj.Pmin:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty='Pmax == Pmin',
+                       message='Inflexible P limit bounds',
+                       upper=obj.Pmax,
+                       lower=obj.Pmin)
+            fixable_errors.append(FixableErrorValueCorrection(grid_element=obj,
+                                                              property_name_low='Pmin',
+                                                              property_name_high='Pmax',
+                                                              value_low=0,
+                                                              value_high=obj.Snom))
+
+    return Pg, Pg_prof
+
+
+def analyze_batteries(elements: List[Battery],
+                      object_type: DeviceType,
+                      time_profile,
+                      v_low: float,
+                      v_high: float,
+                      logger: GridErrorLog,
+                      fixable_errors: List[FIXABLE_ERROR_TYPES]):
+    """
+
+    :param elements:
+    :param object_type:
+    :param time_profile:
+    :param v_low:
+    :param v_high:
+    :param logger:
+    :param fixable_errors:
+    :return:
+    """
+    Pg = 0
+    Pg_prof = 0
+
+    for k, obj in enumerate(elements):
+        Pg += obj.P * obj.active
+
+        if obj.bus is None:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty="bus",
+                       message="The bus is None")
+
+        if time_profile is not None:
+            Pg_prof += obj.P_prof.toarray() * obj.active_prof.toarray()
+
+        if obj.Vset < v_low:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Warning,
+                       propty='Vset',
+                       message='The set point looks too low',
+                       lower=str(v_low),
+                       val=obj.Vset)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=obj,
+                                                         property_name='Vset',
+                                                         value=obj.Vset,
+                                                         lower_limit=v_low,
+                                                         upper_limit=v_high))
+
+        elif obj.Vset > v_high:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Warning,
+                       propty='Vset',
+                       message='The set point looks too high',
+                       val=obj.Vset,
+                       upper=str(v_high))
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=obj,
+                                                         property_name='Vset',
+                                                         value=obj.Vset,
+                                                         lower_limit=v_low,
+                                                         upper_limit=v_high))
+
+        if obj.Qmax < obj.Qmin:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty='Qmax < Qmin',
+                       message='Wrong Q limit bounds',
+                       upper=obj.Qmax,
+                       lower=obj.Qmin)
+            fixable_errors.append(FixableErrorRangeFlip(grid_element=obj,
+                                                        property_name_low='Qmin',
+                                                        property_name_high='Qmax',
+                                                        value_low=obj.Qmin,
+                                                        value_high=obj.Qmax))
+
+        if obj.Pmax < obj.Pmin:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty='Pmax < Pmin',
+                       message='Wrong P limit bounds',
+                       upper=obj.Pmax,
+                       lower=obj.Pmin)
+            fixable_errors.append(FixableErrorRangeFlip(grid_element=obj,
+                                                        property_name_low='Pmin',
+                                                        property_name_high='Pmax',
+                                                        value_low=obj.Pmin,
+                                                        value_high=obj.Pmax))
+
+        if obj.max_soc < obj.min_soc:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty='max_soc < min_soc',
+                       message='Wrong SoC limit bounds',
+                       upper=obj.max_soc,
+                       lower=obj.min_soc)
+            fixable_errors.append(FixableErrorRangeFlip(grid_element=obj,
+                                                        property_name_low='min_soc',
+                                                        property_name_high='max_soc',
+                                                        value_low=obj.min_soc,
+                                                        value_high=obj.max_soc))
+
+        if obj.Enom <= 0:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty='Enom',
+                       message='Invalid nominal energy',
+                       lower="0",
+                       val=obj.Enom)
+
+    return Pg, Pg_prof
+
+
+def analyze_static_gen(elements: List[StaticGenerator],
+                       time_profile,
+                       logger: GridErrorLog, ):
+    """
+
+    :param elements:
+    :param time_profile:
+    :param logger:
+    :return:
+    """
+    Pg = 0.0
+    Qg = 0.0
+    Pg_prof = 0.0
+    Qg_prof = 0.0
+
+    for k, obj in enumerate(elements):
+        Pg += obj.P * obj.active
+        Qg += obj.Q * obj.active
+
+        if obj.bus is None:
+            logger.add(object_type=obj.device_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty="bus",
+                       message="The bus is None")
+
+        if time_profile is not None:
+            Pg_prof += obj.P_prof.toarray() * obj.active_prof.toarray()
+            Qg_prof += obj.Q_prof.toarray() * obj.active_prof.toarray()
+
+    return Pg, Qg, Pg_prof, Qg_prof
+
+
+def analyze_load(elements: List[Load],
+                 time_profile,
+                 logger: GridErrorLog, ):
+    """
+
+    :param elements:
+    :param time_profile:
+    :param logger:
+    :return:
+    """
+    Pl = 0.0
+    Ql = 0.0
+    Pl_prof = 0.0
+    Ql_prof = 0.0
+
+    for k, elm in enumerate(elements):
+        Pl += elm.P * elm.active
+        Ql += elm.Q * elm.active
+
+        if elm.bus is None:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty="bus",
+                       message="The bus is None")
+
+        if time_profile is not None:
+            Pl_prof += elm.P_prof.toarray() * elm.active_prof.toarray()
+            Ql_prof += elm.Q_prof.toarray() * elm.active_prof.toarray()
+
+    return Pl, Ql, Pl_prof, Ql_prof
+
+
+def grid_analysis(circuit: MultiCircuit,
+                  analyze_ts=True,
+                  imbalance_threshold=0.02,
+                  v_low=0.95,
+                  v_high=1.05,
+                  tap_min=0.95,
+                  tap_max=1.05,
+                  transformer_virtual_tap_tolerance=0.1,
+                  branch_connection_voltage_tolerance=0.1,
+                  min_vcc=8,
+                  max_vcc=18,
+                  logger=GridErrorLog(),
+                  branch_x_threshold=1e-4,
+                  condition_number_threshold=1e4,
+                  eps_max: float = 1e20,
+                  eps_min: float = 1e-20):
+    """
+    Analyze the model data
+    :param circuit: Circuit to analyze
+    :param analyze_ts: Analyze time series
+    :param imbalance_threshold: Allowed percentage of imbalance
+    :param v_low: lower voltage setting
+    :param v_high: higher voltage setting
+    :param tap_min: minimum tap value
+    :param tap_max: maximum tap value
+    :param transformer_virtual_tap_tolerance:
+    :param branch_connection_voltage_tolerance:
+    :param max_vcc: maximum short circuit voltage (%)
+    :param min_vcc: Minimum short circuit voltage (%)
+    :param logger: GridErrorLog
+    :param branch_x_threshold: Value to compare branches X such that it is numerically stable
+    :param condition_number_threshold: Condition number threshold to report unstability
+    :param eps_max: Max epsylon value for comparison
+    :param eps_min: Min epsylon value for comparison
+    :return: list of fixable error objects
+    """
+
+    # check for duplicated uuid's
+    duplicates_logger = Logger()
+    _, ok_dict = circuit.get_all_elements_dict(logger=duplicates_logger)
+    logger.add_normal_logger(duplicates_logger)
+
+    if circuit.time_profile is not None:
+        nt = len(circuit.time_profile)
+    else:
+        nt = 0
+
+    fixable_errors: List[FIXABLE_ERROR_TYPES] = list()
+
+    Pl = 0
+    Pg = 0
+    Pl_prof = np.zeros(nt)
+    Pg_prof = np.zeros(nt)
+
+    Ql = 0
+    Qg = 0
+    Ql_prof = np.zeros(nt)
+    Qg_prof = np.zeros(nt)
+
+    Qmin = 0.0
+    Qmax = 0.0
+
+    analyze_buses(elements=circuit.get_buses(),
+                  object_type=DeviceType.BusDevice,
+                  tap_min=tap_min,
+                  tap_max=tap_max,
+                  logger=logger,
+                  v_low=v_low,
+                  v_high=v_high,
+                  fixable_errors=fixable_errors)
+
+    analyze_lines(elements=circuit.get_lines(),
+                  object_type=DeviceType.LineDevice,
+                  branch_connection_voltage_tolerance=branch_connection_voltage_tolerance,
+                  eps_min=eps_min,
+                  eps_max=eps_max,
+                  branch_x_threshold=branch_x_threshold,
+                  logger=logger,
+                  fixable_errors=fixable_errors)
+
+    analyze_transformers(elements=circuit.get_transformers2w(),
+                         object_type=DeviceType.Transformer2WDevice,
+                         transformer_virtual_tap_tolerance=transformer_virtual_tap_tolerance,
+                         eps_min=eps_min,
+                         eps_max=eps_max,
+                         min_vcc=min_vcc,
+                         max_vcc=max_vcc,
+                         tap_min=tap_min,
+                         tap_max=tap_max,
+                         branch_x_threshold=branch_x_threshold,
+                         logger=logger,
+                         fixable_errors=fixable_errors)
+
+    analyze_transformers(elements=circuit.get_windings(),
+                         object_type=DeviceType.WindingDevice,
+                         transformer_virtual_tap_tolerance=transformer_virtual_tap_tolerance,
+                         eps_min=eps_min,
+                         eps_max=eps_max,
+                         min_vcc=min_vcc,
+                         max_vcc=max_vcc,
+                         tap_min=tap_min,
+                         tap_max=tap_max,
+                         branch_x_threshold=branch_x_threshold,
+                         logger=logger,
+                         fixable_errors=fixable_errors)
+
+    Pgg, Pgg_prof = analyze_generators(elements=circuit.get_generators(),
+                                       object_type=DeviceType.GeneratorDevice,
+                                       time_profile=circuit.get_time_array(),
+                                       v_low=v_low,
+                                       v_high=v_high,
+                                       logger=logger,
+                                       fixable_errors=fixable_errors)
+    Pg += Pgg
+    Pg_prof += Pgg_prof
+
+    Pgb, Pgb_prof = analyze_batteries(elements=circuit.get_batteries(),
+                                      object_type=DeviceType.GeneratorDevice,
+                                      time_profile=circuit.get_time_array(),
+                                      v_low=v_low,
+                                      v_high=v_high,
+                                      logger=logger,
+                                      fixable_errors=fixable_errors)
+
+    Pg += Pgb
+    Pg_prof += Pgb_prof
+
+    Pgs, Qgs, Pgs_prof, Qgs_prof = analyze_static_gen(elements=circuit.get_static_generators(),
+                                                      time_profile=circuit.get_time_array(),
+                                                      logger=logger)
+
+    Pg += Pgs
+    Pg_prof += Pgs_prof
+    Qg += Qgs
+    Qg_prof += Qgs_prof
+
+    Pll, Qll, Pll_prof, Qll_prof = analyze_load(elements=circuit.get_loads(),
+                                                time_profile=circuit.get_time_array(),
+                                                logger=logger)
+
+    Pl += Pll
+    Pl_prof += Pll_prof
+    Ql += Qll
+    Ql_prof += Qll_prof
+
+    # compare loads
+    p_ratio = abs(Pl - Pg) / (Pl + eps_min)
+
+    if p_ratio > imbalance_threshold:
+        msg = ">> " + str(imbalance_threshold) + "%"
+        logger.add(object_type='Grid snapshot',
+                   element_name=circuit,
+                   element_index=-1,
+                   severity=LogSeverity.Error,
+                   propty='Active power balance ' + msg,
+                   message='There is too much active power imbalance',
+                   val="{:.1f}".format(p_ratio * 100))
+
+    # compare reactive power limits
+    if not (Qmin <= -Ql <= Qmax):
+        logger.add(object_type='Grid snapshot',
+                   element_name=circuit,
+                   element_index=-1,
+                   severity=LogSeverity.Error,
+                   propty="Reactive power out of bounds",
+                   message='There is too much reactive power imbalance',
+                   lower=str(Qmin),
+                   val=str(Ql),
+                   upper=str(Qmax))
+
+    # analyze the time series data
+    if analyze_ts:
+        if circuit.time_profile is not None:
+            nt = len(circuit.time_profile)
+
+        for t in range(nt):
+            # compare loads
+            p_ratio = abs(Pl_prof[t] - Pg_prof[t]) / (Pl_prof[t] + eps_min)
+            if p_ratio > imbalance_threshold:
+                msg = ">> " + str(imbalance_threshold) + "%"
+                logger.add(object_type='Active power balance',
+                           element_name=circuit,
+                           element_index=t,
+                           severity=LogSeverity.Error,
+                           propty=msg,
+                           message='There is too much active power imbalance',
+                           val="{:.1f}".format(p_ratio * 100))
+
+            # compare reactive power limits
+            if not (Qmin <= -Ql_prof[t] <= Qmax):
+                logger.add(object_type='Reactive power power balance',
+                           element_name=circuit,
+                           element_index=t,
+                           severity=LogSeverity.Error,
+                           propty="Reactive power out of bounds",
+                           message='There is too much reactive power imbalance',
+                           lower=str(Qmin),
+                           val=float(Ql_prof[t]),
+                           upper=str(Qmax))
+
+    # analyze the numerical stability
+    nc = compile_numerical_circuit_at(circuit, t_idx=None)  # compile the snapshot
+
+    Sbus = nc.get_power_injections()
+    indices = nc.get_simulation_indices(Sbus=Sbus)
+    lin_adm = nc.get_linear_admittance_matrices(indices=indices)
+    rcond, unstable = sparse_instability_svd_test(lin_adm.Bbus, condition_number_thrshold=1.0 / condition_number_threshold)
+
+    if unstable:
+        logger.add(object_type='matrix',
+                   element_name=circuit,
+                   element_index=-1,
+                   severity=LogSeverity.Error,
+                   propty="condition number",
+                   message='B matrix is SVD-Unstable: this may make linear power flows output nonsense',
+                   lower="",
+                   val=str(rcond),
+                   upper=str(1.0 / condition_number_threshold))
+
+    rcond, unstable = sparse_instability_lu_test(lin_adm.get_Bred(pqpv=indices.no_slack),
+                                                 condition_number_thrshold=condition_number_threshold)
+
+    if unstable:
+        logger.add(object_type='matrix',
+                   element_name=circuit,
+                   element_index=-1,
+                   severity=LogSeverity.Error,
+                   propty="condition number",
+                   message='B matrix is LU-Unstable: this may make linear power flows output nonsense',
+                   lower="",
+                   val=str(rcond),
+                   upper=str(condition_number_threshold))
+
+    return fixable_errors
+
+
+def object_histogram_analysis(circuit: MultiCircuit,
+                              object_type: DeviceType,
+                              t_idx: Union[None, int],
+                              fig=None):
+    """
+    Draw the histogram analysis of the provided object type
+    :param circuit: Circuit
+    :param object_type: Object Type (DeviceType)
+    :param t_idx: Time index (None or int) to get the data
+    :param fig: matplotlib figure (if None, a new one is created)
+    """
+
+    if object_type == DeviceType.LineDevice.value:
+        properties = ['R', 'X', 'B', 'rate']
+        log_scale = [False, False, False, False, False]
+        objects = circuit.lines
+
+    elif object_type == DeviceType.Transformer2WDevice.value:
+        properties = ['R', 'X', 'G', 'B', 'tap_module', 'tap_phase', 'rate']
+        log_scale = [False, False, False, False, False, False, False]
+        objects = circuit.transformers2w
+
+    elif object_type == DeviceType.BusDevice.value:
+        properties = ['Vnom']
+        log_scale = [False]
+        objects = circuit.get_buses()
+
+    elif object_type == DeviceType.GeneratorDevice.value:
+        properties = ['Vset', 'P', 'Qmin', 'Qmax']
+        log_scale = [False, False, False, False]
+        objects = circuit.get_generators()
+
+    elif object_type == DeviceType.BatteryDevice.value:
+        properties = ['Vset', 'P', 'Qmin', 'Qmax']
+        log_scale = [False, False, False, False]
+        objects = circuit.get_batteries()
+
+    elif object_type == DeviceType.StaticGeneratorDevice.value:
+        properties = ['P', 'Q']
+        log_scale = [False, False]
+        objects = circuit.get_static_generators()
+
+    elif object_type == DeviceType.ShuntDevice.value:
+        properties = ['G', 'B']
+        log_scale = [False, False]
+        objects = circuit.get_shunts()
+
+    elif object_type == DeviceType.LoadDevice.value:
+        properties = ['P', 'Q', 'Ir', 'Ii', 'G', 'B']
+        log_scale = [False, False, False, False, False, False]
+        objects = circuit.get_loads()
+
+    else:
+        return
+
+    n = len(objects)
+    p = len(properties)
+    vals = np.zeros((n, p))
+    extended_prop = np.zeros(p, dtype=object)
+    log_scale_extended = np.zeros(p, dtype=object)
+    for j in range(len(properties)):
+
+        if len(objects):
+            gc_prop = objects[0].registered_properties[properties[j]]
+
+            for i, elem in enumerate(objects):
+                val = elem.get_property_value(prop=gc_prop, t_idx=t_idx)
+                vals[i, j] = val
+                extended_prop[j] = properties[j]
+                log_scale_extended[j] = log_scale[j]
+
+    # create figure if needed
+    if fig is None:
+        fig = plt.figure(figsize=(12, 6))
+
+    fig.suptitle('Analysis of the ' + str(object_type), fontsize=16)
+    fig.set_facecolor('white')
+
+    if n > 0:
+        k = int(np.round(math.sqrt(p)))
+        axs = np.empty(p + 1, dtype=object)
+
+        for j in range(p):
+            x = vals[:, j]
+            mu = x.mean()
+            variance = x.var()
+            sigma = math.sqrt(variance)
+            r = (mu - 6 * sigma, mu + 6 * sigma)
+
+            # plot
+            ax = fig.add_subplot(k, k + 1, j + 1)
+            ax.set_facecolor('white')
+            # bin_edges = np.histogram_bin_edges(x)
+            ax.hist(x,
+                    # bins=len(bin_edges),
+                    range=r,
+                    cumulative=False,
+                    bottom=None,
+                    histtype='bar',
+                    align='mid',
+                    orientation='vertical')
+            ax.plot(x, np.zeros(n), 'o')
+            ax.set_title(str(extended_prop[j]))
+
+            if log_scale_extended[j]:
+                ax.set_xscale('log')
+
+            axs[j] = ax
+
+        if object_type in [DeviceType.LineDevice.value,
+                           DeviceType.Transformer2WDevice.value]:
+            r = vals[:, 0]
+            x = vals[:, 1]
+
+            # plot
+            ax = fig.add_subplot(k, k + 1, p + 2)
+            ax.set_facecolor('white')
+            ax.scatter(r, x)
+            ax.set_title("R-X")
+            ax.set_xlabel("R")
+            ax.set_ylabel("X")
+            axs[p] = ax
+
+    fig.tight_layout(rect=(0, 0.03, 1, 0.95))

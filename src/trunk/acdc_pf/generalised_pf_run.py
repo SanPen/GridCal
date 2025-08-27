@@ -1,12 +1,12 @@
 import os
 import sys
 
-sys.path.append('C:/Users/raiya/Documents/8. eRoots/thesis/code/GridCal/src')
-import GridCalEngine.api as gce
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+sys.path.append('C:/Users/raiya/Documents/8. eRoots/thesis/code/VeraGrid/src')
+import VeraGridEngine.api as gce
+from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from generalised_power_flow import (run_nonlinear_opf,
                                     ac_optimal_power_flow)
-from GridCalEngine.enumerations import TransformerControlType, AcOpfMode
+from VeraGridEngine.enumerations import TransformerControlType, AcOpfMode
 
 
 def example_3bus_acopf():
@@ -643,7 +643,7 @@ def caseREE():
 
 
 import os
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 
 def read_processed_files(log_file_path):

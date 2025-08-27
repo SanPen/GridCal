@@ -8,20 +8,20 @@ import hyperopt
 import functools
 
 from typing import List, Dict, Union
-from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from VeraGridEngine.Simulations.driver_template import DriverTemplate
+from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 from trunk.investments.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Devices.Aggregation.investment import Investment
-from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Devices.Aggregation.investment import Investment
+from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
+from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from trunk.investments.InvestmentsEvaluation.MVRSM import MVRSM_normalization_minimize
 from trunk.MVRSM.MVRSM_mo import MVRSM_multi_minimize
-from GridCalEngine.Simulations.InvestmentsEvaluation.Methods.stop_crits import StochStopCriterion
-from GridCalEngine.basic_structures import IntVec
-from GridCalEngine.enumerations import InvestmentEvaluationMethod, SimulationTypes
-from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
+from VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.stop_crits import StochStopCriterion
+from VeraGridEngine.basic_structures import IntVec
+from VeraGridEngine.enumerations import InvestmentEvaluationMethod, SimulationTypes
+from VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
 
 
 class InvestmentsEvaluationDriver(DriverTemplate):

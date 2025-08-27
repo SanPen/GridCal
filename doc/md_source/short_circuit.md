@@ -166,8 +166,8 @@ $$
 </div>
 
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
+import VeraGridEngine.api as gce
+from VeraGridEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
 
 sc_options = gce.ShortCircuitOptions(bus_index=4,
                                      fault_type=FaultType.LG,
@@ -197,8 +197,8 @@ $$
 </div>
 
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
+import VeraGridEngine.api as gce
+from VeraGridEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
 
 sc_options = gce.ShortCircuitOptions(bus_index=4,
                                      fault_type=FaultType.LL,
@@ -229,8 +229,8 @@ $$
 </div>
 
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
+import VeraGridEngine.api as gce
+from VeraGridEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
 
 sc_options = gce.ShortCircuitOptions(bus_index=4,
                                      fault_type=FaultType.LLG,
@@ -260,8 +260,8 @@ $$
 </div>
 
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
+import VeraGridEngine.api as gce
+from VeraGridEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
 
 sc_options = gce.ShortCircuitOptions(bus_index=4,
                                      fault_type=FaultType.LLL,
@@ -292,8 +292,8 @@ $$
 </div>
 
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
+import VeraGridEngine.api as gce
+from VeraGridEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
 
 sc_options = gce.ShortCircuitOptions(bus_index=4,
                                      fault_type=FaultType.ph3,
@@ -319,10 +319,10 @@ The sequence impedance values for the generator are $Z_1 = 0.004 + 0.5j$ p.u. fo
 $Z_2 = 0.02 + 0.5j$ p.u. for the negative sequence, and $Z_0 = 0.01 + 0.08j$ p.u. for the zero sequence.
 
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import WindingType, ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import WindingType, ShuntConnectionType
 import numpy as np
-from GridCalEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
+from VeraGridEngine.enumerations import FaultType, MethodShortCircuit, PhasesShortCircuit
 
 logger = gce.Logger()
 
@@ -749,7 +749,7 @@ Computer Analysis of Power Systems by J. Arrillaga and C.P. Arnold.
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
@@ -770,7 +770,7 @@ A more elaborated way to run the simulation, controlling all the steps:
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'South Island of New Zealand.gridcal')

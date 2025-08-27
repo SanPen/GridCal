@@ -1,5 +1,5 @@
-from GridCalEngine.api import *
-from GridCalEngine.Topology import substation_wizards
+from VeraGridEngine.api import *
+from VeraGridEngine.Topology import substation_wizards
 
 print('Creating grid...')
 

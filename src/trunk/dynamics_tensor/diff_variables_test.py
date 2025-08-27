@@ -16,15 +16,15 @@ import math
 import numpy as np
 from matplotlib import pyplot as plt
 
-# from GridCalEngine.Utils.Symbolic.events import Events, Event
-from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
-from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
-from GridCalEngine.Utils.Symbolic.block import Block
-from GridCalEngine.Utils.MultiLinear.multilinearize import *
-from GridCalEngine.Utils.MultiLinear.differential_var  import DiffVar, LagVar
-from GridCalEngine.Utils.MultiLinear.diff_blocksolver  import DiffBlock, DiffBlockSolver
-from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
-import GridCalEngine.api as gce
+# from VeraGridEngine.Utils.Symbolic.events import Events, Event
+from VeraGridEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
+from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Utils.MultiLinear.multilinearize import *
+from VeraGridEngine.Utils.MultiLinear.differential_var  import DiffVar, LagVar
+from VeraGridEngine.Utils.MultiLinear.diff_blocksolver  import DiffBlock, DiffBlockSolver
+from VeraGridEngine.Utils.Symbolic.block_solver import BlockSolver
+import VeraGridEngine.api as gce
 
 x = Var('x')
 y_var = Var('y')

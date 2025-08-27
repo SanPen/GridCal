@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
-from GridCalEngine.Utils.MIP.SimpleMip import LpModel, LpExp, LpCst, LpVar
+from VeraGridEngine.Utils.MIP.SimpleMip import LpModel, LpExp, LpCst, LpVar
 
 try:
     import highspy

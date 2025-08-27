@@ -1,5 +1,5 @@
 import os
-from GridCalEngine.api import *
+from VeraGridEngine.api import *
 
 fname = os.path.join('..', 'Grids_and_profiles', 'grids', 'Illinois 200 Bus.gridcal')
 

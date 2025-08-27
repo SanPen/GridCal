@@ -6,17 +6,17 @@ import numpy as np
 import timeit
 import pandas as pd
 from typing import Union
-from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from GridCalEngine.enumerations import AcOpfMode
-from GridCalEngine.Simulations.OPF.Formulations.ac_opf_problem import NonLinearOptimalPfProblem, NonlinearOPFResults
-from GridCalEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx import interior_point_solver, IpsSolution
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import remap_original_bus_indices
-from GridCalEngine.basic_structures import CxVec, IntVec, Logger
+from VeraGridEngine.Utils.NumericalMethods.ips import interior_point_solver
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
+from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from VeraGridEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
+from VeraGridEngine.enumerations import AcOpfMode
+from VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem import NonLinearOptimalPfProblem, NonlinearOPFResults
+from VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx import interior_point_solver, IpsSolution
+from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import remap_original_bus_indices
+from VeraGridEngine.basic_structures import CxVec, IntVec, Logger
 
 
 def run_nonlinear_opf(grid: MultiCircuit,

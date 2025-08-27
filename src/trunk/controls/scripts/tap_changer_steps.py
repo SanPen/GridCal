@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import GridCalEngine.api as gci
+import VeraGridEngine.api as gci
 
 # CGMES data 1
 low = -20

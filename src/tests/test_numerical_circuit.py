@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 import scipy.sparse as sp
-from GridCalEngine.api import *
+from VeraGridEngine.api import *
 
 
 def test_numerical_cicuit_generator_contingencies():

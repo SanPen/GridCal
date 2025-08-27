@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.linearized_power_flow import acdc_lin_pf
-import GridCalEngine.api as gce
+from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.linearized_power_flow import acdc_lin_pf
+import VeraGridEngine.api as gce
 
-# grid = gce.open_file("/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/4node_acdc.gridcal")
-grid = gce.open_file("/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/case5_3_he.gridcal")
+# grid = gce.open_file("/home/santi/Documentos/Git/GitHub/VeraGrid/Grids_and_profiles/grids/4node_acdc.gridcal")
+grid = gce.open_file("/home/santi/Documentos/Git/GitHub/VeraGrid/Grids_and_profiles/grids/case5_3_he.gridcal")
 
 nc = gce.compile_numerical_circuit_at(grid)
 

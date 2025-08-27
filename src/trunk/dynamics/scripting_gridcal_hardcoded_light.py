@@ -10,9 +10,9 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from GridCalEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
-from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
-import GridCalEngine.api as gce
+from VeraGridEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
+from VeraGridEngine.Utils.Symbolic.block_solver import BlockSolver
+import VeraGridEngine.api as gce
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Power flow

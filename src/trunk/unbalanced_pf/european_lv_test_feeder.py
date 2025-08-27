@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-import GridCalEngine.api as gce
-from GridCalEngine import WindingType
+import VeraGridEngine.api as gce
+from VeraGridEngine import WindingType
 
 logger = gce.Logger()
 

@@ -7,7 +7,7 @@ import sys
 import pytest
 # from pytestqt.qtbot import QtBot
 from PySide6.QtTest import QTest
-from GridCal.Gui.Main.GridCalMain import GridCalMainGUI, QApplication
+from VeraGrid.Gui.Main.VeraGridMain import VeraGridMainGUI, QApplication
 
 
 # @pytest.fixture

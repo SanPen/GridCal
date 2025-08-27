@@ -1,8 +1,8 @@
 import os
-import GridCalEngine.api as gce
-import GridCalEngine.Devices as dev
-import GridCal.templates as templs
-import GridCalEngine.Topology.topology as tp
+import VeraGridEngine.api as gce
+import VeraGridEngine.Devices as dev
+import VeraGrid.templates as templs
+import VeraGridEngine.Topology.topology as tp
 
 
 def open_dummy_grid():

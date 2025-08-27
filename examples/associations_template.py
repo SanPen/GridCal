@@ -1,5 +1,5 @@
 import os
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 import pandas as pd
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')

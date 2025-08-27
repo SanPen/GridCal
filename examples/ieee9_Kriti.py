@@ -1,9 +1,9 @@
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 import numpy as np
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
-from GridCalEngine.enumerations import TransformerControlType, AcOpfMode, ReactivePowerControlMode
+from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
+from VeraGridEngine.enumerations import TransformerControlType, AcOpfMode, ReactivePowerControlMode
 
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
+from VeraGridEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 """
 from GridCalEngine.basic_structures import Vec
 import GridCalEngine.Utils.NumericalMethods.autodiff as ad

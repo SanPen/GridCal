@@ -1,6 +1,6 @@
-PWD c:\Users\J\Desktop\GridCal\src\trunk\unbalanced_pf\docs
+PWD c:\Users\J\Desktop\VeraGrid\src\trunk\unbalanced_pf\docs
 INPUT C:\Users\J\AppData\Local\MiKTeX\miktex\data\le\xetex\xelatex.fmt
-INPUT c:\Users\J\Desktop\GridCal\src\trunk\unbalanced_pf\docs\unbalanced_pf.tex
+INPUT c:\Users\J\Desktop\VeraGrid\src\trunk\unbalanced_pf\docs\unbalanced_pf.tex
 OUTPUT unbalanced_pf.log
 INPUT C:\Users\J\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls
 INPUT C:\Users\J\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls

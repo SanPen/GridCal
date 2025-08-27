@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 from typing import Dict, List
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 
 def test_load_and_run_pf() -> None:

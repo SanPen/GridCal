@@ -1,7 +1,7 @@
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids/IEEE39_trafo.gridcal'
-fname = '/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids/IEEE39_1W.gridcal'
+# fname = '/home/santi/Documentos/Git/GitHub/VeraGrid/src/tests/data/grids/IEEE39_trafo.gridcal'
+fname = '/home/santi/Documentos/Git/GitHub/VeraGrid/src/tests/data/grids/IEEE39_1W.gridcal'
 grid_ = gce.open_file(fname)
 
 iterable = gce.AiIterable(grid=grid_, forced_mttf=10.0, forced_mttr=1.0)

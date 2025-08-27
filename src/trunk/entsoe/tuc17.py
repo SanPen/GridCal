@@ -5,7 +5,7 @@
 import os
 import numpy as np
 import pandas as pd
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 pd.set_option('display.max_colwidth', None)
 
@@ -93,7 +93,7 @@ def tuc_17() -> None:
           "Vm ok:", np.allclose(df3['Vm'].values, df_v.values[:, 0]))
     print(pf_res3.get_bus_df())
 
-    print("\nDifference raw to GridCal CGMES")
+    print("\nDifference raw to VeraGrid CGMES")
     print(diff12)
     print("max err:", np.max(np.abs(diff12.values)))
 

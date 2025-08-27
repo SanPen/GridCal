@@ -26,8 +26,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from enum import Enum
 from mpl_toolkits.mplot3d import Axes3D
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowResults, PowerFlowOptions
-from GridCalEngine.enumerations import SolverType
+from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowResults, PowerFlowOptions
+from VeraGridEngine.enumerations import SolverType
 
 from itertools import product
 from scipy.optimize import minimize, Bounds

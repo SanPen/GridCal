@@ -1,11 +1,11 @@
 import os
 from typing import Tuple
-from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
-import GridCalEngine.api as gce
+from VeraGridEngine.basic_structures import Logger
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from VeraGridEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
+from VeraGridEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
+import VeraGridEngine.api as gce
 import numpy as np
 
 

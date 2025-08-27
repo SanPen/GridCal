@@ -6,13 +6,13 @@
 
 import numpy as np
 
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Devices import Bus
-from GridCalEngine.Devices import Generator
-from GridCalEngine.Devices import Load
-from GridCalEngine.Devices import Line
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Devices import Bus
+from VeraGridEngine.Devices import Generator
+from VeraGridEngine.Devices import Load
+from VeraGridEngine.Devices import Line
+from VeraGridEngine.Simulations.PowerFlow.power_flow_options import SolverType
+from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
 
 
 def test_demo_5_node():

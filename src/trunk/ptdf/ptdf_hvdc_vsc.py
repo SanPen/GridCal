@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 fname = os.path.join('..', '..', '..', 'Grids_and_profiles',  'grids', 'KULeuven_5node_hvdc.gridcal')
 grid = gce.FileOpen(fname).open()

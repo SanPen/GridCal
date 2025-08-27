@@ -5,10 +5,10 @@
 import os
 import numpy as np
 import pandas as pd
-import GridCalEngine.api as gce
-from GridCalEngine import LinearAnalysis
-from GridCalEngine.Simulations.ContingencyAnalysis.contingency_plan import add_n1_contingencies
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
+import VeraGridEngine.api as gce
+from VeraGridEngine import LinearAnalysis
+from VeraGridEngine.Simulations.ContingencyAnalysis.contingency_plan import add_n1_contingencies
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 
 
 def test_ptdf():
@@ -76,7 +76,7 @@ def test_ptdf():
 
 def test_ptdf_ieee14_definition():
     """
-    Compare the PSSE LODF and the GridCal LODF for the IEEE14
+    Compare the PSSE LODF and the VeraGrid LODF for the IEEE14
     """
     for fname in [
         os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
@@ -117,7 +117,7 @@ def test_ptdf_ieee14_definition():
 
 def test_lodf_ieee14_definition() -> None:
     """
-    Compare the PSSE LODF and the GridCal LODF for the IEEE14
+    Compare the PSSE LODF and the VeraGrid LODF for the IEEE14
     """
 
     for fname, antenna_branch_idx in [
@@ -167,7 +167,7 @@ def test_lodf_ieee14_definition() -> None:
 
 def test_lodf_ieee14_psse() -> None:
     """
-    Compare the PSSE LODF and the GridCal LODF for the IEEE14
+    Compare the PSSE LODF and the VeraGrid LODF for the IEEE14
     """
     fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
     main_circuit = gce.FileOpen(fname).open()
@@ -187,7 +187,7 @@ def test_lodf_ieee14_psse() -> None:
     lodf_df = pd.read_excel(os.path.join('data', 'results', 'IEEE14_lodf_psse.xlsx'),
                             sheet_name='lodf_psse', index_col=0)
 
-    # re-order the PSSe LODF to be ordered as the GridCal LODF
+    # re-order the PSSe LODF to be ordered as the VeraGrid LODF
     psse_names_dict = {name: i for i, name in enumerate(lodf_df.index.values)}
     gridcal_names = [br.code for br in main_circuit.get_branches()]
     lodf = np.zeros(lodf_df.shape)
@@ -207,7 +207,7 @@ def test_lodf_ieee14_psse() -> None:
 
     # IEEE14 does have tap modules != 1
     # since gridcal computes b = 1/ (x * m) and PSSe computes b = 1/x, this test will fail
-    # but because GridCal approximation is slightly better than PSSe's
+    # but because VeraGrid approximation is slightly better than PSSe's
     # assert np.allclose(lodf, simulation.results.LODF, atol=1e-5)
 
 
@@ -235,7 +235,7 @@ def test_dcpowerflow():
 
 def test_ptdf_psse() -> None:
     """
-    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+    Compare the PSSE PTDF and the VeraGrid PTDF for IEEE14, IEEE30, IEEE118 and REE networks
     """
     for fname, pssename, name in [
         # (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
@@ -264,7 +264,7 @@ def test_ptdf_psse() -> None:
             nodes = main_circuit.get_buses()
             nodes_id = [x.code for x in nodes]
 
-            # Calculate GridCal PTDF
+            # Calculate VeraGrid PTDF
             linear_analysis_opt = gce.LinearAnalysisOptions(distribute_slack=False, correct_values=False)
             linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
             linear_analysis.run()
@@ -313,7 +313,7 @@ def test_ptdf_psse() -> None:
 
 def test_lodf_psse() -> None:
     """
-    Compare the PSSE LODF and the GridCal LODF for IEEE14, IEEE30, IEEE118 and REE networks
+    Compare the PSSE LODF and the VeraGrid LODF for IEEE14, IEEE30, IEEE118 and REE networks
     """
     for fname, pssename, name in [
         (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
@@ -339,7 +339,7 @@ def test_lodf_psse() -> None:
             branches = main_circuit.get_branches()
             branches_id = [x.code for x in branches]
 
-            # Calculate GridCal LODF
+            # Calculate VeraGrid LODF
             linear_analysis_opt = gce.LinearAnalysisOptions(distribute_slack=False, correct_values=False)
             linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
             linear_analysis.run()
@@ -519,7 +519,7 @@ def test_mlodf_sanpen():
 
 def test_ptdf_generation_contingencies():
     """
-    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+    Compare the PSSE PTDF and the VeraGrid PTDF for IEEE14, IEEE30, IEEE118 and REE networks
     In this test we check a number of grids where only generation variations
     have been introduced via generation contingencies
 
@@ -578,7 +578,7 @@ def test_ptdf_generation_contingencies():
 
 def test_lodf_single_contingencies():
     """
-    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+    Compare the PSSE PTDF and the VeraGrid PTDF for IEEE14, IEEE30, IEEE118 and REE networks
     In this test we check the single contingencies against the power flow driver
 
     The test consists in performing the contingencies with a Power flow driver (with linear power flow)

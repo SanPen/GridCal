@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
-from GridCalEngine.Utils.NumericalMethods.common import find_closest_number
+from VeraGridEngine.Utils.NumericalMethods.common import find_closest_number
 
 
 def test_find_closest_number():

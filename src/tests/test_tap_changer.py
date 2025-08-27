@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import pandas as pd
-from GridCalEngine.Devices.Branches.tap_changer import TapChanger, TapChangerTypes
+from VeraGridEngine.Devices.Branches.tap_changer import TapChanger, TapChangerTypes
 
 
 def test_tap_changer1():

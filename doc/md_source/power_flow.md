@@ -85,7 +85,7 @@ Using the simplified API:
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE39_1W.gridcal')
@@ -103,7 +103,7 @@ Using the more complex library objects:
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE14_from_raw.gridcal')
@@ -275,7 +275,7 @@ Cool right? This is the code to reproduce the results:
 import os
 import pandas as pd
 import multiprocessing as mp
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = "[some path...]/matpower8.0b1/data"
 
@@ -343,7 +343,6 @@ for root, dirs, files in os.walk(folder):
         if file.endswith(".m"):
             path = os.path.join(root, file)
             files_list.append(path)
-
 
 with mp.Pool(mp.cpu_count()) as p:
     data = p.map(run_grid, files_list)
@@ -557,8 +556,8 @@ The following code can be used to model the IEEE 13 Node Test Feeder in GridCal 
 unbalanced power flow, obtaining the voltage results depicted bellow.
 
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import WindingType, ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import WindingType, ShuntConnectionType
 import numpy as np
 
 logger = gce.Logger()
@@ -572,37 +571,37 @@ grid.fBase = 60
 bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=0)
 bus_632.is_slack = True
 grid.add_bus(obj=bus_632)
-gen = gce.Generator(vset = 1.0)
-grid.add_generator(bus = bus_632, api_obj = gen)
+gen = gce.Generator(vset=1.0)
+grid.add_generator(bus=bus_632, api_obj=gen)
 
-bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
+bus_633 = gce.Bus(name='633', Vnom=4.16, xpos=100 * 5, ypos=0)
 grid.add_bus(obj=bus_633)
 
-bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0)
+bus_634 = gce.Bus(name='634', Vnom=0.48, xpos=200 * 5, ypos=0)
 grid.add_bus(obj=bus_634)
 
-bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100*5, ypos=0)
+bus_645 = gce.Bus(name='645', Vnom=4.16, xpos=-100 * 5, ypos=0)
 grid.add_bus(obj=bus_645)
 
-bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-200*5, ypos=0)
+bus_646 = gce.Bus(name='646', Vnom=4.16, xpos=-200 * 5, ypos=0)
 grid.add_bus(obj=bus_646)
 
-bus_652 = gce.Bus(name='652', Vnom=4.16, xpos=-100*5, ypos=200*5)
+bus_652 = gce.Bus(name='652', Vnom=4.16, xpos=-100 * 5, ypos=200 * 5)
 grid.add_bus(obj=bus_652)
 
-bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100*5)
+bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100 * 5)
 grid.add_bus(obj=bus_671)
 
-bus_675 = gce.Bus(name='675', Vnom=4.16, xpos=200*5, ypos=100*5)
+bus_675 = gce.Bus(name='675', Vnom=4.16, xpos=200 * 5, ypos=100 * 5)
 grid.add_bus(obj=bus_675)
 
-bus_611 = gce.Bus(name='611', Vnom=4.16, xpos=-200*5, ypos=100*5)
+bus_611 = gce.Bus(name='611', Vnom=4.16, xpos=-200 * 5, ypos=100 * 5)
 grid.add_bus(obj=bus_611)
 
-bus_680 = gce.Bus(name='680', Vnom=4.16, xpos=0, ypos=200*5)
+bus_680 = gce.Bus(name='680', Vnom=4.16, xpos=0, ypos=200 * 5)
 grid.add_bus(obj=bus_680)
 
-bus_684 = gce.Bus(name='684', Vnom=4.16, xpos=-100*5, ypos=100*5)
+bus_684 = gce.Bus(name='684', Vnom=4.16, xpos=-100 * 5, ypos=100 * 5)
 grid.add_bus(obj=bus_684)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -651,37 +650,37 @@ y_601 = np.array([
     [1j * 6.2998, 1j * -1.9958, 1j * -1.2595],
     [1j * -1.9958, 1j * 5.9597, 1j * -0.7417],
     [1j * -1.2595, 1j * -0.7417, 1j * 5.6386]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 y_602 = np.array([
     [1j * 5.6990, 1j * -1.0817, 1j * -1.6905],
     [1j * -1.0817, 1j * 5.1795, 1j * -0.6588],
     [1j * -1.6905, 1j * -0.6588, 1j * 5.4246]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 y_603 = np.array([
     [1j * 4.7097, 1j * -0.8999],
     [1j * -0.8999, 1j * 4.6658]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 y_604 = np.array([
     [1j * 4.6658, 1j * -0.8999],
     [1j * -0.8999, 1j * 4.7097]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 y_605 = np.array([
     [1j * 4.5193]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 y_606 = np.array([
     [1j * 96.8897, 1j * 0.0000, 1j * 0.0000],
     [1j * 0.0000, 1j * 96.8897, 1j * 0.0000],
     [1j * 0.0000, 1j * 0.0000, 1j * 96.8897]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 y_607 = np.array([
     [1j * 88.9912]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Loads
@@ -749,21 +748,21 @@ load_611 = gce.Load(Ir1=0.0,
 load_611.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_611, api_obj=load_611)
 
-load_632_distrib = gce.Load(P1=0.017/2,
-                            Q1=0.010/2,
-                            P2=0.066/2,
-                            Q2=0.038/2,
-                            P3=0.117/2,
-                            Q3=0.068/2)
+load_632_distrib = gce.Load(P1=0.017 / 2,
+                            Q1=0.010 / 2,
+                            P2=0.066 / 2,
+                            Q2=0.038 / 2,
+                            P3=0.117 / 2,
+                            Q3=0.068 / 2)
 load_632_distrib.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_632, api_obj=load_632_distrib)
 
-load_671_distrib = gce.Load(P1=0.017/2,
-                            Q1=0.010/2,
-                            P2=0.066/2,
-                            Q2=0.038/2,
-                            P3=0.117/2,
-                            Q3=0.068/2)
+load_671_distrib = gce.Load(P1=0.017 / 2,
+                            Q1=0.010 / 2,
+                            P2=0.066 / 2,
+                            Q2=0.038 / 2,
+                            P3=0.117 / 2,
+                            Q3=0.068 / 2)
 load_671_distrib.conn = ShuntConnectionType.GroundedStar
 grid.add_load(bus=bus_671, api_obj=load_671_distrib)
 
@@ -884,45 +883,45 @@ XFM_1 = gce.Transformer2W(name='XFM-1',
                           LV=0.48,
                           nominal_power=0.5,
                           rate=0.5,
-                          r=1.1*2,
-                          x=2*2)
+                          r=1.1 * 2,
+                          x=2 * 2)
 XFM_1.conn_f = WindingType.GroundedStar
 XFM_1.conn_t = WindingType.GroundedStar
 grid.add_transformer2w(XFM_1)
 
 line_632_671 = gce.Line(bus_from=bus_632,
                         bus_to=bus_671,
-                        length= 2000 * 0.0003048)
+                        length=2000 * 0.0003048)
 line_632_671.apply_template(config_601, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_632_671)
 
 line_671_684 = gce.Line(bus_from=bus_671,
                         bus_to=bus_684,
-                        length= 300 * 0.0003048)
+                        length=300 * 0.0003048)
 line_671_684.apply_template(config_604, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_671_684)
 
 line_684_611 = gce.Line(bus_from=bus_684,
                         bus_to=bus_611,
-                        length= 300 * 0.0003048)
+                        length=300 * 0.0003048)
 line_684_611.apply_template(config_605, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_684_611)
 
 line_684_652 = gce.Line(bus_from=bus_684,
                         bus_to=bus_652,
-                        length= 800 * 0.0003048)
+                        length=800 * 0.0003048)
 line_684_652.apply_template(config_607, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_684_652)
 
 line_671_680 = gce.Line(bus_from=bus_671,
                         bus_to=bus_680,
-                        length= 1000 * 0.0003048)
+                        length=1000 * 0.0003048)
 line_671_680.apply_template(config_601, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_671_680)
 
 line_671_675 = gce.Line(bus_from=bus_671,
                         bus_to=bus_675,
-                        length= 500 * 0.0003048)
+                        length=500 * 0.0003048)
 line_671_675.apply_template(config_606, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_671_675)
 

@@ -5,9 +5,9 @@
 
 import os
 
-from GridCalEngine.api import *
-from GridCalEngine.IO.file_handler import FileOpen
-from GridCalEngine.enumerations import FaultType
+from VeraGridEngine.api import *
+from VeraGridEngine.IO.file_handler import FileOpen
+from VeraGridEngine.enumerations import FaultType
 
 
 def test_unbalanced_short_circuit():

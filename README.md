@@ -1,41 +1,41 @@
-# GridCal
+# VeraGrid
 
-GridCal is a top tier power systems planning and simulation software.
+VeraGrid is a top tier power systems planning and simulation software.
 As such it has all the static analysis studies that you can think of, plus
 linear and non-linear optimization functions. Some of these functions are
 well known, while others you may have never heard of as they are a
 product of cutting-edge research.
 
-[![GridCal](pics/GridCal_yt.png)](https://www.youtube.com/watch?v=O-tb_um8YtU)
+[![VeraGrid](pics/VeraGrid_yt.png)](https://www.youtube.com/watch?v=O-tb_um8YtU)
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/75e794c9bcfd49bda1721b9ba8f6c790)](https://app.codacy.com/app/SanPen/GridCal?utm_source=github.com&utm_medium=referral&utm_content=SanPen/GridCal&utm_campaign=Badge_Grade_Dashboard)
-[![Documentation Status](https://readthedocs.org/projects/gridcal/badge/?version=latest)](https://gridcal.readthedocs.io/en/latest/?badge=latest) [![Build Status](https://travis-ci.org/SanPen/GridCal.svg?branch=master)](https://travis-ci.org/SanPen/GridCal)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/75e794c9bcfd49bda1721b9ba8f6c790)](https://app.codacy.com/app/SanPen/VeraGrid?utm_source=github.com&utm_medium=referral&utm_content=SanPen/VeraGrid&utm_campaign=Badge_Grade_Dashboard)
+[![Documentation Status](https://readthedocs.org/projects/veragrid/badge/?version=latest)](https://veragrid.readthedocs.io/en/latest/?badge=latest) [![Build Status](https://travis-ci.org/SanPen/VeraGrid.svg?branch=master)](https://travis-ci.org/SanPen/VeraGrid)
 [![DOI](https://www.zenodo.org/badge/49583206.svg)](https://www.zenodo.org/badge/latestdoi/49583206)
-[![Downloads](https://static.pepy.tech/personalized-badge/gridcal?period=total&units=abbreviation&left_color=grey&right_color=green&left_text=Downloads)](https://pepy.tech/project/gridcal)
+[![Downloads](https://static.pepy.tech/personalized-badge/veragrid?period=total&units=abbreviation&left_color=grey&right_color=green&left_text=Downloads)](https://pepy.tech/project/veragrid)
 [![Discord](https://img.shields.io/badge/Discord-%235865F2.svg)](https://discord.gg/sVnwkaxN)
 
-GridCal started in 2015 with a clear objective: create a solid programming library and a user-friendly interface.
+VeraGrid started in 2015 with a clear objective: create a solid programming library and a user-friendly interface.
 This straightforward approach sparked many innovations — some driven by the necessity
 for commercial use, and others fueled by curiosity and research.
 
 Whether you're a pro needing free tools, a researcher wanting a real-world tested platform,
 a teacher sharing commercial-grade software insights, or a student diving into practical algorithms,
-GridCal's got your back. It's a high quality product made for all of us now and
+VeraGrid's got your back. It's a high quality product made for all of us now and
 for the future generations.
 
 ## Installation
 
-GridCal is a software made in the Python programming language.
+VeraGrid is a software made in the Python programming language.
 Therefore, it needs a Python interpreter installed in your operative system.
 
-The GridCal project is divided in three packages:
+The VeraGrid project is divided in three packages:
 
-- GridCalEngine: A package with the database and calculations logic.
-- GridCalServer: A package that serves an API-rest to use GridCalEngine remotely.
-- GridCal: A package that contains the Graphical User Interface (GUI) and operates with `GridCalEngine` and
-  `GridCalServer` seamlessly.
+- VeraGridEngine: A package with the database and calculations logic.
+- VeraGridServer: A package that serves an API-rest to use VeraGridEngine remotely.
+- VeraGrid: A package that contains the Graphical User Interface (GUI) and operates with `VeraGridEngine` and
+  `VeraGridServer` seamlessly.
 
-To install everything, you only need to install the GridCal package and the others will be installed as dependencies.
+To install everything, you only need to install the VeraGrid package and the others will be installed as dependencies.
 
 <img height="200" src="doc/rst_source/figures/Packages.png"/>
 
@@ -45,17 +45,17 @@ If you don't know what is this Python thing, we offer a windows installation:
 
 [Windows setup](https://www.eroots.tech/software)
 
-This will install GridCal as a normal windows program, and you don't need to worry
+This will install VeraGrid as a normal windows program, and you don't need to worry
 about any of the previous instructions. Still, if you need some guidance, the
 following video might be of assistance: [Setup tutorial (video)](https://youtu.be/SY66WgLGo54).
 
 ### Package installation
 
 We recommend to install the latest version of [Python](www.python.org) and then,
-install GridCal with the following terminal command:
+install VeraGrid with the following terminal command:
 
 ```
-pip install GridCal
+pip install VeraGrid
 ```
 
 You may need to use `pip3` if you are under Linux or MacOS, both of which
@@ -66,44 +66,44 @@ come with Python pre-installed already.
 ```bash
 python3 -m venv gc5venv
 source gc5venv/bin/activate
-pip install GridCal
-gridcal
+pip install VeraGrid
+veragrid
 ```
 
 ### Run the graphical user interface
 
-Once you install GridCal in your local Python distribution, you can run the
+Once you install VeraGrid in your local Python distribution, you can run the
 graphical user interface with the following terminal command:
 
 ```
-gridcal
+veragrid
 ```
 
 If this doesn't work, try:
 
 ```
-python -c "from GridCal.ExecuteGridCal import runGridCal; runGridCal()"
+python -c "from VeraGrid.ExecuteVeraGrid import runVeraGrid; runVeraGrid()"
 ```
 
 You may save this command in a shortcut for easy future access.
 
 ### Install only the engine
 
-Some of you may only need GridCal as a library for some other purpose
+Some of you may only need VeraGrid as a library for some other purpose
 like batch calculations, AI training or simple scripting. Whatever it may be,
-you can get the GridCal engine with the following terminal command:
+you can get the VeraGrid engine with the following terminal command:
 
 ```
-pip install GridCalEngine
+pip install VeraGridEngine
 ```
 
-This will install the `GridCalEngine` package that is a dependency of `GridCal`.
+This will install the `VeraGridEngine` package that is a dependency of `VeraGrid`.
 
 Again, you may need to use `pip3` if you are under Linux or MacOS.
 
 ## Features
 
-GridCal is packed with features:
+VeraGrid is packed with features:
 
 - Large collection of devices to model electricity grids
 - AC/DC multi-grid power flow
@@ -125,7 +125,7 @@ GridCal is packed with features:
 - Inputs analysis
 - Model bug report and repair
 - Import many formats (PSSe .raw/rawx, epc, dgs, matpower, pypsa, json, cim, cgmes)
-- Export in many formats (gridcal .xlsx/.gridcal/.json, cgmes, psse .raw/.rawx)
+- Export in many formats (veragrid .xlsx/.veragrid/.json, cgmes, psse .raw/.rawx)
 
 All of these are industry tested algorithms, some of which surpass most commercially available software.
 The aim is to be a drop-in replacement for the expensive and less usable commercial
@@ -136,35 +136,35 @@ software, so that you can work, research and learn with it.
 In an effort to ease the simulation and construction of grids,
 We have included extra materials to work with. These are included in the standalone setups.
 
-- [Load profiles](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles/equipment) for your projects.
-- [Grids](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles/grids) from IEEE and other open projects.
-- [Equipment catalogue](https://gridcal.readthedocs.io/en/latest/data_sheets.html) (Wires, Cables and Transformers)
-  ready to use in GridCal.
+- [Load profiles](https://github.com/SanPen/VeraGrid/tree/master/Grids_and_profiles/equipment) for your projects.
+- [Grids](https://github.com/SanPen/VeraGrid/tree/master/Grids_and_profiles/grids) from IEEE and other open projects.
+- [Equipment catalogue](https://veragrid.readthedocs.io/en/latest/data_sheets.html) (Wires, Cables and Transformers)
+  ready to use in VeraGrid.
 
 ## Tutorials and examples
 
-- [Getting started](https://gridcal.readthedocs.io/en/latest/rst_source/getting_started/index.html)
+- [Getting started](https://veragrid.readthedocs.io/en/latest/rst_source/getting_started/index.html)
 
 - [Cloning the repository (video)](https://youtu.be/59W_rqimB6w)
 
 - [Making a grid with profiles (video)](https://youtu.be/H2d_2bMsIS0)
 
-- [GridCal PlayGround repository](https://github.com/yasirroni/GridCalPlayground) with some notebooks and examples.
+- [VeraGrid PlayGround repository](https://github.com/yasirroni/VeraGridPlayground) with some notebooks and examples.
 
-- [The tests](https://github.com/SanPen/GridCal/tree/master/src/tests) may serve as a valuable source of examples.
+- [The tests](https://github.com/SanPen/VeraGrid/tree/master/src/tests) may serve as a valuable source of examples.
 
 
 ## Matpower grids
 
 Matpower's excellent formulations and consistency has allowed this and other 
-projects to develop, relying on its sound math. That is why GridCal reads Matpower 
+projects to develop, relying on its sound math. That is why VeraGrid reads Matpower 
 cases out of the box, without you having to do anything special. 
-And of course, GridCal solves all Matpower 8 provided grids, solving the continental USA case in about 1 second:
+And of course, VeraGrid solves all Matpower 8 provided grids, solving the continental USA case in about 1 second:
 
 
-[![GridCal](Grids_and_profiles/matpower_benchmark/n_buses_vs_time.png)](https://www.youtube.com/watch?v=O-tb_um8YtU)
+[![VeraGrid](Grids_and_profiles/matpower_benchmark/n_buses_vs_time.png)](https://www.youtube.com/watch?v=O-tb_um8YtU)
 
-Find the results at the [benchmarks page](https://gridcal.readthedocs.io/en/latest/rst_source/development/benchmarks.html) 
+Find the results at the [benchmarks page](https://veragrid.readthedocs.io/en/latest/rst_source/development/benchmarks.html) 
 for more details.
 
 _Results simulated with AMD 9750x and 64 GB of RAM under Ubuntu 24.04.
@@ -176,17 +176,17 @@ Cool right?
 
 ## API
 
-Since day one, GridCal was meant to be used as a library as much as it was meant
+Since day one, VeraGrid was meant to be used as a library as much as it was meant
 to be used from the user interface. Following, we include some usage examples, but
-feel free to check the [documentation](https://gridcal.readthedocs.io) out where you will find a complete
+feel free to check the [documentation](https://veragrid.readthedocs.io) out where you will find a complete
 description of the theory, the models and the objects.
 
 ### Understanding the program structure
 
-GridCal structure is composed by objects arranged in a "database" and  by "structs" at a deeper level.
-Learn [here](https://gridcal.readthedocs.io/en/latest/rst_source/development/structure.html) why.
+VeraGrid structure is composed by objects arranged in a "database" and  by "structs" at a deeper level.
+Learn [here](https://veragrid.readthedocs.io/en/latest/rst_source/development/structure.html) why.
 
-All simulations in GridCal are handled by the simulation drivers. The structure is as follows:
+All simulations in VeraGrid are handled by the simulation drivers. The structure is as follows:
 
 <img height="250" src="doc/rst_source/figures/DataModelSimulation.png"/>
 
@@ -198,7 +198,7 @@ Although this may seem overly complicated, it has proven to be maintainable and 
 
 ### Snapshot vs. time series
 
-GridCal has dual structure to handle legacy cases (snapshot), as well as cases with many variations (time series)
+VeraGrid has dual structure to handle legacy cases (snapshot), as well as cases with many variations (time series)
 
 - A **snapshot** is the grid for a particular moment in time.
   This includes the infrastructure plus the variable values of that infrastructure
@@ -207,7 +207,7 @@ GridCal has dual structure to handle legacy cases (snapshot), as well as cases w
 - The **time series** record the variations of the magnitudes that can vary. These are applied along with
   the infrastructure definition.
 
-In GridCal, the inputs do not get modified by the simulation results. This very important concept, helps
+In VeraGrid, the inputs do not get modified by the simulation results. This very important concept, helps
 to maintain the independence of the inputs and outputs, allowing the replicability of the results.
 This key feature is not true for other open-source of commercial programs.
 
@@ -219,7 +219,7 @@ For those simulations that require many time steps, a collection of `NumericalCi
 
 It may seem that this extra step is redundant. However, the compilation step is composed by mere copy operations,
 which are fast. This steps benefits greatly the efficiency of the numerical calculations since the arrays are
-aligned in memory. The GridCal data model is object-oriented, while the numerical circuit is array-oriented
+aligned in memory. The VeraGrid data model is object-oriented, while the numerical circuit is array-oriented
 (despite beign packed into objects)
 
 
@@ -227,16 +227,16 @@ aligned in memory. The GridCal data model is object-oriented, while the numerica
 ### Loading a grid
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
-# load a grid (.gridcal, .m (Matpower), .raw (PSS/e) .rawx (PSS/e), .epc (PSLF), .dgs (PowerFactory)
-my_grid = gce.open_file("my_file.gridcal")
+# load a grid (.veragrid, .m (Matpower), .raw (PSS/e) .rawx (PSS/e), .epc (PSLF), .dgs (PowerFactory)
+my_grid = gce.open_file("my_file.veragrid")
 ```
 
 In the case of CIM/CGMES, you may need to pass a list of files or a single zip file:
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 # load a grid from many xml files
 my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", ])
@@ -251,7 +251,7 @@ my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", "boundary.
 If you need to explore the CGMEs assets before conversion, you'll need to dive deeper in the API:
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 fname = "tests/data/grids/CGMES_2_4_15/IEEE 118 Bus v2.zip"
 
@@ -259,7 +259,7 @@ logger = gce.Logger()
 data_parser = gce.CgmesDataParser()
 data_parser.load_files(files=[fname])
 cgmes_circuit = gce.CgmesCircuit(cgmes_version=data_parser.cgmes_version,
-                             cgmes_map_areas_like_raw=False, logger=logger)
+                                 cgmes_map_areas_like_raw=False, logger=logger)
 cgmes_circuit.parse_files(data_parser=data_parser)
 
 # print all the ac line segment names
@@ -270,7 +270,7 @@ for ac_line_segment in cgmes_circuit.cgmes_assets.ACLineSegment_list:
 logger.print()
 ```
 
-GridCal supports many file formats:
+VeraGrid supports many file formats:
 
 - CIM 16 (.zip and .xml)
 - UCTE.
@@ -285,23 +285,23 @@ Similarly to CGMES you may be able to use the conversion objects to explore the 
 ### Save a grid
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 # load a grid
-my_grid = gce.open_file("my_file.gridcal")
+my_grid = gce.open_file("my_file.veragrid")
 
 # save
-gce.save_file(my_grid, "my_file_2.gridcal")
+gce.save_file(my_grid, "my_file_2.veragrid")
 ```
 
 In the case of saving a model in CGMES mode, we need to specify some extra parameters.
 To simplify we can use the API function `save_cgmes_file`:
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 # load a grid
-my_grid = gce.open_file("my_file.gridcal")
+my_grid = gce.open_file("my_file.veragrid")
 
 # run power flow (this is optional and it is used to generate the SV profile)
 pf_results = gce.power_flow(my_grid)
@@ -323,7 +323,7 @@ We are going to create a very simple 5-node grid from the excellent book
 #### Lynn 5 buses
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 # declare a circuit object
 grid = gce.MultiCircuit()
@@ -369,13 +369,13 @@ grid.add_line(gce.Line(bus4, bus5, name='line 4-5', r=0.04, x=0.09, b=0.02))
 
 #### IEEE9
 
-A more complex example comes from the issue [354](https://github.com/SanPen/GridCal/issues/354). 
+A more complex example comes from the issue [354](https://github.com/SanPen/VeraGrid/issues/354). 
 In this example we create the IEEE9 bus grid from line and transformer definition information 
 instead of per-unit values:
 
 ```python
 import numpy as np
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 # ieee9 grid
 grid9 = gce.MultiCircuit('IEEE-9', Sbase=100, fbase=50)
@@ -412,13 +412,16 @@ grid9.add_load(bus6, gce.Load(name='Load 2', P=90, Q=30))
 grid9.add_load(bus8, gce.Load(name='Load 3', P=100, Q=35))
 
 # add transformers
-tr1 = gce.Transformer2W(bus_from=bus4,bus_to= bus1, name='T1', HV=230, LV=16.5, nominal_power=247.5, rate=247.5, tap_phase=150*np.pi/180)
+tr1 = gce.Transformer2W(bus_from=bus4, bus_to=bus1, name='T1', HV=230, LV=16.5, nominal_power=247.5, rate=247.5,
+                        tap_phase=150 * np.pi / 180)
 tr1.fill_design_properties(Pcu=0.0, Pfe=0.0, I0=0.0, Vsc=14.3, Sbase=grid9.Sbase)
 
-tr2 = gce.Transformer2W(bus_from=bus7, bus_to=bus2, name='T2', HV=230, LV=18, nominal_power=192, rate=192, tap_phase=150*np.pi/180)
+tr2 = gce.Transformer2W(bus_from=bus7, bus_to=bus2, name='T2', HV=230, LV=18, nominal_power=192, rate=192,
+                        tap_phase=150 * np.pi / 180)
 tr2.fill_design_properties(Pcu=0.0, Pfe=0.0, I0=0.0, Vsc=12.0, Sbase=grid9.Sbase)
 
-tr3 = gce.Transformer2W(bus_from=bus9, bus_to=bus3, name='T3', HV=230, LV=13.8, nominal_power=128, rate=128, tap_phase=150*np.pi/180)
+tr3 = gce.Transformer2W(bus_from=bus9, bus_to=bus3, name='T3', HV=230, LV=13.8, nominal_power=128, rate=128,
+                        tap_phase=150 * np.pi / 180)
 tr3.fill_design_properties(Pcu=0.0, Pfe=0.0, I0=0.0, Vsc=7.5, Sbase=grid9.Sbase)
 
 grid9.add_transformer2w(tr1)  # 0.5236 => 30°#2.618
@@ -452,7 +455,7 @@ grid9.add_line(l5)
 grid9.add_line(l6)
 
 # save (optional)
-gce.save_file(grid9, "IEEE9.gridcal")
+gce.save_file(grid9, "IEEE9.veragrid")
 
 # Power flow
 options = gce.PowerFlowOptions(gce.SolverType.NR,
@@ -495,7 +498,7 @@ Exactly the same results as the example from the book of the issue.
 
 ### Power Flow
 
-GridCal has the most power flow features in any open-source software.
+VeraGrid has the most power flow features in any open-source software.
 The following table shows the features present in each solver:
 
 |                                                                     | Newton Raphson  |Powell Dog-leg|Levenberg-Marquardt|Iwamoto|Fast-decoupled|Gauss-seidel|Holomorphic embedding|Linear without voltage modules|Linear with voltage modules|
@@ -516,10 +519,10 @@ Using the simplified API:
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+fname = os.path.join(folder, 'IEEE39_1W.veragrid')
 main_circuit = gce.open_file(fname)
 
 results = gce.power_flow(main_circuit)
@@ -534,10 +537,10 @@ Using the more complex library objects:
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE14_from_raw.gridcal')
+fname = os.path.join(folder, 'IEEE14_from_raw.veragrid')
 main_circuit = gce.open_file(fname)
 
 options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
@@ -600,14 +603,14 @@ Branch results:
 
 ### Inputs analysis
 
-GridCal can perform a summary of the inputs with the `InputsAnalysisDriver`:
+VeraGrid can perform a summary of the inputs with the `InputsAnalysisDriver`:
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE 118 Bus - ntc_areas.gridcal')
+fname = os.path.join(folder, 'IEEE 118 Bus - ntc_areas.veragrid')
 
 main_circuit = gce.open_file(fname)
 
@@ -633,7 +636,7 @@ We can run an PTDF equivalent of the power flow with the linear analysis drivers
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
@@ -653,7 +656,7 @@ Simulating with a more detailed control of the objects:
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
@@ -717,12 +720,12 @@ Now let's make a comparison between the linear flows and the non-linear flows fr
 ```python
 import os
 from matplotlib import pyplot as plt
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 plt.style.use('fivethirtyeight')
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+fname = os.path.join(folder, 'IEEE39_1W.veragrid')
 main_circuit = gce.open_file(fname)
 
 ptdf_driver = gce.LinearAnalysisTimeSeriesDriver(grid=main_circuit)
@@ -764,10 +767,10 @@ plt.show()
 ```python
 import os
 import numpy as np
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+fname = os.path.join(folder, 'IEEE39_1W.veragrid')
 
 main_circuit = gce.open_file(fname)
 
@@ -800,15 +803,15 @@ print('Nodal prices \n', opf_ts_driver.results.bus_shadow_prices)
 #### Run a linear optimization and verify with power flow
 
 Often ties, you want to dispatch the generation using a linear optimization, to then _verify_ the
-results using the power exact power flow. With GridCal, to do so is as easy as passing the results of the OPF into the
+results using the power exact power flow. With VeraGrid, to do so is as easy as passing the results of the OPF into the
 PowerFlowDriver:
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+fname = os.path.join(folder, 'IEEE39_1W.veragrid')
 
 main_circuit = gce.open_file(fname)
 
@@ -930,10 +933,10 @@ electrical grid.
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'hydro_simple.gridcal')
+fname = os.path.join(folder, 'hydro_simple.veragrid')
 grid = gce.open_file(fname)
 
 # Run the simulation
@@ -996,16 +999,16 @@ time                | f1         | f2  | f3  | f4
 
 ### Short circuit
 
-GridCal has unbalanced short circuit calculations. Now let's run a line-ground short circuit in the third bus of
+VeraGrid has unbalanced short circuit calculations. Now let's run a line-ground short circuit in the third bus of
 the South island of New Zealand grid example from reference book
 _Computer Analysis of Power Systems by J. Arrillaga and C.P. Arnold_
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
+fname = os.path.join(folder, 'South Island of New Zealand.veragrid')
 
 grid = gce.open_file(filename=fname)
 
@@ -1023,10 +1026,10 @@ A more elaborated way to run the simulation, controlling all the steps:
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
+fname = os.path.join(folder, 'South Island of New Zealand.veragrid')
 
 grid = gce.open_file(filename=fname)
 
@@ -1058,25 +1061,25 @@ Sequence voltage, currents and powers are also available.
 
 ### Continuation power flow
 
-GridCal can run continuation power flows (voltage collapse studies) 
+VeraGrid can run continuation power flows (voltage collapse studies)
 
 ```python
 import os
 from matplotlib import pyplot as plt
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 plt.style.use('fivethirtyeight')
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
+fname = os.path.join(folder, 'South Island of New Zealand.veragrid')
 
 # open the grid file
 main_circuit = gce.open_file(fname)
 
 # Run the continuation power flow with the default options
 # Since we do not provide any power flow results, it will run one for us
-results = gce.continuation_power_flow(grid=main_circuit, 
-                                      factor=2.0, 
+results = gce.continuation_power_flow(grid=main_circuit,
+                                      factor=2.0,
                                       stop_at=gce.CpfStopAt.Full)
 
 # plot the results
@@ -1100,12 +1103,12 @@ A more elaborated way to run the simulation, controlling all the steps:
 ```python
 import os
 from matplotlib import pyplot as plt
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 plt.style.use('fivethirtyeight')
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
+fname = os.path.join(folder, 'South Island of New Zealand.veragrid')
 
 # open the grid file
 main_circuit = gce.FileOpen(fname).open()
@@ -1167,7 +1170,7 @@ The simulation then tries all the contingency groups and apply the events regist
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
@@ -1178,13 +1181,13 @@ branches = main_circuit.get_branches()
 
 # manually generate the contingencies
 for i, br in enumerate(branches):
-  # add a contingency group
-  group = gce.ContingencyGroup(name="contingency {}".format(i + 1))
-  main_circuit.add_contingency_group(group)
+    # add a contingency group
+    group = gce.ContingencyGroup(name="contingency {}".format(i + 1))
+    main_circuit.add_contingency_group(group)
 
-  # add the branch contingency to the groups, only groups are failed at once
-  con = gce.Contingency(device=br, name=br.name, group=group)
-  main_circuit.add_contingency(con)
+    # add the branch contingency to the groups, only groups are failed at once
+    con = gce.Contingency(device=br, name=br.name, group=group)
+    main_circuit.add_contingency(con)
 
 # add a special contingency
 group = gce.ContingencyGroup(name="Special contingency")
@@ -1243,10 +1246,10 @@ To perform the contingency analysis of a time series, it's easier to directly us
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+fname = os.path.join(folder, 'IEEE39_1W.veragrid')
 main_circuit = gce.open_file(fname)
 
 results = gce.contingencies_ts(circuit=main_circuit,
@@ -1266,7 +1269,7 @@ Now lets program the example from the state estimation reference book
 _State Estimation in Electric Power Systems by A. Monticelli_.
 
 ```python
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 m_circuit = gce.MultiCircuit()
 
@@ -1327,9 +1330,9 @@ A simple function is available to export the results of a driver.
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
-fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
+fname = os.path.join("data", "grids", "IEEE39_1W.veragrid")
 grid = gce.open_file(fname)
 
 # create the driver
@@ -1349,9 +1352,9 @@ Also there is a function to save from the results objects themselves:
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
-fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
+fname = os.path.join("data", "grids", "IEEE39_1W.veragrid")
 grid = gce.open_file(fname)
 
 # run with the API shortcut functions
@@ -1364,9 +1367,9 @@ gce.export_results(results_list=[pf_results, pf_ts_results], file_name="IEEE39_1
 
 ### Client - Server operation
 
-To use the gridcal server, you need to install the `GridCalServer` python package. Once this is done,
-the `gridcalserver`command will be available on the system.
-To launch the server, simply type `gridcalserver`. This will launch a GridCal server on the machine,
+To use the veragrid server, you need to install the `VeraGridServer` python package. Once this is done,
+the `veragridserver`command will be available on the system.
+To launch the server, simply type `veragridserver`. This will launch a VeraGrid server on the machine,
 on port 8000. This is `https://localhost:8000`
 
 An example on how to send a grid from a script to the server:
@@ -1374,12 +1377,12 @@ An example on how to send a grid from a script to the server:
 ```python
 import os
 import asyncio
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 # path to your file
-fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "IEEE57.gridcal")
+fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "IEEE57.veragrid")
 
-# read gridcal file
+# read veragrid file
 grid_ = gce.open_file(fname)
 
 # define instruction for the server
@@ -1407,9 +1410,9 @@ print(reply_from_server)
 
 ## Tests
 
-**GridCal** uses pytest for automatic software testing.
+**VeraGrid** uses pytest for automatic software testing.
 
-If you make changes to **GridCal** that you plan to submit, first make sure that all
+If you make changes to **VeraGrid** that you plan to submit, first make sure that all
 tests are still passing. You can do this locally with `pytest`.
 
 If you have added new functionality, you should also add a new function that tests this
@@ -1428,13 +1431,13 @@ should be run before each commit to prevent easily detectable bugs.
 
 ## Bug reporting
 
-You have found a bug in **GridCal** or have a suggestion for a new functionality? Then
-get in touch with us by opening up an issue on the [issue board](https://github.com/SanPen/GridCal/issues) to discuss possible new
+You have found a bug in **VeraGrid** or have a suggestion for a new functionality? Then
+get in touch with us by opening up an issue on the [issue board](https://github.com/SanPen/VeraGrid/issues) to discuss possible new
 developments with the community and the maintainers.
 
 ## Contributing
 
-All contributions to the **GridCal** repository are made through pull requests to the
+All contributions to the **VeraGrid** repository are made through pull requests to the
 `devel` branch. You can either submit a pull request from the develop branch of your
 fork or create a special feature branch that you keep the changes on. A feature branch
 is the way to go if you have multiple issues that you are working on in parallel and
@@ -1445,7 +1448,7 @@ However, it is best to discuss your contribution before the pull request is read
 submitted. We only accept high quality contributions that align with the project design. 
 Those are heavily reviewed, and you may expect joint work with us if your proposal is deemed good enough.
 
-An easier alternative to contribute is to use the GridCal objects and functions to produce your contribution 
+An easier alternative to contribute is to use the VeraGrid objects and functions to produce your contribution 
 in a script-like fashion. Again, if that meets the functional and quality standards that we impose, 
 we'll take care of the integration.
 
@@ -1455,20 +1458,20 @@ All contributions must come with testing.
 
 ## Contact
 
-- Join the [Discord GridCal channel](https://discord.com/invite/dzxctaNbvu) for a friendly chat, or quick question.
+- Join the [Discord VeraGrid channel](https://discord.com/invite/dzxctaNbvu) for a friendly chat, or quick question.
 - Submit questions or comments to our [form](https://forms.gle/MpjJAntAwZiLwE6B6).
-- Submit bugs or requests in the [Issues](https://github.com/SanPen/GridCal/issues) section.
+- Submit bugs or requests in the [Issues](https://github.com/SanPen/VeraGrid/issues) section.
 
 ## License
 
-GridCal is licensed under the [Mozilla Public License 2.0](https://mozilla.org/MPL/2.0/) (MPLv2)
+VeraGrid is licensed under the [Mozilla Public License 2.0](https://mozilla.org/MPL/2.0/) (MPLv2)
 
 In practical terms this means that:
 
-- You can use GridCal for commercial work.
-- You can sell commercial services based on GridCal.
-- If you distribute GridCal, you don't need to distribute GridCal's source code. However, with python in practice you do.
-- GridCal license does not propagate, even if you use GridCal or pieces of it in your code.
+- You can use VeraGrid for commercial work.
+- You can sell commercial services based on VeraGrid.
+- If you distribute VeraGrid, you don't need to distribute VeraGrid's source code. However, with python in practice you do.
+- VeraGrid license does not propagate, even if you use VeraGrid or pieces of it in your code.
   However, you must retain the individual files licensing.
 
 Nonetheless, read the license carefully.

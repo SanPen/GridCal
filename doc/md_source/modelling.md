@@ -214,7 +214,7 @@ incorporating the effect of the eliminated ground nodes $g$, which were assumed 
 ### Line definition example
 
 ```python
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 import numpy as np
 
 logger = gce.Logger()
@@ -228,7 +228,7 @@ bus_632 = gce.Bus(name='632', Vnom=4.16, xpos=0, ypos=0)
 bus_632.is_slack = True
 grid.add_bus(obj=bus_632)
 
-bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100*5)
+bus_671 = gce.Bus(name='671', Vnom=4.16, xpos=0, ypos=100 * 5)
 grid.add_bus(obj=bus_671)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -244,7 +244,7 @@ y_601 = np.array([
     [1j * 6.2998, 1j * -1.9958, 1j * -1.2595],
     [1j * -1.9958, 1j * 5.9597, 1j * -0.7417],
     [1j * -1.2595, 1j * -0.7417, 1j * 5.6386]
-], dtype=complex) / 10**6 / 1.60934
+], dtype=complex) / 10 ** 6 / 1.60934
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Line Configuration
@@ -262,7 +262,7 @@ grid.add_overhead_line(config_601)
 # ----------------------------------------------------------------------------------------------------------------------
 line_632_671 = gce.Line(bus_from=bus_632,
                         bus_to=bus_671,
-                        length= 2000 * 0.0003048)
+                        length=2000 * 0.0003048)
 line_632_671.apply_template(config_601, grid.Sbase, grid.fBase, logger)
 grid.add_line(obj=line_632_671)
 ```
@@ -570,8 +570,8 @@ illustrated in the figure above.
 ### Transformer definition example
 
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import WindingType
+import VeraGridEngine.api as gce
+from VeraGridEngine import WindingType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
@@ -580,10 +580,10 @@ grid.fBase = 60
 # ----------------------------------------------------------------------------------------------------------------------
 # Buses
 # ----------------------------------------------------------------------------------------------------------------------
-bus_1 = gce.Bus(name='633', Vnom=4.16, xpos=100*5, ypos=0)
+bus_1 = gce.Bus(name='633', Vnom=4.16, xpos=100 * 5, ypos=0)
 grid.add_bus(obj=bus_1)
 
-bus_2 = gce.Bus(name='634', Vnom=0.48, xpos=200*5, ypos=0)
+bus_2 = gce.Bus(name='634', Vnom=0.48, xpos=200 * 5, ypos=0)
 grid.add_bus(obj=bus_2)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -780,9 +780,10 @@ $$
 </div>
 
 #### Example
+
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
@@ -827,9 +828,10 @@ $$
 </div>
 
 #### Example
+
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
@@ -884,9 +886,10 @@ $$
 </div>
 
 #### Example
+
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
@@ -931,9 +934,10 @@ $$
 </div>
 
 #### Example
+
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
@@ -980,9 +984,10 @@ $$
 </div>
 
 #### Example
+
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
@@ -1032,9 +1037,10 @@ will be updated in each iteration, adding significant complexity compared to the
 </div>
 
 #### Example
+
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
@@ -1080,9 +1086,10 @@ $$
 </div>
 
 #### Example
+
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
@@ -1127,9 +1134,10 @@ $$
 </div>
 
 #### Example
+
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
@@ -1174,9 +1182,10 @@ $$
 </div>
 
 #### Example
+
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
@@ -1222,9 +1231,10 @@ $$
 </div>
 
 #### Example
+
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
@@ -1270,9 +1280,10 @@ $$
 </div>
 
 #### Example
+
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
@@ -1317,9 +1328,10 @@ $$
 </div>
 
 #### Example
+
 ```python
-import GridCalEngine.api as gce
-from GridCalEngine import ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import ShuntConnectionType
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
@@ -1390,8 +1402,9 @@ $$
 $$
 
 #### Example
+
 ```python
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 logger = gce.Logger()
 grid = gce.MultiCircuit()
@@ -1933,7 +1946,7 @@ This example creates the five-node grid from the fantastic book
 the results are printed on the console.
 
 ```python
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 # declare a circuit object
 grid = gce.MultiCircuit()

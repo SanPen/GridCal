@@ -2,10 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from GridCalEngine.api import FileOpen
-from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver import (ContingencyAnalysisOptions,
-                                                                                       ContingencyAnalysisDriver)
-from GridCalEngine.enumerations import EngineType, ContingencyMethod
+from VeraGridEngine.api import FileOpen
+from VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver import (ContingencyAnalysisOptions,
+                                                                                        ContingencyAnalysisDriver)
+from VeraGridEngine.enumerations import EngineType, ContingencyMethod
 import numpy as np
 import os
 
@@ -33,7 +33,7 @@ def test_contingency_filtes() -> None:
     # NO filter
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
-                                        engine=EngineType.GridCal)
+                                        engine=EngineType.VeraGrid)
 
     con_drv.run()
     all_conting_loading = con_drv.results.loading
@@ -49,7 +49,7 @@ def test_contingency_filtes() -> None:
 
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
-                                        engine=EngineType.GridCal)
+                                        engine=EngineType.VeraGrid)
 
     con_drv.run()
     conting_loading = con_drv.results.loading
@@ -68,7 +68,7 @@ def test_contingency_filtes() -> None:
 
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
-                                        engine=EngineType.GridCal)
+                                        engine=EngineType.VeraGrid)
 
     con_drv.run()
     conting_loading = con_drv.results.loading

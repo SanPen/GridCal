@@ -1,4 +1,4 @@
-from GridCalEngine.api import *
+from VeraGridEngine.api import *
 
 # fname =   '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv (opf).gridcal'
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
@@ -26,7 +26,7 @@ options = OptimalPowerFlowOptions(solver=solver,
 optimal_power_flow_time_series = OptimalPowerFlowTimeSeriesDriver(grid=main_circuit,
                                                                   options=options,
                                                                   time_indices=main_circuit.get_all_time_indices(),
-                                                                  engine=EngineType.GridCal)
+                                                                  engine=EngineType.VeraGrid)
 
 optimal_power_flow_time_series.run()
 

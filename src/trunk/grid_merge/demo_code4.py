@@ -5,8 +5,8 @@
 import os
 import sys
 from PySide6 import QtWidgets
-from GridCal.Gui.GridMerge.grid_merge import GridMergeDialogue
-import GridCalEngine.api as gce
+from VeraGrid.Gui.GridMerge.grid_merge import GridMergeDialogue
+import VeraGridEngine.api as gce
 
 
 folder = "C:/Users/eRoots1/Desktop/M-project/Model"

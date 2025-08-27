@@ -1,13 +1,13 @@
 import os
 import pandas as pd
-from GridCalEngine.api import *
-import GridCalEngine.enumerations as en
+from VeraGridEngine.api import *
+import VeraGridEngine.enumerations as en
 
-# fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
-# fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
-# fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/2869 Pegase.gridcal'
+# fname = '/home/santi/Documentos/GitHub/VeraGrid/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+fname = '/home/santi/Documentos/Git/GitHub/VeraGrid/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+# fname = '/home/santi/Documentos/Git/GitHub/VeraGrid/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
+# fname = '/home/santi/Documentos/GitHub/VeraGrid/Grids_and_profiles/grids/grid_2_islands.xlsx'
+# fname = '/home/santi/Documentos/GitHub/VeraGrid/Grids_and_profiles/grids/2869 Pegase.gridcal'
 # fname = os.path.join('..', '..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
 # fname = os.path.join('..', '..', '..', '..', '..', 'Grids_and_profiles', 'grids', '2869 Pegase.gridcal')
 
@@ -27,7 +27,7 @@ simulation = ContingencyAnalysisTimeSeries(
     grid=main_circuit,
     options=options_,
     time_indices=main_circuit.get_all_time_indices(),
-    engine=EngineType.GridCal
+    engine=EngineType.VeraGrid
 )
 
 simulation.run()

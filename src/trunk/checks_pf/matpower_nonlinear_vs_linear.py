@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import multiprocessing as mp
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = "/home/santi/matpower8.0b1/data"
 

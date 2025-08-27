@@ -2,7 +2,7 @@ import os
 import time
 import pandas as pd
 import multiprocessing as mp
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 
 def run_grid(fname):

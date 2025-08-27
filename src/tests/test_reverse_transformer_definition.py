@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from math import sqrt
 
-from GridCalEngine.Devices import TransformerType
+from VeraGridEngine.Devices import TransformerType
 
 
 def test_reverse_transformer():

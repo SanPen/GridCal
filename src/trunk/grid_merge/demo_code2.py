@@ -5,11 +5,11 @@
 import os
 import sys
 from PySide6 import QtWidgets
-from GridCal.Gui.GridMerge.grid_merge import GridMergeDialogue
-import GridCalEngine.api as gce
+from VeraGrid.Gui.GridMerge.grid_merge import GridMergeDialogue
+import VeraGridEngine.api as gce
 
 
-folder = "C:/Users/eRoots1/PycharmProjects/GridCal/src/tests/data"
+folder = "C:/Users/eRoots1/PycharmProjects/VeraGrid/src/tests/data"
 
 original = gce.open_file(filename=os.path.join(folder, "grids", "IEEE57.gridcal"))  # we use this for diff
 

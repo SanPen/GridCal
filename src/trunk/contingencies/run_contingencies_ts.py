@@ -1,5 +1,5 @@
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join("..","..","..",'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE39_1W.gridcal')

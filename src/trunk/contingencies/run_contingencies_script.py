@@ -1,5 +1,5 @@
 import os
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 f_name = '/home/santi/Descargas/Caso2030_v1 1.gridcal'
 folder = '/home/santi/Descargas'

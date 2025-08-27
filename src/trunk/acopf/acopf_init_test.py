@@ -1,4 +1,4 @@
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 import pandas as pd
 from scipy import sparse
 import numpy as np
@@ -7,7 +7,7 @@ from jax import grad, hessian
 import jax.numpy as jnp
 import random
 import math
-from GridCalEngine.basic_structures import CxVec, Vec
+from VeraGridEngine.basic_structures import CxVec, Vec
 from acopf_functions import *
 
 

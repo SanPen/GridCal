@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 import os
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 
 def test_add_stuff_roundtrip() -> None:

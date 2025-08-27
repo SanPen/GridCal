@@ -46,28 +46,28 @@ The four parameters that we must specify are:
 The content of `plugin1.py` is:
 
 ```python
-    from GridCal.Gui.Main.GridCalMain import MainGUI
-    from GridCalEngine.api import InvestmentsEvaluationDriver
+    from VeraGrid.Gui.Main.VeraGridMain import MainGUI
+from VeraGridEngine.api import InvestmentsEvaluationDriver
 
 
-    def main(gui_instance: MainGUI):
-        """
-        Initial plugin function
-        :param gui_instance: Instance of the GridCal GUI object
-        """
-        print("Hello from plugin1!")
+def main(gui_instance: MainGUI):
+    """
+    Initial plugin function
+    :param gui_instance: Instance of the GridCal GUI object
+    """
+    print("Hello from plugin1!")
 
-        grid = gui_instance.circuit
+    grid = gui_instance.circuit
 
-        for bus in grid.buses:
-            print(bus.name)
+    for bus in grid.buses:
+        print(bus.name)
 
 
-    def investments(driver: InvestmentsEvaluationDriver):
-        """
-        Implement the logic that launches for my custom investment
-        """
-        print("Investments driver name: " + driver.name)
+def investments(driver: InvestmentsEvaluationDriver):
+    """
+    Implement the logic that launches for my custom investment
+    """
+    print("Investments driver name: " + driver.name)
 ```
 
 

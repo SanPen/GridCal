@@ -8,11 +8,11 @@ import faulthandler
 # import results_handler
 # from matlab_parser import parse_matlab_case
 
-# Add the path to GridCalEngine
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'GridCal', 'src')))
-import GridCalEngine as gce
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCalEngine.enumerations import SolverType, ConverterControlType
+# Add the path to VeraGridEngine
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'VeraGrid', 'src')))
+import VeraGridEngine as gce
+from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from VeraGridEngine.enumerations import SolverType, ConverterControlType
 
 
 def run_5bus_MatACDC(num_iterations=10):
@@ -394,7 +394,7 @@ def scale_grid_loads(grid, scaling_factor):
     This does not overwrite the grid file—only modifies the object in memory.
 
     Parameters:
-        grid (MultiCircuit): GridCal grid object.
+        grid (MultiCircuit): VeraGrid grid object.
         scaling_factor (float): Scaling multiplier (e.g., 2.0, 3.0).
     """
     # Scale loads
@@ -509,7 +509,7 @@ def run_convergence_test(grid_file, system_name="SYSTEM", start_factor=1.0, step
     Also generates scaled MATLAB files for each scaling factor tested.
 
     Parameters:
-        grid_file (str): Path to the GridCal .gridcal file
+        grid_file (str): Path to the VeraGrid .gridcal file
         system_name (str): Name of the system for display purposes
         start_factor (float): Starting scaling factor
         step_size (float): Increment for each test
@@ -997,23 +997,23 @@ if __name__ == '__main__':
     #         print(f"            Error: {result.get('error', 'Unknown error')}")
     # print("="*60)
     #
-    # print("GridCal - Running 5-bus grid case...")
+    # print("VeraGrid - Running 5-bus grid case...")
     # gridcal_elapsed_5bus, gridcal_bus_df_5bus, gridcal_iostring_5bus = run_time_5bus()
-    # print("GridCal - Running 39-bus grid case...")
+    # print("VeraGrid - Running 39-bus grid case...")
     # gridcal_elapsed_39bus, gridcal_bus_df_39bus, gridcal_iostring_39bus = run_time_39bus()
-    # print("GridCal - Running 96-bus grid case...")
+    # print("VeraGrid - Running 96-bus grid case...")
     # gridcal_elapsed_96bus, gridcal_bus_df_96bus, gridcal_iostring_96bus = run_time_96bus()
-    # print("GridCal - Running 3120-bus grid case...")
+    # print("VeraGrid - Running 3120-bus grid case...")
     # gridcal_elapsed_3120bus, gridcal_bus_df_3120bus, gridcal_iostring_3120bus = run_time_3kbus()
     #
     # Timing the executions for 10 iterations
-    print("GridCal - Timing for 5-bus grid case...")
+    print("VeraGrid - Timing for 5-bus grid case...")
     gridcal_time5bus = run_timing_test(run_time_5bus, iterations=10)
-    print("GridCal - Timing for 39-bus grid case...")
+    print("VeraGrid - Timing for 39-bus grid case...")
     gridcal_time39bus = run_timing_test(run_time_39bus, iterations=10)
-    # print("GridCal - Timing for 96-bus grid case...")
+    # print("VeraGrid - Timing for 96-bus grid case...")
     # gridcal_time96bus = run_timing_test(run_time_96bus, iterations=10)
-    print("GridCal - Timing for 3120-bus grid case...")
+    print("VeraGrid - Timing for 3120-bus grid case...")
     gridcal_time3120bus = run_timing_test(run_time_3kbus, iterations=10)
     #
     #

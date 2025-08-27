@@ -3,7 +3,7 @@ import cvxpy as cp
 import numpy as np
 import jax.numpy as jnp
 from jax import grad, hessian
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Lynn 5 Bus pv.gridcal')
 grid = gce.open_file(fname)

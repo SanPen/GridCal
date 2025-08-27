@@ -7,20 +7,20 @@ from typing import Dict, List, Any
 
 import pytest
 
-import GridCalEngine.Devices as gcdev
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_ac_lines
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.connectivity_node import ConnectivityNode
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.current_limit import CurrentLimit
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.operational_limit_set import OperationalLimitSet
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.operational_limit_type import OperationalLimitType
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
-from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.enumerations import CGMESVersions
+import VeraGridEngine.Devices as gcdev
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from VeraGridEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_ac_lines
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.connectivity_node import ConnectivityNode
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.current_limit import CurrentLimit
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.operational_limit_set import OperationalLimitSet
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.operational_limit_type import OperationalLimitType
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
+from VeraGridEngine.data_logger import DataLogger
+from VeraGridEngine.enumerations import CGMESVersions
 
 tn_test = TopologicalNode(rdfid="tn1")
 cn_test = ConnectivityNode(rdfid="cn1")

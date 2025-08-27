@@ -5,24 +5,24 @@
 from typing import Tuple
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('C:/Users/raiya/Documents/8. eRoots/thesis/code/GridCal/src')
-import GridCalEngine.api as gce
+sys.path.append('C:/Users/raiya/Documents/8. eRoots/thesis/code/VeraGrid/src')
+import VeraGridEngine.api as gce
 import scipy.sparse as sp
 import numba as nb
-from GridCalEngine.basic_structures import Vec, CscMat, CxVec, IntVec
-import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
-from GridCalEngine.Simulations.Derivatives.ac_jacobian import AC_jacobian
-from GridCalEngine.Utils.NumericalMethods.newton_raphson import newton_raphson
-from GridCalEngine.enumerations import SolverType
+from VeraGridEngine.basic_structures import Vec, CscMat, CxVec, IntVec
+import VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
+from VeraGridEngine.Simulations.Derivatives.ac_jacobian import AC_jacobian
+from VeraGridEngine.Utils.NumericalMethods.newton_raphson import newton_raphson
+from VeraGridEngine.enumerations import SolverType
 import numpy as np
-from GridCalEngine.basic_structures import Vec
-from GridCalEngine.Utils.NumericalMethods.common import (ConvexMethodResult, ConvexFunctionResult,
-                                                         check_function_and_args)
-from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
-from GridCalEngine.Devices.Branches import VSC, Transformer2W
+from VeraGridEngine.basic_structures import Vec
+from VeraGridEngine.Utils.NumericalMethods.common import (ConvexMethodResult, ConvexFunctionResult,
+                                                          check_function_and_args)
+from VeraGridEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
+from VeraGridEngine.Devices.Branches import VSC, Transformer2W
 from scipy.sparse import csc_matrix
 from typing import Tuple, Union
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec
+from VeraGridEngine.basic_structures import Vec, CxVec, IntVec
 from scipy.sparse import csr_matrix, csc_matrix
 import prettytable as pt
 

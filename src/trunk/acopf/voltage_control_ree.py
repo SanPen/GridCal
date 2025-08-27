@@ -1,9 +1,9 @@
 import os
 import numpy as np
 import pandas as pd
-import GridCalEngine.api as gce
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
-from GridCalEngine.enumerations import AcOpfMode
+import VeraGridEngine.api as gce
+from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
+from VeraGridEngine.enumerations import AcOpfMode
 
 
 def voltage_control_opf(file_path):

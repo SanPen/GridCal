@@ -3,8 +3,8 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
-from GridCalEngine.enumerations import InvestmentsEvaluationObjectives, InvestmentEvaluationMethod
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from VeraGridEngine.enumerations import InvestmentsEvaluationObjectives, InvestmentEvaluationMethod
+from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 
 
 class InvestmentsEvaluationOptions:

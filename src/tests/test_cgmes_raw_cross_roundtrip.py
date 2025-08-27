@@ -8,13 +8,13 @@ import os
 
 import pytest
 import numpy as np
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
-from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions, FileSave
-from GridCalEngine.Simulations import PowerFlowOptions
-from GridCalEngine.Simulations.results_template import DriverToSave
-from GridCalEngine.enumerations import CGMESVersions, SolverType, SimulationTypes
-from GridCalEngine.basic_structures import Logger
-import GridCalEngine.api as gce
+from VeraGridEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
+from VeraGridEngine.IO.file_handler import FileSavingOptions, FileOpenOptions, FileSave
+from VeraGridEngine.Simulations import PowerFlowOptions
+from VeraGridEngine.Simulations.results_template import DriverToSave
+from VeraGridEngine.enumerations import CGMESVersions, SolverType, SimulationTypes
+from VeraGridEngine.basic_structures import Logger
+import VeraGridEngine.api as gce
 
 
 def run_cgmes_to_raw(import_path: str | list[str], export_fname: str):

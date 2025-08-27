@@ -1,6 +1,6 @@
-PWD c:\Users\a1003\Desktop\GridCal\examples\trunk\acdc_pf\docs
+PWD c:\Users\a1003\Desktop\VeraGrid\examples\trunk\acdc_pf\docs
 INPUT C:\Users\a1003\AppData\Local\MiKTeX\miktex\data\le\pdftex\pdflatex.fmt
-INPUT c:\Users\a1003\Desktop\GridCal\examples\trunk\acdc_pf\docs\acdc_pf_technical_note.tex
+INPUT c:\Users\a1003\Desktop\VeraGrid\examples\trunk\acdc_pf\docs\acdc_pf_technical_note.tex
 OUTPUT acdc_pf_technical_note.log
 INPUT C:\Users\a1003\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls
 INPUT C:\Users\a1003\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls

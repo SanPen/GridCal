@@ -9,8 +9,8 @@ import numba as nb
 from scipy.sparse import csc_matrix, random, hstack, vstack
 from scipy.sparse import rand
 from scipy.sparse.linalg import spsolve as spsolve_scipy
-from GridCalEngine.Utils.Sparse.csc2 import (sp_slice, sp_slice_rows, csc_stack_2d_ff, scipy_to_mat, spsolve_csc,
-                                             extend, CSC, csc_multiply_ff, csc_add_ff)
+from VeraGridEngine.Utils.Sparse.csc2 import (sp_slice, sp_slice_rows, csc_stack_2d_ff, scipy_to_mat, spsolve_csc,
+                                              extend, CSC, csc_multiply_ff, csc_add_ff)
 
 
 def get_scipy_random_matrix(m: int | None = None, n: int | None = None) -> csc_matrix:

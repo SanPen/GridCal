@@ -96,7 +96,7 @@ for idx, (var1, var2) in enumerate(variable_pairs):
 
 axes[-1].set_xlabel("Time (s)")
 plt.tight_layout(rect=[0, 0, 1, 0.97])
-# plt.suptitle("Simulation Variable Comparison (GridCal vs GENCLS)", fontsize=16, y=1.02)
+# plt.suptitle("Simulation Variable Comparison (VeraGrid vs GENCLS)", fontsize=16, y=1.02)
 plt.subplots_adjust(top=0.95)
 plt.show()
 

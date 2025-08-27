@@ -10,8 +10,8 @@ import torch.optim as optim
 import numpy as np
 import random
 from collections import deque
-from gym_env import GridCalEnv  # Assuming GridCalEnv is defined as per your previous code
-from GridCalEngine.api import *
+from gym_env import VeraGridEnv  # Assuming VeraGridEnv is defined as per your previous code
+from VeraGridEngine.api import *
 
 
 class DQN(nn.Module):
@@ -41,9 +41,9 @@ NUM_EPISODES = 1000  # Example value, adjust based on your specific requirements
 
 fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
 circuit_ = FileOpen(fname).open()
-env = GridCalEnv(grid=circuit_,
-                 forced_mttf=10.0,
-                 forced_mttr=1.0)  # Initialize your environment with appropriate parameters
+env = VeraGridEnv(grid=circuit_,
+                  forced_mttf=10.0,
+                  forced_mttr=1.0)  # Initialize your environment with appropriate parameters
 n_actions = env.action_space.shape[0]  # Number of binary actions in the action space
 n_states = env.observation_space.shape[0]  # Dimension of the observation space
 

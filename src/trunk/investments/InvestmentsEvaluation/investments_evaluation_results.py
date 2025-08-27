@@ -6,10 +6,10 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.colors as plt_colors
-from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.basic_structures import IntVec, Vec, StrVec
-from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
+from VeraGridEngine.Simulations.results_template import ResultsTemplate
+from VeraGridEngine.Simulations.results_table import ResultsTable
+from VeraGridEngine.basic_structures import IntVec, Vec, StrVec
+from VeraGridEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
 class InvestmentsEvaluationResults(ResultsTemplate):

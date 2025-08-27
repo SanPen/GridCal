@@ -1,0 +1,347 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+from typing import Dict, List
+from uuid import uuid4, UUID
+from VeraGridEngine.IO.cim.cgmes.cgmes_property import CgmesProperty
+from VeraGridEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
+from VeraGridEngine.IO.base.units import UnitMultiplier, UnitSymbol
+from VeraGridEngine.data_logger import DataLogger
+
+
+def str2num(val: str):
+    """
+    Try to convert to number, else keep as string
+    :param val: String value
+    :return: int, float or string
+    """
+    try:
+        return int(val)
+    except ValueError:
+        try:
+            return float(val)
+        except ValueError:
+            return val
+
+
+def index_find(string, start, end):
+    """
+    version of substring that matches
+    :param string: string
+    :param start: string to start splitting
+    :param end: string to end splitting
+    :return: string between start and end
+    """
+    return string.partition(start)[2].partition(end)[0]
+
+
+def get_new_rdfid():
+    """
+
+    :return:
+    """
+    return str(uuid4())
+
+
+def rfid2uuid(val):
+    """
+
+    :param val:
+    :return:
+    """
+    return val.replace('-', '').replace('_', '')
+
+
+def form_rdfid(idtag: str) -> str:
+    """
+    Converts a simple string, eg. idtag (without hyphens or underscores)
+    to a UUID format.
+
+    Args:
+        idtag (str): The input idtag without hyphens or underscores.
+
+    Returns:
+        str: The corresponding UUID idtag with hyphens.
+    """
+    # Add hyphens to the simple idtag to create a valid UUID
+    formatted_uuid = f"{idtag[:8]}-{idtag[8:12]}-{idtag[12:16]}-{idtag[16:20]}-{idtag[20:]}"
+    try:
+        # Validate and return the UUID
+        UUID(formatted_uuid)
+        return formatted_uuid
+    except ValueError:
+        # Handle invalid input (e.g., incorrect length)
+        return "Invalid input: Not a valid UUID"
+
+
+class Base:
+    """
+    Base
+    """
+
+    def __init__(self, rdfid: str, tpe, resources=None, class_replacements=None):
+        """
+        General CIM object container
+        :param rdfid:
+        :param tpe: type of the object (class)
+        :param resources:
+        :param class_replacements:
+        """
+
+        # pick the object id
+        if class_replacements is None:
+            class_replacements = dict()
+
+        if resources is None:
+            resources = list()
+
+        rdfid = rdfid.strip()
+        self.rdfid = rdfid if rdfid != '' else get_new_rdfid()
+        self.uuid = rfid2uuid(self.rdfid)
+
+        # store the object type
+        self.tpe = tpe
+
+        self.class_replacements: Dict = class_replacements
+        self.resources: List = resources
+
+        # dictionary of objects that reference this object
+        self.references_to_me = dict()
+
+        # dictionary of missing references (those provided but not used)
+        self.missing_references = dict()
+
+        # register the CIM properties
+        self.declared_properties: Dict[str, CgmesProperty] = dict()
+
+        self.parsed_properties = dict()
+
+        self.boundary_set = False
+
+        self.used = False
+
+    def can_keep(self):
+        """
+        Can I keep this object?
+        :return:
+        """
+        return self.used  # and not self.boundary_set
+
+    def has_references(self) -> bool:
+        """
+        Determine if there are references to this object
+        :return: Bool
+        """
+        return len(self.references_to_me) > 0
+
+    def parse_dict(self, data: Dict[str, str], logger: DataLogger):
+        """
+
+        :param data:
+        :param logger:
+        """
+        self.parsed_properties = data
+
+        for prop_name, prop_value in data.items():
+
+            prop = self.declared_properties.get(prop_name, None)
+
+            if prop is not None:
+                setattr(self, prop_name, prop_value)
+            else:
+                if not self.boundary_set:
+                    logger.add_error("Missing object property", device_class=self.tpe, device_property=prop_name,
+                                     device=self.rdfid)
+
+    def __repr__(self):
+        return self.rdfid
+
+    def __str__(self):
+        return self.tpe + ':' + self.rdfid
+
+    def __hash__(self):
+        # alternatively, return hash(repr(self))
+        # handle X nodes Check if the last character is 'X'
+        hex_string = self.uuid
+        if hex_string[-1] == 'X':
+            hex_string_without_X = hex_string[:-1]  # Remove the last character
+        else:
+            hex_string_without_X = hex_string  # No 'X', keep the original string
+        return int(hex_string_without_X, 16)  # hex string to int
+
+    def __lt__(self, other):
+        return self.__hash__() < other.__hash__()
+
+    def __eq__(self, other):
+        return self.rdfid == other.rdfid
+
+    def check(self, logger: DataLogger):
+        """
+        Check specific OCL rules
+        :param logger: Logger instance
+        :return: true is ok false otherwise
+        """
+        return True
+
+    def add_reference(self, obj, attr_name, logger: DataLogger):
+        """
+        Adds a categorized reference to this object
+        :param obj:
+        :param attr_name:
+        :param logger:
+        :return:
+        """
+        if hasattr(self, attr_name):
+            if obj.tpe in self.references_to_me:
+                self.references_to_me[obj.tpe].add(obj)
+            else:
+                self.references_to_me[obj.tpe] = {obj}
+            if attr_name is None:
+                return
+            current_value = getattr(self, attr_name)
+
+            if current_value is None:
+                setattr(self, attr_name, obj)
+            elif isinstance(current_value, list):
+                current_value.append(obj)
+            else:
+                setattr(self, attr_name, [current_value, obj])
+        else:
+            logger.add_error("Cannot add reference", device_class=self.tpe, device_property=attr_name)
+
+
+    def register_property(self, name: str,
+                          class_type: object,
+                          multiplier: UnitMultiplier = UnitMultiplier.none,
+                          unit: UnitSymbol = UnitSymbol.none,
+                          description: str = '',
+                          max_chars=65536,
+                          mandatory=False,
+                          comment='',
+                          out_of_the_standard=False,
+                          profiles: List[CgmesProfileType] = ()):
+        """
+        Shortcut to add properties
+        :param name: name of the property
+        :param class_type: class type (actual python object)
+        :param multiplier: UnitMultiplier from CIM
+        :param unit: UnitSymbol from CIM
+        :param description: property description
+        :param max_chars: maximum number of characters (only for strings)
+        :param mandatory: is this property mandatory when parsing?
+        :param comment: Extra comments
+        """
+        self.declared_properties[name] = CgmesProperty(
+            property_name=name,
+            class_type=class_type,
+            multiplier=multiplier,
+            unit=unit,
+            description=description,
+            max_chars=max_chars,
+            mandatory=mandatory,
+            comment=comment,
+            out_of_the_standard=out_of_the_standard,
+            profiles=profiles)
+
+    def get_properties(self) -> List[CgmesProperty]:
+        return [p for name, p in self.declared_properties.items()]
+
+    def get_xml(self, level=0, profiles: List[CgmesProfileType] = [CgmesProfileType.EQ]) -> Dict[CgmesProfileType, str]:
+
+        """
+        Returns an XML representation of the object
+        Args:
+            level:
+            profiles
+        Returns:
+
+        """
+
+        """
+        <cim:IEC61970CIMVersion rdf:ID="version">
+            <cim:IEC61970CIMVersion.version>IEC61970CIM16v29a</cim:IEC61970CIMVersion.version>
+            <cim:IEC61970CIMVersion.date>2015-07-15</cim:IEC61970CIMVersion.date>
+        </cim:IEC61970CIMVersion>
+        """
+        data = dict()
+        for profile in profiles:
+            l1 = '  ' * level  # start/end tabbing
+            l2 = '  ' * (level + 1)  # middle tabbing
+
+            # header
+            xml = l1 + '<cim:' + self.tpe + ' rdf:ID="' + self.rdfid + '">\n'
+
+            for prop_name, prop in self.declared_properties.items():
+
+                if profile in prop.profiles:
+                    value = getattr(self, prop_name)
+
+                    v = str(value).replace(' ', '_')
+
+                    # eventually replace the class of the property, because CIM is so well designed...
+                    if prop in self.class_replacements.keys():
+                        cls = self.class_replacements[prop]
+                    else:
+                        cls = self.tpe
+
+                    if prop.class_type not in [bool, int, float, str]:
+                        xml += l2 + '<cim:' + cls + '.' + prop_name + ' rdf:resource="#' + v + '" />\n'
+                    else:
+                        xml += l2 + '<cim:' + cls + '.' + prop_name + '>' + v + '</cim:' + cls + '.' + prop_name + '>\n'
+
+            # closing
+            xml += l1 + '</cim:' + self.tpe + '>\n'
+
+            data[profile] = xml
+
+        return data
+
+    def get_dict(self) -> Dict[str, any]:
+        """
+        Get dictionary with the data
+        :return: Dictionary
+        """
+        res = dict()
+        for property_name, cim_prop in self.declared_properties.items():
+            res[property_name] = getattr(self, property_name)
+
+        return res
+
+    def get_all_properties(self) -> List[str]:
+        """
+        Get the list of properties of this object
+        """
+        res = list()
+        for prop_name, value in vars(self).items():
+            obj = getattr(self, prop_name)
+            T = type(obj)
+            if T not in [list, dict]:
+                res.append(prop_name)
+        return res
+
+    def detect_circular_references(self, visited):
+        """
+        Get path, leading to a circular refference
+        :param visited: list of visited elements' rdfid (used for recursion)
+        :return: path of circular refferences
+        """
+        visited.append(self.rdfid)
+
+        for prop in self.get_all_properties():
+
+            value = getattr(self, prop)
+
+            if hasattr(value, 'rdfid'):
+                if value.rdfid in visited:
+                    visited.append(value.rdfid)
+                    return True
+                else:
+                    is_loop = value.detect_circular_references(visited=visited)
+
+                    if is_loop:
+                        return True
+            else:
+                pass
+
+        return False

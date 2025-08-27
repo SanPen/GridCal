@@ -5,7 +5,7 @@
 
 import os
 import time
-from GridCalEngine.api import *
+from VeraGridEngine.api import *
 
 fname = os.path.join('..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
 

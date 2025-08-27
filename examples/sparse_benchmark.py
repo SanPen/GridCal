@@ -31,8 +31,8 @@ import time
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
-from GridCalEngine.Utils.NumericalMethods.sparse_solve import SparseSolver, get_sparse_type, get_linear_solver
-import GridCalEngine.api as gce
+from VeraGridEngine.Utils.NumericalMethods.sparse_solve import SparseSolver, get_sparse_type, get_linear_solver
+import VeraGridEngine.api as gce
 
 
 #  list of solvers to try

@@ -23,7 +23,7 @@ import numpy as np
 from typing import List, Tuple
 from scipy.linalg.blas import dger
 from scipy.optimize import minimize
-from GridCalEngine.basic_structures import Vec, Mat, IntVec
+from VeraGridEngine.basic_structures import Vec, Mat, IntVec
 
 
 def relu(x):

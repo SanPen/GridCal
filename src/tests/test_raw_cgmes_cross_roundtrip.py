@@ -7,13 +7,13 @@ from __future__ import annotations
 import os
 import pytest
 import numpy as np
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
-from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions, FileOpen, FileSave
-from GridCalEngine.Simulations import PowerFlowOptions
-from GridCalEngine.Simulations.results_template import DriverToSave
-from GridCalEngine.enumerations import CGMESVersions, SolverType, SimulationTypes
-from GridCalEngine.basic_structures import Logger
-import GridCalEngine.api as gce
+from VeraGridEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
+from VeraGridEngine.IO.file_handler import FileSavingOptions, FileOpenOptions, FileOpen, FileSave
+from VeraGridEngine.Simulations import PowerFlowOptions
+from VeraGridEngine.Simulations.results_template import DriverToSave
+from VeraGridEngine.enumerations import CGMESVersions, SolverType, SimulationTypes
+from VeraGridEngine.basic_structures import Logger
+import VeraGridEngine.api as gce
 
 
 def create_file_save_options(boundary_zip_path: str) -> FileSavingOptions:
@@ -200,7 +200,7 @@ def run_raw_to_cgmes(import_path: str | list[str],
     assert pf_ok
 
 
-@pytest.mark.skip(reason="Not passing because GridCal ConnectivityNodes were removed and this needs rethinking")
+@pytest.mark.skip(reason="Not passing because VeraGrid ConnectivityNodes were removed and this needs rethinking")
 def test_raw_to_cgmes_cross_roundtrip():
     """
     Importing from RAW and export to CGMES, importing back it.

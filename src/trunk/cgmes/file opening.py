@@ -1,5 +1,5 @@
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 fname = os.path.join("..", "..", "tests", "data", "grids", "CGMES_2_4_15", "IEEE 118 Bus v2.zip")
 

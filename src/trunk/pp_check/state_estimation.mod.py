@@ -7,8 +7,8 @@ import numpy as np
 import pandapower as pp
 from pandapower.estimation import estimate
 from pandapower.estimation import remove_bad_data
-from GridCalEngine.IO.others.pandapower_parser import Panda2GridCal
-from GridCalEngine.Simulations.StateEstimation.state_stimation_driver import StateEstimation
+from VeraGridEngine.IO.others.pandapower_parser import Panda2VeraGrid
+from VeraGridEngine.Simulations.StateEstimation.state_stimation_driver import StateEstimation
 
 # Example Network
 # 
@@ -52,9 +52,9 @@ print(success_rn_max)
 
 # The management of results will be the same as for the *estimate* function (see following section).
 
-# Convert to GridCal ---------------------------------------------------------------------------------------------------
+# Convert to VeraGrid ---------------------------------------------------------------------------------------------------
 
-converter = Panda2GridCal(net)
+converter = Panda2VeraGrid(net)
 grid = converter.get_multicircuit()
 # grid.Sbase = 1.0
 # grid.change_base(100)

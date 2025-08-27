@@ -2,8 +2,8 @@ import os
 import json
 import numpy as np
 from typing import Dict
-import GridCalEngine as gce
-from GridCalEngine.Devices.Branches.overhead_line_type import kron_reduction
+import VeraGridEngine as gce
+from VeraGridEngine.Devices.Branches.overhead_line_type import kron_reduction
 
 grid_folder = "NEV Network 1"
 folder = os.path.join("networks", grid_folder)

@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 fname = os.path.join('..', '..', 'tests', 'data', 'grids', 'PGOC_6bus.gridcal')
 grid = gce.FileOpen(fname).open()

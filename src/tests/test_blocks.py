@@ -5,8 +5,8 @@
 import math
 import numpy as np
 
-from GridCalEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
-from GridCalEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
+from VeraGridEngine.Utils.Symbolic.block import Block
 
 def test_block_save_to_disk():
     """

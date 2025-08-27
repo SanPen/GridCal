@@ -23,9 +23,9 @@ technical_cost_indep = data_indep["Technical cost (M€)"] * 10 ** -1.59
 combined_cost_rand = investment_cost_rand + technical_cost_rand
 combined_cost_indep = investment_cost_indep + technical_cost_indep
 
-plt.scatter(investment_cost_nsga, technical_cost_total, c=combined_cost_nsga, cmap='YlOrRd', label='GridCal', s=10,
+plt.scatter(investment_cost_nsga, technical_cost_total, c=combined_cost_nsga, cmap='YlOrRd', label='VeraGrid', s=10,
             alpha=0.8)
-plt.colorbar(label='Función objetivo (GridCal)')
+plt.colorbar(label='Función objetivo (VeraGrid)')
 plt.scatter(investment_cost_rand, technical_cost_rand, c=combined_cost_rand, cmap='GnBu', label="Random", s=10, alpha=0.3)
 plt.colorbar(label='Función objetivo (Random)')
 plt.scatter(investment_cost_indep, technical_cost_indep, c=combined_cost_indep, cmap='Greys', label="ENTSOE", s=10, alpha=0.8)

@@ -10,7 +10,7 @@ We can run an PTDF equivalent of the power flow with the linear analysis drivers
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
@@ -30,7 +30,7 @@ Simulating with a more detailed control of the objects:
 
 ```python
 import os
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
@@ -95,7 +95,7 @@ Now let's make a comparison between the linear flows and the non-linear flows fr
 ```python
 import os
 from matplotlib import pyplot as plt
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 plt.style.use('fivethirtyeight')
 
@@ -176,7 +176,7 @@ con_options.engine = ContingencyEngine.PTDF
 
 con_drv = ContingencyAnalysisDriver(grid=grid,
                                     options=con_options,
-                                    engine=EngineType.GridCal)
+                                    engine=EngineType.VeraGrid)
 
 con_drv.run()
 ```

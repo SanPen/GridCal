@@ -31,7 +31,7 @@ Use departure and target points from time series
 ```python
 import os
 from matplotlib import pyplot as plt
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 plt.style.use('fivethirtyeight')
 
@@ -43,8 +43,8 @@ main_circuit = gce.open_file(fname)
 
 # Run the continuation power flow with the default options
 # Since we do not provide any power flow results, it will run one for us
-results = gce.continuation_power_flow(grid=main_circuit, 
-                                      factor=2.0, 
+results = gce.continuation_power_flow(grid=main_circuit,
+                                      factor=2.0,
                                       stop_at=gce.CpfStopAt.Full)
 
 # plot the results
@@ -68,7 +68,7 @@ A more elaborated way to run the simulation, controlling all the steps:
 ```python
 import os
 from matplotlib import pyplot as plt
-import GridCalEngine as gce
+import VeraGridEngine as gce
 
 plt.style.use('fivethirtyeight')
 

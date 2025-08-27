@@ -5,10 +5,10 @@
 
 import os
 
-from GridCalEngine.api import *
-from GridCalEngine.IO.file_handler import FileOpen
-from GridCalEngine.enumerations import FaultType
-import GridCalEngine as gce
+from VeraGridEngine.api import *
+from VeraGridEngine.IO.file_handler import FileOpen
+from VeraGridEngine.enumerations import FaultType
+import VeraGridEngine as gce
 
 def test_vsc_save_integration():
     """

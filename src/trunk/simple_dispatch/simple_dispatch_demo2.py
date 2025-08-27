@@ -2,8 +2,8 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from GridCalEngine.Simulations.OPF.simple_dispatch_ts import greedy_dispatch
-import GridCalEngine.api as gce
+from VeraGridEngine.Simulations.OPF.simple_dispatch_ts import greedy_dispatch
+import VeraGridEngine.api as gce
 
 fname = os.path.join("..", "..", "..", "Grids_and_profiles", "grids", "IEEE39_1W.gridcal")
 grid = gce.open_file(fname)

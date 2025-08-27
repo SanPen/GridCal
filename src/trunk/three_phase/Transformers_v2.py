@@ -1,7 +1,7 @@
 from sympy import symbols
 import numpy as np
-import GridCalEngine.api as gce
-from GridCalEngine import WindingsConnection
+import VeraGridEngine.api as gce
+from VeraGridEngine import WindingsConnection
 
 np.set_printoptions(linewidth=20000, precision=3, suppress=True)
 

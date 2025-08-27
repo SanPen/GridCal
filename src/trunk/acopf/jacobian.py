@@ -1,9 +1,9 @@
 import numpy as np
 import scipy.sparse as sp
 from math import sin, cos
-import GridCalEngine.api as gc
-from GridCalEngine.Simulations.Derivatives.ac_jacobian import AC_jacobian
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_power
+import VeraGridEngine.api as gc
+from VeraGridEngine.Simulations.Derivatives.ac_jacobian import AC_jacobian
+from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_power
 
 
 def jacobian_polar(G, B, P, Q, Vm, Va, pq, pv):
@@ -142,9 +142,9 @@ def jacobian_polar(G, B, P, Q, Vm, Va, pq, pv):
 
 
 if __name__ == '__main__':
-    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus (pq).gridcal'
-    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
-    fname = r'/Users/eroot/PyCharmProjects/GridCal/Grids_and_profiles/grids/IEEE 14 bus.raw'
+    # fname = '/home/santi/Documentos/Git/GitHub/VeraGrid/Grids_and_profiles/grids/Lynn 5 Bus (pq).gridcal'
+    # fname = '/home/santi/Documentos/Git/GitHub/VeraGrid/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
+    fname = r'/Users/eroot/PyCharmProjects/VeraGrid/Grids_and_profiles/grids/IEEE 14 bus.raw'
     # fname = '/home/santi/Documentos/Git/GitLab/newton-solver/demo/data/IEEE14.json'
 
     # open file

@@ -59,12 +59,12 @@ def write_py_for_class(cgmes_version, cgmes_class):
 
     # IMPORTED classes
     # Default imports only
-    import_text = "\nfrom GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol\n"
+    import_text = "\nfrom VeraGridEngine.IO.base.units import UnitMultiplier, UnitSymbol\n"
     if parent:
-        import_text += (f"from GridCalEngine.IO.cim.cgmes.{cgmes_folder}.devices.{get_format_name(parent, True)}"
+        import_text += (f"from VeraGridEngine.IO.cim.cgmes.{cgmes_folder}.devices.{get_format_name(parent, True)}"
                         f" import {parent}\n")
     else:
-        import_text += f"from GridCalEngine.IO.cim.cgmes.base import Base\n"
+        import_text += f"from VeraGridEngine.IO.cim.cgmes.base import Base\n"
     # Not sure how to generate all of this as we need to know the path to some of the imported classes.
     # CLASS specification
     code += get_class_spec_code(name, parent)
@@ -80,7 +80,7 @@ def write_py_for_class(cgmes_version, cgmes_class):
     # print(code)
 
     # Enumeration import
-    import_text += f"from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile"
+    import_text += f"from VeraGridEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile"
     for enum_name in class_enum_list:
         import_text += f", {enum_name}"
     import_text += "\n"
@@ -187,7 +187,7 @@ def get_attribute_code(attributes):
             assoc_range = attribute["range"]
             default_value = assoc_range + " | None = None"
             code += (
-                f"\t\tfrom GridCalEngine.IO.cim.cgmes.{cgmes_folder}.devices.{get_format_name(assoc_range, True)} "
+                f"\t\tfrom VeraGridEngine.IO.cim.cgmes.{cgmes_folder}.devices.{get_format_name(assoc_range, True)} "
                 f"import {assoc_range}\n")
             code += f"\t\tself.{attr_name}: {default_value}\n"
         elif "enum_range_list" in attribute:  # Enumeration
@@ -232,7 +232,7 @@ def write_class_import(name):
     import_code = ""
     for class_name in name:
         import_code += \
-            (f"from GridCalEngine.IO.cim.cgmes.{cgmes_folder}.devices.{get_format_name(class_name, True)} import "
+            (f"from VeraGridEngine.IO.cim.cgmes.{cgmes_folder}.devices.{get_format_name(class_name, True)} import "
              f"{class_name}\n")
     with open(f"{cgmes_folder}/class_imports.py", 'w') as file:
         file.write(import_code)

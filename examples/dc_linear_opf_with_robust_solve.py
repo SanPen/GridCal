@@ -1,5 +1,5 @@
 import numpy as np
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 fname = '../Grids_and_profiles/grids/IEEE39_1W.gridcal'
 main_circuit = gce.FileOpen(fname).open()

@@ -4,10 +4,10 @@
 # SPDX-License-Identifier: MPL-2.0
 from pytest import approx
 
-from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Devices import *
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
+from VeraGridEngine.basic_structures import Logger
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Devices import *
+from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
 
 Sbase = 100  # MVA
 
@@ -91,7 +91,7 @@ def test_corr_line_losses():
 
     # Check solution
     approx_losses = round(power_flow.results.losses[0], 3)
-    solution = complex(0.011, 0.002)  # Expected solution from GridCal
+    solution = complex(0.011, 0.002)  # Expected solution from VeraGrid
                                       # Tested on ETAP 16.1.0
 
     print("\n=================================================================")

@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import os
-import GridCalEngine.api as gce
+import VeraGridEngine.api as gce
 
 # Define the path to the test grid file
 TEST_GRID_FILENAME = os.path.join(os.path.dirname(__file__), 'data', 'grids', 'switch_try.gridcal')

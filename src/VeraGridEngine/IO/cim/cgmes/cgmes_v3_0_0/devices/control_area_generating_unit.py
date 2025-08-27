@@ -1,0 +1,35 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.  
+# SPDX-License-Identifier: MPL-2.0
+
+from VeraGridEngine.IO.base.units import UnitMultiplier, UnitSymbol
+from VeraGridEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.identified_object import IdentifiedObject
+from VeraGridEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
+
+
+class ControlAreaGeneratingUnit(IdentifiedObject):
+	def __init__(self, rdfid='', tpe='ControlAreaGeneratingUnit'):
+		IdentifiedObject.__init__(self, rdfid, tpe)
+
+		from VeraGridEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.control_area import ControlArea
+		self.ControlArea: ControlArea | None = None
+		from VeraGridEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.generating_unit import GeneratingUnit
+		self.GeneratingUnit: GeneratingUnit | None = None
+
+		self.register_property(
+			name='ControlArea',
+			class_type=ControlArea,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''The parent control area for the generating unit specifications.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='GeneratingUnit',
+			class_type=GeneratingUnit,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''The generating unit specified for this control area.  Note that a control area should include a GeneratingUnit only once.''',
+			profiles=[]
+		)

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 import pytest
-from GridCalEngine.api import *
+from VeraGridEngine.api import *
 
 np.set_printoptions(linewidth=10000)
 

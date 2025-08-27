@@ -6,16 +6,16 @@
 
 #!/usr/bin/env bash
 python3 setup.py sdist
-twine upload dist/GridCal-2.30.tar.gz
+twine upload dist/VeraGrid-2.30.tar.gz
 
 """
 import os
 import fnmatch
-from GridCalEngine.__version__ import __GridCalEngine_VERSION__
-from GridCal.__version__ import __GridCal_VERSION__
-from GridCalServer.__version__ import __GridCalServer_VERSION__
-from gridcal_packaging import publish
-from GridCal.Gui.update_gui_common import convert_resource_file, convert_ui_file
+from VeraGridEngine.__version__ import __VeraGridEngine_VERSION__
+from VeraGrid.__version__ import __VeraGrid_VERSION__
+from VeraGridServer.__version__ import __VeraGridServer_VERSION__
+from veragrid_packaging import publish
+from VeraGrid.Gui.update_gui_common import convert_resource_file, convert_ui_file
 
 
 def update_gui_to_make_sure():
@@ -35,7 +35,7 @@ def update_gui_to_make_sure():
 
     # define the path to MAIN
     __here__ = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.join(__here__, 'GridCal', 'Gui', 'Main')
+    path = os.path.join(__here__, 'VeraGrid', 'Gui', 'Main')
 
     convert_resource_file(source=os.path.join(path, 'icons.qrc'), rcc_cmd=rcc_cmd)
 
@@ -96,12 +96,12 @@ def check_versions() -> bool:
 
     :return:
     """
-    if __GridCalEngine_VERSION__ != __GridCal_VERSION__:  # both packages' versions must be exactly the same
-        print(__GridCalEngine_VERSION__, 'and', __GridCal_VERSION__, "are different :(")
+    if __VeraGridEngine_VERSION__ != __VeraGrid_VERSION__:  # both packages' versions must be exactly the same
+        print(__VeraGridEngine_VERSION__, 'and', __VeraGrid_VERSION__, "are different :(")
         return False
 
-    if __GridCalEngine_VERSION__ != __GridCalServer_VERSION__:  # both packages' versions must be exactly the same
-        print(__GridCalEngine_VERSION__, 'and', __GridCalServer_VERSION__, "are different :(")
+    if __VeraGridEngine_VERSION__ != __VeraGridServer_VERSION__:  # both packages' versions must be exactly the same
+        print(__VeraGridEngine_VERSION__, 'and', __VeraGridServer_VERSION__, "are different :(")
         return False
 
     return True
@@ -116,31 +116,31 @@ if __name__ == "__main__":
         'import tests'
     ]
 
-    search_text_in_python_files(directory="GridCal", search_terms=forbidden_text)
-    search_text_in_python_files(directory="GridCalEngine", search_terms=forbidden_text)
-    search_text_in_python_files(directory="GridCalServer", search_terms=forbidden_text)
+    search_text_in_python_files(directory="VeraGrid", search_terms=forbidden_text)
+    search_text_in_python_files(directory="VeraGridEngine", search_terms=forbidden_text)
+    search_text_in_python_files(directory="VeraGridServer", search_terms=forbidden_text)
 
     update_gui_to_make_sure()
 
     if check_versions():
 
-        _long_description = "# GridCal \n"
+        _long_description = "# VeraGrid \n"
         _long_description += "This software aims to be a complete platform for power systems research and simulation.)\n"
         _long_description += "\n"
         _long_description += "[Watch the video https](https://youtu.be/SY66WgLGo54)\n"
-        _long_description += "[Check out the documentation](https://gridcal.readthedocs.io)\n"
+        _long_description += "[Check out the documentation](https://veragrid.readthedocs.io)\n"
         _long_description += "\n"
         _long_description += "## Installation\n"
         _long_description += "\n"
-        _long_description += "pip install GridCal\n"
+        _long_description += "pip install veragrid\n"
         _long_description += "\n"
         _long_description += "For more options (including a standalone setup one), follow the\n"
-        _long_description += "[installation instructions]( https://gridcal.readthedocs.io/en/latest/getting_started/install.html)\n"
-        _long_description += "from the project's [documentation](https://gridcal.readthedocs.io)\n"
+        _long_description += "[installation instructions]( https://veragrid.readthedocs.io/en/latest/getting_started/install.html)\n"
+        _long_description += "from the project's [documentation](https://veragrid.readthedocs.io)\n"
 
         _description_content_type = 'text/markdown'
 
-        _summary = 'GridCal is a Power Systems simulation program intended for professional use and research'
+        _summary = 'VeraGrid is a Power Systems simulation program intended for professional use and research'
 
         _keywords = 'power systems planning'
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
         _author_email = 'spenate@eroots.tech'
 
-        _home_page = 'https://github.com/SanPen/GridCal'
+        _home_page = 'https://github.com/SanPen/VeraGrid'
 
         _classifiers_list = [
             'Programming Language :: Python :: 3.10',
@@ -160,9 +160,9 @@ if __name__ == "__main__":
 
         _license_ = 'MPL2'
 
-        publish(pkg_name='GridCalEngine',
-                setup_path=os.path.join('GridCalEngine', 'setup.py'),
-                version=__GridCalEngine_VERSION__,
+        publish(pkg_name='VeraGridEngine',
+                setup_path=os.path.join('VeraGridEngine', 'setup.py'),
+                version=__VeraGridEngine_VERSION__,
                 summary=_summary,
                 home_page=_home_page,
                 author=_author,
@@ -178,9 +178,9 @@ if __name__ == "__main__":
                 exeption_paths=('__pycache__')
                 )
 
-        publish(pkg_name='GridCal',
-                setup_path=os.path.join('GridCal', 'setup.py'),
-                version=__GridCal_VERSION__,
+        publish(pkg_name='VeraGrid',
+                setup_path=os.path.join('VeraGrid', 'setup.py'),
+                version=__VeraGrid_VERSION__,
                 summary=_summary,
                 home_page=_home_page,
                 author=_author,
@@ -196,17 +196,17 @@ if __name__ == "__main__":
                 exeption_paths=('__pycache__', 'icons', 'svg'),
                 extra_files=[
                     os.path.join("data", "cables.csv"),
-                    os.path.join("data", "GridCal.ico"),
-                    os.path.join("data", "GridCal.svg"),
+                    os.path.join("data", "VeraGrid.ico"),
+                    os.path.join("data", "VeraGrid.svg"),
                     os.path.join("data", "sequence_lines.csv"),
                     os.path.join("data", "transformers.csv"),
                     os.path.join("data", "wires.csv")
                 ]
                 )
 
-        publish(pkg_name='GridCalServer',
-                setup_path=os.path.join('GridCalServer', 'setup.py'),
-                version=__GridCalServer_VERSION__,
+        publish(pkg_name='VeraGridServer',
+                setup_path=os.path.join('VeraGridServer', 'setup.py'),
+                version=__VeraGridServer_VERSION__,
                 summary=_summary,
                 home_page=_home_page,
                 author=_author,

@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import os
-from GridCalEngine.api import *
+from VeraGridEngine.api import *
 
 
 def test_non_linear_factors() -> None:

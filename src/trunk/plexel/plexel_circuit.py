@@ -1,7 +1,7 @@
 from typing import List, Union
 from enum import Enum
 import pandas as pd
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 
 
 class ClassEnum(Enum):
@@ -604,7 +604,7 @@ class PlexelBase:
 
 if __name__ == "__main__":
     import os
-    import GridCalEngine.api as gce
+    import VeraGridEngine.api as gce
 
     # fname = os.path.join("..", "..", "..", "Grids_and_profiles/grids/hydro_IEEE39_2.gridcal")
     fname = os.path.join("..", "..", "..", "Grids_and_profiles/grids/IEEE 14 bus.raw")

@@ -1,5 +1,5 @@
-from GridCalEngine import FileOpen
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_josep
+from VeraGridEngine import FileOpen
+from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_josep
 import pandas as pd
 import numpy as np
 

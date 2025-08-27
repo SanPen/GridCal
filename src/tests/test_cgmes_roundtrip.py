@@ -8,14 +8,14 @@ from __future__ import annotations
 import os
 import pytest
 import numpy as np
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
-from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions, FileSave
-from GridCalEngine.Simulations import PowerFlowOptions
-from GridCalEngine.Simulations.results_template import DriverToSave
-from GridCalEngine.enumerations import CGMESVersions, SimulationTypes, \
+from VeraGridEngine.IO.cim.cgmes.cgmes_enums import CgmesProfileType
+from VeraGridEngine.IO.file_handler import FileSavingOptions, FileOpenOptions, FileSave
+from VeraGridEngine.Simulations import PowerFlowOptions
+from VeraGridEngine.Simulations.results_template import DriverToSave
+from VeraGridEngine.enumerations import CGMESVersions, SimulationTypes, \
     SolverType
-from GridCalEngine.basic_structures import Logger
-import GridCalEngine.api as gc
+from VeraGridEngine.basic_structures import Logger
+import VeraGridEngine.api as gc
 
 
 def create_file_save_options(boundary_zip_path: str) -> FileSavingOptions:
@@ -174,7 +174,7 @@ def run_import_export_test(import_path: str | list[str],
 
     assert ok
 
-@pytest.mark.skip(reason="Not passing because GridCal ConnectivityNodes were removed and this needs rethinking")
+@pytest.mark.skip(reason="Not passing because VeraGrid ConnectivityNodes were removed and this needs rethinking")
 def test_cgmes_roundtrip():
     """
 

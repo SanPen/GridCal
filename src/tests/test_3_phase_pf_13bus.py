@@ -2,13 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-import GridCalEngine.api as gce
-from GridCalEngine import WindingType, ShuntConnectionType
+import VeraGridEngine.api as gce
+from VeraGridEngine import WindingType, ShuntConnectionType
 import numpy as np
-from GridCalEngine.basic_structures import Vec
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import (PfBasicFormulation3Ph, expand3ph,
-                                                                                       expandVoltage3ph)
+from VeraGridEngine.basic_structures import Vec
+from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
+from VeraGridEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import (PfBasicFormulation3Ph, expand3ph,
+                                                                                        expandVoltage3ph)
 
 
 def power_flow_3ph(grid: gce.MultiCircuit, V0_3ph: Vec):

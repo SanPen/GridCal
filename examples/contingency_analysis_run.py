@@ -1,6 +1,6 @@
 import os
-from GridCalEngine.api import *
-import GridCalEngine.enumerations as en
+from VeraGridEngine.api import *
+import VeraGridEngine.enumerations as en
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')

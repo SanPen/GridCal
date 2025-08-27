@@ -5,14 +5,14 @@
 import os
 import numpy as np
 from scipy.sparse import csc_matrix
-import GridCalEngine.Simulations.Derivatives.csc_derivatives as cscdiff
-import GridCalEngine.Simulations.Derivatives.ac_jacobian as cscjac
-import GridCalEngine.Simulations.Derivatives.matpower_derivatives as mdiff
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import polar_to_rect
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import compute_branch_power_derivatives
-from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Utils.Sparse.csc2 import mat_to_scipy, scipy_to_cxmat, CxCSC
-import GridCalEngine.api as gce
+import VeraGridEngine.Simulations.Derivatives.csc_derivatives as cscdiff
+import VeraGridEngine.Simulations.Derivatives.ac_jacobian as cscjac
+import VeraGridEngine.Simulations.Derivatives.matpower_derivatives as mdiff
+from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions import polar_to_rect
+from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import compute_branch_power_derivatives
+from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
+from VeraGridEngine.Utils.Sparse.csc2 import mat_to_scipy, scipy_to_cxmat, CxCSC
+import VeraGridEngine.api as gce
 
 
 def test_bus_derivatives():

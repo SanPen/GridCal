@@ -5,12 +5,12 @@
 import os
 
 from scipy.sparse import lil_matrix
-from GridCalEngine.api import *
-import GridCalEngine.Devices as dev
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.api import power_flow
-from GridCalEngine.Topology.topology import compute_connectivity_flexible
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
+from VeraGridEngine.api import *
+import VeraGridEngine.Devices as dev
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.api import power_flow
+from VeraGridEngine.Topology.topology import compute_connectivity_flexible
+from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 
 def test_topology_4_nodes_A():
     """
@@ -757,7 +757,7 @@ def get_lynn_5_bus() -> MultiCircuit:
     ####################################################################################################################
     # Add the loads
     ####################################################################################################################
-    # In GridCal, the loads, generators ect are stored within each bus object:
+    # In VeraGrid, the loads, generators ect are stored within each bus object:
 
     # we'll define the first load completely
     l2 = Load(name='Load',

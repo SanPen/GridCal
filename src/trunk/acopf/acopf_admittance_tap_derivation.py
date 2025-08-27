@@ -2,11 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
-import GridCalEngine.api as gce
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at, NumericalCircuit
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
-from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from GridCalEngine.enumerations import TapPhaseControl
+import VeraGridEngine.api as gce
+from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at, NumericalCircuit
+from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
+from VeraGridEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
+from VeraGridEngine.enumerations import TapPhaseControl
 from scipy import sparse as sp
 import numpy as np
 

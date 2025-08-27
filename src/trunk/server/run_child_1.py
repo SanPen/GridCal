@@ -1,4 +1,4 @@
-from GridCalServer.run import start_server
+from VeraGridServer.run import start_server
 
 start_server(
     host="localhost",

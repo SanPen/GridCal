@@ -6,21 +6,21 @@ from typing import Dict, List
 
 import pytest
 
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.IO.cim.cgmes import cgmes_enums
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_generators
-import GridCalEngine.Devices as gcdev
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.connectivity_node import ConnectivityNode
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.equipment_container import EquipmentContainer
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.generating_unit import GeneratingUnit
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.synchronous_machine import SynchronousMachine
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.regulating_control import RegulatingControl
-from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.enumerations import CGMESVersions
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.IO.cim.cgmes import cgmes_enums
+from VeraGridEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from VeraGridEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_generators
+import VeraGridEngine.Devices as gcdev
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.connectivity_node import ConnectivityNode
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.equipment_container import EquipmentContainer
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.generating_unit import GeneratingUnit
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.synchronous_machine import SynchronousMachine
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
+from VeraGridEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.regulating_control import RegulatingControl
+from VeraGridEngine.data_logger import DataLogger
+from VeraGridEngine.enumerations import CGMESVersions
 
 tn_test = TopologicalNode()
 cn_test = ConnectivityNode()
@@ -89,7 +89,7 @@ generators_test_params = [(cgmes_object(2), calc_node_dict_object(), cn_dict_obj
                            device_to_terminal_dict_object(), 1.0)]
 
 
-@pytest.mark.skip(reason="Not passing because GridCal ConnectivityNodes were removed and this needs rethinking")
+@pytest.mark.skip(reason="Not passing because VeraGrid ConnectivityNodes were removed and this needs rethinking")
 @pytest.mark.parametrize("cgmes_model,calc_node_dict,cn_dict,device_to_terminal_dict,expected_power_factor",
                          generators_test_params)
 def test_get_gcdev_generators(cgmes_model, calc_node_dict, cn_dict, device_to_terminal_dict, expected_power_factor):
@@ -124,7 +124,7 @@ def test_get_gcdev_generators_zero_terminals_log_error():
     assert logger.entries[1].msg == 'Not exactly one terminal'
 
 
-@pytest.mark.skip(reason="Not passing because GridCal ConnectivityNodes were removed and this needs rethinking")
+@pytest.mark.skip(reason="Not passing because VeraGrid ConnectivityNodes were removed and this needs rethinking")
 def test_get_gcdev_generators_generating_unit_is_none_log_error():
     logger = DataLogger()
     multi_circuit = MultiCircuit()
@@ -136,7 +136,7 @@ def test_get_gcdev_generators_generating_unit_is_none_log_error():
     assert logger.entries[0].msg == 'SynchronousMachine has no generating unit'
 
 
-@pytest.mark.skip(reason="Not passing because GridCal ConnectivityNodes were removed and this needs rethinking")
+@pytest.mark.skip(reason="Not passing because VeraGrid ConnectivityNodes were removed and this needs rethinking")
 def test_get_gcdev_generators_regulating_controls_none_log_warning():
     logger = DataLogger()
     multi_circuit = MultiCircuit()
@@ -148,7 +148,7 @@ def test_get_gcdev_generators_regulating_controls_none_log_warning():
     assert logger.entries[0].msg == 'RegulatingCondEq has no control'
 
 
-@pytest.mark.skip(reason="Not passing because GridCal ConnectivityNodes were removed and this needs rethinking")
+@pytest.mark.skip(reason="Not passing because VeraGrid ConnectivityNodes were removed and this needs rethinking")
 def test_get_gcdev_generators_regulating_control_mode_kind_not_voltage_log_warning():
     logger = DataLogger()
     multi_circuit = MultiCircuit()

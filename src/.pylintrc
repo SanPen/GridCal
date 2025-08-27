@@ -1,5 +1,5 @@
 [MASTER]
-init-hook='import sys; sys.path.append("GridCal")'
+init-hook='import sys; sys.path.append("VeraGrid")'
 extension-pkg-whitelist=PyQt5, PySide6
 
 [BASIC]

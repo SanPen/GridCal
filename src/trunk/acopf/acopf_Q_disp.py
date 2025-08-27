@@ -1,8 +1,8 @@
 # Constrain the P of gens in areas 11 and 15 to solve for Q
 import numpy as np
-import GridCalEngine.api as gce
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
-from GridCalEngine.Simulations.OPF import opf_driver
+import VeraGridEngine.api as gce
+from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
+from VeraGridEngine.Simulations.OPF import opf_driver
 
 
 def modify_grid(grid):
