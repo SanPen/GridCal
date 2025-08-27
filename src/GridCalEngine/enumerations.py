@@ -107,6 +107,7 @@ class SwitchGraphicType(Enum):
         except KeyError:
             return s
 
+
 class CpfStopAt(Enum):
     """
     CpfStopAt
@@ -585,6 +586,7 @@ class ConverterControlType(Enum):
     Pdc = 'P_dc'
     Pac = 'P_ac'
     Pdc_angle_droop = 'P_dc_angle_droop'  # PMODE3
+    Imax = 'Imax'
 
     def __str__(self) -> str:
         return str(self.value)
@@ -797,6 +799,46 @@ class WindingsConnection(Enum):
         """
         try:
             return WindingsConnection[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class TerminalType(Enum):
+    """
+    Terminal types
+    """
+    # AC: AC converter side
+    # DC+: DC+ converter side
+    # DC-: DC- converter side
+    # OTHER: Other terminal type such as in transformer3w
+    AC = 'AC'
+    DC_P = 'DC+'
+    DC_N = 'DC-'
+    OTHER = 'Other'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return TerminalType[s]
         except KeyError:
             return s
 
@@ -1666,7 +1708,7 @@ class ResultTypes(Enum):
     BusShortCircuitActivePowerB = 'Short circuit active power B'
     BusShortCircuitActivePowerC = 'Short circuit active power C'
 
-    BusShortCircuitReactivePower = 'Short circuit reactive power '
+    BusShortCircuitReactivePower = 'Short circuit reactive power'
     BusShortCircuitReactivePowerA = 'Short circuit reactive power A'
     BusShortCircuitReactivePowerB = 'Short circuit reactive power B'
     BusShortCircuitReactivePowerC = 'Short circuit reactive power C'
@@ -2121,13 +2163,6 @@ class ContingencyOperationTypes(Enum):
 
     def __repr__(self):
         return str(self)
-
-    # def __call__(self, value, names=None, *, module=None, qualname=None, type=None, start=1, boundary=None):
-    #     if value == 'status':
-    #         return ContingencyOperationTypes.Active
-    #
-    #     return super.__call__(value, names=names,
-    #                           module=module, qualname=qualname, type=type, start=start, boundary=boundary)
 
     @staticmethod
     def argparse(s):

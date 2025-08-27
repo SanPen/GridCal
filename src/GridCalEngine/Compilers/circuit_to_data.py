@@ -250,6 +250,7 @@ def get_bus_data(bus_data: BusData,
         bus_data.cost_v[i] = bus.Vm_cost
         bus_data.Vbus[i] = bus.get_voltage_guess(use_stored_guess=use_stored_guess)
         bus_data.is_dc[i] = bus.is_dc
+        bus_data.is_grounded[i] = bus.is_grounded
 
         bus_data.angle_min[i] = bus.angle_min
         bus_data.angle_max[i] = bus.angle_max
@@ -400,7 +401,7 @@ def get_load_data(data: LoadData,
                             data.S3_delta[3 * ii + 2] = complex(elm.Pc, elm.Qc)
 
                             if elm.G1 > 0 and elm.G2 > 0 and elm.G3 > 0:
-                                data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                                data.Y3_star[3 * ii:3 * ii + 3, [0, 1, 2]] = delta2StarAdmittance(
                                     Yab=complex(elm.G1, -elm.B1),
                                     Ybc=complex(elm.G2, -elm.B2),
                                     Yca=complex(elm.G3, -elm.B3)
@@ -742,7 +743,7 @@ def get_shunt_data(
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                        data.Y3_star[3 * ii:3 * ii + 3, [0, 1, 2]] = delta2StarAdmittance(
                             Yab=complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx]),
                             Ybc=complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx]),
                             Yca=complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
@@ -765,7 +766,7 @@ def get_shunt_data(
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                        data.Y3_star[3 * ii:3 * ii + 3, [0, 1, 2]] = delta2StarAdmittance(
                             Yab=complex(elm.Ga, elm.Ba),
                             Ybc=complex(elm.Gb, elm.Bb),
                             Yca=complex(elm.Gc, elm.Bc)
@@ -818,7 +819,7 @@ def get_shunt_data(
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                        data.Y3_star[3 * ii:3 * ii + 3, [0, 1, 2]] = delta2StarAdmittance(
                             Yab=complex(elm.Ga_prof[t_idx], elm.Ba_prof[t_idx]),
                             Ybc=complex(elm.Gb_prof[t_idx], elm.Bb_prof[t_idx]),
                             Yca=complex(elm.Gc_prof[t_idx], elm.Bc_prof[t_idx])
@@ -863,7 +864,7 @@ def get_shunt_data(
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_star[3*ii:3*ii+3, [0,1,2]] = delta2StarAdmittance(
+                        data.Y3_star[3 * ii:3 * ii + 3, [0, 1, 2]] = delta2StarAdmittance(
                             Yab=complex(elm.Ga, elm.Ba),
                             Ybc=complex(elm.Gb, elm.Bb),
                             Yca=complex(elm.Gc, elm.Bc)
@@ -1909,6 +1910,7 @@ def get_vsc_data(
         data.original_idx[i] = i
 
         data.F[i] = f
+        data.F_dcn[i] = -1 if elm.bus_dc_n is None else bus_dict[elm.bus_dc_n]  # TODO SANPEN: Handle the -1 everywhere for this
         data.T[i] = t
 
         if time_series:
@@ -1923,6 +1925,7 @@ def get_vsc_data(
             data.control2[ii] = elm.control2_prof[t_idx]
             data.control1_val[ii] = elm.control1_val_prof[t_idx]
             data.control2_val[ii] = elm.control2_val_prof[t_idx]
+            # Using DC_positive to set the controls, may need to also pass DC_negative
             set_control_dev(k=ii, f=f, t=t,
                             control=data.control1[ii],
                             control_dev=elm.control1_dev_prof[t_idx],

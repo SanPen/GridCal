@@ -5608,8 +5608,8 @@ class Assets:
             self._upfc_devices = devices
 
         elif device_type == DeviceType.VscDevice:
-            for elm in devices:
-                elm.correct_buses_connection()
+            # for elm in devices:  # TODO SANPEN: Why not?
+            #     elm.correct_buses_connection()
             self._vsc_devices = devices
 
         elif device_type == DeviceType.BranchGroupDevice:
