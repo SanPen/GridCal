@@ -392,8 +392,20 @@ def solve_se_lm(nc: NumericalCircuit,
         dx = spsolve(Asys, rhs)
 
         if norm_f < (tol * 10.0):
-            r, sigma2, Pii, rN, imax, b, bad_data_detected = b_test(sigma2=sigma2, H=H, dz=dz, HtWH=Gx,
+            try:
+                r, sigma2, Pii, rN, imax, b, bad_data_detected = b_test(sigma2=sigma2, H=H, dz=dz, HtWH=Gx,
                                                                     c_threshold=c_threshold, logger=logger)
+            except AssertionError as e:
+                if str(e) == "Unobservable-System":
+                    return NumericStateEstimationResults(V=V,
+                                                         Scalc=Scalc,
+                                                         norm_f=norm_f,
+                                                         converged=False,
+                                                         iterations=iter_,
+                                                         elapsed=time.time() - start_time,
+                                                         bad_data_detected=False,
+                                                         is_observable=False)
+
 
             if bad_data_detected:
                 if prefer_correct:
@@ -411,6 +423,7 @@ def solve_se_lm(nc: NumericalCircuit,
                         z[imax] = z_tilde_imax
                     else:
                         # Pii is very small - this is likely a critical measurement
+                        # TODO -> Do not delete
                         logger.add_warning(f"Measurement {imax} appears critical (Pii={Pii[imax]:.2e})")
                         # Don't correct critical measurements, just remove them
                         # delete measurements
@@ -565,6 +578,7 @@ def solve_se_lm(nc: NumericalCircuit,
                                          norm_f=norm_f,
                                          converged=converged,
                                          iterations=iter_,
+                                         is_observable=bool(converged),
                                          elapsed=time.time() - start_time,
                                          bad_data_detected=bad_data_detected)
 
@@ -658,7 +672,7 @@ def solve_se_nr(nc: NumericalCircuit,
         gx = HtW @ dz
 
         # Solve the increment
-        dx = spsolve(Gx, gx)
+        dx = spsolve(Gx, gx) # (HtW @ dz) * (new_state) = HtW @ H
 
         # modify the solution
         if fixed_slack:
@@ -797,9 +811,10 @@ def solve_se_nr(nc: NumericalCircuit,
                                          losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
                                          loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
                                          norm_f=norm_f,
-                                         converged=converged,
+                                         converged=bool(converged),
                                          iterations=iter_,
                                          elapsed=time.time() - start_time,
+                                         is_observable=bool(converged),
                                          bad_data_detected=bad_data_detected)
 
 def solve_se_gauss_newton(nc: NumericalCircuit,
@@ -982,9 +997,10 @@ def solve_se_gauss_newton(nc: NumericalCircuit,
                                          losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
                                          loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
                                          norm_f=norm_f,
-                                         converged=converged,
+                                         converged=bool(converged),
                                          iterations=iter_,
                                          elapsed=time.time() - start_time,
+                                         is_observable=bool(converged),
                                          bad_data_detected=False)
 
 
@@ -1190,7 +1206,8 @@ def decoupled_state_estimation(nc: NumericalCircuit,
                                          losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
                                          loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
                                          norm_f=norm_f,
-                                         converged=converged,
+                                         converged=bool(converged),
                                          iterations=iter_count,
                                          elapsed=time.time() - start_time,
+                                         is_observable=bool(converged), # by default it is observable if it converges
                                          bad_data_detected=False)

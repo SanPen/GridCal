@@ -57,11 +57,11 @@ class StateEstimationConvergenceReport(ConvergenceReport):
         Constructor
         """
         super().__init__()
-        self.bad_data_detected = list()
+        self.bad_data_detected = False
         self.unobservable_buses = list()
         self.bus_contribution = list()
         self.pseudo_measurements = list()
-        self.is_observable = list()
+        self.is_observable = True
         self.measurement_profile = list()
 
     def add_se(self, method,
@@ -71,8 +71,8 @@ class StateEstimationConvergenceReport(ConvergenceReport):
                iterations: int,
                bad_data_detected: bool,
                is_observable: bool,
-               bus_contribution,
-               pseudo_measurements,
+               bus_contribution: list,
+               pseudo_measurements: list,
                unobservable_buses: list,
                measurement_profile:dict):
         """
@@ -87,21 +87,21 @@ class StateEstimationConvergenceReport(ConvergenceReport):
         """
         # Call parent's add method for common parameters
         self.add(method, converged, error, elapsed, iterations)
-        self.bad_data_detected.append(bad_data_detected)
-        self.is_observable.append(is_observable)
+        self.bad_data_detected=bad_data_detected
+        self.is_observable=is_observable
         self.add_bus_contribution(bus_contribution)
         self.add_pseudo_measurements(pseudo_measurements)
         self.add_unobservable_buses(unobservable_buses)
         self.measurement_profile.append(measurement_profile)
 
-    def is_observable(self) -> list:
+    def is_observable(self) -> bool:
         """
         Get info is the island was observable
         :return: List of is_obsevable booleans
         """
         return self.is_observable
 
-    def get_bad_data_detected(self) -> list:
+    def get_bad_data_detected(self) -> bool:
         """
         Get bad data detection results
         :return: List of bad data detection results
@@ -258,7 +258,9 @@ class StateEstimation(DriverTemplate):
 
             report = StateEstimationConvergenceReport()
 
-            is_observable = True
+            is_observable = True # by default we consider it True, if SE diverges and LM solver is chosen there assert
+            # statement explicitly mentions unobservability, if user runs observability analysis, this boolean is
+            # assigned as per standard output
             solution = None  # initialized so observability results can be saved without running SE
             unobservable_buses=[]
             bus_contrib={}
@@ -389,13 +391,19 @@ class StateEstimation(DriverTemplate):
             else:
                 raise ValueError(f"State Estimation solver type not recognized: {self.options.solver.value}")
 
+
+            # we need to switch is_observable back to True in case the pseudo measurements were added and SE converged
+            # if not is_observable and self.options.add_pseudo_measurements and solution.converged:
+            #     is_observable=True
+            # we leave unobservable buses and bus_contrinb as record that pseudo measurements were added
+
             report.add_se(method=self.options.solver,
                           converged=solution.converged if solution else False,
-                          error=solution.norm_f,
-                          elapsed=solution.elapsed,
-                          iterations=solution.iterations,
-                          bad_data_detected=solution.bad_data_detected,
-                          is_observable=is_observable,
+                          error=solution.norm_f if solution else 1e9,
+                          elapsed=solution.elapsed if solution else 0,
+                          iterations=solution.iterations if solution else 0,
+                          bad_data_detected=solution.bad_data_detected if solution else is_observable,
+                          is_observable=solution.is_observable if solution else is_observable ,
                           unobservable_buses=unobservable_buses,
                           bus_contribution=bus_contrib,
                           measurement_profile=measurement_profile,

@@ -45,7 +45,8 @@ class NumericStateEstimationResults:
                  converged: bool,
                  iterations: int,
                  elapsed: float,
-                 bad_data_detected=False):
+                 bad_data_detected=False,
+                 is_observable=True):
         """
         Object to store the results returned by a numeric power flow routine
         :param V: Voltage vector
@@ -108,6 +109,7 @@ class NumericStateEstimationResults:
         self.method = None
 
         self.bad_data_detected = bad_data_detected
+        self.is_observable = is_observable
 
 
 class StateEstimationResults(ResultsTemplate):

@@ -234,14 +234,15 @@ def profile_measurements(Hsub, ids, tol=1e-9,include_line_measurements_on_both_e
                 rank_local = np.linalg.matrix_rank(H_local, tol=tol)
                 H_local_reduced = np.delete(H_local, related_idxs.index(idx), axis=0)
                 rank_local_minus_one = np.linalg.matrix_rank(H_local_reduced, tol=tol)
-
+                redundancy_type = classify_redundancy(H_dense, idx, tol)
                 if rank_local == rank_local_minus_one:
-                    prof[meas_id] = "locally redundant"
+                    prof[meas_id] = f"locally redundant ({redundancy_type})"
                 else:
-                    prof[meas_id] = "globally redundant"
+                    prof[meas_id] = f"globally redundant ({redundancy_type})"
             else:
-                # No other local measurement to compare → global redundancy
-                prof[meas_id] = "globally redundant"
+                # Only one measurement in the group → global redundancy
+                redundancy_type = classify_redundancy(H_dense, idx, tol)
+                prof[meas_id] = f"globally redundant ({redundancy_type})"
 
     return prof
 
@@ -350,3 +351,31 @@ def plot_bus_observability(bus_status_per_type):
     plt.title("Bus Observability Profile by Measurement Type")
     plt.legend()
     plt.show()
+
+# -------------- we extend measurement classification to check single and mutliple redundancies ----------------------
+def classify_redundancy(H, idx, tol=1e-9):
+    """Classify redundant measurement into none/single/multiple redundancy."""
+    """
+    Take the measurement’s row h_i.Remove it from the Jacobian H_rest.
+    """
+    h_i = H[idx, :].reshape(1, -1)      # row vector = the measurement we test
+    H_rest = np.delete(H, idx, axis=0)  # all other measurements
+
+    # Least squares to check dependence
+    """
+    Try to express h_i as a linear combination of the others (least-squares fit).residual_norm tells us how well 
+    it can be reconstructed: If residual is large, it means h_i is not redundant at all → "none". If residual is tiny, 
+    then h_i lies in the span of others → it’s redundant
+    """
+    coeffs, residuals, _, _ = np.linalg.lstsq(H_rest.T, h_i.T, rcond=None)
+    residual_norm = np.linalg.norm(h_i - coeffs.T @ H_rest)
+
+    if residual_norm > tol:
+        return "none"
+    else:
+        """
+        Count how many coefficients in that linear combination are significant. If only 1 other measurement explains
+         h_i → "single redundancy".If it needs multiple others together → "multiple redundancy".
+        """
+        nnz = np.sum(np.abs(coeffs) > 1e-6)
+        return "single" if nnz == 1 else "multiple"

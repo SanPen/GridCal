@@ -51,7 +51,8 @@ def test_se_with_and_without_pseudo_measurements():
     se_no_pseudo = StateEstimation(circuit=grid, options=se_options_no_pseudo)
     se_no_pseudo.run()
     report_no_pseudo = se_no_pseudo.results.convergence_reports[0]
-
+    assert report_no_pseudo
+    assert not report_no_pseudo.is_observable
     # Expect: no convergence
     assert not report_no_pseudo.converged(), "SE should NOT converge without pseudo-measurements."
 
@@ -68,6 +69,7 @@ def test_se_with_and_without_pseudo_measurements():
     se_pseudo.run()
     report_pseudo = se_pseudo.results.convergence_reports[0]
 
+    assert report_pseudo.is_observable
     # Expect: convergence
     assert report_pseudo.converged(), "SE should converge once pseudo-measurements are added."
 
