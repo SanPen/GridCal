@@ -13,6 +13,7 @@ from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
+from GridCalEngine.Simulations.OPF.simple_dispatch_ts import GreedyDispatchInputsSnapshot, greedy_dispatch2
 from GridCalEngine.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
 
 
@@ -177,18 +178,54 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             self.results.fluid_path_flow = opf_vars.fluid_path_vars.flow[0, :]
             self.results.fluid_injection_flow = opf_vars.fluid_inject_vars.flow[0, :]
 
-        elif self.options.solver == SolverType.SIMPLE_OPF:
+        elif self.options.solver == SolverType.GREEDY_DISPATCH_OPF:
 
             if not remote:
                 self.report_progress(0.0)
-                self.report_text('Simple dispatch...')
+                self.report_text('Greedy dispatch...')
+
+            greedy_dispatch_inputs = GreedyDispatchInputsSnapshot(grid=self.grid,
+                                                                  logger=self.logger)
+
+            (gen_dispatch, batt_dispatch,
+             batt_energy, total_cost,
+             load_not_supplied, load_shedding,
+             ndg_surplus_after_batt,
+             ndg_curtailment_per_gen) = greedy_dispatch2(
+                load_profile=greedy_dispatch_inputs.load_profile,
+                gen_profile=greedy_dispatch_inputs.gen_profile,
+                gen_p_max=greedy_dispatch_inputs.gen_p_max,
+                gen_p_min=greedy_dispatch_inputs.gen_p_min,
+                gen_dispatchable=greedy_dispatch_inputs.gen_dispatchable,
+                gen_active=greedy_dispatch_inputs.gen_active,
+                gen_cost=greedy_dispatch_inputs.gen_cost,
+                batt_active=greedy_dispatch_inputs.batt_active,
+                batt_p_max_charge=greedy_dispatch_inputs.batt_p_max_charge,
+                batt_p_max_discharge=greedy_dispatch_inputs.batt_p_max_discharge,
+                batt_energy_max=greedy_dispatch_inputs.batt_energy_max,
+                batt_eff_charge=greedy_dispatch_inputs.batt_eff_charge,
+                batt_eff_discharge=greedy_dispatch_inputs.batt_eff_discharge,
+                batt_cost=greedy_dispatch_inputs.batt_cost,
+                batt_soc0=greedy_dispatch_inputs.batt_soc0,
+                batt_soc_min=greedy_dispatch_inputs.batt_soc_min,
+                dt=greedy_dispatch_inputs.dt,
+                force_charge_if_low=True
+            )
 
             # AC optimal power flow
-            Pl, Pg = run_simple_dispatch(grid=self.grid,
-                                         text_prog=self.report_text,
-                                         prog_func=self.report_progress)
+            # Pl, Pg = run_simple_dispatch(grid=self.grid,
+            #                              text_prog=self.report_text,
+            #                              prog_func=self.report_progress)
 
-            self.results.generator_power = Pg
+            self.results.generator_power = gen_dispatch[0, :]
+            self.results.generator_shedding = ndg_curtailment_per_gen[0, :]
+
+            self.results.battery_power = batt_dispatch[0, :]
+            self.results.battery_energy = batt_energy[0, :]
+
+            self.results.load_shedding = load_shedding[0, :]
+
+            self.results.converged = True
 
         elif self.options.solver == SolverType.NONLINEAR_OPF:
 

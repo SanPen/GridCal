@@ -8,7 +8,9 @@ import numpy as np
 from typing import Union, List, TYPE_CHECKING
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker_3ph import multi_island_pf_3ph
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from GridCalEngine.Simulations.PowerFlow.power_flow_results_3ph import PowerFlowResults3Ph
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Compilers.circuit_to_bentayga import (BENTAYGA_AVAILABLE, bentayga_pf,
@@ -50,23 +52,23 @@ class PowerFlowDriver(DriverTemplate):
 
         self.opf_results: Union[OptimalPowerFlowResults, None] = opf_results
 
-        self.results = PowerFlowResults(n=self.grid.get_bus_number(),
-                                        m=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
-                                        n_hvdc=self.grid.get_hvdc_number(),
-                                        n_vsc=self.grid.get_vsc_number(),
-                                        n_gen=self.grid.get_generation_like_number(),
-                                        n_batt=self.grid.get_batteries_number(),
-                                        n_sh=self.grid.get_shunt_like_device_number(),
-                                        bus_names=self.grid.get_bus_names(),
-                                        branch_names=self.grid.get_branch_names(add_hvdc=False,
-                                                                                add_vsc=False,
-                                                                                add_switch=True),
-                                        hvdc_names=self.grid.get_hvdc_names(),
-                                        vsc_names=self.grid.get_vsc_names(),
-                                        gen_names=self.grid.get_generation_like_names(),
-                                        batt_names=self.grid.get_battery_names(),
-                                        sh_names=self.grid.get_shunt_like_devices_names(),
-                                        bus_types=np.ones(self.grid.get_bus_number()))
+        self.results: PowerFlowResults | PowerFlowResults3Ph = PowerFlowResults(
+            n=self.grid.get_bus_number(),
+            m=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
+            n_hvdc=self.grid.get_hvdc_number(),
+            n_vsc=self.grid.get_vsc_number(),
+            n_gen=self.grid.get_generation_like_number(),
+            n_batt=self.grid.get_batteries_number(),
+            n_sh=self.grid.get_shunt_like_device_number(),
+            bus_names=self.grid.get_bus_names(),
+            branch_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
+            hvdc_names=self.grid.get_hvdc_names(),
+            vsc_names=self.grid.get_vsc_names(),
+            gen_names=self.grid.get_generation_like_names(),
+            batt_names=self.grid.get_battery_names(),
+            sh_names=self.grid.get_shunt_like_devices_names(),
+            bus_types=np.ones(self.grid.get_bus_number())
+        )
 
         self.convergence_reports = list()
 
@@ -141,76 +143,126 @@ class PowerFlowDriver(DriverTemplate):
             self.logger.add_warning('Failed back to GridCal')
 
         if self.engine == EngineType.GridCal:
-            self.results = multi_island_pf(multi_circuit=self.grid,
-                                           t=None,
-                                           options=self.options,
-                                           opf_results=self.opf_results,
-                                           logger=self.logger)
+
+            if self.options.three_phase_unbalanced:
+                # There is a different worker for 3-phase calculations
+                self.results = multi_island_pf_3ph(multi_circuit=self.grid,
+                                                   t=None,
+                                                   options=self.options,
+                                                   opf_results=self.opf_results,
+                                                   logger=self.logger)
+            else:
+                self.results = multi_island_pf(multi_circuit=self.grid,
+                                               t=None,
+                                               options=self.options,
+                                               opf_results=self.opf_results,
+                                               logger=self.logger)
             self.convergence_reports = self.results.convergence_reports
 
         elif self.engine == EngineType.NewtonPA:
 
-            res = newton_pa_pf(circuit=self.grid, pf_opt=self.options, time_series=False)
+            if self.options.three_phase_unbalanced:
+                self.logger.add_warning("Newton does not support 3-phase unbalanced, using GridCal")
+                self.results = multi_island_pf_3ph(multi_circuit=self.grid,
+                                                   t=None,
+                                                   options=self.options,
+                                                   opf_results=self.opf_results,
+                                                   logger=self.logger)
 
-            self.results = PowerFlowResults(n=self.grid.get_bus_number(),
-                                            m=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
-                                            n_hvdc=self.grid.get_hvdc_number(),
-                                            n_vsc=self.grid.get_vsc_number(),
-                                            n_gen=self.grid.get_generators_number(),
-                                            n_batt=self.grid.get_batteries_number(),
-                                            n_sh=self.grid.get_shunt_like_device_number(),
-                                            bus_names=res.bus_names,
-                                            branch_names=res.branch_names,
-                                            hvdc_names=res.hvdc_names,
-                                            vsc_names=self.grid.get_vsc_names(),
-                                            gen_names=self.grid.get_generator_names(),
-                                            batt_names=self.grid.get_battery_names(),
-                                            sh_names=self.grid.get_shunt_like_devices_names(),
-                                            bus_types=res.bus_types)
+            else:
+                res = newton_pa_pf(circuit=self.grid, pf_opt=self.options, time_series=False)
 
-            self.results = translate_newton_pa_pf_results(self.grid, res)
-            self.results.area_names = [a.name for a in self.grid.areas]
-            self.convergence_reports = self.results.convergence_reports
+                self.results = PowerFlowResults(n=self.grid.get_bus_number(),
+                                                m=self.grid.get_branch_number(add_hvdc=False, add_vsc=False,
+                                                                              add_switch=True),
+                                                n_hvdc=self.grid.get_hvdc_number(),
+                                                n_vsc=self.grid.get_vsc_number(),
+                                                n_gen=self.grid.get_generators_number(),
+                                                n_batt=self.grid.get_batteries_number(),
+                                                n_sh=self.grid.get_shunt_like_device_number(),
+                                                bus_names=res.bus_names,
+                                                branch_names=res.branch_names,
+                                                hvdc_names=res.hvdc_names,
+                                                vsc_names=self.grid.get_vsc_names(),
+                                                gen_names=self.grid.get_generator_names(),
+                                                batt_names=self.grid.get_battery_names(),
+                                                sh_names=self.grid.get_shunt_like_devices_names(),
+                                                bus_types=res.bus_types)
+
+                self.results = translate_newton_pa_pf_results(self.grid, res)
+                self.results.area_names = [a.name for a in self.grid.areas]
+                self.convergence_reports = self.results.convergence_reports
 
         elif self.engine == EngineType.GSLV:
 
-            res = gslv_pf(circuit=self.grid,
-                          pf_opt=self.options,
-                          time_series=False,
-                          logger=self.logger)
+            if self.options.three_phase_unbalanced:
+                self.logger.add_warning("GSLV does not support 3-phase unbalanced, using GridCal")
+                self.results = multi_island_pf_3ph(multi_circuit=self.grid,
+                                                   t=None,
+                                                   options=self.options,
+                                                   opf_results=self.opf_results,
+                                                   logger=self.logger)
 
-            self.results = translate_gslv_pf_results(self.grid, res=res, logger=self.logger)
-            self.results.area_names = [a.name for a in self.grid.areas]
-            self.convergence_reports = self.results.convergence_reports
+            else:
+
+                res = gslv_pf(circuit=self.grid,
+                              pf_opt=self.options,
+                              time_series=False,
+                              logger=self.logger)
+
+                self.results = translate_gslv_pf_results(self.grid, res=res, logger=self.logger)
+                self.results.area_names = [a.name for a in self.grid.areas]
+                self.convergence_reports = self.results.convergence_reports
 
         elif self.engine == EngineType.Bentayga:
 
-            res = bentayga_pf(self.grid, self.options, time_series=False)
+            if self.options.three_phase_unbalanced:
+                self.logger.add_warning("Bentayga does not support 3-phase unbalanced, using GridCal")
+                self.results = multi_island_pf_3ph(multi_circuit=self.grid,
+                                                   t=None,
+                                                   options=self.options,
+                                                   opf_results=self.opf_results,
+                                                   logger=self.logger)
 
-            self.results = PowerFlowResults(n=self.grid.get_bus_number(),
-                                            m=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
-                                            n_hvdc=self.grid.get_hvdc_number(),
-                                            n_vsc=self.grid.get_vsc_number(),
-                                            n_gen=self.grid.get_generators_number(),
-                                            n_batt=self.grid.get_batteries_number(),
-                                            n_sh=self.grid.get_shunt_like_device_number(),
-                                            bus_names=res.names,
-                                            branch_names=res.names,
-                                            hvdc_names=res.hvdc_names,
-                                            vsc_names=self.grid.get_vsc_names(),
-                                            gen_names=self.grid.get_generator_names(),
-                                            batt_names=self.grid.get_battery_names(),
-                                            sh_names=self.grid.get_shunt_like_devices_names(),
-                                            bus_types=res.bus_types)
+            else:
 
-            self.results = translate_bentayga_pf_results(self.grid, res)
-            self.results.area_names = [a.name for a in self.grid.areas]
-            self.convergence_reports = self.results.convergence_reports
+                res = bentayga_pf(self.grid, self.options, time_series=False)
+
+                self.results = PowerFlowResults(n=self.grid.get_bus_number(),
+                                                m=self.grid.get_branch_number(add_hvdc=False, add_vsc=False,
+                                                                              add_switch=True),
+                                                n_hvdc=self.grid.get_hvdc_number(),
+                                                n_vsc=self.grid.get_vsc_number(),
+                                                n_gen=self.grid.get_generators_number(),
+                                                n_batt=self.grid.get_batteries_number(),
+                                                n_sh=self.grid.get_shunt_like_device_number(),
+                                                bus_names=res.names,
+                                                branch_names=res.names,
+                                                hvdc_names=res.hvdc_names,
+                                                vsc_names=self.grid.get_vsc_names(),
+                                                gen_names=self.grid.get_generator_names(),
+                                                batt_names=self.grid.get_battery_names(),
+                                                sh_names=self.grid.get_shunt_like_devices_names(),
+                                                bus_types=res.bus_types)
+
+                self.results = translate_bentayga_pf_results(self.grid, res)
+                self.results.area_names = [a.name for a in self.grid.areas]
+                self.convergence_reports = self.results.convergence_reports
 
         elif self.engine == EngineType.PGM:
 
-            self.results = pgm_pf(self.grid, self.options, logger=self.logger)
-            self.results.area_names = [a.name for a in self.grid.areas]
+            if self.options.three_phase_unbalanced:
+                self.logger.add_warning("PGM integration does not support 3-phase unbalanced, using GridCal")
+                self.results = multi_island_pf_3ph(multi_circuit=self.grid,
+                                                   t=None,
+                                                   options=self.options,
+                                                   opf_results=self.opf_results,
+                                                   logger=self.logger)
+
+            else:
+
+                self.results = pgm_pf(self.grid, self.options, logger=self.logger)
+                self.results.area_names = [a.name for a in self.grid.areas]
 
         else:
             raise Exception('Engine ' + self.engine.value + ' not implemented for ' + self.name)

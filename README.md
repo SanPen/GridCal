@@ -1087,7 +1087,7 @@ res = results.mdl(gce.ResultTypes.BusActivePower)
 res.plot(ax=ax1)
 
 ax2 = fig.add_subplot(122)
-res = results.mdl(gce.ResultTypes.BusVoltage)
+res = results.mdl(gce.ResultTypes.BusVoltageModule)
 res.plot(ax=ax2)
 
 plt.tight_layout()
@@ -1149,7 +1149,7 @@ res = vc.results.mdl(gce.ResultTypes.BusActivePower)
 res.plot(ax=ax1)
 
 ax2 = fig.add_subplot(122)
-res = vc.results.mdl(gce.ResultTypes.BusVoltage)
+res = vc.results.mdl(gce.ResultTypes.BusVoltageModule)
 res.plot(ax=ax2)
 
 plt.tight_layout()
