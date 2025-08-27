@@ -3,6 +3,7 @@ from VeraGridEngine.api import *
 
 np.set_printoptions(linewidth=10000)
 
+
 def test_14_bus_matpower():
     # Go back two directories
     file_path = os.path.join('data', 'grids', 'case14.m')
@@ -96,7 +97,7 @@ def test_14_bus_matpower():
             obj = branches[gc_idx]
             grid.add_element(m_object(value=val * scale, uncertainty=sigma * scale, api_obj=obj))
 
-    for solver in [SolverType.LU,SolverType.NR, SolverType.LM,SolverType.GN]:
+    for solver in [SolverType.LU, SolverType.NR, SolverType.LM, SolverType.GN]:
 
         se_options = StateEstimationOptions(
             fixed_slack=True,
@@ -128,8 +129,8 @@ def test_14_bus_matpower():
             assert isinstance(type_dict, dict)
 
             # Check that all statuses are valid
-            #for meas_id, status in type_dict.items():
-               # assert status in allowed_statuses, f"Invalid status '{status}' for measurement {meas_id}"
+            # for meas_id, status in type_dict.items():
+            # assert status in allowed_statuses, f"Invalid status '{status}' for measurement {meas_id}"
 
         # Fully observable checks
         unobs = se.results.convergence_reports[0].unobservable_buses
@@ -140,7 +141,7 @@ def test_14_bus_matpower():
 
         # Optional: check a specific known measurement status
         some_active = next(iter(profile["active"]))
-        #assert profile["active"][some_active] in allowed_statuses
+        # assert profile["active"][some_active] in allowed_statuses
         print(se.results.convergence_reports[0].measurement_profile)
         print(f"Converged: {se.results.converged}")
         print(f"Error: {se.results.error}")

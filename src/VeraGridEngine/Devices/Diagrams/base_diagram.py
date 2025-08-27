@@ -384,7 +384,13 @@ class BaseDiagram:
         self.min_bus_width: float = data.get("min_bus_width", 1)
         self.max_bus_width: float = data.get("max_bus_width", 20)
         self.arrow_size: float = data.get("arrow_size", 1)
-        self.palette = Colormaps(data.get("palette", 'VeraGrid'))
+
+        palette_name: str = data.get("palette", 'VeraGrid')
+        if palette_name in [a.value for a in Colormaps]:
+            self.palette = Colormaps(palette_name)
+        else:
+            self.palette = Colormaps.VeraGrid
+
         self.default_bus_voltage = data.get("default_bus_voltage", 10)
         self.use_api_colors = data.get("use_api_colors", False)
 

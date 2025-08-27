@@ -350,7 +350,7 @@ def plot_bus_observability(bus_status_per_type):
     plt.ylabel("Observability")
     plt.title("Bus Observability Profile by Measurement Type")
     plt.legend()
-    plt.show()
+    # plt.show()
 
 # -------------- we extend measurement classification to check single and mutliple redundancies ----------------------
 def classify_redundancy(H, idx, tol=1e-9):
