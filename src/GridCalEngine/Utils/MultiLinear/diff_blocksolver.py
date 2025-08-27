@@ -158,7 +158,7 @@ class DiffBlockSolver(BlockSolver):
                 eq = eq.subs({var:approximation})
                 self._state_eqs_substituted[iter] = eq
                 self._lag_vars_set.update(LagVar.get_or_create( var.origin_var.name+ '_lag_' + str(lag),
-                                                 base_var=var.origin_var, lag = lag) for lag in range(1, total_lag+1))
+                                                 base_var=var.origin_var, lag = lag) for lag in range(1, max(3, total_lag+1)))
 
         self._algebraic_eqs_substituted = self._algebraic_eqs.copy()
         for iter, eq in enumerate(self._algebraic_eqs_substituted):
@@ -170,7 +170,7 @@ class DiffBlockSolver(BlockSolver):
                 eq = eq.subs({var:approximation})
                 self._algebraic_eqs_substituted[iter] = eq
                 self._lag_vars_set.update(LagVar.get_or_create( var.origin_var.name+ '_lag_' + str(lag),
-                                                 base_var=var.origin_var, lag = lag) for lag in range(1, total_lag+1))
+                                                 base_var=var.origin_var, lag = lag) for lag in range(1, max(3, total_lag+1)))
 
         i = len(self.uid2idx_vars)
         l = 0

@@ -100,6 +100,8 @@ class LagVar(Var):
 
         if diff_order == 1:
             return x0
+        elif diff_order == 2:
+            return x0 - dt*dx0[0]
         else:
             res = x0 - dt*dx0[0]
 
@@ -174,8 +176,7 @@ class DiffVar(Var):
     def populate_initial_lag(self, x0:float, dx0:np.ndarray, lag_x:float, dt: Optional[Const]):
         #function that initializes the lag of the same order for the same original_var
         diff_order = self.diff_order 
-        initial_value = x0 if diff_order == 1 else lag_x
-        res = initial_value
+        central_difference = True
 
         for i in range(diff_order):
             res += (dt**(i+1))*(-1)**(i+1)*dx0[i] 
@@ -188,7 +189,14 @@ class DiffVar(Var):
         """
         origin_name = self.origin_var.name
         lag_total = self.diff_order
-
+        if self.diff_order == 1:
+            lag_var_2 = LagVar.get_or_create(
+                f"{origin_name}_lag_{2}",
+                base_var=self.origin_var,
+                lag=2
+            )
+            return (self.origin_var - lag_var_2)/2*dt, lag_total
+        
         # Compute the sum: ∑_{i=0}^{n} (-1)^i * C(n, i) * f(x - i*dt)
         terms = []
         for i in range(lag_total + 1):

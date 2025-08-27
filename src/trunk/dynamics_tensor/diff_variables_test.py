@@ -27,11 +27,11 @@ from GridCalEngine.Utils.Symbolic.block_solver import BlockSolver
 import GridCalEngine.api as gce
 
 x = Var('x')
-y = Var('y')
+y_var = Var('y')
 dt = Const(0.00001)
 #dt = Var('dt')
 dx = DiffVar.get_or_create('dx', base_var = x)
-dy = DiffVar.get_or_create('dy', base_var = y)
+dy = DiffVar.get_or_create('dy', base_var = y_var)
 d2x = DiffVar.get_or_create('d2x', base_var = dx)
 d2y = DiffVar.get_or_create('d2y', base_var = dy)
 d3x = DiffVar.get_or_create('d3x', base_var = d2x)
@@ -51,10 +51,10 @@ dy_approx, b = dy.approximation_expr(dt)
 
 diff_block = DiffBlock(
     algebraic_eqs=[
-        dx + y,
+        dx + y_var,
         dy - x,
     ],
-    algebraic_vars=[x,y],
+    algebraic_vars=[x,y_var],
     diff_vars=[dx, dy, d2x, d2y],
 )
 
@@ -62,12 +62,12 @@ slv = DiffBlockSolver(diff_block)
 
 vars_mapping = {
     x:1,
-    y:0
+    y_var:0
 }
 
 div_vars_mapping = {
     dx:0,
-    dy:1
+    dy:1,
 }
 
 my_events = RmsEvents([])
@@ -100,6 +100,7 @@ fig = plt.figure(figsize=(14, 10))
 
 #Generator state variables
 plt.plot(t, y[:, slv.get_var_idx(x)], label="x (pu)", color='red')
+plt.plot(t, y[:, slv.get_var_idx(y_var)], label="y (pu)", color='yellow')
 plt.plot(t, np.cos(t), label="cos(t)", linestyle='--', color='blue')
 
 plt.legend(loc='upper right', ncol=2)

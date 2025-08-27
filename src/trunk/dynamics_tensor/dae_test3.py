@@ -109,7 +109,34 @@ generator_block_diff = DiffBlock(
     diff_vars=[delta_dt, domega_dt, det_dt]
 )
 
-generator_block_ML = DiffBlock(
+generator_block_ML_0 = DiffBlock(
+    state_eqs=[
+        (2 * pi * fn) * (omega - omega_ref),  # dδ/dt
+        (tm  - t_e - D * (omega - omega_ref)) / M,  # dω/dt
+        (omega - omega_ref),
+    
+    ],
+    state_vars=[delta, omega, et],
+    algebraic_eqs=[
+        psid - (ra * i_q + v_q),
+        psiq + (ra * i_d + v_d),
+        0 - (psid + xd * i_d - vf),
+        0 - (psiq + xd * i_q),
+        v_d - (Vg * sin(delta - dg)),
+        v_q - (Vg * cos(delta - dg)),
+        t_e - (psid * i_q - psiq * i_d),
+        P_g - (v_d * i_d + v_q * i_q),
+        Q_g - (v_q * i_d - v_d * i_q),
+        (tm - tm0) + (Kp * (omega - omega_ref) + Ki * et),
+        du_cos + (delta_dt - dg_dt)*(u_sin),
+        du_sin - (delta_dt - dg_dt)*(u_cos),
+    ],
+    algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g, tm, u_cos, u_sin],
+    parameters=[],
+    diff_vars= [delta_dt, dg_dt, du_cos, du_sin],
+)
+
+generator_block_ML_2 = DiffBlock(
     state_eqs=[
         (2 * pi * fn) * (omega - omega_ref),  # dδ/dt
         (tm  - t_e - D * (omega - omega_ref)) / M,  # dω/dt
@@ -130,7 +157,7 @@ generator_block_ML = DiffBlock(
         (tm - tm0) + (Kp * (omega - omega_ref) + Ki * et),
         int_sin2 - 0.5*((delta-dg)-u_sin*u_cos), 
         int_sin2cos2 - 1/32*(4*(delta-dg) - (4*u_cos**3*u_sin - 4*u_sin**3*u_cos)),
-        dt_int_sin2  - (delta_dt - dg_dt)*u_sin**2,
+        dt_int_sin2 - (delta_dt - dg_dt)*u_sin**2,
         dt_int_sin2cos2 - (delta_dt - dg_dt)*delta_dt*u_sin**2*u_cos**2
     ],
     algebraic_vars=[psid, psiq, i_d, i_q, v_d, v_q, t_e, P_g, Q_g, tm, u_cos, u_sin, int_sin2, int_sin2cos2],
@@ -284,7 +311,7 @@ bus2_block = Block(
 # ----------------------------------------------------------------------------------------------------------------------
 
 sys = DiffBlock(
-    children=[line_block, load_block, generator_block_diff, bus1_block, bus2_block],
+    children=[line_block, load_block, generator_block_ML_2, bus1_block, bus2_block],
     in_vars=[]
 )
 
@@ -381,12 +408,12 @@ vars_mapping = {
     Q_g: Sb1.imag,
     tm: te0,
     #u:0,
-    #u_sin: u_sin0,
-    #u_cos: u_cos0,
+    u_sin: u_sin0,
+    u_cos: u_cos0,
     #v_sin: u_sin0,
     #v_cos: u_cos0,
-    #int_sin2: 0.5*((delta0-dg0)-u_sin0*u_cos0),
-    #int_sin2cos2:  1/32*(4*(delta0-dg0) - (4*u_cos0**3*u_sin0 - 4*u_sin0**3*u_cos)),
+    int_sin2: 0.5*((delta0-dg0)-u_sin0*u_cos0),
+    int_sin2cos2: 1/32*(4*(delta0-dg0) - (4*u_cos0**3*u_sin0 - 4*u_sin0**3*u_cos)),
 }
 
 # Consistency check 
@@ -420,8 +447,15 @@ for eq, val in residuals.items():
 # ---------------------------------------------------------------------------------------
 
 event1 = RmsEvent('Load', Pl0, 2500, 0.15)
+
+ramp_events = []
+for i, val in enumerate(np.linspace(Sb2.real, 0.15, 50)):
+    event = RmsEvent('Load', Pl0, 2500 + i, val)
+    ramp_events.append(event)
+
 #event2 = Event(Ql0, 5000, 0.3)
-my_events = RmsEvents([event1])
+my_events = RmsEvents(ramp_events)
+#my_events = RmsEvents([event1])
 #my_events = RmsEvents([])
 
 params0 = slv.build_init_params_vector(params_mapping)
@@ -462,14 +496,14 @@ except:
     }
 
 diff_vars_mapping = {
-    #du_cos: 0,
-    #du_sin: 0,
+    du_cos: 0,
+    du_sin: 0,
     delta_dt: 0,
-    domega_dt:0,
-    det_dt:0,
-    #dg_dt: 0,
-    #dt_int_sin2:0,
-    #dt_int_sin2cos2:0,
+    #domega_dt:0,
+    #det_dt:0,
+    dg_dt: 0,
+    dt_int_sin2:0,
+    dt_int_sin2cos2:0,
 }
 
 params0 = slv.build_init_params_vector(params_mapping)
@@ -479,13 +513,14 @@ if isinstance(slv, DiffBlockSolver):
 
     t, y = slv.simulate(
         t0=0,
-        t_end=10.0,
+        t_end=0.002,
         h=0.001,
         x0=x0,
         dx0 = dx0,
         params0=params0,
         events_list=my_events,
-        method="implicit_euler"
+        method="implicit_euler",
+        verbose = True,
     )
 else:
     t, y = slv.simulate(
@@ -495,7 +530,7 @@ else:
         x0=x0,
         params0=params0,
         events_list=my_events,
-        method="implicit_euler"
+        method="implicit_euler",
     )
 
 
@@ -506,17 +541,22 @@ fig = plt.figure(figsize=(14, 10))
 
 #Generator state variables
 plt.plot(t, y[:, slv.get_var_idx(omega)], label="ω (pu)", color='red')
-#plt.plot(t, y[:, slv.get_var_idx(delta)], label="delta", color='red')
+#plt.plot(t, y[:, slv.get_var_idx(delta)], label="delta", color='grey')
 #plt.plot(t, y[:, slv.get_var_idx(dg)], label="dg", color='red')
 #plt.plot(t, y[:, slv.get_var_idx(u)]/(2*pi.value*fn.value) + 1, label="ω (pu)", color='red')
 
-#plt.plot(t, y[:, slv.get_var_idx(u_cos)], label="u cos (pu)", color='blue')
-#plt.plot(t, y[:, slv.get_var_idx(u_sin)], label="u sin (pu)", color='yellow')
+plt.plot(t, y[:, slv.get_var_idx(u_cos)], label="u cos (pu)", color='blue')
+plt.plot(t, y[:, slv.get_var_idx(u_sin)], label="u sin (pu)", color='yellow')
+
+
+plt.plot(t, y[:, slv.get_var_idx(dg)], label="dg (pu)", color='gray')
+#plt.plot(t, y[:, slv.get_var_idx(delta)], label="delta (pu)", color='tail')
 
 delta_idx = slv.get_var_idx(delta)  
 dg_idx = slv.get_var_idx(dg)  
 cos_delta_real = np.cos(y[:, delta_idx] - y[:, dg_idx]) 
 sin_delta_real = np.sin(y[:, delta_idx] - y[:, dg_idx]) 
+
 plt.plot(t, cos_delta_real, label="cos delta real (pu)", color='gray')
 plt.plot(t, sin_delta_real, label="sin delta real (pu)", color='teal')
 #plt.plot(t, y[:, slv.get_var_idx(delta)], label="delta", color='black')

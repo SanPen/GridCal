@@ -560,7 +560,7 @@ vars_in_order = slv.sort_vars(vars_mapping)
 
 t, y = slv.simulate(
     t0=0,
-    t_end=20.0,
+    t_end=5.0,
     h=0.001,
     x0=x0,
     params0=params0,
@@ -573,6 +573,12 @@ slv.save_simulation_to_csv('simulation_results.csv', t, y)
 
 # Generator state variables
 plt.plot(t, y[:, slv.get_var_idx(omega_1)], label="ω (pu)")
+delta_idx = slv.get_var_idx(delta_0)  
+dg_idx = slv.get_var_idx(dg_0)  
+cos_delta_real = np.cos(y[:, delta_idx] - y[:, dg_idx]) 
+sin_delta_real = np.sin(y[:, delta_idx] - y[:, dg_idx]) 
+plt.plot(t, cos_delta_real, label="cos delta real (pu)", color='gray')
+plt.plot(t, sin_delta_real, label="sin delta real (pu)", color='teal')
 # plt.plot(t, y[:, slv.get_var_idx(delta)], label="δ (rad)")
 # plt.plot(t, y[:, slv.get_var_idx(et)], label="et (pu)")
 
