@@ -6,7 +6,7 @@ from __future__ import annotations
 import os.path
 import warnings
 from VeraGridEngine.IO.file_system import get_create_veragrid_folder
-from VeraGridEngine import TapModuleControl, TapPhaseControl, BusMode
+from VeraGridEngine.enumerations import TapModuleControl, TapPhaseControl, BusMode
 from VeraGridEngine.enumerations import (HvdcControlType, SolverType, TimeGrouping,
                                          ZonalGrouping, MIPSolvers, ContingencyMethod, ContingencyOperationTypes,
                                          BuildStatus, BranchGroupTypes, ConverterControlType)

@@ -13,7 +13,7 @@ from typing import Union, List, Dict, Tuple, TYPE_CHECKING
 from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import spsolve as scipy_spsolve
 
-from VeraGridEngine import DeviceType
+from VeraGridEngine.enumerations import DeviceType
 from VeraGridEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec, CxMat, BoolVec
 from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
 from VeraGridEngine.Devices.Aggregation.contingency_group import ContingencyGroup

@@ -21,7 +21,7 @@ from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 import VeraGridEngine.Devices as dev
 from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from VeraGridEngine import TapModuleControl, TapPhaseControl
+from VeraGridEngine.enumerations import TapModuleControl, TapPhaseControl
 from VeraGridEngine.enumerations import SolverType
 from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
 

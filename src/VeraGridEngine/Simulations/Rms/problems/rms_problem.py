@@ -2,13 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from typing import List, Tuple
-import numpy as np
-import sympy as sym
-import scipy.sparse as sp
-
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
-from VeraGridEngine.basic_structures import Vec
 
 
 
