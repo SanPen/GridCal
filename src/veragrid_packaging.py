@@ -213,9 +213,6 @@ def build_tar_gz_pkg(pkg_name: str,
     with open(setup_cfg_path, 'w') as f:
         f.write(setup_cfg)
 
-    if not os.path.exists('dist'):
-        os.makedirs('dist')
-
     with tarfile.open(output_filename, "w:gz") as tar:
         for name, file_path in files:
             if not name.endswith('setup.py'):

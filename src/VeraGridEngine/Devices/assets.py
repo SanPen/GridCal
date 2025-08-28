@@ -8,6 +8,7 @@ import pandas as pd
 from typing import List, Dict, Tuple, Union, Any, Set, Generator
 import datetime as dateslib
 
+from VeraGridEngine.Devices.Dynamic.events import RmsEvent
 from VeraGridEngine.basic_structures import IntVec, StrVec, Vec
 import VeraGridEngine.Devices as dev
 from VeraGridEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
@@ -109,6 +110,7 @@ class Assets:
         'profile_magnitudes',
         'device_type_name_dict',
         'device_associations',
+        '_events'
     )
 
     def __init__(self):
@@ -353,6 +355,8 @@ class Assets:
         self.device_type_name_dict: Dict[str, DeviceType] = dict()
 
         self.device_associations: Dict[str, List[str]] = dict()
+
+        self._events : List[RmsEvent] = list()
 
         """
         self.type_name = 'Shunt'
@@ -3906,6 +3910,14 @@ class Assets:
                             filtered_groups_idx.add(group_idx)
 
         return [self._contingency_groups[i] for i in sorted(filtered_groups_idx)]
+
+    def add_event(self, event: RmsEvent):
+        self._events.append(event)
+
+    def get_events(self):
+        return self._events
+
+
 
     # ------------------------------------------------------------------------------------------------------------------
     # Investment

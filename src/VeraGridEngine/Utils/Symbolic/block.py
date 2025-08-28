@@ -88,6 +88,7 @@ class Block:
 
     # parameters
     parameters: List[Var | Const] = field(default_factory=list)
+    parameters_eqs: Dict[str, Expr] = field(default_factory=dict)
 
     name: str = ""
 

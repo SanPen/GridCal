@@ -12,14 +12,25 @@ import numpy as np
 
 class RmsEvent:
     def __init__(self,
-                 device: str,
-                 variable: Var,
+                 device_type: str,
+                 device_name: str,
+                 variable: str,
                  time_step: int = 0.0,
                  value: float = 0.0):
-        self._device = device
+        self._device_type = device_type
+        self._device_name = device_name
         self._variable = variable
-        self._time_step = time_step
         self._value = value
+        self._time_step = time_step
+
+
+    @property
+    def device_type(self):
+        return self._device_type
+
+    @property
+    def device_name(self):
+        return self._device_name
 
     @property
     def variable(self):

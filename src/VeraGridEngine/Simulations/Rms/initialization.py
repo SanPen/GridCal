@@ -232,6 +232,9 @@ def initialize_rms(grid: MultiCircuit, power_flow_results, logger: Logger = Logg
     P_used = np.zeros(n, dtype=int)
     Q_used = np.zeros(n, dtype=int)
 
+
+
+
     # initialize buses
     for i, elm in enumerate(grid.buses):
         elm.initialize_rms()
@@ -265,5 +268,14 @@ def initialize_rms(grid: MultiCircuit, power_flow_results, logger: Logger = Logg
         else:
             mdl.algebraic_eqs.append(P[i])
             mdl.algebraic_eqs.append(Q[i])
+
+    # initialize events
+
+    events = grid.get_events()
+    for event in events:
+        if event.device_type == "injection":
+            for elm in grid.get_injection_devices_iter():
+                if elm.name == event.device_name:
+                    params_list = elm.rms_model.model.parameters
 
     return compose_system_block(grid, power_flow_results)

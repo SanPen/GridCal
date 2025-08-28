@@ -59,6 +59,13 @@ def _var_uid(sym: Var | str) -> str:
 def _stepwise(x: NUMBER) -> NUMBER:
     return 1 if x >= 0 else 0
 
+def _piecewise(time: float, t_events, values, default_value):
+    for t, val in zip(reversed(t_events), reversed(values)):
+        if time >= t:
+            return val
+    return default_value
+
+
 
 def _heaviside(x: NUMBER) -> NUMBER:
     if x > 0:

@@ -42,7 +42,7 @@ line0 = grid.add_line(
              rate=900.0))
 
 # load
-load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(P=-0.0999999, Q=-0.0999999))
+load_grid = grid.add_load(bus=bus2, api_obj=gce.Load(name="Load1", P=-0.0999999, Q=-0.0999999))
 
 # Generators
 gen1 = gce.Generator(name="Gen1", P=10, vset=1.0, Snom=900,
@@ -106,7 +106,8 @@ params_mapping = {
 # Events
 # ---------------------------------------------------------------------------------------
 
-# event1 = RmsEvent(Pl0, 5000, 0.3)
+event1 = RmsEvent("injection", "Load1", "Pl0", 5000, 0.3)
+grid.add_event(event1)
 # event2 = Event(Ql0, 5000, 0.3)
 # my_events = RmsEvents([event1])
 my_events = RmsEvents([])

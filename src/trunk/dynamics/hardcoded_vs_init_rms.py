@@ -58,10 +58,10 @@ merged_df = comparison
 # merged_df['Pl_Gridcal'] = merged_df['Pl_Gridcal'] * (-100)
 
 variable_pairs = [
-     [f"omega_1_Gridcal", f"omega_Gridcal"],
-     [f"omega_2_Gridcal", f"omega_Gridcal.1"],
-     [f"omega_3_Gridcal", f"omega_Gridcal.2"],
-     [f"omega_4_Gridcal", f"omega_Gridcal.3"],
+     [f"omega_1_VeraGrid", f"omega_VeraGrid"],
+     [f"omega_2_VeraGrid", f"omega_VeraGrid.1"],
+     [f"omega_3_VeraGrid", f"omega_VeraGrid.2"],
+     [f"omega_4_VeraGrid", f"omega_VeraGrid.3"],
      # [f"Vline_to_Gridcal", f"Vm_Gridcal.1"],
      # [f"dline_to_Gridcal", f"Va_Gridcal.1"],
      # [f"dline_from_Gridcal", f"Va_Gridcal"],
@@ -97,6 +97,7 @@ for idx, (var1, var2) in enumerate(variable_pairs):
 axes[-1].set_xlabel("Time (s)")
 plt.tight_layout(rect=[0, 0, 1, 0.97])
 # plt.suptitle("Simulation Variable Comparison (VeraGrid vs GENCLS)", fontsize=16, y=1.02)
+plt.ylim([0.85, 1.15])
 plt.subplots_adjust(top=0.95)
 plt.show()
 
