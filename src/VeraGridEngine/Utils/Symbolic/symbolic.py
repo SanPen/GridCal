@@ -59,11 +59,16 @@ def _var_uid(sym: Var | str) -> str:
 def _stepwise(x: NUMBER) -> NUMBER:
     return 1 if x >= 0 else 0
 
-def _piecewise(time: float, t_events, values, default_value):
-    for t, val in zip(reversed(t_events), reversed(values)):
-        if time >= t:
-            return val
-    return default_value
+# def _piecewise(time, t_events, values, default_value):
+#     for t, val in zip(reversed(t_events), reversed(values)):
+#         if time >= t:
+#             return val
+#     return default_value
+
+def _piecewise(time, t_event, new_value, default_value):
+    if time >= t_event:
+        return Const(new_value)
+    return Const(default_value)
 
 
 
@@ -712,7 +717,7 @@ def _all_vars(expressions: Sequence[Expr]) -> List[Var]:
     return list(res)
 
 
-def _emit(expr: Expr, uid_map_vars: Dict[int, str], uid_map_params: Dict[int, str]) -> str:
+def _emit(expr: Expr, uid_map_vars: Dict[int, str], uid_map_params: Dict[int, str], uid_map_t: Dict[int, str] = None ) -> str:
     """
     Emit a pure-Python (Numba-friendly) expression string
     :param expr: Expr (expression)
@@ -725,18 +730,19 @@ def _emit(expr: Expr, uid_map_vars: Dict[int, str], uid_map_params: Dict[int, st
     if isinstance(expr, Var):
         if expr.uid in uid_map_vars.keys():
             return uid_map_vars[expr.uid]  # positional variable
-        else:
-            # pdb.set_trace()
+        elif expr.uid in uid_map_params.keys():
             return uid_map_params[expr.uid]
+        elif expr.uid in uid_map_t.keys():
+            return uid_map_t[expr.uid]
     if isinstance(expr, UnOp):
-        return f"-({_emit(expr.operand, uid_map_vars, uid_map_params)})"
+        return f"-({_emit(expr.operand, uid_map_vars, uid_map_params, uid_map_t)})"
     if isinstance(expr, BinOp):
-        return f"({_emit(expr.left, uid_map_vars, uid_map_params)} {expr.op} {_emit(expr.right, uid_map_vars, uid_map_params)})"
+        return f"({_emit(expr.left, uid_map_vars, uid_map_params, uid_map_t)} {expr.op} {_emit(expr.right, uid_map_vars, uid_map_params, uid_map_t)})"
     if isinstance(expr, Func):
         if expr.name in ("real", "imag", "conj", "angle"):
-            return f"np.{expr.name}({_emit(expr.arg, uid_map_vars, uid_map_params)})"
+            return f"np.{expr.name}({_emit(expr.arg, uid_map_vars, uid_map_params, uid_map_t)})"
         else:
-            return f"np.{expr.name}({_emit(expr.arg, uid_map_vars, uid_map_params)})"
+            return f"np.{expr.name}({_emit(expr.arg, uid_map_vars, uid_map_params, uid_map_t)})"
 
     raise TypeError(type(expr))
 

@@ -1111,6 +1111,10 @@ class DeviceType(Enum):
 
     RmsModelTemplateDevice = "RMS template"
 
+    RmsEventDevice = "Rms Event"
+
+    RmsEventsGroupDevice = "Rms Events Group"
+
     def __str__(self) -> str:
         return str(self.value)
 
@@ -2325,6 +2329,7 @@ class DynamicVarType(Enum):
     """
        GridReductionMethod
        """
+    T = "T"
     Vm = "Vm"
     Va = "Va"
     P = "P"

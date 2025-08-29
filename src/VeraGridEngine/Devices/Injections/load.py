@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+import pdb
 from typing import Union
 import numpy as np
 import pandas as pd
@@ -10,6 +11,7 @@ from VeraGridEngine.enumerations import DeviceType, BuildStatus
 from VeraGridEngine.Devices.Parents.load_parent import LoadParent
 from VeraGridEngine.Devices.profile import Profile
 from VeraGridEngine.Utils.Symbolic.block import Block, Var, Const, DynamicVarType
+from VeraGridEngine.Utils.Symbolic.symbolic import _piecewise
 
 
 class Load(LoadParent):
@@ -557,12 +559,14 @@ class Load(LoadParent):
             if show_fig:
                 plt.show()
 
-    def initialize_rms(self):
+    def initialize_rms(self, rms_event = False):
         if self.rms_model.empty():
 
             Ql = Var("Ql")
             Pl = Var("Pl")
 
+        if rms_event:
+            var = Var()
             self.rms_model.model = Block(
                 algebraic_eqs=[
                     Pl - self.Pl0, #TODO: consider that self.P/Q should be constant variables/objects, in order for us to create events
@@ -578,3 +582,29 @@ class Load(LoadParent):
                     DynamicVarType.Q: Ql
                 }
             )
+
+    def initialize_rms_with_event(self, rms_event):
+        if self.rms_model.empty():
+            Ql = Var("Ql")
+            Pl = Var("Pl")
+            default_value = 0.1
+            var = Var(rms_event.parameter)
+            self.Pl0 = var
+            self.rms_model.model = Block(
+                algebraic_eqs=[
+                    Pl - self.Pl0,
+                    Ql - self.Ql0
+                ],
+                algebraic_vars=[Pl, Ql],
+                init_eqs={},
+                init_vars=[],
+                init_params_eq= {},
+                parameters=[var],
+                parameters_eqs=[_piecewise(self.time, rms_event.time, rms_event.value, default_value)],
+                external_mapping={
+                    DynamicVarType.P: Pl,
+                    DynamicVarType.Q: Ql
+                }
+            )
+            pdb.set_trace()
+            print("load")

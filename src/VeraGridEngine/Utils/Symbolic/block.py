@@ -86,9 +86,9 @@ class Block:
     external_mapping: Dict[DynamicVarType, Var] = field(default_factory=dict)
     var_mapping: Dict[str, Var] = field(default_factory=dict)
 
-    # parameters
+    # parameters (parameters affected by events)
     parameters: List[Var | Const] = field(default_factory=list)
-    parameters_eqs: Dict[str, Expr] = field(default_factory=dict)
+    parameters_eqs: List[Expr] = field(default_factory=list)
 
     name: str = ""
 

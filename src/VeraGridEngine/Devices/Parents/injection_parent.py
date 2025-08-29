@@ -14,6 +14,7 @@ from VeraGridEngine.basic_structures import CxVec
 from VeraGridEngine.Devices.profile import Profile
 from VeraGridEngine.Devices.Aggregation.facility import Facility
 from VeraGridEngine.Devices.Dynamic.dynamic_model_host import DynamicModelHost
+from VeraGridEngine.Utils.Symbolic.block import Var
 
 if TYPE_CHECKING:
     from VeraGridEngine.Devices import Technology
@@ -43,7 +44,8 @@ class InjectionParent(PhysicalDevice):
         '_shift_key_prof',
         '_use_kw',
         '_conn',
-        '_rms_model'
+        '_rms_model',
+        'time'
     )
 
     def __init__(self,
@@ -83,6 +85,8 @@ class InjectionParent(PhysicalDevice):
 
         self._bus = bus
 
+        self.time: Var
+
         self.active = bool(active)
         self._active_prof = Profile(default_value=self.active, data_type=bool)
 
@@ -114,6 +118,7 @@ class InjectionParent(PhysicalDevice):
         self._conn: ShuntConnectionType = ShuntConnectionType.Star
 
         self._rms_model: DynamicModelHost = DynamicModelHost()
+
 
         self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus', editable=False)
 

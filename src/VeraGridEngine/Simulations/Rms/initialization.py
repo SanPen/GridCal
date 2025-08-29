@@ -6,10 +6,11 @@ from typing import Tuple, Any, Sequence, Callable, Dict
 import math
 import numba as nb
 import numpy as np
+from pygments.lexers.textfmts import TodotxtLexer
 from scipy.optimize import newton_krylov
 from VeraGridEngine.Utils.Symbolic import BlockSolver
 from VeraGridEngine.Utils.Symbolic.symbolic import _emit, _emit_one
-from VeraGridEngine.Utils.Symbolic.block import Block, Expr
+from VeraGridEngine.Utils.Symbolic.block import Block, Expr, Var
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from VeraGridEngine.enumerations import DynamicVarType
@@ -101,7 +102,7 @@ def compose_system_block(grid: MultiCircuit,
         init_guess[(mdl.external_mapping[DynamicVarType.Q].uid,
                     mdl.external_mapping[DynamicVarType.Q].name)] = float(np.imag(res.Sbus[i] / grid.Sbase))
 
-        sys_block.children.append(mdl)
+        sys_block.add(mdl)
 
     # branches
     for i, elm in enumerate(grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True)):
@@ -131,7 +132,7 @@ def compose_system_block(grid: MultiCircuit,
         init_guess[(mdl.external_mapping[DynamicVarType.Qt].uid,
                     mdl.external_mapping[DynamicVarType.Qt].name)] = St[i].imag
 
-        sys_block.children.append(mdl)
+        sys_block.add(mdl)
 
     # injections
 
@@ -181,14 +182,14 @@ def compose_system_block(grid: MultiCircuit,
                 init_val = float(eq_fn(x))
                 init_guess[key] = init_val
                 x[uid2idx_vars[var.uid]] = init_val
-        for param, value in elm.init_params.items():
-            eq = mdl.init_params_eq[param]
-            eq_fn = _compile_equation([eq], uid2sym_vars)
-            init_val = float(eq_fn(x))
-            elm.init_params[param] = init_val
+        # for param, value in elm.init_params.items():
+        #     eq = mdl.init_params_eq[param]
+        #     eq_fn = _compile_equation([eq], uid2sym_vars)
+        #     init_val = float(eq_fn(x))
+        #     elm.init_params[param] = init_val
 
 
-        sys_block.children.append(mdl)
+        sys_block.add(mdl)
 
     # del buses P, Q
     for i, elm in enumerate(grid.buses):
@@ -221,6 +222,9 @@ def initialize_rms(grid: MultiCircuit, power_flow_results, logger: Logger = Logg
     """
     Initialize all RMS models
     """
+    # find events
+    rms_events = grid.rms_events
+
     # already computed grid power flow
 
     bus_dict = dict()
@@ -231,7 +235,6 @@ def initialize_rms(grid: MultiCircuit, power_flow_results, logger: Logger = Logg
     Q: ObjVec = np.zeros(n, dtype=object)
     P_used = np.zeros(n, dtype=int)
     Q_used = np.zeros(n, dtype=int)
-
 
 
 
@@ -254,7 +257,14 @@ def initialize_rms(grid: MultiCircuit, power_flow_results, logger: Logger = Logg
 
     # initialize injections
     for elm in grid.get_injection_devices_iter():
-        elm.initialize_rms()
+
+        # resolve events
+        # check if there is an event actuating through this element and initialize rms accordingly
+        for rms_event in rms_events:
+            if elm.idtag == rms_event.device_idtag:
+                elm.initialize_rms_with_event(rms_event)
+            else:
+                elm.initialize_rms()
         mdl = elm.rms_model.model
         k = bus_dict[elm.bus]
         setP(P, P_used, k, mdl.E(DynamicVarType.P))
@@ -269,13 +279,6 @@ def initialize_rms(grid: MultiCircuit, power_flow_results, logger: Logger = Logg
             mdl.algebraic_eqs.append(P[i])
             mdl.algebraic_eqs.append(Q[i])
 
-    # initialize events
 
-    events = grid.get_events()
-    for event in events:
-        if event.device_type == "injection":
-            for elm in grid.get_injection_devices_iter():
-                if elm.name == event.device_name:
-                    params_list = elm.rms_model.model.parameters
 
     return compose_system_block(grid, power_flow_results)

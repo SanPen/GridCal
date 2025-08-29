@@ -19,3 +19,5 @@ from VeraGridEngine.Devices.Aggregation.branch_group import BranchGroup
 from VeraGridEngine.Devices.Aggregation.modelling_authority import ModellingAuthority
 from VeraGridEngine.Devices.Aggregation.inter_aggregation_info import InterAggregationInfo
 from VeraGridEngine.Devices.Aggregation.facility import Facility
+from VeraGridEngine.Devices.Aggregation.rms_event import RmsEvent
+from VeraGridEngine.Devices.Aggregation.rms_events_group import RmsEventsGroup

@@ -10,6 +10,7 @@ from VeraGridEngine.enumerations import BuildStatus, DeviceType
 from VeraGridEngine.basic_structures import CxVec
 from VeraGridEngine.Devices.profile import Profile
 from VeraGridEngine.Devices.Parents.injection_parent import InjectionParent
+from VeraGridEngine.Utils.Symbolic.block import Var
 
 
 class GeneratorParent(InjectionParent):

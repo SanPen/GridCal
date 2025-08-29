@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import pdb
 import sys
 import os
 
@@ -55,6 +56,32 @@ def _compile_equations(eqs: Sequence[Expr],
     src = f"def _f(vars, params):\n"
     src += f"    out = np.zeros({len(eqs)})\n"
     src += "\n".join([f"    out[{i}] = {_emit(e, uid2sym_vars, uid2sym_params)}" for i, e in enumerate(eqs)]) + "\n"
+    src += f"    return out"
+    ns: Dict[str, Any] = {"math": math, "np": np}
+    exec(src, ns)
+    fn = nb.njit(ns["_f"], fastmath=True)
+
+    if add_doc_string:
+        fn.__doc__ = "def _f(vars)"
+    return fn
+
+def _compile_parameters_equations(eqs: Sequence[Expr],
+                       uid2sym_vars: Dict[int, str],
+                       uid2sym_params: Dict[int, str],
+                       uid2sym_t:Dict[int, str],
+                       add_doc_string: bool = True) -> Callable[[np.ndarray, np.ndarray, np.ndarray], np.ndarray]:
+    """
+    Compile the array of expressions to a function that returns an array of values for those expressions
+    :param eqs: Iterable of expressions (Expr)
+    :param uid2sym_vars: dictionary relating the uid of a var with its array name (i.e. var[0])
+    :param uid2sym_params:
+    :param add_doc_string: add the docstring?
+    :return: Function pointer that returns an array
+    """
+    # Build source
+    src = f"def _f(vars, params, time):\n"
+    src += f"    out = np.zeros({len(eqs)})\n"
+    src += "\n".join([f"    out[{i}] = {_emit(e, uid2sym_vars, uid2sym_params, uid2sym_t)}" for i, e in enumerate(eqs)]) + "\n"
     src += f"    return out"
     ns: Dict[str, Any] = {"math": math, "np": np}
     exec(src, ns)
@@ -176,7 +203,7 @@ class BlockSolver:
     A network of Blocks that behaves roughly like a Simulink diagram.
     """
 
-    def __init__(self, block_system: Block):
+    def __init__(self, block_system: Block, time: Var):
         """
         Constructor        
         :param block_system: BlockSystem
@@ -189,6 +216,8 @@ class BlockSolver:
         self._state_vars: List[Var] = list()
         self._state_eqs: List[Expr] = list()
         self._parameters: List[Const] = list()
+        self._parameters_eqs: List[Expr] = list()
+        self.time = time
 
         for b in self.block_system.get_all_blocks():
             self._algebraic_vars.extend(b.algebraic_vars)
@@ -196,6 +225,8 @@ class BlockSolver:
             self._state_vars.extend(b.state_vars)
             self._state_eqs.extend(b.state_eqs)
             self._parameters.extend(b.parameters)
+            self._parameters_eqs.extend(b.parameters_eqs)
+
 
         self._n_state = len(self._state_vars)
         self._n_alg = len(self._algebraic_vars)
@@ -208,9 +239,11 @@ class BlockSolver:
 
         uid2sym_vars: Dict[int, str] = dict()
         uid2sym_params: Dict[int, str] = dict()
+        uid2sym_t: Dict[int, str] = dict()
         self.uid2var: Dict[int, Var] = dict()
         self.uid2idx_vars: Dict[int, int] = dict()
         self.uid2idx_params: Dict[int, int] = dict()
+        self.uid2idx_t: Dict[int, int] = dict()
         i = 0
         for v in self._state_vars:
             uid2sym_vars[v.uid] = f"vars[{i}]"
@@ -231,6 +264,12 @@ class BlockSolver:
             self.uid2idx_params[ep.uid] = j
             j += 1
 
+        k = 0
+        uid2sym_t[self.time.uid] = f"time[{k}]"
+        self.uid2idx_t[self.time.uid] = k
+
+
+
         # Compile RHS and Jacobian
         """
                    state Var   algeb var  
@@ -246,6 +285,9 @@ class BlockSolver:
 
         self._rhs_algeb_fn = _compile_equations(eqs=self._algebraic_eqs, uid2sym_vars=uid2sym_vars,
                                                 uid2sym_params=uid2sym_params)
+
+        self._params_fn = _compile_parameters_equations(eqs=self._parameters_eqs, uid2sym_vars=uid2sym_vars,
+                                                uid2sym_params=uid2sym_params, uid2sym_t=uid2sym_t)
 
         self._j11_fn = _get_jacobian(eqs=self._state_eqs, variables=self._state_vars, uid2sym_vars=uid2sym_vars,
                                      uid2sym_params=uid2sym_params)
@@ -789,7 +831,7 @@ class BlockSolver:
             h: float,
             x0: np.ndarray,
             params0: np.ndarray,
-            events_list: RmsEvents,
+            time: Var,
             method: Literal["rk4", "euler", "implicit_euler"] = "rk4",
             newton_tol: float = 1e-8,
             newton_max_iter: int = 1000,
@@ -812,12 +854,12 @@ class BlockSolver:
         if method == "rk4":
             return self._simulate_fixed(t0, t_end, h, x0, params0, stepper="rk4")
         if method == "implicit_euler":
-            params_matrix = self.build_params_matrix(n_steps=int(np.ceil((t_end - t0) / h)),
-                                                     params0=params0,
-                                                     events_list=events_list)
+            # params_matrix = self.build_params_matrix(n_steps=int(np.ceil((t_end - t0) / h)),
+            #                                          params0=params0,
+            #                                          events_list=events_list)
 
             return self._simulate_implicit_euler(
-                t0=t0, t_end=t_end, h=h, x0=x0, params0=params0, diff_params_matrix=params_matrix,
+                t0=t0, t_end=t_end, h=h, x0=x0, params0=params0, time=time,
                 tol=newton_tol, max_iter=newton_max_iter,
             )
         raise ValueError(f"Unknown method '{method}'")
@@ -858,7 +900,7 @@ class BlockSolver:
     def _simulate_implicit_euler(self, t0: float, t_end: float, h: float,
                                  x0: np.ndarray,
                                  params0: np.ndarray,
-                                 diff_params_matrix: csr_matrix,  # TODO: Not sure if a CSR is the best thing here
+                                 time,
                                  tol=1e-6,
                                  max_iter=1000):
         """
@@ -874,15 +916,17 @@ class BlockSolver:
         steps = int(np.ceil((t_end - t0) / h))
         t = np.empty(steps + 1)
         y = np.empty((steps + 1, self._n_vars))
-        params_current = params0
+        params_current = np.zeros(1)
         t[0] = t0
         y[0] = x0.copy()
         for step_idx in range(steps):
-            params_current += diff_params_matrix[step_idx, :].toarray().ravel()  # TODO think of a better way
+            # params_current += diff_params_matrix[step_idx, :].toarray().ravel()  # TODO think of a better way
             xn = y[step_idx]
             x_new = xn.copy()  # initial guess
             converged = False
             n_iter = 0
+            current_time = np.array(t[step_idx])
+            params_current = self._params_fn(x_new, params_current, current_time)
             while not converged and n_iter < max_iter:
                 rhs = self.rhs_implicit(x_new, xn, params_current, step_idx, h)
                 residual = np.linalg.norm(rhs, np.inf)

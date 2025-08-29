@@ -489,7 +489,7 @@ class Generator(GeneratorParent):
         """
         self._Snom = val
 
-    def initialize_rms(self):
+    def initialize_rms(self, rms_event = False):
         if self.rms_model.empty():
 
             delta = Var("delta")
@@ -508,17 +508,6 @@ class Generator(GeneratorParent):
 
             Vm = self.bus.rms_model.model.E(DynamicVarType.Vm)
             Va = self.bus.rms_model.model.E(DynamicVarType.Va)
-
-            X1 = Var("X1")
-            R1 = Var("R1")
-            freq = Var("freq")
-            vf = Var("vf")
-            tm0 = Var("tm0")
-            M = Var("M")
-            D = Var("D")
-            omega_ref = Var("omega_ref")
-            Kp = Var("Kp")
-            Ki = Var("Ki")
 
             self.rms_model.model = Block(
                 state_eqs=[
@@ -557,21 +546,9 @@ class Generator(GeneratorParent):
                     et: Const(0),
                 },
                 init_vars = [delta, omega, et, v_d, v_q, i_d, i_q, psid, psiq, te, tm],
-                init_params_eq = {
-                    "tm0" : tm,
-                    "vf" : psid + self.X1 * i_d
-                },
-                parameters=[X1, R1, freq, vf, tm0, M, D, omega_ref, Kp, Ki],
-                parameters_eqs={"X1": X1 - self.X1,
-                                "R1": R1 - self.R1,
-                                "freq": freq - self.freq,
-                                "vf": vf - self.vf,
-                                "tm0": tm0 - self.tm0,
-                                "M": M - self.M,
-                                "D": D - self.D,
-                                "omega_ref": omega_ref - self.omega_ref,
-                                "Kp": Kp - self.Kp,
-                                "Ki": Ki - self.Ki},
+                init_params_eq = {},
+                parameters=[],
+                parameters_eqs={},
 
                 external_mapping={
                     DynamicVarType.P: P_g,
