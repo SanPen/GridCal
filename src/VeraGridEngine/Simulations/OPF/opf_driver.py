@@ -258,6 +258,8 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             self.results.hvdc_Pf = res.hvdc_Pf
             self.results.hvdc_loading = res.hvdc_loading
             self.results.converged = res.converged
+            self.results.error = res.error
+            self.results.non_linear = True
 
             msg = "Interior point solver"
             self.logger.add_info(msg=msg, device="Error", value=res.error, expected_value=self.options.ips_tolerance)
