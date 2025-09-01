@@ -350,7 +350,7 @@ def pack_plugin(name: str,
     }
 
     v2 = version.replace(".", "_")
-    filename_zip = f'{name}_{v2}.gcplugin'
+    filename_zip = f'{name}_{v2}.vgplugin'
     with zipfile.ZipFile(filename_zip, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
 
         folder_name = os.path.basename(pkg_folder)

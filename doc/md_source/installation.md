@@ -6,7 +6,7 @@ Once [python](https://www.python.org/) is installed in the system,
 you only need to install the VeraGrid package and the others will be installed as dependencies.
 
 ```bash
-pip install gridcal
+pip install veragrid
 ```
 
 ## Standalone setup
@@ -36,10 +36,10 @@ come with Python pre-installed already.
 ## Install into an environment
 
 ```bash
-python3 -m venv gc5venv
-source gc5venv/bin/activate
+python3 -m venv vg5venv
+source vg5venv/bin/activate
 pip install VeraGrid
-gridcal
+veragrid
 ```
 
 ## Run the graphical user interface
@@ -48,7 +48,7 @@ Once you install VeraGrid in your local Python distribution, you can run the
 graphical user interface with the following terminal command:
 
 ```bash
-gridcal
+veragrid
 ```
 
 If this doesn't work, try:

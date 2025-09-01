@@ -1623,7 +1623,7 @@ In order to define the type of transformer a catalogue is available within the V
 
 This transformer is the transformer between HV Bus and Bus 2. The transformer is: 25 MV 20/10 kV.
 
-1. Access the catalogue (Excel file). It can be found in the repository at Gridcal/Grids_and_profiles/grids/equipment and select 'equipment.ods'.
+1. Access the catalogue (Excel file). It can be found in the repository at `VeraGrid/Grids_and_profiles/grids/equipment` and select 'equipment.ods'.
 
 2. Select the 'Transformers' sheet.
 

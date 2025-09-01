@@ -40,9 +40,9 @@ def start_server(key_file_name: str = "key.pem", cert_file_name: str = "cert.pem
     host = get_my_ip()
 
     print(f"""
-┏┓  • ┓┏┓  ┓┏┓ ({__VeraGridServer_VERSION__} Alpha) 
-┃┓┏┓┓┏┫┃ ┏┓┃┗┓┏┓┏┓┓┏┏┓┏┓
-┗┛┛ ┗┗┻┗┛┗┻┗┗┛┗ ┛ ┗┛┗ ┛
+┓┏      ┏┓  • ┓┏┓({__VeraGridServer_VERSION__} Alpha) 
+┃┃┏┓┏┓┏┓┃┓┏┓┓┏┫┗┓┏┓┏┓┓┏┏┓┏┓
+┗┛┗ ┛ ┗┻┗┛┛ ┗┗┻┗┛┗ ┛ ┗┛┗ ┛ 
 {host}:{port}  
     """)
 

@@ -56,7 +56,7 @@ class IoMain(ConfigurationMain):
                                     '.dgs', '.m', '.raw', '.RAW', '.json', '.uct',
                                     '.ejson2', '.ejson3', '.p', '.nc', '.hdf5',
                                     '.xml', '.rawx', '.zip', '.dpx', '.epc', '.EPC',
-                                    '.gcplugin']
+                                    '.vgplugin']
 
         self.cgmes_version_dict = {x.value: x for x in [CGMESVersions.v2_4_15,
                                                         CGMESVersions.v3_0_0]}
@@ -137,7 +137,7 @@ class IoMain(ConfigurationMain):
 
                         if file_name.endswith('.dgridcal') or file_name.endswith('.dveragrid'):
                             any_grid_delta = True
-                        elif file_name.endswith('.gcplugin'):
+                        elif file_name.endswith('.vgplugin'):
                             self.install_plugin_now(file_name)
                             return
                         else:
@@ -443,7 +443,7 @@ class IoMain(ConfigurationMain):
         Install plugin
         :param fname: name of the plugin
         """
-        if fname.endswith('.gcplugin'):
+        if fname.endswith('.vgplugin'):
             info = get_plugin_info(fname)
 
             if info is not None:

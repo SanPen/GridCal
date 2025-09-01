@@ -53,8 +53,8 @@ Nonetheless, read the license carefully.
 ## Dependency map
 
 ```
-gridcal                                   VeraGrid is a Power Systems simulation program intended for professional use and research
-├── VeraGridEngine==5.3.53                 VeraGrid is a Power Systems simulation program intended for professional use and research
+veragrid                                  VeraGrid is a Power Systems simulation program intended for professional use and research
+├── VeraGridEngine==5.3.53                VeraGrid is a Power Systems simulation program intended for professional use and research
 │   ├── autograd>=1.7.0                   Efficiently computes derivatives of NumPy code.
 │   │   └── numpy<3                       Fundamental package for array computing in Python
 │   ├── brotli                            Python bindings for the Brotli compression library

@@ -76,3 +76,9 @@ point of your plugin must accept only one argument of type `MainGUI`.
 See the function `main` in the code above. This is because VeraGrid will pass "itself"
 into the plugin so that you can acquire total control and access to do whatever 
 you want to do from the plugin. Of course, with great power comes great responsibility.
+
+
+## Installation of a plugin
+
+A VeraGrid plugin ends with `.vgplugin`. 
+You just need to drag & drop that plugin file into the user interface. 

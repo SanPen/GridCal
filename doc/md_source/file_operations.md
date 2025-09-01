@@ -179,9 +179,9 @@ gce.export_results(results_list=[pf_results, pf_ts_results], file_name="IEEE39_1
 
 ### Client - Server operation
 
-To use the gridcal server, you need to install the `VeraGridServer` python package. Once this is done,
-the `gridcalserver`command will be available on the system.
-To launch the server, simply type `gridcalserver`. This will launch a VeraGrid server on the machine,
+To use the VeraGrid server, you need to install the `VeraGridServer` python package. Once this is done,
+the `veragridserver`command will be available on the system.
+To launch the server, simply type `veragridserver`. This will launch a VeraGrid server on the machine,
 on port 8000. This is `https://localhost:8000`
 
 An example on how to send a grid from a script to the server:
@@ -194,7 +194,7 @@ import VeraGridEngine as gce
 # path to your file
 fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "IEEE57.veragrid")
 
-# read gridcal file
+# read veragrid file
 grid_ = gce.open_file(fname)
 
 # define instruction for the server
