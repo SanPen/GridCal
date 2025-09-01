@@ -160,23 +160,23 @@ if __name__ == "__main__":
 
         _license_ = 'MPL2'
 
-        # publish(pkg_name='VeraGridEngine',
-        #         setup_path=os.path.join('VeraGridEngine', 'setup.py'),
-        #         version=__VeraGridEngine_VERSION__,
-        #         summary=_summary,
-        #         home_page=_home_page,
-        #         author=_author,
-        #         email=_author_email,
-        #         license_=_license_,
-        #         keywords=_keywords,
-        #         classifiers_list=_classifiers_list,
-        #         requires_pyhon=_requires_pyhon,
-        #         description_content_type=_description_content_type,
-        #         provides_extra=_provides_extra,
-        #         long_description=_long_description,
-        #         ext_filter=['.py', '.csv', '.txt'],
-        #         exeption_paths=('__pycache__')
-        #         )
+        publish(pkg_name='VeraGridEngine',
+                setup_path=os.path.join('VeraGridEngine', 'setup.py'),
+                version=__VeraGridEngine_VERSION__,
+                summary=_summary,
+                home_page=_home_page,
+                author=_author,
+                email=_author_email,
+                license_=_license_,
+                keywords=_keywords,
+                classifiers_list=_classifiers_list,
+                requires_pyhon=_requires_pyhon,
+                description_content_type=_description_content_type,
+                provides_extra=_provides_extra,
+                long_description=_long_description,
+                ext_filter=['.py', '.csv', '.txt'],
+                exeption_paths=('__pycache__')
+                )
 
         publish(pkg_name='VeraGrid',
                 setup_path=os.path.join('VeraGrid', 'setup.py'),
