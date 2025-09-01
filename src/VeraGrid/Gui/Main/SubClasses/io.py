@@ -52,7 +52,9 @@ class IoMain(ConfigurationMain):
 
         self.rosetta_gui: Union[RosetaExplorerGUI, None] = None
 
-        self.accepted_extensions = ['.gridcal', '.dgridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
+        self.accepted_extensions = ['.veragrid', '.dveragrid',
+                                    '.gridcal', '.dgridcal',
+                                    '.xlsx', '.xls', '.sqlite', '.gch5',
                                     '.dgs', '.m', '.raw', '.RAW', '.json', '.uct',
                                     '.ejson2', '.ejson3', '.p', '.nc', '.hdf5',
                                     '.xml', '.rawx', '.zip', '.dpx', '.epc', '.EPC',
