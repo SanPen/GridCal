@@ -11,7 +11,7 @@ from VeraGridEngine.enumerations import DeviceType, BuildStatus
 from VeraGridEngine.Devices.Parents.load_parent import LoadParent
 from VeraGridEngine.Devices.profile import Profile
 from VeraGridEngine.Utils.Symbolic.block import Block, Var, Const, DynamicVarType
-from VeraGridEngine.Utils.Symbolic.symbolic import _piecewise
+from VeraGridEngine.Utils.Symbolic.symbolic import piecewise
 
 
 class Load(LoadParent):
@@ -587,7 +587,7 @@ class Load(LoadParent):
         if self.rms_model.empty():
             Ql = Var("Ql")
             Pl = Var("Pl")
-            default_value = 0.1
+            default_value = -0.075000000001172
             var = Var(rms_event.parameter)
             self.Pl0 = var
             self.rms_model.model = Block(
@@ -600,11 +600,9 @@ class Load(LoadParent):
                 init_vars=[],
                 init_params_eq= {},
                 parameters=[var],
-                parameters_eqs=[_piecewise(self.time, rms_event.time, rms_event.value, default_value)],
+                parameters_eqs=[piecewise(self.time, rms_event.time, rms_event.value, default_value)],
                 external_mapping={
                     DynamicVarType.P: Pl,
                     DynamicVarType.Q: Ql
                 }
             )
-            pdb.set_trace()
-            print("load")

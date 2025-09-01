@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+import pdb
 from typing import Tuple, Any, Sequence, Callable, Dict
 import math
 import numba as nb
@@ -257,7 +258,6 @@ def initialize_rms(grid: MultiCircuit, power_flow_results, logger: Logger = Logg
 
     # initialize injections
     for elm in grid.get_injection_devices_iter():
-
         # resolve events
         # check if there is an event actuating through this element and initialize rms accordingly
         for rms_event in rms_events:

@@ -9,6 +9,9 @@ from matplotlib import pyplot as plt
 
 import sys
 import os
+
+from VeraGridEngine import DynamicVarType
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 # from VeraGridEngine.Utils.Symbolic.events import Events, Event
@@ -16,6 +19,7 @@ from VeraGridEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.block_solver import BlockSolver
+from VeraGridEngine.Utils.Symbolic.symbolic import piecewise
 import VeraGridEngine.api as gce
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -176,6 +180,9 @@ line_block = Block(
 # Load
 # ----------------------------------------------------------------------------------------------------------------------
 
+t = Var("t")
+# Pl0 = Var("Pl0")
+
 Ql = Var("Ql")
 Pl = Var("Pl")
 
@@ -184,8 +191,16 @@ load_block = Block(
         Pl - Pl0,
         Ql - Ql0
     ],
-    algebraic_vars=[Ql, Pl],
-    parameters=[]
+    algebraic_vars=[Pl, Ql],
+    init_eqs={},
+    init_vars=[],
+    init_params_eq={},
+    # parameters=[Pl0],
+    # parameters_eqs=[piecewise(t, 0.1, 0.15, 0.1)],
+    external_mapping={
+        DynamicVarType.P: Pl,
+        DynamicVarType.Q: Ql
+    }
 )
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -264,7 +279,7 @@ sys = Block(
 # ----------------------------------------------------------------------------------------------------------------------
 # Solver
 # ----------------------------------------------------------------------------------------------------------------------
-slv = BlockSolver(sys)
+slv = BlockSolver(sys, t)
 
 params_mapping = {}
 
@@ -326,8 +341,8 @@ for eq, val in residuals.items():
 # Events
 # ---------------------------------------------------------------------------------------
 
-event1 = RmsEvent('Load', Pl0, 2500, 0.15)
-#event2 = Event(Ql0, 5000, 0.3)
+
+
 my_events = RmsEvents([])
 
 params0 = slv.build_init_params_vector(params_mapping)
@@ -364,11 +379,11 @@ vars_in_order = slv.sort_vars(vars_mapping)
 
 t, y = slv.simulate(
     t0=0,
-    t_end=10.0,
+    t_end=20.0,
     h=0.001,
     x0=x0,
     params0=params0,
-    events_list=my_events,
+    time = t,
     method="implicit_euler"
 )
 

@@ -56,29 +56,25 @@ def _var_uid(sym: Var | str) -> str:
 # Function helpers
 # ----------------------------------------------------------------------------
 
-def _stepwise(x: NUMBER) -> NUMBER:
-    return 1 if x >= 0 else 0
+@nb.njit
+def _heaviside(x):
+    return 0.0 if x <= 0 else 1.0
 
-# def _piecewise(time, t_events, values, default_value):
-#     for t, val in zip(reversed(t_events), reversed(values)):
-#         if time >= t:
-#             return val
-#     return default_value
 
-def _piecewise(time, t_event, new_value, default_value):
-    if time >= t_event:
-        return Const(new_value)
-    return Const(default_value)
+def heaviside(x: Any) -> Func:
+    return Func("heaviside", _to_expr(x))
 
 
 
-def _heaviside(x: NUMBER) -> NUMBER:
-    if x > 0:
-        return 1
-    elif x < 0:
-        return 0
-    else:
-        return 0.5
+def piecewise(time: Expr, t_event: NUMBER, new_value: NUMBER, default_value: NUMBER) -> Expr:
+    """
+    Symbolic piecewise: returns new_value after t_event, default_value before.
+    """
+
+    t_expr = _to_expr(time)
+    step = heaviside(t_expr - Const(t_event))  # symbolic heaviside
+    return step * _to_expr(new_value) + (Const(1) - step) * _to_expr(default_value)
+
 
 
 class CmpOp(Enum):
@@ -480,9 +476,8 @@ class Func(Expr):
         "conj": np.conj,
         "angle": np.angle,
         "abs": np.abs,
-
-        "stepwise": _stepwise,
         "heaviside": _heaviside
+
     })
 
     # --- evaluation ----------------------------------------------------------
@@ -520,8 +515,6 @@ class Func(Expr):
             return cosh(u) * du
         if self.name == "cosh":
             return sinh(u) * du
-        if self.name == "stepwise":
-            return Const(0)
         if self.name == "heaviside":
             return Const(0)
         raise ValueError(f"Unknown function '{self.name}'")
@@ -578,8 +571,9 @@ imag = _make_unary("imag")
 conj = _make_unary("conj")
 angle = _make_unary("angle")
 abs = _make_unary("abs")
-stepwise = _make_unary("stepwise")
 heaviside = _make_unary("heaviside")
+
+
 
 
 def _expr_to_dict(expr: Expr) -> Dict[str, Any]:
@@ -717,7 +711,7 @@ def _all_vars(expressions: Sequence[Expr]) -> List[Var]:
     return list(res)
 
 
-def _emit(expr: Expr, uid_map_vars: Dict[int, str], uid_map_params: Dict[int, str], uid_map_t: Dict[int, str] = None ) -> str:
+def _emit(expr: Expr, uid_map_vars: Dict[int, str], uid_map_params: Dict[int, str]) -> str:
     """
     Emit a pure-Python (Numba-friendly) expression string
     :param expr: Expr (expression)
@@ -730,21 +724,52 @@ def _emit(expr: Expr, uid_map_vars: Dict[int, str], uid_map_params: Dict[int, st
     if isinstance(expr, Var):
         if expr.uid in uid_map_vars.keys():
             return uid_map_vars[expr.uid]  # positional variable
-        elif expr.uid in uid_map_params.keys():
+        else:
+            # pdb.set_trace()
             return uid_map_params[expr.uid]
-        elif expr.uid in uid_map_t.keys():
-            return uid_map_t[expr.uid]
     if isinstance(expr, UnOp):
-        return f"-({_emit(expr.operand, uid_map_vars, uid_map_params, uid_map_t)})"
+        return f"-({_emit(expr.operand, uid_map_vars, uid_map_params)})"
     if isinstance(expr, BinOp):
-        return f"({_emit(expr.left, uid_map_vars, uid_map_params, uid_map_t)} {expr.op} {_emit(expr.right, uid_map_vars, uid_map_params, uid_map_t)})"
+        return f"({_emit(expr.left, uid_map_vars, uid_map_params)} {expr.op} {_emit(expr.right, uid_map_vars, uid_map_params)})"
     if isinstance(expr, Func):
         if expr.name in ("real", "imag", "conj", "angle"):
-            return f"np.{expr.name}({_emit(expr.arg, uid_map_vars, uid_map_params, uid_map_t)})"
+            return f"np.{expr.name}({_emit(expr.arg, uid_map_vars, uid_map_params)})"
         else:
-            return f"np.{expr.name}({_emit(expr.arg, uid_map_vars, uid_map_params, uid_map_t)})"
+            return f"np.{expr.name}({_emit(expr.arg, uid_map_vars, uid_map_params)})"
 
     raise TypeError(type(expr))
+
+def _emit_params_eq(expr: Expr, uid_map_t: Dict[int, str] = None ) -> str:
+    """
+    Emit a pure-Python (Numba-friendly) expression string
+    :param expr: Expr (expression)
+    :param uid_map:
+    :return:
+    """
+
+    if isinstance(expr, Const):
+        return repr(expr.value)
+    if isinstance(expr, Var):
+        if expr.uid in uid_map_t.keys():
+            return uid_map_t[expr.uid]
+    if isinstance(expr, UnOp):
+        return f"-({_emit_params_eq(expr.operand, uid_map_t)})"
+    if isinstance(expr, BinOp):
+        return f"({_emit_params_eq(expr.left, uid_map_t)} {expr.op} {_emit_params_eq(expr.right, uid_map_t)})"
+    if isinstance(expr, Func):
+        # Use numpy functions for standard numeric functions
+        if expr.name in ("real", "imag", "conj", "angle", "sin", "cos", "tan",
+                         "exp", "log", "sqrt", "asin", "acos", "atan",
+                         "sinh", "cosh", "abs"):
+            return f"np.{expr.name}({_emit_params_eq(expr.arg, uid_map_t)})"
+        elif expr.name == "heaviside":
+            return f"_heaviside({_emit_params_eq(expr.arg, uid_map_t)})"
+
+    else:
+            raise ValueError(f"Unknown function '{expr.name}' in _emit_params_eq")
+
+    raise TypeError(type(expr))
+
 
 def _emit_one(expr: Expr, uid_map_vars: Dict[int, str]) -> str:
     """
@@ -823,7 +848,12 @@ def _compile(expressions: Sequence[Expr],
     src += f"    out = np.zeros({len(expressions)})\n"
     src += "\n".join([f"    out[{i}] = {_emit(e, uid2sym, uid_map_params)}" for i, e in enumerate(expressions)]) + "\n"
     src += f"    return out"
-    ns: Dict[str, Any] = {"math": math, "np": np}
+    ns: Dict[str, Any] = {
+        "math": math,
+        "np": np,
+        "_heaviside": _heaviside,
+    }
+
     exec(src, ns)
     fn = nb.njit(ns["_f"], fastmath=True)
 
@@ -849,6 +879,6 @@ __all__ = [
     "conj",
     "abs",
     "angle",
-    "stepwise",
-    "heaviside"
+    "heaviside",
+    "piecewise"
 ]

@@ -13,7 +13,7 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from VeraGridEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
+from VeraGridEngine.Devices.Aggregation.rms_event import RmsEvent
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.block_solver import BlockSolver  # compose_system_block
@@ -63,6 +63,8 @@ Ki_1 = 0.0
 # Build the system
 # ----------------------------------------------------------------------------------------------------------------------
 
+t = Var("t")
+
 grid = gce.MultiCircuit(Sbase=100, fbase=60.0)
 
 # Buses
@@ -80,9 +82,10 @@ grid.add_line(line0)
 grid.add_line(line1)
 
 # load
-load0 = gce.Load(P= 7.5, Q= 1.0, Pl0= -0.075000000001172, Ql0= -0.009999999862208533)
-# load0 = gce.Load(P= -0.075000000001172, Q= -0.009999999862208533)
-grid.add_load(bus=bus2, api_obj=load0)
+
+Load0 = gce.Load(name="Load0", P= 7.5, Q= 1.0, Pl0= -0.075000000001172, Ql0= -0.009999999862208533)
+Load0.time = t
+load_grid = grid.add_load(bus=bus2, api_obj=Load0)
 
 # Generators
 gen0 = gce.Generator(name="Gen0", P=4, vset=1.0, Snom=900,
@@ -108,6 +111,13 @@ gen1 = gce.Generator(name="Gen1", P=3.5, vset=1.0, Snom=900,
                      )
 grid.add_generator(bus=bus0, api_obj=gen0)
 grid.add_generator(bus=bus1, api_obj=gen1)
+
+# ---------------------------------------------------------------------------------------
+# Events
+# ---------------------------------------------------------------------------------------
+
+event1 = RmsEvent(Load0, "Pl0", 0.1, 0.15)
+grid.add_rms_event(event1)
 
 options = gce.PowerFlowOptions(
     solver_type=gce.SolverType.NR,
@@ -147,13 +157,15 @@ logger = gce.Logger()
 # Build init guess and solver
 # ----------------------------------------------------------------------------------------------------------------------
 
+
+
 sys_block, init_guess = gce.initialize_rms(grid, res)
 print(init_guess)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Solver
 # ----------------------------------------------------------------------------------------------------------------------
-slv = BlockSolver(sys_block)
+slv = BlockSolver(sys_block, t)
 
 params_mapping = {
     # Pl0: 0.1,
@@ -164,10 +176,6 @@ params_mapping = {
 # Events
 # ---------------------------------------------------------------------------------------
 
-# event1 = RmsEvent(Pl0, 5000, 0.3)
-# event2 = Event(Ql0, 5000, 0.3)
-# my_events = RmsEvents([event1])
-my_events = RmsEvents([])
 params0 = slv.build_init_params_vector(params_mapping)
 
 # x0 = slv.build_init_vars_vector(mapping)
@@ -206,7 +214,7 @@ t, y = slv.simulate(
     h=0.001,
     x0=x0,
     params0=params0,
-    events_list=my_events,
+    time = t,
     method="implicit_euler"
 )
 

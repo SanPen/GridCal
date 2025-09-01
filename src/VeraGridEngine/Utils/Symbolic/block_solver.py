@@ -25,7 +25,7 @@ from typing import Dict, List, Literal, Any, Callable, Sequence
 
 # from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Devices.Dynamic.events import RmsEvents
-from VeraGridEngine.Utils.Symbolic.symbolic import Var, Expr, Const, _emit
+from VeraGridEngine.Utils.Symbolic.symbolic import Var, Expr, Const, _emit, _emit_params_eq, _heaviside
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Sparse.csc import pack_4_by_4_scipy
 
@@ -66,10 +66,8 @@ def _compile_equations(eqs: Sequence[Expr],
     return fn
 
 def _compile_parameters_equations(eqs: Sequence[Expr],
-                       uid2sym_vars: Dict[int, str],
-                       uid2sym_params: Dict[int, str],
                        uid2sym_t:Dict[int, str],
-                       add_doc_string: bool = True) -> Callable[[np.ndarray, np.ndarray, np.ndarray], np.ndarray]:
+                       add_doc_string: bool = True) -> Callable[[float], np.ndarray]:
     """
     Compile the array of expressions to a function that returns an array of values for those expressions
     :param eqs: Iterable of expressions (Expr)
@@ -79,14 +77,13 @@ def _compile_parameters_equations(eqs: Sequence[Expr],
     :return: Function pointer that returns an array
     """
     # Build source
-    src = f"def _f(vars, params, time):\n"
+    src = f"def _f(time):\n"
     src += f"    out = np.zeros({len(eqs)})\n"
-    src += "\n".join([f"    out[{i}] = {_emit(e, uid2sym_vars, uid2sym_params, uid2sym_t)}" for i, e in enumerate(eqs)]) + "\n"
+    src += "\n".join([f"    out[{i}] = {_emit_params_eq(e, uid2sym_t)}" for i, e in enumerate(eqs)]) + "\n"
     src += f"    return out"
-    ns: Dict[str, Any] = {"math": math, "np": np}
+    ns: Dict[str, Any] = {"math": math, "np": np, "_heaviside": _heaviside}
     exec(src, ns)
     fn = nb.njit(ns["_f"], fastmath=True)
-
     if add_doc_string:
         fn.__doc__ = "def _f(vars)"
     return fn
@@ -265,7 +262,7 @@ class BlockSolver:
             j += 1
 
         k = 0
-        uid2sym_t[self.time.uid] = f"time[{k}]"
+        uid2sym_t[self.time.uid] = f"time"
         self.uid2idx_t[self.time.uid] = k
 
 
@@ -286,8 +283,7 @@ class BlockSolver:
         self._rhs_algeb_fn = _compile_equations(eqs=self._algebraic_eqs, uid2sym_vars=uid2sym_vars,
                                                 uid2sym_params=uid2sym_params)
 
-        self._params_fn = _compile_parameters_equations(eqs=self._parameters_eqs, uid2sym_vars=uid2sym_vars,
-                                                uid2sym_params=uid2sym_params, uid2sym_t=uid2sym_t)
+        self._params_fn = _compile_parameters_equations(eqs=self._parameters_eqs, uid2sym_t=uid2sym_t)
 
         self._j11_fn = _get_jacobian(eqs=self._state_eqs, variables=self._state_vars, uid2sym_vars=uid2sym_vars,
                                      uid2sym_params=uid2sym_params)
@@ -920,13 +916,12 @@ class BlockSolver:
         t[0] = t0
         y[0] = x0.copy()
         for step_idx in range(steps):
-            # params_current += diff_params_matrix[step_idx, :].toarray().ravel()  # TODO think of a better way
             xn = y[step_idx]
             x_new = xn.copy()  # initial guess
             converged = False
             n_iter = 0
-            current_time = np.array(t[step_idx])
-            params_current = self._params_fn(x_new, params_current, current_time)
+            current_time = t[step_idx]
+            params_current = self._params_fn(float(current_time))
             while not converged and n_iter < max_iter:
                 rhs = self.rhs_implicit(x_new, xn, params_current, step_idx, h)
                 residual = np.linalg.norm(rhs, np.inf)

@@ -547,8 +547,6 @@ class Generator(GeneratorParent):
                 },
                 init_vars = [delta, omega, et, v_d, v_q, i_d, i_q, psid, psiq, te, tm],
                 init_params_eq = {},
-                parameters=[],
-                parameters_eqs={},
 
                 external_mapping={
                     DynamicVarType.P: P_g,
