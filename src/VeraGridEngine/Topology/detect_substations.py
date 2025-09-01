@@ -6,7 +6,7 @@ from __future__ import annotations
 from typing import List, Union, TYPE_CHECKING
 import numpy as np
 import VeraGridEngine.Devices as dev
-from VeraGridEngine import DeviceType
+from VeraGridEngine.enumerations import DeviceType
 from VeraGridEngine.Devices.types import BRANCH_TYPES
 from VeraGridEngine.Topology.topology import find_islands, get_adjacency_matrix
 from VeraGridEngine.basic_structures import IntVec

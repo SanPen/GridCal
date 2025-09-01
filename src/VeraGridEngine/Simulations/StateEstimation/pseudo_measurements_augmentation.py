@@ -9,6 +9,8 @@ from VeraGridEngine.enumerations import DeviceType
 class PseudoMeasurement(MeasurementTemplate):
     def __init__(self, value, sigma, api_obj: Bus, name="",
                  idtag = None):
+        # If this has to be injected in DB it has to get a object instance of class Device. In order
+        # to persist it in DB it should be saved in Asset class !
         """
         Parameters
         ----------
@@ -93,8 +95,6 @@ def add_pseudo_measurements(se_input, unobservable_buses, V, Ybus, neighbors,bus
     Extend se_input with pseudo-measurements for unobservable buses.
     neighbors: prebuilt neighbor list per bus
     """
-    # Build reverse lookup: idx -> Bus object
-    idx_to_bus = {idx: bus for bus, idx in bus_dict.items()}
     for bus_idx in unobservable_buses:
         Pi, Qi = compute_power_injection(bus_idx, V, Ybus, neighbors)
 
@@ -110,7 +110,7 @@ def add_pseudo_measurements(se_input, unobservable_buses, V, Ybus, neighbors,bus
             Qi = 0.0  # often reactive load is unknown; can keep 0 or small value
 
         # Get the Bus object for this bus_idx
-        bus_obj = idx_to_bus[bus_idx]
+        bus_obj = bus_dict[bus_idx]
         pm_p = PseudoMeasurement(Pi*Sbase, sigma_pseudo, bus_obj,"pseudo")
         pm_q = PseudoMeasurement(Qi*Sbase, sigma_pseudo, bus_obj, "pseudo",)# converted later to pu in get_measurements
         se_input.p_idx.append(bus_idx)  # or appropriate index mapping

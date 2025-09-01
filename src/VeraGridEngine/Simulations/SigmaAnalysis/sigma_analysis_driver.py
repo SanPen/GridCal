@@ -7,7 +7,6 @@ import numba as nb
 from matplotlib import pyplot as plt
 from typing import Union
 
-from VeraGridEngine import BusMode
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from VeraGridEngine.Simulations.results_table import ResultsTable

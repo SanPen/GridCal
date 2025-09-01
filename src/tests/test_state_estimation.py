@@ -50,7 +50,7 @@ def test_3_node_abur_exposito() -> None:
     grid.add_line(br2)
     grid.add_line(br3)
 
-    for solver in [SolverType.LU, SolverType.NR, SolverType.LM, SolverType.GN]:
+    for solver in [SolverType.Decoupled_LU, SolverType.NR, SolverType.LM, SolverType.GN]:
         se_options = StateEstimationOptions(
             fixed_slack=True,
             solver=solver
@@ -217,7 +217,7 @@ def test_14_bus_matpower():
             obj = branches[gc_idx]
             grid.add_element(m_object(value=val * scale, uncertainty=sigma * scale, api_obj=obj))
 
-    for solver in [SolverType.LU,SolverType.NR, SolverType.LM,SolverType.GN]:
+    for solver in [SolverType.Decoupled_LU, SolverType.NR, SolverType.LM, SolverType.GN]:
 
         se_options = StateEstimationOptions(
             fixed_slack=True,
@@ -253,7 +253,7 @@ def test_14_bus_matpower():
         ])
 
         diff = se.results.voltage - expected_voltage
-        if not SolverType.LU:
+        if not SolverType.Decoupled_LU:
             assert np.allclose(se.results.voltage, expected_voltage, atol=1e-12)
         else:
             assert np.allclose(se.results.voltage, expected_voltage, atol=1e-1)

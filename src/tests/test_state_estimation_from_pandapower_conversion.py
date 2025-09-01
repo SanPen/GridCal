@@ -4,17 +4,17 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 
-from VeraGridEngine import FileOpen
+from VeraGridEngine import power_flow, SolverType
+from VeraGridEngine.IO.file_handler import FileOpen
 from VeraGridEngine.IO.others.pandapower_parser import Panda2VeraGrid, PANDAPOWER_AVAILABLE
 from VeraGridEngine.Simulations.StateEstimation.state_stimation_driver import StateEstimation, StateEstimationOptions
-import VeraGridEngine as gce
 
 
 def test_state_estimation_pandapower():
     if PANDAPOWER_AVAILABLE:
         import pandapower
         # tests/data/grids/state-estimation /small_grid_gb_hv_estimate_raw_expected.json
-        # fname = os.path.join("src", "tests", "data", "grids", "state-estimation", "small_grid_gb_hv_estimate_raw_expected.json")
+        #fname = os.path.join("src", "tests", "data", "grids", "state-estimation", "small_grid_gb_hv_estimate_raw_expected.json")
         fname = os.path.join("data", "grids", "state-estimation", "small_grid_gb_hv_estimate_raw_expected.json")
         net_wns = pandapower.from_json(fname)
 
@@ -28,13 +28,13 @@ def test_state_estimation_pandapower():
 
         # gce.save_file(grid, 'small_grid_gb_hv_estimate_raw_expected.gridcal')
 
-        pf_res = gce.power_flow(grid)
+        pf_res = power_flow(grid)
         print(pf_res.get_bus_df())
         print(pf_res.get_branch_df())
 
-        for solver in [gce.SolverType.LU,gce.SolverType.GN,gce.SolverType.LM]:
+        for solver in [SolverType.Decoupled_LU, SolverType.GN, SolverType.LM]:
             se_opt = StateEstimationOptions(
-                prefer_correct=False,
+                prefer_correct=True,
                 fixed_slack=True,
                 solver=solver,
                 verbose=2,
@@ -82,7 +82,7 @@ def test_network_objects_consistency():
         # assert ok
         # gce.save_file(grid, 'small_grid_gb_hv_estimate_raw_expected.gridcal')
 
-        pf_res = gce.power_flow(grid)
+        pf_res = power_flow(grid)
         print(pf_res.get_bus_df())
         print(pf_res.get_branch_df())
 
@@ -99,7 +99,7 @@ def test_network_objects_consistency():
 
         se.logger.print("SE Logger:")
 
-        pf_res_cim = gce.power_flow(circuit_cim)
+        pf_res_cim =power_flow(circuit_cim)
         print(pf_res_cim.get_bus_df())
         print(pf_res_cim.get_branch_df())
 
