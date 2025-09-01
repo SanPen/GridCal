@@ -105,6 +105,11 @@ def powell_fx(problem: PfFormulationTemplate,
             logger.add_error("Jacobian not square, check the controls!", "Powell")
             return problem.get_solution(elapsed=time.time() - start, iterations=0)
 
+        if J.shape[0] != len(f):
+            logger.add_error("Jacobian and residuals have different sizes!", "Powell",
+                             value=len(f), expected_value=J.shape[0])
+            return problem.get_solution(elapsed=time.time() - start, iterations=0)
+
         g = J.T @ f
 
         iteration = 0
@@ -160,6 +165,11 @@ def powell_fx(problem: PfFormulationTemplate,
 
                 if J.shape[0] != J.shape[1]:
                     logger.add_error("Jacobian not square, check the controls!", "Powell")
+                    return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
+
+                if J.shape[0] != len(f):
+                    logger.add_error("Jacobian and residuals have different sizes!", "Powell",
+                                     value=len(f), expected_value=J.shape[0])
                     return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
 
                 g = J.T @ f

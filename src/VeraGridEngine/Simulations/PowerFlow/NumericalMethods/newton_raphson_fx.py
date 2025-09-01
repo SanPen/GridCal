@@ -88,7 +88,6 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                                  value=len(f), expected_value=J.shape[0])
                 return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
 
-
             try:
 
                 # compute update step: J x Δx = Δg
@@ -130,6 +129,5 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
 
             elif verbose == 1:
                 print(f'It {iteration}, error {error}, converged {converged}')
-
 
     return problem.get_solution(elapsed=time.time() - start, iterations=iteration)

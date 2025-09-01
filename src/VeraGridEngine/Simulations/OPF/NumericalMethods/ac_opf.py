@@ -69,9 +69,16 @@ def run_nonlinear_opf(grid: MultiCircuit,
     if opf_options.ips_init_with_pf:
         if Sbus_pf0 is None:
             # run power flow to initialize
-            pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
-            Sbus_pf = pf_results.Sbus
-            voltage_pf = pf_results.voltage
+            # NOTE: We have to do this here because the later island split, considers HvdcLine as a normal link
+            pf_results = multi_island_pf_nc(nc=nc, options=pf_options, logger=logger)
+
+            if pf_results.converged:
+                Sbus_pf = pf_results.Sbus
+                voltage_pf = pf_results.voltage
+            else:
+                # pick the passed values
+                Sbus_pf = nc.bus_data.installed_power
+                voltage_pf = nc.bus_data.Vbus
         else:
             # pick the passed values
             Sbus_pf = Sbus_pf0
