@@ -1841,20 +1841,25 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                         target_idtag=winding_id
                     )
 
-                    winding_w_tc.tap_changer.init_from_cgmes(
-                        low=tap_changer.lowStep,
-                        high=tap_changer.highStep,
-                        normal=tap_changer.normalStep,
-                        neutral=tap_changer.neutralStep,
-                        stepVoltageIncrement=tap_changer.stepVoltageIncrement,
-                        step=int(tap_changer.step),
-                        # asymmetry_angle=90,
-                        tc_type=tc_type
-                    )
+                    if winding_w_tc is not None:
+                        winding_w_tc.tap_changer.init_from_cgmes(
+                            low=tap_changer.lowStep,
+                            high=tap_changer.highStep,
+                            normal=tap_changer.normalStep,
+                            neutral=tap_changer.neutralStep,
+                            stepVoltageIncrement=tap_changer.stepVoltageIncrement,
+                            step=int(tap_changer.step),
+                            # asymmetry_angle=90,
+                            tc_type=tc_type
+                        )
 
-                    # SET tap_module and tap_phase from its own TapChanger object
-                    winding_w_tc.tap_module = winding_w_tc.tap_changer.get_tap_module()
-                    winding_w_tc.tap_phase = winding_w_tc.tap_changer.get_tap_phase()
+                        # SET tap_module and tap_phase from its own TapChanger object
+                        winding_w_tc.tap_module = winding_w_tc.tap_changer.get_tap_module()
+                        winding_w_tc.tap_phase = winding_w_tc.tap_changer.get_tap_phase()
+                    else:
+                        logger.add_error("Winding of the tap changer not found",
+                                         device_class="TransformerEnd",
+                                         device=winding_id)
 
                 else:
                     logger.add_error(msg='Transformer not found for TapChanger',
