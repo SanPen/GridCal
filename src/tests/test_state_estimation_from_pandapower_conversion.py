@@ -60,7 +60,7 @@ def test_network_objects_consistency():
         # tests/data/grids/state-estimation /small_grid_gb_hv_estimate_raw_expected.json
         # fname = os.path.join("src", "tests", "data", "grids", "state-estimation", "small_grid_gb_hv_estimate_raw_expected.json")
         fname_pp = os.path.join("data", "grids", "state-estimation", "without_pre_processing_and_meas.json")
-        fname = os.path.join("data", "grids", "state-estimation", "20250605T1315Z_RT_SmallGridTestConfiguration_.zip")
+        fname = os.path.join("data", "grids", "state-estimation", "19700101T0000Z_.zip")
         net_wns = pandapower.from_json(fname_pp)
         if "max_i_ka" not in net_wns.line:
             net_wns.line.loc[:, "max_i_ka"] = 10.

@@ -6152,6 +6152,8 @@ class Assets:
         elif obj.device_type == DeviceType.RmsModelTemplateDevice:
             self.add_rms_model(obj=obj)
 
+        elif obj.device_type == DeviceType.SwitchDevice:
+            self.add_switch(obj=obj)
         else:
             raise Exception('Element type not understood ' + str(obj.device_type))
 
