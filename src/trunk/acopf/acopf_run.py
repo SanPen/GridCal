@@ -1,8 +1,8 @@
 import os
 import VeraGridEngine.api as gce
 from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from VeraGridEngine.Simulations.OPF.NumericalMethods.acopf_old import ac_optimal_power_flow
-from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf_new import run_nonlinear_opf
+# from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
+from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
 from VeraGridEngine.enumerations import TapPhaseControl, TapModuleControl
 
 from VeraGridEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
@@ -220,12 +220,8 @@ def two_grids_of_3bus():
     # run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
     island = compile_numerical_circuit_at(circuit=grid, t_idx=None)
 
-    island_res = ac_optimal_power_flow(nc=island,
-                                       pf_options=pf_options,
-                                       opf_options=opf_options,
-                                       debug=False,
-                                       use_autodiff=False,
-                                       plot_error=True)
+
+    island_res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True)
 
 
 def case9():
@@ -566,7 +562,6 @@ def superconductor():
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8, verbose=1)
 
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=False)
-    return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
 
 if __name__ == '__main__':

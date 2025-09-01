@@ -1306,8 +1306,8 @@ class NonLinearOptimalPfProblem:
                 Hqvmvm = (self.Cdispgen @ diags(mu[- self.n_gen_disp - 2 * self.n_disp_hvdc: b])
                           @ (- 2 * diags(np.power(self.Inom, 2.0)) * self.Cdispgen_t))
             else:
-                Hqpgpg = lil_matrix((self.n_gen_disp, self.n_gen_disp))
-                Hqqgqg = lil_matrix((self.n_gen_disp, self.n_gen_disp))
+                Hqpgpg = lil_matrix((self.n_gen_disp_sh, self.n_gen_disp_sh))
+                Hqqgqg = lil_matrix((self.n_gen_disp_sh, self.n_gen_disp_sh))
                 Hqvmvm = lil_matrix((self.nbus, self.nbus))
 
             Hfvava = 2 * (Sfvava + Sfva.T @ muf_mat @ np.conj(Sfva)).real
