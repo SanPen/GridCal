@@ -65,10 +65,8 @@ def example_3bus_acopf():
     # print('\tConv:\n', power_flow.results.get_branch_df())
     opf_options = OptimalPowerFlowOptions()
 
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
     run_nonlinear_opf(grid=grid,
                       opf_options=opf_options,
-                      pf_options=pf_options,
                       plot_error=True)
 
 

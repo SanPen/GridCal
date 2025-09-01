@@ -260,25 +260,19 @@ def continuation_power_flow(grid: MultiCircuit,
 
 
 def nonlinear_opf(grid: MultiCircuit,
-                  pf_options: PowerFlowOptions = PowerFlowOptions(),
                   opf_options: OptimalPowerFlowOptions = OptimalPowerFlowOptions(),
-                  plot_error: bool = False,
-                  pf_init: bool = True) -> NonlinearOPFResults:
+                  plot_error: bool = False) -> NonlinearOPFResults:
     """
     Run AC Optimal Power Flow
     :param grid: MultiCircuit instance
-    :param pf_options: Power Flow Options instance (optional)
     :param opf_options: Optimal Power Flow Options instance (optional)
     :param plot_error: Boolean that selects to plot error
-    :param pf_init: Boolean that selects a power-flow initialization of the problem
     :return: AC Optimal Power Flow results
     """
 
     acopf_res = run_nonlinear_opf(grid=grid,
-                                  pf_options=pf_options,
                                   opf_options=opf_options,
-                                  plot_error=plot_error,
-                                  pf_init=pf_init)
+                                  plot_error=plot_error)
 
     return acopf_res
 

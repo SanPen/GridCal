@@ -190,13 +190,11 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 res = run_nonlinear_opf(
                     grid=self.grid,
                     opf_options=self.options,
-                    pf_options=self.pf_options,
                     t_idx=t,
                     # for the first power flow, use the given strategy
                     # for the successive ones, use the previous solution
-                    pf_init=self.options.ips_init_with_pf if it == 0 else True,
-                    Sbus_pf0=self.results.Sbus[it - 1, :] if it > 0 else None,
-                    voltage_pf0=self.results.voltage[it - 1, :] if it > 0 else None,
+                    # Sbus_pf0=self.results.Sbus[it - 1, :] if it > 0 else None,
+                    # voltage_pf0=self.results.voltage[it - 1, :] if it > 0 else None,
                     logger=self.logger
                 )
                 Sbase = self.grid.Sbase
@@ -386,13 +384,11 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                     res = run_nonlinear_opf(
                         grid=self.grid,
                         opf_options=self.options,
-                        pf_options=self.pf_options,
                         t_idx=t,
                         # for the first power flow, use the given strategy
                         # for the successive ones, use the previous solution
-                        pf_init=self.options.ips_init_with_pf if it == 0 else True,
-                        Sbus_pf0=self.results.Sbus[it - 1, :] if it > 0 else None,
-                        voltage_pf0=self.results.voltage[it - 1, :] if it > 0 else None,
+                        # Sbus_pf0=self.results.Sbus[it - 1, :] if it > 0 else None,
+                        # voltage_pf0=self.results.voltage[it - 1, :] if it > 0 else None,
                         logger=self.logger
                     )
                     Sbase = self.grid.Sbase

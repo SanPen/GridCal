@@ -1,27 +1,10 @@
 import VeraGridEngine.api as gce
-import numpy as np
-from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
-from VeraGridEngine.enumerations import TransformerControlType, AcOpfMode, ReactivePowerControlMode
 
-from VeraGridEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
-"""
-from GridCalEngine.basic_structures import Vec
-import GridCalEngine.Utils.NumericalMethods.autodiff as ad
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
-from typing import Callable, Tuple
-import os
-
-import pandas as pd
-from scipy.sparse import csc_matrix as csc
-from scipy.sparse import lil_matrix
-"""
 # User input - Weights for the two components of the Objective Function
 wloss = 0.8
 wred = 0.2
 
-####---------- Create IEEE 9 bus system
+### ---------- Create IEEE 9 bus system
 grid = gce.MultiCircuit()
 # grid.Sbase = 100
 
@@ -78,5 +61,5 @@ grid.add_bus(dcbus1)
 dcbus2 = gce.Bus('DCBus_2', Vnom=345, is_slack=False, is_dc=True)
 grid.add_bus(dcbus2)
 
-nc = compile_numerical_circuit_at(circuit=grid)
+nc = gce.compile_numerical_circuit_at(circuit=grid)
 print('')

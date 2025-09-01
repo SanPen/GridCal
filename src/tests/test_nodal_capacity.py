@@ -22,10 +22,6 @@ def test_linear_vs_nonlinear_ncap():
     grid = gce.FileOpen(fname).open()
 
     # Nonlinear OPF
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
-                                      verbose=0,
-                                      control_q=False)
-
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF,
                                               ips_tolerance=1e-8,
                                               ips_iterations=50,
@@ -33,7 +29,6 @@ def test_linear_vs_nonlinear_ncap():
                                               acopf_mode=AcOpfMode.ACOPFstd)
 
     res = run_nonlinear_opf(grid=grid,
-                            pf_options=pf_options,
                             opf_options=opf_options,
                             plot_error=False,
                             optimize_nodal_capacity=True,

@@ -1993,6 +1993,8 @@ class SimulationsMain(TimeEventsMain):
         robust = self.ui.fixOpfCheckBox.isChecked()
         generation_expansion_planning = self.ui.opfGEPCheckBox.isChecked()
 
+        _, pf_results = self.session.power_flow
+
         if self.ui.save_mip_checkBox.isChecked():
             folder = opf_file_path()
             dte_str = str(datetime.datetime.now()).replace(":", "_").replace("/", "-")
@@ -2022,6 +2024,17 @@ class SimulationsMain(TimeEventsMain):
         ips_init_with_pf = self.ui.ips_initialize_with_pf_checkBox.isChecked()
         ips_control_q_limits = self.ui.ips_control_Qlimits_checkBox.isChecked()
 
+        if pf_results is not None:
+            acopf_v0 = pf_results.voltage
+            acopf_S0 = pf_results.Sbus
+        else:
+            if ips_init_with_pf:
+                self.show_warning_toast("Run a power flow first")
+                ips_init_with_pf = False
+
+            acopf_v0 = None
+            acopf_S0 = None
+
         verbose = self.ui.ips_verbose_spinBox.value()
 
         options = sim.OptimalPowerFlowOptions(solver=solver,
@@ -2045,6 +2058,8 @@ class SimulationsMain(TimeEventsMain):
                                               ips_trust_radius=ips_trust_radius,
                                               ips_init_with_pf=ips_init_with_pf,
                                               ips_control_q_limits=ips_control_q_limits,
+                                              acopf_v0=acopf_v0,
+                                              acopf_S0=acopf_S0,
                                               robust=robust,
                                               verbose=verbose)
 

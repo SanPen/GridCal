@@ -38,10 +38,7 @@ def remap_original_bus_indices(n_bus, original_bus_idx: Sequence[int]) -> Tuple[
 
 def run_nonlinear_opf(grid: MultiCircuit,
                       opf_options: OptimalPowerFlowOptions,
-                      pf_options: PowerFlowOptions,
                       t_idx: Union[None, int] = None,
-                      Sbus_pf0: Union[CxVec, None] = None,
-                      voltage_pf0: Union[CxVec, None] = None,
                       plot_error: bool = False,
                       optimize_nodal_capacity: bool = False,
                       nodal_capacity_sign: float = 1.0,
@@ -51,10 +48,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
     Run optimal power flow for a MultiCircuit
     :param grid: MultiCircuit
     :param opf_options: OptimalPowerFlowOptions
-    :param pf_options: PowerFlowOptions
     :param t_idx: Time index
-    :param Sbus_pf0: Sbus initial solution
-    :param voltage_pf0: Voltage initial solution
     :param plot_error: Plot the error evolution
     :param optimize_nodal_capacity:
     :param nodal_capacity_sign:
@@ -66,27 +60,15 @@ def run_nonlinear_opf(grid: MultiCircuit,
     # compile the system
     nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx, logger=logger)
 
-    if opf_options.ips_init_with_pf:
-        if Sbus_pf0 is None:
-            # run power flow to initialize
-            # NOTE: We have to do this here because the later island split, considers HvdcLine as a normal link
-            pf_results = multi_island_pf_nc(nc=nc, options=pf_options, logger=logger)
-
-            if pf_results.converged:
-                Sbus_pf = pf_results.Sbus
-                voltage_pf = pf_results.voltage
-            else:
-                # pick the passed values
-                Sbus_pf = nc.bus_data.installed_power
-                voltage_pf = nc.bus_data.Vbus
-        else:
-            # pick the passed values
-            Sbus_pf = Sbus_pf0
-            voltage_pf = voltage_pf0
+    if opf_options.ips_init_with_pf and opf_options.acopf_S0 is not None and opf_options.acopf_v0 is not None:
+        # pick the passed values
+        Sbus_pf = opf_options.acopf_S0
+        voltage_pf = opf_options.acopf_v0
     else:
-        # initialize with sensible values
+        # pick the default values
         Sbus_pf = nc.bus_data.installed_power
         voltage_pf = nc.bus_data.Vbus
+        logger.add_error("Initialized with PF, but no PF values were passed")
 
     # split into islands, but considering the HVDC lines as actual links
     islands = nc.split_into_islands(ignore_single_node_islands=True,
