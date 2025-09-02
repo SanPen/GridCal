@@ -459,12 +459,12 @@ class Panda2VeraGrid:
                 Sbase=grid.Sbase
             )
 
-            elm.tap_changer = self.extract_tap_changers(row)
+            self.extract_tap_changers(row,elm)
             grid.add_transformer2w(elm)
 
             self.register(panda_type="trafo", panda_code=idx, api_obj=elm)
 
-    def extract_tap_changers(self, row):
+    def extract_tap_changers(self, row,elm):
         """
             # Tap changer mapping (pandapower → GridCal)
             #
@@ -497,8 +497,7 @@ class Panda2VeraGrid:
         dV = 0.0
         asymmetry_angle = 0.0
         tc_type = TapChangerTypes.NoRegulation
-        if tap_changer_type is not None:
-
+        if tap_changer_type is not None and pd.notna(row["tap_neutral"]):
             if tap_changer_type == "Ratio":
                 # Longitudinal regulator
                 dV = row['tap_step_percent'] / 100.0
@@ -544,7 +543,7 @@ class Panda2VeraGrid:
                 tc_type=tc_type
             )
 
-            return tc
+            elm.tap_changer =  tc
 
     def parse_transformers3W(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -612,7 +611,7 @@ class Panda2VeraGrid:
                 Vsc12=Vsc12, Vsc23=Vsc23, Vsc31=Vsc31,
                 Pfe=Pfe, I0=I0, Sbase=grid.Sbase,
             )
-            elm.tap_changer = self.extract_tap_changers(row)
+            elm.tap_changer = self.extract_tap_changers(row,elm)
             grid.add_transformer3w(elm)
 
             self.register(panda_type="trafo", panda_code=idx, api_obj=elm)
