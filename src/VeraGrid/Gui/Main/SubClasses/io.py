@@ -255,10 +255,10 @@ class IoMain(ConfigurationMain):
         :param title: Title of the open window
         """
 
-        files_types = "*.gridcal *.veragrid"
+        files_types = "*.gridcal *.veragrid "
 
         if allow_diff_file_format:
-            files_types += "*.dgridcal *.dveragrid"
+            files_types += "*.dgridcal *.dveragrid "
 
         files_types += "*.gch5 *.xlsx *.xls *.sqlite *.dgs "
         files_types += "*.m *.raw *.RAW *.rawx *.uct *.json *.ejson2 *.ejson3 *.xml "
