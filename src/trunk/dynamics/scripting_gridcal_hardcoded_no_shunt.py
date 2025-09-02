@@ -11,11 +11,12 @@ from matplotlib import pyplot as plt
 import sys
 import os
 
+from VeraGridEngine import DynamicVarType
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from VeraGridEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
-from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin, piecewise
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.block_solver import BlockSolver
 import VeraGridEngine.api as gce
@@ -533,6 +534,10 @@ te0_4 = psid0_4 * i_q0_4 - psiq0_4 * i_d0_4
 # ----------
 # Variables
 # ----------
+
+t = Var("t")
+
+
 # Line 0
 Pline_from_0 = Var("Pline_from_0")
 Qline_from_0 = Var("Qline_from_0")
@@ -1345,14 +1350,14 @@ generator_block_4 = Block(
 # ------
 # Shunt
 # ------
-g_s7 = Const(0.0)
-b_s7 = Const(2.0)
-g_s9 = Const(0.0)
-b_s9 = Const(3.5)
-Ps0_7 = Const(np.abs(v7)**2 * g_s7.value)
-Qs0_7 = Const(np.abs(v7)**2 * b_s7.value)
-Ps0_9 = Const(np.abs(v9)**2 * g_s9.value)
-Qs0_9 = Const(np.abs(v9)**2 * b_s9.value)
+# g_s7 = Const(0.0)
+# b_s7 = Const(2.0)
+# g_s9 = Const(0.0)
+# b_s9 = Const(3.5)
+# Ps0_7 = Const(np.abs(v7)**2 * g_s7.value)
+# Qs0_7 = Const(np.abs(v7)**2 * b_s7.value)
+# Ps0_9 = Const(np.abs(v9)**2 * g_s9.value)
+# Qs0_9 = Const(np.abs(v9)**2 * b_s9.value)
 
 # shunt_7 = Block(
 #     algebraic_eqs=[
@@ -1375,10 +1380,10 @@ Qs0_9 = Const(np.abs(v9)**2 * b_s9.value)
 # -----
 # Load
 # -----
-# Pl0_7 = Var('Pl0_7')
-Pl0_7 = Const(Sb7.real)
+Pl0_7 = Var('Pl0_7')
+Pl0_7_default = Sb7.real
 print("Pl0_7")
-print(Pl0_7)
+print(Pl0_7_default)
 Ql0_7 = Const(Sb7.imag) #
 print("Ql0_7")
 print(Ql0_7)
@@ -1396,7 +1401,12 @@ load_7 = Block(
         Qload_7 - Ql0_7
     ],
     algebraic_vars=[Pload_7, Qload_7],
-    parameters=[Pl0_7] #
+    parameters=[Pl0_7],
+    parameters_eqs=[piecewise(t, 2.0, -9.0, Pl0_7_default)],
+    external_mapping={
+        DynamicVarType.P: Pload_7,
+        DynamicVarType.Q: Qload_7
+    }
 )
 
 load_9 = Block(
@@ -1423,13 +1433,17 @@ sys = Block(
 # ----------------------------------------------------------------------------------------------------------------------
 # Solver
 # ----------------------------------------------------------------------------------------------------------------------
-slv = BlockSolver(sys)
+start_building_system = time.time()
+
+slv = BlockSolver(sys, t)
 
 # params_mapping = {
 #     Pl0_7: Sb7.real + Ps0_7.value , #
 #     # u: 1.0
 #     #Ql0: 0.1
 # }
+end_building_system = time.time()
+print(f"Harcoded build system time = {end_building_system-start_building_system:.6f} [s]")
 
 params_mapping = {}
 
@@ -1661,10 +1675,10 @@ vars_mapping = {
     Q_G4: Sb4.imag,
     et_4: 0.0,
 
-    Pload_7: Sb7.real + Ps0_7.value, # 
-    Qload_7: Sb7.imag + Qs0_7.value, # 
-    Pload_9: Sb9.real + Ps0_9.value, # 
-    Qload_9: Sb9.imag + Qs0_9.value, #
+    Pload_7: Sb7.real, #+ Ps0_7.value, #
+    Qload_7: Sb7.imag, #+ Qs0_7.value, #
+    Pload_9: Sb9.real, #+ Ps0_9.value, #
+    Qload_9: Sb9.imag, #+ Qs0_9.value, #
 }
 
 init_guess = vars_mapping
@@ -1674,8 +1688,8 @@ print(init_guess)
 # ---------------------------------------------------------------------------------------
 # Events
 # ---------------------------------------------------------------------------------------
-event1 = RmsEvent('Load', Pl0_7, 2500, -9.0)
-my_events = RmsEvents([])
+
+
 
 params0 = slv.build_init_params_vector(params_mapping)
 x0 = slv.build_init_vars_vector(vars_mapping)
@@ -1705,15 +1719,21 @@ x0 = slv.build_init_vars_vector(vars_mapping)
 
 vars_in_order = slv.sort_vars(vars_mapping)
 
+start_simulation = time.time()
+
 t, y = slv.simulate(
     t0=0,
     t_end=20.0,
     h=0.001,
     x0=x0,
     params0=params0,
-    events_list=my_events,
+    time = t,
     method="implicit_euler"
 )
+
+end_simulation = time.time()
+print(f"Harcoded simulation time = {end_simulation-start_simulation:.6f} [s]")
+
 
 # save to csv
 slv.save_simulation_to_csv('simulation_results.csv', t, y)

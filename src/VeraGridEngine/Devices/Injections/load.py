@@ -565,11 +565,9 @@ class Load(LoadParent):
             Ql = Var("Ql")
             Pl = Var("Pl")
 
-        if rms_event:
-            var = Var()
             self.rms_model.model = Block(
                 algebraic_eqs=[
-                    Pl - self.Pl0, #TODO: consider that self.P/Q should be constant variables/objects, in order for us to create events
+                    Pl - self.Pl0,
                     Ql - self.Ql0
                 ],
                 algebraic_vars=[Pl, Ql],
@@ -587,7 +585,7 @@ class Load(LoadParent):
         if self.rms_model.empty():
             Ql = Var("Ql")
             Pl = Var("Pl")
-            default_value = getattr(self, rms_event.parameter, None)
+            default_value = getattr(self, rms_event.parameter, None)  # TODO: Find a way of not using getattr and setattr
             var = Var(rms_event.parameter)
             setattr(self, rms_event.parameter, var)
             self.rms_model.model = Block(

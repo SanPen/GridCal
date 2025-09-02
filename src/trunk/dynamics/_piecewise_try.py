@@ -6,8 +6,15 @@ from VeraGridEngine.enumerations import DeviceType, BuildStatus
 from VeraGridEngine.Devices.Parents.load_parent import LoadParent
 from VeraGridEngine.Devices.profile import Profile
 from VeraGridEngine.Utils.Symbolic.block import Block, Var, Const, DynamicVarType
-from VeraGridEngine.Utils.Symbolic.symbolic import _piecewise
+from VeraGridEngine.Utils.Symbolic.symbolic import piecewise
 
-result = _piecewise(0, 1, 5, 2)
+result = piecewise(0, 1, 5, 2)
 
-print(result)
+# print(4*18+2*2+13*4+2*11)
+
+print(97/71)
+
+print(172/150)
+
+
+# print(result)

@@ -15,7 +15,7 @@ from VeraGridEngine import DynamicVarType
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from VeraGridEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
+
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin, piecewise
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.block_solver import BlockSolver  # compose_system_block

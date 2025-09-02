@@ -7,10 +7,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 import sys
+import time
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from VeraGridEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
+from VeraGridEngine.Devices.Aggregation.rms_event import RmsEvent
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
 from VeraGridEngine.Utils.Symbolic.block_solver import BlockSolver
 import VeraGridEngine.api as gce
 
@@ -31,6 +33,8 @@ res_1 = gce.power_flow(grid_1)
 
 
 # Build system
+
+t = Var("t")
 
 grid = gce.MultiCircuit()
 
@@ -135,9 +139,16 @@ trafo_G4 = grid.add_line(
              r=0.00000, x=0.15 * (100.0/900.0), b=0.0, rate=900.0))
 
 # load
-load1 = grid.add_load(bus=bus7, api_obj=gce.Load(P=967.0, Q=100.0, Pl0=-9.670000000007317, Ql0=-0.9999999999967969))
+load1 = gce.Load(name="load1", P=967.0, Q=100.0, Pl0=-9.670000000007317, Ql0=-0.9999999999967969)
+load1.time = t
+load1_grid = grid.add_load(bus=bus7, api_obj=load1)
+# load1 = grid.add_load(bus=bus7, api_obj=gce.Load(P=967.0, Q=100.0, Pl0=-9.670000000007317, Ql0=-0.9999999999967969))
 
-load2 = grid.add_load(bus=bus9, api_obj=gce.Load(P=1767.0, Q=100.0, Pl0=-17.6699999999199, Ql0=-0.999999999989467))
+load2 = gce.Load(name="load2", P=1767.0, Q=100.0, Pl0=-17.6699999999199, Ql0=-0.999999999989467)
+load2.time = t
+load2_grid = grid.add_load(bus=bus9, api_obj=load2)
+
+# load2 = grid.add_load(name="load2", bus=bus9, api_obj=gce.Load(P=1767.0, Q=100.0, Pl0=-17.6699999999199, Ql0=-0.999999999989467))
 #
 # # Shunt at bus 7
 # shunt1 = gce.Shunt(
@@ -201,8 +212,8 @@ gen1 = gce.Generator(
     x1=xd_1, r1=ra_1, freq=fn_1,
     # vf=1.0,
     # tm0=700.0/900.0,   # ≈ 0.7778
-    tm0=6.9999999999011875,
-    vf=1.1441074098644528,
+    tm0=6.999999999999923,
+    vf=1.141048034212655,
     M=M_1, D=D_1,
     omega_ref=omega_ref_1,
     Kp=Kp_1, Ki=Ki_1
@@ -213,8 +224,8 @@ gen2 = gce.Generator(
     x1=xd_2, r1=ra_2, freq=fn_2,
     # vf=1.0,
     # tm0=700.0/900.0,   # ≈ 0.7778
-    tm0=6.9999999993318305,
-    vf=1.1876079575330167,
+    tm0=6.999999999999478,
+    vf=1.180101792122771,
     M=M_2, D=D_2,
     omega_ref=omega_ref_2,
     Kp=Kp_2, Ki=Ki_2
@@ -225,8 +236,8 @@ gen3 = gce.Generator(
     x1=xd_3, r1=ra_3, freq=fn_3,
     # vf=1.0,
     # tm0=719.091/900.0,  # ≈ 0.7990
-    tm0=7.377782468876932,
-    vf=1.1785186916596406,
+    tm0=7.331832804674334,
+    vf=1.1551307366822237,
     M=M_3, D=D_3,
     omega_ref=omega_ref_3,
     Kp=Kp_3, Ki=Ki_3
@@ -237,8 +248,8 @@ gen4 = gce.Generator(
     x1=xd_4, r1=ra_4, freq=fn_4,
     # vf=1.0,
     # tm0=700.0/900.0,   # ≈ 0.7778
-    tm0=6.999999888676741,
-    vf=1.163396359978149,
+    tm0=6.99999999999765,
+    vf=1.2028205849036708,
     M=M_4, D=D_4,
     omega_ref=omega_ref_4,
     Kp=Kp_4, Ki=Ki_4
@@ -249,8 +260,15 @@ grid.add_generator(bus=bus1, api_obj=gen1)
 grid.add_generator(bus=bus2, api_obj=gen2)
 grid.add_generator(bus=bus3, api_obj=gen3)
 grid.add_generator(bus=bus4, api_obj=gen4)
-# # Run power flow
 
+# ---------------------------------------------------------------------------------------
+# Events
+# ---------------------------------------------------------------------------------------
+
+event1 = RmsEvent(load1, "Pl0", 2.5, -9.0)
+grid.add_rms_event(event1)
+
+# # Run power flow
 options = gce.PowerFlowOptions(
     solver_type=gce.SolverType.NR,
     retry_with_other_methods=False,
@@ -294,7 +312,7 @@ print(init_guess)
 # # # Events
 # event1 = RmsEvent('Load', Pl0_7, 2500, -9.0)
 # event1 = RmsEvent('Load', grid.lines[7].rms_model.model.V('Pl07'), 2500, -9.0)
-my_events = RmsEvents([])
+
 # params_mapping = {
 #     # Pl0_7: Sb7.real + Ps0_7.value
 # }
@@ -302,10 +320,18 @@ params_mapping = {}
 
 # TODO: initi_guess in hardcoded was Dict(Var, float), now it's Dict((int(uid), str(name)), float) for debugging. So slv.build_init_vars_vector(init_guess) and slv.sort_vars(init_guess) needs to be addressed
 # # Solver
-slv = BlockSolver(ss)
+start_building_system = time.time()
+
+slv = BlockSolver(ss, t)
+
+end_building_system = time.time()
+print(f"Automatic build system time = {end_building_system-start_building_system:.6f} [s]")
+
 params0 = slv.build_init_params_vector(params_mapping)
 x0 = slv.build_init_vars_vector_from_uid(init_guess)
 vars_in_order = slv.sort_vars_from_uid(init_guess)
+
+start_simulation = time.time()
 
 t, y = slv.simulate(
     t0=0,
@@ -313,9 +339,13 @@ t, y = slv.simulate(
     h=0.001,
     x0=x0,
     params0=params0,
-    events_list=my_events,
+    time=t,
     method="implicit_euler"
 )
+
+end_simulation = time.time()
+print(f"Automatic simulation time = {end_simulation-start_simulation:.6f} [s]")
+
 
 # TODO: check results and implement test once intilize_rms is wokring!
 # # Save to csv

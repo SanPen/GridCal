@@ -7,7 +7,7 @@ import pdb
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def merge_simulation_results_by_time(csv1, csv2, output_csv= 'merged_data_hardcoded_init_rms.csv', time_col='Time [s]'):
+def merge_simulation_results_by_time(csv1, csv2, output_csv= 'merged_data_Andes_init_rms.csv', time_col='Time [s]'):
     """
     Merge two simulation result CSVs by matching nearest time steps.
 
@@ -50,7 +50,7 @@ def merge_simulation_results_by_time(csv1, csv2, output_csv= 'merged_data_hardco
 
     return merged_df
 
-comparison = merge_simulation_results_by_time('simulation_results.csv', 'simulation_results_Ieee_automatic_init.csv')
+comparison = merge_simulation_results_by_time('simulation_andes_output.csv', 'simulation_results_Ieee_automatic_init.csv')
 # andes is automatic
 # Load merged CSV
 i = 1
@@ -58,10 +58,10 @@ merged_df = comparison
 # merged_df['Pl_Gridcal'] = merged_df['Pl_Gridcal'] * (-100)
 
 variable_pairs = [
-     [f"omega_1_VeraGrid", f"omega_VeraGrid"],
-     [f"omega_2_VeraGrid", f"omega_VeraGrid.1"],
-     [f"omega_3_VeraGrid", f"omega_VeraGrid.2"],
-     [f"omega_4_VeraGrid", f"omega_VeraGrid.3"],
+     [f"omega_andes_gen_1", f"omega_VeraGrid"],
+     [f"omega_andes_gen_2", f"omega_VeraGrid.1"],
+     [f"omega_andes_gen_3", f"omega_VeraGrid.2"],
+     [f"omega_andes_gen_4", f"omega_VeraGrid.3"],
      # [f"Vline_to_Gridcal", f"Vm_Gridcal.1"],
      # [f"dline_to_Gridcal", f"Va_Gridcal.1"],
      # [f"dline_from_Gridcal", f"Va_Gridcal"],
