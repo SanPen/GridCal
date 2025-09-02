@@ -676,7 +676,7 @@ def convert_bus(elm: dev.Bus, n_time: int,
     :return:
     """
     bus = pg.Bus(nt=n_time,
-                 name=elm.name,
+                 name=str(elm.name),
                  idtag=elm.idtag,
                  code=str(elm.code),
                  Vnom=elm.Vnom,
