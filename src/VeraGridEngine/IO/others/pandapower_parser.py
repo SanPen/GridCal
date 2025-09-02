@@ -12,7 +12,8 @@ import numpy as np
 import pandas as pd
 
 import VeraGridEngine.Devices as dev
-from VeraGridEngine.enumerations import (ExternalGridMode,TapChangerTypes)
+from VeraGridEngine import TapChanger
+from VeraGridEngine.enumerations import (ExternalGridMode, TapChangerTypes)
 from VeraGridEngine.Devices.types import ALL_DEV_TYPES
 from VeraGridEngine.basic_structures import Logger
 
@@ -207,7 +208,7 @@ class Panda2VeraGrid:
                 name=row['name'],
                 code=idx,
                 Vm=row['vm_pu'],
-                mode= ExternalGridMode.VD,
+                mode=ExternalGridMode.VD,
                 idtag=row.get('uuid', None)
             )
 
@@ -413,7 +414,7 @@ class Panda2VeraGrid:
 
             elm.rdfid = row.get('uuid', elm.idtag)
 
-            grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
+            grid.add_static_generator(bus=bus, api_obj=elm)  # Add generator to the grid
 
             self.register(panda_type="sgen", panda_code=idx, api_obj=elm)
 
@@ -459,12 +460,15 @@ class Panda2VeraGrid:
                 Sbase=grid.Sbase
             )
 
-            self.extract_tap_changers(row,elm)
+            tc = self.extract_tap_changers(row)
+            if tc is not None:
+                elm.tap_changer = tc
+
             grid.add_transformer2w(elm)
 
             self.register(panda_type="trafo", panda_code=idx, api_obj=elm)
 
-    def extract_tap_changers(self, row,elm):
+    def extract_tap_changers(self, row) -> TapChanger | None:
         """
             # Tap changer mapping (pandapower → GridCal)
             #
@@ -509,8 +513,8 @@ class Panda2VeraGrid:
                     alpha = np.deg2rad(row["tap_step_degree"])  # pandapower phase shift α [rad]
                     if dV > 0 and abs(np.sin(alpha)) <= dV:
                         # Convert α -> Θ (GridCal asymmetry_angle)
-                        Theta = alpha + np.arcsin(np.sin(alpha) / dV)
-                        asymmetry_angle = np.rad2deg(Theta)
+                        theta = alpha + np.arcsin(np.sin(alpha) / dV)
+                        asymmetry_angle = np.rad2deg(theta)
                         tc_type = TapChangerTypes.Asymmetrical
                     else:
                         # fallback: cannot map with given dV, treat as ideal angle shifter
@@ -526,7 +530,7 @@ class Panda2VeraGrid:
             elif tap_changer_type == "Ideal":
                 dV = 0.0
                 tc_type = TapChangerTypes.Asymmetrical
-                asymmetry_angle = row.get("tap_step_degree",  90.0)  # default to 90° if missing
+                asymmetry_angle = row.get("tap_step_degree", 90.0)  # default to 90° if missing
 
             else:
                 tc_type = TapChangerTypes.NoRegulation
@@ -534,7 +538,7 @@ class Panda2VeraGrid:
                 asymmetry_angle = 90.0
 
             # Build GridCal TapChanger
-            tc = dev.TapChanger(
+            return dev.TapChanger(
                 total_positions=row['tap_max'] - row['tap_min'] + 1,
                 neutral_position=row['tap_neutral'],
                 normal_position=row['tap_pos'],
@@ -542,8 +546,8 @@ class Panda2VeraGrid:
                 asymmetry_angle=asymmetry_angle,
                 tc_type=tc_type
             )
-
-            elm.tap_changer =  tc
+        else:
+            return None
 
     def parse_transformers3W(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -596,7 +600,7 @@ class Panda2VeraGrid:
             Pfe = getattr(row, "pfe_kw", 0.0)  # iron losses in kW
 
             Irated = row['sn_mva'] * 1e6 / (math.sqrt(3) * row['vn_hv_kv'] * 1e3)
-            I0 = I0/ 100 * Irated  # no-load current in A
+            I0 = I0 / 100 * Irated  # no-load current in A
 
             # short-circuit voltage (%)
             Vsc12 = getattr(row, "vk_hv_percent", 0.0)
@@ -611,7 +615,11 @@ class Panda2VeraGrid:
                 Vsc12=Vsc12, Vsc23=Vsc23, Vsc31=Vsc31,
                 Pfe=Pfe, I0=I0, Sbase=grid.Sbase,
             )
-            elm.tap_changer = self.extract_tap_changers(row,elm)
+
+            tc = self.extract_tap_changers(row)
+            if tc is not None:
+                elm.winding1.tap_changer = tc
+
             grid.add_transformer3w(elm)
 
             self.register(panda_type="trafo", panda_code=idx, api_obj=elm)
@@ -723,8 +731,8 @@ class Panda2VeraGrid:
                                 name=name)
                             )
                         elif m_tpe == "va":
-                            grid.add_va_measurement(dev.VaMeasurement(value=val,uncertainty = std,api_obj=api_object,
-                                                                      name = name))
+                            grid.add_va_measurement(dev.VaMeasurement(value=val, uncertainty=std, api_obj=api_object,
+                                                                      name=name))
                         elif m_tpe == 'p':
                             grid.add_pi_measurement(dev.PiMeasurement(
                                 value=val,
@@ -887,7 +895,7 @@ class Panda2VeraGrid:
         grid = dev.MultiCircuit()
 
         if self.panda_net is not None:
-            #grid.Sbase = self.panda_net.sn_mva if self.panda_net.sn_mva > 0.0 else 100.0  # always, the pandapower
+            # grid.Sbase = self.panda_net.sn_mva if self.panda_net.sn_mva > 0.0 else 100.0  # always, the pandapower
             # For pandapwoer Sbase is crazily affecting only load
             grid.Sbase = 100.0  # always, the pandapower
             # scaling is handled in the conversions
