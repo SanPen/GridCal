@@ -18,7 +18,7 @@ def test_state_estimation_pandapower():
         fname = os.path.join("data", "grids", "state-estimation", "test_net_tng_raw_expected.json")
         net_wns = pandapower.from_json(fname)
 
-        # pandapower.to_pickle(net_wns, "small_grid_gb_hv_estimate_raw_expected.p")
+        # pandapower.to_pickle(net_wns, "test_net_tng_raw_expected.p")
 
         g = Panda2VeraGrid(net_wns)
         grid = g.get_multicircuit()

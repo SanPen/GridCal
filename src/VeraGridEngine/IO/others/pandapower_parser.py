@@ -573,7 +573,7 @@ class Panda2VeraGrid:
             elm = dev.Transformer3W(
                 idtag=str(row.uuid),
                 code=str(idx),
-                name=row.name,
+                name=str(row.name),
                 bus1=bus_hv,
                 bus2=bus_mv,
                 bus3=bus_lv,
@@ -585,27 +585,19 @@ class Panda2VeraGrid:
             elm.rdfid = row.get('uuid', elm.idtag)
             # --- Derived values ---
             # Copper losses [kW] and short-circuit voltages [%]
-            if "vkr_hv_percent" in row:
-                Pcu12 = row["vkr_hv_percent"] / 100 * Sn1 * 1000  # copper losses in kW
-            else:
-                Pcu12 = 0
-            if "vkr_mv_percent" in row:
-                Pcu23 = row["vkr_mv_percent"] / 100 * Sn1 * 1000  # copper losses in kW
-            else:
-                Pcu23 = 0
-            if "vkr_lv_percent" in row:
-                Pcu31 = row["vkr_lv_percent"] / 100 * Sn1 * 1000  # copper losses in kW
-            else:
-                Pcu31 = 0
-            Pfe = getattr(row, "pfe_kw", 0.0)  # iron losses in kW
 
-            Irated = row['sn_mva'] * 1e6 / (math.sqrt(3) * row['vn_hv_kv'] * 1e3)
-            I0 = I0 / 100 * Irated  # no-load current in A
+            Pfe = row.get("pfe_kw", 0.0)  # iron losses in kW
+            I0 = row.get('i0_percent', 0.0)
 
             # short-circuit voltage (%)
-            Vsc12 = getattr(row, "vk_hv_percent", 0.0)
-            Vsc23 = getattr(row, "vk_mv_percent", 0.0)
-            Vsc31 = getattr(row, "vk_lv_percent", 0.0)
+            Vsc12 = row.get("vk_hv_percent", 0.0)
+            Vsc23 = row.get("vk_mv_percent", 0.0)
+            Vsc31 = row.get("vk_lv_percent", 0.0)
+
+            # see: https://pandapower.readthedocs.io/en/latest/elements/trafo.html#trafo
+            Pcu12 = row.get("vkr_hv_percent", 0.0) / 100.0 * Sn1 * 1000.0  # copper losses in kW
+            Pcu23 = row.get("vkr_mv_percent", 0.0) / 100.0 * Sn2 * 1000.0  # copper losses in kW
+            Pcu31 = row.get("vkr_lv_percent", 0.0) / 100.0 * Sn3 * 1000.0  # copper losses in kW
 
             # Fill design values (VeraGrid computes r,x from % values)
             elm.fill_from_design_values(
@@ -911,6 +903,7 @@ class Panda2VeraGrid:
             self.parse_generators(grid=grid, bus_dictionary=bus_dict)
             self.parse_static_generators(grid=grid, bus_dictionary=bus_dict)
             self.parse_transformers(grid=grid, bus_dictionary=bus_dict)
+            self.parse_transformers3W(grid=grid, bus_dictionary=bus_dict)
             self.parse_switches(grid=grid, bus_dictionary=bus_dict)
             self.parse_measurements(grid=grid)
 
