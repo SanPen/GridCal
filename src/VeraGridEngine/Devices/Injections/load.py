@@ -587,9 +587,9 @@ class Load(LoadParent):
         if self.rms_model.empty():
             Ql = Var("Ql")
             Pl = Var("Pl")
-            default_value = -0.075000000001172
+            default_value = getattr(self, rms_event.parameter, None)
             var = Var(rms_event.parameter)
-            self.Pl0 = var
+            setattr(self, rms_event.parameter, var)
             self.rms_model.model = Block(
                 algebraic_eqs=[
                     Pl - self.Pl0,

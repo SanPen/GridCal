@@ -405,15 +405,15 @@ generator1_block = Block(
 # -------------------------------------------------------------
 # Load
 # -------------------------------------------------------------
-# Pl0 = Var("Pl0")
-Pl0 = Const(Sb2.real)
+Pl0 = Var("Pl0")
+# Pl0 = Const(Sb2.real)
 Ql0 = Const(Sb2.imag)
-
-print("Pl0")
-print(Pl0)
-
-print("Ql0")
-print(Ql0)
+#
+# print("Pl0")
+# print(Pl0)
+#
+# print("Ql0")
+# print(Ql0)
 #
 # load = Block(
 #     algebraic_eqs=[
@@ -434,7 +434,7 @@ load = Block(
     init_vars=[],
     init_params_eq={},
     parameters=[Pl0],
-    parameters_eqs=[piecewise(t, 0.1, 0.15, -0.075000000001172)],
+    parameters_eqs=[piecewise(t, 2.5, 0.15, -0.075000000001172)],
     external_mapping={
         DynamicVarType.P: Pl,
         DynamicVarType.Q: Ql
@@ -562,8 +562,7 @@ print(vars_mapping)
 # ---------------------------------------------------------------------------------------
 # Events
 # ---------------------------------------------------------------------------------------
-event1 = RmsEvent('Load', Pl0, 2500, -5.0 / grid.Sbase)
-my_events = RmsEvents([])
+
 
 params0 = slv.build_init_params_vector(params_mapping)
 x0 = slv.build_init_vars_vector(vars_mapping)

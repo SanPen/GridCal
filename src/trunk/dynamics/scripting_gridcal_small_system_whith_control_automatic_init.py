@@ -116,7 +116,7 @@ grid.add_generator(bus=bus1, api_obj=gen1)
 # Events
 # ---------------------------------------------------------------------------------------
 
-event1 = RmsEvent(Load0, "Pl0", 0.1, 0.15)
+event1 = RmsEvent(Load0, "Pl0", 2.5, 0.15)
 grid.add_rms_event(event1)
 
 options = gce.PowerFlowOptions(
