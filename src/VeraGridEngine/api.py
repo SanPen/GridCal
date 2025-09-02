@@ -88,7 +88,7 @@ def save_cgmes_file(grid: MultiCircuit,
 
 def power_flow(grid: MultiCircuit,
                options: PowerFlowOptions | None = None,
-               engine=EngineType.VeraGrid) -> PowerFlowResults:
+               engine=EngineType.VeraGrid) -> PowerFlowResults | PowerFlowResults3Ph:
     """
     Run power flow on the snapshot
     :param grid: MultiCircuit instance
