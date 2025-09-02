@@ -8,7 +8,7 @@ from typing import Tuple
 
 import pandas as pd
 from scipy import sparse
-from scipy.linalg import lstsq
+from scipy.linalg import lstsq, eigvalsh
 from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, diags
 from scipy.sparse.linalg import factorized, spsolve, spilu, splu, lsqr
 import numpy as np
@@ -239,7 +239,7 @@ def b_test(sigma2: Vec,
     # Use LU so we can reuse for many RHS
     lu = factorized(HtWH.tocsc())
     # For the system to be observable the eigenvalues should be greater than zero -> matrix pos definate
-    eigvals = np.linalg.eigvalsh(HtWH.toarray())
+    eigvals = eigvalsh(HtWH)
     assert np.all(eigvals > 0), "Unobservable-System"
 
     # Compute h_i = H_i G^{-1} H_i^T and then Pii = sigma_i^2 - h_i
@@ -1120,7 +1120,7 @@ def decoupled_state_estimation(nc: NumericalCircuit,
             lu_ga = splu(Ga)
             dtheta = lu_ga.solve(Ta)
         except Exception:
-            dtheta = lstsq(Ga.toarray(), Ta, rcond=None)[0]
+            dtheta = spillu(Ga).solve(Ta)
 
         # safety clip + apply relaxation
         if np.any(np.abs(dtheta) > max_theta_step):
@@ -1148,7 +1148,7 @@ def decoupled_state_estimation(nc: NumericalCircuit,
             lu_gr = splu(Gr)
             dV = lu_gr.solve(Tr)
         except Exception:
-            dV = lstsq(Gr.toarray(), Tr, rcond=None)[0]
+            dV = spilu(Gr).solve(Tr)
 
         # safety clip + apply relaxation
         if np.any(np.abs(dV) > max_V_step):
