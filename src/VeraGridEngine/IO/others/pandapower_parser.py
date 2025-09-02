@@ -441,16 +441,12 @@ class Panda2VeraGrid:
             )
             elm.rdfid = row.get('uuid', elm.idtag)
             # --- Derived values ---
-            if "vkr_percent" in row:
-                Pcu = row["vkr_percent"] / 100 * row["sn_mva"] * 1000  # copper losses in kW
-            else:
-                Pcu = 0
-            Pfe = row["pfe_kw"]  # iron losses in kW
 
-            Irated = row['sn_mva'] * 1e6 / (math.sqrt(3) * row['vn_hv_kv'] * 1e3)
-            I0 = row['i0_percent'] / 100 * Irated  # no-load current in A
-
-            Vsc = row["vk_percent"]  # short-circuit voltage (%)
+            # see: https://pandapower.readthedocs.io/en/latest/elements/trafo.html#trafo
+            Pcu = row.get("vkr_percent", 0.0) / 100 * row["sn_mva"] * 1000  # copper losses in kW
+            Pfe = row.get("pfe_kw", 0.0)  # iron losses in kW
+            I0 = row.get('i0_percent', 0.0)  # no-load current in %
+            Vsc = row.get("vk_percent", 0.0)  # short-circuit voltage (%)
 
             elm.fill_design_properties(
                 Pcu=Pcu,
@@ -568,7 +564,6 @@ class Panda2VeraGrid:
             Sn2 = getattr(row, "sn_mv_mva", grid.Sbase)
             Sn3 = getattr(row, "sn_lv_mva", grid.Sbase)
 
-            I0 = getattr(row, "i0_percent", 0.0)
             # Build transformer
             elm = dev.Transformer3W(
                 idtag=str(row.uuid),
