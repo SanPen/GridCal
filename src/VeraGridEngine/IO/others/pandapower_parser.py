@@ -622,7 +622,7 @@ class Panda2VeraGrid:
 
             grid.add_transformer3w(elm)
 
-            self.register(panda_type="trafo", panda_code=idx, api_obj=elm)
+            self.register(panda_type="trafo3w", panda_code=idx, api_obj=elm)
 
     def parse_switches(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """

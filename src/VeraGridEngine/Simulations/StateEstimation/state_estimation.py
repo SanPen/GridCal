@@ -390,76 +390,76 @@ def solve_se_lm(nc: NumericalCircuit,
         # Solve the increment
         dx = spsolve(Asys, rhs)
 
-        if norm_f < (tol * 10.0):
-            try:
-                r, sigma2, Pii, rN, imax, b, bad_data_detected = b_test(sigma2=sigma2, H=H, dz=dz, HtWH=Gx,
-                                                                    c_threshold=c_threshold, logger=logger)
-            except AssertionError as e:
-                if str(e) == "Unobservable-System":
-                    return NumericStateEstimationResults(V=V,
-                                                         Scalc=Scalc,
-                                                         norm_f=norm_f,
-                                                         converged=False,
-                                                         iterations=iter_,
-                                                         elapsed=time.time() - start_time,
-                                                         bad_data_detected=False,
-                                                         is_observable=False)
-
-
-            if bad_data_detected:
-                if prefer_correct:
-                    if Pii[imax] > 1e-10:  # if the value is not corrected in b_test alone
-                        z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]
-
-                        logger.add_info("Measurement corrected",
-                                        device=measurements[imax].api_object.name,
-                                        device_class=measurements[imax].device_type.value,
-                                        device_property="value",
-                                        value=z[imax],
-                                        expected_value=z_tilde_imax)
-
-                        # correct the bad data index
-                        z[imax] = z_tilde_imax
-                    else:
-                        # Pii is very small - this is likely a critical measurement
-                        # TODO -> Do not delete
-                        logger.add_warning(f"Measurement {imax} appears critical (Pii={Pii[imax]:.2e})")
-                        # Don't correct critical measurements, just remove them
-                        # delete measurements
-                        mask = np.ones(len(z), dtype=int)
-                        mask[imax] = 0
-
-                        se_input = se_input.slice_with_mask(mask=mask)
-
-                        # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
-                        z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
-
-                        # compute the weights matrix using per-unit sigma
-                        sigma2 = np.power(sigma, 2.0)
-                        cov = 1.0 / sigma2
-                        W = diags(cov).tocsc()
-                else:
-
-                    logger.add_info("Measurement deleted",
-                                    device=measurements[imax].api_object.name,
-                                    device_class=measurements[imax].device_type.value,
-                                    device_property="value",
-                                    value=z[imax],
-                                    expected_value="")
-
-                    # delete measurements
-                    mask = np.ones(len(z), dtype=int)
-                    mask[imax] = 0
-
-                    se_input = se_input.slice_with_mask(mask=mask)
-
-                    # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
-                    z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
-
-                    # compute the weights matrix using per-unit sigma
-                    sigma2 = np.power(sigma, 2.0)
-                    cov = 1.0 / sigma2
-                    W = diags(cov).tocsc()
+        # if norm_f < (tol * 10.0):
+        #     try:
+        #         r, sigma2, Pii, rN, imax, b, bad_data_detected = b_test(sigma2=sigma2, H=H, dz=dz, HtWH=Gx,
+        #                                                             c_threshold=c_threshold, logger=logger)
+        #     except AssertionError as e:
+        #         if str(e) == "Unobservable-System":
+        #             return NumericStateEstimationResults(V=V,
+        #                                                  Scalc=Scalc,
+        #                                                  norm_f=norm_f,
+        #                                                  converged=False,
+        #                                                  iterations=iter_,
+        #                                                  elapsed=time.time() - start_time,
+        #                                                  bad_data_detected=False,
+        #                                                  is_observable=False)
+        #
+        #
+        #     if bad_data_detected:
+        #         if prefer_correct:
+        #             if Pii[imax] > 1e-10:  # if the value is not corrected in b_test alone
+        #                 z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]
+        #
+        #                 logger.add_info("Measurement corrected",
+        #                                 device=measurements[imax].api_object.name,
+        #                                 device_class=measurements[imax].device_type.value,
+        #                                 device_property="value",
+        #                                 value=z[imax],
+        #                                 expected_value=z_tilde_imax)
+        #
+        #                 # correct the bad data index
+        #                 z[imax] = z_tilde_imax
+        #             else:
+        #                 # Pii is very small - this is likely a critical measurement
+        #                 # TODO -> Do not delete
+        #                 logger.add_warning(f"Measurement {imax} appears critical (Pii={Pii[imax]:.2e})")
+        #                 # Don't correct critical measurements, just remove them
+        #                 # delete measurements
+        #                 mask = np.ones(len(z), dtype=int)
+        #                 mask[imax] = 0
+        #
+        #                 se_input = se_input.slice_with_mask(mask=mask)
+        #
+        #                 # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
+        #                 z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
+        #
+        #                 # compute the weights matrix using per-unit sigma
+        #                 sigma2 = np.power(sigma, 2.0)
+        #                 cov = 1.0 / sigma2
+        #                 W = diags(cov).tocsc()
+        #         else:
+        #
+        #             logger.add_info("Measurement deleted",
+        #                             device=measurements[imax].api_object.name,
+        #                             device_class=measurements[imax].device_type.value,
+        #                             device_property="value",
+        #                             value=z[imax],
+        #                             expected_value="")
+        #
+        #             # delete measurements
+        #             mask = np.ones(len(z), dtype=int)
+        #             mask[imax] = 0
+        #
+        #             se_input = se_input.slice_with_mask(mask=mask)
+        #
+        #             # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
+        #             z, sigma, measurements = get_measurements_and_deviations(se_input=se_input, Sbase=nc.Sbase)
+        #
+        #             # compute the weights matrix using per-unit sigma
+        #             sigma2 = np.power(sigma, 2.0)
+        #             cov = 1.0 / sigma2
+        #             W = diags(cov).tocsc()
 
         # L-M ratios of convergence
         dF = obj_val_prev - obj_val

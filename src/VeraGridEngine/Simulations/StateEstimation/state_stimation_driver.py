@@ -415,14 +415,15 @@ class StateEstimation(DriverTemplate):
 
             # Scale power results from per-unit to MVA before applying
             island_sbase = island.Sbase
-            solution.Scalc *= island_sbase
+            if solution is not None:
+                solution.Scalc *= island_sbase
 
-            self.results.apply_from_island(
-                results=solution,
-                b_idx=island.bus_data.original_idx,
-                br_idx=island.passive_branch_data.original_idx,
-                hvdc_idx=island.hvdc_data.original_idx,
-                vsc_idx=island.vsc_data.original_idx
-            )
+                self.results.apply_from_island(
+                    results=solution,
+                    b_idx=island.bus_data.original_idx,
+                    br_idx=island.passive_branch_data.original_idx,
+                    hvdc_idx=island.hvdc_data.original_idx,
+                    vsc_idx=island.vsc_data.original_idx
+                )
 
         self.toc()

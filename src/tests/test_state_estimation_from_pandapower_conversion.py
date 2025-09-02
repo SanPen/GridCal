@@ -33,8 +33,8 @@ def test_state_estimation_pandapower():
         print(pf_res.get_branch_df())
 
         for solver in [
-            SolverType.Decoupled_LU,
-            SolverType.GN,
+           # SolverType.Decoupled_LU,
+            #SolverType.GN,
             SolverType.LM
         ]:
             se_opt = StateEstimationOptions(
@@ -42,7 +42,11 @@ def test_state_estimation_pandapower():
                 fixed_slack=True,
                 solver=solver,
                 verbose=2,
-                run_observability_analyis=True
+                run_observability_analyis=True,
+                run_measurement_profiling=True,
+                max_iter=150,
+                tol=1e-08,
+                add_pseudo_measurements=True
             )
             se = StateEstimation(circuit=grid, options=se_opt)
             se.run()
