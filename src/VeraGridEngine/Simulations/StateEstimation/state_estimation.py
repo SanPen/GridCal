@@ -8,9 +8,8 @@ from typing import Tuple
 
 import pandas as pd
 from scipy import sparse
-from scipy.linalg import lstsq, eigvalsh
 from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, diags
-from scipy.sparse.linalg import factorized, spsolve, spilu, splu, lsqr
+from scipy.sparse.linalg import factorized, spsolve, spilu, splu, eigsh
 import numpy as np
 from VeraGridEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
 from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
@@ -239,7 +238,7 @@ def b_test(sigma2: Vec,
     # Use LU so we can reuse for many RHS
     lu = factorized(HtWH.tocsc())
     # For the system to be observable the eigenvalues should be greater than zero -> matrix pos definate
-    eigvals = eigvalsh(HtWH)
+    eigvals, _ = eigsh(HtWH)
     assert np.all(eigvals > 0), "Unobservable-System"
 
     # Compute h_i = H_i G^{-1} H_i^T and then Pii = sigma_i^2 - h_i
