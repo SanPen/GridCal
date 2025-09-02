@@ -1120,7 +1120,7 @@ def decoupled_state_estimation(nc: NumericalCircuit,
             lu_ga = splu(Ga)
             dtheta = lu_ga.solve(Ta)
         except Exception:
-            dtheta = spillu(Ga).solve(Ta)
+            dtheta = spilu(Ga).solve(Ta)
 
         # safety clip + apply relaxation
         if np.any(np.abs(dtheta) > max_theta_step):
