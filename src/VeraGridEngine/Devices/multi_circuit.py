@@ -2090,7 +2090,7 @@ class MultiCircuit(Assets):
                 # not found in the base, add it
                 action = ActionType.Add
 
-            else:
+            elif type(new_elm) == type(elm_from_base):
                 # check differences
                 action, changed_props = elm_from_base.compare(
                     other=new_elm,
@@ -2098,6 +2098,12 @@ class MultiCircuit(Assets):
                     detailed_profile_comparison=detailed_profile_comparison,
                     nt=nt
                 )
+            else:
+                # Same iftag, different classes, probably some consequence of CGMES
+                logger.add_info(msg="Same idtag, different types",
+                                device_class=new_elm.device_type.value,
+                                device_property=new_elm.name,
+                                expected_value=elm_from_base.device_type.value)
 
             if action != ActionType.NoAction:
                 new_element = new_elm.copy(forced_new_idtag=False)
