@@ -355,7 +355,7 @@ class TapChanger:
 
         elif self.tc_type == TapChangerTypes.VoltageRegulation:
             ndu = self._ndv[tap_position]
-            return 1.0 / (1.0 - ndu)
+            return 1.0 / (1.0 - ndu + 1e-20)
 
         elif self.tc_type == TapChangerTypes.Asymmetrical:
             ndu = self._ndv[tap_position]

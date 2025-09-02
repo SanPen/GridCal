@@ -68,6 +68,7 @@ def test_network_objects_consistency():
         # pandapower.to_pickle(net_wns, "small_grid_gb_hv_estimate_raw_expected.p")
         file_handler = FileOpen(fname)
         circuit_cim = file_handler.open()
+        pf_res_cim = power_flow(circuit_cim)
 
         g = Panda2VeraGrid(net_wns)
         grid = g.get_multicircuit()

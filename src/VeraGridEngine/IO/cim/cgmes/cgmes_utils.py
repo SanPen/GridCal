@@ -549,16 +549,25 @@ def get_nominal_voltage_for_cn(cn: CGMES_CONNECTIVITY_NODE, logger: DataLogger) 
     :return: hopefully the nominal voltage
     """
     if hasattr(cn, 'ConnectivityNodeContainer'):
-        if hasattr(cn.ConnectivityNodeContainer, 'BaseVoltage'):
-            if cn.ConnectivityNodeContainer.BaseVoltage is not None:
-                if not isinstance(cn.ConnectivityNodeContainer.BaseVoltage, str):
-                    return float(cn.ConnectivityNodeContainer.BaseVoltage.nominalVoltage)
+        if hasattr(cn.ConnectivityNodeContainer, 'VoltageLevel'):
+            if hasattr(cn.ConnectivityNodeContainer.VoltageLevel, 'BaseVoltage'):
+                if cn.ConnectivityNodeContainer.VoltageLevel.BaseVoltage is not None:
+                    if not isinstance(cn.ConnectivityNodeContainer.VoltageLevel.BaseVoltage.nominalVoltage, str):
+                        return float(cn.ConnectivityNodeContainer.VoltageLevel.BaseVoltage.nominalVoltage)
+                    else:
+                        logger.add_error(msg='Missing reference',
+                                         device=cn.rdfid,
+                                         device_class=cn.tpe,
+                                         device_property="nominalVoltage",
+                                         value=cn.ConnectivityNodeContainer.VoltageLevel.BaseVoltage,
+                                         expected_value='object')
+                        return 0.0
                 else:
                     logger.add_error(msg='Missing reference',
                                      device=cn.rdfid,
                                      device_class=cn.tpe,
-                                     device_property="BaseVoltage",
-                                     value=cn.ConnectivityNodeContainer.BaseVoltage,
+                                     device_property="nominalVoltage",
+                                     value=cn.ConnectivityNodeContainer,
                                      expected_value='object')
                     return 0.0
             else:
@@ -570,13 +579,34 @@ def get_nominal_voltage_for_cn(cn: CGMES_CONNECTIVITY_NODE, logger: DataLogger) 
                                  expected_value='object')
                 return 0.0
         else:
-            logger.add_error(msg='Missing reference',
-                             device=cn.rdfid,
-                             device_class=cn.tpe,
-                             device_property="BaseVoltage",
-                             value=cn.ConnectivityNodeContainer,
-                             expected_value='object')
-            return 0.0
+            if hasattr(cn.ConnectivityNodeContainer, 'BaseVoltage'):
+                if cn.ConnectivityNodeContainer.BaseVoltage is not None:
+                    if not isinstance(cn.ConnectivityNodeContainer.BaseVoltage.nominalVoltage, str):
+                        return float(cn.ConnectivityNodeContainer.BaseVoltage.nominalVoltage)
+                    else:
+                        logger.add_error(msg='Missing reference',
+                                         device=cn.rdfid,
+                                         device_class=cn.tpe,
+                                         device_property="nominalVoltage",
+                                         value=cn.ConnectivityNodeContainer.BaseVoltage,
+                                         expected_value='object')
+                        return 0.0
+                else:
+                    logger.add_error(msg='Missing reference',
+                                     device=cn.rdfid,
+                                     device_class=cn.tpe,
+                                     device_property="nominalVoltage",
+                                     value=cn.ConnectivityNodeContainer,
+                                     expected_value='object')
+                    return 0.0
+            else:
+                logger.add_error(msg='Missing reference',
+                                 device=cn.rdfid,
+                                 device_class=cn.tpe,
+                                 device_property="BaseVoltage",
+                                 value=cn.ConnectivityNodeContainer,
+                                 expected_value='object')
+                return 0.0
     else:
         logger.add_error(msg='Missing reference',
                          device=cn.rdfid,

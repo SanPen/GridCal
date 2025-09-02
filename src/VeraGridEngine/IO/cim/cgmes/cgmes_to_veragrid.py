@@ -386,7 +386,9 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
             code=cn_elm.description,
             name=cn_elm.name,
             Vnom=nominal_voltage,
-            is_slack=is_slack
+            is_slack=is_slack,
+            Va0=va,
+            Vm0=vm,
         )
 
         gc_model.add_bus(gcdev_elm)
