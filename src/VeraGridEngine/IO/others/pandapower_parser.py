@@ -427,8 +427,6 @@ class Panda2VeraGrid:
         for idx, row in self.panda_net.trafo.iterrows():
             bus1 = bus_dictionary[row['hv_bus']]
             bus2 = bus_dictionary[row['lv_bus']]
-            tap_changer_type = row.get('tap_changer_type',None)
-            # TODO Add here the tap changers
             elm = dev.Transformer2W(
                 bus_from=bus1,
                 bus_to=bus2,
@@ -568,7 +566,6 @@ class Panda2VeraGrid:
             Sn3 = getattr(row, "sn_lv_mva", grid.Sbase)
 
             I0 = getattr(row, "i0_percent", 0.0)
-            # TODO Add here the tap changers
             # Build transformer
             elm = dev.Transformer3W(
                 idtag=str(row.uuid),
