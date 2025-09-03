@@ -14,7 +14,7 @@ geopy>=1.16
 nose>=1.3
 h5py>=3.12
 numba>=0.61
-PySide6<=6.7.2
+PySide6>=6.8.0
 pyproj
 pyarrow>=18.0
 fastparquet>=2024
