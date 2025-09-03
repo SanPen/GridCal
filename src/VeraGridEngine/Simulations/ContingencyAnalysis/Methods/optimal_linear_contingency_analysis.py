@@ -9,7 +9,7 @@ from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_a
 from VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from VeraGridEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
-from VeraGridEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
+from VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts import run_linear_opf_ts
 from VeraGridEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from VeraGridEngine.basic_structures import Logger
 

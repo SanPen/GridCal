@@ -10,9 +10,9 @@ from typing import Union
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.enumerations import SolverType, TimeGrouping, EngineType, SimulationTypes
 from VeraGridEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from VeraGridEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
+from VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts import run_linear_opf_ts
 from VeraGridEngine.Simulations.OPF.simple_dispatch_ts import run_greedy_dispatch_ts
-from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
+from VeraGridEngine.Simulations.OPF.ac_opf_worker import run_nonlinear_opf
 from VeraGridEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from VeraGridEngine.Simulations.driver_template import TimeSeriesDriverTemplate

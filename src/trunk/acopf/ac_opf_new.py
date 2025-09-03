@@ -3,8 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
-import timeit
-import pandas as pd
 from typing import Union
 from VeraGridEngine.Utils.NumericalMethods.ips import interior_point_solver
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
@@ -12,10 +10,9 @@ from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_a
 from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from VeraGridEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from VeraGridEngine.enumerations import AcOpfMode
 from VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem import NonLinearOptimalPfProblem, NonlinearOPFResults
-from VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx import interior_point_solver, IpsSolution
-from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import remap_original_bus_indices
+from VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx import interior_point_solver
+from VeraGridEngine.Simulations.OPF.ac_opf_worker import remap_original_bus_indices
 from VeraGridEngine.basic_structures import CxVec, IntVec, Logger
 
 

@@ -10,7 +10,7 @@ from scipy import sparse as sp
 from VeraGridEngine.enumerations import TapPhaseControl, TapModuleControl
 from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
-from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
+from VeraGridEngine.Simulations.OPF.ac_opf_worker import run_nonlinear_opf
 from VeraGridEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 
 

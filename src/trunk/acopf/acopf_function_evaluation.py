@@ -1,5 +1,5 @@
 import VeraGridEngine.api as gce
-from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
+from VeraGridEngine.Simulations.OPF.ac_opf_worker import ac_optimal_power_flow
 # from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf_autodif import ac_optimal_power_flow
 
 
