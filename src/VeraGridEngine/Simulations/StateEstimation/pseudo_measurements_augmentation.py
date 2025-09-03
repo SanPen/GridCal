@@ -32,7 +32,7 @@ class PseudoMeasurement(MeasurementTemplate):
                                      device_type=DeviceType.NoDevice)
         self.value = value
         self.sigma = sigma
-        self.bus = Bus
+        self.bus = api_obj
 
 
     def get_value_pu(self, Sbase: float):

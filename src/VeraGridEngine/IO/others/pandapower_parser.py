@@ -789,7 +789,7 @@ class Panda2VeraGrid:
                         else:
                             self.logger.add_warning(f"PandaPower {m_tpe} measurement not implemented")
 
-                    elif elm_tpe in ['line', 'impedance', 'trafo']:
+                    elif elm_tpe in ['line', 'impedance', 'trafo','trafo3w']:
                         if m_tpe == 'p':
                             if side == 1 or side == 'from':
                                 grid.add_pf_measurement(dev.PfMeasurement(
@@ -821,7 +821,7 @@ class Panda2VeraGrid:
                                     name=name
                                 ))
                         elif m_tpe == "i":
-                            if elm_tpe == 'transformer':
+                            if elm_tpe == 'trafo':
                                 if side == 1 or side == "hv":
                                     vnom = api_object.bus1.Vnom if hasattr(api_object.bus1, 'Vnom') else 1.0
                                     ibase = grid.Sbase / (vnom * math.sqrt(3))
@@ -844,6 +844,40 @@ class Panda2VeraGrid:
                                             api_obj=api_object,
                                             name=name
                                         ))
+                                if elm_tpe == 'trafo3w':
+                                    if side == 1 or side == "hv":
+                                        vnom = api_object.bus1.Vnom if hasattr(api_object.bus1, 'Vnom') else 1.0
+                                        ibase = grid.Sbase / (vnom * math.sqrt(3))
+                                        value = val / ibase  # Convert kA to pu
+                                        grid.add_if_measurement(
+                                            dev.IfMeasurement(
+                                                value=value,
+                                                uncertainty=std,
+                                                api_obj=api_object,
+                                                name=name
+                                            ))
+                                    if side == 2 or side == "mv":
+                                        vnom = api_object.bus2.Vnom if hasattr(api_object.bus2, 'Vnom') else 1.0
+                                        ibase = grid.Sbase / (vnom * math.sqrt(3))
+                                        value = val / ibase  # Convert kA to pu
+                                        grid.add_it_measurement(
+                                            dev.ItMeasurement(
+                                                value=value,
+                                                uncertainty=std,
+                                                api_obj=api_object,
+                                                name=name
+                                            ))
+                                    if side == 3 or side == "lv":
+                                        vnom = api_object.bus3.Vnom if hasattr(api_object.bus3, 'Vnom') else 1.0
+                                        ibase = grid.Sbase / (vnom * math.sqrt(3))
+                                        value = val / ibase  # Convert kA to pu
+                                        grid.add_it_measurement(
+                                            dev.ItMeasurement(
+                                                value=value,
+                                                uncertainty=std,
+                                                api_obj=api_object,
+                                                name=name
+                                            ))
                             else:
                                 if side == 1 or side == 'from':
                                     vnom = api_object.bus_from.Vnom if hasattr(api_object.bus_from, 'Vnom') else 1.0

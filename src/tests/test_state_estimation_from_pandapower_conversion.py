@@ -15,11 +15,18 @@ def test_state_estimation_pandapower():
         import pandapower
         # tests/data/grids/state-estimation /small_grid_gb_hv_estimate_raw_expected.json
         #fname = os.path.join("src", "tests", "data", "grids", "state-estimation", "small_grid_gb_hv_estimate_raw_expected.json")
-        fname = os.path.join("data", "grids", "state-estimation", "test_net_tng_raw_expected.json")
+        fname = os.path.join("data", "grids", "state-estimation", "test_net_tng_unreduced_with_measurements.json")
         net_wns = pandapower.from_json(fname)
-
+        net_wns.bus.loc[1519,"uuid"] = net_wns.bus.loc[1519].uuid.strip("DUMMY_BUS_")
+        net_wns.bus.loc[1517,"uuid"] = net_wns.bus.loc[1517].uuid.strip("DUMMY_BUS_")
+        net_wns.bus.loc[1518,"uuid"]= net_wns.bus.loc[1518].uuid.strip("DUMMY_BUS_")
+        net_wns.trafo.loc[23, "uuid"] = net_wns.trafo.loc[23].uuid.strip("DUMMY_PST__")
+        net_wns.trafo.loc[22, "uuid"] = net_wns.trafo.loc[22].uuid.strip("DUMMY_PST__")
+        net_wns.trafo.loc[21, "uuid"] = net_wns.trafo.loc[21].uuid.strip("DUMMY_PST__")
+        net_wns.ext_grid.loc[0, "in_service"] = False
+        net_wns.measurement.loc[:, "std_dev"] = 0.00001
         # pandapower.to_pickle(net_wns, "test_net_tng_raw_expected.p")
-
+        net_wns.bus.loc[net_wns.bus[net_wns.bus.name.isna()].index, "name"] = "bus_named"
         g = Panda2VeraGrid(net_wns)
         grid = g.get_multicircuit()
 
@@ -33,19 +40,19 @@ def test_state_estimation_pandapower():
         print(pf_res.get_branch_df())
 
         for solver in [
-           # SolverType.Decoupled_LU,
-            #SolverType.GN,
+            #SolverType.Decoupled_LU,
+            SolverType.GN,
             SolverType.LM
         ]:
             se_opt = StateEstimationOptions(
-                prefer_correct=True,
+                prefer_correct=False,
                 fixed_slack=True,
                 solver=solver,
                 verbose=2,
                 run_observability_analyis=True,
                 run_measurement_profiling=True,
                 max_iter=150,
-                tol=1e-08,
+                tol=1e-05,
                 add_pseudo_measurements=True
             )
             se = StateEstimation(circuit=grid, options=se_opt)

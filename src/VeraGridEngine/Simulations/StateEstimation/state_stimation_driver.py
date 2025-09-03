@@ -293,7 +293,7 @@ class StateEstimation(DriverTemplate):
                 if unobservable_buses and self.options.add_pseudo_measurements:
                     se_input_island = add_pseudo_measurements_for_unobservable_buses(bus_dict=bus_dict,
                                                                                      unobservable_buses=unobservable_buses,
-                                                                                     se_input=se_input, V=V,
+                                                                                     se_input=se_input_island, V=V,
                                                                                      Ybus=adm.Ybus,
                                                                                      Cf=conn.Cf,
                                                                                      Ct=conn.Ct,
