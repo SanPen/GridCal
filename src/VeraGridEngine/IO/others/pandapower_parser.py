@@ -8,11 +8,12 @@ import math
 from typing import Dict
 import sqlite3
 import json
-
+import numpy as np
 import pandas as pd
 
 import VeraGridEngine.Devices as dev
-from VeraGridEngine import ExternalGridMode
+from VeraGridEngine import TapChanger
+from VeraGridEngine.enumerations import (ExternalGridMode, TapChangerTypes)
 from VeraGridEngine.Devices.types import ALL_DEV_TYPES
 from VeraGridEngine.basic_structures import Logger
 
@@ -207,7 +208,7 @@ class Panda2VeraGrid:
                 name=row['name'],
                 code=idx,
                 Vm=row['vm_pu'],
-                mode= ExternalGridMode.VD,
+                mode=ExternalGridMode.VD,
                 idtag=row.get('uuid', None)
             )
 
@@ -413,7 +414,7 @@ class Panda2VeraGrid:
 
             elm.rdfid = row.get('uuid', elm.idtag)
 
-            grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
+            grid.add_static_generator(bus=bus, api_obj=elm)  # Add generator to the grid
 
             self.register(panda_type="sgen", panda_code=idx, api_obj=elm)
 
@@ -427,7 +428,6 @@ class Panda2VeraGrid:
         for idx, row in self.panda_net.trafo.iterrows():
             bus1 = bus_dictionary[row['hv_bus']]
             bus2 = bus_dictionary[row['lv_bus']]
-
             elm = dev.Transformer2W(
                 bus_from=bus1,
                 bus_to=bus2,
@@ -441,16 +441,12 @@ class Panda2VeraGrid:
             )
             elm.rdfid = row.get('uuid', elm.idtag)
             # --- Derived values ---
-            if "vkr_percent" in row:
-                Pcu = row["vkr_percent"] / 100 * row["sn_mva"] * 1000  # copper losses in kW
-            else:
-                Pcu = 0
-            Pfe = row["pfe_kw"]  # iron losses in kW
 
-            Irated = row['sn_mva'] * 1e6 / (math.sqrt(3) * row['vn_hv_kv'] * 1e3)
-            I0 = row['i0_percent'] / 100 * Irated  # no-load current in A
-
-            Vsc = row["vk_percent"]  # short-circuit voltage (%)
+            # see: https://pandapower.readthedocs.io/en/latest/elements/trafo.html#trafo
+            Pcu = row.get("vkr_percent", 0.0) / 100 * row["sn_mva"] * 1000  # copper losses in kW
+            Pfe = row.get("pfe_kw", 0.0)  # iron losses in kW
+            I0 = row.get('i0_percent', 0.0)  # no-load current in %
+            Vsc = row.get("vk_percent", 0.0)  # short-circuit voltage (%)
 
             elm.fill_design_properties(
                 Pcu=Pcu,
@@ -460,9 +456,160 @@ class Panda2VeraGrid:
                 Sbase=grid.Sbase
             )
 
+            tc = self.extract_tap_changers(row)
+            if tc is not None:
+                elm.tap_changer = tc
+
             grid.add_transformer2w(elm)
 
             self.register(panda_type="trafo", panda_code=idx, api_obj=elm)
+
+    def extract_tap_changers(self, row) -> TapChanger | None:
+        """
+            # Tap changer mapping (pandapower → GridCal)
+            #
+            # Ratio + tap_step_percent only:
+            #   dV = tap_step_percent / 100
+            #   asymmetry_angle = 0°
+            #
+            # Ratio + tap_step_percent + tap_step_degree (cross regulator):
+            #   δu = tap_step_percent / 100
+            #   α = tap_step_degree  (phase shift per tap, deg)
+            #
+            #   Conversion (UCTE):
+            #     tan(α) = (δu · sinΘ) / (1 + δu · cosΘ)
+            #     ⇒ Θ = α + arcsin(sin(α) / δu)
+            #
+            #   If δu = 0 or |sin(α)| > δu:
+            #     Fallback → treat as Ideal phase shifter:
+            #       dV = 0
+            #       asymmetry_angle = α
+            #
+            # Symmetrical:
+            #   dV = tap_step_percent / 100
+            #   asymmetry_angle = 90°
+            #
+            # Ideal:
+            #   dV = 0
+            #   asymmetry_angle = tap_step_degree For "Symmetrical" and "Ideal", mapping stays as before.
+        """
+        tap_changer_type = row.get("tap_changer_type", None)
+        dV = 0.0
+        asymmetry_angle = 0.0
+        tc_type = TapChangerTypes.NoRegulation
+        if tap_changer_type is not None and pd.notna(row["tap_neutral"]):
+            if tap_changer_type == "Ratio":
+                # Longitudinal regulator
+                dV = row['tap_step_percent'] / 100.0
+                asymmetry_angle = 0.0
+                tc_type = TapChangerTypes.VoltageRegulation
+
+                # Check if cross regulator (with angle)
+                if "tap_step_degree" in row and row["tap_step_degree"] != 0.0:
+                    alpha = np.deg2rad(row["tap_step_degree"])  # pandapower phase shift α [rad]
+                    if dV > 0 and abs(np.sin(alpha)) <= dV:
+                        # Convert α -> Θ (GridCal asymmetry_angle)
+                        theta = alpha + np.arcsin(np.sin(alpha) / dV)
+                        asymmetry_angle = np.rad2deg(theta)
+                        tc_type = TapChangerTypes.Asymmetrical
+                    else:
+                        # fallback: cannot map with given dV, treat as ideal angle shifter
+                        asymmetry_angle = row["tap_step_degree"]
+                        dV = 0.0
+                        tc_type = TapChangerTypes.Asymmetrical
+
+            elif tap_changer_type == "Symmetrical":
+                dV = row['tap_step_percent'] / 100.0
+                asymmetry_angle = 90.0
+                tc_type = TapChangerTypes.Symmetrical
+
+            elif tap_changer_type == "Ideal":
+                dV = 0.0
+                tc_type = TapChangerTypes.Asymmetrical
+                asymmetry_angle = row.get("tap_step_degree", 90.0)  # default to 90° if missing
+
+            else:
+                tc_type = TapChangerTypes.NoRegulation
+                dV = 0.0
+                asymmetry_angle = 90.0
+
+            # Build GridCal TapChanger
+            return dev.TapChanger(
+                total_positions=row['tap_max'] - row['tap_min'] + 1,
+                neutral_position=row['tap_neutral'],
+                normal_position=row['tap_pos'],
+                dV=dV,
+                asymmetry_angle=asymmetry_angle,
+                tc_type=tc_type
+            )
+        else:
+            return None
+
+    def parse_transformers3W(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
+        """
+        Add 3W transformers to the VeraGrid grid
+        :param grid: MultiCircuit grid
+        :param bus_dictionary:
+        """
+
+        for idx, row in self.panda_net.trafo3w.iterrows():
+            bus_hv = bus_dictionary[row['hv_bus']]
+            bus_mv = bus_dictionary[row['mv_bus']]
+            bus_lv = bus_dictionary[row['lv_bus']]
+            # Nominal voltages
+            V1, V2, V3 = row.vn_hv_kv, row.vn_mv_kv, row.vn_lv_kv
+
+            # Ratings (if available, else default to 100 MVA)
+            Sn1 = getattr(row, "sn_hv_mva", grid.Sbase)
+            Sn2 = getattr(row, "sn_mv_mva", grid.Sbase)
+            Sn3 = getattr(row, "sn_lv_mva", grid.Sbase)
+
+            # Build transformer
+            elm = dev.Transformer3W(
+                idtag=str(row.uuid),
+                code=str(idx),
+                name=str(row.name),
+                bus1=bus_hv,
+                bus2=bus_mv,
+                bus3=bus_lv,
+                V1=V1, V2=V2, V3=V3,
+                r12=0.0, r23=0.0, r31=0.0,  # will be recomputed
+                x12=0.0, x23=0.0, x31=0.0,
+                rate12=Sn1, rate23=Sn2, rate31=Sn3,
+            )
+            elm.rdfid = row.get('uuid', elm.idtag)
+            # --- Derived values ---
+            # Copper losses [kW] and short-circuit voltages [%]
+
+            Pfe = row.get("pfe_kw", 0.0)  # iron losses in kW
+            I0 = row.get('i0_percent', 0.0)
+
+            # short-circuit voltage (%)
+            Vsc12 = row.get("vk_hv_percent", 0.0)
+            Vsc23 = row.get("vk_mv_percent", 0.0)
+            Vsc31 = row.get("vk_lv_percent", 0.0)
+
+            # see: https://pandapower.readthedocs.io/en/latest/elements/trafo.html#trafo
+            Pcu12 = row.get("vkr_hv_percent", 0.0) / 100.0 * Sn1 * 1000.0  # copper losses in kW
+            Pcu23 = row.get("vkr_mv_percent", 0.0) / 100.0 * Sn2 * 1000.0  # copper losses in kW
+            Pcu31 = row.get("vkr_lv_percent", 0.0) / 100.0 * Sn3 * 1000.0  # copper losses in kW
+
+            # Fill design values (VeraGrid computes r,x from % values)
+            elm.fill_from_design_values(
+                V1=V1, V2=V2, V3=V3,
+                Sn1=Sn1, Sn2=Sn2, Sn3=Sn3,
+                Pcu12=Pcu12, Pcu23=Pcu23, Pcu31=Pcu31,
+                Vsc12=Vsc12, Vsc23=Vsc23, Vsc31=Vsc31,
+                Pfe=Pfe, I0=I0, Sbase=grid.Sbase,
+            )
+
+            tc = self.extract_tap_changers(row)
+            if tc is not None:
+                elm.winding1.tap_changer = tc
+
+            grid.add_transformer3w(elm)
+
+            self.register(panda_type="trafo3w", panda_code=idx, api_obj=elm)
 
     def parse_switches(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -571,8 +718,8 @@ class Panda2VeraGrid:
                                 name=name)
                             )
                         elif m_tpe == "va":
-                            grid.add_va_measurement(dev.VaMeasurement(value=val,uncertainty = std,api_obj=api_object,
-                                                                      name = name))
+                            grid.add_va_measurement(dev.VaMeasurement(value=val, uncertainty=std, api_obj=api_object,
+                                                                      name=name))
                         elif m_tpe == 'p':
                             grid.add_pi_measurement(dev.PiMeasurement(
                                 value=val,
@@ -735,7 +882,7 @@ class Panda2VeraGrid:
         grid = dev.MultiCircuit()
 
         if self.panda_net is not None:
-            #grid.Sbase = self.panda_net.sn_mva if self.panda_net.sn_mva > 0.0 else 100.0  # always, the pandapower
+            # grid.Sbase = self.panda_net.sn_mva if self.panda_net.sn_mva > 0.0 else 100.0  # always, the pandapower
             # For pandapwoer Sbase is crazily affecting only load
             grid.Sbase = 100.0  # always, the pandapower
             # scaling is handled in the conversions
@@ -751,6 +898,7 @@ class Panda2VeraGrid:
             self.parse_generators(grid=grid, bus_dictionary=bus_dict)
             self.parse_static_generators(grid=grid, bus_dictionary=bus_dict)
             self.parse_transformers(grid=grid, bus_dictionary=bus_dict)
+            self.parse_transformers3W(grid=grid, bus_dictionary=bus_dict)
             self.parse_switches(grid=grid, bus_dictionary=bus_dict)
             self.parse_measurements(grid=grid)
 

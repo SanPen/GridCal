@@ -8,9 +8,8 @@ from typing import Tuple
 
 import pandas as pd
 from scipy import sparse
-from scipy.linalg import lstsq
 from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, diags
-from scipy.sparse.linalg import factorized, spsolve, spilu, splu, lsqr
+from scipy.sparse.linalg import factorized, spsolve, spilu, splu, eigsh
 import numpy as np
 from VeraGridEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
 from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
@@ -223,6 +222,7 @@ def b_test(sigma2: Vec,
     :param dz: residuals r = z - h(x^) (length m)
     :param HtWH: G = H^T W H (k x k)
     :param c_threshold: detection threshold 'c' (use 4.0 as in the paper)
+    :param logger: Logger
     :return:
         'r'      : residuals r_i
         'sigma2' : sigma_i^2
@@ -239,7 +239,7 @@ def b_test(sigma2: Vec,
     # Use LU so we can reuse for many RHS
     lu = factorized(HtWH.tocsc())
     # For the system to be observable the eigenvalues should be greater than zero -> matrix pos definate
-    eigvals = np.linalg.eigvalsh(HtWH.toarray())
+    eigvals, _ = eigsh(HtWH)
     assert np.all(eigvals > 0), "Unobservable-System"
 
     # Compute h_i = H_i G^{-1} H_i^T and then Pii = sigma_i^2 - h_i
@@ -1120,7 +1120,7 @@ def decoupled_state_estimation(nc: NumericalCircuit,
             lu_ga = splu(Ga)
             dtheta = lu_ga.solve(Ta)
         except Exception:
-            dtheta = lstsq(Ga.toarray(), Ta, rcond=None)[0]
+            dtheta = spilu(Ga).solve(Ta)
 
         # safety clip + apply relaxation
         if np.any(np.abs(dtheta) > max_theta_step):
@@ -1148,7 +1148,7 @@ def decoupled_state_estimation(nc: NumericalCircuit,
             lu_gr = splu(Gr)
             dV = lu_gr.solve(Tr)
         except Exception:
-            dV = lstsq(Gr.toarray(), Tr, rcond=None)[0]
+            dV = spilu(Gr).solve(Tr)
 
         # safety clip + apply relaxation
         if np.any(np.abs(dV) > max_V_step):
