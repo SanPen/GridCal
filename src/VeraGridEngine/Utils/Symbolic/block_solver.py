@@ -951,7 +951,7 @@ class BlockSolver:
 
         return t, y
 
-    def save_simulation_to_csv(self, filename, t, y):
+    def save_simulation_to_csv(self, filename, t, y, csv_saving=False):
         """
         Save the simulation results to a CSV file.
 
@@ -973,9 +973,10 @@ class BlockSolver:
         var_names = [str(var) + '_VeraGrid' for var in all_vars]
 
         # Create DataFrame with time and variable data
-        df = pd.DataFrame(data=y, columns=var_names)
-        df.insert(0, 'Time [s]', t)
+        df_simulation_results = pd.DataFrame(data=y, columns=var_names)
+        df_simulation_results.insert(0, 'Time [s]', t)
 
-        # Save to CSV
-        df.to_csv(filename, index=False)
-        print(f"Simulation results saved to: {filename}")
+        if csv_saving:
+            df_simulation_results.to_csv(filename, index=False)
+            print(f"Simulation results saved to: {filename}")
+        return df_simulation_results

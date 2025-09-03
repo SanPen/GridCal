@@ -1402,7 +1402,7 @@ load_7 = Block(
     ],
     algebraic_vars=[Pload_7, Qload_7],
     parameters=[Pl0_7],
-    parameters_eqs=[piecewise(t, 2.0, -9.0, Pl0_7_default)],
+    parameters_eqs=[piecewise(t, np.array([2.0]), np.array([-9.0]), Pl0_7_default)],
     external_mapping={
         DynamicVarType.P: Pload_7,
         DynamicVarType.Q: Qload_7

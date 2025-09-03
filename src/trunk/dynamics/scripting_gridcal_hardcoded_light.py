@@ -346,7 +346,7 @@ print(f"Automatic simulation time = {end_simulation-start_simulation:.6f} [s]")
 
 # TODO: check results and implement test once intilize_rms is wokring!
 # # Save to csv
-slv.save_simulation_to_csv('simulation_results_Ieee_automatic_init.csv', t, y)
+slv.save_simulation_to_csv('simulation_results_Ieee_automatic_init.csv', t, y, csv_saving=True)
 
 # # Plot
 # plt.plot(t, y[:, slv.get_var_idx(slv._state_vars[1])], label="ω (pu)")
