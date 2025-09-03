@@ -7,7 +7,7 @@ linear and non-linear optimization functions. Some of these functions
 are well known, while others you may have never heard of as they are a
 product of cutting-edge research.
 
-.. figure:: md_source/figures/VeraGrid.png
+.. figure:: md_source/figures/VeraGrid_yt.png
     :alt: VeraGrid main figure
 
 |Codacy Badge| |Documentation Status| |Build Status| |DOI| |Downloads| |Discord|
