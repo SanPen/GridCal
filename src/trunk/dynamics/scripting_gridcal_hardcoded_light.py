@@ -265,8 +265,13 @@ grid.add_generator(bus=bus4, api_obj=gen4)
 # Events
 # ---------------------------------------------------------------------------------------
 
-event1 = RmsEvent(load1, "Pl0", 2.5, -9.0)
+event1 = RmsEvent(load1, "Pl0", np.array([2.5, 12.5]), np.array([-9.0, -9.01]))
+
+event2 = RmsEvent(load1, "Ql0", np.array([16.5]), np.array([-0.8]))
+
+
 grid.add_rms_event(event1)
+grid.add_rms_event(event2)
 
 # # Run power flow
 options = gce.PowerFlowOptions(
@@ -307,15 +312,7 @@ ss, init_guess = gce.initialize_rms(grid, res)
 print("init_guess")
 print(init_guess)
 
-# TODO: events definition and access to variable still needs to be addressed
 
-# # # Events
-# event1 = RmsEvent('Load', Pl0_7, 2500, -9.0)
-# event1 = RmsEvent('Load', grid.lines[7].rms_model.model.V('Pl07'), 2500, -9.0)
-
-# params_mapping = {
-#     # Pl0_7: Sb7.real + Ps0_7.value
-# }
 params_mapping = {}
 
 # TODO: initi_guess in hardcoded was Dict(Var, float), now it's Dict((int(uid), str(name)), float) for debugging. So slv.build_init_vars_vector(init_guess) and slv.sort_vars(init_guess) needs to be addressed

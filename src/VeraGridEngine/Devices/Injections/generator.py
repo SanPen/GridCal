@@ -530,9 +530,6 @@ class Generator(GeneratorParent):
                 ],
                 algebraic_vars=[P_g, Q_g, v_d, v_q, i_d, i_q, psid, psiq, te, tm],
                 init_eqs = {
-                    # E_ = Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va))))
-
-                    # delta: angle(Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va))))),
                     delta: imag(log((Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va)))))/(abs(Vm * exp(1j * Va) + (self.R1 + 1j * self.X1) * (conj((P_g + 1j * Q_g) / (Vm * exp(1j * Va)))))))),
                     omega: Const(self.omega_ref),
                     v_d: real((Vm * exp(1j * Va)) * exp(-1j * (delta - np.pi / 2))),
@@ -546,7 +543,9 @@ class Generator(GeneratorParent):
                     et: Const(0),
                 },
                 init_vars = [delta, omega, et, v_d, v_q, i_d, i_q, psid, psiq, te, tm],
-                init_params_eq = {},
+                fix_vars = ["tm0", "vf"],
+                fix_vars_eqs = {"tm0": tm,
+                                "vf": psid + self.X1 * i_d},
 
                 external_mapping={
                     DynamicVarType.P: P_g,

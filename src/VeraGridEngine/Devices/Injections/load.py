@@ -573,7 +573,6 @@ class Load(LoadParent):
                 algebraic_vars=[Pl, Ql],
                 init_eqs={},
                 init_vars=[],
-                init_params_eq={},
                 parameters=[],
                 external_mapping={
                     DynamicVarType.P: Pl,
@@ -581,26 +580,34 @@ class Load(LoadParent):
                 }
             )
 
-    def initialize_rms_with_event(self, rms_event):
+    def initialize_rms_with_event(self, rms_events):
         if self.rms_model.empty():
             Ql = Var("Ql")
             Pl = Var("Pl")
-            default_value = getattr(self, rms_event.parameter, None)  # TODO: Find a way of not using getattr and setattr
-            var = Var(rms_event.parameter)
-            setattr(self, rms_event.parameter, var)
             self.rms_model.model = Block(
                 algebraic_eqs=[
-                    Pl - self.Pl0,
-                    Ql - self.Ql0
                 ],
-                algebraic_vars=[Pl, Ql],
+                algebraic_vars=[],
                 init_eqs={},
                 init_vars=[],
-                init_params_eq= {},
-                parameters=[var],
-                parameters_eqs=[piecewise(self.time, rms_event.time, rms_event.value, default_value)],
+                parameters=[],
+                parameters_eqs=[],
                 external_mapping={
-                    DynamicVarType.P: Pl,
-                    DynamicVarType.Q: Ql
                 }
             )
+            self.rms_model.model.external_mapping[DynamicVarType.P] = Pl
+            self.rms_model.model.external_mapping[DynamicVarType.Q] = Ql
+            self.rms_model.model.algebraic_vars.append(Pl)
+            self.rms_model.model.algebraic_vars.append(Ql)
+            for rms_event in rms_events:
+
+                default_value = getattr(self, rms_event.parameter, None)  # TODO: Find a way of not using getattr and setattr
+                var = Var(rms_event.parameter)
+                setattr(self, rms_event.parameter, var)
+                self.rms_model.model.parameters.append(var)
+                self.rms_model.model.parameters_eqs.append(piecewise(self.time, rms_event.times, rms_event.values, default_value))
+
+            self.rms_model.model.algebraic_eqs.append(Pl - self.Pl0)
+            self.rms_model.model.algebraic_eqs.append(Ql - self.Ql0)
+
+

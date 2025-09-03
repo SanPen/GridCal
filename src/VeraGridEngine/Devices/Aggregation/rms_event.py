@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from typing import Union
+import numpy as np
 
 from VeraGridEngine.Devices.Parents.editable_device import EditableDevice
 from VeraGridEngine.Devices.Parents.pointer_device_parent import PointerDeviceParent
@@ -17,16 +18,16 @@ class RmsEvent(PointerDeviceParent):
     """
     __slots__ = (
         'parameter',
-        'time',
-        'value',
+        'times',
+        'values',
         '_group'
     )
 
     def __init__(self,
                  device: EditableDevice | None = None,
                  parameter: str = None,
-                 time: float = 0.0,
-                 value: float = 0.0,
+                 times: np.ndarray = None,
+                 values: np.ndarray = None,
                  idtag: Union[str, None] = None,
                  name="RmsEvent",
                  code='',
@@ -40,8 +41,8 @@ class RmsEvent(PointerDeviceParent):
         :param code: String. Contingency code name
         :param group: RmsEventsGroup. RmsEvent group
         :param parameter: parameter
-        :param time: time
-        :param value: value
+        :param times: time
+        :param values: value
         :param comment: Comment
         """
 
@@ -55,14 +56,14 @@ class RmsEvent(PointerDeviceParent):
 
         self._group: RmsEventsGroup = group
         self.parameter: str = parameter
-        self.time: float = time
-        self.value: float = value
+        self.times: np.ndarray = times
+        self.values: np.ndarray = values
 
         self.register(key='parameter', units='', tpe=str,
                       definition='parameter that the event changes')
-        self.register(key='time', units='', tpe=float,
+        self.register(key='times', units='', tpe=float,
                       definition='Time when the event occurs')
-        self.register(key='value', units='', tpe=float,
+        self.register(key='values', units='', tpe=float,
                       definition='New value for the parameter')
         self.register(key='group', units='', tpe=DeviceType.RmsEventsGroupDevice, definition='RmsEvent group')
 

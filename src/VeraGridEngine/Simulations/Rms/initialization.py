@@ -183,11 +183,11 @@ def compose_system_block(grid: MultiCircuit,
                 init_val = float(eq_fn(x))
                 init_guess[key] = init_val
                 x[uid2idx_vars[var.uid]] = init_val
-        # for param, value in elm.init_params.items():
-        #     eq = mdl.init_params_eq[param]
-        #     eq_fn = _compile_equation([eq], uid2sym_vars)
-        #     init_val = float(eq_fn(x))
-        #     elm.init_params[param] = init_val
+        for var in mdl.fix_vars:
+            eq = mdl.fix_vars_eqs[var]
+            eq_fn = _compile_equation([eq], uid2sym_vars)
+            init_val = float(eq_fn(x))
+            setattr(elm, var, init_val)
 
 
         sys_block.add(mdl)
@@ -260,11 +260,11 @@ def initialize_rms(grid: MultiCircuit, power_flow_results, logger: Logger = Logg
     for elm in grid.get_injection_devices_iter():
         # resolve events
         # check if there is an event actuating through this element and initialize rms accordingly
-        for rms_event in rms_events:
-            if elm.idtag == rms_event.device_idtag:
-                elm.initialize_rms_with_event(rms_event)
-            else:
-                elm.initialize_rms()
+        rms_evts = [rms_evt for rms_evt in rms_events if rms_evt.device_idtag == elm.idtag]
+        if len(rms_evts) != 0:
+            elm.initialize_rms_with_event(rms_evts)
+        else:
+            elm.initialize_rms()
         mdl = elm.rms_model.model
         k = bus_dict[elm.bus]
         setP(P, P_used, k, mdl.E(DynamicVarType.P))
