@@ -10,7 +10,7 @@ product of cutting-edge research.
 .. figure:: md_source/figures/VeraGrid.png
     :alt: VeraGrid main figure
 
-|Codacy Badge| |Documentation Status| |Build Status| |DOI| |Downloads|
+|Codacy Badge| |Documentation Status| |Build Status| |DOI| |Downloads| |Discord|
 
 VeraGrid started in 2015 with a clear objective: create a solid
 programming library and a user-friendly interface. This straightforward
@@ -84,15 +84,18 @@ Disclaimer
 All trademarks mentioned in the documentation or the source code belong
 to their respective owners.
 
+
 .. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/75e794c9bcfd49bda1721b9ba8f6c790
    :target: https://app.codacy.com/app/SanPen/VeraGrid?utm_source=github.com&utm_medium=referral&utm_content=SanPen/VeraGrid&utm_campaign=Badge_Grade_Dashboard
-.. |Documentation Status| image:: https://readthedocs.org/projects/gridcal/badge/?version=latest
-   :target: https://gridcal.readthedocs.io/en/latest/?badge=latest
+.. |Documentation Status| image:: https://readthedocs.org/projects/veragrid/badge/?version=latest
+   :target: https://veragrid.readthedocs.io/en/latest/?badge=latest
 .. |Build Status| image:: https://travis-ci.org/SanPen/VeraGrid.svg?branch=master
    :target: https://travis-ci.org/SanPen/VeraGrid
 .. |DOI| image:: https://www.zenodo.org/badge/49583206.svg
    :target: https://www.zenodo.org/badge/latestdoi/49583206
-.. |Downloads| image:: https://static.pepy.tech/personalized-badge/gridcal?period=total&units=abbreviation&left_color=grey&right_color=green&left_text=Downloads
-   :target: https://pepy.tech/project/gridcal
+.. |Downloads| image:: https://static.pepy.tech/personalized-badge/veragrid?period=total&units=abbreviation&left_color=grey&right_color=green&left_text=Downloads
+   :target: https://pepy.tech/project/veragrid
+.. |Discord| image:: https://img.shields.io/badge/Discord-%235865F2.svg
+   :target: https://discord.gg/sVnwkaxN
 
 
