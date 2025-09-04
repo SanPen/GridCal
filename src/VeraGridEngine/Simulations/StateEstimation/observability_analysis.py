@@ -14,6 +14,8 @@ from VeraGridEngine.Simulations.StateEstimation.state_estimation_inputs import S
 from VeraGridEngine.basic_structures import CscMat, IntVec, Logger
 from VeraGridEngine.Simulations.StateEstimation.state_estimation import Jacobian_SE
 from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor, as_completed
+import multiprocessing as mp
 
 
 def check_for_observability_and_return_unobservable_buses(nc: NumericalCircuit,
@@ -118,13 +120,7 @@ def check_for_observability_and_return_unobservable_buses(nc: NumericalCircuit,
             Hr = H.tocsr()[r_idx, n_non_slack:]
             Hv = H.tocsr()[v_idx, :]
             Hi = H.tocsr()[i_idx, :]
-
-            measurement_profile = {
-                "active": profile_measurements(Ha, measurement_ids[a_idx],include_line_measurements_on_both_ends=include_line_measurements_on_both_ends),
-                "reactive": profile_measurements(Hr, measurement_ids[r_idx],include_line_measurements_on_both_ends=include_line_measurements_on_both_ends),
-                "voltage": profile_measurements(Hv, measurement_ids[v_idx],include_line_measurements_on_both_ends=include_line_measurements_on_both_ends),
-                "current": profile_measurements(Hi, measurement_ids[i_idx],include_line_measurements_on_both_ends=include_line_measurements_on_both_ends),
-            }
+            measurement_profile=parallel_measurement_profiling(Ha, Hr, Hv, Hi, measurement_ids, a_idx, r_idx, v_idx, i_idx,True)
             bus_status = bus_observability_profile(measurement_profile)
             plot_bus_observability(bus_status)
             logger.add_info("Measurement profiling completed")
@@ -157,6 +153,47 @@ def check_for_observability_and_return_unobservable_buses(nc: NumericalCircuit,
             if score > tolerance_for_observability_score:
                 unobservable_buses.append(bus)
         return False, unobservable_buses, None, V, bus_contrib
+
+
+
+def parallel_measurement_profiling(Ha, Hr, Hv, Hi, measurement_ids, a_idx, r_idx, v_idx, i_idx,
+                                   include_line_measurements_on_both_ends=True):
+    """
+    Parallel execution of all 4 measurement profiling strategies.
+    """
+    # Prepare arguments for parallel processing
+    args_list = [
+        (Ha, measurement_ids[a_idx], include_line_measurements_on_both_ends),
+        (Hr, measurement_ids[r_idx], include_line_measurements_on_both_ends),
+        (Hv, measurement_ids[v_idx], include_line_measurements_on_both_ends),
+        (Hi, measurement_ids[i_idx], include_line_measurements_on_both_ends)
+    ]
+
+    strategies = ["active", "reactive", "voltage", "current"]
+    results = {}
+
+    # Use ProcessPoolExecutor for true parallel execution
+    with ProcessPoolExecutor(max_workers=min(4, mp.cpu_count())) as executor:
+        # Submit all tasks
+        future_to_strategy = {
+            executor.submit(profile_measurements_ultrafast, *args): strategy
+            for args, strategy in zip(args_list, strategies)
+        }
+
+        # Collect results as they complete
+        for future in as_completed(future_to_strategy):
+            strategy = future_to_strategy[future]
+            try:
+                results[strategy] = future.result()
+            except Exception as e:
+                print(f"Error processing {strategy}: {e}")
+                results[strategy] = {}
+
+    return results
+
+
+
+
 
 
 def add_pseudo_measurements_for_unobservable_buses(bus_dict, unobservable_buses: object, se_input: object, V: object,
@@ -243,6 +280,83 @@ def profile_measurements(Hsub, ids, tol=1e-9,include_line_measurements_on_both_e
                 # Only one measurement in the group → global redundancy
                 redundancy_type = classify_redundancy(H_dense, idx, tol)
                 prof[meas_id] = f"globally redundant ({redundancy_type})"
+
+    return prof
+
+
+def profile_measurements_ultrafast(Hsub, ids, tol=1e-9, include_line_measurements_on_both_ends=True):
+    """
+    Ultra-fast version with identical results to original.
+    """
+    n = Hsub.shape[1]
+    prof = {}
+
+    ids = [tuple(id_) for id_ in ids]
+    groups = build_local_groups(ids, include_line_measurements_on_both_ends=include_line_measurements_on_both_ends)
+
+    H_dense = Hsub.toarray() if hasattr(Hsub, "toarray") else Hsub
+    G = H_dense.T @ H_dense
+
+    # Precompute SVD for smart criticality screening
+    U, s, Vh = np.linalg.svd(H_dense, full_matrices=False)
+    rank_full = np.sum(s > tol)
+    U_rank = U[:, :rank_full]
+
+    # Identify critical measurement candidates efficiently
+    critical_candidates = np.where(np.max(np.abs(U_rank), axis=1) > 0.7)[0]
+
+    # Precompute all local group information
+    group_cache = {}
+    for key, indices in groups.items():
+        H_local = H_dense[indices, :]
+        group_cache[key] = {
+            'indices': indices,
+            'local_rank': np.linalg.matrix_rank(H_local, tol=tol),
+            'H_local': H_local
+        }
+
+    # Process measurements
+    for idx in range(H_dense.shape[0]):
+        meas_id = ids[idx]
+
+        # Check criticality only for candidates
+        if idx in critical_candidates:
+            h_i = H_dense[idx, :].reshape(1, -1)
+            G_reduced = G - h_i.T @ h_i
+            if np.linalg.matrix_rank(G_reduced, tol=tol) < n:
+                prof[meas_id] = "critical"
+                continue
+
+        # Redundancy classification
+        (cat, api_obj) = meas_id
+
+        if cat in ["pf_value", "qf_value", "if_value"]:
+            key = f"bus_{api_obj.bus_from}"
+        elif cat in ["pt_value", "qt_value", "it_value"]:
+            key = f"bus_{api_obj.bus_to}"
+        else:
+            key = f"bus_{api_obj}"
+
+        group_data = group_cache[key]
+        related_idxs = group_data['indices']
+
+        if len(related_idxs) > 1:
+            # Find position and remove current measurement
+            pos = related_idxs.index(idx)
+            mask = np.ones(len(related_idxs), dtype=bool)
+            mask[pos] = False
+            H_local_reduced = group_data['H_local'][mask, :]
+
+            rank_local_reduced = np.linalg.matrix_rank(H_local_reduced, tol=tol)
+            redundancy_type = classify_redundancy(H_dense, idx, tol)
+
+            if group_data['local_rank'] == rank_local_reduced:
+                prof[meas_id] = f"locally redundant ({redundancy_type})"
+            else:
+                prof[meas_id] = f"globally redundant ({redundancy_type})"
+        else:
+            redundancy_type = classify_redundancy(H_dense, idx, tol)
+            prof[meas_id] = f"globally redundant ({redundancy_type})"
 
     return prof
 

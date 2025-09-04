@@ -567,7 +567,16 @@ class Panda2VeraGrid:
             Sn2 = getattr(row, "sn_mv_mva", grid.Sbase)
             Sn3 = getattr(row, "sn_lv_mva", grid.Sbase)
 
-            # Build transformer
+            # Build transformer  ---->>> bus 2 erfers to MV , so winding 2 is MV
+            # self._winding1 = Winding(bus_from=self.bus0, idtag=w1_idtag,
+            #                          bus_to=bus1,
+            #                          HV=V1, LV=1.0, name=name + "_W1")
+            # self._winding2 = Winding(bus_from=self.bus0, idtag=w2_idtag,
+            #                          bus_to=bus2,
+            #                          HV=V2, LV=1.0, name=name + "_W2")
+            # self._winding3 = Winding(bus_from=self.bus0, idtag=w3_idtag,
+            #                          bus_to=bus3,
+            #                          HV=V3, LV=1.0, name=name + "_W3")
             elm = dev.Transformer3W(
                 idtag=str(row.uuid),
                 code=str(idx),
@@ -794,39 +803,87 @@ class Panda2VeraGrid:
 
                     elif elm_tpe in ['line', 'impedance', 'trafo','trafo3w']:
                         if m_tpe == 'p':
-                            if side == 1 or side == 'from':
-                                grid.add_pf_measurement(dev.PfMeasurement(
-                                    value=val * self.load_scale,
-                                    uncertainty=std,
-                                    api_obj=api_object,
-                                    name=name
-                                ))
-                            elif side == 2 or side == 'to':
+                            if side == 1 or side == 'from' or side == "hv":
+                                if elm_tpe=="trafo3w":
+                                    grid.add_pf_measurement(dev.PfMeasurement(
+                                        value=val * self.load_scale,
+                                        uncertainty=std,
+                                        api_obj=api_object.winding1,
+                                        name=name
+                                    ))
+                                else:
+                                    grid.add_pf_measurement(dev.PfMeasurement(
+                                        value=val * self.load_scale,
+                                        uncertainty=std,
+                                        api_obj=api_object,
+                                        name=name
+                                    ))
+                            elif side == 2 or side == 'to' or side == "lv":
+                                if elm_tpe=="trafo3w":
+                                    grid.add_pt_measurement(dev.PtMeasurement(
+                                        value=val * self.load_scale,
+                                        uncertainty=std,
+                                        api_obj=api_object.winding3, # winding3 corresponds to bus3 and LV side
+                                        name=name
+                                    ))
+                                else:
+                                    grid.add_pt_measurement(dev.PtMeasurement(
+                                        value=val * self.load_scale,
+                                        uncertainty=std,
+                                        api_obj=api_object,
+                                        name=name
+                                    ))
+                            elif side == "mv": # for trafo3w MV side
                                 grid.add_pt_measurement(dev.PtMeasurement(
                                     value=val * self.load_scale,
                                     uncertainty=std,
-                                    api_obj=api_object,
+                                    api_obj=api_object.winding2, # bus2 is MV and winding2
                                     name=name
                                 ))
+
                         elif m_tpe == 'q':
-                            if side == 1 or side == 'from':
-                                grid.add_qf_measurement(dev.QfMeasurement(
-                                    value=val * self.load_scale,
-                                    uncertainty=std,
-                                    api_obj=api_object,
-                                    name=name
-                                ))
-                            elif side == 2 or side == 'to':
+                            if side == 1 or side == 'from' or side == "hv":
+                                if elm_tpe=="trafo3w":
+                                    grid.add_qf_measurement(dev.QfMeasurement(
+                                        value=val * self.load_scale,
+                                        uncertainty=std,
+                                        api_obj=api_object.winding1,
+                                        name=name
+                                    ))
+                                else:
+                                    grid.add_qf_measurement(dev.QfMeasurement(
+                                        value=val * self.load_scale,
+                                        uncertainty=std,
+                                        api_obj=api_object,
+                                        name=name
+                                    ))
+
+                            elif side == 2 or side == 'to' or side == "lv":
+                                if elm_tpe=="trafo3w":
+                                    grid.add_qt_measurement(dev.QtMeasurement(
+                                        value=val * self.load_scale,
+                                        uncertainty=std,
+                                        api_obj=api_object.winding3,
+                                        name=name
+                                    ))
+                                else:
+                                    grid.add_qt_measurement(dev.QtMeasurement(
+                                        value=val * self.load_scale,
+                                        uncertainty=std,
+                                        api_obj=api_object,
+                                        name=name
+                                    ))
+                            elif side == "mv":
                                 grid.add_qt_measurement(dev.QtMeasurement(
                                     value=val * self.load_scale,
                                     uncertainty=std,
-                                    api_obj=api_object,
+                                    api_obj=api_object.winding2,
                                     name=name
                                 ))
                         elif m_tpe == "i":
                             if elm_tpe == 'trafo':
-                                if side == 1 or side == "hv":
-                                    vnom = api_object.bus_from.Vnom if hasattr(api_object.bus1, 'Vnom') else 1.0
+                                if side == 1 or side == "hv" or side == 'from':
+                                    vnom = api_object.bus_from.Vnom if hasattr(api_object.bus_from, 'Vnom') else 1.0
                                     ibase = grid.Sbase / (vnom * math.sqrt(3))
                                     value = val / ibase  # Convert kA to pu
                                     grid.add_if_measurement(
@@ -836,8 +893,8 @@ class Panda2VeraGrid:
                                             api_obj=api_object,
                                             name=name
                                         ))
-                                if side == 2 or side == "lv":
-                                    vnom = api_object.bus_to.Vnom if hasattr(api_object.bus2, 'Vnom') else 1.0
+                                if side == 2 or side == "lv" or side == 'to':
+                                    vnom = api_object.bus_to.Vnom if hasattr(api_object.bus_to, 'Vnom') else 1.0
                                     ibase = grid.Sbase / (vnom * math.sqrt(3))
                                     value = val / ibase  # Convert kA to pu
                                     grid.add_it_measurement(
@@ -847,40 +904,40 @@ class Panda2VeraGrid:
                                             api_obj=api_object,
                                             name=name
                                         ))
-                                if elm_tpe == 'trafo3w':
-                                    if side == 1 or side == "hv":
-                                        vnom = api_object.bus1.Vnom if hasattr(api_object.bus1, 'Vnom') else 1.0
-                                        ibase = grid.Sbase / (vnom * math.sqrt(3))
-                                        value = val / ibase  # Convert kA to pu
-                                        grid.add_if_measurement(
-                                            dev.IfMeasurement(
-                                                value=value,
-                                                uncertainty=std,
-                                                api_obj=api_object,
-                                                name=name
-                                            ))
-                                    if side == 2 or side == "mv":
-                                        vnom = api_object.bus2.Vnom if hasattr(api_object.bus2, 'Vnom') else 1.0
-                                        ibase = grid.Sbase / (vnom * math.sqrt(3))
-                                        value = val / ibase  # Convert kA to pu
-                                        grid.add_it_measurement(
-                                            dev.ItMeasurement(
-                                                value=value,
-                                                uncertainty=std,
-                                                api_obj=api_object,
-                                                name=name
-                                            ))
-                                    if side == 3 or side == "lv":
-                                        vnom = api_object.bus3.Vnom if hasattr(api_object.bus3, 'Vnom') else 1.0
-                                        ibase = grid.Sbase / (vnom * math.sqrt(3))
-                                        value = val / ibase  # Convert kA to pu
-                                        grid.add_it_measurement(
-                                            dev.ItMeasurement(
-                                                value=value,
-                                                uncertainty=std,
-                                                api_obj=api_object,
-                                                name=name
-                                            ))
+                            elif elm_tpe == 'trafo3w':
+                                if side == 1 or side == "hv":
+                                    vnom = api_object.bus1.Vnom if hasattr(api_object.bus1, 'Vnom') else 1.0
+                                    ibase = grid.Sbase / (vnom * math.sqrt(3))
+                                    value = val / ibase  # Convert kA to pu
+                                    grid.add_if_measurement(
+                                        dev.IfMeasurement(
+                                            value=value,
+                                            uncertainty=std,
+                                            api_obj=api_object.winding1,
+                                            name=name
+                                        ))
+                                if side == 2 or side == "mv":
+                                    vnom = api_object.bus2.Vnom if hasattr(api_object.bus2, 'Vnom') else 1.0
+                                    ibase = grid.Sbase / (vnom * math.sqrt(3))
+                                    value = val / ibase  # Convert kA to pu
+                                    grid.add_it_measurement(
+                                        dev.ItMeasurement(
+                                            value=value,
+                                            uncertainty=std,
+                                            api_obj=api_object.winding2,
+                                            name=name
+                                        ))
+                                if side == 3 or side == "lv":
+                                    vnom = api_object.bus3.Vnom if hasattr(api_object.bus3, 'Vnom') else 1.0
+                                    ibase = grid.Sbase / (vnom * math.sqrt(3))
+                                    value = val / ibase  # Convert kA to pu
+                                    grid.add_it_measurement(
+                                        dev.ItMeasurement(
+                                            value=value,
+                                            uncertainty=std,
+                                            api_obj=api_object.winding3,
+                                            name=name
+                                        ))
                             else:
                                 if side == 1 or side == 'from':
                                     vnom = api_object.bus_from.Vnom if hasattr(api_object.bus_from, 'Vnom') else 1.0

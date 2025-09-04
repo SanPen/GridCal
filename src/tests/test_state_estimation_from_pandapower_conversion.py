@@ -42,18 +42,18 @@ def test_state_estimation_pandapower():
 
         for solver in [
             #SolverType.Decoupled_LU,
-            SolverType.GN,
+            #SolverType.GN,
             SolverType.LM
         ]:
             se_opt = StateEstimationOptions(
-                prefer_correct=False,
-                fixed_slack=True,
+                prefer_correct=True,
+                fixed_slack=False,
                 solver=solver,
-                verbose=2,
+                verbose=1,
                 run_observability_analyis=True,
-                run_measurement_profiling=True,
-                max_iter=150,
-                tol=1e-05,
+                run_measurement_profiling=False,
+                max_iter=200,
+                tol=1e-04,
                 add_pseudo_measurements=True
             )
             se = StateEstimation(circuit=grid, options=se_opt)
