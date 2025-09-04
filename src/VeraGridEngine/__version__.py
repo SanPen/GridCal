@@ -44,5 +44,7 @@ contributors_msg += ('Chavdar Ivanov, '
 contributors_msg += ('Rubén Carmona Pardo, '
                      'Julio González Mejías, '
                      'Jesús Riquelme Santos (Contingencies and PTDF testing)\n')
+contributors_msg += 'Alex Blanco Castro (3-phase ABC power flow and short circuit)\n'
+contributors_msg += 'Ankur Arohi (Better State Estimation and pandapower parser)\n'
 
 about_msg += copyright_msg + '\n' + contributors_msg
