@@ -3364,11 +3364,9 @@ class SchematicWidget(BaseDiagramWidget):
                                     tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Pt[i]) + ' [MW]'
                                     tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Qt[i]) + ' [Mvar]'
                                     tooltip += '\nLosses: \t\t' + "{:10.4f}".format(vsc_losses[i]) + ' [MW]'
-                                    graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
-                                                                         St=vsc_Pt[i] + 1j * vsc_Qt[i])
+                                    graphic_object.set_arrows_with_power_vsc(Pf=vsc_Pf[i], Pt=vsc_Pt[i], Qt=vsc_Qt[i])
                                 else:
-                                    graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
-                                                                         St=-vsc_Pf[i] + 1j * vsc_Qt[i])
+                                    graphic_object.set_arrows_with_power_vsc(Pf=vsc_Pf[i], Pt=-vsc_Pf[i], Qt=vsc_Qt[i])
 
                             graphic_object.setToolTipText(tooltip)
                             graphic_object.set_colour(color, w, style)

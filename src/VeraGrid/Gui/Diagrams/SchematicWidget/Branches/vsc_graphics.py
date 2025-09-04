@@ -180,3 +180,30 @@ class VscGraphicItem(LineGraphicTemplateItem):
         :return:
         """
         self.editor.set_vsc_control_dev(graphic=self, control_idx=2)
+
+    def set_arrows_with_power_vsc(self, Pf: float | None, Pt: complex | None, Qt: complex | None) -> None:
+        """
+        Set the arrow directions
+        :param Pf: DC actrive power from
+        :param Pt: AC active power to
+        :param Qt: AC reactive power
+        """
+
+        if Pf is not None:
+
+            if Pt is None:
+                Pt = -Pf
+
+            if Qt is None:
+                Qt = 0
+
+            self.arrow_p_to.set_value(Pf, True, Pf < 0, name="Pf", units="MW", draw_label=self.draw_labels)
+            self.arrow_q_to.setVisible(False)
+            self.arrow_p_from.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
+            self.arrow_q_from.set_value(Qt, True, Qt > 0, name="Qt", units="MVAr", draw_label=self.draw_labels)
+        else:
+            if Pt is None:
+                self.arrow_p_from.setVisible(False)
+                self.arrow_q_from.setVisible(False)
+                self.arrow_p_to.setVisible(False)
+                self.arrow_q_to.setVisible(False)
