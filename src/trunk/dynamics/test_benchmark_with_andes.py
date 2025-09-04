@@ -19,7 +19,7 @@ from VeraGridEngine.Utils.Symbolic.block_solver import BlockSolver
 import VeraGridEngine.api as gce
 
 
-matplotlib.use('TkAgg')  # or 'QtAgg', depending on your system
+
 
 # perform simulation in Andes
 
@@ -28,7 +28,7 @@ def perform_andes_simulation_for_kundur_ieee_no_shunt():
     start = time.time()
 
     # Load the system
-    ss = andes.load('Gen_Load/kundur_ieee_no_shunt.json', default_config=True)
+    ss = andes.load('src/tests/data/dynamics/kundur_ieee_no_shunt.json', default_config=True)
 
     #number of variables
     n_xy = len(ss.dae.xy_name)
@@ -426,7 +426,7 @@ def perform_veragrid_simulation_for_kundur_ieee_no_shunt():
     return veragrid_simulation_df, power_flow_time, compiling_time, simulation_time
 
 
-def merge_simulation_results_by_time(andes_simulation_df, veragrid_simulation_df, time_col='Time [s]', output_csv = True, output_csv_file = "merged_csv"):
+def merge_simulation_results_by_time(andes_simulation_df, veragrid_simulation_df, time_col='Time [s]', output_csv = True, output_csv_file = "merged_csv.csv"):
 
     andes_sim_df = andes_simulation_df
     veragrid_sim_df = veragrid_simulation_df
@@ -449,55 +449,91 @@ def merge_simulation_results_by_time(andes_simulation_df, veragrid_simulation_df
 
     return merged_df
 
-def compare_andes_veragrid_simulation_results(andes_simulation_df, veragrid_simulation_df):
+def rename_duplicate_columns(df):
+    """
+    Rename duplicate columns in a DataFrame by appending .1, .2, etc.
 
-    merged_df = merge_simulation_results_by_time(andes_simulation_df, veragrid_simulation_df)
+    Parameters
+    ----------
+    df : pd.DataFrame
 
-    i = 1
+    Returns
+    -------
+    pd.DataFrame with unique column names
+    """
+    seen = {}
+    new_cols = []
+    for col in df.columns:
+        if col not in seen:
+            seen[col] = 0
+            new_cols.append(col)
+        else:
+            seen[col] += 1
+            new_cols.append(f"{col}.{seen[col]}")
+    df.columns = new_cols
+    return df
+
+
+def test_andes_veragrid_simulation_results(tol=1e-3):
+    """
+    Compare results from ANDES and VeraGrid simulations.
+
+    Parameters
+    ----------
+    andes_simulation_df : pd.DataFrame
+        Results from the ANDES simulation.
+    veragrid_simulation_df : pd.DataFrame
+        Results from the VeraGrid simulation.
+    tol : float
+        Tolerance for considering values equal (default 1e-3).
+
+    Returns
+    -------
+    success : bool
+        True if all comparisons are within tolerance, False otherwise.
+    report : dict
+        Dictionary with variable pair as key and comparison result as value.
+    """
+    andes_sim_results, andes_pf_time, andes_comp_time, andes_sim_time = perform_andes_simulation_for_kundur_ieee_no_shunt()
+    veragrid_sim_results, veragrid_pf_time, veragrid_comp_time, veragrid_sim_time = perform_veragrid_simulation_for_kundur_ieee_no_shunt()
+
+    veragrid_sim_results_no_duplicates = rename_duplicate_columns(veragrid_sim_results)
+
+    merged_df = merge_simulation_results_by_time(andes_sim_results, veragrid_sim_results_no_duplicates)
+
+
     variable_pairs = [
-        [f"omega_andes_gen_1", f"omega_VeraGrid"],
-        [f"omega_andes_gen_2", f"omega_VeraGrid.1"],
-        [f"omega_andes_gen_3", f"omega_VeraGrid.2"],
-        [f"omega_andes_gen_4", f"omega_VeraGrid.3"],
+        ("omega_andes_gen_1", "omega_VeraGrid"),
+        ("omega_andes_gen_2", "omega_VeraGrid.1"),
+        ("omega_andes_gen_3", "omega_VeraGrid.2"),
+        ("omega_andes_gen_4", "omega_VeraGrid.3"),
     ]
 
+    report = {}
+    success = True
 
-    # Automatically detect time columns
-    time_column = merged_df['Time [s]']
-    time_columns = [col for col in merged_df.columns if 'Time [s]' in col.lower()]
-    time1 = time_column
-
-    # Create subplots
-    n = len(variable_pairs)
-    cols = 2
-    rows = (n + 1) // cols
-
-    fig, axes = plt.subplots(rows, cols, figsize=(10, 2 * rows), sharex=True)
-    axes = axes.flatten()
-    for idx, (var1, var2) in enumerate(variable_pairs):
-        ax = axes[idx]
+    for var1, var2 in variable_pairs:
         if var1 in merged_df and var2 in merged_df:
+            diff = np.abs(merged_df[var1] - merged_df[var2])
+            max_diff = diff.max()
 
-            ax.plot(time1, merged_df[var1], label=var1, linestyle='-')
-            ax.plot(time1, merged_df[var2], label=var2, linestyle='--')
-            ax.set_title(f"{var1} vs {var2}", fontsize=9)
-            ax.set_xlabel("Time (s)", fontsize=8)
-            ax.set_ylabel("Value (pu)", fontsize=8)
-            ax.tick_params(axis='both', labelsize=7)
-            ax.legend(fontsize=7, loc='best')
-            ax.grid(True)
+            within_tol = bool((diff <= tol).all())
+            report[(var1, var2)] = {
+                "max_diff": float(max_diff),
+                "within_tol": within_tol
+            }
 
-    axes[-1].set_xlabel("Time (s)")
-    plt.tight_layout(rect=[0, 0, 1, 0.97])
-    # plt.suptitle("Simulation Variable Comparison (VeraGrid vs GENCLS)", fontsize=16, y=1.02)
-    plt.ylim([0.85, 1.15])
-    plt.subplots_adjust(top=0.95)
-    plt.show()
+            if not within_tol:
+                success = False
+                print(report)
+        else:
+            report[(var1, var2)] = "Missing in merged dataframe"
+            success = False
+
+    assert success
 
 
 
 if __name__ == '__main__':
-    andes_sim_results, andes_pf_time, andes_comp_time, andes_sim_time = perform_andes_simulation_for_kundur_ieee_no_shunt()
-    veragrid_sim_results, veragrid_pf_time, veragrid_comp_time, veragrid_sim_time = perform_veragrid_simulation_for_kundur_ieee_no_shunt()
-    compare_andes_veragrid_simulation_results(andes_sim_results, veragrid_sim_results)
+    test_andes_veragrid_simulation_results()
 
