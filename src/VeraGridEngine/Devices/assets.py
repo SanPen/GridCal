@@ -1707,6 +1707,18 @@ class Assets:
             gen_index_dict[elm.idtag] = k  # associate the idtag to the index
         return gen_index_dict
 
+    def get_generator_bus_index_dict(self, bus_index_dict: Dict[dev.Bus, int] = None):
+        """
+        Get a dictionary of generators related to their bus index
+        :param bus_index_dict: bus object to bus index dictionary (optional)
+        :return: generator object to bus index dictionary
+
+        """
+        if bus_index_dict is None:
+            bus_index_dict = self.get_bus_index_dict()
+
+        return {g.idtag: bus_index_dict[g.bus] for g in self.get_generators() if g.bus is not None}
+
     # ------------------------------------------------------------------------------------------------------------------
     # External grid
     # ------------------------------------------------------------------------------------------------------------------
