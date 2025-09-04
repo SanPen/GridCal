@@ -24,6 +24,7 @@ def test_state_estimation_pandapower():
         net_wns.trafo.loc[22, "uuid"] = net_wns.trafo.loc[22].uuid.strip("DUMMY_PST__")
         net_wns.trafo.loc[21, "uuid"] = net_wns.trafo.loc[21].uuid.strip("DUMMY_PST__")
         net_wns.ext_grid.loc[0, "in_service"] = False
+        net_wns.gen.loc[:,"in_service"]=True
         net_wns.measurement.loc[:, "std_dev"] = 0.00001
         # pandapower.to_pickle(net_wns, "test_net_tng_raw_expected.p")
         net_wns.bus.loc[net_wns.bus[net_wns.bus.name.isna()].index, "name"] = "bus_named"

@@ -203,20 +203,21 @@ class Panda2VeraGrid:
         """
 
         for idx, row in self.panda_net.ext_grid.iterrows():
-            bus = bus_dictionary[row['bus']]
-            elm = dev.ExternalGrid(
-                name=row['name'],
-                code=idx,
-                Vm=row['vm_pu'],
-                mode=ExternalGridMode.VD,
-                idtag=row.get('uuid', None)
-            )
+            if row["in_service"]:
+                bus = bus_dictionary[row['bus']]
+                elm = dev.ExternalGrid(
+                    name=row['name'],
+                    code=idx,
+                    Vm=row['vm_pu'],
+                    mode=ExternalGridMode.VD,
+                    idtag=row.get('uuid', None)
+                )
 
-            elm.rdfid = row.get('uuid', elm.idtag)
+                elm.rdfid = row.get('uuid', elm.idtag)
 
-            grid.add_external_grid(bus, elm)
+                grid.add_external_grid(bus, elm)
 
-            self.register(panda_type="ext_grid", panda_code=idx, api_obj=elm)
+                self.register(panda_type="ext_grid", panda_code=idx, api_obj=elm)
 
     def parse_loads(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -226,20 +227,21 @@ class Panda2VeraGrid:
         """
 
         for idx, row in self.panda_net.load.iterrows():
-            bus = bus_dictionary[row['bus']]
-            elm = dev.Load(
-                name=row['name'],
-                code=idx,
-                P=row['p_mw'] * self.load_scale,
-                Q=row['q_mvar'] * self.load_scale,
-                idtag=row.get('uuid', None)
-            )
+            if row["in_service"]:
+                bus = bus_dictionary[row['bus']]
+                elm = dev.Load(
+                    name=row['name'],
+                    code=idx,
+                    P=row['p_mw'] * self.load_scale,
+                    Q=row['q_mvar'] * self.load_scale,
+                    idtag=row.get('uuid', None)
+                )
 
-            elm.rdfid = row.get('uuid', elm.idtag)
+                elm.rdfid = row.get('uuid', elm.idtag)
 
-            grid.add_load(bus=bus, api_obj=elm)
+                grid.add_load(bus=bus, api_obj=elm)
 
-            self.register(panda_type="load", panda_code=idx, api_obj=elm)
+                self.register(panda_type="load", panda_code=idx, api_obj=elm)
 
     def parse_shunts(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -387,11 +389,11 @@ class Panda2VeraGrid:
                     vset=row["vm_pu"]
                 )
 
-                elm.rdfid = row.get('uuid', elm.idtag)
+            elm.rdfid = row.get('uuid', elm.idtag)
 
-                grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
+            grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
 
-                self.register(panda_type="gen", panda_code=idx, api_obj=elm)
+            self.register(panda_type="gen", panda_code=idx, api_obj=elm)
 
     def parse_static_generators(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -402,21 +404,22 @@ class Panda2VeraGrid:
         """
 
         for idx, row in self.panda_net.sgen.iterrows():
-            bus = bus_dictionary[row['bus']]
-            elm = dev.StaticGenerator(
-                name=row['name'],
-                code=idx,
-                P=row['p_mw'] * self.load_scale,
-                Q=row["q_mvar"],
-                active=row['in_service'],
-                idtag=row.get('uuid', None)
-            )
+            if row["in_service"]:
+                bus = bus_dictionary[row['bus']]
+                elm = dev.StaticGenerator(
+                    name=row['name'],
+                    code=idx,
+                    P=row['p_mw'] * self.load_scale,
+                    Q=row["q_mvar"],
+                    active=row['in_service'],
+                    idtag=row.get('uuid', None)
+                )
 
-            elm.rdfid = row.get('uuid', elm.idtag)
+                elm.rdfid = row.get('uuid', elm.idtag)
 
-            grid.add_static_generator(bus=bus, api_obj=elm)  # Add generator to the grid
+                grid.add_static_generator(bus=bus, api_obj=elm)  # Add generator to the grid
 
-            self.register(panda_type="sgen", panda_code=idx, api_obj=elm)
+                self.register(panda_type="sgen", panda_code=idx, api_obj=elm)
 
     def parse_transformers(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """
@@ -823,7 +826,7 @@ class Panda2VeraGrid:
                         elif m_tpe == "i":
                             if elm_tpe == 'trafo':
                                 if side == 1 or side == "hv":
-                                    vnom = api_object.bus1.Vnom if hasattr(api_object.bus1, 'Vnom') else 1.0
+                                    vnom = api_object.bus_from.Vnom if hasattr(api_object.bus1, 'Vnom') else 1.0
                                     ibase = grid.Sbase / (vnom * math.sqrt(3))
                                     value = val / ibase  # Convert kA to pu
                                     grid.add_if_measurement(
@@ -834,7 +837,7 @@ class Panda2VeraGrid:
                                             name=name
                                         ))
                                 if side == 2 or side == "lv":
-                                    vnom = api_object.bus2.Vnom if hasattr(api_object.bus2, 'Vnom') else 1.0
+                                    vnom = api_object.bus_to.Vnom if hasattr(api_object.bus2, 'Vnom') else 1.0
                                     ibase = grid.Sbase / (vnom * math.sqrt(3))
                                     value = val / ibase  # Convert kA to pu
                                     grid.add_it_measurement(
