@@ -296,12 +296,16 @@ def compute_current_loads(bus_idx: IntVec,
             I[a2] += np.conj(Idelta[ca]) / (np.sqrt(3)) * 1 * np.exp(1j * voltage_angle)
 
         elif star and a_connected and b_connected and c_connected:
-            voltage_angle_a = np.angle(V[a2])
-            voltage_angle_b = np.angle(V[b2])
-            voltage_angle_c = np.angle(V[c2])
-            I[a2] += -np.conj(Istar[ab]) * 1 * np.exp(1j * voltage_angle_a)
-            I[b2] += -np.conj(Istar[bc]) * 1 * np.exp(1j * voltage_angle_b)
-            I[c2] += -np.conj(Istar[ca]) * 1 * np.exp(1j * voltage_angle_c)
+            # voltage_angle_a = np.angle(V[a2])
+            # voltage_angle_b = np.angle(V[b2])
+            # voltage_angle_c = np.angle(V[c2])
+            # I[a2] += -np.conj(Istar[ab]) * 1 * np.exp(1j * voltage_angle_a)
+            # I[b2] += -np.conj(Istar[bc]) * 1 * np.exp(1j * voltage_angle_b)
+            # I[c2] += -np.conj(Istar[ca]) * 1 * np.exp(1j * voltage_angle_c)
+
+            I[a2] += -np.conj(Istar[ab])
+            I[b2] += -np.conj(Istar[bc])
+            I[c2] += -np.conj(Istar[ca])
 
         elif star and a_connected:
             voltage_angle = np.angle(V[a2])
@@ -613,7 +617,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self.Y_power_star_linear: CxVec
         self.S0 = self.S0 / (nc.Sbase / 3)
         self.Y_power_star_linear = self.Y_power_star_linear / (nc.Sbase / 3)
-        self.I0: CxVec = compute_Ibus(nc) / (nc.Sbase / 3)
+        # self.I0: CxVec = compute_Ibus(nc) / (nc.Sbase / 3)
+        self.I0 = np.zeros_like(self.S0)
 
         self.Qmin = expand3ph(Qmin)[self.mask] * 100e6
         self.Qmax = expand3ph(Qmax)[self.mask] * 100e6
@@ -810,7 +815,13 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                                                      Idelta=self.nc.load_data.I3_delta)
 
         self.I0 = I0 / (self.nc.Sbase / 3)
+        print("\nI0 = ", I0)
         self.Y_current_linear = Y_current_linear / (self.nc.Sbase / 3)
+
+        ###
+        suma_I = self.I0[3] + self.I0[4] + self.I0[5]
+        # print("\nsuma_I = ", np.abs(suma_I))
+        ###
 
         Sbus = compute_zip_power(self.S0, self.I0, np.zeros(len(self.S0), dtype=complex), self.V) + Sdelta2star / (
                 self.nc.Sbase / 3)
@@ -872,6 +883,44 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         # converged?
         self._converged = self._error < self.options.tolerance
+
+        ###
+        C = self.Ybus[3:6,0:3]
+        C = np.array(C.todense())
+
+        D = self.Ybus[3:6,3:6]
+        D = np.array(D.todense())
+
+        D_inv = np.linalg.pinv(D)
+        Il = self.I0[3:6]
+        Vs = self.V[0:3]
+        V1 = self.V[3:6]
+
+        # V1 = D_inv @ (Il - C @ Vs)
+        # print(np.abs(V1).round(5))
+
+        Il_pu = (D @ V1) + (C @ Vs)
+
+        # print(Il_pu)
+
+        voltage_angle_a = np.angle(self.V[3])
+        voltage_angle_b = np.angle(self.V[4])
+        voltage_angle_c = np.angle(self.V[5])
+        Il_pu[0] = -np.conj(Il_pu[0]) * 1 * np.exp(1j * voltage_angle_a)
+        Il_pu[1] = -np.conj(Il_pu[1]) * 1 * np.exp(1j * voltage_angle_b)
+        Il_pu[2] = -np.conj(Il_pu[2]) * 1 * np.exp(1j * voltage_angle_c)
+
+        Il = Il_pu * (self.nc.Sbase / 3)
+        # print("\n", Il.round(3))
+
+        ###
+        # Impedance loads
+        V = self.V[3:6]
+        Y = self.Yshunt_bus[3:6,3:6]
+        I = Y @ V
+        suma_I = I[0] + I[1] + I[2]
+        print("\n suma_I =\n", suma_I)
+        ###
 
         return self._error, self._converged, x, self.f
 

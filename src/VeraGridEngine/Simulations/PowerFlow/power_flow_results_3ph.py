@@ -604,6 +604,7 @@ class PowerFlowResults3Ph(ResultsTemplate):
         Get a DataFrame with the buses results, Vm in p.u., Va in deg
         :return: DataFrame
         """
+        pd.set_option("display.float_format", "{:.5f}".format)
         df = pd.DataFrame(data={
             'Vm_A': np.abs(self.voltage_A).round(5),
             'Vm_B': np.abs(self.voltage_B).round(5),

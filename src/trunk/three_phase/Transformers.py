@@ -33,7 +33,7 @@ Yprimitive[0:2,0:2] = Y_2x2
 Yprimitive[2:4,2:4] = Y_2x2
 Yprimitive[4:6,4:6] = Y_2x2
 
-connexion = 'Zz'
+connexion = 'Dy'
 
 Cu = np.zeros((6, 6))
 Ci = np.zeros((6, 6))

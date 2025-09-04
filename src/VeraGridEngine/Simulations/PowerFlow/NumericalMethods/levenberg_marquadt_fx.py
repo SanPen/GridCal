@@ -39,6 +39,9 @@ def levenberg_marquardt_fx(problem: PfFormulationTemplate,
 
     # get the initial point
     x = problem.var2x()
+    x[0] = -30 * np.pi / 180
+    x[1] = -150 * np.pi / 180
+    x[2] = 90 * np.pi / 180
 
     if len(x) == 0:
         # if the length of x is zero, means that there's nothing to solve

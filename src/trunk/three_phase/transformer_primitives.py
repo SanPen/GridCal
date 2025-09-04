@@ -12,7 +12,8 @@ def transformer_admittance(vector_group: str,
                            vtap_t: float
                            ):
 
-    phase_displacement = np.deg2rad(clock_notation * 30)
+    # phase_displacement = np.deg2rad(clock_notation * 30)
+    phase_displacement = np.deg2rad(0)
 
     ys = 1 / (R + 1j * X + 1e-20)
     ysh = G + 1j * B
@@ -95,14 +96,14 @@ def transformer_admittance(vector_group: str,
             [-yff/3, -yff/3, 2*yff/3]
         ])
         Yft = np.array([
-            [yft/np.sqrt(3), 0, -yft/np.sqrt(3)],
-            [-yft/np.sqrt(3), yft/np.sqrt(3), 0],
-            [0, -yft/np.sqrt(3), yft/np.sqrt(3)]
-        ])
-        Ytf = np.array([
             [ytf/np.sqrt(3), -ytf/np.sqrt(3), 0],
             [0, ytf/np.sqrt(3), -ytf/np.sqrt(3)],
             [-ytf/np.sqrt(3), 0, ytf/np.sqrt(3)]
+        ])
+        Ytf = np.array([
+            [yft / np.sqrt(3), 0, -yft / np.sqrt(3)],
+            [-yft / np.sqrt(3), yft / np.sqrt(3), 0],
+            [0, -yft / np.sqrt(3), yft / np.sqrt(3)]
         ])
         Ytt = np.array([
             [ytt, 0, 0],
