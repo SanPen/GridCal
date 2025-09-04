@@ -567,16 +567,7 @@ class Panda2VeraGrid:
             Sn2 = getattr(row, "sn_mv_mva", grid.Sbase)
             Sn3 = getattr(row, "sn_lv_mva", grid.Sbase)
 
-            # Build transformer  ---->>> bus 2 erfers to MV , so winding 2 is MV
-            # self._winding1 = Winding(bus_from=self.bus0, idtag=w1_idtag,
-            #                          bus_to=bus1,
-            #                          HV=V1, LV=1.0, name=name + "_W1")
-            # self._winding2 = Winding(bus_from=self.bus0, idtag=w2_idtag,
-            #                          bus_to=bus2,
-            #                          HV=V2, LV=1.0, name=name + "_W2")
-            # self._winding3 = Winding(bus_from=self.bus0, idtag=w3_idtag,
-            #                          bus_to=bus3,
-            #                          HV=V3, LV=1.0, name=name + "_W3")
+            # Build transformer
             elm = dev.Transformer3W(
                 idtag=str(row.uuid),
                 code=str(idx),
