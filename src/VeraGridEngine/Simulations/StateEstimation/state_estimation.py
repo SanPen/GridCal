@@ -222,6 +222,7 @@ def b_test(sigma2: Vec,
     :param dz: residuals r = z - h(x^) (length m)
     :param HtWH: G = H^T W H (k x k)
     :param c_threshold: detection threshold 'c' (use 4.0 as in the paper)
+    :param logger: Logger
     :return:
         'r'      : residuals r_i
         'sigma2' : sigma_i^2

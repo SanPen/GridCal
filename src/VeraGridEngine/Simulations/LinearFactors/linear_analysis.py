@@ -747,7 +747,7 @@ class LinearMultiContingencies:
         self.__branches_dict = grid.get_branches_index_dict2(add_vsc=False, add_hvdc=False, add_switch=True)
         self.__hvdc_dict = grid.get_hvdc_index_dict()
         self.__vsc_dict = grid.get_vsc_index_dict()
-        self.__generator_bus_index_dict = {g.idtag: bus_index_dict[g.bus] for g in grid.get_generators()}
+        self.__generator_bus_index_dict = grid.get_generator_bus_index_dict(bus_index_dict=bus_index_dict)
 
         self.contingency_indices_list = list()
 
@@ -769,12 +769,16 @@ class LinearMultiContingencies:
 
     @property
     def contingency_group_dict(self) -> Dict[str, List[Contingency]]:
+        """
+        get the contingency grooups dictionary
+        :return: Dict[str, List[Contingency]]
+        """
         return self.__contingency_group_dict
 
     def get_contingency_group_names(self) -> List[str]:
         """
         Returns a list of the names of the used contingency groups
-        :return:
+        :return: List[str]
         """
         return [elm.name for elm in self.contingency_groups_used]
 

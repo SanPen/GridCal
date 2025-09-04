@@ -389,11 +389,11 @@ class Panda2VeraGrid:
                     vset=row["vm_pu"]
                 )
 
-            elm.rdfid = row.get('uuid', elm.idtag)
+                elm.rdfid = row.get('uuid', elm.idtag)
 
-            grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
+                grid.add_generator(bus=bus, api_obj=elm)  # Add generator to the grid
 
-            self.register(panda_type="gen", panda_code=idx, api_obj=elm)
+                self.register(panda_type="gen", panda_code=idx, api_obj=elm)
 
     def parse_static_generators(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
         """

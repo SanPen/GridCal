@@ -5,7 +5,10 @@
 
 from __future__ import annotations
 
-# NOTE: Do not optimize or remove imports here
+
+"""
+NOTE: Do not optimize or remove imports here, this is the API and exposes functionality outside
+"""
 
 from VeraGridEngine.enumerations import *
 from VeraGridEngine.basic_structures import *
@@ -88,7 +91,7 @@ def save_cgmes_file(grid: MultiCircuit,
 
 def power_flow(grid: MultiCircuit,
                options: PowerFlowOptions | None = None,
-               engine=EngineType.VeraGrid) -> PowerFlowResults:
+               engine=EngineType.VeraGrid) -> PowerFlowResults | PowerFlowResults3Ph:
     """
     Run power flow on the snapshot
     :param grid: MultiCircuit instance

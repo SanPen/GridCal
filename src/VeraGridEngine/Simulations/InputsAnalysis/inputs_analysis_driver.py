@@ -84,23 +84,32 @@ class InputsAnalysisResults(ResultsTemplate):
         """
         dta = list()
         for k, elm in enumerate(self.grid.get_generators()):
+            if elm is not None:
+                if self.opf_results is None:
+                    P = elm.P * elm.active
+                else:
+                    P = self.opf_results.generator_power[k] - self.opf_results.generator_shedding[k]
 
-            if self.opf_results is None:
-                P = elm.P * elm.active
-            else:
-                P = self.opf_results.generator_power[k] - self.opf_results.generator_shedding[k]
+                if elm.bus is None:
+                    zone = ""
+                    area = ""
+                    substation = ""
+                    country = ""
+                else:
+                    zone = elm.bus.zone.name if elm.bus.zone is not None else ""
+                    area = elm.bus.area.name if elm.bus.area is not None else ""
+                    substation = elm.bus.substation.name if elm.bus.substation is not None else ""
+                    country = elm.bus.country.name if elm.bus.country is not None else ""
 
-            dta.append([elm.name,
-                        P,
-                        elm.Pf,
-                        elm.Snom,
-                        elm.Pmin, elm.Pmax,
-                        elm.Qmin, elm.Qmax,
-                        elm.Vset,
-                        elm.bus.zone.name if elm.bus.zone is not None else "",
-                        elm.bus.area.name if elm.bus.area is not None else "",
-                        elm.bus.substation.name if elm.bus.substation is not None else "",
-                        elm.bus.country.name if elm.bus.country is not None else ""])
+                dta.append([elm.name,
+                            P,
+                            elm.Pf,
+                            elm.Snom,
+                            elm.Pmin, elm.Pmax,
+                            elm.Qmin, elm.Qmax,
+                            elm.Vset,
+                            zone, area, substation, country])
+
         cols = ['Name', 'P', 'Pf',
                 'Snom', 'Pmin', 'Pmax',
                 'Qmin', 'Qmax', 'Vset',
@@ -114,17 +123,27 @@ class InputsAnalysisResults(ResultsTemplate):
         """
         dta = list()
         for elm in self.grid.get_batteries():
-            dta.append([elm.name,
-                        elm.P * elm.active,
-                        elm.Pf,
-                        elm.Snom,
-                        elm.Pmin, elm.Pmax,
-                        elm.Qmin, elm.Qmax,
-                        elm.Vset,
-                        elm.bus.zone.name if elm.bus.zone is not None else "",
-                        elm.bus.area.name if elm.bus.area is not None else "",
-                        elm.bus.substation.name if elm.bus.substation is not None else "",
-                        elm.bus.country.name if elm.bus.country is not None else ""])
+            if elm is not None:
+                if elm.bus is None:
+                    zone = ""
+                    area = ""
+                    substation = ""
+                    country = ""
+                else:
+                    zone = elm.bus.zone.name if elm.bus.zone is not None else ""
+                    area = elm.bus.area.name if elm.bus.area is not None else ""
+                    substation = elm.bus.substation.name if elm.bus.substation is not None else ""
+                    country = elm.bus.country.name if elm.bus.country is not None else ""
+
+                dta.append([elm.name,
+                            elm.P * elm.active,
+                            elm.Pf,
+                            elm.Snom,
+                            elm.Pmin, elm.Pmax,
+                            elm.Qmin, elm.Qmax,
+                            elm.Vset,
+                            zone, area, substation, country])
+
         cols = ['Name', 'P', 'Pf',
                 'Snom', 'Pmin', 'Pmax',
                 'Qmin', 'Qmax', 'Vset',
@@ -138,13 +157,23 @@ class InputsAnalysisResults(ResultsTemplate):
         """
         dta = list()
         for elm in self.grid.get_loads():
-            dta.append([elm.name,
-                        elm.P * elm.active,
-                        elm.Q * elm.active,
-                        elm.bus.zone.name if elm.bus.zone is not None else "",
-                        elm.bus.area.name if elm.bus.area is not None else "",
-                        elm.bus.substation.name if elm.bus.substation is not None else "",
-                        elm.bus.country.name if elm.bus.country is not None else ""])
+            if elm is not None:
+                if elm.bus is None:
+                    zone = ""
+                    area = ""
+                    substation = ""
+                    country = ""
+                else:
+                    zone = elm.bus.zone.name if elm.bus.zone is not None else ""
+                    area = elm.bus.area.name if elm.bus.area is not None else ""
+                    substation = elm.bus.substation.name if elm.bus.substation is not None else ""
+                    country = elm.bus.country.name if elm.bus.country is not None else ""
+
+                dta.append([elm.name,
+                            elm.P * elm.active,
+                            elm.Q * elm.active,
+                            zone, area, substation, country])
+
         cols = ['Name', 'P', 'Q',
                 'Zone', 'Area', 'Substation', 'Country']
         return pd.DataFrame(data=dta, columns=cols)
@@ -156,13 +185,23 @@ class InputsAnalysisResults(ResultsTemplate):
         """
         dta = list()
         for elm in self.grid.get_static_generators():
-            dta.append([elm.name,
-                        elm.P * elm.active,
-                        elm.Q * elm.active,
-                        elm.bus.zone.name if elm.bus.zone is not None else "",
-                        elm.bus.area.name if elm.bus.area is not None else "",
-                        elm.bus.substation.name if elm.bus.substation is not None else "",
-                        elm.bus.country.name if elm.bus.country is not None else ""])
+            if elm is not None:
+                if elm.bus is None:
+                    zone = ""
+                    area = ""
+                    substation = ""
+                    country = ""
+                else:
+                    zone = elm.bus.zone.name if elm.bus.zone is not None else ""
+                    area = elm.bus.area.name if elm.bus.area is not None else ""
+                    substation = elm.bus.substation.name if elm.bus.substation is not None else ""
+                    country = elm.bus.country.name if elm.bus.country is not None else ""
+
+                dta.append([elm.name,
+                            elm.P * elm.active,
+                            elm.Q * elm.active,
+                            zone, area, substation, country])
+
         cols = ['Name', 'P', 'Q',
                 'Zone', 'Area', 'Substation', 'Country']
         return pd.DataFrame(data=dta, columns=cols)
@@ -248,7 +287,7 @@ class InputsAnalysisResults(ResultsTemplate):
         """
 
         :param elms:
-        :param magnitude:snaphot property name
+        :param magnitude: Snapshot property name
         :param aggregation:
         :return:
         """

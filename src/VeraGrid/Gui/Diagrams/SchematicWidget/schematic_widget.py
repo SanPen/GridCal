@@ -4739,7 +4739,7 @@ List[FluidPath]]:
     bus_dict = circuit.get_bus_index_dict()
 
     # get all Branches
-    all_branches = circuit.get_branches() + circuit.get_switches()
+    all_branches = circuit.get_branches(add_vsc=True, add_hvdc=True, add_switch=True)
     branch_dict = {b: i for i, b in enumerate(all_branches)}
 
     # create a pool of buses

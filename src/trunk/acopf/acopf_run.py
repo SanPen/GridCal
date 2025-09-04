@@ -2,10 +2,10 @@ import os
 import VeraGridEngine.api as gce
 from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 # from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
-from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
+from VeraGridEngine.Simulations.OPF.ac_opf_worker import run_nonlinear_opf
 from VeraGridEngine.enumerations import TapPhaseControl, TapModuleControl
 
-from VeraGridEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
+from VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts import run_linear_opf_ts
 # from VeraGridEngine.enumerations import TransformerControlType
 from VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import NodalCapacityTimeSeriesDriver
 from VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_options import NodalCapacityOptions

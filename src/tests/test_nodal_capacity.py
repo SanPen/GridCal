@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 import VeraGridEngine.api as gce
-from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
-from VeraGridEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
+from VeraGridEngine.Simulations.OPF.ac_opf_worker import run_nonlinear_opf
+from VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts import run_linear_opf_ts
 from VeraGridEngine.enumerations import AcOpfMode
 import numpy as np
 

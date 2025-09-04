@@ -455,8 +455,9 @@ def eval_f(x: Vec, Cg: csc_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: 
                                                                          nslcap=nslcap, acopf_mode=acopf_mode)
     # Obj. function:  Active power generation costs plus overloads and voltage deviation penalties
 
-    fval = 1e-4 * (np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2)))
-                   + np.sum(c_s * (sl_sf + sl_st)) + np.sum(c_v * (sl_vmax + sl_vmin))
+    fval = 1e-4 * (np.sum(c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2.0))
+                   + np.sum(c_s * (sl_sf + sl_st))
+                   + np.sum(c_v * (sl_vmax + sl_vmin))
                    + np.sum(nodal_capacity_sign * slcap))
 
     return fval
@@ -636,7 +637,8 @@ def eval_h(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: Vec, n
 
 
 def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc_matrix, Cf: csc, Ct: csc, Inom: Vec,
-                           Yf: csc_matrix, Yt: csc_matrix, Ybus: csc_matrix, Sbase: float, mon_br_idx: IntVec, ig: IntVec,
+                           Yf: csc_matrix, Yt: csc_matrix, Ybus: csc_matrix, Sbase: float, mon_br_idx: IntVec,
+                           ig: IntVec,
                            slack: Vec, nslcap: int, nodal_capacity_sign: float, capacity_nodes_idx: IntVec, pq: IntVec,
                            pv: IntVec, alltapm: Vec, alltapt: Vec, F_hvdc: IntVec, T_hvdc: IntVec, nsh: int,
                            k_m: IntVec, k_tau: IntVec, mu, lmbda, R: Vec, X: Vec, F: IntVec, T: IntVec,

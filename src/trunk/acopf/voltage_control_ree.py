@@ -1,8 +1,7 @@
-import os
 import numpy as np
 import pandas as pd
 import VeraGridEngine.api as gce
-from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
+from VeraGridEngine.Simulations.OPF.ac_opf_worker import run_nonlinear_opf
 from VeraGridEngine.enumerations import AcOpfMode
 
 

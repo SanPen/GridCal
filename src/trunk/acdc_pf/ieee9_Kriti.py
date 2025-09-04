@@ -1,7 +1,5 @@
 import VeraGridEngine.api as gce
 import numpy as np
-from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
-from VeraGridEngine.enumerations import TransformerControlType, AcOpfMode, ReactivePowerControlMode
 from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
 """

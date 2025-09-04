@@ -599,19 +599,21 @@ class PowerFlowResults3Ph(ResultsTemplate):
             "QlossC": self.losses_C.imag,
         }, index=self.branch_names)
 
-    def get_voltage_df(self) -> pd.DataFrame:
+    def get_voltage_3ph_df(self) -> pd.DataFrame:
         """
-        Get a DataFrame with the buses results
-        :return: DataFrame, Vm in p.u., Va in deg, P in MW, Q in MVAr
+        Get a DataFrame with the buses results, Vm in p.u., Va in deg
+        :return: DataFrame
         """
-        return pd.DataFrame(data={
-            'Vm_A': np.abs(self.voltage_A),
-            'Vm_B': np.abs(self.voltage_B),
-            'Vm_C': np.abs(self.voltage_C),
-            'Va_A': np.angle(self.voltage_A, deg=True),
-            'Va_B': np.angle(self.voltage_B, deg=True),
-            'Va_C': np.angle(self.voltage_C, deg=True)
+        df = pd.DataFrame(data={
+            'Vm_A': np.abs(self.voltage_A).round(5),
+            'Vm_B': np.abs(self.voltage_B).round(5),
+            'Vm_C': np.abs(self.voltage_C).round(5),
+            'Va_A': np.angle(self.voltage_A, deg=True).round(1),
+            'Va_B': np.angle(self.voltage_B, deg=True).round(1),
+            'Va_C': np.angle(self.voltage_C, deg=True).round(1)
         }, index=self.bus_names)
+
+        return df
 
     def export_all(self):
         """

@@ -99,12 +99,16 @@ def get_record_info(files):
     val = ""
     for name, file_path in files:
         hsh = file_hash(filename=file_path)
-        val += f"{file_path},sha256={hsh}\n"
+        val += f"{file_path}, sha256={hsh}\n"
 
     return val
 
 
 def get_wheel_info():
+    """
+    Get the pkg information
+    :return:
+    """
     val = ""
     val += "Wheel-Version: 1.0\n"
     val += "Generator: VeraGrid packaging\n"

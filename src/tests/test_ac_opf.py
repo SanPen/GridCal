@@ -8,8 +8,8 @@ import os
 import numpy as np
 import VeraGridEngine.api as gce
 from VeraGridEngine.enumerations import TapPhaseControl, TapModuleControl
-from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
-from VeraGridEngine.Simulations.OPF.NumericalMethods.ac_opf import NonlinearOPFResults
+from VeraGridEngine.Simulations.OPF.ac_opf_worker import run_nonlinear_opf
+from VeraGridEngine.Simulations.OPF.ac_opf_worker import NonlinearOPFResults
 
 
 def case9() -> NonlinearOPFResults:
