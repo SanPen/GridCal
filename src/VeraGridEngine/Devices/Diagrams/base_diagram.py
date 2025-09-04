@@ -449,10 +449,7 @@ class BaseDiagram:
         # Add the electrical branches ----------------------------------------------------------------------------------
         tuples = list()
         for dev_type in [DeviceType.LineDevice,
-                         DeviceType.DCLineDevice,
-                         DeviceType.HVDCLineDevice,
                          DeviceType.Transformer2WDevice,
-                         DeviceType.VscDevice,
                          DeviceType.UpfcDevice]:
 
             groups = self.data.get(dev_type.value, None)
@@ -469,6 +466,62 @@ class BaseDiagram:
                         else:
                             w = 1e-6
 
+                        tuples.append((f, t, w))
+
+        for dev_type in [DeviceType.DCLineDevice]:
+
+            groups = self.data.get(dev_type.value, None)
+
+            if groups:
+                for i, (idtag, location) in enumerate(groups.locations.items()):
+                    branch = location.api_object
+                    f = graph_node_dictionary.get(branch.bus_from.idtag, None)
+                    t = graph_node_dictionary.get(branch.bus_to.idtag, None)
+
+                    if f is not None and t is not None:
+                        w = branch.R
+                        tuples.append((f, t, w))
+
+        for dev_type in [DeviceType.HVDCLineDevice]:
+
+            groups = self.data.get(dev_type.value, None)
+
+            if groups:
+                for i, (idtag, location) in enumerate(groups.locations.items()):
+                    branch = location.api_object
+                    f = graph_node_dictionary.get(branch.bus_from.idtag, None)
+                    t = graph_node_dictionary.get(branch.bus_to.idtag, None)
+
+                    if f is not None and t is not None:
+                        w = max(branch.r, 0.01)
+                        tuples.append((f, t, w))
+
+        for dev_type in [DeviceType.VscDevice]:
+
+            groups = self.data.get(dev_type.value, None)
+
+            if groups:
+                for i, (idtag, location) in enumerate(groups.locations.items()):
+                    branch = location.api_object
+                    f = graph_node_dictionary.get(branch.bus_from.idtag, None)
+                    t = graph_node_dictionary.get(branch.bus_to.idtag, None)
+
+                    if f is not None and t is not None:
+                        w = 0.01
+                        tuples.append((f, t, w))
+
+        for dev_type in [DeviceType.SwitchDevice]:
+
+            groups = self.data.get(dev_type.value, None)
+
+            if groups:
+                for i, (idtag, location) in enumerate(groups.locations.items()):
+                    branch = location.api_object
+                    f = graph_node_dictionary.get(branch.bus_from.idtag, None)
+                    t = graph_node_dictionary.get(branch.bus_to.idtag, None)
+
+                    if f is not None and t is not None:
+                        w = max(branch.R, 0.001)
                         tuples.append((f, t, w))
 
         # Add fluid branches -------------------------------------------------------------------------------------------
