@@ -18,9 +18,10 @@ import numpy as np
 import numba as nb
 import math
 import scipy.sparse as sp
+import scipy.linalg
 from scipy.sparse.linalg import spsolve
 from scipy.sparse import csr_matrix
-from scipy.sparse.linalg import gmres, spilu, LinearOperator
+from scipy.sparse.linalg import gmres, spilu, LinearOperator, inv
 from typing import Dict, List, Literal, Any, Callable, Sequence
 
 # from VeraGridEngine.Devices.multi_circuit import MultiCircuit
@@ -980,3 +981,72 @@ class BlockSolver:
             df_simulation_results.to_csv(filename, index=False)
             print(f"Simulation results saved to: {filename}")
         return df_simulation_results
+
+    def stability_assessment(self, z: np.ndarray, params: np.ndarray):
+        """
+            Stability analisys:
+            1. Calculate the state matrix (A) from the state space model. From the DAE model:
+                Tx'=f(x,y)
+                0=g(x,y)
+                the A matrix is computed as:
+                A = T^-1(f_x - f_y * g_y^{-1} * g_x)
+
+            2. Find eigenvalues and right and left eigenvectors
+                for left eigenvectors: bi-orthogonality: W.T@V =I --> W = inv(V).T
+
+            3. Perform stability assessment
+
+            Returns:
+            stability: "Unstable", "Marginally stable" or "Asymptotically stable"
+            ndarray with the positive eigenvalues (unstable ones)
+            -------
+            ??
+        """
+        fx = self._j11_fn(z, params)  # ∂f_state/∂x
+        fy = self._j12_fn(z, params)  # ∂f_state/∂y
+        gx = self._j21_fn(z, params)  # ∂g/∂x
+        gy = self._j22_fn(z, params)  # ∂g/∂y
+
+        gxy = inv(gy) @ gx
+        A = (fx - fy @ gxy)  # sparse state matrix csc matrix
+        An = A.toarray()
+        num_states = A.shape[0]
+        det_A = np.linalg.det(An)
+        print("detererminant A=", det_A)
+
+        Eigenvalues, V = scipy.linalg.eig(An)  # find eigenvalues and right eigenvectors(V)
+        V = sp.csc_matrix(V)
+
+        W = sp.csc_matrix(inv(V).T)  # left eigenvectors
+
+
+        Wabs = sp.lil_matrix((W.shape[0], W.shape[0]))
+        Vabs = sp.lil_matrix((V.shape[0], V.shape[0]))
+        for row in range(W.shape[0]):
+            for column in range(W.shape[0]):
+                Wabs[row, column] = abs(W[row, column])
+                Vabs[row, column] = abs(V[row, column])
+        Wabs = Wabs.tocsc()
+        Vabs = Vabs.tocsc()
+        PF = Wabs.multiply(Vabs)
+        PF_abs = sp.csc_matrix(np.ones(num_states)) @ PF
+
+        for i in range(len(Eigenvalues)):
+            PF[:, i] /= PF_abs[0, i]
+
+        # Stability: select positive and zero eigenvalues
+        tol = 1e-6  # numerical tolerance for eigenvalues = 0
+        unstable_eigs = Eigenvalues[np.real(Eigenvalues) > tol]
+        zero_eigs = Eigenvalues[abs(np.real(Eigenvalues)) <= tol]
+        stable_eigs = Eigenvalues[np.real(Eigenvalues) < -tol]
+
+        stability = ""
+        if unstable_eigs.size == 0:
+            if zero_eigs.size == 0:
+                stability = "Asymptotically stable"
+            else:
+                stability = "Marginally stable"
+        else:
+            stability = "Unstable"
+
+        return stability, Eigenvalues, V, W, PF, A

@@ -9,12 +9,11 @@ from matplotlib import pyplot as plt
 
 import sys
 import os
+import time
 
 from VeraGridEngine import DynamicVarType
 
-
-
-#sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from VeraGridEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin, piecewise
@@ -1450,7 +1449,7 @@ x0 = slv.build_init_vars_vector(vars_mapping)
 # )
 
 vars_in_order = slv.sort_vars(vars_mapping)
-
+"""
 t, y = slv.simulate(
     t0=0,
     t_end=10.0,
@@ -1530,7 +1529,19 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
+"""
+#stability assessment
+start_stability = time.time()
+stab, Eigenvalues, V, W, PF, A = slv.stability_assessment(z=x0, params=params0)
+end_stability = time.time()
+print(f"Time for stability assessment = {end_stability - start_stability:.6f} [s]")
 
+print("State matrix A:", A)
+print("Stability assessment:", stab)
+print("Eigenvalues:", Eigenvalues)
+#print("Right eivenvectors:", V)
+#print("Left eigenvectors:", W)
+print("Participation factors:", PF.toarray())
 
 
 
