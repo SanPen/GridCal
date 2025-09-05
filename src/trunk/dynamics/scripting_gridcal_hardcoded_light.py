@@ -4,7 +4,8 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
-from matplotlib import pyplot as plt
+import pandas as pd
+
 
 import sys
 import time
@@ -15,6 +16,8 @@ from VeraGridEngine.Devices.Aggregation.rms_event import RmsEvent
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
 from VeraGridEngine.Utils.Symbolic.block_solver import BlockSolver
 import VeraGridEngine.api as gce
+
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Power flow
@@ -366,7 +369,7 @@ slv.save_simulation_to_csv('simulation_results_Ieee_automatic_init.csv', t, y, c
 #stability assessment
 start_stability = time.time()
 
-stab, Eigenvalues, V, W, PF, A = slv.stability_assessment(z=x0, params=params0)
+stab, Eigenvalues, V, W, PF, A = slv.stability_assessment(z=x0, params=params0, plot = True)
 
 end_stability = time.time()
 print(f"Time for stability assessment = {end_stability - start_stability:.6f} [s]")
@@ -377,3 +380,6 @@ print("Eigenvalues:", Eigenvalues)
 #print("Right eivenvectors:", V)
 #print("Left eigenvectors:", W)
 print("Participation factors:", PF.toarray())
+
+df_Eig = pd.DataFrame(Eigenvalues)
+df_Eig.to_csv("Eigenvalues_results.csv", index=False)

@@ -57,6 +57,7 @@ def main():
 
    eig = ss.EIG
    eig.run()
+
    end_eig = time.time()
 
    print(f"ANDES - stability - Run time: {end_eig - start_eig:.6f} [s]")
@@ -67,9 +68,14 @@ def main():
    print("Left eigenvectors:", eig.W)
    print("Participation factors:", eig.pfactors)
 
+   return eig.As, eig.mu, eig.N, eig.W, eig.pfactors
 
 if __name__ == '__main__':
-   main()
+    As, mu, N, W, pfactors =  main()
+
+df_Eig = pd.DataFrame(mu)
+df_Eig.to_csv("Eigenvalues_results_Andes.csv", index=False)
+
 
 #case_path = get_case('kundur/kundur_full.xlsx')
 #ss = andes.run(case_path, routine='eig')
