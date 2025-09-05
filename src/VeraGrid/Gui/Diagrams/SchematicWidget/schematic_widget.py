@@ -2573,36 +2573,18 @@ class SchematicWidget(BaseDiagramWidget):
 
     def convert_hvdc_line_to_vsc_system(self, hvdc_line: HvdcLine):
         """
-
-        :param hvdc_line:
-        :return:
+        Convert a HvdcLine to the corresponding VSC-DcLine-VSC system
+        :param hvdc_line: HvdcLine
         """
-        ac_bus_1 = hvdc_line.bus_from
-        ac_bus_2 = hvdc_line.bus_to
 
-        dc_bus_1 = Bus(name=ac_bus_1.name + " DC", Vnom=hvdc_line.dc_link_voltage, is_dc=True,
-                       latitude=ac_bus_1.latitude, longitude=ac_bus_1.longitude,
-                       area=ac_bus_1.area, zone=ac_bus_1.zone, substation=ac_bus_1.substation,
-                       voltage_level=ac_bus_1.voltage_level, country=ac_bus_1.country)
+        hvdc_graphics: HvdcGraphicItem = self.graphics_manager.query(hvdc_line)
 
-        dc_bus_2 = Bus(name=ac_bus_2.name + " DC", Vnom=hvdc_line.dc_link_voltage, is_dc=True,
-                       latitude=ac_bus_2.latitude, longitude=ac_bus_2.longitude,
-                       area=ac_bus_2.area, zone=ac_bus_2.zone, substation=ac_bus_2.substation,
-                       voltage_level=ac_bus_2.voltage_level, country=ac_bus_2.country)
-
-        conv1 = VSC(name=hvdc_line.name + " 1", bus_from=dc_bus_1, bus_to=ac_bus_1, rate=hvdc_line.rate)
-        conv2 = VSC(name=hvdc_line.name + " 2", bus_from=dc_bus_2, bus_to=ac_bus_2, rate=hvdc_line.rate)
-        dc_line = DcLine(name=hvdc_line.name, bus_from=dc_bus_1, bus_to=dc_bus_2, rate=hvdc_line.rate)
-
-        self.circuit.add_bus(dc_bus_1)
-        self.circuit.add_bus(dc_bus_2)
-        self.circuit.add_vsc(conv1)
-        self.circuit.add_vsc(conv2)
-        self.circuit.add_dc_line(dc_line)
+        (ac_bus_1, ac_bus_2,
+         dc_bus_1, dc_bus_2,
+         conv1, conv2, dc_line) = self.circuit.convert_hvdc_line_to_vsc_system(hvdc_line=hvdc_line)
 
         bus1_graphics = self.diagram.query_point(ac_bus_1)
         bus2_graphics = self.diagram.query_point(ac_bus_2)
-
         dc_graphics_1 = self.add_api_bus(bus=dc_bus_1,
                                          x0=int(bus1_graphics.x),
                                          y0=int(bus1_graphics.y),
@@ -2619,7 +2601,8 @@ class SchematicWidget(BaseDiagramWidget):
         self.add_api_vsc(conv1, x=0, y=0)
         self.add_api_vsc(conv2, x=0, y=0)
 
-        self.delete_element_utility_function(device=hvdc_line, propagate=True)
+        if hvdc_graphics is not None:
+            self._remove_from_scene(hvdc_graphics)
 
     def add_object_to_the_schematic(
             self,

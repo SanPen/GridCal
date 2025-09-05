@@ -12,7 +12,7 @@ from VeraGridEngine.basic_structures import IntVec, StrVec, Vec
 import VeraGridEngine.Devices as dev
 from VeraGridEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from VeraGridEngine.Devices.Parents.editable_device import GCPROP_TYPES
-from VeraGridEngine.enumerations import DeviceType, ActionType
+from VeraGridEngine.enumerations import DeviceType, ActionType, ConverterControlType
 from VeraGridEngine.basic_structures import Logger, ListSet
 from VeraGridEngine.data_logger import DataLogger
 
@@ -885,6 +885,70 @@ class Assets:
         :return: idtag -> HvdcLine
         """
         return {elm.idtag: i for i, elm in enumerate(self.hvdc_lines)}
+
+    def convert_hvdc_line_to_vsc_system(self, hvdc_line: dev.HvdcLine):
+        """
+        Convert a HvdcLine to the corresponding VSC-DcLine-VSC system
+        :param hvdc_line: HvdcLine
+        :return: ac_bus_1, ac_bus_2, dc_bus_1, dc_bus_2, conv1, conv2, dc_line
+        """
+        ac_bus_1 = hvdc_line.bus_from
+        ac_bus_2 = hvdc_line.bus_to
+
+        dc_bus_1 = dev.Bus(name=ac_bus_1.name + " DC",
+                           Vnom=hvdc_line.dc_link_voltage,
+                           is_dc=True,
+                           latitude=ac_bus_1.latitude,
+                           longitude=ac_bus_1.longitude,
+                           area=ac_bus_1.area,
+                           zone=ac_bus_1.zone,
+                           substation=ac_bus_1.substation,
+                           voltage_level=ac_bus_1.voltage_level,
+                           country=ac_bus_1.country)
+
+        dc_bus_2 = dev.Bus(name=ac_bus_2.name + " DC",
+                           Vnom=hvdc_line.dc_link_voltage,
+                           is_dc=True,
+                           latitude=ac_bus_2.latitude,
+                           longitude=ac_bus_2.longitude,
+                           area=ac_bus_2.area,
+                           zone=ac_bus_2.zone,
+                           substation=ac_bus_2.substation,
+                           voltage_level=ac_bus_2.voltage_level,
+                           country=ac_bus_2.country)
+
+        conv1 = dev.VSC(name=hvdc_line.name + " 1",
+                        bus_from=dc_bus_1,
+                        bus_to=ac_bus_1,
+                        rate=hvdc_line.rate,
+                        control1=ConverterControlType.Pdc,
+                        control2=ConverterControlType.Vm_ac,
+                        control1_val=hvdc_line.Pset,
+                        control2_val=1.0)
+
+        conv2 = dev.VSC(name=hvdc_line.name + " 2",
+                        bus_from=dc_bus_2,
+                        bus_to=ac_bus_2,
+                        rate=hvdc_line.rate,
+                        control1=ConverterControlType.Vm_dc,
+                        control2=ConverterControlType.Vm_ac,
+                        control1_val=1.0,
+                        control2_val=1.0)
+
+        dc_line = dev.DcLine(name=hvdc_line.name,
+                             bus_from=dc_bus_1,
+                             bus_to=dc_bus_2,
+                             rate=hvdc_line.rate)
+
+        self.add_bus(dc_bus_1)
+        self.add_bus(dc_bus_2)
+        self.add_vsc(conv1)
+        self.add_vsc(conv2)
+        self.add_dc_line(dc_line)
+
+        self.delete_hvdc_line(hvdc_line)
+
+        return ac_bus_1, ac_bus_2, dc_bus_1, dc_bus_2, conv1, conv2, dc_line
 
     # ------------------------------------------------------------------------------------------------------------------
     # VSC
