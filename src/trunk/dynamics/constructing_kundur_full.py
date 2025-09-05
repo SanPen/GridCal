@@ -12,7 +12,9 @@ import os
 
 from VeraGridEngine import DynamicVarType
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+
+#sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from VeraGridEngine.Devices.Dynamic.events import RmsEvents, RmsEvent
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var, cos, sin, piecewise
