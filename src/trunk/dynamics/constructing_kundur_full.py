@@ -1449,7 +1449,7 @@ x0 = slv.build_init_vars_vector(vars_mapping)
 # )
 
 vars_in_order = slv.sort_vars(vars_mapping)
-"""
+
 t, y = slv.simulate(
     t0=0,
     t_end=10.0,
@@ -1529,7 +1529,7 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
-"""
+
 #stability assessment
 start_stability = time.time()
 stab, Eigenvalues, V, W, PF, A = slv.stability_assessment(z=x0, params=params0)
