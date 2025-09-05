@@ -85,6 +85,7 @@ class BusVars:
         self.Va = np.zeros((nt, n_elm), dtype=object)
         self.Vm = np.ones((nt, n_elm), dtype=object)
         self.Pinj = np.zeros((nt, n_elm), dtype=object)
+        self.Pgen = np.zeros((nt, n_elm), dtype=object)
         self.Pbalance = np.zeros((nt, n_elm), dtype=object)
         self.kirchhoff = np.zeros((nt, n_elm), dtype=object)
         self.shadow_prices = np.zeros((nt, n_elm), dtype=float)
@@ -105,6 +106,7 @@ class BusVars:
                 data.Va[t, i] = model.get_value(self.Va[t, i])
                 data.Vm[t, i] = model.get_value(self.Vm[t, i])
                 data.Pinj[t, i] = model.get_value(self.Pinj[t, i])
+                data.Pgen[t, i] = model.get_value(self.Pgen[t, i])
                 data.Pbalance[t, i] = model.get_value(self.Pbalance[t, i]) * Sbase
                 data.shadow_prices[t, i] = model.get_dual_value(self.kirchhoff[t, i])
 
@@ -923,6 +925,9 @@ def add_linear_generation_formulation(t: Union[int, None],
             # add to the balance
             bus_vars.Pbalance[t, bus_idx] += gen_vars.p[t, k]
 
+            # add to the generation injections in case of inter-area
+            bus_vars.Pgen[t, bus_idx] += gen_vars.p[t, k]
+
         else:
             # the generator is not available at time step
             gen_vars.p[t, k] = 0.0  # there has not been any variable assigned to p[t, k] at this point
@@ -1111,6 +1116,9 @@ def add_linear_battery_formulation(t: Union[int, None],
             # add to the balance
             bus_vars.Pbalance[t, bus_idx] += batt_vars.p[t, k]
 
+            # add to the generation injections in case of inter-area
+            bus_vars.Pgen[t, bus_idx] += batt_vars.p[t, k]
+
         else:
             # the generator is not available at a time step
             batt_vars.p[t, k] = 0.0
@@ -1199,6 +1207,9 @@ def add_linear_load_formulation(t: Union[int, None],
 
             # add to the balance
             bus_vars.Pbalance[t, bus_idx] -= load_vars.p[t, k]
+
+            # add to the injections
+            # bus_vars.Pinj[t, bus_idx] -= load_vars.p[t, k]
 
         else:
             # the load is not available at time step
@@ -2061,10 +2072,21 @@ def run_linear_opf_ts(grid: MultiCircuit,
             # add inter area branch flow maximization ------------------------------------------------------------------
             if maximize_inter_area_flow:
 
-                for branches_list in [inter_area_branches, inter_area_hvdc]:
-                    for k, branch, sense in branches_list:
-                        # we want to maximize, hence the minus sign
-                        f_obj += mip_vars.branch_vars.flows[local_t_idx, k] * (- sense)
+                # maximize the power at the from buses
+                for i in inter_aggregation_info.idx_bus_from:
+                    f_obj -= mip_vars.bus_vars.Pgen[local_t_idx, i]
+
+                # minimize the power at the to buses
+                for i in inter_aggregation_info.idx_bus_to:
+                    f_obj += mip_vars.bus_vars.Pgen[local_t_idx, i]
+
+                for k, branch, sense in inter_area_branches:
+                    # we want to maximize, hence the minus sign
+                    f_obj += mip_vars.branch_vars.flows[local_t_idx, k] * (- sense)
+
+                for k, branch, sense in inter_area_hvdc:
+                    # we want to maximize, hence the minus sign
+                    f_obj += mip_vars.hvdc_vars.flows[local_t_idx, k] * (- sense)
 
             # add hydro side -------------------------------------------------------------------------------------------
             if local_t_idx == 0 and fluid_level_0 is None:
