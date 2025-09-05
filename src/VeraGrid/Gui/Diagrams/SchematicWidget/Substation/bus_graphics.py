@@ -207,11 +207,27 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
     @property
     def api_object(self) -> Bus:
+        """
+
+        :return:
+        """
         return self._api_object
 
     @property
     def editor(self) -> SchematicWidget:
+        """
+
+        :return:
+        """
         return self._editor
+
+    @property
+    def terminal(self):
+        """
+
+        :return:
+        """
+        return self._terminal
 
     def get_associated_branch_graphics(self) -> List[GenericDiagramWidget]:
         """

@@ -5,12 +5,12 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union
-from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
 from VeraGrid.Gui.gui_functions import add_menu_entry
 from VeraGrid.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from VeraGrid.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from VeraGridEngine.Devices.Branches.hvdc_line import HvdcLine
+from VeraGrid.Gui.messages import yes_no_question
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from VeraGrid.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -70,37 +70,37 @@ class HvdcGraphicItem(LineGraphicTemplateItem):
             # pe2 = menu.addAction('Convert to Multi-terminal')
             # pe2.triggered.connect(self.convert_to_multi_terminal)
 
-            rabf = menu.addAction('Change bus')
-            move_bus_icon = QIcon()
-            move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
-            rabf.setIcon(move_bus_icon)
-            rabf.triggered.connect(self.change_bus)
+            add_menu_entry(menu=menu,
+                           text="Change bus",
+                           icon_path=":/Icons/icons/move_bus.svg",
+                           function_ptr=self.change_bus)
+
+            add_menu_entry(menu=menu,
+                           text="Convert to VSC multi-terminal",
+                           icon_path=":/Icons/icons/vsc.svg",
+                           function_ptr=self.convert_to_multi_terminal)
 
             menu.addSeparator()
 
-            ra6 = menu.addAction('Plot profiles')
-            plot_icon = QIcon()
-            plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
-            ra6.setIcon(plot_icon)
-            ra6.triggered.connect(self.plot_profiles)
+            add_menu_entry(menu=menu,
+                           text="Plot profiles",
+                           icon_path=":/Icons/icons/plot.svg",
+                           function_ptr=self.plot_profiles)
 
-            ra4 = menu.addAction('Assign rate to profile')
-            ra4_icon = QIcon()
-            ra4_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
-            ra4.setIcon(ra4_icon)
-            ra4.triggered.connect(self.assign_rate_to_profile)
+            add_menu_entry(menu=menu,
+                           text="Assign rate to profile",
+                           icon_path=":/Icons/icons/assign_to_profile.svg",
+                           function_ptr=self.assign_rate_to_profile)
 
-            ra5 = menu.addAction('Assign active state to profile')
-            ra5_icon = QIcon()
-            ra5_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
-            ra5.setIcon(ra5_icon)
-            ra5.triggered.connect(self.assign_status_to_profile)
+            add_menu_entry(menu=menu,
+                           text="Assign active state to profile",
+                           icon_path=":/Icons/icons/assign_to_profile.svg",
+                           function_ptr=self.assign_status_to_profile)
 
-            ra2 = menu.addAction('Delete')
-            del_icon = QIcon()
-            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-            ra2.setIcon(del_icon)
-            ra2.triggered.connect(self.delete)
+            add_menu_entry(menu=menu,
+                           text="Delete",
+                           icon_path=":/Icons/icons/delete3.svg",
+                           function_ptr=self.delete)
 
             menu.exec_(event.screenPos())
         else:
@@ -108,9 +108,13 @@ class HvdcGraphicItem(LineGraphicTemplateItem):
 
     def convert_to_multi_terminal(self):
         """
-
+        Convert this HvdcLine to a vsc + DC line system
         """
-        pass
+        ok = yes_no_question('Do you want to change the HvdcLine by 2 VSC converters + 1 DC Line?',
+                             'Change by a VSC system')
+
+        if ok:
+            self.editor.convert_hvdc_line_to_vsc_system(hvdc_line=self.api_object)
 
     def plot_profiles(self):
         """

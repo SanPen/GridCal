@@ -2571,6 +2571,56 @@ class SchematicWidget(BaseDiagramWidget):
         else:
             raise Exception("Bus graphics not found! this is likely a bug")
 
+    def convert_hvdc_line_to_vsc_system(self, hvdc_line: HvdcLine):
+        """
+
+        :param hvdc_line:
+        :return:
+        """
+        ac_bus_1 = hvdc_line.bus_from
+        ac_bus_2 = hvdc_line.bus_to
+
+        dc_bus_1 = Bus(name=ac_bus_1.name + " DC", Vnom=hvdc_line.dc_link_voltage, is_dc=True,
+                       latitude=ac_bus_1.latitude, longitude=ac_bus_1.longitude,
+                       area=ac_bus_1.area, zone=ac_bus_1.zone, substation=ac_bus_1.substation,
+                       voltage_level=ac_bus_1.voltage_level, country=ac_bus_1.country)
+
+        dc_bus_2 = Bus(name=ac_bus_2.name + " DC", Vnom=hvdc_line.dc_link_voltage, is_dc=True,
+                       latitude=ac_bus_2.latitude, longitude=ac_bus_2.longitude,
+                       area=ac_bus_2.area, zone=ac_bus_2.zone, substation=ac_bus_2.substation,
+                       voltage_level=ac_bus_2.voltage_level, country=ac_bus_2.country)
+
+        conv1 = VSC(name=hvdc_line.name + " 1", bus_from=dc_bus_1, bus_to=ac_bus_1, rate=hvdc_line.rate)
+        conv2 = VSC(name=hvdc_line.name + " 2", bus_from=dc_bus_2, bus_to=ac_bus_2, rate=hvdc_line.rate)
+        dc_line = DcLine(name=hvdc_line.name, bus_from=dc_bus_1, bus_to=dc_bus_2, rate=hvdc_line.rate)
+
+        self.circuit.add_bus(dc_bus_1)
+        self.circuit.add_bus(dc_bus_2)
+        self.circuit.add_vsc(conv1)
+        self.circuit.add_vsc(conv2)
+        self.circuit.add_dc_line(dc_line)
+
+        bus1_graphics = self.diagram.query_point(ac_bus_1)
+        bus2_graphics = self.diagram.query_point(ac_bus_2)
+
+        dc_graphics_1 = self.add_api_bus(bus=dc_bus_1,
+                                         x0=int(bus1_graphics.x),
+                                         y0=int(bus1_graphics.y),
+                                         injections_by_tpe=dict())
+        dc_graphics_2 = self.add_api_bus(bus=dc_bus_2,
+                                         x0=int(bus2_graphics.x),
+                                         y0=int(bus2_graphics.y),
+                                         injections_by_tpe=dict())
+
+        self.add_to_scene(dc_graphics_1)
+        self.add_to_scene(dc_graphics_2)
+
+        self.add_api_dc_line(dc_line, from_port=dc_graphics_1.terminal, to_port=dc_graphics_2.terminal)
+        self.add_api_vsc(conv1, x=0, y=0)
+        self.add_api_vsc(conv2, x=0, y=0)
+
+        self.delete_element_utility_function(device=hvdc_line, propagate=True)
+
     def add_object_to_the_schematic(
             self,
             elm: ALL_DEV_TYPES,
