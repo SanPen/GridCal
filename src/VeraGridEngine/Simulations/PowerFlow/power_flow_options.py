@@ -20,7 +20,7 @@ class PowerFlowOptions(OptionsTemplate):
                  tolerance: float = 1e-6,
                  max_iter: int = 25,
                  limit_i_vsc: bool = False,
-                 control_q: bool = True,
+                 control_q: bool = False,
                  control_taps_modules: bool = True,
                  control_taps_phase: bool = True,
                  control_remote_voltage: bool = True,
