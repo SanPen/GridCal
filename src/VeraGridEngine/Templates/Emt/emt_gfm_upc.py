@@ -298,11 +298,17 @@ def build_emt_gfm_aggregated_model(
         event_dict={
             Rf: vf.add_const(0.02), Lf: vf.add_const(0.15), Rc: vf.add_const(0.01), Lc: vf.add_const(0.1),
             Cf: vf.add_const(0.05), Rcap: vf.add_const(1e6), Kdp: vf.add_const(0.1), Kdq: vf.add_const(0.005),
-            fn: vf.add_const(50.0), omega_base: vf.add_const(2.0 * math.pi * 50.0),
             Kp_vcl: vf.add_const(0.00075), Ki_vcl: vf.add_const(0.2),
             Kp_icl: vf.add_const(0.00075), Ki_icl: vf.add_const(0.2), tau_p: vf.add_const(0.01),
-            tau_q: vf.add_const(0.01), i_max: vf.add_const(1.2), a0: vf.add_const(0.0), a1: vf.add_const(0.0), a2: vf.add_const(0.0),
+            tau_q: vf.add_const(0.01), i_max: vf.add_const(1.2),
             p_ref: vf.add_const(None), q_ref: vf.add_const(None), v_ref: vf.add_const(None),
+        },
+        parameters={
+            fn: vf.add_const(50.0),
+            omega_base: vf.add_const(2.0 * math.pi * 50.0),
+            a0: vf.add_const(0.0),
+            a1: vf.add_const(0.0),
+            a2: vf.add_const(0.0),
         },
         init_eqs={
             theta: vf.add_const(0.0), omega: vf.add_const(1.0),
@@ -352,6 +358,7 @@ def build_emt_gfm_aggregated_model(
             VarPowerFlowReferenceType.d_v_C: d_v_c,
         },
         api_obj_mapping={
+            ParamPowerFlowReferenceType.freq: fn,
             ParamPowerFlowReferenceType.omega_base: omega_base,
             ParamPowerFlowReferenceType.alpha1: a0,
             ParamPowerFlowReferenceType.alpha2: a1,

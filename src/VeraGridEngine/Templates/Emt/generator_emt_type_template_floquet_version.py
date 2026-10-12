@@ -4,7 +4,7 @@ from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Templates.Emt.stamp_synchronous_generator_emt_template import get_stamp_synchronous_machine_6th_order_emt_template
 from VeraGridEngine.Utils.Symbolic.block import Block
-from VeraGridEngine.enumerations import DeviceType, ParamPowerFlowReferenceType, VarPowerFlowReferenceType
+from VeraGridEngine.enumerations import DeviceType, VarPowerFlowReferenceType
 
 
 def get_floquet_generator_template_emt(vf: VarFactory, name: str = "floquet_generator_emt_template") -> EmtModelTemplate:
@@ -62,27 +62,6 @@ def get_floquet_generator_template_emt(vf: VarFactory, name: str = "floquet_gene
         VarPowerFlowReferenceType.Q_B: gen_mdl.external_mapping[VarPowerFlowReferenceType.Q_B],
         VarPowerFlowReferenceType.P_C: gen_mdl.external_mapping[VarPowerFlowReferenceType.P_C],
         VarPowerFlowReferenceType.Q_C: gen_mdl.external_mapping[VarPowerFlowReferenceType.Q_C],
-    }
-
-    template.block.api_obj_mapping = {
-        ParamPowerFlowReferenceType.omega_base: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.omega_base],
-        ParamPowerFlowReferenceType.R1: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.R1],
-        ParamPowerFlowReferenceType.X1: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.X1],
-        ParamPowerFlowReferenceType.X0: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.X0],
-        ParamPowerFlowReferenceType.Ra: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.Ra],
-        ParamPowerFlowReferenceType.Rs: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.Rs],
-        ParamPowerFlowReferenceType.Xd: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.Xd],
-        ParamPowerFlowReferenceType.Xq: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.Xq],
-        ParamPowerFlowReferenceType.Xd_prime: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.Xd_prime],
-        ParamPowerFlowReferenceType.Xq_prime: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.Xq_prime],
-        ParamPowerFlowReferenceType.Xd_2prime: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.Xd_2prime],
-        ParamPowerFlowReferenceType.Xq_2prime: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.Xq_2prime],
-        ParamPowerFlowReferenceType.Xl: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.Xl],
-        ParamPowerFlowReferenceType.Td0_prime: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.Td0_prime],
-        ParamPowerFlowReferenceType.Tq0_prime: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.Tq0_prime],
-        ParamPowerFlowReferenceType.Td0_2prime: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.Td0_2prime],
-        ParamPowerFlowReferenceType.Tq0_2prime: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.Tq0_2prime],
-        ParamPowerFlowReferenceType.D: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.D],
     }
 
     # Seed runtime parameters for the frozen actuator channels.

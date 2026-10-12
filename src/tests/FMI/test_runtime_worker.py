@@ -12,11 +12,11 @@ from multiprocessing.context import BaseContext
 from multiprocessing.process import BaseProcess
 from pathlib import Path
 
-from VeraGridEngine.IO.fmu.importer.model_description import (
+from VeraGridEngine.IO.fmu.model_description import (
     FmuModelDescription,
     read_fmu_model_description,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_protocol import (
+from VeraGridEngine.IO.fmu.Elements.protocol import (
     FmiThreeWorkerCompletedIntegratorStepRequest,
     FmiThreeWorkerConfigureFloat64Request,
     FmiThreeWorkerDoStepRequest,
@@ -40,13 +40,13 @@ from VeraGridEngine.IO.fmu.importer.runtime_protocol import (
     send_fmi_three_worker_frame,
     validate_fmi_three_worker_response_correlation,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_profile import (
+from VeraGridEngine.IO.fmu.profile import (
     FmiThreeWorkerFloat64Profile,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_worker import (
+from VeraGridEngine.IO.fmu.workers import (
     run_fmi_three_worker,
 )
-from VeraGridEngine.IO.fmu.importer.staging import FmuStagingArea, stage_fmu_source
+from VeraGridEngine.IO.fmu.staging import FmuStagingArea, stage_fmu_source
 from VeraGridEngine.enumerations import FmuInterfaceMode
 
 

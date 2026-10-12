@@ -556,7 +556,6 @@ def get_simple_generator_emt_template(vf: VarFactory, name: str = "simple_emt_ty
         Lmq:        vf.add_const(1.55),
         Lf:         vf.add_const(0.10),
         Rf:         vf.add_const(0.017),
-        R0:         vf.add_const(0.001),
         omega_ref:  vf.add_const(1.0),
         Kp:         vf.add_const(2.0),
         Ki:         vf.add_const(2.0),
@@ -584,8 +583,20 @@ def get_simple_generator_emt_template(vf: VarFactory, name: str = "simple_emt_ty
             (Vpk + Ra * Ipk * sym.cos(phi) + omega_ref * (Lmq + La) * Ipk * sym.sin(phi))
         ),
         Kq_share: vf.add_const(0.2),
+        # Sharing references are operating-point values, not static generator
+        # attributes. The EMT seed path resolves both placeholders after PF.
+        P_share_ref: vf.add_const(None),
+        Q_share_ref: vf.add_const(None),
     }
+    templ.block.parameters.update({
+        R0: vf.add_const(0.001),
+        omega_base: vf.add_const(None),
+        Ra: vf.add_const(None),
+        Ld: vf.add_const(None),
+        L0: vf.add_const(None),
+    })
     templ.block.api_obj_mapping = {
+        ParamPowerFlowReferenceType.generator_r0_pu: R0,
         ParamPowerFlowReferenceType.omega_base : omega_base,
         ParamPowerFlowReferenceType.R1: Ra,
         ParamPowerFlowReferenceType.X1: Ld,

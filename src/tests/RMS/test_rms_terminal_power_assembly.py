@@ -12,6 +12,7 @@ from VeraGridEngine.Devices.Branches.line import Line
 from VeraGridEngine.Devices.Branches.vsc import VSC
 from VeraGridEngine.Devices.Events.rms_events_group import RmsEventsGroup
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
+from VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified import assign_static_api_object_mapping_for_device
 from VeraGridEngine.Devices.Injections.generator import Generator
 from VeraGridEngine.Devices.Injections.load import Load
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
@@ -30,7 +31,7 @@ from VeraGridEngine.Simulations.Rms.problems.rms_problem_dae_full_vectorized imp
     RmsProblemDaeFullVec,
 )
 from VeraGridEngine.Simulations.Rms.problems.rms_terminal_power_assembly import (
-    assemble_rms_terminal_power_contributions,
+    assemble_rms_mapped_power_references,
     convert_rms_ac_power_balance_to_current_balance,
 )
 from VeraGridEngine.Simulations.Rms.rms_options import RmsOptions
@@ -38,20 +39,19 @@ from VeraGridEngine.Templates.Rms.genqec_exc_gov_sat_template import (
     get_complete_generator_template_rms,
 )
 from VeraGridEngine.Templates.Rms.line_rms_template import get_line_rms_template
+from VeraGridEngine.Templates.Rms.line_phasor_rms_template import get_line_phasor_rms_template
 from VeraGridEngine.Templates.Rms.load_rms_template import get_load_rms_template
 from VeraGridEngine.Templates.Rms.vsc_gfl_dclinked import build_vsc_rms
-from VeraGridEngine.Utils.Symbolic.block import (
-    Block,
-    RmsTerminalPowerContribution,
-    RmsTerminalSide,
-)
-from VeraGridEngine.Utils.Symbolic.symbolic import Expr, Var, get_expression_vars
+from VeraGridEngine.Templates.Rms.vsc_gfm import VscGfmBuild
+from VeraGridEngine.Templates.Rms.hvdc_vsc_gfl_rms_template_v2 import build_hvdc_vsc_gfl_rms
+from VeraGridEngine.Utils.Symbolic.block import Block, DynamicModelContract
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var, get_expression_vars
 from VeraGridEngine.Utils.Symbolic.bus_rms_template import initialize_bus_rms
 from VeraGridEngine.Utils.Symbolic.templates_common_functions import set_rms_model
-from VeraGridEngine.enumerations import VarPowerFlowReferenceType
+from VeraGridEngine.enumerations import ParamPowerFlowReferenceType, VarPowerFlowReferenceType
 
 
-def test_terminal_power_assembly_uses_physical_topology() -> None:
+def test_mapped_power_assembly_uses_physical_topology() -> None:
     """Map DC and AC powers to buses without dynamic diagram connections.
 
     :return: None.
@@ -68,24 +68,12 @@ def test_terminal_power_assembly_uses_physical_topology() -> None:
             (VarPowerFlowReferenceType.Qt, ac_reactive_power),
         )),
     )
-    model.dynamic_model_contract.rms_terminal_power_contributions = list((
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.FROM,
-            active_power_reference=VarPowerFlowReferenceType.Pf,
-            reactive_power_reference=None,
-        ),
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.TO,
-            active_power_reference=VarPowerFlowReferenceType.Pt,
-            reactive_power_reference=VarPowerFlowReferenceType.Qt,
-        ),
-    ))
     active_balance: ObjVec = np.zeros(2, dtype=object)
     reactive_balance: ObjVec = np.zeros(2, dtype=object)
     active_used: BoolVec = np.zeros(2, dtype=bool)
     reactive_used: BoolVec = np.zeros(2, dtype=bool)
 
-    assemble_rms_terminal_power_contributions(
+    assemble_rms_mapped_power_references(
         model=model,
         bus_from_index=0,
         bus_to_index=1,
@@ -104,34 +92,7 @@ def test_terminal_power_assembly_uses_physical_topology() -> None:
     assert reactive_balance[1].eval(Qac=0.1) == pytest.approx(-0.1)
 
 
-def test_terminal_power_assembly_rejects_missing_contract() -> None:
-    """Fail closed instead of inferring network coupling from variable names.
-
-    :return: None.
-    """
-    active_balance: ObjVec = np.zeros(2, dtype=object)
-    reactive_balance: ObjVec = np.zeros(2, dtype=object)
-    active_used: BoolVec = np.zeros(2, dtype=bool)
-    reactive_used: BoolVec = np.zeros(2, dtype=bool)
-
-    with pytest.raises(ValueError, match="no declared terminal"):
-        assemble_rms_terminal_power_contributions(
-            model=Block(),
-            bus_from_index=0,
-            bus_to_index=1,
-            bus_from_is_dc=True,
-            bus_to_is_dc=False,
-            active_power_balance=active_balance,
-            active_power_balance_used=active_used,
-            reactive_power_balance=reactive_balance,
-            reactive_power_balance_used=reactive_used,
-        )
-
-    assert active_used.tolist() == [False, False]
-    assert reactive_used.tolist() == [False, False]
-
-
-def test_terminal_power_assembly_rejects_reactive_power_on_dc_bus_atomically() -> None:
+def test_mapped_power_assembly_rejects_reactive_power_on_dc_bus_atomically() -> None:
     """Reject a domain mismatch before mutating any nodal balance.
 
     :return: None.
@@ -146,20 +107,13 @@ def test_terminal_power_assembly_rejects_reactive_power_on_dc_bus_atomically() -
             (VarPowerFlowReferenceType.Qf, reactive_power),
         )),
     )
-    model.dynamic_model_contract.rms_terminal_power_contributions = list((
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.FROM,
-            active_power_reference=VarPowerFlowReferenceType.Pf,
-            reactive_power_reference=VarPowerFlowReferenceType.Qf,
-        ),
-    ))
     active_balance: ObjVec = np.zeros(2, dtype=object)
     reactive_balance: ObjVec = np.zeros(2, dtype=object)
     active_used: BoolVec = np.zeros(2, dtype=bool)
     reactive_used: BoolVec = np.zeros(2, dtype=bool)
 
     with pytest.raises(ValueError, match="reactive power on a DC bus"):
-        assemble_rms_terminal_power_contributions(
+        assemble_rms_mapped_power_references(
             model=model,
             bus_from_index=0,
             bus_to_index=1,
@@ -190,24 +144,13 @@ def test_single_bus_device_assembly_uses_selected_power_interface() -> None:
             (VarPowerFlowReferenceType.Q, reactive_power),
         )),
     )
-    model.dynamic_model_contract.rms_terminal_power_contributions = list((
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.BUS,
-            active_power_reference=VarPowerFlowReferenceType.P,
-            reactive_power_reference=VarPowerFlowReferenceType.Q,
-        ),
-    ))
     active_balance: ObjVec = np.zeros(2, dtype=object)
     reactive_balance: ObjVec = np.zeros(2, dtype=object)
     active_used: BoolVec = np.zeros(2, dtype=bool)
     reactive_used: BoolVec = np.zeros(2, dtype=bool)
 
-    assemble_rms_terminal_power_contributions(
+    assemble_rms_mapped_power_references(
         model=model,
-        bus_from_index=None,
-        bus_to_index=None,
-        bus_from_is_dc=None,
-        bus_to_is_dc=None,
         active_power_balance=active_balance,
         active_power_balance_used=active_used,
         reactive_power_balance=reactive_balance,
@@ -215,32 +158,173 @@ def test_single_bus_device_assembly_uses_selected_power_interface() -> None:
         bus_index=1,
         bus_is_dc=False,
     )
-    restored_model: Block = Block.parse(data=model.to_dict())
-    restored_contribution: RmsTerminalPowerContribution = (
-        restored_model.dynamic_model_contract.rms_terminal_power_contributions[0]
-    )
-
     assert active_used.tolist() == [False, True]
     assert reactive_used.tolist() == [False, True]
     assert active_balance[1].eval(P=0.2) == pytest.approx(0.2)
     assert reactive_balance[1].eval(Q=-0.1) == pytest.approx(-0.1)
-    assert restored_contribution.get_terminal_side() is RmsTerminalSide.BUS
 
 
-def test_standard_vsc_template_declares_both_terminal_contributions() -> None:
-    """Keep the native VSC template compatible with fail-closed assembly.
+def test_standard_vsc_template_uses_mapped_terminal_powers() -> None:
+    """Keep VSC topology separate from its mapped dynamic quantities.
 
     :return: None.
     """
     model: Block = build_vsc_rms(vfactory=VarFactory()).block
-    contributions: list[RmsTerminalPowerContribution] = (
-        model.dynamic_model_contract.rms_terminal_power_contributions
+    assert model.out_vars == list()
+    assert "rms_terminal_power_contributions" not in DynamicModelContract.__slots__
+    assert VarPowerFlowReferenceType.Pf in model.external_mapping
+    assert VarPowerFlowReferenceType.Pt in model.external_mapping
+    assert VarPowerFlowReferenceType.Qt in model.external_mapping
+
+
+def test_mapped_bus_power_requires_one_terminal_topology() -> None:
+    """Reject a P/Q mapping when its static bus topology is absent."""
+    active_power = Var(name="P")
+    model = Block(external_mapping={VarPowerFlowReferenceType.P: active_power})
+
+    with pytest.raises(
+        ValueError,
+        match="RMS bus terminal requires one-terminal device topology",
+    ):
+        assemble_rms_mapped_power_references(
+            model=model,
+            active_power_balance=np.zeros(1, dtype=object),
+            active_power_balance_used=np.zeros(1, dtype=bool),
+            reactive_power_balance=np.zeros(1, dtype=object),
+            reactive_power_balance_used=np.zeros(1, dtype=bool),
+        )
+
+
+def test_mapped_to_power_requires_two_terminal_topology() -> None:
+    """Reject a Pt/Qt mapping when its static to-side topology is absent."""
+    active_power = Var(name="Pt")
+    model = Block(external_mapping={VarPowerFlowReferenceType.Pt: active_power})
+
+    with pytest.raises(
+        ValueError,
+        match="RMS to terminal requires two-terminal device topology",
+    ):
+        assemble_rms_mapped_power_references(
+            model=model,
+            active_power_balance=np.zeros(1, dtype=object),
+            active_power_balance_used=np.zeros(1, dtype=bool),
+            reactive_power_balance=np.zeros(1, dtype=object),
+            reactive_power_balance_used=np.zeros(1, dtype=bool),
+        )
+
+
+def test_mapped_reactive_power_rejects_dc_topology() -> None:
+    """Reject Q at a DC bus before mutating either nodal balance."""
+    reactive_power = Var(name="Q")
+    model = Block(external_mapping={VarPowerFlowReferenceType.Q: reactive_power})
+
+    with pytest.raises(
+        ValueError,
+        match="RMS terminal declares reactive power on a DC bus",
+    ):
+        assemble_rms_mapped_power_references(
+            model=model,
+            active_power_balance=np.zeros(1, dtype=object),
+            active_power_balance_used=np.zeros(1, dtype=bool),
+            reactive_power_balance=np.zeros(1, dtype=object),
+            reactive_power_balance_used=np.zeros(1, dtype=bool),
+            bus_index=0,
+            bus_is_dc=True,
+        )
+
+
+def test_vsc_dc_from_reactive_fallback_keeps_ac_reactive_balance() -> None:
+    """A legacy VSC Qf mapping must not enter the DC nodal balance."""
+    model = Block(external_mapping={
+        VarPowerFlowReferenceType.Pf: Var(name="Pf"),
+        VarPowerFlowReferenceType.Qf: Var(name="Qf"),
+        VarPowerFlowReferenceType.Pt: Var(name="Pt"),
+        VarPowerFlowReferenceType.Qt: Var(name="Qt"),
+    })
+    active = np.zeros(2, dtype=object)
+    reactive = np.zeros(2, dtype=object)
+    active_used = np.zeros(2, dtype=bool)
+    reactive_used = np.zeros(2, dtype=bool)
+
+    assemble_rms_mapped_power_references(
+        model=model,
+        active_power_balance=active,
+        active_power_balance_used=active_used,
+        reactive_power_balance=reactive,
+        reactive_power_balance_used=reactive_used,
+        bus_from_index=0,
+        bus_to_index=1,
+        bus_from_is_dc=True,
+        bus_to_is_dc=False,
+        ignore_dc_from_reactive=True,
     )
 
-    assert model.out_vars == list()
-    assert len(contributions) == 2
-    assert contributions[0].get_terminal_side() is RmsTerminalSide.FROM
-    assert contributions[1].get_terminal_side() is RmsTerminalSide.TO
+    assert active_used.tolist() == [True, True]
+    assert reactive_used.tolist() == [False, True]
+
+
+def test_mapped_power_rejects_mixed_terminal_reference_families() -> None:
+    """Reject an ambiguous physical model even when topology is available."""
+    model = Block(external_mapping={
+        VarPowerFlowReferenceType.P: Var(name="P"),
+        VarPowerFlowReferenceType.Pf: Var(name="Pf"),
+    })
+
+    with pytest.raises(
+        ValueError,
+        match="mixes one-terminal and two-terminal power references",
+    ):
+        assemble_rms_mapped_power_references(
+            model=model,
+            active_power_balance=np.zeros(2, dtype=object),
+            active_power_balance_used=np.zeros(2, dtype=bool),
+            reactive_power_balance=np.zeros(2, dtype=object),
+            reactive_power_balance_used=np.zeros(2, dtype=bool),
+            bus_from_index=0,
+            bus_to_index=1,
+            bus_from_is_dc=False,
+            bus_to_is_dc=False,
+        )
+
+
+def test_gfm_vsc_root_exposes_only_branch_power_references() -> None:
+    """Keep internal converter P/Q out of the physical VSC root mapping."""
+    model = VscGfmBuild(vfactory=VarFactory()).block
+
+    assert VarPowerFlowReferenceType.P not in model.external_mapping
+    assert VarPowerFlowReferenceType.Q not in model.external_mapping
+    assert VarPowerFlowReferenceType.Pf in model.external_mapping
+    assert VarPowerFlowReferenceType.Qf in model.external_mapping
+    assert VarPowerFlowReferenceType.Pt in model.external_mapping
+    assert VarPowerFlowReferenceType.Qt in model.external_mapping
+
+
+def test_hvdc_vsc_v2_declares_reactive_power_only_at_ac_terminal() -> None:
+    """The DC terminal has active power but no reactive power reference."""
+    model = build_hvdc_vsc_gfl_rms(vfactory=VarFactory()).block
+
+    assert VarPowerFlowReferenceType.Pf in model.external_mapping
+    assert VarPowerFlowReferenceType.Qf not in model.external_mapping
+    assert VarPowerFlowReferenceType.Pt in model.external_mapping
+    assert VarPowerFlowReferenceType.Qt in model.external_mapping
+
+    active = np.zeros(2, dtype=object)
+    reactive = np.zeros(2, dtype=object)
+    active_used = np.zeros(2, dtype=bool)
+    reactive_used = np.zeros(2, dtype=bool)
+    assemble_rms_mapped_power_references(
+        model=model,
+        active_power_balance=active,
+        active_power_balance_used=active_used,
+        reactive_power_balance=reactive,
+        reactive_power_balance_used=reactive_used,
+        bus_from_index=0,
+        bus_to_index=1,
+        bus_from_is_dc=True,
+        bus_to_is_dc=False,
+    )
+    assert active_used.tolist() == [True, True]
+    assert reactive_used.tolist() == [False, True]
 
 
 def build_legacy_vsc_dae_case(
@@ -343,7 +427,7 @@ def build_legacy_vsc_current_seed_case() -> tuple[MultiCircuit, PowerFlowResults
     return grid, power_flow_results
 
 
-def build_supported_vectorized_ac_load_case() -> tuple[MultiCircuit, PowerFlowResults]:
+def build_supported_vectorized_ac_load_case(physical_conductance: float = 0.0) -> tuple[MultiCircuit, PowerFlowResults]:
     """Build a supported square RMS case for vectorized initial projection.
 
     The established generator, line, and load templates provide a physical
@@ -351,6 +435,7 @@ def build_supported_vectorized_ac_load_case() -> tuple[MultiCircuit, PowerFlowRe
     independently underdetermined legacy partial-VSC topology as an adapter
     test.
 
+    :param physical_conductance: Total line shunt conductance in per unit.
     :return: Grid and converged power-flow results for vectorized RMS problems.
     """
     # Build the smallest established network fixture that has a voltage angle
@@ -372,6 +457,7 @@ def build_supported_vectorized_ac_load_case() -> tuple[MultiCircuit, PowerFlowRe
         r=0.029585798816568046,
         x=0.07100591715976332,
         b=0.03,
+        g=physical_conductance,
         rate=900.0,
     )
     load: Load = Load(name="Load1", P=9.999999, Q=0.999999)
@@ -490,9 +576,9 @@ def test_dae_constructors_preserve_legacy_vsc_power_coupling() -> None:
         options=RmsOptions(),
         pf_results=power_flow_results,
     )
-    assert len(full_vectorized_problem._legacy_balance_layout_by_model_type) == 1
+    assert len(full_vectorized_problem._mapped_power_layout_by_model_type) == 1
     full_vectorized_problem.set_events_group(rms_events_group=RmsEventsGroup())
-    assert set(full_vectorized_problem._legacy_balance_layout_by_model_type.keys()).issubset(
+    assert set(full_vectorized_problem._mapped_power_layout_by_model_type.keys()).issubset(
         set(full_vectorized_problem._rhs_algeb_fn_by_types.keys())
     )
     converter: VSC = grid.get_vsc()[0]
@@ -512,7 +598,7 @@ def test_dae_constructors_preserve_legacy_vsc_power_coupling() -> None:
         dx=differentials,
     )
     legacy_model_type: int = next(
-        iter(full_vectorized_problem._legacy_balance_layout_by_model_type.keys())
+        iter(full_vectorized_problem._mapped_power_layout_by_model_type.keys())
     )
     class_residual: np.ndarray = full_vectorized_problem._rhs_algeb_fn_by_types[
         legacy_model_type
@@ -906,13 +992,6 @@ def test_full_vectorized_runtime_keeps_device_and_terminal_rows_separate() -> No
             (VarPowerFlowReferenceType.Q, first_reactive_power),
         )),
     )
-    first_model.dynamic_model_contract.rms_terminal_power_contributions = list((
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.BUS,
-            active_power_reference=VarPowerFlowReferenceType.P,
-            reactive_power_reference=VarPowerFlowReferenceType.Q,
-        ),
-    ))
     first_load: Load = Load(name="First selected power")
     first_load.rms_model = first_model
     grid.add_load(bus=bus, api_obj=first_load)
@@ -928,13 +1007,6 @@ def test_full_vectorized_runtime_keeps_device_and_terminal_rows_separate() -> No
             (VarPowerFlowReferenceType.Q, second_reactive_power),
         )),
     )
-    second_model.dynamic_model_contract.rms_terminal_power_contributions = list((
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.BUS,
-            active_power_reference=VarPowerFlowReferenceType.P,
-            reactive_power_reference=VarPowerFlowReferenceType.Q,
-        ),
-    ))
     second_load: Load = Load(name="Second selected power")
     second_load.rms_model = second_model
     grid.add_load(bus=bus, api_obj=second_load)
@@ -977,7 +1049,7 @@ def test_full_vectorized_runtime_keeps_device_and_terminal_rows_separate() -> No
 
     first_start: int = problem._model_algebraic_eq_start_idx[first_model.uid]
     second_start: int = problem._model_algebraic_eq_start_idx[second_model.uid]
-    assert len(problem._terminal_balance_layout_by_model_type) == 1
+    assert len(problem._mapped_power_layout_by_model_type) == 1
     assert residual[first_start] == pytest.approx(0.10)
     assert residual[first_start + 1] == pytest.approx(0.20)
     assert residual[second_start] == pytest.approx(-0.03)
@@ -1050,13 +1122,6 @@ def build_mixed_terminal_contract_grid(
             (VarPowerFlowReferenceType.Q, typed_reactive_power),
         )),
     )
-    typed_model.dynamic_model_contract.rms_terminal_power_contributions = list((
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.BUS,
-            active_power_reference=VarPowerFlowReferenceType.P,
-            reactive_power_reference=VarPowerFlowReferenceType.Q,
-        ),
-    ))
     typed_load: Load = Load(name="Typed equivalent load")
     typed_load.rms_model = typed_model
 
@@ -1101,8 +1166,8 @@ def build_mixed_terminal_contract_grid(
     return grid, power_flow_results
 
 
-def test_full_vectorized_rejects_typed_then_legacy_equivalent_models() -> None:
-    """Fail closed when a legacy instance follows a typed representative.
+def test_full_vectorized_ignores_persisted_contract_on_representative() -> None:
+    """Compile equivalent mappings independently of persisted old metadata.
 
     :return: None.
     """
@@ -1110,16 +1175,16 @@ def test_full_vectorized_rejects_typed_then_legacy_equivalent_models() -> None:
     power_flow_results: PowerFlowResults
     grid, power_flow_results = build_mixed_terminal_contract_grid(contract_first=True)
 
-    with pytest.raises(ValueError, match="same terminal-power contract mode"):
-        RmsProblemDaeFullVec(
-            grid=grid,
-            options=RmsOptions(),
-            pf_results=power_flow_results,
-        )
+    problem = RmsProblemDaeFullVec(
+        grid=grid,
+        options=RmsOptions(),
+        pf_results=power_flow_results,
+    )
+    assert len(problem._mapped_power_layout_by_model_type) == 1
 
 
-def test_full_vectorized_rejects_legacy_then_typed_equivalent_models() -> None:
-    """Fail closed when a typed instance follows a legacy representative.
+def test_full_vectorized_ignores_persisted_contract_on_member() -> None:
+    """Compile equivalent mappings when only a member has old metadata.
 
     :return: None.
     """
@@ -1127,16 +1192,16 @@ def test_full_vectorized_rejects_legacy_then_typed_equivalent_models() -> None:
     power_flow_results: PowerFlowResults
     grid, power_flow_results = build_mixed_terminal_contract_grid(contract_first=False)
 
-    with pytest.raises(ValueError):
-        RmsProblemDaeFullVec(
-            grid=grid,
-            options=RmsOptions(),
-            pf_results=power_flow_results,
-        )
+    problem = RmsProblemDaeFullVec(
+        grid=grid,
+        options=RmsOptions(),
+        pf_results=power_flow_results,
+    )
+    assert len(problem._mapped_power_layout_by_model_type) == 1
 
 
-def test_phasor_balance_consumes_vsc_terminal_power_contributions() -> None:
-    """Convert assembled VSC terminal powers into the phasor AC KCL residual.
+def test_phasor_balance_consumes_vsc_mapped_power_references() -> None:
+    """Convert mapped VSC terminal powers into the phasor AC KCL residual.
 
     :return: None.
     """
@@ -1154,18 +1219,6 @@ def test_phasor_balance_consumes_vsc_terminal_power_contributions() -> None:
             (VarPowerFlowReferenceType.Qt, ac_reactive_power),
         )),
     )
-    model.dynamic_model_contract.rms_terminal_power_contributions = list((
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.FROM,
-            active_power_reference=VarPowerFlowReferenceType.Pf,
-            reactive_power_reference=None,
-        ),
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.TO,
-            active_power_reference=VarPowerFlowReferenceType.Pt,
-            reactive_power_reference=VarPowerFlowReferenceType.Qt,
-        ),
-    ))
     active_balance: ObjVec = np.zeros(2, dtype=object)
     reactive_balance: ObjVec = np.zeros(2, dtype=object)
     real_current_balance: ObjVec = np.zeros(2, dtype=object)
@@ -1176,7 +1229,7 @@ def test_phasor_balance_consumes_vsc_terminal_power_contributions() -> None:
     imaginary_current_used: BoolVec = np.zeros(2, dtype=bool)
 
     # Assemble by physical VSC topology first, as each RMS problem does.
-    assemble_rms_terminal_power_contributions(
+    assemble_rms_mapped_power_references(
         model=model,
         bus_from_index=0,
         bus_to_index=1,
@@ -1273,18 +1326,6 @@ def test_phasor_problem_emits_vsc_dc_and_ac_nodal_residuals() -> None:
             (VarPowerFlowReferenceType.Qt, ac_reactive_power),
         )),
     )
-    vsc_model.dynamic_model_contract.rms_terminal_power_contributions = list((
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.FROM,
-            active_power_reference=VarPowerFlowReferenceType.Pf,
-            reactive_power_reference=None,
-        ),
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.TO,
-            active_power_reference=VarPowerFlowReferenceType.Pt,
-            reactive_power_reference=VarPowerFlowReferenceType.Qt,
-        ),
-    ))
     converter: VSC = VSC(
         name="DC-AC VSC",
         bus_from=dc_bus,
@@ -1322,13 +1363,6 @@ def test_phasor_problem_emits_vsc_dc_and_ac_nodal_residuals() -> None:
             (VarPowerFlowReferenceType.Q, selected_reactive_power),
         )),
     )
-    selected_power_model.dynamic_model_contract.rms_terminal_power_contributions = list((
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.BUS,
-            active_power_reference=VarPowerFlowReferenceType.P,
-            reactive_power_reference=VarPowerFlowReferenceType.Q,
-        ),
-    ))
     selected_power_injection: Load = Load(name="Selected power")
     selected_power_injection.rms_model = selected_power_model
     grid.add_load(bus=ac_bus, api_obj=selected_power_injection)
@@ -1401,3 +1435,159 @@ def test_phasor_problem_emits_vsc_dc_and_ac_nodal_residuals() -> None:
         P_selected=0.04,
         Q_selected=-0.02,
     ) == pytest.approx(0.234)
+
+
+def test_rms_line_physical_shunt_power() -> None:
+    """Compare mapped polar line powers with an independent pi primitive.
+
+    :return: None.
+    """
+    grid: MultiCircuit = MultiCircuit(Sbase=100.0)
+    source: Bus = grid.add_bus(Bus(name="source", Vnom=132.0))
+    target: Bus = grid.add_bus(Bus(name="target", Vnom=132.0))
+    line: Line = Line(bus_from=source, bus_to=target, r=0.01, x=0.1, b=0.002, g=0.003)
+    grid.add_line(line)
+    model: Block = get_line_rms_template(grid.var_factory).block
+    physical_block: Block = model.children[0]
+    mapped_values: dict[Var, Const] = dict()
+    assign_static_api_object_mapping_for_device(
+        grid=grid, device=line, mdl=model, problem_mapping=mapped_values, logger=None,
+    )
+    from_voltage: complex = 1.03 * np.exp(0.13j)
+    to_voltage: complex = 0.96 * np.exp(-0.08j)
+    series_admittance: complex = 1.0 / complex(line.R, line.X)
+    half_shunt: complex = complex(line.G, line.B) / 2.0
+    from_current: complex = series_admittance * (from_voltage - to_voltage) + half_shunt * from_voltage
+    to_current: complex = series_admittance * (to_voltage - from_voltage) + half_shunt * to_voltage
+    from_power: complex = from_voltage * np.conj(from_current)
+    to_power: complex = to_voltage * np.conj(to_current)
+    bindings: dict[int, float] = dict()
+    parameter: Var
+    value: Const
+    for parameter, value in physical_block.parameters.items():
+        assert value.value is not None
+        bindings[parameter.uid] = float(value.value)
+    for parameter, value in mapped_values.items():
+        assert value.value is not None
+        bindings[parameter.uid] = float(value.value)
+    variable: Var
+    for variable in physical_block.algebraic_vars:
+        bindings[variable.uid] = 0.0
+    bindings[model.external_mapping[VarPowerFlowReferenceType.Vmf].uid] = abs(from_voltage)
+    bindings[model.external_mapping[VarPowerFlowReferenceType.Vaf].uid] = float(np.angle(from_voltage))
+    bindings[model.external_mapping[VarPowerFlowReferenceType.Vmt].uid] = abs(to_voltage)
+    bindings[model.external_mapping[VarPowerFlowReferenceType.Vat].uid] = float(np.angle(to_voltage))
+    status: float
+    for status in (0.0, 1.0):
+        # Both physical half-shunts follow the existing retained conduction status.
+        for parameter in physical_block.event_dict:
+            bindings[parameter.uid] = status
+        expected: np.ndarray = status * np.array(
+            (from_power.real, from_power.imag, to_power.real, to_power.imag), dtype=float,
+        )
+        actual: np.ndarray = np.zeros(4, dtype=float)
+        equation_index: int
+        for equation_index in range(4):
+            actual[equation_index] = -float(physical_block.algebraic_eqs[equation_index].eval_uid(bindings))
+        np.testing.assert_allclose(actual, expected, rtol=1.0e-10, atol=1.0e-12)
+
+
+    # Exercise the actual DAE assembly and projection with the same nonzero G.
+    pf_results: PowerFlowResults
+    grid, pf_results = build_supported_vectorized_ac_load_case(physical_conductance=0.003)
+    assert pf_results.converged
+    problem: RmsProblemDaeVec = RmsProblemDaeVec(
+        grid=grid, options=RmsOptions(), pf_results=pf_results,
+    )
+    problem.set_events_group(rms_events_group=RmsEventsGroup())
+    solver: BackEulerImplicitIntegrationVec = BackEulerImplicitIntegrationVec(
+        problem=problem, t0=0.0, t_end=0.0, h=1.0e-3, max_iter=25,
+    )
+    times: np.ndarray
+    values: np.ndarray
+    initialized: bool
+    converged: bool
+    times, values, initialized, converged = solver.simulate()
+    assert initialized
+    problem.update_input_matrices_by_model(x=values[0], dx=problem.get_dx0())
+    assert np.linalg.norm(problem.rhs_algebraic_vec(x=values[0], dx=problem.get_dx0()), ord=np.inf) < 1.0e-6
+    line = grid.lines[0]
+    from_voltage = pf_results.voltage[0]
+    to_voltage = pf_results.voltage[1]
+    from_current = (from_voltage - to_voltage) / complex(line.R, line.X) + complex(line.G, line.B) * from_voltage / 2.0
+    to_current = (to_voltage - from_voltage) / complex(line.R, line.X) + complex(line.G, line.B) * to_voltage / 2.0
+    expected_power: np.ndarray = np.array((
+        (from_voltage * np.conj(from_current)).real, (from_voltage * np.conj(from_current)).imag,
+        (to_voltage * np.conj(to_current)).real, (to_voltage * np.conj(to_current)).imag,
+    ))
+    power_refs: tuple[VarPowerFlowReferenceType, ...] = (
+        VarPowerFlowReferenceType.Pf, VarPowerFlowReferenceType.Qf,
+        VarPowerFlowReferenceType.Pt, VarPowerFlowReferenceType.Qt,
+    )
+    actual_power: np.ndarray = np.array(tuple(
+        values[0, problem._uid2idx_vars[line.rms_model.E(reference).uid]] for reference in power_refs
+    ))
+    np.testing.assert_allclose(actual_power, expected_power, rtol=1.0e-6, atol=1.0e-6)
+
+
+def test_rms_phasor_line_physical_shunt_current() -> None:
+    """Preserve physical shunt currents and virtual-tap scaling in the phasor model.
+
+    :return: None.
+    """
+    grid: MultiCircuit = MultiCircuit(Sbase=2.0)
+    source: Bus = grid.add_bus(Bus(Vnom=20.0))
+    target: Bus = grid.add_bus(Bus(Vnom=20.0))
+    line: Line = Line(bus_from=source, bus_to=target, r=0.02, x=0.2, b=0.006, g=0.004)
+    grid.add_line(line)
+    model: Block = get_line_phasor_rms_template(grid.var_factory).block
+    mapped_values: dict[Var, Const] = dict()
+    assign_static_api_object_mapping_for_device(
+        grid=grid, device=line, mdl=model, problem_mapping=mapped_values, logger=None,
+    )
+    bindings: dict[int, float] = dict()
+    parameter: Var
+    value: Const
+    for parameter, value in model.parameters.items():
+        if value.value is None:
+            pass
+        else:
+            bindings[parameter.uid] = float(value.value)
+    for parameter, value in mapped_values.items():
+        assert value.value is not None
+        bindings[parameter.uid] = float(value.value)
+    from_voltage: complex = 1.02 * np.exp(0.14j)
+    to_voltage: complex = 0.97 * np.exp(-0.06j)
+    bindings[model.in_vars[0].uid] = float(from_voltage.real)
+    bindings[model.in_vars[1].uid] = float(from_voltage.imag)
+    bindings[model.in_vars[2].uid] = float(to_voltage.real)
+    bindings[model.in_vars[3].uid] = float(to_voltage.imag)
+    variable: Var
+    for variable in model.algebraic_vars:
+        bindings[variable.uid] = 0.0
+    from_tap: float
+    to_tap: float
+    for from_tap, to_tap in ((1.0, 1.0), (1.03, 0.98)):
+        tap_parameter: Var | None
+        tap_parameter = model.api_obj_mapping.get(ParamPowerFlowReferenceType.vtap_f, None)
+        assert tap_parameter is not None
+        bindings[tap_parameter.uid] = from_tap
+        tap_parameter = model.api_obj_mapping.get(ParamPowerFlowReferenceType.vtap_t, None)
+        assert tap_parameter is not None
+        bindings[tap_parameter.uid] = to_tap
+        series: complex = 1.0 / complex(line.R, line.X)
+        half_shunt: complex = complex(line.G, line.B) / 2.0
+        from_current: complex = (
+            (series + half_shunt) * from_voltage / (from_tap * from_tap)
+            - series * to_voltage / (from_tap * to_tap)
+        )
+        to_current: complex = (
+            (series + half_shunt) * to_voltage / (to_tap * to_tap)
+            - series * from_voltage / (from_tap * to_tap)
+        )
+        expected: np.ndarray = np.array((from_current.real, from_current.imag, to_current.real, to_current.imag))
+        actual: np.ndarray = np.zeros(4)
+        equation_index: int
+        for equation_index in range(4):
+            actual[equation_index] = -float(model.algebraic_eqs[equation_index].eval_uid(bindings))
+        np.testing.assert_allclose(actual, expected, rtol=1.0e-10, atol=1.0e-12)

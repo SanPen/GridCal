@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import math
+from VeraGridEngine.enumerations import ParamPowerFlowReferenceType
 import numpy as np
 
 import VeraGridEngine.Utils.Symbolic.symbolic as sym
@@ -175,7 +176,6 @@ def build_vsc_gfm_emt_park(vfactory, name: str = "gfm_emt"):
             Rcap: vfactory.add_const(1e6),
             Kdp: vfactory.add_const(0.05),
             Kdq: vfactory.add_const(0.05),
-            fn: vfactory.add_const(50.0),
             Kp_icl: vfactory.add_const(0.05),
             Ki_icl: vfactory.add_const(50.0),
             tau_P: vfactory.add_const(0.01),
@@ -228,6 +228,8 @@ def build_vsc_gfm_emt_park(vfactory, name: str = "gfm_emt"):
             VarPowerFlowReferenceType.P: P,
             VarPowerFlowReferenceType.Q: Q,
         },
+        api_obj_mapping={ParamPowerFlowReferenceType.freq: fn},
+        parameters={fn: vfactory.add_const(50.0)},
     )
 
     core.add(park_block)

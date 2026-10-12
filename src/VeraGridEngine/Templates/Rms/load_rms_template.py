@@ -53,10 +53,11 @@ def get_load_rms_template(
 ) -> RmsModelTemplate:
     """Build the RMS constant-power load model.
 
-    ``Pl0`` and ``Ql0`` remain runtime event parameters. When their optional
-    values are unset, their event expressions copy the solved operating point
-    from ``Pl`` and ``Ql``. A numeric value supplied by General options replaces
-    that automatic starting value while preserving event support.
+    ``Pl0`` and ``Ql0`` remain runtime event parameters. When an optional value
+    is unset, the associated Load device supplies its P/Q value through
+    ``api_obj_mapping`` and the stored expression is ``Const(None)``. A numeric
+    General option omits that mapping and becomes the authoritative baseline
+    while preserving event support.
 
     :param vfactory: Variable factory used by the symbolic model.
     :param name: Model name.
@@ -80,16 +81,17 @@ def get_load_rms_template(
 
     block: Block = Block()
 
-    # Each event parameter owns its initialization expression. A numeric value
-    # selected in General options overrides the power-flow-derived default.
+    # Each event parameter has exactly one initial source. Without an explicit
+    # option the Load device supplies it through api_obj_mapping; otherwise the
+    # selected numeric literal is stored directly.
     pl0_expression: Expr
     ql0_expression: Expr
     if pl0_init is None:
-        pl0_expression = Pl
+        pl0_expression = vfactory.add_const(None)
     else:
         pl0_expression = vfactory.add_const(pl0_init)
     if ql0_init is None:
-        ql0_expression = Ql
+        ql0_expression = vfactory.add_const(None)
     else:
         ql0_expression = vfactory.add_const(ql0_init)
     block.event_dict[Pl0] = pl0_expression
@@ -112,11 +114,19 @@ def get_load_rms_template(
         VarPowerFlowReferenceType.Q: Ql
     })
 
-    templ.block.api_obj_mapping = dict({
-        ParamPowerFlowReferenceType.Pl0: Pl0,
-        ParamPowerFlowReferenceType.Ql0: Ql0,
-    })
-
+    # The static Load.P/Q values establish the default baseline, while the
+    # event_dict ownership above keeps both references mutable. An explicit
+    # template option remains authoritative and therefore omits only that
+    # variable's device mapping.
+    block.api_obj_mapping = dict()
+    if pl0_init is None:
+        block.api_obj_mapping[ParamPowerFlowReferenceType.Pl0] = Pl0
+    else:
+        pass
+    if ql0_init is None:
+        block.api_obj_mapping[ParamPowerFlowReferenceType.Ql0] = Ql0
+    else:
+        pass
     templ.block.in_vars = inputs
     templ.block.out_vars = list([Pl, Ql])
 

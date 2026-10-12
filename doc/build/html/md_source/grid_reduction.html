@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>👾 Grid Reduction &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>👾 Grid Reduction &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -139,7 +139,7 @@ You can expect that the reduced grid flows behave roughly like the original grid
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">vg</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s1">&#39;case118.m&#39;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s1">'case118.m'</span><span class="p">)</span>
 
 <span class="n">pf_res</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">power_flow</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
 
@@ -314,7 +314,7 @@ and does not account for transformer taps, shunts and other modifications.</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Topology.GridReduction.ptdf_grid_reduction</span><span class="w"> </span><span class="kn">import</span> <span class="n">ptdf_reduction</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Topology.GridReduction.ward_equivalents</span><span class="w"> </span><span class="kn">import</span> <span class="n">ward_standard_reduction</span>
 
-<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;tests&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;grids&#39;</span><span class="p">,</span> <span class="s1">&#39;Matpower&#39;</span><span class="p">,</span> <span class="s1">&#39;case118.m&#39;</span><span class="p">)</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'..'</span><span class="p">,</span> <span class="s1">'..'</span><span class="p">,</span> <span class="s1">'tests'</span><span class="p">,</span> <span class="s1">'data'</span><span class="p">,</span> <span class="s1">'grids'</span><span class="p">,</span> <span class="s1">'Matpower'</span><span class="p">,</span> <span class="s1">'case118.m'</span><span class="p">)</span>
 
 <span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 
@@ -361,7 +361,7 @@ and does not account for transformer taps, shunts and other modifications.</p>
                 <span class="n">logger</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Logger</span><span class="p">()</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Method not found :(&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Method not found :("</span><span class="p">)</span>
 
         <span class="c1"># run a power flow after</span>
         <span class="n">pf_res2</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">power_flow</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid2</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">pf_opt</span><span class="p">)</span>
@@ -374,22 +374,22 @@ and does not account for transformer taps, shunts and other modifications.</p>
 
             <span class="k">if</span> <span class="n">Sf_pre</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">flow_d2</span><span class="p">[</span><span class="n">br</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">br</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                    <span class="s2">&quot;Pf pre&quot;</span><span class="p">:</span> <span class="n">Sf_pre</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
-                    <span class="s2">&quot;Pf post&quot;</span><span class="p">:</span> <span class="n">pf_res2</span><span class="o">.</span><span class="n">Sf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
-                    <span class="s2">&quot;Pf err&quot;</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Sf_pre</span><span class="o">.</span><span class="n">real</span> <span class="o">-</span> <span class="n">pf_res2</span><span class="o">.</span><span class="n">Sf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">),</span>
-                    <span class="s2">&quot;Pf err %&quot;</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Sf_pre</span><span class="o">.</span><span class="n">real</span> <span class="o">-</span> <span class="n">pf_res2</span><span class="o">.</span><span class="n">Sf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span> <span class="o">/</span> <span class="n">Sf_pre</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
-                    <span class="s2">&quot;Qf pre&quot;</span><span class="p">:</span> <span class="n">Sf_pre</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span>
-                    <span class="s2">&quot;Qf post&quot;</span><span class="p">:</span> <span class="n">pf_res2</span><span class="o">.</span><span class="n">Sf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span>
-                    <span class="s2">&quot;Qf err&quot;</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Sf_pre</span><span class="o">.</span><span class="n">imag</span> <span class="o">-</span> <span class="n">pf_res2</span><span class="o">.</span><span class="n">Sf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">),</span>
+                    <span class="s2">"name"</span><span class="p">:</span> <span class="n">br</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="s2">"Pf pre"</span><span class="p">:</span> <span class="n">Sf_pre</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
+                    <span class="s2">"Pf post"</span><span class="p">:</span> <span class="n">pf_res2</span><span class="o">.</span><span class="n">Sf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
+                    <span class="s2">"Pf err"</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Sf_pre</span><span class="o">.</span><span class="n">real</span> <span class="o">-</span> <span class="n">pf_res2</span><span class="o">.</span><span class="n">Sf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">),</span>
+                    <span class="s2">"Pf err %"</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Sf_pre</span><span class="o">.</span><span class="n">real</span> <span class="o">-</span> <span class="n">pf_res2</span><span class="o">.</span><span class="n">Sf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span> <span class="o">/</span> <span class="n">Sf_pre</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
+                    <span class="s2">"Qf pre"</span><span class="p">:</span> <span class="n">Sf_pre</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span>
+                    <span class="s2">"Qf post"</span><span class="p">:</span> <span class="n">pf_res2</span><span class="o">.</span><span class="n">Sf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span>
+                    <span class="s2">"Qf err"</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Sf_pre</span><span class="o">.</span><span class="n">imag</span> <span class="o">-</span> <span class="n">pf_res2</span><span class="o">.</span><span class="n">Sf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">),</span>
                 <span class="p">}</span>
 
         <span class="n">df_flow_comp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">flow_d2</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
 
         <span class="nb">print</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">pf_method</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">method</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mean error:&quot;</span><span class="p">,</span> <span class="n">df_flow_comp</span><span class="p">[</span><span class="s2">&quot;Pf err&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s1">&#39;+-&#39;</span><span class="p">,</span> <span class="n">df_flow_comp</span><span class="p">[</span><span class="s2">&quot;Pf err&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">())</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mean error %:&quot;</span><span class="p">,</span> <span class="n">df_flow_comp</span><span class="p">[</span><span class="s2">&quot;Pf err %&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s1">&#39;+-&#39;</span><span class="p">,</span> <span class="n">df_flow_comp</span><span class="p">[</span><span class="s2">&quot;Pf err %&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Mean error:"</span><span class="p">,</span> <span class="n">df_flow_comp</span><span class="p">[</span><span class="s2">"Pf err"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s1">'+-'</span><span class="p">,</span> <span class="n">df_flow_comp</span><span class="p">[</span><span class="s2">"Pf err"</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Mean error %:"</span><span class="p">,</span> <span class="n">df_flow_comp</span><span class="p">[</span><span class="s2">"Pf err %"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s1">'+-'</span><span class="p">,</span> <span class="n">df_flow_comp</span><span class="p">[</span><span class="s2">"Pf err %"</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">())</span>
 </pre></div>
 </div>
 </section>

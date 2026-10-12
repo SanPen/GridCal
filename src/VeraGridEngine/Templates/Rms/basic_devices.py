@@ -94,9 +94,7 @@ def get_pll_transform_rms(vfactory: VarFactory, name: str = "Pll_transform_rms")
     omega_vco = vfactory.add_var('omega_vco', shared_reference="omega_reference")
     theta = vfactory.add_var('theta', shared_reference="theta_reference")
 
-    event_dict = {
-        fn: vfactory.add_const(50),
-    }
+    event_dict = {}
 
     vco_block = Block(
         state_eqs=[2 * math.pi * fn * (omega_vco - 1)],
@@ -105,6 +103,8 @@ def get_pll_transform_rms(vfactory: VarFactory, name: str = "Pll_transform_rms")
         name= 'VCO',
         out_vars = [theta],
         in_vars= [omega_vco],
+        api_obj_mapping={ParamPowerFlowReferenceType.freq: fn},
+        parameters={fn: vfactory.add_const(50)},
     )
 
 
@@ -335,7 +335,7 @@ def get_gfl_electrical_block(vfactory: VarFactory, name: str = "gfl_electrical_e
         ],
         algebraic_vars=[v_q_c, v_d_c, i_d, i_q, P, Q, vd_hat, vq_hat],
         diff_vars=[dt_id, dt_iq],
-        event_dict={
+        parameters={
             R: vfactory.add_const(0.01),
             L: vfactory.add_const(0.05),
         },
@@ -448,7 +448,7 @@ def get_gfl_voltage_control_electrical_block(vfactory: VarFactory,
             v_q_c - (vq_hat + v_q_g + L * omega * i_d),
         ],
         algebraic_vars=[v_d_c, v_q_c],
-        event_dict={
+        parameters={
             L: vfactory.add_const(0.05),
         },
         in_vars=[vd_hat, vq_hat, v_d_g, v_q_g, omega, i_d, i_q],
@@ -613,10 +613,8 @@ def get_gfl_losses_from_line_block(vfactory: VarFactory, name: str = "gfl_losses
         Qf: vfactory.add_const(0.0),
         bt: vfactory.add_const(0.0),
         gt: vfactory.add_const(0.1),
-        a0: vfactory.add_const(0.0),
-        a1: vfactory.add_const(0.0),
-        a2: vfactory.add_const(0.0),
     }
+    parameters = {a0: vfactory.add_const(0.0), a1: vfactory.add_const(0.0), a2: vfactory.add_const(0.0)}
 
     external_mapping = {
         VarPowerFlowReferenceType.Pt: Pt_vsc,
@@ -635,6 +633,7 @@ def get_gfl_losses_from_line_block(vfactory: VarFactory, name: str = "gfl_losses
         ],
         algebraic_vars=[Pt_vsc, Qt_vsc, Pf_vsc],
         event_dict=event_dict,
+        parameters=parameters,
         external_mapping=external_mapping,
         in_vars=[i_d, i_q, Pt_line, Qt_line],
         out_vars=[Pt_vsc, Qt_vsc, Pf_vsc],
@@ -729,10 +728,8 @@ def get_gfl_losses_block(vfactory: VarFactory, name: str = "gfl_losses") -> RmsM
         Qf: vfactory.add_const(0.0),
         bt: vfactory.add_const(0.0),
         gt: vfactory.add_const(0.1),
-        a0: vfactory.add_const(0.0),
-        a1: vfactory.add_const(0.0),
-        a2: vfactory.add_const(0.0),
     }
+    parameters = {a0: vfactory.add_const(0.0), a1: vfactory.add_const(0.0), a2: vfactory.add_const(0.0)}
 
     external_mapping = {
         VarPowerFlowReferenceType.Pt: Pt_vsc,
@@ -757,6 +754,7 @@ def get_gfl_losses_block(vfactory: VarFactory, name: str = "gfl_losses") -> RmsM
             # ash: sym.atan((-gt*exp1 - bt*exp2)/(bt*exp1 - gt*exp2)),
         },
         event_dict=event_dict,
+        parameters=parameters,
         external_mapping=external_mapping,
         in_vars=[i_d, i_q, P, Q],
         out_vars=[Pt_vsc, Qt_vsc, Pf_vsc],

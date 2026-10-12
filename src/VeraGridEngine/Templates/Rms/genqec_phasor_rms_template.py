@@ -130,7 +130,7 @@ def get_genqec_phasor(vfactory: VarFactory, name: str = "GENQEC phasor RMS templ
     Xqaux2 = vfactory.add_var('Xqaux2')
     Xqaux3 = vfactory.add_var('Xqaux3')
 
-    event_dict = {
+    parameters = {
         fn: vfactory.add_const(50.0),
         ws: vfactory.add_const(2 * pi * 50),
         M: vfactory.add_const(3.5),
@@ -153,6 +153,11 @@ def get_genqec_phasor(vfactory: VarFactory, name: str = "GENQEC phasor RMS templ
         Td0_2prime: vfactory.add_const(0.03),
         Tq0_2prime: vfactory.add_const(0.05),
 
+        A: vfactory.add_const(5.0),
+        B: vfactory.add_const(1.0),
+    }
+
+    event_dict = {
         Xd_prime_minus_Xl: Xd_prime - Xl,
         Xq_prime_minus_Xl: Xq_prime - Xl,
         Xdaux: ((Xd_prime - Xd_2prime) / (Xd_prime_minus_Xl) ** 2),
@@ -161,8 +166,6 @@ def get_genqec_phasor(vfactory: VarFactory, name: str = "GENQEC phasor RMS templ
         Xqaux: ((Xq_prime - Xq_2prime) / (Xq_prime_minus_Xl) ** 2),
         Xqaux2: (Xq_prime - Xq_2prime) / (Xq_prime_minus_Xl),
         Xqaux3: ((Xq_2prime - Xl) / (Xq_prime_minus_Xl)),
-        A: vfactory.add_const(5.0),
-        B: vfactory.add_const(1.0)
     }
 
     Eq_2prime_expr = Psid_prime * Xdaux2 + Eq_prime * Xdaux3
@@ -322,6 +325,8 @@ def get_genqec_phasor(vfactory: VarFactory, name: str = "GENQEC phasor RMS templ
             Id_sat: Id / Sat,
         },
         external_mapping={
+            VarPowerFlowReferenceType.P: Pg,
+            VarPowerFlowReferenceType.Q: Qg,
             VarPowerFlowReferenceType.Ir: Irg,
             VarPowerFlowReferenceType.Ii: Iig,
             VarPowerFlowReferenceType.Vr: inputs[0],
@@ -329,7 +334,7 @@ def get_genqec_phasor(vfactory: VarFactory, name: str = "GENQEC phasor RMS templ
         },
 
         api_obj_mapping={
-            ParamPowerFlowReferenceType.fn: fn,
+            ParamPowerFlowReferenceType.freq: fn,
             ParamPowerFlowReferenceType.omega_base: ws,
             ParamPowerFlowReferenceType.M: M,
             ParamPowerFlowReferenceType.D: D,
@@ -351,15 +356,6 @@ def get_genqec_phasor(vfactory: VarFactory, name: str = "GENQEC phasor RMS templ
             ParamPowerFlowReferenceType.Td0_2prime: Td0_2prime,
             ParamPowerFlowReferenceType.Tq0_2prime: Tq0_2prime,
 
-            ParamPowerFlowReferenceType.Xd_prime_minus_Xl: Xd_prime_minus_Xl,
-            ParamPowerFlowReferenceType.Xq_prime_minus_Xl: Xq_prime_minus_Xl,
-            ParamPowerFlowReferenceType.Xdaux: Xdaux,
-            ParamPowerFlowReferenceType.Xdaux2: Xdaux2,
-            ParamPowerFlowReferenceType.Xdaux3: Xdaux3,
-            ParamPowerFlowReferenceType.Xqaux: Xqaux,
-            ParamPowerFlowReferenceType.Xqaux2: Xqaux2,
-            ParamPowerFlowReferenceType.Xqaux3: Xqaux3,
-
             ParamPowerFlowReferenceType.A: A,
             ParamPowerFlowReferenceType.B: B,
         },
@@ -367,6 +363,7 @@ def get_genqec_phasor(vfactory: VarFactory, name: str = "GENQEC phasor RMS templ
         out_vars=[Irg, Iig, omega, IRPu, Te],
         in_vars=inputs,
         event_dict=event_dict,
+        parameters=parameters,
         name="genqec_phasor",
         children=[ml_trig_block, ml_positive_part]
     )
@@ -447,8 +444,8 @@ def get_complete_generator_template_phasor(vfactory: VarFactory,
     vfactory.add_connections([governor_mdl.in_vars[1]], [genqec_mdl.out_vars[4]])  # Te to governor
 
     # Convert generator P/Q outputs to injected Ir/Ii for current-balance formulations
-    Pg_out = genqec_mdl.out_vars[0]
-    Qg_out = genqec_mdl.out_vars[1]
+    Pg_out = genqec_mdl.E(VarPowerFlowReferenceType.P)
+    Qg_out = genqec_mdl.E(VarPowerFlowReferenceType.Q)
     Irg_out = vfactory.add_var("Irg_out")
     Iig_out = vfactory.add_var("Iig_out")
     v_sq = Vr_input * Vr_input + Vi_input * Vi_input

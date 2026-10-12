@@ -18,10 +18,34 @@ from VeraGridEngine.Simulations.EMT.problems.emt_problem_dae import EmtProblemDa
 from VeraGridEngine.Simulations.PowerFlow3ph.power_flow_results_3ph import PowerFlowResults3Ph
 from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from VeraGridEngine.Utils.Symbolic.diagnostic import NewtonDiagnosticsConfig
-from VeraGridEngine.IO.fmu.importer.emt_boundary import CompositeEmtBoundaryUpdater, build_emt_boundary_updater
+from VeraGridEngine.IO.fmu.fmu_device_integration import CompositeEmtBoundaryUpdater, build_emt_boundary_updater
 from VeraGridEngine.basic_structures import Vec, StrVec
+from VeraGridEngine.IO.manufacturer_native.runtime_session import ManufacturerNativeRuntimeSession
+from VeraGridEngine.IO.native_runtime import NativeWorkerLimits
 
 from VeraGridEngine.enumerations import EngineType, PlotSimulationType, SimulationTypes
+
+
+def _model_states_are_steady(values, state_vars, tolerance: float = 1e-4) -> bool:
+    """Compare model states at initialization and the first simulation step.
+
+    Advancing angles are excluded. The comparison assumes no common phase
+    frequency or fundamental cycle.
+    """
+    values = np.asarray(values, dtype=float)
+    if (not np.isfinite(tolerance) or tolerance < 0 or values.ndim != 2 or
+            values.shape[0] < 2 or values.shape[1] < len(state_vars)):
+        return False
+    indices = [i for i, var in enumerate(state_vars)
+               if not var.name.lower().startswith(("theta", "angle", "phi"))]
+    if not indices:
+        return False
+    first = values[0, indices]
+    second = values[1, indices]
+    if not np.all(np.isfinite(first)) or not np.all(np.isfinite(second)):
+        return False
+    scale = np.maximum(1.0, np.maximum(np.abs(first), np.abs(second)))
+    return bool(np.all(np.abs(second - first) / scale <= tolerance))
 
 
 def _collect_emt_group_parameter_values(problem: EmtProblemDae,
@@ -117,9 +141,6 @@ class EmtSimulationDriver(DriverTemplate):
         Performs the EMTP loop using the chosen method.
         :return:
         """
-        # TODO: into the loop add " self.report_text('Time series at ' + str(self.grid.time_profile[t]) + '...')
-        #                     self.report_progress2(it, len(time_indices)) "
-
         self.progress_signal.emit(0)
 
         # set emt events groups
@@ -233,13 +254,28 @@ class EmtSimulationDriver(DriverTemplate):
                     cancel_checker=self.is_cancel,
                 )
 
+                native_session: ManufacturerNativeRuntimeSession | None = None
+                if len(self.grid.manufacturer_native_models) > 0:
+                    native_session = ManufacturerNativeRuntimeSession(
+                        providers=self.grid.manufacturer_native_models,
+                        platform=None,
+                        limits=NativeWorkerLimits(),
+                        logger=self.logger,
+                    )
+                    try:
+                        problem.resolve_manufacturer_native_boundary(native_session)
+                    except BaseException:
+                        native_session.close()
+                        raise
+                else:
+                    pass
+
                 # EMT runtime parameters are initialized by problem/solver
                 # construction. Snapshot them now, before any event evolution.
                 self.results.initial_parameter_value_maps[group_idx] = _collect_emt_group_parameter_values(
                     problem=problem,
                     grid=self.grid,
                 )
-
                 boundary_updater: EmtProblemDae | CompositeEmtBoundaryUpdater = build_emt_boundary_updater(problem)
                 try:
                     # The solver uses the FMU-aware wrapper when native adapters
@@ -250,6 +286,11 @@ class EmtSimulationDriver(DriverTemplate):
                     # every native runtime on success, failure, or cancellation.
                     if isinstance(boundary_updater, CompositeEmtBoundaryUpdater):
                         boundary_updater.close()
+                    else:
+                        pass
+                    problem.resolve_manufacturer_native_boundary(None)
+                    if native_session is not None:
+                        native_session.close()
                     else:
                         pass
 
@@ -283,6 +324,14 @@ class EmtSimulationDriver(DriverTemplate):
 
                 print(f"converged ={converged}")
                 print(f"well_initialized ={well_initialized}")
+                steady_initialization = bool(
+                    well_initialized and _model_states_are_steady(
+                        values=y,
+                        state_vars=problem.get_state_vars(),
+                    )
+                )
+                print(f"steady_state_initialized ={steady_initialization}")
+                self.report_text(f"Steady-state initialized: {steady_initialization}")
 
                 # Persist the solver status in the shared results object so the
                 # GUI post-processing stage reports the actual simulation

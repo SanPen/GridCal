@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Callable, List
 
-from PySide6 import QtCore
+from PySide6 import QtCore, QtGui
 
 from VeraGridEngine.Devices.Branches.underground_cable_type import UndergroundCableType
 from VeraGridEngine.Devices.Branches.underground_line_type import CableInSystem, UndergroundLineType
@@ -84,7 +84,7 @@ class UndergroundCableCatalogueModel(QtCore.QAbstractTableModel):
         """
         if index.isValid():
             flags: QtCore.Qt.ItemFlag = QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
-            if self.properties[index.column()].editable:
+            if self.cables[index.row()].is_property_editable(self.properties[index.column()]):
                 return flags | QtCore.Qt.ItemFlag.ItemIsEditable
             else:
                 return flags
@@ -107,6 +107,8 @@ class UndergroundCableCatalogueModel(QtCore.QAbstractTableModel):
                 return str(cable.get_value(prop=prop, t_idx=None))
             elif role == QtCore.Qt.ItemDataRole.ToolTipRole:
                 return prop.definition
+            elif role == QtCore.Qt.ItemDataRole.ForegroundRole and not cable.is_property_editable(prop):
+                return QtGui.QColor('gray')
             else:
                 return None
         else:
@@ -124,20 +126,20 @@ class UndergroundCableCatalogueModel(QtCore.QAbstractTableModel):
         :return: Whether the value was accepted.
         """
         if (index.isValid() and role == QtCore.Qt.ItemDataRole.EditRole
-                and self.properties[index.column()].editable):
+                and self.cables[index.row()].is_property_editable(self.properties[index.column()])):
             cable: UndergroundCableType = self.cables[index.row()]
             prop: GCProp = self.properties[index.column()]
             try:
-                if prop.tpe is str:
-                    cable.set_value(prop=prop, t_idx=None, value=str(value))
-                else:
-                    cable.set_value(prop=prop, t_idx=None, value=float(value))
+                cable.set_value(prop=prop, t_idx=None, value=prop.tpe(value))
                 accepted: bool = True
             except (TypeError, ValueError):
                 accepted = False
 
             if accepted:
-                self.dataChanged.emit(index, index, [role])
+                self.dataChanged.emit(self.index(index.row(), 0),
+                                      self.index(index.row(), self.columnCount() - 1),
+                                      [QtCore.Qt.ItemDataRole.DisplayRole, role,
+                                       QtCore.Qt.ItemDataRole.ForegroundRole])
                 if self.edit_callback is not None:
                     self.edit_callback()
                 else:

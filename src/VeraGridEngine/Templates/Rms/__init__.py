@@ -5,6 +5,7 @@
 
 # from VeraGridEngine.Templates.Rms.genqec_exc_gov_sat_template import get_complete_generator_template_rms, get_genqec_rms, get_governor_rms, get_stabilizer_rms, get_exciter_rms
 from VeraGridEngine.Templates.Rms.genqec_exc_gov_sat_template_v2 import get_complete_generator_template_rms, get_genqec_rms, get_governor_rms, get_stabilizer_rms, get_exciter_rms
+from VeraGridEngine.Templates.Rms.gencls_rms_template import get_gencls_rms_template
 from VeraGridEngine.Templates.Rms.genrow_rms_template import get_genrow_rms_template
 from VeraGridEngine.Templates.Rms.line_rms_template import get_line_rms_template, get_dc_line_rms_template
 from VeraGridEngine.Templates.Rms.load_rms_template import get_load_rms_template

@@ -5,6 +5,7 @@
 
 from typing import List
 import numpy as np
+from VeraGridEngine.enumerations import ParamPowerFlowReferenceType
 import math
 
 from VeraGridEngine.enumerations import DeviceType
@@ -148,10 +149,10 @@ def pll_transform(vfactory: VarFactory, v_abc, multilinear:bool = False, name:st
     )
 
     res_block.add(Block(event_dict={
-        omega_base: vfactory.add_const(2.0 * math.pi * 50.0),
         Kp_pll: vfactory.add_const(0.03),
         Ki_pll: vfactory.add_const(0.2),
-    }))
+    }, parameters={omega_base: vfactory.add_const(2.0 * math.pi * 50.0)},
+        api_obj_mapping={ParamPowerFlowReferenceType.omega_base: omega_base}))
     res_block.add(integrator)
     res_block.add(park_block)
     return res_block, v_dq, omega, theta, aux_vars
@@ -542,13 +543,21 @@ def VscGflEmtBuild(vfactory: VarFactory, name: str = "",
         VarPowerFlowReferenceType.v_A: inputs[0],
         VarPowerFlowReferenceType.v_B: inputs[1],
         VarPowerFlowReferenceType.v_C: inputs[2],
+        VarPowerFlowReferenceType.vt_A: inputs[0],
+        VarPowerFlowReferenceType.vt_B: inputs[1],
+        VarPowerFlowReferenceType.vt_C: inputs[2],
         VarPowerFlowReferenceType.Vdc: inputs[9],
+        VarPowerFlowReferenceType.Vf_dc: inputs[9],
         VarPowerFlowReferenceType.Idc: i_dc,
+        VarPowerFlowReferenceType.If_dc: i_dc,
         VarPowerFlowReferenceType.Pt: Pt_vsc,
         VarPowerFlowReferenceType.Qt: Qt_vsc,
         VarPowerFlowReferenceType.i_A: i_a_t,
         VarPowerFlowReferenceType.i_B: i_b_t,
         VarPowerFlowReferenceType.i_C: i_c_t,
+        VarPowerFlowReferenceType.it_A: i_a_t,
+        VarPowerFlowReferenceType.it_B: i_b_t,
+        VarPowerFlowReferenceType.it_C: i_c_t,
         VarPowerFlowReferenceType.Vpk: Vpk_ref,
         VarPowerFlowReferenceType.phi_v: phi_v_ref,
     }

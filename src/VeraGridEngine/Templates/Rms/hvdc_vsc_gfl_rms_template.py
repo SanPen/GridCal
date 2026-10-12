@@ -86,48 +86,23 @@ class HvdcVscGflRmsTemplate(TemplateDefinition):
         )
 
 
-def _find_event_variable(block: Block, variable_name: str) -> tuple[Block, Var] | None:
-    """Find an event parameter and its owning block recursively.
-
-    :param block: Root of the symbolic block tree to inspect.
-    :param variable_name: Exact event-parameter name to find.
-    :return: Owner and variable, or ``None`` when the parameter is absent.
-    """
-    variable: Var
-    for variable in block.event_dict:
-        if variable.name == variable_name:
-            return block, variable
-        else:
-            pass
-    child: Block
-    for child in block.children:
-        result: tuple[Block, Var] | None = _find_event_variable(child, variable_name)
-        if result is not None:
-            return result
-        else:
-            pass
-    return None
-
-
-def _set_event_value(block: Block, variable_name: str, value: float, vf: VarFactory) -> None:
-    """Set one existing event parameter to a numeric default.
+def _set_parameter_value(block: Block, variable_name: str, value: float, vf: VarFactory) -> None:
+    """Set a static or event parameter without changing its ownership.
 
     :param block: Root of the symbolic block tree to update.
-    :param variable_name: Exact event-parameter name to update.
+    :param variable_name: Exact parameter name to update.
     :param value: Real numeric default assigned to the parameter.
     :param vf: Factory used to create the symbolic constant.
     :return: None.
-    :raises KeyError: If the block has no matching event parameter.
+    :raises KeyError: If the block has no matching parameter.
     """
-    result: tuple[Block, Var] | None = _find_event_variable(block=block, variable_name=variable_name)
-    if result is None:
-        raise KeyError(f"The VSC GFL model has no event parameter named '{variable_name}'")
-    else:
-        pass
-    owner: Block
-    variable: Var
-    owner, variable = result
-    owner.event_dict[variable] = vf.add_const(value)
+    for owner in block.get_all_blocks():
+        for destination in (owner.parameters, owner.event_dict):
+            for variable in destination:
+                if variable.name == variable_name:
+                    destination[variable] = vf.add_const(value)
+                    return
+    raise KeyError(f"The VSC GFL model has no parameter named '{variable_name}'")
 
 
 def build_hvdc_vsc_gfl_rms(
@@ -192,7 +167,7 @@ def build_hvdc_vsc_gfl_rms(
     variable_name: str
     value: float
     for variable_name, value in defaults:
-        _set_event_value(template.block, variable_name, value, vfactory)
+        _set_parameter_value(template.block, variable_name, value, vfactory)
 
     return template
 

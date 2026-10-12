@@ -212,22 +212,18 @@ def test_simulation_with_event_emt():
     results_df = pd.DataFrame(res, index=t, columns=cols)
     results_df.index.name = "time_s"
 
-    results_df = results_df[reference_df.columns]
-    runtime_df = results_df.iloc[1:].reset_index(drop=True)
-    reference_runtime_df = reference_df.iloc[1:].reset_index(drop=True)
-    y_columns = [col for col in runtime_df.columns if col.startswith("y")]
-    dy_columns = [col for col in runtime_df.columns if col.startswith("dy")]
-
-    # The non-flattened EMT build now follows the RMS-like canonical workflow,
-    # so the legacy CSV snapshot is no longer treated as a strict trajectory
-    # contract. The runtime result must still remain finite and eventful.
-    assert np.all(np.isfinite(runtime_df[y_columns].to_numpy(dtype=float)))
-    assert np.max(np.abs(runtime_df[y_columns].to_numpy(dtype=float))) > 1.0e-6
-
-    # The derivative traces are not treated as a strict snapshot contract here.
-    # They are still checked for numerical sanity so event handling cannot hide
-    # NaNs or infinities behind a passing state-trajectory comparison.
-    assert np.all(np.isfinite(runtime_df[dy_columns].to_numpy(dtype=float)))
+    # The EMT reference is a complete trajectory contract. Compare every state
+    # and derivative at every simulated instant, including the initialized point
+    # at t=0 and both event boundaries.
+    assert list(results_df.columns) == list(reference_df.columns)
+    assert_frame_equal(
+        results_df.reset_index(drop=True),
+        reference_df.reset_index(drop=True),
+        check_dtype=False,
+        check_index_type=False,
+        atol=1.0e-6,
+        rtol=1.0e-6,
+    )
 
 
 if __name__ == "__main__":

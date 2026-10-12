@@ -4,28 +4,32 @@
 # SPDX-License-Identifier: MPL-2.0
 """Functional export tests for the maintained FMI 3 CS and ME pipelines."""
 from __future__ import annotations
+from VeraGridEngine.enumerations import InterfaceType
 
 from pathlib import Path
 import xml.etree.ElementTree as element_tree
 import zipfile
 
 import numpy as np
+import pytest
 from fmpy import simulate_fmu
 from fmpy.validation import validate_fmu
 
 from VeraGridEngine.enumerations import FmiVersion
-from VeraGridEngine.IO.fmu.exporter.api import export_fmu
-from VeraGridEngine.IO.fmu.exporter.compat import Block, Const, Var
-from VeraGridEngine.IO.fmu.exporter.config import ExportConfig as CsExportConfig
-from VeraGridEngine.IO.fmu.export_platform import (
+from VeraGridEngine.IO.fmu.compiler import fmu_compiler_available
+from VeraGridEngine.IO.fmu.interface import export_model_as_fmu
+from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
+from VeraGridEngine.IO.fmu.config import ExportConfig as CsExportConfig
+from VeraGridEngine.IO.fmu.config import (
     binary_directory,
     detect_target_platform,
     library_suffix,
 )
-from VeraGridEngine.IO.fmu.exporter_me.api import export_fmu_me
-from VeraGridEngine.IO.fmu.exporter_me.config import ExportConfig as MeExportConfig
+from VeraGridEngine.IO.fmu.config import ExportConfig as MeExportConfig
 
 
+@pytest.mark.skipif(not fmu_compiler_available(), reason="No usable FMU compiler is configured")
 def test_fmi_three_smooth_cs_and_me_exports_follow_same_oracle(tmp_path: Path) -> None:
     """Compile and execute smooth FMI 3 CS and ME models against ``x=t``.
 
@@ -42,7 +46,7 @@ def test_fmi_three_smooth_cs_and_me_exports_follow_same_oracle(tmp_path: Path) -
         out_vars=list((state,)),
         name="FmiThreeSmooth",
     )
-    cs_path: Path = export_fmu(
+    cs_path: Path = export_model_as_fmu(
         source_block,
         CsExportConfig(
             model_name="FmiThreeSmoothCs",
@@ -51,9 +55,9 @@ def test_fmi_three_smooth_cs_and_me_exports_follow_same_oracle(tmp_path: Path) -
             fmi_version=FmiVersion.FMI_3_0,
         ),
     )
-    me_path: Path = export_fmu_me(
+    me_path: Path = export_model_as_fmu(
         source_block,
-        MeExportConfig(
+        MeExportConfig(interface_type=InterfaceType.MODEL_EXCHANGE, 
             model_name="FmiThreeSmoothMe",
             output_path=tmp_path / "FmiThreeSmoothMe.fmu",
             fixed_step=1.0e-3,
@@ -92,4 +96,3 @@ def test_fmi_three_smooth_cs_and_me_exports_follow_same_oracle(tmp_path: Path) -
     )
     np.testing.assert_allclose(cs_result["x"], cs_result["time"], rtol=1.0e-7, atol=1.0e-8)
     np.testing.assert_allclose(me_result["x"], me_result["time"], rtol=1.0e-7, atol=1.0e-8)
-

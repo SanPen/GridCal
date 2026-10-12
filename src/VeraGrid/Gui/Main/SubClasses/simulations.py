@@ -1682,7 +1682,7 @@ class SimulationsMain(TimeEventsMain):
         """
         # update the results in the circuit structures
 
-        _, results = self.session.power_flow_3ph
+        driver, results = self.session.power_flow_3ph
 
         self.remove_simulation(SimulationTypes.PowerFlow3ph_run)
 
@@ -1697,6 +1697,9 @@ class SimulationsMain(TimeEventsMain):
                 else:
                     self.show_warning_toast(self.tr("Power flow 3ph not converged :/"))
 
+            elif driver is not None and driver.logger.has_errors():
+                # The worker preserves the actual failure, including invalid Z0/Z2 data.
+                self.show_logs(logger=driver.logger, name=self.tr('Power flow 3ph failed'))
             else:
                 warning_msg(self.tr('There are no power flow results.\nIs there any slack bus or generator?'),
                             self.tr('Power flow'))
@@ -4131,7 +4134,7 @@ class SimulationsMain(TimeEventsMain):
             group_index: int
             for group_index in range(group_count):
                 rms_events_group = self.circuit.rms_events_groups[group_index]
-                if rms_events_group.active:
+                if rms_events_group.active and results.has_event_group_results[group_index]:
                     active_group_indices.append(group_index)
                 else:
                     pass
@@ -4167,8 +4170,13 @@ class SimulationsMain(TimeEventsMain):
                         not_converged_names.append(group_name)
 
                 if len(not_converged_names) > 0:
-                    for group_name in not_converged_names:
-                        self.show_warning_toast(f"Simulation not converged for {group_name}:/")
+                    self.ui.progress_label.setText("RMS stopped with partial results")
+                    if drv is not None and drv.logger.has_logs():
+                        self.show_logs(logger=drv.logger, name="RMS simulation stopped")
+                    self.show_error_toast(
+                        f"RMS stopped; partial results available for {', '.join(not_converged_names)}",
+                        duration=5000,
+                    )
                 else:
                     self.show_info_toast(self.tr("Simulation converged for all active simulation groups :)"))
             else:

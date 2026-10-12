@@ -1,23 +1,19 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+
+"""Typed validation results and their Dynamic Editor presentation dialog."""
+
 from __future__ import annotations
 
-import re
-from typing import cast, Optional, TYPE_CHECKING
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtWidgets import QDialog
 
-from PySide6 import QtGui, QtWidgets
-from PySide6.QtCore import QObject, Qt
-from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QScrollArea, QTableWidget, QTableWidgetItem, \
-    QHBoxLayout, QSizePolicy, QToolButton, QVBoxLayout, QWidget
-
+from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_validation_dialog import Ui_ValidationSectionDialog
+from VeraGridEngine.enumerations import ValidationFilterType
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import Var
-from VeraGridEngine.enumerations import VarPowerFlowReferenceType
-
-if TYPE_CHECKING:
-    from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor import DynamicBlockEditorGUI
-else:
-    pass
-
 
 def collect_block_tree(root_block: Block) -> list[Block]:
     """
@@ -42,125 +38,91 @@ def format_validation_block_label(block: Block) -> str:
     :param block: Block to label.
     :return: User-facing label with the block name and uid suffix.
     """
-    block_name: str = block.name if block.name else "Unnamed block"
+    block_name: str = block.name if block.name else QtCore.QCoreApplication.translate(
+        "DynamicBlockEditorGUI",
+        "Unnamed block",
+    )
     uid_suffix: str = str(block.uid)[-8:]
     return f"{block_name} [{uid_suffix}]"
 
 
-def get_var_reference(var: Var) -> VarPowerFlowReferenceType | None:
+class ValidationNameEntry:
+    """Track the symbolic identities registered under one visible name."""
+
+    __slots__ = ("_name", "_uids")
+
+    def __init__(self, name: str) -> None:
+        """Create an empty identity group for one variable name.
+
+        :param name: Symbolic variable name represented by this entry.
+        :return: None.
+        """
+        self._name: str = name
+        self._uids: set[int] = set()
+
+    def get_name(self) -> str:
+        """Return the symbolic name represented by this entry.
+
+        :return: Symbolic variable name.
+        """
+        return self._name
+
+    def add_uid(self, uid: int) -> None:
+        """Register one symbolic identity for the represented name.
+
+        :param uid: Stable variable identity to register.
+        :return: None.
+        """
+        self._uids.add(uid)
+
+    def has_multiple_uids(self) -> bool:
+        """Return whether the name belongs to more than one variable.
+
+        :return: ``True`` when the name is duplicated by identity.
+        """
+        return len(self._uids) > 1
+
+
+def get_or_create_validation_name_entry(
+        name_entries: list[ValidationNameEntry],
+        name: str,
+) -> ValidationNameEntry:
+    """Return the duplicate-check entry for one name, creating it if absent.
+
+    :param name_entries: Ordered duplicate-check entries for one block.
+    :param name: Symbolic variable name to resolve.
+    :return: Existing or newly created name entry.
     """
-    Return one power-flow reference carried by a symbolic variable.
+    name_entry: ValidationNameEntry
+    for name_entry in name_entries:
+        if name_entry.get_name() == name:
+            return name_entry
+        else:
+            pass
 
-    :param var: Candidate symbolic variable.
-    :return: Power-flow reference or ``None`` when absent.
+    new_entry: ValidationNameEntry = ValidationNameEntry(name=name)
+    name_entries.append(new_entry)
+    return new_entry
+
+
+def append_vars_to_name_entries(
+        name_entries: list[ValidationNameEntry],
+        vars_list: list[Var],
+) -> None:
     """
-    if isinstance(var.ref, VarPowerFlowReferenceType):
-        return var.ref
-    else:
-        return None
+    Register one list of variables into the duplicate-name entries.
 
-
-def append_vars_to_name_uid_map(name_to_uids: dict[str, set[int]], vars_list: list[Var]) -> None:
-    """
-    Register one list of variables into the duplicate-name lookup map.
-
-    :param name_to_uids: Mutable mapping from variable name to seen uid set.
+    :param name_entries: Mutable identity groups indexed by their typed name property.
     :param vars_list: Variables to register.
     :return: None.
     """
     var: Var
     for var in vars_list:
-        uid_set: set[int] = name_to_uids.setdefault(var.name, set())
-        uid_set.add(var.uid)
-
-
-def append_port_vars_to_phase_count(phase_counts: dict[str, int], vars_list: list[Var]) -> None:
-    """
-    Count visible EMT ports by phase group.
-
-    :param phase_counts: Mutable phase-count mapping.
-    :param vars_list: Candidate port variables.
-    :return: None.
-    """
-    var: Var
-    for var in vars_list:
-        reference: VarPowerFlowReferenceType | None = get_var_reference(var=var)
-        phase_name: str | None = get_emt_phase_group(reference=reference)
-
-        if phase_name is not None:
-            phase_counts[phase_name] = phase_counts.get(phase_name, 0) + 1
-        else:
-            pass
-
-
-def append_missing_port_messages_for_direction(
-        missing_port_messages: list[str],
-        emt_missing_by_phase: dict[str, list[str]],
-        vars_list: list[Var],
-        node_uid: int,
-        connected_ports: set[tuple[int, int]],
-        is_input: bool,
-        mode: object,
-) -> None:
-    """
-    Append missing-port labels for one port direction.
-
-    :param missing_port_messages: Mutable flat missing-port message list.
-    :param emt_missing_by_phase: Mutable EMT missing-port lookup by phase.
-    :param vars_list: Candidate port variables.
-    :param node_uid: Diagram node uid.
-    :param connected_ports: Connected port lookup set for this direction.
-    :param is_input: Whether the candidate list is for inputs.
-    :param mode: Current dynamic simulation mode.
-    :return: None.
-    """
-    direction_label: str = "input" if is_input else "output"
-    port_index: int = 0
-    var: Var
-    reference: VarPowerFlowReferenceType | None
-    phase_name: str | None
-    message: str
-
-    for var in vars_list:
-        if (node_uid, port_index) in connected_ports:
-            pass
-        else:
-            message = f"{direction_label} '{var.name}' is not connected"
-            reference = get_var_reference(var=var)
-            phase_name = get_emt_phase_group(reference=reference)
-
-            if phase_name is not None and str(mode).endswith("EMT"):
-                emt_missing_by_phase[phase_name].append(message)
-            else:
-                missing_port_messages.append(message)
-
-        port_index = port_index + 1
-
-
-def format_missing_port_detail(input_names: list[str], output_names: list[str]) -> str:
-    """
-    Format one grouped missing-port detail line.
-
-    :param input_names: Missing input labels.
-    :param output_names: Missing output labels.
-    :return: Human-readable detail string.
-    """
-    detail_parts: list[str] = list()
-
-    if len(input_names) > 0:
-        detail_parts.append("Inputs: " + ", ".join(input_names))
-    else:
-        pass
-
-    if len(output_names) > 0:
-        detail_parts.append("Outputs: " + ", ".join(output_names))
-    else:
-        pass
-
-    if len(detail_parts) > 0:
-        return " | ".join(detail_parts)
-    else:
-        return "All connected"
+        name_entry: ValidationNameEntry = get_or_create_validation_name_entry(
+            name_entries=name_entries,
+            name=var.name,
+        )
+        name_entry.add_uid(uid=var.uid)
 
 
 class ValidationRow:
@@ -168,20 +130,19 @@ class ValidationRow:
     Row of validation output associated with one block.
     """
 
-    __slots__ = ("_block_label", "_details", "_ok", "_highlight_ports", "_highlight_port_refs", "_highlight_block")
+    __slots__ = ("_block_uid", "_block_label", "_details", "_highlight_block")
 
-    def __init__(self, block_label: str) -> None:
+    def __init__(self, block_uid: int, block_label: str) -> None:
         """
         Build one validation row.
 
+        :param block_uid: Stable identity of the validated block.
         :param block_label: Human-readable block label.
         :return: None.
         """
+        self._block_uid: int = block_uid
         self._block_label: str = block_label
         self._details: list[str] = list()
-        self._ok: bool = False
-        self._highlight_ports: set[str] = set()
-        self._highlight_port_refs: set[VarPowerFlowReferenceType] = set()
         self._highlight_block: bool = False
 
     def get_block_label(self) -> str:
@@ -191,6 +152,13 @@ class ValidationRow:
         :return: Block label.
         """
         return self._block_label
+
+    def get_block_uid(self) -> int:
+        """Return the stable identity of the validated block.
+
+        :return: Block uid.
+        """
+        return self._block_uid
 
     def get_details(self) -> list[str]:
         """
@@ -209,14 +177,6 @@ class ValidationRow:
         """
         self._details.append(detail)
 
-    def is_ok(self) -> bool:
-        """
-        Return whether the row is informationally correct.
-
-        :return: Stored row status.
-        """
-        return self._ok
-
     def set_highlight_block(self, val: bool) -> None:
         """
         Store whether the owning block should be highlighted.
@@ -234,61 +194,22 @@ class ValidationRow:
         """
         return self._highlight_block
 
-    def add_highlight_port_name(self, port_name: str) -> None:
-        """
-        Register one port name that should be highlighted.
-
-        :param port_name: Visible port variable name.
-        :return: None.
-        """
-        self._highlight_ports.add(port_name)
-
-    def get_highlight_port_names(self) -> set[str]:
-        """
-        Return the port names that should be highlighted.
-
-        :return: Highlighted port names.
-        """
-        return self._highlight_ports
-
-    def add_highlight_port_ref(self, port_ref: VarPowerFlowReferenceType) -> None:
-        """
-        Register one port reference type that should be highlighted.
-
-        :param port_ref: Semantic power-flow reference.
-        :return: None.
-        """
-        self._highlight_port_refs.add(port_ref)
-
-    def get_highlight_port_refs(self) -> set[VarPowerFlowReferenceType]:
-        """
-        Return the port reference types that should be highlighted.
-
-        :return: Highlighted port references.
-        """
-        return self._highlight_port_refs
-
-
 class ValidationSection:
     """
     Group of validation rows for one validation rule family.
     """
 
-    __slots__ = ("_title", "_rows", "_first_column_title", "_show_issue_label")
+    __slots__ = ("_title", "_rows")
 
-    def __init__(self, title: str, first_column_title: str = "Block", show_issue_label: bool = True) -> None:
+    def __init__(self, title: str) -> None:
         """
         Build one validation section.
 
         :param title: Section title.
-        :param first_column_title: First table-column title.
-        :param show_issue_label: Whether to show the section issue summary label.
         :return: None.
         """
         self._title: str = title
         self._rows: list[ValidationRow] = list()
-        self._first_column_title: str = first_column_title
-        self._show_issue_label: bool = show_issue_label
 
     def get_title(self) -> str:
         """
@@ -306,36 +227,23 @@ class ValidationSection:
         """
         return self._rows
 
-    def get_first_column_title(self) -> str:
-        """
-        Return the first table-column title.
-
-        :return: First column title.
-        """
-        return self._first_column_title
-
-    def get_show_issue_label(self) -> bool:
-        """
-        Return whether the section should show its issue label.
-
-        :return: Issue-label visibility flag.
-        """
-        return self._show_issue_label
-
-    def get_or_create_row(self, block_label: str) -> ValidationRow:
+    def get_or_create_row(self, block: Block) -> ValidationRow:
         """Return the row for one block, creating it when absent.
 
-        :param block_label: Display label identifying the validated block.
+        :param block: Validated block owning the row.
         :return: Existing or newly appended validation row.
         """
         row: ValidationRow
         for row in self._rows:
-            if row.get_block_label() == block_label:
+            if row.get_block_uid() == block.uid:
                 return row
             else:
                 pass
 
-        new_row: ValidationRow = ValidationRow(block_label=block_label)
+        new_row: ValidationRow = ValidationRow(
+            block_uid=block.uid,
+            block_label=format_validation_block_label(block=block),
+        )
         self._rows.append(new_row)
         return new_row
 
@@ -447,63 +355,70 @@ def collect_validation_traversal_list(root_node: ValidationTraversalNode) -> lis
     return flat_nodes
 
 
-def add_validation_detail(section: ValidationSection, block_label: str, detail: str) -> None:
+def add_validation_detail(section: ValidationSection, block: Block, detail: str) -> None:
     """
     Append one formatted validation detail to a section.
 
     :param section: Mutable validation section.
-    :param block_label: Human-readable block identifier.
+    :param block: Validated block owning the detail.
     :param detail: One validation detail for that block.
     :return: None.
     """
-    row: ValidationRow = section.get_or_create_row(block_label=block_label)
+    row: ValidationRow = section.get_or_create_row(block=block)
     row.add_detail(detail=detail)
 
 
-def add_validation_port_detail(
-        section: ValidationSection,
-        block_label: str,
-        detail: str,
-        input_names: list[str],
-        output_names: list[str],
-        input_refs: list[VarPowerFlowReferenceType] | None = None,
-        output_refs: list[VarPowerFlowReferenceType] | None = None,
-) -> None:
-    """
-    Append one port-connectivity detail and store the exact port names to highlight.
+class ValidationFilterChoice:
+    """Typed filter option exposed by the validation-results combo box."""
 
-    :param section: Mutable validation section.
-    :param block_label: Human-readable block identifier.
-    :param detail: One validation detail for that block.
-    :param input_names: Missing input port names.
-    :param output_names: Missing output port names.
-    :param input_refs: Missing input port references.
-    :param output_refs: Missing output port references.
-    :return: None.
-    """
-    row: ValidationRow = section.get_or_create_row(block_label=block_label)
-    row.add_detail(detail=detail)
+    __slots__ = ("_label", "_filter_type", "_section")
 
-    port_name: str
-    for port_name in input_names:
-        row.add_highlight_port_name(port_name=port_name)
+    def __init__(
+            self,
+            label: str,
+            filter_type: ValidationFilterType,
+            section: ValidationSection | None,
+    ) -> None:
+        """Create one validation-result filter choice.
 
-    for port_name in output_names:
-        row.add_highlight_port_name(port_name=port_name)
+        :param label: User-facing combo-box label.
+        :param filter_type: Scope represented by this filter choice.
+        :param section: Optional validation section to display exclusively.
+        :return: None.
+        """
+        self._label: str = label
+        self._filter_type: ValidationFilterType = filter_type
+        self._section: ValidationSection | None = section
 
-    if input_refs is not None:
-        port_ref: VarPowerFlowReferenceType
-        for port_ref in input_refs:
-            row.add_highlight_port_ref(port_ref=port_ref)
-    else:
-        pass
+    def get_label(self) -> str:
+        """Return the user-facing filter label.
 
-    if output_refs is not None:
-        port_ref: VarPowerFlowReferenceType
-        for port_ref in output_refs:
-            row.add_highlight_port_ref(port_ref=port_ref)
-    else:
-        pass
+        :return: Filter label.
+        """
+        return self._label
+
+    def is_issues_only(self) -> bool:
+        """Return whether this choice excludes successful checks.
+
+        :return: Issues-only state.
+        """
+        return self._filter_type == ValidationFilterType.ISSUES_ONLY
+
+    def includes_section(self, section: ValidationSection, has_issues: bool) -> bool:
+        """Return whether one validation section belongs in this filter.
+
+        :param section: Candidate validation section.
+        :param has_issues: Whether the section contains reported issue rows.
+        :return: Whether the section must be rendered.
+        """
+        if self._filter_type == ValidationFilterType.ALL_CHECKS:
+            return True
+        elif self._filter_type == ValidationFilterType.ISSUES_ONLY:
+            return has_issues
+        elif self._filter_type == ValidationFilterType.SECTION:
+            return self._section is section
+        else:
+            return False
 
 
 class ValidationSectionDialog(QDialog):
@@ -511,9 +426,25 @@ class ValidationSectionDialog(QDialog):
     Dialog showing model-consistency results grouped by validation section.
     """
 
-    __slots__ = ("_section_results", "_show_issues_button")
+    __slots__ = (
+        "_section_results",
+        "_ui",
+        "_show_issues_button",
+        "_filter_choices",
+        "_table_model",
+        "_issue_icon",
+        "_ok_icon",
+    )
 
-    def __init__(self, section_results: list[ValidationSection], parent: Optional[QtWidgets.QWidget] = None) -> None:
+    issuesRequested: QtCore.Signal = QtCore.Signal(object)
+    # Symbolic UIDs may exceed Qt's 32-bit integer signal payload.
+    issueSelected: QtCore.Signal = QtCore.Signal(object)
+
+    def __init__(
+            self,
+            section_results: list[ValidationSection],
+            parent: QtWidgets.QWidget | None = None,
+    ) -> None:
         """
         Build one validation-results dialog.
 
@@ -523,182 +454,205 @@ class ValidationSectionDialog(QDialog):
         """
         super().__init__(parent)
         self._section_results: list[ValidationSection] = section_results
-        self.setWindowTitle("Model Consistency Validation")
-        self.resize(860, 620)
+        self._ui: Ui_ValidationSectionDialog = Ui_ValidationSectionDialog()
+        self._ui.setupUi(self)
 
-        layout: QVBoxLayout = QVBoxLayout(self)
-        # The outer layout keeps the scroll area and the close button compact so
-        # the report can fit more validation content before requiring scrolling.
-        layout.setContentsMargins(6, 6, 6, 6)
-        layout.setSpacing(4)
-
-        scroll_area: QScrollArea = QScrollArea(self)
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        layout.addWidget(scroll_area)
-
-        scroll_widget: QWidget = QWidget(scroll_area)
-        scroll_area.setWidget(scroll_widget)
-        scroll_layout: QVBoxLayout = QVBoxLayout(scroll_widget)
-        # The inner layout uses tight spacing so each section title stays visually
-        # attached to its content and the full report is denser to read.
-        scroll_layout.setContentsMargins(6, 6, 6, 6)
-        scroll_layout.setSpacing(2)
-
-        intro_label: QLabel = QLabel(
-            "Run an informational validation of the edited model structure, mappings, initialization, and port connectivity. "
-            "This check reports issues but does not block saving the model."
+        # A single standard item model keeps all result scrolling and sizing in
+        # the table view, instead of nesting one manually sized table per check.
+        self._table_model: QtGui.QStandardItemModel = QtGui.QStandardItemModel(self)
+        self._table_model.setColumnCount(4)
+        self._table_model.setHorizontalHeaderLabels(
+            list((self.tr("Status"), self.tr("Check"), self.tr("Block"), self.tr("Details"),))
         )
-        intro_label.setWordWrap(True)
-        scroll_layout.addWidget(intro_label)
-        scroll_layout.addSpacing(2)
+        self._ui.resultsTableView.setModel(self._table_model)
+
+        table_header: QtWidgets.QHeaderView = self._ui.resultsTableView.horizontalHeader()
+        table_header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        table_header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        table_header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        table_header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.Stretch)
+
+        # Standard Qt status icons follow the active platform and theme without
+        # imposing fixed light-theme foreground colours on the result table.
+        self._issue_icon: QtGui.QIcon = self.style().standardIcon(
+            QtWidgets.QStyle.StandardPixmap.SP_MessageBoxWarning
+        )
+        self._ok_icon: QtGui.QIcon = self.style().standardIcon(
+            QtWidgets.QStyle.StandardPixmap.SP_DialogApplyButton
+        )
+
+        self._filter_choices: list[ValidationFilterChoice] = list()
+        self._populate_filter_choices()
+        self._update_summary()
+        self._refresh_table(filter_index=0)
+        self._ui.resultsFilterComboBox.currentIndexChanged.connect(self._refresh_table)
+        self._ui.resultsTableView.doubleClicked.connect(self._show_selected_issue_in_model)
+
+        self._show_issues_button: QtWidgets.QPushButton = self._ui.showIssuesButton
+        self._show_issues_button.setEnabled(self._has_any_issue_rows())
+        self._show_issues_button.clicked.connect(self._show_issues_in_model)
+
+    def _populate_filter_choices(self) -> None:
+        """Populate the result filter with overview and section choices.
+
+        :return: None.
+        """
+        self._filter_choices.clear()
+        self._ui.resultsFilterComboBox.clear()
+
+        all_checks_choice: ValidationFilterChoice = ValidationFilterChoice(
+            label=self.tr("All checks"),
+            filter_type=ValidationFilterType.ALL_CHECKS,
+            section=None,
+        )
+        issues_only_choice: ValidationFilterChoice = ValidationFilterChoice(
+            label=self.tr("Issues only"),
+            filter_type=ValidationFilterType.ISSUES_ONLY,
+            section=None,
+        )
+        self._filter_choices.append(all_checks_choice)
+        self._filter_choices.append(issues_only_choice)
 
         section: ValidationSection
         for section in self._section_results:
-            self._add_section_widget(layout=scroll_layout, section=section)
+            section_choice: ValidationFilterChoice = ValidationFilterChoice(
+                label=section.get_title(),
+                filter_type=ValidationFilterType.SECTION,
+                section=section,
+            )
+            self._filter_choices.append(section_choice)
 
-        # Keep the compact validation rows anchored to the top of the scroll
-        # area so extra dialog height becomes empty space below the sections.
-        scroll_layout.addStretch(1)
+        filter_choice: ValidationFilterChoice
+        for filter_choice in self._filter_choices:
+            self._ui.resultsFilterComboBox.addItem(filter_choice.get_label())
 
-        button_box: QDialogButtonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok, self)
-        self._show_issues_button: QtWidgets.QPushButton = button_box.addButton(
-            "Show Issues",
-            QDialogButtonBox.ButtonRole.ActionRole,
-        )
-        self._show_issues_button.setToolTip("Show issues in the model")
-        self._show_issues_button.setEnabled(self._has_any_issue_rows())
-        self._show_issues_button.clicked.connect(self._show_issues_in_model)
-        button_box.accepted.connect(self.accept)
-        layout.addWidget(button_box)
+    def _update_summary(self) -> None:
+        """Display aggregate validation counts above the table.
 
-    def _add_section_widget(self, layout: QVBoxLayout, section: ValidationSection) -> None:
-        """
-        Append one rendered validation section to the dialog layout.
-
-        :param layout: Parent vertical layout receiving the widgets.
-        :param section: Validation section to render.
         :return: None.
         """
-        rows: list[ValidationRow] = section.get_rows()
-        has_issues: bool = len(rows) > 0
-        section_header_widget: QWidget = QWidget(self)
-        section_header_layout: QHBoxLayout = QHBoxLayout(section_header_widget)
-        title_background_color: QColor = section_header_widget.palette().color(QtGui.QPalette.ColorRole.Button)
-
-        # The header row must stay compact and use the active Qt theme background
-        # so the collapsed state visually matches the dynamic-editor toolbar style.
-        section_header_layout.setContentsMargins(0, 0, 0, 0)
-        section_header_layout.setSpacing(0)
-        section_header_widget.setStyleSheet(
-            f"background-color: {title_background_color.name()}; color: #173042;"
-        )
-        section_header_widget.setMinimumHeight(0)
-        section_header_widget.setMaximumHeight(24)
-
-        # The left control owns the expand/collapse state and shows the section
-        # title using the standard Qt arrow affordance.
-        title_button: QToolButton = QToolButton(section_header_widget)
-        title_button.setText(section.get_title())
-        title_button.setCheckable(True)
-        title_button.setChecked(False)
-        title_button.setArrowType(Qt.ArrowType.RightArrow)
-        title_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        title_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        title_button.setContentsMargins(2, 0, 2, 0)
-        title_button.setMinimumHeight(16)
-        title_button.setMaximumHeight(20)
-        title_button.setStyleSheet(
-            "border: none; background: transparent; color: #173042; padding-top: 0px; padding-bottom: 0px;"
-        )
-
-        # The right status text keeps the collapsed overview readable without
-        # requiring the user to expand every validation section.
-        status_summary_label: QLabel = QLabel(section_header_widget)
-        if has_issues:
-            status_summary_label.setText("Issues found")
-            status_summary_label.setStyleSheet("color: #b42318; background: transparent;")
-        else:
-            status_summary_label.setText("All good")
-            status_summary_label.setStyleSheet("color: #027a48; background: transparent;")
-        status_summary_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        status_summary_label.setContentsMargins(0, 0, 2, 0)
-        status_summary_label.setMinimumHeight(16)
-        status_summary_label.setMaximumHeight(20)
-
-        section_header_layout.addWidget(title_button)
-        section_header_layout.addWidget(status_summary_label)
-        layout.addWidget(section_header_widget)
-
-        # The content widget starts collapsed and is toggled only from the header
-        # control so the report opens as a compact section summary list.
-        section_content_widget: QWidget = QWidget(self)
-        section_content_layout: QVBoxLayout = QVBoxLayout(section_content_widget)
-        section_content_layout.setContentsMargins(0, 0, 0, 0)
-        section_content_layout.setSpacing(0)
-        section_content_widget.setVisible(False)
-
-        if len(rows) == 0:
-            # A successful section already exposes its status in the collapsed
-            # header summary, so the expanded body stays empty instead of
-            # repeating the same message.
-            pass
-        else:
-            if section.get_show_issue_label():
-                # The warning label is kept, but spacing is reduced so the table is
-                # still visible together with the section title in normal cases.
-                warning_label: QLabel = QLabel("Issues found in this section")
-                warning_label.setStyleSheet("color: #b42318;")
-                warning_label.setContentsMargins(4, 0, 4, 0)
-                section_content_layout.addWidget(warning_label)
+        issue_section_count: int = 0
+        finding_count: int = 0
+        section: ValidationSection
+        for section in self._section_results:
+            rows: list[ValidationRow] = section.get_rows()
+            if len(rows) > 0:
+                issue_section_count = issue_section_count + 1
             else:
                 pass
 
-            table_widget: QTableWidget = QTableWidget(self)
-            table_widget.setColumnCount(2)
-            table_widget.setHorizontalHeaderLabels(list((section.get_first_column_title(), "Details",)))
-            table_widget.setRowCount(len(rows))
-            table_widget.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-            table_widget.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
-            table_widget.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-            table_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-            table_widget.verticalHeader().setVisible(False)
-            table_widget.horizontalHeader().setStretchLastSection(True)
-            table_widget.setContentsMargins(0, 0, 0, 0)
-            table_widget.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-            table_widget.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.Stretch)
-
-            row_index: int = 0
             row: ValidationRow
             for row in rows:
-                details_text: str = "\n".join(row.get_details())
-                block_item: QTableWidgetItem = QTableWidgetItem(row.get_block_label())
-                detail_item: QTableWidgetItem = QTableWidgetItem(details_text)
-                if row.is_ok():
-                    ok_brush: QtGui.QBrush = QtGui.QBrush(QColor("#027a48"))
-                    block_item.setForeground(ok_brush)
-                    detail_item.setForeground(ok_brush)
+                finding_count = finding_count + len(row.get_details())
+
+        check_count: int = len(self._section_results)
+        if finding_count == 0:
+            summary_text: str = self.tr("{check_count} checks · No issues found").format(
+                check_count=check_count
+            )
+        else:
+            summary_text = self.tr(
+                "{check_count} checks · {issue_section_count} checks with issues · {finding_count} findings"
+            ).format(
+                check_count=check_count,
+                issue_section_count=issue_section_count,
+                finding_count=finding_count,
+            )
+        self._ui.summaryLabel.setText(summary_text)
+
+    def _refresh_table(self, filter_index: int) -> None:
+        """Rebuild the visible rows for one selected validation filter.
+
+        :param filter_index: Index of the selected typed filter choice.
+        :return: None.
+        """
+        existing_row_count: int = self._table_model.rowCount()
+        if existing_row_count > 0:
+            self._table_model.removeRows(0, existing_row_count)
+        else:
+            pass
+
+        if 0 <= filter_index < len(self._filter_choices):
+            filter_choice: ValidationFilterChoice = self._filter_choices[filter_index]
+        else:
+            filter_choice = self._filter_choices[0]
+
+        section: ValidationSection
+        for section in self._section_results:
+            rows: list[ValidationRow] = section.get_rows()
+            has_issues: bool = len(rows) > 0
+            if filter_choice.includes_section(section=section, has_issues=has_issues):
+                if has_issues:
+                    row: ValidationRow
+                    for row in rows:
+                        self._append_issue_table_row(section=section, row=row)
                 else:
-                    error_brush: QtGui.QBrush = QtGui.QBrush(QColor("#b42318"))
-                    block_item.setForeground(error_brush)
-                    detail_item.setForeground(error_brush)
+                    self._append_success_table_row(section=section)
+            else:
+                pass
 
-                table_widget.setItem(row_index, 0, block_item)
-                table_widget.setItem(row_index, 1, detail_item)
-                row_index = row_index + 1
+        has_visible_rows: bool = self._table_model.rowCount() > 0
+        self._ui.resultsTableView.setVisible(has_visible_rows)
+        self._ui.emptyStateLabel.setVisible(not has_visible_rows)
+        if has_visible_rows:
+            self._ui.resultsTableView.resizeRowsToContents()
+        else:
+            if filter_choice.is_issues_only() and not self._has_any_issue_rows():
+                self._ui.emptyStateLabel.setText(self.tr("No issues found."))
+            else:
+                self._ui.emptyStateLabel.setText(self.tr("No validation results match this filter."))
 
-            table_widget.resizeRowsToContents()
-            table_widget.setMinimumHeight(
-                table_widget.verticalHeader().length() + table_widget.horizontalHeader().height() + 8)
-            table_widget.setMaximumHeight(
-                table_widget.verticalHeader().length() + table_widget.horizontalHeader().height() + 8)
-            section_content_layout.addWidget(table_widget)
+    def _append_issue_table_row(self, section: ValidationSection, row: ValidationRow) -> None:
+        """Append one issue-bearing block row to the shared results model.
 
-        title_button.toggled.connect(section_content_widget.setVisible)
-        title_button.toggled.connect(self._update_section_toggle_arrow)
-        layout.addWidget(section_content_widget)
-        layout.addSpacing(1)
+        :param section: Validation check that reported the issue.
+        :param row: Block-level validation result.
+        :return: None.
+        """
+        status_item: QtGui.QStandardItem = QtGui.QStandardItem(self._issue_icon, self.tr("Issue"))
+        status_item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        check_item: QtGui.QStandardItem = QtGui.QStandardItem(section.get_title())
+        block_item: QtGui.QStandardItem = QtGui.QStandardItem(row.get_block_label())
+        details_text: str = "\n".join(row.get_details())
+        detail_item: QtGui.QStandardItem = QtGui.QStandardItem(details_text)
+        detail_item.setToolTip(details_text)
+
+        # Every visible cell carries the stable block identity so selection is
+        # independent from translated labels and duplicate block names.
+        # Block identities are UUID-v4 integers and therefore use 128 bits.
+        # QVariant integer conversion cannot represent that complete range, so
+        # the item model stores the lossless decimal representation instead.
+        block_uid_text: str = str(row.get_block_uid())
+        status_item.setData(block_uid_text, QtCore.Qt.ItemDataRole.UserRole)
+        check_item.setData(block_uid_text, QtCore.Qt.ItemDataRole.UserRole)
+        block_item.setData(block_uid_text, QtCore.Qt.ItemDataRole.UserRole)
+        detail_item.setData(block_uid_text, QtCore.Qt.ItemDataRole.UserRole)
+
+        table_items: list[QtGui.QStandardItem] = list()
+        table_items.append(status_item)
+        table_items.append(check_item)
+        table_items.append(block_item)
+        table_items.append(detail_item)
+        self._table_model.appendRow(table_items)
+
+    def _append_success_table_row(self, section: ValidationSection) -> None:
+        """Append one compact successful-check row to the shared results model.
+
+        :param section: Validation check with no reported issues.
+        :return: None.
+        """
+        status_item: QtGui.QStandardItem = QtGui.QStandardItem(self._ok_icon, self.tr("OK"))
+        status_item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        check_item: QtGui.QStandardItem = QtGui.QStandardItem(section.get_title())
+        block_item: QtGui.QStandardItem = QtGui.QStandardItem("—")
+        detail_item: QtGui.QStandardItem = QtGui.QStandardItem(self.tr("No issues found"))
+
+        table_items: list[QtGui.QStandardItem] = list()
+        table_items.append(status_item)
+        table_items.append(check_item)
+        table_items.append(block_item)
+        table_items.append(detail_item)
+        self._table_model.appendRow(table_items)
 
     def get_section_results(self) -> list[ValidationSection]:
         """
@@ -726,70 +680,40 @@ class ValidationSectionDialog(QDialog):
 
         return False
 
-    def _update_section_toggle_arrow(self, expanded: bool) -> None:
-        """
-        Update one section-header arrow to match its expanded state.
-
-        :param expanded: Whether the controlled section content is visible.
-        :return: None.
-        """
-        sender_button: QObject | None = self.sender()
-
-        # The slot is shared by all section buttons, so the sender must be
-        # resolved and checked before mutating the arrow visual state.
-        if isinstance(sender_button, QToolButton):
-            if expanded:
-                sender_button.setArrowType(Qt.ArrowType.DownArrow)
-            else:
-                sender_button.setArrowType(Qt.ArrowType.RightArrow)
-        else:
-            pass
-
     def _show_issues_in_model(self) -> None:
         """
         Request issue highlighting on the owning dynamic editor.
 
         :return: None.
         """
-        # Construction is owned by the dynamic editor. A typed cast keeps the
-        # validation module independent from the editor's runtime import cycle.
-        parent_widget: DynamicBlockEditorGUI | None = cast("DynamicBlockEditorGUI | None", self.parent())
-
-        if parent_widget is not None:
-            parent_widget.show_validation_issues_in_model(section_results=self.get_section_results())
+        if self._has_any_issue_rows():
+            # The dialog publishes intent and does not depend on its parent
+            # implementation, keeping the reusable results view decoupled.
+            self.issuesRequested.emit(self.get_section_results())
             self.accept()
         else:
             pass
 
+    def _show_selected_issue_in_model(self, index: QtCore.QModelIndex) -> None:
+        """Request navigation to the block represented by one result row.
 
-def extract_port_names_from_validation_detail(detail: str) -> set[str]:
-    """
-    Extract the visible port names referenced by one connectivity detail line.
-
-    :param detail: Validation detail string.
-    :return: Port names referenced by the message.
-    """
-    port_names: set[str] = set()
-    match_text: str
-
-    # Connectivity details are rendered as comma-separated input/output labels.
-    # The highlighter parses those labels so the same validation report can be
-    # projected back onto the scene without adding a parallel data structure.
-    for match_text in re.findall(r"(?:Inputs|Outputs):\s*([^|]+)", detail):
-        raw_name: str
-        for raw_name in match_text.split(","):
-            cleaned_name: str = raw_name.strip()
-            if len(cleaned_name) > 0:
-                port_names.add(cleaned_name)
-            else:
-                pass
-
-    return port_names
-
+        :param index: Double-clicked result-table index.
+        :return: None.
+        """
+        block_uid_data: object = index.data(QtCore.Qt.ItemDataRole.UserRole)
+        if isinstance(block_uid_data, str) and block_uid_data.isdecimal():
+            # Conversion occurs in Python, whose integers preserve the complete
+            # UUID value without passing it through a bounded QVariant integer.
+            block_uid: int = int(block_uid_data)
+            self.issueSelected.emit(block_uid)
+            self.accept()
+        else:
+            # Successful summary rows deliberately carry no block identity.
+            pass
 
 def build_validation_row_highlight_metadata(section_results: list[ValidationSection]) -> None:
     """
-    Populate per-row scene-highlight metadata from the rendered section details.
+    Mark every reported validation row for block-level scene highlighting.
 
     :param section_results: Validation sections to annotate.
     :return: None.
@@ -798,47 +722,5 @@ def build_validation_row_highlight_metadata(section_results: list[ValidationSect
     for section in section_results:
         row: ValidationRow
         for row in section.get_rows():
-            detail: str
-            port_names: set[str] = set()
-
-            # Port-connectivity problems map to concrete ports, while all other
-            # reported issues are shown at block granularity with a red border.
-            if section.get_title() == "Port Connectivity":
-                for detail in row.get_details():
-                    port_names.update(extract_port_names_from_validation_detail(detail=detail))
-
-                if len(port_names) > 0:
-                    port_name: str
-                    for port_name in port_names:
-                        row.add_highlight_port_name(port_name=port_name)
-                else:
-                    row.set_highlight_block(val=True)
-            else:
-                row.set_highlight_block(val=True)
-
-
-def get_emt_phase_group(reference: VarPowerFlowReferenceType | None) -> str | None:
-    """
-    Map one EMT interface reference to its phase group.
-
-    :param reference: Variable power-flow reference.
-    :return: ``N``, ``A``, ``B``, ``C`` or ``None``.
-    """
-    if reference in (VarPowerFlowReferenceType.v_N, VarPowerFlowReferenceType.i_N,
-                     VarPowerFlowReferenceType.vf_N, VarPowerFlowReferenceType.if_N,
-                     VarPowerFlowReferenceType.vt_N, VarPowerFlowReferenceType.it_N):
-        return "N"
-    elif reference in (VarPowerFlowReferenceType.v_A, VarPowerFlowReferenceType.i_A,
-                       VarPowerFlowReferenceType.vf_A, VarPowerFlowReferenceType.if_A,
-                       VarPowerFlowReferenceType.vt_A, VarPowerFlowReferenceType.it_A):
-        return "A"
-    elif reference in (VarPowerFlowReferenceType.v_B, VarPowerFlowReferenceType.i_B,
-                       VarPowerFlowReferenceType.vf_B, VarPowerFlowReferenceType.if_B,
-                       VarPowerFlowReferenceType.vt_B, VarPowerFlowReferenceType.it_B):
-        return "B"
-    elif reference in (VarPowerFlowReferenceType.v_C, VarPowerFlowReferenceType.i_C,
-                       VarPowerFlowReferenceType.vf_C, VarPowerFlowReferenceType.if_C,
-                       VarPowerFlowReferenceType.vt_C, VarPowerFlowReferenceType.it_C):
-        return "C"
-    else:
-        return None
+            # Every remaining validation section reports block-level issues.
+            row.set_highlight_block(val=True)

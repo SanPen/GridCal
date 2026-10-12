@@ -19,5 +19,5 @@ if __name__ == '__main__':
         rcc_cmd += '.exe'
         uic_cmd += '.exe'
 
-    for f in ['block_editor.ui']:
+    for f in ['block_editor.ui', 'dynamic_editor_validation_dialog.ui']:
         convert_ui_file(source=f, uic_cmd=uic_cmd)

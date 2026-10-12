@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.NumericalMethods package &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.NumericalMethods package &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -161,6 +161,30 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.asynchronous_gen_currents">
+<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.</span></span><span class="sig-name descname"><span class="pre">asynchronous_gen_currents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voltage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">complex128</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Xs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Xm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Xr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Sr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0j</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">complex128</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/PowerFlow/NumericalMethods/common_functions.html#asynchronous_gen_currents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.asynchronous_gen_currents" title="Link to this definition"></a></dt>
+<dd><p>Compute ABC injections with one slip and the existing single-cage model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>voltage</strong> – Three phase-to-ground voltages in pu.</p></li>
+<li><p><strong>Rs</strong> – Stator resistance in machine pu.</p></li>
+<li><p><strong>Xs</strong> – Stator reactance in machine pu.</p></li>
+<li><p><strong>Xm</strong> – Magnetising reactance in machine pu.</p></li>
+<li><p><strong>Rr</strong> – Rotor resistance in machine pu.</p></li>
+<li><p><strong>Xr</strong> – Rotor reactance in machine pu.</p></li>
+<li><p><strong>P</strong> – Positive-sequence electrical active injection in MW, as in PF AS mode.</p></li>
+<li><p><strong>Sr</strong> – Machine rated power in MVA.</p></li>
+<li><p><strong>y0</strong> – Effective zero-sequence admittance in machine pu (zero for D/Y).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Phase current injections in MW / pu voltage, as used by the ABC residual.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.asynchronous_gen_q">
 <span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.</span></span><span class="sig-name descname"><span class="pre">asynchronous_gen_q</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Xs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Xm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Xr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Sr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/PowerFlow/NumericalMethods/common_functions.html#asynchronous_gen_q"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.asynchronous_gen_q" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
@@ -178,6 +202,27 @@
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.asynchronous_impedance">
+<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.</span></span><span class="sig-name descname"><span class="pre">asynchronous_impedance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Xs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Xm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Xr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">complex</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/PowerFlow/NumericalMethods/common_functions.html#asynchronous_impedance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.asynchronous_impedance" title="Link to this definition"></a></dt>
+<dd><p>Return the existing single-cage equivalent on the machine base.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slip</strong> – Sequence slip (s for positive sequence, 2-s for negative).</p></li>
+<li><p><strong>Rs</strong> – Stator resistance in pu.</p></li>
+<li><p><strong>Xs</strong> – Stator reactance in pu.</p></li>
+<li><p><strong>Xm</strong> – Magnetising reactance in pu.</p></li>
+<li><p><strong>Rr</strong> – Rotor resistance in pu.</p></li>
+<li><p><strong>Xr</strong> – Rotor reactance in pu.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Terminal sequence impedance in pu.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -320,16 +365,6 @@ since the neutral point of the star is floating -&gt; In = Ia + Ib + Ic = 0
 :param Sb: Phase B load complex power
 :param Sc: Phase C load complex power
 :return: Ia, Ib, Ic, Un</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.fortescue_012_to_abc">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.</span></span><span class="sig-name descname"><span class="pre">fortescue_012_to_abc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">complex128</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/PowerFlow/NumericalMethods/common_functions.html#fortescue_012_to_abc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.fortescue_012_to_abc" title="Link to this definition"></a></dt>
-<dd><p>Convert 012 to abc
-:param z0: zero-sequence impedance
-:param z1: positive-sequence impedance
-:param z2: negative-sequence impedance
-:return: abc impedance matrix</p>
 </dd></dl>
 
 <dl class="py function">

@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/fmi.png</file>
     <file>icons/pf3.png</file>
     <file>icons/message.png</file>
     <file>icons/ss_emt_icon.png</file>

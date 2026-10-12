@@ -46,7 +46,10 @@ def test_procedural_catalog_covers_every_concrete_engine_type_once() -> None:
     expected_types: list[ProceduralLogicType] = list(
         logic_tpe
         for logic_tpe in ProceduralLogicType
-        if logic_tpe != ProceduralLogicType.Base
+        if logic_tpe not in (
+            ProceduralLogicType.Base,
+            ProceduralLogicType.ManufacturerNativeController,
+        )
     )
 
     assert len(descriptor_types) == len(set(descriptor_types))

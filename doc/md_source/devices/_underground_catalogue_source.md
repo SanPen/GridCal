@@ -35,19 +35,81 @@ All quantities in this expression are in mm. The default dimensions give 4 mm of
 
 ### Conducting materials and correction factors
 
+Choose **resistance input** in either the **Cable** database table or the cable-system builder:
+
+- **Resistivity and filling factor** (default): enter `core_resistivity`, `core_filling_factor`,
+  `sheath_resistivity` and `sheath_filling_factor`. Both `core_dc_resistance` and `sheath_dc_resistance`
+  are calculated, read-only results that update with the material inputs and geometry.
+- **DC resistance**: enter positive `core_dc_resistance` and `sheath_dc_resistance` values in Ω/km at **20 °C**.
+  All four resistivity/filling-factor fields are greyed out and cannot be edited. Their retained values are
+  inactive; they are not additional constraints on the resistances or inputs to the calculation in this mode.
+
+There is **one selector shared by the core and sheath**. Switching modes in either GUI table converts the
+active inputs to preserve both resistances before further edits. Only the selected representation governs
+the impedances of both conducting layers.
+
 | Python property | Description | Unit | Default | Meaning and role |
 | --- | --- | --- | --- | --- |
-| `core_resistivity` | Core material resistivity | μΩ·cm | 1.7241 | Resistivity at 20 °C used to calculate the core impedance. |
-| `sheath_resistivity` | Sheath material resistivity | μΩ·cm | 1.7241 | Resistivity at 20 °C used to calculate the sheath impedance. |
-| `core_filling_factor` | Core conducting filling factor | % | 100.0 | Percentage of the modelled core section occupied by conducting material. Effective resistivity is divided by this fraction; this is not a capacitance. |
-| `sheath_filling_factor` | Sheath conducting filling factor | % | 100.0 | Corresponding conducting fraction of the sheath section; applied to sheath resistivity. |
+| `resistance_input` | Shared resistance input method | — | `Resistivity and filling factor` | `CableResistanceInput.Resistivity` or `CableResistanceInput.DcResistance`; selects the inputs for both core and sheath. |
+| `core_resistivity` | Core material resistivity | μΩ·cm | 1.7241 | Resistivity at 20 °C; editable and used only in resistivity mode. |
+| `sheath_resistivity` | Sheath material resistivity | μΩ·cm | 1.7241 | Resistivity at 20 °C; editable and used only in resistivity mode. |
+| `core_filling_factor` | Core conducting filling factor | % | 100.0 | Editable and used only in resistivity mode. Percentage of the modelled core section occupied by conducting material; this is not a capacitance. |
+| `sheath_filling_factor` | Sheath conducting filling factor | % | 100.0 | Editable and used only in resistivity mode. Conducting fraction of the annular sheath section. |
 | `core_relative_permeability` | Core relative magnetic permeability | — | 1.0 | Dimensionless permeability relative to vacuum, used in the core internal impedance. |
 | `sheath_relative_permeability` | Sheath relative magnetic permeability | — | 1.0 | Dimensionless permeability used in the sheath internal impedance. |
 | `skin_effect_factor` | Core skin-effect factor | — | 1.0 | Factor used in the frequency-dependent core internal impedance calculation. |
-| `core_dc_resistance` | Reference core DC resistance | Ω/km | 0.0 | Informational value at 20 °C, read-only in the catalogue tables. The geometric calculation uses dimensions, resistivity and filling factor instead. |
+| `core_dc_resistance` | Core DC resistance at 20 °C | Ω/km | ≈0.219519, derived | Calculated and read-only in resistivity mode; editable and used by the impedance calculation in DC resistance mode. |
+| `sheath_dc_resistance` | Sheath DC resistance at 20 °C | Ω/km | Derived from material and geometry | Calculated and read-only in resistivity mode; editable and used by the tubular sheath impedance calculation in DC resistance mode. |
 | `proximity_effect_factor` | Reference proximity-effect factor | — | 1.0 | Informational, read-only in the catalogue tables; not used by the current calculation. |
 
 Use positive material resistivities and relative permeabilities. Filling factors are percentages, with physically meaningful values greater than zero and no greater than 100. There is no construction-temperature input: these material values are not automatically converted to another operating temperature by the geometric cable calculation.
+
+For either conducting layer, using its geometric section $A$ in m², the two parameterisations are:
+
+$$
+R_{\mathrm{dc}}=\frac{1000\,\rho_{\mathrm{material}}}{A(C_f/100)}\quad[\Omega/\mathrm{km}],
+\qquad
+\rho_{\mathrm{effective}}=\frac{R_{\mathrm{dc}} A}{1000}\quad[\Omega\,\mathrm m].
+$$
+
+The core uses $A_c=\pi r_c^2$. The sheath uses its **annular** area $A_s=\pi(r_{so}^2-r_{si}^2)$,
+where $r_{si}=d_c/2+t_i$ and $r_{so}=r_{si}+t_s$ (dimensions converted to metres).
+The insulation and core are not part of the sheath's conducting section.
+
+DC resistance mode supplies each layer's effective resistivity and a 100% effective filling factor to the
+existing Bessel-function calculations. It therefore affects both the core and tubular sheath impedances,
+including the resulting reduced system matrix. This does not infer a manufacturer's material or actual
+packing fraction. The same geometry and electromagnetic model apply in both modes.
+
+For direct resistance input through Python, select the mode explicitly:
+
+```python
+from VeraGridEngine.Devices.Branches.underground_cable_type import UndergroundCableType
+from VeraGridEngine.enumerations import CableResistanceInput
+
+cable = UndergroundCableType(
+    name="Cable specified by resistance",
+    core_diameter=10.0,
+    resistance_input=CableResistanceInput.DcResistance,
+    core_dc_resistance=0.25,  # Ohm/km at 20 degrees Celsius
+    sheath_dc_resistance=0.8,
+)
+```
+
+Setting either DC resistance alone does not select its mode. Supply both positive values when constructing
+a cable with `resistance_input=CableResistanceInput.DcResistance`. The constructor and snapshot setters restore
+the explicitly supplied inputs; GUI edits through `set_value()` additionally convert values when changing mode.
+Native files store the single selector and both active resistances. Files without a selector, and current PowerFactory DGS
+`TypCab` imports, use **Resistivity and filling factor**, preserving their previous impedance calculation.
+An old imported `rpha` value is not a competing input in that mode: the displayed/saved resistance is derived
+from the active material data. The PowerFactory input-method option shown in its UI is not part of the currently
+mapped DGS cable fields.
+
+The earlier `core_resistance_input` name is accepted as a compatibility alias, not a second selector.
+Native JSON files saved with that core-only selector and no sheath resistance retain their core input and
+derive the sheath resistance from the saved sheath materials and annular geometry during loading. They then
+use the common selector. The old constructor keyword also derives an omitted sheath resistance from its
+material inputs. New files and examples use `resistance_input` and explicit DC values for both layers.
 
 ### Insulation materials
 
@@ -68,7 +130,7 @@ The GUI and Python API use the same construction objects. Editing a catalogue co
 
 ## UndergroundLineType
 
-An `UndergroundLineType` is a reusable underground line template. It can be defined either from positioned [cable constructions](modelling.md#undergroundcabletype), or directly from per-kilometre sequence parameters. A network `Line` then selects this template and supplies its buses, length and circuit index.
+![img.png](img.png)An `UndergroundLineType` is a reusable underground line template. It can be defined either from positioned [cable constructions](modelling.md#undergroundcabletype), or directly from per-kilometre sequence parameters. Both AC `Line` and DC `DcLine` use this common **Cable System** catalogue. The branch supplies its buses and length; an AC line selects a circuit, and a DC line selects a conductor.
 
 ### System identification, environment and rating
 
@@ -79,7 +141,7 @@ An `UndergroundLineType` is a reusable underground line template. It can be defi
 | `code` | User code | — | Empty | Optional inherited identifier; assign after construction if needed. It is not a constructor argument for this class. |
 | `comment` | User comment | — | Empty | Optional description or installation notes; does not affect the calculation. |
 | `Vnom` | System rated voltage | kV | 1.0 | System voltage rating, distinct from a construction's `nominal_voltage`. Used as the voltage base when no connected-bus voltage is supplied. |
-| `Imax` | Rated current | kA | 1.0 | User-supplied current rating, not calculated from cable dimensions or soil data. Applying the template converts this to a line power rating using the applicable voltage. |
+| `Imax` | Rated current | kA | 1.0 | User-supplied current rating, not calculated from cable dimensions or soil data. AC application converts this to a power rating. DC application preserves the existing branch rating; set that rating in the DC line editor. |
 | `freq` | Calculation frequency | Hz | 50.0 | Frequency used in physical impedance and admittance calculations and capacitance-to-susceptance conversion. |
 | `earth_resistivity` | Earth resistivity | Ω·m | 100.0 | Soil resistivity for the earth-return impedance calculation; use a positive value. |
 | `cables_in_system` | Physical composition | — | Empty | Collection of construction references and positions. Use the builder or `add_cable_relationship()` rather than editing this as a single table cell. |
@@ -139,7 +201,7 @@ negative sequence equals positive sequence. Physical primitive matrices are not 
 
 ### Validation and applying a template
 
-A physical calculation requires at least one construction, consecutive unique phases, distinct cable-centre positions, positive burial depths, positive core diameters and sheath thicknesses, overall diameters larger than the core diameters, and positive filling factors. The current checks do not enforce every physical constraint: also ensure positive main and outer insulation thicknesses, sensible material properties, positive frequency and soil resistivity, and a non-overlapping cable arrangement. Successful input conversion in a table cell is not a full geometry validation.
+A physical calculation requires at least one construction, consecutive unique phases, distinct cable-centre positions, positive burial depths, positive core diameters, main insulation and sheath thicknesses, overall diameters larger than the core diameters, and a finite positive sheath annular area. The selected inputs of both layers must be finite: either two positive DC resistances, or positive resistivities and filling factors greater than zero and at most 100%. Inactive material inputs do not participate in validation. The current checks do not enforce every physical constraint: also ensure positive outer insulation thickness, sensible permeabilities, positive frequency and soil resistivity, and a non-overlapping cable arrangement. Successful input conversion in a table cell is not a full geometry validation.
 
 The Python workflow is:
 
@@ -151,3 +213,78 @@ The Python workflow is:
 The system's own `freq` controls its physical calculation. Set it consistently with the network frequency; the `freq` argument to `Line.apply_template()` does not replace it for an underground template.
 
 Assigning `line.template` alone does not calculate or copy the electrical parameters. Recompute the system after changing construction, positions or environmental inputs, then reapply it to each affected line. Reapply the template after changing line length as well, so both scalar parameters and phase matrices correspond to the new length. Line length and circuit selection belong to the network branch, not to the reusable construction or system.
+
+
+### Applying Cable System to a DC line
+
+The **Cable** and **Cable System** creation workflow is shared by AC and DC:
+
+1. Define the physical Cable, including the shared core/sheath resistance-input selector.
+2. Position the required cables in the Cable System builder and calculate its matrices at a positive reference frequency (50 Hz by default).
+3. Create a `DcLine` between DC buses. In its design tab, choose the Cable System and press **Load template values**.
+4. Select **Cable System conductor**, enter the installed length and branch current rating, then apply the design.
+
+The conductor number is the builder's global **Phase** number (1, 2, ...), reused as a conductor identifier for DC. A one- or two-cable layout is valid; a complete ABC circuit is unnecessary. In the design tab, **Use Cable System** keeps resistance derived from the template. Clear it to enter a resistance manually and remove the template association. This manual branch has no stored L/C evidence.
+
+For a physical system and selected conductor `i`:
+
+- `Rdc` is the selected Cable's `core_dc_resistance` in Ω/km, from its active resistance input method. It is not the real part of the AC impedance matrix.
+- `L = Im(Z[i, i]) / (2*pi*freq)` in H/km.
+- `C = Im(Y[i, i]) / (2*pi*freq)` in F/km.
+
+These use the existing sheath-reduced phase matrices at the reference frequency. Each scalar `DcLine` represents one selected conductor; it does not retain mutual coupling with other DC branches, automatically combine an outgoing and return conductor, or introduce a new sheath-bonding model. Represent a metallic return as a separate DC branch where required. The material-based resistance is at 20 °C; the existing branch temperature correction remains controlled by the simulation options.
+
+For an equivalent imported without geometry, `get_dc_parameters()` returns `R`, `X/(2*pi*freq)` and `C*1e-6`. If `C` is zero it uses `B*1e-6/(2*pi*freq)`. Only conductor 1 is available for this scalar equivalent. **Cable System C is always in µF/km**, including imported DC systems; the DC parameter API returns F/km.
+
+With length `ell` in km and `Zbase = Vnom**2/Sbase`, application retains the previous DC conversions:
+
+```text
+Rpu = Rdc * ell / Zbase
+Lpu_seconds = L * ell / Zbase
+Cpu_seconds = C * ell * Zbase
+```
+
+`DcLine.apply_template()` copies R into the branch and preserves its existing rating. Dynamic consumers request L/C through `get_applied_dynamic_values_pu_seconds()`; this catalogue change does not add new dynamic models or mutual-coupling equations. The catalogue can reference AC or DC dynamic templates, but application only copies a template compatible with the receiving branch (or a generic template); an incompatible AC/DC model is skipped with a warning. Assign separate dynamic models on the branches when a system is shared across both domains. Reapply the system after changing Cable data, geometry or the selected conductor.
+
+The following standalone example creates a physical cable system and applies it
+to a DC branch. Its construction defaults illustrate the workflow; replace them
+with the cable's actual dimensions and material data for a network study.
+
+```python
+from VeraGridEngine.basic_structures import Logger
+from VeraGridEngine.Devices.Branches.dc_line import DcLine
+from VeraGridEngine.Devices.Branches.underground_cable_type import UndergroundCableType
+from VeraGridEngine.Devices.Branches.underground_line_type import UndergroundLineType
+from VeraGridEngine.Devices.Substation.bus import Bus
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+
+grid = MultiCircuit(Sbase=100.0)
+logger = Logger()
+
+cable = UndergroundCableType(name="Example cable", nominal_voltage=15.0)
+grid.add_underground_cable(cable)
+system = UndergroundLineType(name="Example system", Vnom=15.0, freq=50.0)
+system.add_cable_relationship(cable=cable, xpos=0.0, ypos=1.0, phase=1)
+grid.add_underground_line(system)
+
+dc_bus_1 = Bus(name="DC from", Vnom=15.0, is_dc=True)
+dc_bus_2 = Bus(name="DC to", Vnom=15.0, is_dc=True)
+grid.add_bus(dc_bus_1)
+grid.add_bus(dc_bus_2)
+
+dc_line = DcLine(bus_from=dc_bus_1, bus_to=dc_bus_2,
+                 length=2.5, rate=30.0, dc_conductor=1)
+grid.add_dc_line(dc_line)
+dc_line.apply_template(obj=system, Sbase=grid.Sbase, logger=logger)
+if logger.has_errors():
+    raise ValueError(str(logger))
+r_ohm_km, l_h_km, c_f_km = system.get_dc_parameters(conductor=1)
+```
+
+### PowerFactory and legacy DC catalogue compatibility
+
+DC `TypLne` import retains its existing classification, completeness checks and conversions: `L = xline/(2*pi*frnom)`, and C from `cline` or `bline/(2*pi*frnom)`, with direct capacitance taking precedence. Values are now stored in a parameter-only Cable System; missing construction data is not invented. Incomplete or unclassified types keep the existing resistive-line fallback. DGS export emits a DC equivalent for each system/conductor used by a DC line.
+
+Older `.veragrid` DC catalogue records migrate to Cable System before line references are resolved. Identifiers and dynamic associations are retained; old H/km and F/km values are converted to the common X and µF/km fields. New files save only the common catalogue. The separate **DC cable type** GUI category has been removed.
+
+For Python migration, prefer `UndergroundLineType` and `grid.add_underground_line()`. The deprecated `DcCableType(R=..., L=..., C=...)` constructor still accepts its old H/km and F/km arguments, but produces a common Cable System whose **C property uses µF/km**. Read DC quantities with `get_dc_parameters()` or `get_dc_values()` instead of the old `.L`/`.C`/`get_values()` interface. The old `dc_cable_types` collection and add/delete methods are compatibility aliases for the common AC/DC catalogue, not a filtered DC list.

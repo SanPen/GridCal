@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Compilers package &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Compilers package &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -251,6 +251,23 @@
 </section>
 <section id="module-VeraGridEngine.Compilers.circuit_to_data">
 <span id="veragridengine-compilers-circuit-to-data-module"></span><h2>VeraGridEngine.Compilers.circuit_to_data module<a class="headerlink" href="#module-VeraGridEngine.Compilers.circuit_to_data" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="VeraGridEngine.Compilers.circuit_to_data.compile_line_couplings">
+<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Compilers.circuit_to_data.</span></span><span class="sig-name descname"><span class="pre">compile_line_couplings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.multi_circuit.MultiCircuit" title="VeraGridEngine.Devices.multi_circuit.MultiCircuit"><span class="pre">MultiCircuit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData" title="VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData"><span class="pre">PassiveBranchData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Compilers/circuit_to_data.html#compile_line_couplings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Compilers.circuit_to_data.compile_line_couplings" title="Link to this definition"></a></dt>
+<dd><p>Stamp complete physical tower sections, including mutual circuit admittances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>circuit</strong> – Device model; only explicitly associated lines are coupled.</p></li>
+<li><p><strong>data</strong> – Compiled branches, with lines occupying the first rows.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="VeraGridEngine.Compilers.circuit_to_data.compile_numerical_circuit_at">
 <span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Compilers.circuit_to_data.</span></span><span class="sig-name descname"><span class="pre">compile_numerical_circuit_at</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/Compilers/circuit_to_data.html#compile_numerical_circuit_at"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Compilers.circuit_to_data.compile_numerical_circuit_at" title="Link to this definition"></a></dt>

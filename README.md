@@ -47,6 +47,33 @@ To install everything, you only need to install the VeraGrid package and the oth
 <img height="300" src="doc/md_source/figures/Packages.png"/>
 
 
+### One-line terminal installer (Linux, macOS, Windows)
+
+Run the command for your operating system in your terminal:
+
+**Linux:**
+```bash
+curl -sSL https://raw.githubusercontent.com/SanPen/VeraGrid/master/src/install_on_linux.sh | bash
+```
+
+**macOS:**
+```bash
+curl -sSL https://raw.githubusercontent.com/SanPen/VeraGrid/master/src/install_on_macos.sh | bash
+```
+
+**Windows (Command Prompt / PowerShell):**
+```cmd
+curl -sSL https://raw.githubusercontent.com/SanPen/VeraGrid/master/src/install_on_windows.cmd -o install_veragrid.cmd && install_veragrid.cmd && del install_veragrid.cmd
+```
+
+This automatically:
+- Creates a dedicated Python virtual environment in your user directory.
+- Installs the latest VeraGrid package and all dependencies via `pip`.
+- Sets up desktop and application menu shortcuts with the VeraGrid icon.
+- Associates `.veragrid` and `.gridcal` file formats so double-clicking files opens them directly in VeraGrid.
+
+
+
 ### Standalone setup
 
 If you don't know what is this Python thing, we offer a Windows installation:

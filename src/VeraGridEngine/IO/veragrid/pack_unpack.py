@@ -14,6 +14,13 @@ import numpy as np
 from enum import EnumMeta as EnumType
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Devices.Dynamic.manufacturer_native_model import (
+    ManufacturerNativeBinaryVariant,
+    ManufacturerNativeModel,
+)
+from VeraGridEngine.IO.manufacturer_native.model_info import ManufacturerNativeModelInfo
+from VeraGridEngine.IO.manufacturer_native.model_info_codec import decode_manufacturer_native_model_info
+from VeraGridEngine.enumerations import IeeeCigreDllPlatform, IeeeCigreDllVerificationStatus
 import VeraGridEngine.Devices as devices
 from VeraGridEngine.Devices.Parents.editable_device import GCProp, EditableDevice
 from VeraGridEngine.Devices.Profiles import AnyProfile
@@ -66,6 +73,7 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
 
         'market_unit': devices.MarketUnit(),
 
+        'manufacturer_native_model': devices.ManufacturerNativeModel(),
         'rms_model_template': devices.RmsModelTemplate(),
         'emt_model_template': devices.EmtModelTemplate(),
         'fmu_template': devices.FmuTemplate(),
@@ -95,7 +103,6 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
         'underground_cable_constructions': devices.UndergroundCableType(),
         'underground_cable_types': devices.UndergroundLineType(),
         'sequence_line_types': devices.SequenceLineType(),
-        'dc_cable_types': devices.DcCableType(),
         'transformer_types': devices.TransformerType(),
 
         'branch_group': devices.BranchGroup(),
@@ -691,6 +698,18 @@ def veragrid_object_to_json(elm: ALL_DEV_TYPES,
             if prop.has_profile():
                 data[name + '_prof'] = profile_todict(elm.get_profile_by_prop(prop=prop))
 
+        elif prop.tpe == SubObjectType.ManufacturerNativeModelInfo:
+            # Decode before serialization so malformed metadata can never enter
+            # a VeraGrid archive through this generic property path.
+            decoded_model_info: ManufacturerNativeModelInfo = decode_manufacturer_native_model_info(obj)
+            if obj.startswith(b"veragrid-manufacturer-native-model-info-v2\n"):
+                canonical_schema_version: int = 2
+            else:
+                canonical_schema_version = 1
+            data[name] = {
+                "schema_version": canonical_schema_version,
+                "canonical_hex": obj.hex(),
+            }
         elif prop.tpe == SubObjectType.MergeInformation:
             data[name] = obj.to_dict()
 
@@ -766,6 +785,29 @@ def veragrid_object_to_json(elm: ALL_DEV_TYPES,
                     else:
                         pass
 
+    if isinstance(elm, ManufacturerNativeModel):
+        variant_records: List[Dict[str, object]] = list()
+        platform: IeeeCigreDllPlatform
+        for platform in (
+                IeeeCigreDllPlatform.WINDOWS_X86,
+                IeeeCigreDllPlatform.WINDOWS_X64,
+                IeeeCigreDllPlatform.LINUX_X64,
+        ):
+            variant: ManufacturerNativeBinaryVariant | None = elm.get_platform_variant(platform)
+            if variant is not None:
+                variant_records.append({
+                    "platform": variant.platform.value,
+                    "extension": variant.extension,
+                    "content_sha256": variant.content_sha256,
+                    "byte_size": variant.byte_size,
+                    "zip_member": variant.zip_member,
+                    "verification_status": variant.verification_status.value,
+                })
+            else:
+                pass
+        data["binary_variants"] = variant_records
+    else:
+        pass
     return data
 
 
@@ -1487,7 +1529,49 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
                             elif isinstance(gc_prop.tpe, SubObjectType):  # this is a hyperlink to another object
 
-                                if gc_prop.tpe == SubObjectType.GeneratorQCurve:
+                                if gc_prop.tpe == SubObjectType.ManufacturerNativeModelInfo:
+                                    if not isinstance(property_value, dict):
+                                        raise TypeError("ModelInfo must use a declarative canonical_hex envelope")
+                                    else:
+                                        pass
+                                    if set(property_value.keys()) != {"schema_version", "canonical_hex"}:
+                                        raise ValueError("ModelInfo envelope must contain exactly schema_version and canonical_hex")
+                                    else:
+                                        pass
+                                    schema_version: object = property_value["schema_version"]
+                                    if (
+                                            not isinstance(schema_version, int)
+                                            or isinstance(schema_version, bool)
+                                            or schema_version not in (1, 2)
+                                    ):
+                                        raise ValueError("Unsupported canonical ModelInfo schema version")
+                                    else:
+                                        pass
+                                    canonical_hex: object = property_value["canonical_hex"]
+                                    if not isinstance(canonical_hex, str) or len(canonical_hex) % 2 != 0:
+                                        raise TypeError("Canonical ModelInfo hexadecimal bytes are invalid")
+                                    else:
+                                        canonical_bytes: bytes = bytes.fromhex(canonical_hex)
+                                    if canonical_bytes.hex() != canonical_hex:
+                                        raise ValueError("Canonical ModelInfo hex must be lowercase")
+                                    else:
+                                        pass
+                                    if schema_version == 1:
+                                        if not canonical_bytes.startswith(b"veragrid-ieee-cigre-model-info-v1\n"):
+                                            raise ValueError("Canonical ModelInfo envelope schema does not match its bytes")
+                                        else:
+                                            pass
+                                    else:
+                                        if not canonical_bytes.startswith(
+                                                b"veragrid-manufacturer-native-model-info-v2\n"
+                                        ):
+                                            raise ValueError("Canonical ModelInfo envelope schema does not match its bytes")
+                                        else:
+                                            pass
+                                    decode_manufacturer_native_model_info(canonical_bytes)
+                                    elm.set_snapshot_value(gc_prop.name, canonical_bytes)
+
+                                elif gc_prop.tpe == SubObjectType.GeneratorQCurve:
 
                                     # Fill the curve object from its JSON declaration.
                                     q_curve: devices.GeneratorQCurve = elm.get_snapshot_value(prop=gc_prop)
@@ -1682,6 +1766,71 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                 if property_value is not None and float(property_value) == 0.0:
                     elm._length = 0.0
 
+        if isinstance(elm, ManufacturerNativeModel):
+            raw_variants: object = json_entry.get("binary_variants", None)
+            if not isinstance(raw_variants, list):
+                raise TypeError("Manufacturer native provider requires a binary_variants list")
+            else:
+                pass
+            if len(raw_variants) > 3:
+                raise ValueError("Manufacturer native provider has too many platform variants")
+            else:
+                pass
+            raw_variant: object
+            for raw_variant in raw_variants:
+                if not isinstance(raw_variant, dict):
+                    raise TypeError("Manufacturer native binary variant must be a record")
+                else:
+                    pass
+                expected_fields: Set[str] = {
+                    "platform", "extension", "content_sha256", "byte_size",
+                    "zip_member", "verification_status",
+                }
+                if set(raw_variant.keys()) != expected_fields:
+                    raise ValueError("Manufacturer native binary variant has missing or extra fields")
+                else:
+                    pass
+                platform: IeeeCigreDllPlatform = IeeeCigreDllPlatform(raw_variant["platform"])
+                if elm.get_platform_variant(platform) is not None:
+                    raise ValueError("Manufacturer native platform variant is duplicated")
+                else:
+                    pass
+                byte_size: object = raw_variant["byte_size"]
+                if not isinstance(byte_size, int) or isinstance(byte_size, bool):
+                    raise TypeError("Manufacturer native binary byte_size must be an integer")
+                else:
+                    pass
+                variant: ManufacturerNativeBinaryVariant = ManufacturerNativeBinaryVariant(
+                    platform=platform,
+                    extension=str(raw_variant["extension"]),
+                    content_sha256=str(raw_variant["content_sha256"]),
+                    byte_size=byte_size,
+                    zip_member=str(raw_variant["zip_member"]),
+                    verification_status=IeeeCigreDllVerificationStatus(raw_variant["verification_status"]),
+                )
+                elm.set_platform_variant(variant)
+            if len(elm.model_info) == 0:
+                raise ValueError("Manufacturer native provider is missing canonical ModelInfo")
+            else:
+                persisted_model_info: ManufacturerNativeModelInfo = (
+                    decode_manufacturer_native_model_info(elm.model_info)
+                )
+            if persisted_model_info.native_interface != elm.native_interface:
+                raise ValueError(
+                    "Manufacturer native interface does not match canonical ModelInfo"
+                )
+            else:
+                pass
+            if elm.model_info.startswith(b"veragrid-manufacturer-native-model-info-v2\n"):
+                persisted_schema_version: int = 2
+            else:
+                persisted_schema_version = 1
+            if persisted_schema_version != elm.model_info_schema_version:
+                raise ValueError(
+                    "Manufacturer native schema version does not match canonical ModelInfo"
+                )
+            else:
+                pass
         # save the element in the dictionary for later
         devices_dict[elm.idtag] = elm
         parsed_devices.append(elm)
@@ -1698,6 +1847,17 @@ def handle_legacy_jsons(model_data: Dict[str, List],
     :param logger:
     :return:
     """
+    # The first resistance selector only controlled the core. Recover the
+    # former sheath material definition before the shared selector is used.
+    cable_types = elements_dict_by_type.get(DeviceType.UndergroundCableTypeDevice, {})
+    for entry in model_data.get('underground_cable_constructions', []):
+        if ('core_resistance_input' in entry and 'resistance_input' not in entry
+                and 'sheath_dc_resistance' not in entry):
+            cable = cable_types.get(entry.get('idtag'))
+            if cable is not None:
+                cable.sheath_dc_resistance = cable.get_sheath_dc_resistance_from_material()
+                logger.add_info('Recovered sheath resistance for legacy core-only input selector', device=cable.name)
+
     gt_data_list = model_data.get("generator_technology", None)
     if gt_data_list is not None:
         for entry in gt_data_list:
@@ -1964,6 +2124,49 @@ def normalize_dynamic_legacy(data: VERAGRID_FILE_TYPE,
     return symbolic_data
 
 
+def migrate_dc_cable_types(data: VERAGRID_FILE_TYPE, logger: Logger) -> None:
+    """Move legacy DC providers into Cable System before resolving references.
+
+    Preserve identifiers and dynamic associations. The former C field is in
+    F/km; Cable System stores microfarad/km. A 50 Hz representation preserves
+    the original frequency-neutral L/C exactly up to floating-point rounding.
+    Both native JSON and legacy DataFrame tables are accepted.
+    """
+    omega = 2.0 * np.pi * 50.0
+
+    def convert(record: dict) -> dict:
+        result = dict(record)
+        result['freq'] = 50.0
+        result['X'] = float(result.pop('L', 0.0)) * omega
+        result['C'] = float(result.get('C', 0.0)) * 1.0e6
+        result['B'] = result['C'] * omega
+        return result
+
+    model_data = data.get('model_data')
+    if model_data is not None and 'dc_cable_types' in model_data:
+        legacy = model_data.pop('dc_cable_types')
+        existing = model_data.setdefault('underground_cable_types', [])
+        existing_ids = {item.get('idtag') for item in existing}
+        for record in legacy:
+            if record.get('idtag') in existing_ids:
+                logger.add_warning('Duplicate legacy DC cable identifier; keeping Cable System',
+                                   device=record.get('idtag'))
+            else:
+                existing.append(convert(record))
+                existing_ids.add(record.get('idtag'))
+        if legacy:
+            logger.add_info('Migrated DC cable types to Cable System', value=len(legacy))
+
+    legacy_df = data.pop('dc_cable_types', None)
+    if legacy_df is not None and not legacy_df.empty:
+        converted = pd.DataFrame([convert(row) for row in legacy_df.to_dict('records')])
+        existing_df = data.get('underground_cable_types')
+        if existing_df is not None and not existing_df.empty:
+            converted = pd.concat([existing_df, converted], ignore_index=True)
+        data['underground_cable_types'] = converted
+        logger.add_info('Migrated DC cable table to Cable System', value=len(legacy_df))
+
+
 def parse_veragrid_data(data: VERAGRID_FILE_TYPE,
                         previous_circuit: Union[MultiCircuit, None] = None,
                         project_directory: str | Path | None = None,
@@ -1982,6 +2185,8 @@ def parse_veragrid_data(data: VERAGRID_FILE_TYPE,
     :param logger: Logger to register events
     :return: MultiCircuit instance
     """
+    migrate_dc_cable_types(data=data, logger=logger)
+
     # create circuit
     circuit = MultiCircuit()
 

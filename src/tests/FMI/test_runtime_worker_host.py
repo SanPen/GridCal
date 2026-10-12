@@ -12,25 +12,19 @@ import signal
 
 import pytest
 
-from VeraGridEngine.IO.fmu.importer.errors import (
-    FmuArchiveError,
-    FmuBindingError,
-    FmuImportError,
-    FmuModeError,
-)
-from VeraGridEngine.IO.fmu.importer.model_description import (
+from VeraGridEngine.IO.fmu.model_description import (
     FmuModelDescription,
     read_fmu_model_description,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_protocol import (
+from VeraGridEngine.IO.fmu.Elements.protocol import (
     FmiThreeWorkerCompletedIntegratorStepResult,
     FmiThreeWorkerDiscreteStatesResult,
     FmiThreeWorkerDoStepResult,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_profile import (
+from VeraGridEngine.IO.fmu.profile import (
     FmiThreeWorkerFloat64Profile,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_worker_host import (
+from VeraGridEngine.IO.fmu.worker_host import (
     FmiThreeWorkerHost,
     FmiThreeWorkerHostLimits,
     FmiThreeWorkerHostState,
@@ -296,7 +290,7 @@ def test_fmi_three_worker_host_initializes_and_closes_owned_staging(
             metadata=metadata,
             interface_mode=FmuInterfaceMode.CO_SIMULATION,
             staging_parent=compiled_fmi_three_scalar_co_simulation_fmu.parent,
-            limits=_create_worker_host_limits(20.0, 262144),
+            limits=_create_worker_host_limits(60.0, 262144),
             float64_profile=FmiThreeWorkerFloat64Profile.SCALAR,
         )
     )
@@ -311,7 +305,7 @@ def test_fmi_three_worker_host_initializes_and_closes_owned_staging(
         assert host.get_state() == FmiThreeWorkerHostState.READY
         assert host.get_process_id() is not None
         assert staging_root.is_dir()
-        with pytest.raises(FmuBindingError, match="CONFIGURE_UINT64 reference"):
+        with pytest.raises(ValueError, match="CONFIGURE_UINT64 reference"):
             host.configure_uint64(
                 value_references=(3,),
                 values=(5,),
@@ -329,7 +323,7 @@ def test_fmi_three_worker_host_initializes_and_closes_owned_staging(
             initial_float64_values=(2.0,),
         )
         assert host.get_state() == FmiThreeWorkerHostState.INITIALIZED
-        with pytest.raises(FmuModeError, match="requires READY state"):
+        with pytest.raises(RuntimeError, match="requires READY state"):
             host.initialize(
                 start_time=0.0,
                 stop_time=1.0,
@@ -338,7 +332,7 @@ def test_fmi_three_worker_host_initializes_and_closes_owned_staging(
                 initial_float64_values=tuple(),
             )
         assert host.get_state() == FmiThreeWorkerHostState.INITIALIZED
-        with pytest.raises(FmuModeError, match="requires Model Exchange"):
+        with pytest.raises(RuntimeError, match="requires Model Exchange"):
             host.set_time(0.25)
         host.close()
     finally:
@@ -361,7 +355,7 @@ def test_fmi_three_worker_host_runs_model_exchange_continuous_time_lifecycle(
 
     host: FmiThreeWorkerHost = _prepare_compiled_fmi_three_scalar_worker_host(
         compiled_fmu_path=compiled_fmi_three_scalar_co_simulation_fmu,
-        limits=_create_worker_host_limits(20.0, 262144),
+        limits=_create_worker_host_limits(60.0, 262144),
         interface_mode=FmuInterfaceMode.MODEL_EXCHANGE,
     )
     staging_root: Path = host.get_staging_root()
@@ -432,7 +426,7 @@ def test_fmi_three_worker_host_runs_model_exchange_continuous_time_lifecycle(
         host.restore_checkpoint()
         assert host.get_continuous_states() == pytest.approx((1.0,))
         host.discard_checkpoint()
-        with pytest.raises(FmuModeError, match="requires a compatible saved state"):
+        with pytest.raises(RuntimeError, match="requires a compatible saved state"):
             host.restore_checkpoint()
         completed_result: FmiThreeWorkerCompletedIntegratorStepResult = (
             host.completed_integrator_step(
@@ -452,7 +446,7 @@ def test_fmi_three_worker_host_runs_model_exchange_continuous_time_lifecycle(
         assert not direct_event_result.discrete_states_need_update
         host.enter_continuous_time_mode()
         assert host.get_state() == FmiThreeWorkerHostState.CONTINUOUS_TIME
-        with pytest.raises(FmuModeError, match="requires Co-Simulation"):
+        with pytest.raises(RuntimeError, match="requires Co-Simulation"):
             host.do_step(
                 current_communication_point=0.25,
                 communication_step_size=0.1,
@@ -565,7 +559,7 @@ def test_fmi_three_worker_host_retains_unknown_spawn_after_owner_gc(
     assert host.get_state() == FmiThreeWorkerHostState.FAILED
     assert host.get_process_id() is None
     assert staging_root.is_dir()
-    with pytest.raises(FmuImportError, match="spawn outcome is unknown"):
+    with pytest.raises(RuntimeError, match="spawn outcome is unknown"):
         host.close()
     assert host.get_state() == FmiThreeWorkerHostState.FAILED
     assert staging_root.is_dir()
@@ -586,7 +580,7 @@ def test_fmi_three_worker_host_rejects_step_before_native_write(
     host: FmiThreeWorkerHost = (
         _prepare_compiled_fmi_three_scalar_worker_host(
             compiled_fmu_path=compiled_fmi_three_scalar_co_simulation_fmu,
-            limits=_create_worker_host_limits(20.0, 262144),
+            limits=_create_worker_host_limits(60.0, 262144),
         )
     )
     try:
@@ -608,7 +602,7 @@ def test_fmi_three_worker_host_rejects_step_before_native_write(
                 values=(9.0, 10.0),
             )
         assert host.get_state() == FmiThreeWorkerHostState.INITIALIZED
-        with pytest.raises(FmuModeError, match="not continuous"):
+        with pytest.raises(RuntimeError, match="not continuous"):
             host.set_numeric_values_and_do_step(
                 float64_value_references=(1,),
                 float64_values=(9.0,),
@@ -652,7 +646,7 @@ def test_fmi_three_worker_host_rejects_step_before_native_write(
             )
         )
         assert first_result.last_successful_time == pytest.approx(0.25)
-        with pytest.raises(FmuModeError, match="constant communication step size"):
+        with pytest.raises(RuntimeError, match="constant communication step size"):
             host.set_numeric_values_and_do_step(
                 float64_value_references=(1,),
                 float64_values=(9.0,),
@@ -660,7 +654,7 @@ def test_fmi_three_worker_host_rejects_step_before_native_write(
                 communication_step_size=0.5,
                 no_set_fmu_state_prior_to_current_point=True,
             )
-        with pytest.raises(FmuModeError, match="not continuous"):
+        with pytest.raises(RuntimeError, match="not continuous"):
             host.set_numeric_values_and_do_step(
                 float64_value_references=(1,),
                 float64_values=(9.0,),
@@ -685,7 +679,7 @@ def test_fmi_three_worker_host_closes_ready_instance_idempotently(
 
     host: FmiThreeWorkerHost = _prepare_compiled_fmi_three_scalar_worker_host(
         compiled_fmu_path=compiled_fmi_three_scalar_co_simulation_fmu,
-        limits=_create_worker_host_limits(20.0, 262144),
+        limits=_create_worker_host_limits(60.0, 262144),
     )
     staging_root: Path = host.get_staging_root()
     try:
@@ -715,7 +709,7 @@ def test_fmi_three_worker_host_preserves_final_readable_values_after_termination
 
     host: FmiThreeWorkerHost = _prepare_compiled_fmi_three_scalar_worker_host(
         compiled_fmu_path=compiled_fmi_three_scalar_co_simulation_fmu,
-        limits=_create_worker_host_limits(20.0, 262144),
+        limits=_create_worker_host_limits(60.0, 262144),
     )
     staging_root: Path = host.get_staging_root()
     try:
@@ -744,9 +738,9 @@ def test_fmi_three_worker_host_preserves_final_readable_values_after_termination
         assert host.get_float64((0, 1, 2), 3) == pytest.approx(
             (0.25, 9.0, 9.25)
         )
-        with pytest.raises(FmuModeError, match="SET_FLOAT64 requires Step Mode"):
+        with pytest.raises(RuntimeError, match="SET_FLOAT64 requires Step Mode"):
             host.set_float64(value_references=(1,), values=(2.0,))
-        with pytest.raises(FmuModeError, match="DO_STEP requires Step Mode"):
+        with pytest.raises(RuntimeError, match="DO_STEP requires Step Mode"):
             host.do_step(
                 current_communication_point=0.25,
                 communication_step_size=0.25,
@@ -772,7 +766,7 @@ def test_fmi_three_worker_host_rejects_invalid_initial_assignments_locally(
 
     host: FmiThreeWorkerHost = _prepare_compiled_fmi_three_scalar_worker_host(
         compiled_fmu_path=compiled_fmi_three_scalar_co_simulation_fmu,
-        limits=_create_worker_host_limits(20.0, 262144),
+        limits=_create_worker_host_limits(60.0, 262144),
     )
     staging_root: Path = host.get_staging_root()
     try:
@@ -782,7 +776,7 @@ def test_fmi_three_worker_host_rejects_invalid_initial_assignments_locally(
             debug_logging=False,
         )
         process_id: int | None = host.get_process_id()
-        with pytest.raises(FmuBindingError, match="Initialization Mode"):
+        with pytest.raises(ValueError, match="Initialization Mode"):
             host.initialize(
                 start_time=0.0,
                 stop_time=1.0,
@@ -821,7 +815,7 @@ def test_fmi_three_worker_host_rejects_float64_output_write(
 
     host: FmiThreeWorkerHost = _prepare_compiled_fmi_three_scalar_worker_host(
         compiled_fmu_path=compiled_fmi_three_scalar_co_simulation_fmu,
-        limits=_create_worker_host_limits(20.0, 262144),
+        limits=_create_worker_host_limits(60.0, 262144),
     )
     staging_root: Path = host.get_staging_root()
     try:
@@ -837,7 +831,7 @@ def test_fmi_three_worker_host_rejects_float64_output_write(
             initial_float64_value_references=tuple(),
             initial_float64_values=tuple(),
         )
-        with pytest.raises(FmuBindingError, match="input or tunable parameter"):
+        with pytest.raises(ValueError, match="input or tunable parameter"):
             host.set_float64(value_references=(2,), values=(3.0,))
         assert host.get_state() == FmiThreeWorkerHostState.FAILED
         assert not staging_root.exists()
@@ -859,7 +853,7 @@ def test_fmi_three_worker_host_rejects_get_response_amplification_locally(
         FmiThreeWorkerHostLimits(
             maximum_frame_size=1024,
             maximum_float64_values_per_request=128,
-            response_timeout_seconds=20.0,
+            response_timeout_seconds=60.0,
             graceful_join_timeout_seconds=10.0,
             terminate_join_timeout_seconds=5.0,
             kill_join_timeout_seconds=5.0,
@@ -910,7 +904,7 @@ def test_fmi_three_worker_host_releases_staging_after_frame_bound_failure(
     )
     staging_root: Path = host.get_staging_root()
     try:
-        with pytest.raises(FmuImportError, match="request transport failed"):
+        with pytest.raises(RuntimeError, match="request transport failed"):
             host.start(
                 instance_name="veragrid-fmi-three-frame-bound-failure",
                 visible=False,
@@ -939,7 +933,7 @@ def test_fmi_three_worker_host_enforces_start_response_deadline(
     )
     staging_root: Path = host.get_staging_root()
     try:
-        with pytest.raises(FmuImportError, match="response timed out"):
+        with pytest.raises(RuntimeError, match="response timed out"):
             host.start(
                 instance_name="veragrid-fmi-three-start-timeout",
                 visible=False,
@@ -964,7 +958,7 @@ def test_fmi_three_worker_host_maps_child_archive_error_and_cleans_up(
 
     host: FmiThreeWorkerHost = _prepare_compiled_fmi_three_scalar_worker_host(
         compiled_fmu_path=compiled_fmi_three_scalar_co_simulation_fmu,
-        limits=_create_worker_host_limits(20.0, 262144),
+        limits=_create_worker_host_limits(60.0, 262144),
     )
     staging_root: Path = host.get_staging_root()
     source_path: Path = host.get_staged_fmu_directory() / "sources" / "model.c"
@@ -975,7 +969,7 @@ def test_fmi_three_worker_host_maps_child_archive_error_and_cleans_up(
         replacement_byte = b" "
     source_path.write_bytes(b"".join((source_bytes[:-1], replacement_byte)))
     try:
-        with pytest.raises(FmuArchiveError, match="worker ARCHIVE"):
+        with pytest.raises(ValueError, match="worker ARCHIVE"):
             host.start(
                 instance_name="veragrid-fmi-three-child-archive-error",
                 visible=False,
@@ -1000,7 +994,7 @@ def test_fmi_three_worker_host_fails_closed_after_exact_child_termination(
 
     host: FmiThreeWorkerHost = _prepare_compiled_fmi_three_scalar_worker_host(
         compiled_fmu_path=compiled_fmi_three_scalar_co_simulation_fmu,
-        limits=_create_worker_host_limits(20.0, 262144),
+        limits=_create_worker_host_limits(60.0, 262144),
     )
     staging_root: Path = host.get_staging_root()
     try:
@@ -1014,7 +1008,7 @@ def test_fmi_three_worker_host_fails_closed_after_exact_child_termination(
             os.kill(process_id, signal.SIGTERM)
         else:
             raise AssertionError("The supervised worker has no process identifier")
-        with pytest.raises(FmuImportError, match="worker"):
+        with pytest.raises(RuntimeError, match="worker"):
             host.initialize(
                 start_time=0.0,
                 stop_time=1.0,

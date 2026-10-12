@@ -2142,71 +2142,18 @@ def synchronize_saved_emt_root_contract_from_bus(device: Any) -> None:
     rehash_block_tree_var_keyed_dicts(root_block=model)
 
 
-def synchronize_saved_emt_root_parameters_from_children(device: Any) -> None:
-    """
-    Mirror child static parameters into one saved EMT root block.
-
-    Some editor-produced EMT models keep static parameters only in child blocks.
-    The EMT initialization pipeline can still compile temporary residual systems
-    starting from the saved root block contract before every wrapper/child path
-    has been flattened, so the saved root must expose the same constant vars as
-    its children for robust GUI execution.
-
-    :param device: Device whose saved EMT root parameters must be synchronized.
-    :return: None.
-    """
-    model: Block = device.emt_model
-    child_block: Block
-    parameter_var: Var
-    parameter_value: Const
-    api_key: Any
-    api_var: Var | None
-
-    if model.empty():
-        return
-    else:
-        pass
-
-    for child_block in model.children:
-        for parameter_var, parameter_value in child_block.parameters.items():
-            if parameter_var in model.parameters:
-                pass
-            else:
-                model.parameters[parameter_var] = parameter_value
-
-        # Editor-saved wrapper roots can keep static API mappings such as
-        # ``omega_base`` only on the generated child block. The EMT static
-        # parameter mapper later reads the root ``api_obj_mapping`` contract, so
-        # mirror missing child mappings into the root before assembly.
-        for api_key, api_var in child_block.api_obj_mapping.items():
-            if api_key in model.api_obj_mapping:
-                pass
-            else:
-                model.api_obj_mapping[api_key] = api_var
-
-            if api_var is None:
-                pass
-            else:
-                if api_var in child_block.parameters:
-                    if api_var in model.parameters:
-                        pass
-                    else:
-                        model.parameters[api_var] = child_block.parameters[api_var]
-                else:
-                    pass
-
-
 def synchronize_saved_rms_root_mappings_from_children(device: Any) -> None:
-    """Synchronize live child RMS mappings into the saved device-model root.
+    """Synchronize the live child RMS interface into the saved model root.
 
     Models assembled in the Dynamic Editor store complete device templates as
-    children of the editor-owned root. RMS initialization reads
-    ``external_mapping`` and ``api_obj_mapping`` from that root, so every
-    mapping owned by a generated child must also be exposed there after the
-    edited model is committed. Keep existing root bindings only when their
-    targets are still declared in the current tree. This removes orphaned
-    mappings left by deleted blocks while preserving live interface bindings,
-    including connected variables with different names or from/to references.
+    children of the editor-owned root. External terminal bindings form the root
+    interface and must therefore be exposed there after the edited model is
+    committed. Static API mappings remain owner-local: recursive RMS and EMT
+    initialization visits every block, so copying a child's mapping to its parent
+    would create a second, invalid owner. Existing root terminal bindings are
+    retained only while their targets are still declared in the current tree,
+    and obsolete root API copies are discarded unless the root itself declares
+    the mapped parameter.
 
     :param device: Device whose saved RMS model has just been committed.
     :return: None.
@@ -2252,28 +2199,28 @@ def synchronize_saved_rms_root_mappings_from_children(device: Any) -> None:
         for external_key, external_var in model.external_mapping.items()
         if external_var is None or external_var.uid in live_variable_uids
     )
-    model.api_obj_mapping = dict(
-        (api_key, api_var)
-        for api_key, api_var in model.api_obj_mapping.items()
-        if api_var is None or api_var.uid in live_variable_uids
-    )
+    localized_root_api_mapping: Dict[ParamPowerFlowReferenceType, Var | None] = dict()
+    for api_key, api_var in model.api_obj_mapping.items():
+        if api_var is None:
+            localized_root_api_mapping[api_key] = api_var
+        elif ((api_var in model.event_dict) != (api_var in model.parameters)):
+            # Storage, not the enum key, defines whether the mapped value is
+            # immutable or event-capable.
+            localized_root_api_mapping[api_key] = api_var
+        else:
+            # Recursive discovery reads the descendant mapping directly. A root
+            # entry targeting that descendant is an obsolete ownership copy.
+            pass
+    model.api_obj_mapping = localized_root_api_mapping
 
-    # The first element is the root itself. Fill missing or orphaned mappings
-    # from surviving descendants, without overriding still-live root choices.
+    # The first element is the root itself. Fill missing or orphaned external
+    # bindings from descendants without moving owner-local API mappings.
     for descendant_block in all_blocks[1:]:
         for external_key, external_var in descendant_block.external_mapping.items():
             root_external_var: Var | None = model.external_mapping.get(external_key, None)
             if (root_external_var is None and external_var is not None
                     and external_var.uid in live_variable_uids):
                 model.external_mapping[external_key] = external_var
-            else:
-                pass
-
-        for api_key, api_var in descendant_block.api_obj_mapping.items():
-            root_api_var: Var | None = model.api_obj_mapping.get(api_key, None)
-            if (root_api_var is None and api_var is not None
-                    and api_var.uid in live_variable_uids):
-                model.api_obj_mapping[api_key] = api_var
             else:
                 pass
 
@@ -2787,9 +2734,9 @@ def connect_bus_variables_rms(device: Any,
     :return: None.
     """
     if device.device_type == DeviceType.VscDevice:
-        # A VeraGrid VSC is oriented from its DC bus to its AC bus. Its RMS
-        # template therefore combines a direct Vdc terminal on the from side
-        # with the conventional Vmt/Vat pair on the to side.
+        # A VeraGrid VSC is oriented from its positive DC bus to its AC bus.
+        # Its RMS template therefore combines Vf_dc (and, for a bipolar VSC,
+        # Vt_dc) with the conventional Vmt/Vat AC terminal pair.
         if var_factory is None:
             raise ValueError("var factory not associated to grid element")
         else:
@@ -2804,13 +2751,41 @@ def connect_bus_variables_rms(device: Any,
         else:
             pass
 
-        _connect_rms_bus_voltage_reference(
+        vdc_connected: bool = _connect_rms_bus_voltage_reference(
             bus_model=device.bus_from.rms_model,
             device_model=model,
             bus_reference=VarPowerFlowReferenceType.Vdc,
-            device_reference=VarPowerFlowReferenceType.Vdc,
+            device_reference=VarPowerFlowReferenceType.Vf_dc,
             var_factory=var_factory,
         )
+        if vdc_connected:
+            pass
+        else:
+            # Models saved before the side-specific VSC terminal contract can
+            # expose the DC terminal directly as Vdc.
+            _connect_rms_bus_voltage_reference(
+                bus_model=device.bus_from.rms_model,
+                device_model=model,
+                bus_reference=VarPowerFlowReferenceType.Vdc,
+                device_reference=VarPowerFlowReferenceType.Vdc,
+                var_factory=var_factory,
+            )
+
+        if device.bus_dc_n is None:
+            pass
+        else:
+            if device.bus_dc_n.rms_model.empty():
+                initialize_bus_rms(device.bus_dc_n, var_factory)
+            else:
+                pass
+            _connect_rms_bus_voltage_reference(
+                bus_model=device.bus_dc_n.rms_model,
+                device_model=model,
+                bus_reference=VarPowerFlowReferenceType.Vdc,
+                device_reference=VarPowerFlowReferenceType.Vt_dc,
+                var_factory=var_factory,
+            )
+
         vm_connected: bool = _connect_rms_bus_voltage_reference(
             bus_model=device.bus_to.rms_model,
             device_model=model,
@@ -3272,9 +3247,8 @@ def set_rms_model(device: Any, model:Block, var_factory: VarFactory):
     # set the model to the device
     device.rms_model = model
 
-    # The RMS assembler reads power-flow mappings from the saved model root.
-    # Promote mappings owned by complete-template descendants so scripted
-    # assignment follows the same persistence contract as the Dynamic Editor.
+    # The saved RMS root owns the external device interface. Static API mappings
+    # stay on their declaring blocks and are discovered recursively at assembly.
     synchronize_saved_rms_root_mappings_from_children(device=device)
 
 

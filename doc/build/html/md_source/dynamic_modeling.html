@@ -1,0 +1,344 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building dynamic models &mdash; VeraGrid 6.7.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/style.css?v=ba3a54df" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Dynamic workspace and editors" href="dynamic_editor.html" />
+    <link rel="prev" title="🧬 EMT Small-Signal stability: Floquet analysis" href="small_signal_stability_emt.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            VeraGrid
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">💽 Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_interface.html">📊 User interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="veragrid_scripting_guide.html">📑 VeraGrid scripting guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="grid_analysis.html">🔎 Grid analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">🌁 Structure of VeraGrid</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modelling.html">📐 Grid Modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_debugging.html">🪲 Model debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="file_operations.html">💾 File loading and saving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="topology.html">🌵 Topology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clustering.html">🎳 Clustering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="grid_reduction.html">👾 Grid Reduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedural_grid.html">🕸️ Procedural Grid Expansion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="power_flow.html">🔥 Power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linear_analysis.html">📏 Linear analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimal_power_flow.html">🏁 Optimal power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="short_circuit.html">⚡ Short-Circuit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stochastic_power_flow.html">🎲 Stochastic power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="continuation_power_flow.html">➿ Continuation power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sigma_analysis.html">🌘 Sigma analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="solar_wizard.html">☀️ Solar power wizard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contingency_analysis.html">💥 Contingency analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="investment_optimization.html">🏦 Investment optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cascading.html">🎢 Cascading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="net_transfer_capacity.html">🚢 Net transfer capacity optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reliability.html">🚧 Reliability</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state_estimation.html">🌀 State estimation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="dynamic_simulations.html">🧲 Dynamic simulations</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-simulation-theory">1. Dynamic simulation theory</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dynamic_simulations.html#dynamic-editor-and-model-construction">2. Dynamic editor and model construction</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Building dynamic models</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#general-block-structure">General block structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model-ownership-and-connections">Model ownership and connections</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#construction-workflow">Construction workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#building-and-assigning-models-from-the-api">Building and assigning models from the API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parameters-and-events">Parameters and events</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#templates-and-copied-models">Templates and copied models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#validation">Validation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#next-steps">Next steps</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dynamic_editor.html">Dynamic workspace and editors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-model-library">3. Dynamic model library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#recommended-reading-paths">Recommended reading paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#end-to-end-workflow">End-to-end workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">🧩 Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">📜 License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_models.html">Data Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rst_source/api/auto/modules.html">VeraGrid</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">VeraGrid</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+      <li class="breadcrumb-item active">Building dynamic models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/md_source/dynamic_modeling.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="building-dynamic-models">
+<h1>Building dynamic models<a class="headerlink" href="#building-dynamic-models" title="Link to this heading"></a></h1>
+<p>VeraGrid represents an RMS or EMT device model as a graph of reusable blocks. The same model objects can be created with the API or edited graphically in the dynamic workspace.</p>
+<p>Use this page for the common modelling workflow. For the complete equation API, initialization rules, and validation details, continue with <a class="reference internal" href="dae_block_authoring.html"><span class="std std-doc">Writing DAE models in VeraGrid</span></a>.</p>
+<section id="general-block-structure">
+<h2>General block structure<a class="headerlink" href="#general-block-structure" title="Link to this heading"></a></h2>
+<p>A block can contain:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Element</p></th>
+<th class="head"><p>Role</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Input ports</p></td>
+<td><p>Expressions received from another block or a grid terminal</p></td>
+</tr>
+<tr class="row-odd"><td><p>Output ports</p></td>
+<td><p>Expressions exposed to connected blocks</p></td>
+</tr>
+<tr class="row-even"><td><p>Parameters</p></td>
+<td><p>Constant or event-modifiable model data</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">state_vars</span></code></p></td>
+<td><p>Integrated dynamic states</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">algebraic_vars</span></code></p></td>
+<td><p>Unknowns constrained instantaneously</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">diff_vars</span></code></p></td>
+<td><p>Derivative symbols associated with states</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">state_eqs</span></code></p></td>
+<td><p>State and derivative equations</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">algebraic_eqs</span></code></p></td>
+<td><p>Algebraic residual equations</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">init_eqs</span></code></p></td>
+<td><p>Explicit initial values for variables</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">diff_init_eqs</span></code></p></td>
+<td><p>Explicit initial values for derivatives</p></td>
+</tr>
+<tr class="row-even"><td><p>Runtime logic</p></td>
+<td><p>Discrete modes, limits, gates, and other procedural behaviour</p></td>
+</tr>
+<tr class="row-odd"><td><p>Children</p></td>
+<td><p>Nested blocks used to build a hierarchical model</p></td>
+</tr>
+</tbody>
+</table>
+<p>New blocks use <code class="docutils literal notranslate"><span class="pre">state_vars</span></code>, <code class="docutils literal notranslate"><span class="pre">diff_vars</span></code>, and <code class="docutils literal notranslate"><span class="pre">state_eqs</span></code> for differential behaviour. The old <code class="docutils literal notranslate"><span class="pre">differential_eqs</span></code> field is retained only to load legacy models and must not be used for new authoring.</p>
+</section>
+<section id="model-ownership-and-connections">
+<h2>Model ownership and connections<a class="headerlink" href="#model-ownership-and-connections" title="Link to this heading"></a></h2>
+<p>Every equation has one owning block, and every model-owned unknown must be determined exactly once. Ports do not create an independent copy of a signal; a connection identifies how expressions are shared across the graph.</p>
+<p>Grid connection blocks are created by the editor for the selected device. They expose the voltage, current, or other physical terminal contract expected by the RMS or EMT network formulation. Do not replace these terminals with unrelated free variables: the connection is what couples the device model to the global network equations.</p>
+</section>
+<section id="construction-workflow">
+<h2>Construction workflow<a class="headerlink" href="#construction-workflow" title="Link to this heading"></a></h2>
+<p>The recommended sequence is the same in the GUI and the API:</p>
+<ol class="arabic simple">
+<li><p>Select the target device and simulation domain.</p></li>
+<li><p>Start from the grid connection blocks supplied for that device.</p></li>
+<li><p>Add the smallest set of functional blocks needed for the study.</p></li>
+<li><p>Connect compatible ports and verify the signal direction.</p></li>
+<li><p>Set parameters and operating-point bindings.</p></li>
+<li><p>Declare states, algebraic variables, derivatives, equations, and initialization expressions.</p></li>
+<li><p>Add runtime logic only when continuous equations cannot describe the behaviour.</p></li>
+<li><p>Validate the complete model graph.</p></li>
+<li><p>Save or assign the model to the device.</p></li>
+</ol>
+</section>
+<section id="building-and-assigning-models-from-the-api">
+<h2>Building and assigning models from the API<a class="headerlink" href="#building-and-assigning-models-from-the-api" title="Link to this heading"></a></h2>
+<p>The API workflow uses the same <code class="docutils literal notranslate"><span class="pre">Block</span></code>, <code class="docutils literal notranslate"><span class="pre">Var</span></code>, <code class="docutils literal notranslate"><span class="pre">Expr</span></code>, and <code class="docutils literal notranslate"><span class="pre">VarFactory</span></code> objects used by the editor. The following function builds a reusable first-order lag block without assigning it to a specific grid device:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Dynamic.var_factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">VarFactory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.block</span><span class="w"> </span><span class="kn">import</span> <span class="n">Block</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Const</span><span class="p">,</span> <span class="n">Var</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">build_first_order_lag</span><span class="p">(</span>
+        <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
+        <span class="n">time_constant_seconds</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Block</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Build a first-order lag whose output is also its dynamic state.</span>
+
+<span class="sd">    :param var_factory: Grid-owned factory used to create symbolic identities.</span>
+<span class="sd">    :param time_constant_seconds: Positive lag time constant in seconds.</span>
+<span class="sd">    :param name: Human-readable block name.</span>
+<span class="sd">    :return: Unconnected first-order lag block.</span>
+<span class="sd">    """</span>
+    <span class="n">input_signal</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">"_input"</span><span class="p">)</span>
+    <span class="n">output_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">"_output"</span><span class="p">)</span>
+    <span class="n">time_constant</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">"_time_constant"</span><span class="p">)</span>
+    <span class="n">time_constant_value</span><span class="p">:</span> <span class="n">Const</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="n">time_constant_seconds</span><span class="p">)</span>
+
+    <span class="n">block</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">state_vars</span><span class="o">=</span><span class="nb">list</span><span class="p">([</span><span class="n">output_state</span><span class="p">]),</span>
+        <span class="n">state_eqs</span><span class="o">=</span><span class="nb">list</span><span class="p">([</span>
+            <span class="p">(</span><span class="n">input_signal</span> <span class="o">-</span> <span class="n">output_state</span><span class="p">)</span> <span class="o">/</span> <span class="n">time_constant</span><span class="p">,</span>
+        <span class="p">]),</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="nb">dict</span><span class="p">({</span>
+            <span class="n">time_constant</span><span class="p">:</span> <span class="n">time_constant_value</span><span class="p">,</span>
+        <span class="p">}),</span>
+        <span class="n">init_eqs</span><span class="o">=</span><span class="nb">dict</span><span class="p">({</span>
+            <span class="n">output_state</span><span class="p">:</span> <span class="n">input_signal</span><span class="p">,</span>
+        <span class="p">}),</span>
+        <span class="n">in_vars</span><span class="o">=</span><span class="nb">list</span><span class="p">([</span><span class="n">input_signal</span><span class="p">]),</span>
+        <span class="n">out_vars</span><span class="o">=</span><span class="nb">list</span><span class="p">([</span><span class="n">output_state</span><span class="p">]),</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">block</span>
+</pre></div>
+</div>
+<p>Add the returned block to a device-model root, connect its ports to the surrounding blocks, and expose only the network-facing variables on the root. The <a class="reference internal" href="dae_block_authoring.html"><span class="std std-doc">DAE authoring guide</span></a> contains a complete RMS device template with network and static-API mappings.</p>
+<p>Once a complete root model has been built and validated, assign it to its grid device with the standard helper:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Dynamic.var_factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">VarFactory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Parents.editable_device</span><span class="w"> </span><span class="kn">import</span> <span class="n">EditableDevice</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.block</span><span class="w"> </span><span class="kn">import</span> <span class="n">Block</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.templates_common_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_emt_model</span><span class="p">,</span> <span class="n">set_rms_model</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">assign_dynamic_model</span><span class="p">(</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">EditableDevice</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
+        <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
+        <span class="n">use_emt</span><span class="p">:</span> <span class="nb">bool</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Assign an already constructed dynamic model to one grid device.</span>
+
+<span class="sd">    :param device: Grid device that owns the dynamic model.</span>
+<span class="sd">    :param model: Validated RMS or EMT block graph.</span>
+<span class="sd">    :param var_factory: Variable factory owned by the target circuit.</span>
+<span class="sd">    :param use_emt: ``True`` for an EMT model and ``False`` for an RMS model.</span>
+<span class="sd">    :return: Nothing.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">use_emt</span><span class="p">:</span>
+        <span class="n">set_emt_model</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">var_factory</span><span class="o">=</span><span class="n">var_factory</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">set_rms_model</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">var_factory</span><span class="o">=</span><span class="n">var_factory</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In normal scripts, <code class="docutils literal notranslate"><span class="pre">model</span></code> is obtained from a supplied template builder or from a dedicated model-construction function. Keep model construction separate from simulation setup so the block graph can be validated and reused.</p>
+<p>The detailed authoring guide includes complete examples for creating variables, derivatives, equations, ports, and initialization expressions.</p>
+</section>
+<section id="parameters-and-events">
+<h2>Parameters and events<a class="headerlink" href="#parameters-and-events" title="Link to this heading"></a></h2>
+<p>A parameter that must change during a scenario must be declared as event-modifiable by the model. The Events page and event API refer to the model parameter identity, not only to its displayed name. Save the model before creating events so those identities remain stable.</p>
+<p>Use constant parameters for immutable coefficients. Use runtime logic for discrete behaviour such as mode changes, saturation state, or switching gates. Avoid using runtime logic for relationships that can be expressed directly as DAE equations.</p>
+</section>
+<section id="templates-and-copied-models">
+<h2>Templates and copied models<a class="headerlink" href="#templates-and-copied-models" title="Link to this heading"></a></h2>
+<p>A template is a reusable starting point. Once assigned to a device, the device model can be inspected or edited independently. The Comparison page groups compatible saved models and helps propagate selected parameter values across devices without replacing their full block graphs.</p>
+<p>For the currently supplied models and blocks, see the <a class="reference internal" href="dynamic_model_library_index.html"><span class="std std-doc">Dynamic model library</span></a>. The library reference is intentionally kept separate from authoring guidance.</p>
+</section>
+<section id="validation">
+<h2>Validation<a class="headerlink" href="#validation" title="Link to this heading"></a></h2>
+<p>Validate the whole model, not only individual blocks. A useful review checks:</p>
+<ul class="simple">
+<li><p>all required ports are connected;</p></li>
+<li><p>grid connection blocks match the selected device and domain;</p></li>
+<li><p>every state has a corresponding derivative and state equation;</p></li>
+<li><p>algebraic equations are independent and have the correct ownership;</p></li>
+<li><p>initialization equations cover the intended starting state;</p></li>
+<li><p>parameter names and units match event and plot definitions;</p></li>
+<li><p>the model contains no references to objects outside its saved hierarchy.</p></li>
+</ul>
+<p>The editor reports structural and equation diagnostics before changes are applied. Resolve these diagnostics before starting a simulation.</p>
+</section>
+<section id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="dynamic_editor.html"><span class="std std-doc">Dynamic workspace and editors</span></a>: graphical editing, events, comparison, and plots.</p></li>
+<li><p><a class="reference internal" href="dae_block_authoring.html"><span class="std std-doc">Writing DAE models in VeraGrid</span></a>: complete symbolic authoring reference.</p></li>
+<li><p><a class="reference internal" href="dynamic_physical_network_contracts.html"><span class="std std-doc">Dynamic physical network contracts</span></a>: device-to-network terminal conventions.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="small_signal_stability_emt.html" class="btn btn-neutral float-left" title="🧬 EMT Small-Signal stability: Floquet analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dynamic_editor.html" class="btn btn-neutral float-right" title="Dynamic workspace and editors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Santiago Peñate Vera et. al..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

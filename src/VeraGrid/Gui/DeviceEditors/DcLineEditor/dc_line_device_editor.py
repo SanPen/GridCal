@@ -107,11 +107,9 @@ class DcLineDeviceEditor(TemplateDeviceEditor):
         self.dc_line_design_layout.addLayout(self.dc_line_design_button_layout)
 
         if self.circuit is not None:
-            # Build one template list in the same order expected by the legacy editor.
+            # AC and DC branches share the Cable System catalogue.
             available_templates: list[DcLineTemplate] = list()
-            available_templates.extend(self.circuit.sequence_line_types)
             available_templates.extend(self.circuit.underground_cable_types)
-            available_templates.extend(self.circuit.overhead_line_types)
 
             self.dc_line_design_widget = EmbeddedDcLineDesignEditorWidget(
                 branch=self.api_object,

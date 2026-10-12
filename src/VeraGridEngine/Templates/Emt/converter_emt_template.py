@@ -9,9 +9,6 @@ from VeraGridEngine.enumerations import DeviceType, ConverterControlType, ParamP
 from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
 from VeraGridEngine.Utils.Symbolic.block import (
     Block,
-    EmtTerminalConductor,
-    EmtTerminalCurrentContribution,
-    EmtTerminalSide,
     VarPowerFlowReferenceType,
 )
 from VeraGridEngine.Utils.Symbolic.symbolic import Var, Const
@@ -33,15 +30,14 @@ And provides:
 - AC side: i_A, i_B, i_C (instantaneous three-phase currents)
 
 External mapping for EmtProblemDae:
-- v_A, v_B, v_C: AC bus voltages (from bus)
-- Vdc: DC bus voltage (from bus)
-- i_A, i_B, i_C: AC phase currents (to bus - entering the bus)
-- Idc: DC current (to bus - entering the DC bus)
+- v_A, v_B, v_C: AC bus voltages
+- Vdc: DC bus voltage
+- it_A, it_B, it_C: AC currents at the physical to terminal
+- If_dc: DC current at the physical from terminal
 
 For KCL connection:
-- If the DC bus is bus_from: If_dc is looked up
-- If the DC bus is bus_to: It_dc is looked up
-- AC currents i_A, i_B, i_C are added to the AC bus KCL
+- static VSC topology supplies the from/to buses
+- mapped current references supply terminal and conductor semantics
 """
 
 def _converter_control_type_code(control: ConverterControlType | None) -> int:
@@ -219,8 +215,6 @@ def get_emt_ideal_converter(
     event_dict = {
         P_loss: vf.add_const(0.0),
         P0: vf.add_const(0.0),
-        omega_base: vf.add_const(2.0 * np.pi * 50.0),
-        sbase: vf.add_const(1.0),
         control1: vf.add_const(float(_converter_control_type_code(None))),
         control2: vf.add_const(float(_converter_control_type_code(None))),
         control1_val: vf.add_const(0.0),
@@ -304,6 +298,10 @@ def get_emt_ideal_converter(
         algebraic_eqs=algebraic_eqs,
         algebraic_vars=algebraic_vars,
         event_dict=event_dict,
+        parameters={
+            omega_base: vf.add_const(2.0 * np.pi * 50.0),
+            sbase: vf.add_const(1.0),
+        },
         init_eqs=init_eqs,
         diff_init_eqs={d_theta: omega_base},
         in_vars=inputs,
@@ -311,8 +309,6 @@ def get_emt_ideal_converter(
     )
     converter_block.api_obj_mapping = {
         ParamPowerFlowReferenceType.Sbase: sbase,
-        ParamPowerFlowReferenceType.converter_loss_power_0: P_loss,
-        # ParamPowerFlowReferenceType.P0: P0,
         ParamPowerFlowReferenceType.omega_base: omega_base,
         ParamPowerFlowReferenceType.converter_control_mode_1: control1,
         ParamPowerFlowReferenceType.converter_control_mode_2: control2,
@@ -329,15 +325,19 @@ def get_emt_ideal_converter(
         VarPowerFlowReferenceType.v_A: v_A,
         VarPowerFlowReferenceType.v_B: v_B,
         VarPowerFlowReferenceType.v_C: v_C,
+        VarPowerFlowReferenceType.vt_A: v_A,
+        VarPowerFlowReferenceType.vt_B: v_B,
+        VarPowerFlowReferenceType.vt_C: v_C,
 
         VarPowerFlowReferenceType.Vdc: v_dc,
+        VarPowerFlowReferenceType.Vf_dc: v_dc,
 
-        VarPowerFlowReferenceType.i_A: i_A,
-        VarPowerFlowReferenceType.i_B: i_B,
-        VarPowerFlowReferenceType.i_C: i_C,
+        VarPowerFlowReferenceType.it_A: i_A,
+        VarPowerFlowReferenceType.it_B: i_B,
+        VarPowerFlowReferenceType.it_C: i_C,
 
         # For KCL at DC bus (bus_from)
-        VarPowerFlowReferenceType.Idc: i_dc,
+        VarPowerFlowReferenceType.If_dc: i_dc,
         VarPowerFlowReferenceType.P: P,
         VarPowerFlowReferenceType.Q: Q,
         VarPowerFlowReferenceType.phi_v: phi_v,
@@ -347,32 +347,8 @@ def get_emt_ideal_converter(
     converter_block.name = name
     templ.block.children.append(converter_block)
     templ.block.external_mapping = converter_block.external_mapping
-    templ.block.api_obj_mapping = converter_block.api_obj_mapping
     templ.block.in_vars = inputs
     templ.block.out_vars = converter_block.out_vars
-    templ.block.dynamic_model_contract.emt_terminal_current_contributions = list((
-        EmtTerminalCurrentContribution(
-            terminal_side=EmtTerminalSide.FROM,
-            conductor=EmtTerminalConductor.DC,
-            current_reference=VarPowerFlowReferenceType.Idc,
-        ),
-        EmtTerminalCurrentContribution(
-            terminal_side=EmtTerminalSide.TO,
-            conductor=EmtTerminalConductor.PHASE_A,
-            current_reference=VarPowerFlowReferenceType.i_A,
-        ),
-        EmtTerminalCurrentContribution(
-            terminal_side=EmtTerminalSide.TO,
-            conductor=EmtTerminalConductor.PHASE_B,
-            current_reference=VarPowerFlowReferenceType.i_B,
-        ),
-        EmtTerminalCurrentContribution(
-            terminal_side=EmtTerminalSide.TO,
-            conductor=EmtTerminalConductor.PHASE_C,
-            current_reference=VarPowerFlowReferenceType.i_C,
-        ),
-    ))
-
     return templ
 
 
@@ -454,7 +430,8 @@ def _build_pseudo_emt_converter_vsc_block(
     c0 = vf.add_const(0.0)
     c1 = vf.add_const(1.0)
     c3 = vf.add_const(3.0)
-    c32 = vf.add_const(1.5)
+    c_half_power = vf.add_const(0.5)
+    c2 = vf.add_const(2.0)
     loss_current_scale = vf.add_const(3.0 / np.sqrt(2.0))
 
     sbase_eff = sym.max(sbase, eps)
@@ -468,29 +445,29 @@ def _build_pseudo_emt_converter_vsc_block(
     i_leak = v_dc / R_dc_eff
     v_dc_eff = sym.max(v_dc, vdc_floor)
 
-    i_q0 = (vf.add_const(2.0 / 3.0) * (Q_ref / sbase_eff)) / (Vpk + eps)
+    i_q0 = (c2 * (Q_ref / sbase_eff)) / (Vpk + eps)
     # Fixed explicit predictor passes keep initialization acyclic while making
     # the nonlinear current-dependent loss and the seeded d-axis current
     # mutually consistent at the PF operating point.
-    i_d0_seed = (vf.add_const(2.0 / 3.0) * ((P_ref / sbase_eff) + P_loss0_pu)) / (Vpk + eps)
+    i_d0_seed = (c2 * ((P_ref / sbase_eff) + P_loss0_pu)) / (Vpk + eps)
     i_mag0_seed = sym.sqrt(i_d0_seed * i_d0_seed + i_q0 * i_q0 + eps)
     loss_current0_seed = loss_current_scale * i_mag0_seed
     P_loss0_seed = (P_loss0_pu + P_loss_i1_pu * loss_current0_seed
                     + P_loss_i2_pu * loss_current0_seed * loss_current0_seed)
-    i_d0_predict1 = (vf.add_const(2.0 / 3.0) * ((P_ref / sbase_eff) + P_loss0_seed)) / (Vpk + eps)
+    i_d0_predict1 = (c2 * ((P_ref / sbase_eff) + P_loss0_seed)) / (Vpk + eps)
     i_mag0_predict1 = sym.sqrt(i_d0_predict1 * i_d0_predict1 + i_q0 * i_q0 + eps)
     loss_current0_predict1 = loss_current_scale * i_mag0_predict1
     P_loss0_predict1 = (P_loss0_pu + P_loss_i1_pu * loss_current0_predict1
                         + P_loss_i2_pu * loss_current0_predict1 * loss_current0_predict1)
-    i_d0_predict2 = (vf.add_const(2.0 / 3.0) * ((P_ref / sbase_eff) + P_loss0_predict1)) / (Vpk + eps)
+    i_d0_predict2 = (c2 * ((P_ref / sbase_eff) + P_loss0_predict1)) / (Vpk + eps)
     i_mag0_predict2 = sym.sqrt(i_d0_predict2 * i_d0_predict2 + i_q0 * i_q0 + eps)
     loss_current0_predict2 = loss_current_scale * i_mag0_predict2
     P_loss0_predict2 = (P_loss0_pu + P_loss_i1_pu * loss_current0_predict2
                         + P_loss_i2_pu * loss_current0_predict2 * loss_current0_predict2)
-    i_d0 = (vf.add_const(2.0 / 3.0) * ((P_ref / sbase_eff) + P_loss0_predict2)) / (Vpk + eps)
+    i_d0 = (c2 * ((P_ref / sbase_eff) + P_loss0_predict2)) / (Vpk + eps)
     i_mag0 = sym.sqrt(i_d0 * i_d0 + i_q0 * i_q0 + eps)
-    P0 = c32 * Vpk * i_d0
-    Q0 = c32 * Vpk * i_q0
+    P0 = c_half_power * Vpk * i_d0
+    Q0 = c_half_power * Vpk * i_q0
     loss_current0 = loss_current_scale * i_mag0
     P_loss0_expr = P_loss0_pu + P_loss_i1_pu * loss_current0 + P_loss_i2_pu * loss_current0 * loss_current0
     # Positive AC power includes the power dissipated in the converter. Only
@@ -512,9 +489,9 @@ def _build_pseudo_emt_converter_vsc_block(
             Q_ref - q_ref_expr,
             Vdc_ref - vdc_ref_expr,
             # Instantaneous active power in dq0 coordinates.
-            P - (c32 * (v_d * i_d + v_q * i_q) + c3 * v_0 * i_0),
+            P - (c_half_power * (v_d * i_d + v_q * i_q) + v_0 * i_0),
             # Instantaneous reactive power in dq coordinates.
-            Q - c32 * (v_d * i_q - v_q * i_d),
+            Q - c_half_power * (v_d * i_q - v_q * i_d),
             # Converter current magnitude used by the loss model.
             i_mag - sym.sqrt(i_d * i_d + i_q * i_q + c3 * i_0 * i_0 + eps),
             # Current-dependent converter loss model.
@@ -524,7 +501,11 @@ def _build_pseudo_emt_converter_vsc_block(
             # AC-to-DC bridge current implied by power transfer and losses.
             i_dc_conv + (P - P_loss) / v_dc_eff,
             # Resistive coupling between the DC bus and the internal capacitor node.
-            i_dc - (v_dc_bus - v_dc) / R_dc_term_eff,
+            # Write the terminal resistor constraint in voltage form.  This is
+            # physically identical to i=(v_bus-v_dc)/R, but avoids a 1/R
+            # Jacobian coefficient (1e10 for an almost ideal DC connection)
+            # that amplifies roundoff into visible AC-power ripple.
+            (v_dc_bus - v_dc) - R_dc_term_eff * i_dc,
             # Expose mode-selection flags so outer loops can gate themselves.
             regulate_vdc_mode - regulate_vdc,
             regulate_q_mode - regulate_q,
@@ -532,37 +513,39 @@ def _build_pseudo_emt_converter_vsc_block(
         ],
         algebraic_vars=[P_ref, Q_ref, Vdc_ref, i_dc, P, Q, i_mag, P_loss, i_dc_conv, regulate_vdc_mode, regulate_q_mode, regulate_active_mode],
         event_dict={
-            sbase: vf.add_const(1.0),
-            P0_sched: vf.add_const(0.0),
             control1: vf.add_const(float(_converter_control_type_code(ConverterControlType.Vm_dc))),
             control2: vf.add_const(float(_converter_control_type_code(ConverterControlType.Qac))),
             control1_val: vf.add_const(1.0),
             control2_val: vf.add_const(0.0),
-            omega_base: vf.add_const(2.0 * np.pi * 50.0),
+            P0_sched: vf.add_const(0.0),
             phi_v: vf.add_const(0.0),
             Vpk: vf.add_const(np.sqrt(2.0)),
             Vdc_nom: vf.add_const(1.0),
-            R_eq: vf.add_const(max(0.02, 1e-9)),
-            L_eq: vf.add_const(max(0.08, 1e-9)),
-            C_dc: vf.add_const(max(0.05, 1e-9)),
-            R_dc: vf.add_const(max(1e6, 1e-9)),
-            R_dc_term: vf.add_const(max(0.0001, 1e-9)),
-            pll_kp: vf.add_const(40.0),
-            pll_ki: vf.add_const(400.0),
-            i_kp: vf.add_const(0.5),
-            i_ki: vf.add_const(40.0),
-            vdc_kp: vf.add_const(1.5),
-            vdc_ki: vf.add_const(30.0),
-            q_kp: vf.add_const(0.6),
-            q_ki: vf.add_const(25.0),
+            R_eq: vf.add_const(max(0.05, 1e-9)),
+            L_eq: vf.add_const(max(0.20, 1e-9)),
+            C_dc: vf.add_const(max(0.20, 1e-9)),
+            R_dc: vf.add_const(max(1e12, 1e-9)),
+            R_dc_term: vf.add_const(max(1e-10, 1e-12)),
+            pll_kp: vf.add_const(10.0),
+            pll_ki: vf.add_const(100.0),
+            i_kp: vf.add_const(0.3),
+            i_ki: vf.add_const(20.0),
+            vdc_kp: vf.add_const(0.01),
+            vdc_ki: vf.add_const(0.10),
+            q_kp: vf.add_const(0.02),
+            q_ki: vf.add_const(0.5),
             i_max: vf.add_const(max(1.2, 1e-6)),
             m_max: vf.add_const(max(0.95, 1e-6)),
-            P_loss0: vf.add_const(0.0),
-            P_loss_i1: vf.add_const(0.01),
-            P_loss_i2: vf.add_const(0.01),
-            tau_meas: vf.add_const(max(0.01, 1e-6)),
-            aw_gain: vf.add_const(1.0),
+            tau_meas: vf.add_const(max(0.02, 1e-6)),
+            aw_gain: vf.add_const(0.2),
             vdc_floor: vf.add_const(max(0.05, 1e-6)),
+        },
+        parameters={
+            omega_base: vf.add_const(2.0 * np.pi * 50.0),
+            sbase: vf.add_const(1.0),
+            P_loss0: vf.add_const(0.0),
+            P_loss_i1: vf.add_const(0.0),
+            P_loss_i2: vf.add_const(0.0),
         },
         init_eqs={
             v_dc: v_dc0,
@@ -598,7 +581,6 @@ def _build_pseudo_emt_converter_vsc_block(
     )
     block.api_obj_mapping = {
         ParamPowerFlowReferenceType.Sbase: sbase,
-        ParamPowerFlowReferenceType.P0: P0_sched,
         ParamPowerFlowReferenceType.alpha1: P_loss0,
         ParamPowerFlowReferenceType.alpha2: P_loss_i1,
         ParamPowerFlowReferenceType.alpha3: P_loss_i2,
@@ -697,9 +679,9 @@ def _build_pseudo_emt_converter_outer_loop_block(vf: VarFactory, name: str) -> B
 
     eps = vf.add_const(1e-10)
     c0 = vf.add_const(0.0)
-    c23 = vf.add_const(2.0 / 3.0)
+    c2 = vf.add_const(2.0)
     c3 = vf.add_const(3.0)
-    c32 = vf.add_const(1.5)
+    c_half_power = vf.add_const(0.5)
 
     sbase_eff = sym.max(sbase, eps)
     tau_meas_eff = sym.max(tau_meas, eps)
@@ -713,10 +695,10 @@ def _build_pseudo_emt_converter_outer_loop_block(vf: VarFactory, name: str) -> B
         + regulate_active_mode * (P_ref_pu - (P_f - P_loss))
     )
 
-    i_d0 = c23 * P_ac_ff_pu / (Vpk + eps)
+    i_d0 = c2 * P_ac_ff_pu / (Vpk + eps)
     q_ref_enabled_pu = Q_ref_pu * regulate_q_mode
-    i_q0 = c23 * q_ref_enabled_pu / (Vpk + eps)
-    Q0 = c32 * Vpk * i_q0
+    i_q0 = c2 * q_ref_enabled_pu / (Vpk + eps)
+    Q0 = c_half_power * Vpk * i_q0
 
     i_d_cap = sym.hard_sat(i_d_ref_u, -i_max, i_max)
     i_q_cap = sym.sqrt(sym.max(i_max * i_max - i_d_ref * i_d_ref, eps))
@@ -741,9 +723,9 @@ def _build_pseudo_emt_converter_outer_loop_block(vf: VarFactory, name: str) -> B
             # AC voltage magnitude used by the feedforward terms.
             v_mag - sym.sqrt(v_d * v_d + v_q * v_q + eps),
             # Active-current feedforward from scheduled active power and base losses.
-            i_d_ff - c23 * P_ac_ff_pu / (v_mag + eps),
+            i_d_ff - c2 * P_ac_ff_pu / (v_mag + eps),
             # Reactive-current feedforward from scheduled reactive power.
-            i_q_ff - c23 * q_ref_enabled_pu / (v_mag + eps),
+            i_q_ff - c2 * q_ref_enabled_pu / (v_mag + eps),
             # Zero-sequence reference schedule for the balanced operating mode.
             i_0_ref_u,
             # Unsaturated d-axis current reference from the gated active loop.
@@ -759,13 +741,13 @@ def _build_pseudo_emt_converter_outer_loop_block(vf: VarFactory, name: str) -> B
         ],
         algebraic_vars=[v_mag, i_d_ff, i_q_ff, i_0_ref_u, i_d_ref_u, i_q_ref_u, i_0_ref, i_d_ref, i_q_ref],
         init_eqs={
-            xi_vdc: (regulate_vdc_mode + regulate_active_mode) * (i_d0 - (c23 * P_ac_ff_pu / (Vpk + eps)) - vdc_kp * active_control_error),
-            xi_q: regulate_q_mode * (i_q0 - (c23 * q_ref_enabled_pu / (Vpk + eps)) - q_kp * (q_ref_enabled_pu - Q0)),
+            xi_vdc: (regulate_vdc_mode + regulate_active_mode) * (i_d0 - (c2 * P_ac_ff_pu / (Vpk + eps)) - vdc_kp * active_control_error),
+            xi_q: regulate_q_mode * (i_q0 - (c2 * q_ref_enabled_pu / (Vpk + eps)) - q_kp * (q_ref_enabled_pu - Q0)),
             P_f: P,
             Q_f: Q0,
             v_mag: Vpk,
-            i_d_ff: c23 * P_ac_ff_pu / (Vpk + eps),
-            i_q_ff: c23 * q_ref_enabled_pu / (Vpk + eps),
+            i_d_ff: c2 * P_ac_ff_pu / (Vpk + eps),
+            i_q_ff: c2 * q_ref_enabled_pu / (Vpk + eps),
             i_0_ref_u: c0,
             i_d_ref_u: i_d0,
             i_q_ref_u: i_q0,
@@ -834,15 +816,15 @@ def _build_pseudo_emt_converter_inner_loop_block(vf: VarFactory, name: str) -> B
 
     eps = vf.add_const(1e-10)
     c0 = vf.add_const(0.0)
-    c23 = vf.add_const(2.0 / 3.0)
+    c2 = vf.add_const(2.0)
     initial_modulation_utilization = vf.add_const(0.90)
     sbase_eff = sym.max(sbase, eps)
     vdc_floor_eff = sym.max(vdc_floor, eps)
     v_dc_eff = sym.max(v_dc, vdc_floor_eff)
     omega_ratio = omega_pll / (omega_base + eps)
 
-    i_d0 = c23 * ((P_ref / sbase_eff) + P_loss) / (Vpk + eps)
-    i_q0 = c23 * (Q_ref / sbase_eff) / (Vpk + eps)
+    i_d0 = c2 * ((P_ref / sbase_eff) + P_loss) / (Vpk + eps)
+    i_q0 = c2 * (Q_ref / sbase_eff) / (Vpk + eps)
     # Match the switched-converter branch-drop convention used by the EMT seed
     # helper so the pseudo model starts from the same commanded dq voltage.
     v_cmd_d0 = Vpk - R_eq * i_d0 + L_eq * i_q0
@@ -952,13 +934,15 @@ def _build_pseudo_emt_converter_transformer_block(vf: VarFactory, name: str) -> 
     c0 = vf.add_const(0.0)
     c13 = vf.add_const(1.0 / 3.0)
     c23 = vf.add_const(2.0 / 3.0)
+    c2 = vf.add_const(2.0)
     shift = vf.add_const(2.0 * np.pi / 3.0)
     theta_b = theta_pll - shift
     theta_c = theta_pll + shift
     omega_ratio = omega_pll / (omega_base + eps)
+    sbase_eff = sym.max(sbase, eps)
 
-    i_d0 = c23 * ((P_ref / sbase) + P_loss) / (Vpk + eps)
-    i_q0 = c23 * (Q_ref / sbase) / (Vpk + eps)
+    i_d0 = c2 * ((P_ref / sbase_eff) + P_loss) / (Vpk + eps)
+    i_q0 = c2 * (Q_ref / sbase_eff) / (Vpk + eps)
     i_0_decay = vf.add_const(1.0)
 
     return Block(
@@ -981,11 +965,9 @@ def _build_pseudo_emt_converter_transformer_block(vf: VarFactory, name: str) -> 
             v_q + c23 * (sym.cos(theta_pll) * v_A + sym.cos(theta_b) * v_B + sym.cos(theta_c) * v_C),
             # abc-to-0 transformation for zero-sequence voltage.
             v_0 - c13 * (v_A + v_B + v_C),
-            # dq0-to-abc reconstruction of phase-A current injection.
+            # dq0-to-abc reconstruction of phase currents.
             i_A - (i_d * sym.sin(theta_pll) - i_q * sym.cos(theta_pll)),
-            # dq0-to-abc reconstruction of phase-B current injection.
             i_B - (i_d * sym.sin(theta_b) - i_q * sym.cos(theta_b)),
-            # dq0-to-abc reconstruction of phase-C current injection.
             i_C - (i_d * sym.sin(theta_c) - i_q * sym.cos(theta_c)),
         ],
         algebraic_vars=[i_A, i_B, i_C, v_d, v_q, v_0],
@@ -1085,19 +1067,20 @@ def get_full_pseudo_emt_converter(
         VarPowerFlowReferenceType.v_A: v_A,
         VarPowerFlowReferenceType.v_B: v_B,
         VarPowerFlowReferenceType.v_C: v_C,
+        VarPowerFlowReferenceType.vt_A: v_A,
+        VarPowerFlowReferenceType.vt_B: v_B,
+        VarPowerFlowReferenceType.vt_C: v_C,
         VarPowerFlowReferenceType.Vdc: v_dc_bus,
+        VarPowerFlowReferenceType.Vf_dc: v_dc_bus,
         VarPowerFlowReferenceType.i_N: None,
-        VarPowerFlowReferenceType.i_A: transformer_block.out_vars[0],
-        VarPowerFlowReferenceType.i_B: transformer_block.out_vars[1],
-        VarPowerFlowReferenceType.i_C: transformer_block.out_vars[2],
+        VarPowerFlowReferenceType.it_A: transformer_block.out_vars[0],
+        VarPowerFlowReferenceType.it_B: transformer_block.out_vars[1],
+        VarPowerFlowReferenceType.it_C: transformer_block.out_vars[2],
         VarPowerFlowReferenceType.if_N: None,
         VarPowerFlowReferenceType.if_A: None,
         VarPowerFlowReferenceType.if_B: None,
         VarPowerFlowReferenceType.if_C: None,
         VarPowerFlowReferenceType.it_N: None,
-        VarPowerFlowReferenceType.it_A: None,
-        VarPowerFlowReferenceType.it_B: None,
-        VarPowerFlowReferenceType.it_C: None,
         VarPowerFlowReferenceType.Sf_A: None,
         VarPowerFlowReferenceType.Sf_B: None,
         VarPowerFlowReferenceType.Sf_C: None,
@@ -1112,34 +1095,10 @@ def get_full_pseudo_emt_converter(
         VarPowerFlowReferenceType.d_v_A_t: None,
         VarPowerFlowReferenceType.d_v_B_t: None,
         VarPowerFlowReferenceType.d_v_C_t: None,
-        VarPowerFlowReferenceType.Idc: vsc_block.out_vars[1],
+        VarPowerFlowReferenceType.If_dc: vsc_block.out_vars[1],
         VarPowerFlowReferenceType.P: vsc_block.out_vars[2],
         VarPowerFlowReferenceType.Q: vsc_block.out_vars[3],
         VarPowerFlowReferenceType.phi_v: vsc_block.out_vars[9],
         VarPowerFlowReferenceType.Vpk: vsc_block.out_vars[10],
     }
-    templ.block.api_obj_mapping = dict(vsc_block.api_obj_mapping)
-    templ.block.dynamic_model_contract.emt_terminal_current_contributions = list((
-        EmtTerminalCurrentContribution(
-            terminal_side=EmtTerminalSide.FROM,
-            conductor=EmtTerminalConductor.DC,
-            current_reference=VarPowerFlowReferenceType.Idc,
-        ),
-        EmtTerminalCurrentContribution(
-            terminal_side=EmtTerminalSide.TO,
-            conductor=EmtTerminalConductor.PHASE_A,
-            current_reference=VarPowerFlowReferenceType.i_A,
-        ),
-        EmtTerminalCurrentContribution(
-            terminal_side=EmtTerminalSide.TO,
-            conductor=EmtTerminalConductor.PHASE_B,
-            current_reference=VarPowerFlowReferenceType.i_B,
-        ),
-        EmtTerminalCurrentContribution(
-            terminal_side=EmtTerminalSide.TO,
-            conductor=EmtTerminalConductor.PHASE_C,
-            current_reference=VarPowerFlowReferenceType.i_C,
-        ),
-    ))
-
     return templ

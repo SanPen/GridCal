@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow package &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow package &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -316,6 +316,7 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_full_acdc_with_negative_poles.PfAcDcWithNegativePoles.nc"><code class="docutils literal notranslate"><span class="pre">PfAcDcWithNegativePoles.nc</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_full_acdc_with_negative_poles.PfAcDcWithNegativePoles.qv_droop_control"><code class="docutils literal notranslate"><span class="pre">PfAcDcWithNegativePoles.qv_droop_control</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_full_acdc_with_negative_poles.PfAcDcWithNegativePoles.size"><code class="docutils literal notranslate"><span class="pre">PfAcDcWithNegativePoles.size()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_full_acdc_with_negative_poles.PfAcDcWithNegativePoles.static_droop"><code class="docutils literal notranslate"><span class="pre">PfAcDcWithNegativePoles.static_droop</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_full_acdc_with_negative_poles.PfAcDcWithNegativePoles.tau"><code class="docutils literal notranslate"><span class="pre">PfAcDcWithNegativePoles.tau</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_full_acdc_with_negative_poles.PfAcDcWithNegativePoles.u_cbr_m"><code class="docutils literal notranslate"><span class="pre">PfAcDcWithNegativePoles.u_cbr_m</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_full_acdc_with_negative_poles.PfAcDcWithNegativePoles.u_cbr_m_tau"><code class="docutils literal notranslate"><span class="pre">PfAcDcWithNegativePoles.u_cbr_m_tau</span></code></a></li>
@@ -514,7 +515,9 @@
 <li class="toctree-l2"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#module-VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions">VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.active_power_mismatch"><code class="docutils literal notranslate"><span class="pre">active_power_mismatch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.asynchronous_gen_currents"><code class="docutils literal notranslate"><span class="pre">asynchronous_gen_currents()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.asynchronous_gen_q"><code class="docutils literal notranslate"><span class="pre">asynchronous_gen_q()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.asynchronous_impedance"><code class="docutils literal notranslate"><span class="pre">asynchronous_impedance()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.compute_asynchronous_generator_q"><code class="docutils literal notranslate"><span class="pre">compute_asynchronous_generator_q()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.compute_asynchronous_generator_q_per_bus"><code class="docutils literal notranslate"><span class="pre">compute_asynchronous_generator_q_per_bus()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.compute_current"><code class="docutils literal notranslate"><span class="pre">compute_current()</span></code></a></li>
@@ -527,7 +530,6 @@
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.expand_magnitudes"><code class="docutils literal notranslate"><span class="pre">expand_magnitudes()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.floating_star_currents"><code class="docutils literal notranslate"><span class="pre">floating_star_currents()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.floating_star_powers"><code class="docutils literal notranslate"><span class="pre">floating_star_powers()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.fortescue_012_to_abc"><code class="docutils literal notranslate"><span class="pre">fortescue_012_to_abc()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.get_If"><code class="docutils literal notranslate"><span class="pre">get_If()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.get_It"><code class="docutils literal notranslate"><span class="pre">get_It()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.get_Sf"><code class="docutils literal notranslate"><span class="pre">get_Sf()</span></code></a></li>

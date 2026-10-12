@@ -4,10 +4,11 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 
-from typing import Tuple
+import math
+from typing import Any, Tuple
 
 from VeraGridEngine.Devices.Parents.editable_device import EditableDevice, GCProp
-from VeraGridEngine.enumerations import DeviceType, PrpCat
+from VeraGridEngine.enumerations import CableResistanceInput, DeviceType, PrpCat
 
 
 class UndergroundCableType(EditableDevice):
@@ -15,7 +16,9 @@ class UndergroundCableType(EditableDevice):
 
     __slots__ = (
         '_nominal_voltage',
+        '_resistance_input',
         '_core_dc_resistance',
+        '_sheath_dc_resistance',
         '_core_diameter',
         '_core_internal_diameter',
         '_cable_diameter',
@@ -41,9 +44,15 @@ class UndergroundCableType(EditableDevice):
         GCProp(prop_name='nominal_voltage', old_names=('Vnom',), units='kV', tpe=float,
                definition='Rated cable voltage (PowerFactory uline)',
                cat=(PrpCat.TP,)),
+        GCProp(prop_name='resistance_input', old_names=('core_resistance_input',), units='', tpe=CableResistanceInput,
+               definition='Choose the resistance inputs for both core and sheath at 20 degrees Celsius: DC resistances, or resistivities and filling factors',
+               cat=(PrpCat.TP,)),
         GCProp(prop_name='core_dc_resistance', old_names=('rpha',), units='Ohm/km', tpe=float,
-               definition='Imported core DC resistance at 20 degrees Celsius; informational, not used by the geometric calculation',
-               editable=False, cat=(PrpCat.TP,)),
+               definition='Core DC resistance at 20 degrees Celsius: input in DC resistance mode, otherwise calculated from resistivity, filling factor and diameter',
+               cat=(PrpCat.TP,)),
+        GCProp(prop_name='sheath_dc_resistance', units='Ohm/km', tpe=float,
+               definition='Sheath DC resistance at 20 degrees Celsius: input in DC resistance mode, otherwise calculated from resistivity, filling factor and annular area',
+               cat=(PrpCat.TP,)),
         GCProp(prop_name='core_diameter', old_names=('diaCon',), units='mm', tpe=float,
                definition='Core outer diameter',
                cat=(PrpCat.TP,)),
@@ -60,16 +69,16 @@ class UndergroundCableType(EditableDevice):
                definition='Core-to-sheath insulation thickness (PowerFactory thIns[0]); outer insulation is derived from cable_diameter',
                cat=(PrpCat.TP,)),
         GCProp(prop_name='core_resistivity', old_names=('crho_core',), units='uOhm*cm', tpe=float,
-               definition='Core resistivity at 20 degrees Celsius (PowerFactory crho[0])',
+               definition='Core resistivity at 20 degrees Celsius (PowerFactory crho[0]); inactive in DC resistance mode',
                cat=(PrpCat.TP,)),
         GCProp(prop_name='sheath_resistivity', old_names=('crho_sheath',), units='uOhm*cm', tpe=float,
-               definition='Sheath resistivity at 20 degrees Celsius (PowerFactory crho[1])',
+               definition='Sheath resistivity at 20 degrees Celsius (PowerFactory crho[1]); inactive in DC resistance mode',
                cat=(PrpCat.TP,)),
         GCProp(prop_name='core_filling_factor', old_names=('Cf_core',), units='%', tpe=float,
-               definition='Core conducting filling factor (PowerFactory Cf[0])',
+               definition='Core conducting filling factor (PowerFactory Cf[0]); inactive in DC resistance mode',
                cat=(PrpCat.TP,)),
         GCProp(prop_name='sheath_filling_factor', old_names=('Cf_sheath',), units='%', tpe=float,
-               definition='Sheath conducting filling factor (PowerFactory Cf[1])',
+               definition='Sheath conducting filling factor (PowerFactory Cf[1]); inactive in DC resistance mode',
                cat=(PrpCat.TP,)),
         GCProp(prop_name='main_insulation_permittivity', old_names=('cepsr_core_sheath',), units='', tpe=float,
                definition='Core-to-sheath insulation relative permittivity (PowerFactory cepsr[0])',
@@ -119,14 +128,20 @@ class UndergroundCableType(EditableDevice):
                  core_relative_permeability: float = 1.0,
                  sheath_relative_permeability: float = 1.0,
                  skin_effect_factor: float = 1.0,
-                 proximity_effect_factor: float = 1.0) -> None:
+                 proximity_effect_factor: float = 1.0,
+                 core_resistance_input: CableResistanceInput | None = None,
+                 resistance_input: CableResistanceInput | None = None,
+                 sheath_dc_resistance: float | None = None) -> None:
         """Create one physical cable using scalar inputs for its two conducting layers.
 
         :param name: Cable catalogue name.
         :param idtag: Persistent VeraGrid identifier.
         :param code: Optional user code.
         :param nominal_voltage: Rated cable voltage (PowerFactory uline) in kV.
-        :param core_dc_resistance: Imported core DC resistance at 20 degrees Celsius; informational, not used by the geometric calculation in Ohm/km.
+        :param core_dc_resistance: Core DC resistance at 20 degrees Celsius in Ohm/km, used only in DC resistance mode.
+        :param core_resistance_input: Deprecated alias of the shared resistance_input selector.
+        :param resistance_input: Select DC resistances or material inputs for both core and sheath; defaults to material inputs.
+        :param sheath_dc_resistance: Sheath DC resistance at 20 degrees Celsius in Ohm/km, required in DC resistance mode.
         :param core_diameter: Core outer diameter in mm.
         :param core_internal_diameter: Core inner diameter in mm.
         :param cable_diameter: Overall cable diameter, including outer insulation in mm.
@@ -156,7 +171,14 @@ class UndergroundCableType(EditableDevice):
 
         # Store only the supported layers; the DGS parser maps the PowerFactory vectors.
         self.nominal_voltage = nominal_voltage
+        if (core_resistance_input is not None and resistance_input is not None
+                and CableResistanceInput(core_resistance_input) != CableResistanceInput(resistance_input)):
+            raise ValueError('Specify one common resistance input method for core and sheath')
+        self.resistance_input = (resistance_input if resistance_input is not None else
+                                 core_resistance_input if core_resistance_input is not None else
+                                 CableResistanceInput.Resistivity)
         self.core_dc_resistance = core_dc_resistance
+        self.sheath_dc_resistance = 0.0 if sheath_dc_resistance is None else sheath_dc_resistance
         self.core_diameter = core_diameter
         self.core_internal_diameter = core_internal_diameter
         self.cable_diameter = cable_diameter
@@ -174,6 +196,10 @@ class UndergroundCableType(EditableDevice):
         self.sheath_relative_permeability = sheath_relative_permeability
         self.skin_effect_factor = skin_effect_factor
         self.proximity_effect_factor = proximity_effect_factor
+        if (core_resistance_input is not None and resistance_input is None
+                and sheath_dc_resistance is None):
+            # Preserve the former core-only constructor's sheath definition.
+            self.sheath_dc_resistance = self.get_sheath_dc_resistance_from_material()
 
     @property
     def nominal_voltage(self) -> float:
@@ -193,21 +219,151 @@ class UndergroundCableType(EditableDevice):
         self._nominal_voltage = float(value)
 
     @property
-    def core_dc_resistance(self) -> float:
-        """Read the core_dc_resistance input.
+    def resistance_input(self) -> CableResistanceInput:
+        """Return the common resistance input method for core and sheath."""
+        return self._resistance_input
 
-        :return: Imported core DC resistance at 20 degrees Celsius; informational, not used by the geometric calculation in Ohm/km.
+    @resistance_input.setter
+    def resistance_input(self, value: CableResistanceInput | str) -> None:
+        """Store the selector without reinterpreting other inputs during file loading."""
+        self._resistance_input = CableResistanceInput(value)
+
+    @property
+    def core_resistance_input(self) -> CableResistanceInput:
+        """Compatibility alias; this selector now controls both conducting layers."""
+        return self.resistance_input
+
+    @core_resistance_input.setter
+    def core_resistance_input(self, value: CableResistanceInput | str) -> None:
+        self.resistance_input = value
+
+    def get_sheath_area_m2(self) -> float:
+        """Return the tubular sheath area, excluding the core and insulation."""
+        inner_radius_m = (self.core_diameter / 2.0 + self.main_insulation_thickness) * 1e-3
+        thickness_m = self.sheath_thickness * 1e-3
+        return math.pi * thickness_m * (2.0 * inner_radius_m + thickness_m)
+
+    def get_sheath_dc_resistance_from_material(self) -> float:
+        """Derive sheath resistance from its material data, also for legacy migration."""
+        conducting_area_m2 = self.get_sheath_area_m2() * self.sheath_filling_factor / 100.0
+        if conducting_area_m2 <= 0.0:
+            return float('nan')
+        return self.sheath_resistivity * 1e-5 / conducting_area_m2
+
+    def get_core_material_properties(self) -> tuple[float, float]:
+        """Return effective calculation inputs in micro-ohm cm and percent.
+
+        A directly specified resistance determines effective resistivity over
+        the solid core section; a 100 percent factor avoids applying it twice.
+        The material-input path is unchanged for legacy files and DGS imports.
         """
-        return self._core_dc_resistance
+        if self.resistance_input == CableResistanceInput.DcResistance:
+            area_m2 = math.pi * (self.core_diameter * 0.5e-3) ** 2
+            return self._core_dc_resistance * area_m2 * 1.0e5, 100.0
+        return self.core_resistivity, self.core_filling_factor
+
+    def get_sheath_material_properties(self) -> tuple[float, float]:
+        """Return the active sheath calculation inputs in micro-ohm cm and percent."""
+        if self.resistance_input == CableResistanceInput.DcResistance:
+            return self.sheath_dc_resistance * self.get_sheath_area_m2() * 1e5, 100.0
+        return self.sheath_resistivity, self.sheath_filling_factor
+
+    def validate_resistance_inputs(self) -> None:
+        """Reject invalid active inputs before calculating an impedance matrix."""
+        if not math.isfinite(self.core_diameter) or self.core_diameter <= 0.0:
+            raise ValueError('Core diameter must be finite and positive')
+        if (not math.isfinite(self.sheath_thickness) or self.sheath_thickness <= 0.0
+                or not math.isfinite(self.main_insulation_thickness) or self.main_insulation_thickness <= 0.0
+                or not math.isfinite(self.get_sheath_area_m2()) or self.get_sheath_area_m2() <= 0.0):
+            raise ValueError('Sheath annular area and its defining dimensions must be finite and positive')
+        for layer in ('core', 'sheath'):
+            if self.resistance_input == CableResistanceInput.DcResistance:
+                resistance = getattr(self, f'{layer}_dc_resistance')
+                if not math.isfinite(resistance) or resistance <= 0.0:
+                    raise ValueError(f'{layer.capitalize()} DC resistance must be finite and positive')
+            else:
+                resistivity = getattr(self, f'{layer}_resistivity')
+                factor = getattr(self, f'{layer}_filling_factor')
+                if not math.isfinite(resistivity) or resistivity <= 0.0:
+                    raise ValueError(f'{layer.capitalize()} resistivity must be finite and positive')
+                if not math.isfinite(factor) or not 0.0 < factor <= 100.0:
+                    raise ValueError(f'{layer.capitalize()} filling factor must be greater than zero and at most 100 percent')
+
+    def is_property_editable(self, prop: GCProp) -> bool:
+        """Allow only the selected resistance representation to be edited."""
+        if prop.name in ('core_dc_resistance', 'sheath_dc_resistance'):
+            return self.resistance_input == CableResistanceInput.DcResistance
+        if prop.name in ('core_resistivity', 'core_filling_factor', 'sheath_resistivity', 'sheath_filling_factor'):
+            return self.resistance_input == CableResistanceInput.Resistivity
+        return super().is_property_editable(prop)
+
+    def set_value(self, prop: GCProp, t_idx: int | None, value: Any) -> None:
+        """Apply GUI edits, preserving resistance when switching input method.
+
+        Snapshot setters used by file loading deliberately bypass this UI
+        transition so saved inputs are restored independently of field order.
+        """
+        if not self.is_property_editable(prop):
+            raise ValueError(f'{prop.name} is not an active input')
+        if prop.name == 'resistance_input':
+            mode = CableResistanceInput(value)
+            if mode != self.resistance_input:
+                self.validate_resistance_inputs()
+                if mode == CableResistanceInput.DcResistance:
+                    self._core_dc_resistance = self.core_dc_resistance
+                    self._sheath_dc_resistance = self.sheath_dc_resistance
+                else:
+                    # Preserve each layer's R when returning to material inputs.
+                    for layer, properties in (('core', self.get_core_material_properties()),
+                                               ('sheath', self.get_sheath_material_properties())):
+                        factor = getattr(self, f'{layer}_filling_factor')
+                        if not math.isfinite(factor) or not 0.0 < factor <= 100.0:
+                            factor = 100.0
+                        setattr(self, f'{layer}_resistivity', properties[0] * factor / 100.0)
+                        setattr(self, f'{layer}_filling_factor', factor)
+                self.resistance_input = mode
+            return
+        if prop.name in ('core_dc_resistance', 'core_resistivity', 'core_filling_factor', 'core_diameter',
+                         'sheath_dc_resistance', 'sheath_resistivity', 'sheath_filling_factor',
+                         'sheath_thickness', 'main_insulation_thickness'):
+            number = float(value)
+            if not math.isfinite(number) or number <= 0.0:
+                raise ValueError(f'{prop.name} must be finite and positive')
+            if prop.name in ('core_filling_factor', 'sheath_filling_factor') and number > 100.0:
+                raise ValueError('Filling factor cannot exceed 100 percent')
+        super().set_value(prop=prop, t_idx=t_idx, value=value)
+
+    @property
+    def core_dc_resistance(self) -> float:
+        """Return the active or derived core DC resistance at 20 C in Ohm/km."""
+        if self.resistance_input == CableResistanceInput.DcResistance:
+            return self._core_dc_resistance
+        area_m2 = math.pi * (self.core_diameter * 0.5e-3) ** 2
+        conducting_area_m2 = area_m2 * self.core_filling_factor / 100.0
+        if conducting_area_m2 <= 0.0:
+            return float('nan')
+        return self.core_resistivity * 1.0e-5 / conducting_area_m2
 
     @core_dc_resistance.setter
     def core_dc_resistance(self, value: float) -> None:
         """Store the core_dc_resistance input.
 
-        :param value: Imported core DC resistance at 20 degrees Celsius; informational, not used by the geometric calculation in Ohm/km.
+        :param value: Core DC resistance at 20 degrees Celsius in Ohm/km; active only in DC resistance mode.
         :return: None.
         """
         self._core_dc_resistance = float(value)
+
+    @property
+    def sheath_dc_resistance(self) -> float:
+        """Return the active or derived sheath DC resistance at 20 C in Ohm/km."""
+        if self.resistance_input == CableResistanceInput.DcResistance:
+            return self._sheath_dc_resistance
+        return self.get_sheath_dc_resistance_from_material()
+
+    @sheath_dc_resistance.setter
+    def sheath_dc_resistance(self, value: float) -> None:
+        """Store the sheath resistance input; used only in DC resistance mode."""
+        self._sheath_dc_resistance = float(value)
 
     @property
     def core_diameter(self) -> float:

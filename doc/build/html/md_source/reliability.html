@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🚧 Reliability &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>🚧 Reliability &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -259,7 +259,7 @@ customer impact if one concentrates the interruption on a few buses and the othe
 <p>Using the driver directly:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">vg</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;my_grid.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"my_grid.veragrid"</span><span class="p">)</span>
 
 <span class="n">pf_options</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">PowerFlowOptions</span><span class="p">()</span>
 
@@ -273,14 +273,14 @@ customer impact if one concentrates the interruption on a few buses and the othe
 
 <span class="n">results</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">results</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LOLE:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">LOLE_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ENS:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">ENS_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LOLF:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">LOLF_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LOLET:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">LOLET_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LOLFT:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">LOLFT_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SAIDI:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">SAIDI_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SAIFI:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">SAIFI_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CAIDI:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">CAIDI_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"LOLE:"</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">LOLE_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"ENS:"</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">ENS_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"LOLF:"</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">LOLF_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"LOLET:"</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">LOLET_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"LOLFT:"</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">LOLFT_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"SAIDI:"</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">SAIDI_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"SAIFI:"</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">SAIFI_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"CAIDI:"</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">CAIDI_evolution</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>The main constructor arguments are:</p>
@@ -294,7 +294,7 @@ customer impact if one concentrates the interruption on a few buses and the othe
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">vg</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;my_grid.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"my_grid.veragrid"</span><span class="p">)</span>
 
 <span class="n">drv</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">ReliabilityStudyDriver</span><span class="p">(</span>
     <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
@@ -305,7 +305,7 @@ customer impact if one concentrates the interruption on a few buses and the othe
 <span class="n">drv</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
 <span class="n">results</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">results</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LOLE evolution:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">LOLE_evolution</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"LOLE evolution:"</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">LOLE_evolution</span><span class="p">)</span>
 
 <span class="c1"># Getting tabular outputs from the result object:</span>
 

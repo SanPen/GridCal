@@ -3548,6 +3548,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
     status = lp_model.solve(robust=robust,
                             show_logs=verbose > 0,
                             progress_text=progress_text)
+    # Preserve the solver's diagnostics even if export or extraction fails.
+    logger += lp_model.logger
 
     # gather the results
     logger.add_info(msg="Status", value=lp_model.status2string(status))
@@ -3558,9 +3560,12 @@ def run_linear_opf_ts(grid: MultiCircuit,
     else:
         logger.add_error("The problem does not have an optimal solution.")
         mip_vars.acceptable_solution = False
-        lp_file_name = os.path.join(opf_file_path(), f"{grid.name} opf debug.lp")
-        lp_model.save_model(file_name=lp_file_name)
-        logger.add_info("Debug LP model saved", value=lp_file_name)
+        try:
+            lp_file_name = os.path.join(opf_file_path(), f"{grid.name} opf debug.lp")
+            lp_model.save_model(file_name=lp_file_name)
+            logger.add_info("Debug LP model saved", value=lp_file_name)
+        except Exception as error:
+            logger.add_warning("Could not save debug LP model", value=str(error))
 
     # convert the lp vars to their values
     vars_v = mip_vars.get_values(Sbase=grid.Sbase,
@@ -3569,9 +3574,6 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                  gen_fuel_rates_matrix=gen_fuel_rates_matrix,
                                  gen_tech_shares_matrix=gen_tech_shares_matrix,
                                  batt_tech_shares_matrix=batt_tech_shares_matrix)
-
-    # add the model logger to the main logger
-    logger += lp_model.logger
 
     # lp_model.save_model('nodal_opf.lp')
     return vars_v, lp_model

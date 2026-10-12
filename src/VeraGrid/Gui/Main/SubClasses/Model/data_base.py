@@ -27,13 +27,14 @@ from VeraGridEngine.Devices.Parents.editable_device import EditableDevice
 from VeraGridEngine.Topology.detect_substations import detect_substations, detect_facilities
 from VeraGrid.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from VeraGrid.Gui.messages import yes_no_question, warning_msg, info_msg
-from VeraGrid.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
+from VeraGrid.Gui.Main.SubClasses.Model.diagrams import DIAGRAM_WIDGETS, DiagramsMain
 from VeraGrid.Gui.DeviceEditors.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from VeraGrid.Gui.DeviceEditors.UndergroundCableBuilder.underground_cable_builder import UndergroundCableBuilderGUI
 from VeraGrid.Gui.dialog_lifecycle import delete_dialog_safely, exec_dialog_safely, is_dialog_available
 from VeraGrid.Gui.Visualization.visualization import NativeColorMap
 from VeraGrid.Gui.PlotDialogue.plot_dialogue import PlotDialogue
 from VeraGrid.Gui.FmuTemplateEditor.fmu_template_editor import FmuTemplateEditorDialog
+from VeraGrid.Gui.ManufacturerNativeImporter.manufacturer_native_importer import ManufacturerNativeImporterDialog
 from VeraGrid.Gui.SystemScaler.system_scaler import SystemScaler
 from VeraGrid.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, generate_map_diagram
 from VeraGrid.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget, make_diagram_from_buses
@@ -171,6 +172,10 @@ class DataBaseTableMain(DiagramsMain):
 
         root_item: QtGui.QStandardItem = db_tree_model.invisibleRootItem()
         grouped_device_types: Dict[str, List[DeviceType]] = self.circuit.get_template_objects_type_dict()
+        device_labels: Dict[DeviceType, str] = {
+            DeviceType.UndergroundCableTypeDevice: 'Cable',
+            DeviceType.UnderGroundLineDevice: 'Cable System',
+        }
 
         for group_name, device_types in grouped_device_types.items():
             # Category rows are only display nodes. Runtime selection is stored only on device leaves.
@@ -180,7 +185,8 @@ class DataBaseTableMain(DiagramsMain):
 
             for device_type in device_types:
                 # The displayed label can be translated while the enum payload remains stable.
-                device_item: QtGui.QStandardItem = QtGui.QStandardItem(translate_tree_label(str(device_type.value)))
+                label: str = device_labels.get(device_type, str(device_type.value))
+                device_item: QtGui.QStandardItem = QtGui.QStandardItem(translate_tree_label(label))
                 device_item.setEditable(False)
                 device_item.setData(device_type, QtCore.Qt.ItemDataRole.UserRole)
 
@@ -568,33 +574,55 @@ class DataBaseTableMain(DiagramsMain):
 
         return substations, selected_objects
 
-    def delete_selected_db_table_objects(self):
+    def delete_selected_db_table_objects(self) -> None:
+        """Delete every unblocked selection from the database and diagrams.
+
+        Assets owns reference validation. This view reports general blockers
+        and mutates diagrams only after the Engine deletion is permitted.
+
+        :return: None.
         """
-        Delete selection from the database main table
-        """
+        selected_objects: List[ALL_DEV_TYPES] = self.get_selected_db_table_objects()
+        if len(selected_objects) == 0:
+            return
+        else:
+            pass
 
-        selected_objects = self.get_selected_db_table_objects()
+        confirmed: bool = yes_no_question(
+            self.tr("Are you sure that you want to delete the selected elements?"),
+            self.tr("Delete"),
+        )
+        if not confirmed:
+            return
+        else:
+            pass
 
-        if len(selected_objects):
+        deleted_count: int = 0
+        obj: ALL_DEV_TYPES
+        for obj in selected_objects:
+            blockers: List[ALL_DEV_TYPES] = self.circuit.get_element_deletion_blockers(obj)
+            if len(blockers) == 0:
+                # Assets owns the deletion and reference policy.
+                self.circuit.delete_element(obj=obj)
+                deleted_count += 1
 
-            ok = yes_no_question(self.tr('Are you sure that you want to delete_with_dialogue the selected elements?'),
-                                 self.tr('Delete'))
-            if ok:
-                for obj in selected_objects:
+                # Diagrams follow only a deletion accepted by Assets.
+                diagram: DIAGRAM_WIDGETS
+                for diagram in self.diagram_widgets_list:
+                    diagram.delete_element_utility_function(device=obj, propagate=False)
+            else:
+                blocker_names: str = ", ".join(blocker.name for blocker in blockers)
+                warning_msg(
+                    self.tr("The element is still referenced by: {names}").format(
+                        names=blocker_names
+                    ),
+                    self.tr("Element in use"),
+                )
 
-                    # delete_with_dialogue from the database
-                    self.circuit.delete_element(obj=obj)
-
-                    # delete_with_dialogue from all diagrams
-                    for diagram in self.diagram_widgets_list:
-                        diagram.delete_element_utility_function(device=obj, propagate=False)
-
-                # update the view
-                self.view_objects_data()
-                self.update_from_to_list_views()
-                self.update_date_dependent_combos()
-
-                self.show_info_toast(f"{len(selected_objects)} objects deleted")
+        self.view_objects_data()
+        self.update_from_to_list_views()
+        self.update_date_dependent_combos()
+        self.show_info_toast(f"{deleted_count} objects deleted")
 
     def duplicate_selected_db_table_objects(self):
         """
@@ -1631,21 +1659,15 @@ class DataBaseTableMain(DiagramsMain):
 
             elif elm_type == DeviceType.UnderGroundLineDevice:
 
-                name = f'Cable {len(self.circuit.underground_cable_types) + 1}'
+                name = f'Cable System {len(self.circuit.underground_cable_types) + 1}'
                 obj = dev.UndergroundLineType(name=name)
                 self.circuit.add_underground_line(obj)
 
             elif elm_type == DeviceType.UndergroundCableTypeDevice:
 
-                name = f'Underground cable {len(self.circuit.underground_cable_constructions) + 1}'
+                name = f'Cable {len(self.circuit.underground_cable_constructions) + 1}'
                 obj = dev.UndergroundCableType(name=name)
                 self.circuit.add_underground_cable(obj)
-
-            elif elm_type == DeviceType.DcCableTypeDevice:
-
-                name = f'DC cable {len(self.circuit.dc_cable_types) + 1}'
-                obj = dev.DcCableType(name=name)
-                self.circuit.add_dc_cable_type(obj)
 
             elif elm_type == DeviceType.SequenceLineDevice:
 
@@ -1709,6 +1731,16 @@ class DataBaseTableMain(DiagramsMain):
                 name = f'Market unit group{self.circuit.get_market_unit_group_number()}'
                 obj = dev.MarketUnitsGroup(name=name)
                 self.circuit.add_market_unit_group(obj)
+
+            elif elm_type == DeviceType.ManufacturerNativeModelDevice:
+
+                # A provider is valid only after its binary completed isolated
+                # inspection, so this database action never creates an empty row.
+                importer_dialog: QtWidgets.QDialog = ManufacturerNativeImporterDialog(
+                    assets=self.circuit,
+                    parent=self,
+                )
+                exec_dialog_safely(dialog=importer_dialog)
 
             elif elm_type == DeviceType.EmtModelTemplateDevice:
 
@@ -1829,6 +1861,17 @@ class DataBaseTableMain(DiagramsMain):
         elif elm.device_type == DeviceType.EmtModelTemplateDevice:
             self.open_dynamic_editor(api_object=elm, circuit=self.circuit,
                                      preferred_mode=DynamicSimulationMode.EMT)
+
+        elif elm.device_type == DeviceType.ManufacturerNativeModelDevice:
+            native_dialog: QtWidgets.QDialog = ManufacturerNativeImporterDialog(
+                assets=self.circuit,
+                provider=elm,
+                parent=self,
+            )
+            if exec_dialog_safely(dialog=native_dialog):
+                self.view_objects_data()
+            else:
+                pass
 
         elif elm.device_type == DeviceType.FmuTemplateDevice:
             dlg: QtWidgets.QDialog = FmuTemplateEditorDialog(

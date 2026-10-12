@@ -29,8 +29,10 @@ def get_load_phasor_rms_template(vfactory: VarFactory, name="Load phasor rms tem
     Ql = vfactory.add_var("Ql")
     Pl = vfactory.add_var("Pl")
 
-    templ.block.event_dict[Pl0] = vfactory.add_const(-0.0999999)
-    templ.block.event_dict[Ql0] = vfactory.add_const(-0.009999999862208533)
+    # The load device supplies the baseline through api_obj_mapping, while the
+    # event declaration keeps both set-points mutable during the simulation.
+    templ.block.event_dict[Pl0] = vfactory.add_const(None)
+    templ.block.event_dict[Ql0] = vfactory.add_const(None)
 
     templ.block.algebraic_vars = [Pl, Ql]
 

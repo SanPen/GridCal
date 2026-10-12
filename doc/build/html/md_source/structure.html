@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🌁 Structure of VeraGrid &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>🌁 Structure of VeraGrid &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -235,10 +235,10 @@ that when adopting a table based structure, one shall immediately think of panda
 to implement the structure. Furthermore, a dictionary of tables seems to be the
 most flexible.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="s2">&quot;buses&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
-  <span class="s2">&quot;branches&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
-  <span class="s2">&quot;loads&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
-  <span class="s2">&quot;generators&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+  <span class="s2">"buses"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+  <span class="s2">"branches"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+  <span class="s2">"loads"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+  <span class="s2">"generators"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
   <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>
@@ -308,7 +308,7 @@ we would like to run a simulation since numerical simulations require the
 per-unit system. Furthermore, we discovered that using the compatible units
 as input does not forbid to provide the design units trough extra functions or design focused parameters.
 We can have the cake and eat it too.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">elm</span> <span class="o">=</span> <span class="n">Line</span><span class="p">(</span><span class="n">bus_from</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Line 1,</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">elm</span> <span class="o">=</span> <span class="n">Line</span><span class="p">(</span><span class="n">bus_from</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Line 1,</span>
            <span class="n">r</span><span class="o">=</span><span class="n">resistance</span> <span class="ow">in</span> <span class="n">per</span> <span class="n">unit</span><span class="p">,</span>
            <span class="n">x</span><span class="o">=</span><span class="n">reactance</span> <span class="ow">in</span> <span class="n">per</span> <span class="n">unit</span><span class="p">,</span>
            <span class="n">b</span><span class="o">=</span><span class="n">shunt</span> <span class="n">susceptance</span> <span class="ow">in</span> <span class="n">per</span><span class="o">-</span><span class="n">unit</span><span class="p">,</span>

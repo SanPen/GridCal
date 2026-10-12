@@ -125,32 +125,31 @@ meters must resolve an exact device terminal, including the special retained
 series-branch resolution used when PowerFactory omits a native valve row. An
 ambiguous topology produces no fallback binding.
 
-## DC cable template ownership
+## Shared Cable System ownership for DC branches
 
-Cable construction data does not belong to generic `Line`, because a line is
-not necessarily a cable. A `DcCableType` is associated with `DcLine`, never
-with `Line`, and owns the physical resistance, inductance, and capacitance per
-unit length together with its ratings. `DcLine` owns the installed length and
-the applied template reference.
+Cable construction belongs to `UndergroundCableType` (**Cable**). Installation
+geometry and equivalent parameters belong to `UndergroundLineType` (**Cable
+System**), shared by AC `Line` and DC `DcLine`. `DcLine` owns its installed length,
+selected `dc_conductor` and applied system reference.
 
-A source line type becomes a `DcCableType` only when the source explicitly
-classifies that construction as a cable. Declaring only that the system is DC
-does not establish cable construction. A missing or contradictory installation
-classification must not be replaced by a parser initializer or inferred from
-the type name, resistance, reactance, capacitance, rating, or voltage.
+For physical systems, DC resistance comes from the selected core's active DC
+resistance representation. L/C come from the diagonal of the existing reduced
+Z/Y matrices at the system's reference frequency. This is a scalar equivalent;
+mutual coupling between DC branches and a new sheath/return model are outside
+this change. See [Applying Cable System to a DC line](modelling.md#applying-cable-system-to-a-dc-line).
 
-An importer may derive physical inductance and capacitance from source
-reactance, susceptance, and their positive reference frequency. Neither
-resistance, length, rating, nor nominal voltage can reconstruct missing cable
-geometry. The importer therefore creates and applies a `DcCableType` only when
-the required source values are complete; it does not persist invented zeros or
-a runtime fallback as physical asset data.
+DC DGS import still requires explicit, consistent cable classification and
+complete R/X/C-or-B/frequency evidence. It preserves the former conversions
+and stores a parameter-only Cable System without inventing geometry. `C` in
+the shared catalogue uses µF/km; `get_dc_parameters()` supplies F/km and H/km.
+`get_dc_values()` retains the former DC per-unit-seconds conversion.
 
-When no complete DC cable template is available, the `DcLine` remains without
-one. RMS must look for its established model default, report the missing value
-and chosen fallback through `Logger`, and continue. A resistive reduction may
-omit cable energy states, but it must not claim that the physical inductance or
-capacitance is known to be zero.
+Incomplete source types leave `DcLine` without a cable template. The existing
+dynamic fallback reports missing data and may use a resistive reduction; it
+does not persist unknown energy parameters as measured zeros. Existing RMS/EMT
+model ownership and parameter mapping are unchanged by the catalogue merger.
+Legacy DC catalogue records migrate before reference resolution, preserving
+identifiers and dynamic associations. New files contain the common catalogue.
 
 ## DGS VSC ownership
 

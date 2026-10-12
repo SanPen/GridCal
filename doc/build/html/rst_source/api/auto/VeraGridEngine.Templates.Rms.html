@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Rms package &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Templates.Rms package &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -536,9 +536,6 @@ This representation makes line equations linear in the voltage variables.</p>
 </dl>
 </dd></dl>
 
-</section>
-<section id="veragridengine-templates-rms-common-module">
-<h2>VeraGridEngine.Templates.Rms.common module<a class="headerlink" href="#veragridengine-templates-rms-common-module" title="Link to this heading"></a></h2>
 </section>
 <section id="module-VeraGridEngine.Templates.Rms.dc_voltage_source">
 <span id="veragridengine-templates-rms-dc-voltage-source-module"></span><h2>VeraGridEngine.Templates.Rms.dc_voltage_source module<a class="headerlink" href="#module-VeraGridEngine.Templates.Rms.dc_voltage_source" title="Link to this heading"></a></h2>
@@ -1852,7 +1849,7 @@ initialize the frozen <code class="docutils literal notranslate"><span class="pr
 <dl class="py function">
 <dt class="sig sig-object py" id="VeraGridEngine.Templates.Rms.genrou_exc_gov_rms_template.set_rms_model_parameter">
 <span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.Rms.genrou_exc_gov_rms_template.</span></span><span class="sig-name descname"><span class="pre">set_rms_model_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.block.Block" title="VeraGridEngine.Utils.Symbolic.block.Block"><span class="pre">Block</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vfactory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/Rms/genrou_exc_gov_rms_template.html#set_rms_model_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.Rms.genrou_exc_gov_rms_template.set_rms_model_parameter" title="Link to this definition"></a></dt>
-<dd><p>Set exactly one named event parameter.</p>
+<dd><p>Set exactly one named static or event parameter.</p>
 <p>The function fails if the parameter is absent or duplicated so an explicit
 model configuration can never leave a default active silently.</p>
 <dl class="field-list simple">
@@ -2832,10 +2829,11 @@ load consumption is represented with negative injections (Pl0 &lt; 0, Ql0 &lt; 0
 <dt class="sig sig-object py" id="VeraGridEngine.Templates.Rms.load_rms_template.get_load_rms_template">
 <span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.Rms.load_rms_template.</span></span><span class="sig-name descname"><span class="pre">get_load_rms_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vfactory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Load</span> <span class="pre">rms</span> <span class="pre">template'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pl0_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ql0_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.rms_template.RmsModelTemplate" title="VeraGridEngine.Devices.Dynamic.rms_template.RmsModelTemplate"><span class="pre">RmsModelTemplate</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/Rms/load_rms_template.html#get_load_rms_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.Rms.load_rms_template.get_load_rms_template" title="Link to this definition"></a></dt>
 <dd><p>Build the RMS constant-power load model.</p>
-<p><code class="docutils literal notranslate"><span class="pre">Pl0</span></code> and <code class="docutils literal notranslate"><span class="pre">Ql0</span></code> remain runtime event parameters. When their optional
-values are unset, their event expressions copy the solved operating point
-from <code class="docutils literal notranslate"><span class="pre">Pl</span></code> and <code class="docutils literal notranslate"><span class="pre">Ql</span></code>. A numeric value supplied by General options replaces
-that automatic starting value while preserving event support.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Pl0</span></code> and <code class="docutils literal notranslate"><span class="pre">Ql0</span></code> remain runtime event parameters. When an optional value
+is unset, the associated Load device supplies its P/Q value through
+<code class="docutils literal notranslate"><span class="pre">api_obj_mapping</span></code> and the stored expression is <code class="docutils literal notranslate"><span class="pre">Const(None)</span></code>. A numeric
+General option omits that mapping and becomes the authoritative baseline
+while preserving event support.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2919,7 +2917,7 @@ Ql0 (float): Initial reactive power at nominal voltage (pu)</p>
 <span id="veragridengine-templates-rms-pv-load-template-module"></span><h2>VeraGridEngine.Templates.Rms.pv_load_template module<a class="headerlink" href="#module-VeraGridEngine.Templates.Rms.pv_load_template" title="Link to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="VeraGridEngine.Templates.Rms.pv_load_template.PVLoadBuild">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.Rms.pv_load_template.</span></span><span class="sig-name descname"><span class="pre">PVLoadBuild</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vfactory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'PV</span> <span class="pre">load</span> <span class="pre">RMS</span> <span class="pre">template'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pg0_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vg0_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.rms_template.RmsModelTemplate" title="VeraGridEngine.Devices.Dynamic.rms_template.RmsModelTemplate"><span class="pre">RmsModelTemplate</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/Rms/pv_load_template.html#PVLoadBuild"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.Rms.pv_load_template.PVLoadBuild" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.Rms.pv_load_template.</span></span><span class="sig-name descname"><span class="pre">PVLoadBuild</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vfactory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'PV</span> <span class="pre">load</span> <span class="pre">RMS</span> <span class="pre">template'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pg0_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vg0_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.rms_template.RmsModelTemplate" title="VeraGridEngine.Devices.Dynamic.rms_template.RmsModelTemplate"><span class="pre">RmsModelTemplate</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/Rms/pv_load_template.html#PVLoadBuild"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.Rms.pv_load_template.PVLoadBuild" title="Link to this definition"></a></dt>
 <dd><p>Builds an RMS model template for a PV load with reactive power limits.</p>
 <p>The PV load model represents a load/generator with constant active power (P)
 and reactive power limited between Qmin and Qmax. When reactive power is within
@@ -2938,7 +2936,7 @@ Qg = Qmin_G   if Qh &lt;= Qmin_G</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>vfactory</strong> – Factory that owns the model’s symbolic variables.</p></li>
 <li><p><strong>name</strong> – Name assigned to the generated RMS model template.</p></li>
-<li><p><strong>Pg0_val</strong> – Initial active power in per unit.</p></li>
+<li><p><strong>Pg0_val</strong> – Optional initial active power in per unit; otherwise use the solved power-flow value.</p></li>
 <li><p><strong>Vg0_val</strong> – Initial voltage reference in per unit.</p></li>
 </ul>
 </dd>
@@ -2972,9 +2970,9 @@ Qg = Qmin_G   if Qh &lt;= Qmin_G</p>
 - optional active-power limiting switch (plim),
 - recovery multipliers with separate frequency/voltage enable flags.</p>
 <p>Notes:
-- Frequency is represented by <code class="docutils literal notranslate"><span class="pre">f_hz</span></code> as a model variable initialized to nominal value.</p>
+- <code class="docutils literal notranslate"><span class="pre">fn</span></code> is a static parameter mapped to the grid nominal frequency.</p>
 <blockquote>
-<div><p>A direct bus-frequency external mapping is not available in current RMS interfaces.</p>
+<div><p><code class="docutils literal notranslate"><span class="pre">f_hz</span></code> is the local frequency measured by the PLL.</p>
 </div></blockquote>
 <ul class="simple">
 <li><p>True latching tripping behavior (frflag/vrflag in the original ANDES formulation)
@@ -3045,9 +3043,9 @@ RMS studies in VeraGrid:
 - optional active-power limiting switch (plim),
 - recovery multipliers with separate frequency/voltage enable flags.</p>
 <p>Notes:
-- Frequency is represented by <code class="docutils literal notranslate"><span class="pre">f_hz</span></code> as a model variable initialized to nominal value.</p>
+- <code class="docutils literal notranslate"><span class="pre">fn</span></code> is a static parameter mapped to the grid nominal frequency.</p>
 <blockquote>
-<div><p>A direct bus-frequency external mapping is not available in current RMS interfaces.</p>
+<div><p><code class="docutils literal notranslate"><span class="pre">f_hz</span></code> is the local frequency measured by the PLL.</p>
 </div></blockquote>
 <ul class="simple">
 <li><p>True latching tripping behavior (frflag/vrflag in the original ANDES formulation)

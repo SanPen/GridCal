@@ -13,3 +13,4 @@ recursive-include Session *.*
 recursive-include ThirdParty *.*
 recursive-exclude tests *.*
 recursive-exclude research *.*
+global-exclude *.py[cod]

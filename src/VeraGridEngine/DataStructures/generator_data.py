@@ -8,7 +8,7 @@ import numpy as np
 from scipy.sparse import csc_matrix, coo_matrix
 import VeraGridEngine.Topology.topology as tp
 from VeraGridEngine.basic_structures import CxVec, Vec, IntVec, BoolVec, StrVec, Logger
-from VeraGridEngine.enumerations import GeneratorControlMode
+from VeraGridEngine.enumerations import GeneratorControlMode, ShuntConnectionType
 from VeraGridEngine.Utils.compare import compare_arr
 
 
@@ -23,6 +23,7 @@ class GeneratorData:
         "names",
         "idtag",
         "control_mode_int",
+        "conn",
         "installed_p",
         "active",
         "is_static_generator",
@@ -87,6 +88,7 @@ class GeneratorData:
         self.idtag: StrVec = np.empty(nelm, dtype=object)
 
         self.control_mode_int: IntVec = np.zeros(nelm, dtype=int)  # int representation of GeneratorControlMode
+        self.conn: IntVec = np.full(nelm, ShuntConnectionType.GroundedStar.idx(), dtype=int)
         self.installed_p: Vec = np.zeros(nelm, dtype=float)
 
         self.active: BoolVec = np.zeros(nelm, dtype=bool)
@@ -174,6 +176,7 @@ class GeneratorData:
         data.idtag = self.idtag[elm_idx]
 
         data.control_mode_int = self.control_mode_int[elm_idx]
+        data.conn = self.conn[elm_idx]
         data.installed_p = self.installed_p[elm_idx]
 
         data.active = self.active[elm_idx]
@@ -285,6 +288,7 @@ class GeneratorData:
         data.idtag = self.idtag.copy()
 
         data.control_mode_int = self.control_mode_int.copy()
+        data.conn = self.conn.copy()
         data.installed_p = self.installed_p.copy()
 
         data.active = self.active.copy()

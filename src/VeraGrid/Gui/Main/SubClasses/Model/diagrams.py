@@ -121,6 +121,7 @@ class VideoExportWorker(QtCore.QThread):
                     t_idx,
                     False
                 )
+                self.diagram.set_video_time_index(time_index=t_idx)
                 colour_end_time: float = perf_counter()
                 colour_elapsed_time += colour_end_time - colour_start_time
 
@@ -1758,13 +1759,13 @@ class DiagramsMain(CompiledArraysMain):
 
     def grid_colour_function(self,
                              diagram_widget: ALL_EDITORS,
-                             current_study: SimulationTypes | str,
+                             current_study: SimulationTypes | str | None,
                              t_idx: Union[None, int],
                              allow_popups: bool = True) -> None:
         """
         Colour the schematic or the map
         :param diagram_widget: Diagram where the plotting is made
-        :param current_study: Simulation type enum or its serialized display label.
+        :param current_study: Simulation type or label; None uses design colouring.
         :param t_idx: current time step (if None, the snapshot is taken)
         :param allow_popups: if true, messages me pop up
         """
@@ -1782,7 +1783,10 @@ class DiagramsMain(CompiledArraysMain):
         # Qt models in the source branch expose the enum value text, while the
         # target branch passes the enum itself. Normalize both public forms at
         # this GUI boundary so the dispatch below remains enum-based.
-        if isinstance(current_study, SimulationTypes):
+        if current_study is None:
+            normalized_current_study = SimulationTypes.DesignView
+            current_study_label = str(SimulationTypes.DesignView.value)
+        elif isinstance(current_study, SimulationTypes):
             normalized_current_study = current_study
             current_study_label = str(current_study.value)
         else:
@@ -3295,6 +3299,7 @@ class DiagramsMain(CompiledArraysMain):
 
         :return:
         """
+        self.video_thread.diagram.remove_video_time_label()
         if self.video_thread.logger.has_logs():
             self.show_logs(self.video_thread.logger, "Video export")
 

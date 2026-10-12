@@ -20,9 +20,27 @@ from VeraGridEngine.Devices.Injections.current_injection import CurrentInjection
 from VeraGridEngine.Devices.Injections.load import Load
 from VeraGridEngine.Devices.Injections.shunt import Shunt
 from VeraGridEngine.Devices.Substation.bus import Bus
-from VeraGridEngine.Devices.Dynamic.static_parameter_mapping import (
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
+from VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified import (
     assign_api_mapping_value_if_present,
     assign_static_api_object_mapping_for_device,
+    get_line_g_keys,
+)
+from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
+from VeraGridEngine.Templates.Emt.converter_emt_multilinear_template import (
+    get_emt_ideal_converter_multilinear,
+)
+from VeraGridEngine.Templates.Emt.converter_emt_template import (
+    get_emt_ideal_converter,
+    get_full_pseudo_emt_converter,
+)
+from VeraGridEngine.Templates.Emt.converter_soft_switched_emt_template import (
+    get_soft_switched_emt_converter,
+)
+from VeraGridEngine.Templates.Emt.converter_switched_emt_template import (
+    get_switched_emt_converter,
 )
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
@@ -44,9 +62,40 @@ def _make_var(name: str) -> Var:
     return Var(name=name)
 
 
-def _make_block(mapping: dict[ParamPowerFlowReferenceType, Var | None]) -> Block:
-    """Create a symbolic block exposing an ``api_obj_mapping``."""
-    return Block(api_obj_mapping=dict(mapping))
+def _make_block(
+        mapping: dict[ParamPowerFlowReferenceType, Var | None],
+        event_keys: set[ParamPowerFlowReferenceType] | None = None,
+) -> Block:
+    """Create a block whose mapped variables have their declared local owner.
+
+    :param mapping: API references and their optional symbolic targets.
+    :param event_keys: Mapping keys whose targets are explicitly event-capable.
+    :return: Block with static targets in ``parameters`` and runtime targets in
+        ``event_dict``.
+    """
+    parameters: dict[Var, Const] = dict()
+    event_dict: dict[Var, Const] = dict()
+    explicit_event_keys: set[ParamPowerFlowReferenceType]
+    if event_keys is None:
+        explicit_event_keys = set()
+    else:
+        explicit_event_keys = set(event_keys)
+    key: ParamPowerFlowReferenceType
+    target: Var | None
+
+    for key, target in mapping.items():
+        if target is None:
+            pass
+        elif key in explicit_event_keys:
+            event_dict[target] = Const(None)
+        else:
+            parameters[target] = Const(None)
+
+    return Block(
+        api_obj_mapping=dict(mapping),
+        parameters=parameters,
+        event_dict=event_dict,
+    )
 
 
 def _const_value(mapping: dict[Var, Const], block: Block, key: ParamPowerFlowReferenceType) -> float:
@@ -59,25 +108,28 @@ def _const_value(mapping: dict[Var, Const], block: Block, key: ParamPowerFlowRef
     return float(value.value)
 
 
-def test_assign_api_mapping_never_writes_event_dict() -> None:
-    """Static api-object mapping must skip ``event_dict`` targets."""
-    target: Var = _make_var("static_param")
+def test_assign_api_mapping_initializes_event_target_without_mutating_block() -> None:
+    """API mapping must seed an event target only in problem-side storage."""
+    target: Var = _make_var("event_param")
     block: Block = Block(
-        api_obj_mapping=dict({ParamPowerFlowReferenceType.device_active: target}),
+        api_obj_mapping=dict({ParamPowerFlowReferenceType.Pl0: target}),
         event_dict=dict({target: Const(9.0)}),
     )
+    problem_mapping: dict[Var, Const] = dict()
 
     assigned: bool = assign_api_mapping_value_if_present(
         mdl=block,
-        key=ParamPowerFlowReferenceType.device_active,
+        key=ParamPowerFlowReferenceType.Pl0,
         value=1.0,
         logger=None,
         device_name="device",
+        problem_mapping=problem_mapping,
     )
 
-    assert assigned is False
+    assert assigned is True
     assert target not in block.parameters
     assert float(block.event_dict[target].value) == 9.0
+    assert float(problem_mapping[target].value) == 1.0
 
 
 def test_missing_keys_are_skipped_silently() -> None:
@@ -94,6 +146,56 @@ def test_missing_keys_are_skipped_silently() -> None:
 
     assert assigned is False
     assert len(block.parameters) == 0
+
+
+def test_api_mapping_requires_same_block_parameter_owner() -> None:
+    """Reject a target which is not declared by the mapping block.
+
+    :return: None.
+    """
+    target: Var = _make_var("undeclared_static_param")
+    block: Block = Block(
+        api_obj_mapping=dict({ParamPowerFlowReferenceType.device_active: target}),
+    )
+    problem_mapping: dict[Var, Const] = dict()
+
+    assigned: bool = assign_api_mapping_value_if_present(
+        mdl=block,
+        key=ParamPowerFlowReferenceType.device_active,
+        value=1.0,
+        logger=None,
+        device_name="device",
+        problem_mapping=problem_mapping,
+    )
+
+    assert assigned is False
+    assert problem_mapping == dict()
+
+
+def test_converter_templates_keep_api_mappings_on_local_parameter_owners() -> None:
+    """Enforce owner-local storage for every EMT converter mapping.
+
+    :return: None.
+    """
+    templates: list[Block] = list((
+        get_emt_ideal_converter(vf=VarFactory()).block,
+        get_emt_ideal_converter_multilinear(vf=VarFactory()).block,
+        get_full_pseudo_emt_converter(vf=VarFactory()).block,
+        get_switched_emt_converter(vf=VarFactory()).block,
+        get_soft_switched_emt_converter(vf=VarFactory()).block,
+    ))
+    root_block: Block
+    current_block: Block
+    mapping_key: ParamPowerFlowReferenceType
+    mapping_target: Var | None
+
+    for root_block in templates:
+        for current_block in root_block.get_all_blocks():
+            for mapping_key, mapping_target in current_block.api_obj_mapping.items():
+                assert mapping_target is not None
+                target_is_constant: bool = mapping_target in current_block.parameters
+                target_is_runtime: bool = mapping_target in current_block.event_dict
+                assert target_is_constant != target_is_runtime
 
 
 def test_load_subset_mapping_assigns_only_requested_keys() -> None:
@@ -202,8 +304,8 @@ def test_balanced_load_values_are_distributed_to_phase_keys() -> None:
     assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.Ql0_A), 1.0 / 30.0)
 
 
-def test_load_static_api_mapping_does_not_seed_runtime_event_dict_targets() -> None:
-    """Load static api-object mapping must not write runtime event targets."""
+def test_load_api_mapping_seeds_runtime_targets_without_mutating_block() -> None:
+    """Load API mapping must initialize event targets only in problem storage."""
     grid: SimpleNamespace = _make_grid(sbase=100.0, fbase=60.0)
     bus: Bus = Bus(name="bus", Vnom=20.0)
     load: Load = Load(name="load", P=90.0, Q=30.0)
@@ -225,14 +327,26 @@ def test_load_static_api_mapping_does_not_seed_runtime_event_dict_targets() -> N
         }),
     )
 
-    assign_static_api_object_mapping_for_device(grid=grid, device=load, mdl=block, problem_mapping=dict(), logger=None)
+    problem_mapping: dict[Var, Const] = dict()
+    assign_static_api_object_mapping_for_device(
+        grid=grid,
+        device=load,
+        mdl=block,
+        problem_mapping=problem_mapping,
+        logger=None,
+    )
 
+    # Storage ownership remains unchanged: api_obj_mapping supplies the runtime
+    # baseline without moving event-capable variables into parameters.
     assert p_target not in block.parameters
     assert q_target not in block.parameters
     assert omega_target not in block.parameters
     assert np.isclose(float(block.event_dict[p_target].value), 0.0)
     assert np.isclose(float(block.event_dict[q_target].value), 0.0)
     assert np.isclose(float(block.event_dict[omega_target].value), 0.0)
+    assert np.isclose(float(problem_mapping[p_target].value), 0.3)
+    assert np.isclose(float(problem_mapping[q_target].value), 0.1)
+    assert np.isclose(float(problem_mapping[omega_target].value), 2.0 * np.pi * 60.0)
 
 
 def test_existing_generator_mapping_values_remain_unchanged() -> None:
@@ -260,8 +374,8 @@ def test_existing_generator_mapping_values_remain_unchanged() -> None:
     assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.X0), 0.08)
 
 
-def test_generator_nominal_frequency_candidates_are_available() -> None:
-    """Generator static mapping must expose RMS-relevant frequency-base candidates."""
+def test_generator_nominal_frequency_mapping_uses_device_frequency() -> None:
+    """Generator static mapping must expose its canonical device frequency."""
     grid: SimpleNamespace = _make_grid(fbase=60.0)
     bus: Bus = Bus(name="bus", Vnom=20.0)
     generator: Generator = Generator(name="gen", freq=55.0)
@@ -269,7 +383,6 @@ def test_generator_nominal_frequency_candidates_are_available() -> None:
 
     block: Block = _make_block(
         dict({
-            ParamPowerFlowReferenceType.fn: _make_var("fn"),
             ParamPowerFlowReferenceType.omega_base: _make_var("omega_base"),
             ParamPowerFlowReferenceType.freq: _make_var("freq"),
         })
@@ -278,7 +391,7 @@ def test_generator_nominal_frequency_candidates_are_available() -> None:
     problem_mapping = dict()
     assign_static_api_object_mapping_for_device(grid=grid, device=generator, mdl=block, problem_mapping=problem_mapping, logger=None)
 
-    assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.fn), 60.0)
+    assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.freq), 55.0)
     assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.omega_base), 2.0 * np.pi * 60.0)
 
 
@@ -303,8 +416,8 @@ def test_dc_load_mapping_preserves_explicit_power_and_conductance_terms() -> Non
     assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.g), 0.12)
 
 
-def test_existing_vsc_static_values_remain_unchanged() -> None:
-    """Historical VSC EMT keys must keep their existing values."""
+def test_vsc_static_mapping_skips_runtime_control_values() -> None:
+    """VSC controls must stay outside the shared static parameter mapping."""
     grid: SimpleNamespace = _make_grid(sbase=150.0, fbase=50.0)
     bus_dc: Bus = Bus(name="dc", Vnom=2.0, is_dc=True)
     bus_ac: Bus = Bus(name="ac", Vnom=20.0, is_dc=False)
@@ -318,15 +431,22 @@ def test_existing_vsc_static_values_remain_unchanged() -> None:
         control2_val=20.0,
     )
 
+    runtime_keys: set[ParamPowerFlowReferenceType] = set((
+        ParamPowerFlowReferenceType.converter_control_mode_1,
+        ParamPowerFlowReferenceType.converter_control_mode_2,
+        ParamPowerFlowReferenceType.converter_control_target_1,
+        ParamPowerFlowReferenceType.converter_control_target_2,
+    ))
     block: Block = _make_block(
-        dict({
+        mapping=dict({
             ParamPowerFlowReferenceType.Sbase: _make_var("sbase"),
             ParamPowerFlowReferenceType.omega_base: _make_var("omega"),
             ParamPowerFlowReferenceType.converter_control_mode_1: _make_var("c1"),
             ParamPowerFlowReferenceType.converter_control_mode_2: _make_var("c2"),
             ParamPowerFlowReferenceType.converter_control_target_1: _make_var("t1"),
             ParamPowerFlowReferenceType.converter_control_target_2: _make_var("t2"),
-        })
+        }),
+        event_keys=runtime_keys,
     )
 
     problem_mapping = dict()
@@ -334,10 +454,18 @@ def test_existing_vsc_static_values_remain_unchanged() -> None:
 
     assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.Sbase), 150.0)
     assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.omega_base), 2.0 * np.pi * 50.0)
-    assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.converter_control_mode_1), 1.0)
-    assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.converter_control_mode_2), 6.0)
-    assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.converter_control_target_1), 1.05)
-    assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.converter_control_target_2), 20.0)
+    runtime_key: ParamPowerFlowReferenceType
+    for runtime_key in (
+            ParamPowerFlowReferenceType.converter_control_mode_1,
+            ParamPowerFlowReferenceType.converter_control_mode_2,
+            ParamPowerFlowReferenceType.converter_control_target_1,
+            ParamPowerFlowReferenceType.converter_control_target_2,
+    ):
+        runtime_target: Var | None = block.api_obj_mapping.get(runtime_key, None)
+        assert runtime_target is not None
+        assert runtime_target not in problem_mapping
+        assert runtime_target in block.event_dict
+        assert block.event_dict[runtime_target].value is None
 
 
 def test_existing_dc_line_mapping_values_remain_unchanged() -> None:
@@ -452,7 +580,11 @@ def test_transformer_equivalent_circuit_keys_receive_only_derived_values() -> No
     omega: float = 2.0 * np.pi * 50.0
     total_ratio: float = (110.0 / 20.0) * 1.1
     total_ratio_square: float = total_ratio * total_ratio
-    magnetizing_l_primary: float = 1000.0 / omega
+    # A zero static susceptance represents an absent magnetizing branch. The
+    # finite 1e7-pu fallback keeps the coupled-inductance matrix invertible while
+    # making the artificial magnetizing current electrically negligible.
+    x_magnetizing: float = 1.0e7
+    magnetizing_l_primary: float = x_magnetizing / omega
     magnetizing_l_secondary: float = magnetizing_l_primary / total_ratio_square
     mutual_inductance: float = magnetizing_l_primary / total_ratio
     leakage_l_primary: float = 0.5 * 0.08 / omega
@@ -514,7 +646,9 @@ def test_transformer_direct_and_derived_keys_receive_both_sets() -> None:
 
     omega: float = 2.0 * np.pi * 50.0
     total_ratio: float = (110.0 / 20.0) * 1.1
-    magnetizing_l_primary: float = 1000.0 / omega
+    # Preserve the open-magnetizing-branch approximation used when B is zero.
+    x_magnetizing: float = 1.0e7
+    magnetizing_l_primary: float = x_magnetizing / omega
     mutual_inductance: float = magnetizing_l_primary / total_ratio
 
     assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.tap_module), 1.1)
@@ -724,3 +858,109 @@ def test_current_injection_phase_keys_fall_back_to_balanced_totals() -> None:
 
     assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.current_injection_ira_pu), 0.02)
     assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.current_injection_iic_pu), 1.0 / 75.0)
+
+
+def test_line_physical_shunt_conductance_mapping() -> None:
+    """Keep total line shunt conductance distinct from series admittance.
+
+    :return: None.
+    """
+    power_base: float
+    for power_base in (2.0, 100.0):
+        grid: SimpleNamespace = _make_grid(sbase=power_base)
+        source: Bus = Bus(name="source", Vnom=20.0)
+        target: Bus = Bus(name="target", Vnom=20.0)
+        line: Line = Line(bus_from=source, bus_to=target, r=0.01, x=0.1, g=0.003)
+        block: Block = _make_block(dict((
+            (ParamPowerFlowReferenceType.g, _make_var("series_g")),
+            (ParamPowerFlowReferenceType.shunt_g_pu, _make_var("physical_g")),
+        )))
+        mapped_values: dict[Var, Const] = dict()
+
+        # Line.G already uses the system per-unit base; injection conversion is inappropriate.
+        assign_static_api_object_mapping_for_device(
+            grid=grid, device=line, mdl=block, problem_mapping=mapped_values, logger=None,
+        )
+        assert np.isclose(
+            _const_value(mapped_values, block, ParamPowerFlowReferenceType.shunt_g_pu),
+            0.003, rtol=1.0e-10, atol=1.0e-12,
+        )
+        assert np.isclose(
+            _const_value(mapped_values, block, ParamPowerFlowReferenceType.g),
+            np.real(1.0 / complex(0.01, 0.1)), rtol=1.0e-10, atol=1.0e-12,
+        )
+
+
+def test_line_shunt_conductance_matrix_projection() -> None:
+    """Compare full and partial G mappings with independent static primitives.
+
+    :return: None.
+    """
+    g_keys: list[list[ParamPowerFlowReferenceType]] = get_line_g_keys()
+    assert g_keys[0][1] == ParamPowerFlowReferenceType.Gna
+    assert g_keys[1][0] == ParamPowerFlowReferenceType.Gan
+    assert g_keys[3][3] == ParamPowerFlowReferenceType.Gcc
+    physical_g: np.ndarray = 1.0e-6 * np.array((
+        (0.4, -0.03, -0.02, -0.01),
+        (-0.03, 0.7, -0.04, -0.02),
+        (-0.02, -0.04, 0.8, -0.03),
+        (-0.01, -0.02, -0.03, 0.9),
+    ))
+    frequency: float
+    power_base: float
+    voltage_base: float
+    resistive: bool
+    for frequency, power_base, voltage_base, resistive in (
+        (50.0, 2.0, 10.0, False), (60.0, 100.0, 132.0, False), (60.0, 100.0, 20.0, True),
+    ):
+        phase_mask: tuple[bool, bool, bool, bool]
+        for phase_mask in ((True, True, True, True), (False, True, True, True), (False, True, False, True)):
+            grid: MultiCircuit = MultiCircuit(Sbase=power_base, fbase=frequency)
+            source: Bus = grid.add_bus(Bus(Vnom=voltage_base))
+            target: Bus = grid.add_bus(Bus(Vnom=voltage_base))
+            line: Line = Line(bus_from=source, bus_to=target, r=0.08, x=0.0 if resistive else 0.4)
+            grid.add_line(line)
+            # Preserve explicitly supplied phase data rather than regenerating sequence defaults.
+            line.fill_3_phase_from_sequence()
+            line.disable_auto_updates()
+            line.ys.phN, line.ys.phA, line.ys.phB, line.ys.phC = phase_mask
+            line.ysh.phN, line.ysh.phA, line.ysh.phB, line.ysh.phC = phase_mask
+            active: np.ndarray = np.flatnonzero(np.array(phase_mask, dtype=bool))
+            selector: tuple[np.ndarray, np.ndarray] = np.ix_(active, active)
+            impedance: complex = complex(0.08, 0.0 if resistive else 0.4)
+            line.ys.values[:] = 0.0
+            line.ys.values[selector] = np.eye(len(active), dtype=complex) / impedance
+            line.ysh.values[:] = 0.0
+            zbase: float = voltage_base * voltage_base / power_base
+            line.ysh.values[selector] = physical_g[selector] * zbase * 1.0e6
+            numerical: NumericalCircuit = compile_numerical_circuit_at(circuit=grid, fill_three_phase=True)
+            expected: np.ndarray = np.real(
+                numerical.passive_branch_data.Yff3 + numerical.passive_branch_data.Yft3,
+            )
+            np.testing.assert_allclose(expected[selector], physical_g[selector] * zbase / 2.0, rtol=1.0e-10, atol=1.0e-12)
+            partial: bool
+            for partial in (False, True):
+                mapping: dict[ParamPowerFlowReferenceType, Var] = dict()
+                row: int
+                col: int
+                for row in range(4):
+                    for col in range(4):
+                        if not partial or (row, col) in ((0, 0), (1, 1), (1, 3)):
+                            mapping[g_keys[row][col]] = _make_var(g_keys[row][col].name)
+                        else:
+                            pass
+                block: Block = _make_block(mapping)
+                resolved: dict[Var, Const] = dict()
+                # No Linv key is requested: even singular L must not suppress valid G.
+                assign_static_api_object_mapping_for_device(
+                    grid=grid, device=line, mdl=block, problem_mapping=resolved, logger=None,
+                )
+                for row in range(4):
+                    for col in range(4):
+                        if g_keys[row][col] in mapping:
+                            np.testing.assert_allclose(
+                                _const_value(resolved, block, g_keys[row][col]),
+                                expected[row, col], rtol=1.0e-10, atol=1.0e-12,
+                            )
+                        else:
+                            pass

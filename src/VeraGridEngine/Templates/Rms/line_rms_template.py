@@ -36,6 +36,7 @@ def get_line_rms_template(vfactory: VarFactory, name="Line_rms_template") -> Rms
     g = vfactory.add_var("g")
     b = vfactory.add_var("b")
     bsh = vfactory.add_var("bsh")
+    gsh: Var = vfactory.add_var("gsh")
 
     u: Var = vfactory.add_var("u")
 
@@ -44,17 +45,19 @@ def get_line_rms_template(vfactory: VarFactory, name="Line_rms_template") -> Rms
     block.parameters[g] = vfactory.add_const(5)
     block.parameters[b] = vfactory.add_const(-12)
     block.parameters[bsh] = vfactory.add_const(0.03)
+    block.parameters[gsh] = vfactory.add_const(0.0)
 
     block.event_dict[u] = vfactory.add_const(1)
 
     block.algebraic_vars = [Pf, Pt, Qf, Qt]
 
 
+    # Physical shunt loss is split equally between the two terminal powers.
     pi2 = np.pi / 2
     block.algebraic_eqs = [
-        Pf - u * ((inputs[0] ** 2 * g) - g * inputs[0] * inputs[2] * cos(inputs[1] - inputs[3]) + b * inputs[0] * inputs[2] * cos(inputs[1] - inputs[3] + pi2)),
+        Pf - u * ((inputs[0] ** 2 * (g + gsh / 2)) - g * inputs[0] * inputs[2] * cos(inputs[1] - inputs[3]) + b * inputs[0] * inputs[2] * cos(inputs[1] - inputs[3] + pi2)),
         Qf - u * (inputs[0] ** 2 * (-bsh / 2 - b) - g * inputs[0] * inputs[2] * sin(inputs[1] - inputs[3]) + b * inputs[0] * inputs[2] * sin(inputs[1] - inputs[3] + pi2)),
-        Pt - u * ((inputs[2] ** 2 * g) - g * inputs[2] * inputs[0] * cos(inputs[3] - inputs[1]) + b * inputs[2] * inputs[0] * cos(inputs[3] - inputs[1] + pi2)),
+        Pt - u * ((inputs[2] ** 2 * (g + gsh / 2)) - g * inputs[2] * inputs[0] * cos(inputs[3] - inputs[1]) + b * inputs[2] * inputs[0] * cos(inputs[3] - inputs[1] + pi2)),
         Qt - u * (inputs[2] ** 2 * (-bsh / 2 - b) - g * inputs[2] * inputs[0] * sin(inputs[3] - inputs[1]) + b * inputs[2] * inputs[0] * sin(inputs[3] - inputs[1] + pi2)),
     ]
 
@@ -76,11 +79,15 @@ def get_line_rms_template(vfactory: VarFactory, name="Line_rms_template") -> Rms
         VarPowerFlowReferenceType.Qt: Qt,
     }
 
-    templ.block.api_obj_mapping = {
+    # Static mappings belong to the same child that declares their parameter
+    # targets. The root only exposes the external terminal interface, while the
+    # recursive RMS/EMT mapper visits this physical line block directly.
+    block.api_obj_mapping = {
         ParamPowerFlowReferenceType.g: g,
         ParamPowerFlowReferenceType.b: b,
         ParamPowerFlowReferenceType.bsh: bsh,
-           }
+        ParamPowerFlowReferenceType.shunt_g_pu: gsh,
+    }
 
     templ.block.in_vars = inputs
     templ.block.out_vars = [Pf, Pt, Qf, Qt]
@@ -197,7 +204,9 @@ def get_dc_line_rms_template(
         VarPowerFlowReferenceType.Pt: Pt,
     }
 
-    templ.block.api_obj_mapping = {
+    # Keep the resistance mapping beside its declaration. A wrapper mapping to
+    # this child parameter would be rejected by the owner-local static contract.
+    block.api_obj_mapping = {
         # A native DC-line device exposes its physical resistance through the
         # dedicated dynamic reference.
         ParamPowerFlowReferenceType.dc_line_r_pu: r,

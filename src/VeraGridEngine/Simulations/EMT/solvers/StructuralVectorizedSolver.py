@@ -33,7 +33,10 @@ from VeraGridEngine.Simulations.EMT.problems.emt_problem_template import (
     resolve_solver_boundary_updater,
 )
 from VeraGridEngine.Utils.emt_boundary_update_wrapper import BoundaryUpdateWrapper
-from VeraGridEngine.Utils.Symbolic.jit_compiler import EagerEquationCompiler, EquationCompiler, MatrixVectorizedCompiler, _compile_to_file
+from VeraGridEngine.Utils.Symbolic.jit_compiler import (
+    EagerEquationCompiler, EquationCompiler, MatrixVectorizedCompiler,
+    _compile_to_file, _fingerprint_codegen_expr, _StructuralExpressionContext,
+)
 from VeraGridEngine.Simulations.EMT.solvers.structural_compiled_solver import StructuralCompiledSparseFactorizationManager
 from VeraGridEngine.Simulations.driver_template import DummySignal
 from VeraGridEngine.Utils.NumericalMethods.external_sparse_solver_interface import SparseLinearSolverBackendProvider
@@ -302,112 +305,25 @@ Callable[..., Any]:
         return nb.jit(fastmath=fastmath, cache=cache)(py_func)
 
 
-def _canonicalize_node(
-        node: Expr,
-        runtime_uids: Set[int],
-        param_uids: Set[int],
-        runtime_slots: Dict[int, str],
-        param_slots: Dict[int, str],
-        found_runtime_vars_ordered: List[Var],
-        seen_runtime_uids: Set[int]
-) -> str:
-    """
-    Canonicalizes an expression while distinguishing runtime variables from parameters.
-
-    Runtime variables get placeholders __RVAR_k__ and are also collected in order.
-    Parameters get placeholders __PARAM_k__ but are NOT collected into template vars.
-    """
-
-    if isinstance(node, Var):
-        target_uid: int = node.uid if node.base_var is None else node.base_var.uid
-
-        if target_uid in runtime_uids:
-            if target_uid not in runtime_slots:
-                runtime_slots[target_uid] = f"__RVAR_{len(runtime_slots)}__"
-
-            if target_uid not in seen_runtime_uids:
-                seen_runtime_uids.add(target_uid)
-                found_runtime_vars_ordered.append(node)
-
-            return runtime_slots[target_uid]
-
-        elif target_uid in param_uids:
-            if target_uid not in param_slots:
-                param_name: str = node.name
-                param_slots[target_uid] = f"__PARAM_{param_name}_{target_uid}__"
-
-            return param_slots[target_uid]
-
-        else:
-            raise RuntimeError(
-                f"Canonicalization found Var not classified as runtime or parameter: "
-                f"name={node.name}, target_uid={target_uid}"
-            )
-
-    elif isinstance(node, Const):
-        return f"{float(node.value):.6g}"
-
-    elif isinstance(node, BinOp):
-        left_str: str = _canonicalize_node(
-            node.left, runtime_uids, param_uids,
-            runtime_slots, param_slots,
-            found_runtime_vars_ordered, seen_runtime_uids
-        )
-        right_str: str = _canonicalize_node(
-            node.right, runtime_uids, param_uids,
-            runtime_slots, param_slots,
-            found_runtime_vars_ordered, seen_runtime_uids
-        )
-
-        if node.op in ['+', '*'] and left_str > right_str:
-            left_str, right_str = right_str, left_str
-
-        return f"({left_str}{node.op}{right_str})"
-
-    elif isinstance(node, UnOp):
-        op_str: str = _canonicalize_node(
-            node.operand, runtime_uids, param_uids,
-            runtime_slots, param_slots,
-            found_runtime_vars_ordered, seen_runtime_uids
-        )
-        return f"{node.op}({op_str})"
-
-    elif isinstance(node, Func):
-        arg_str: str = _canonicalize_node(
-            node.arg, runtime_uids, param_uids,
-            runtime_slots, param_slots,
-            found_runtime_vars_ordered, seen_runtime_uids
-        )
-        return f"{node.op}({arg_str})"
-
-    else:
-        return str(node)
-
-
 def canonicalize_expression(
         expr: Expr,
         runtime_uids: Set[int],
-        param_uids: Set[int]
+        param_uids: Set[int],
 ) -> Tuple[str, List[Var]]:
     """
-    Returns a canonical structural signature and the ordered runtime variables only.
+    Return the shared structural signature and first-occurrence runtime gathers.
+
+    :param expr: Symbolic expression whose literal values must remain exact.
+    :param runtime_uids: UIDs belonging to the runtime state/algebraic vector.
+    :param param_uids: UIDs belonging to the shared parameter vector.
+    :return: Structural fingerprint and one gathered variable per runtime UID.
+    :raises RuntimeError: If a supported variable has no runtime/parameter classification.
     """
-
-    runtime_slots: Dict[int, str] = dict()
-    param_slots: Dict[int, str] = dict()
-    found_runtime_vars_ordered: List[Var] = list()
-    seen_runtime_uids: Set[int] = set()
-
-    canonical_str: str = _canonicalize_node(
-        node=expr,
-        runtime_uids=runtime_uids,
-        param_uids=param_uids,
-        runtime_slots=runtime_slots,
-        param_slots=param_slots,
-        found_runtime_vars_ordered=found_runtime_vars_ordered,
-        seen_runtime_uids=seen_runtime_uids
-    )
-    return canonical_str, found_runtime_vars_ordered
+    # Bind structural roles only for this expression. The existing compiler walk
+    # preserves exact constants; its code-generation maps are unused in this context.
+    context: _StructuralExpressionContext = _StructuralExpressionContext(runtime_uids, param_uids)
+    signature: str = _fingerprint_codegen_expr(expr, dict(), dict(), "", None, None, context)
+    return signature, context.runtime_variables
 
 
 class VectorizedKernelSpec:
@@ -1188,6 +1104,7 @@ class SparseADJacobian:
 class StructuralVectorizedSolver:
     __slots__ = [
         'problem', 't0', 't_end', 'h', 'method', 'pred_method', 'dense_threshold', 'verbose', 'newton_max_iter',
+        '_newton_tolerance',
         'vec_jacobian', 'vec_flat_args', 'fused_residual', 'vec_kernels',
         '_state_vars', '_algebraic_vars', '_diff_vars', '_state_eqs', '_algebraic_eqs',
         'sorted_vars', '_n_state', '_n_vars', '_n_diff', 'uid2idx_vars',
@@ -1213,7 +1130,8 @@ class StructuralVectorizedSolver:
                  sparse_solver_backend_provider: SparseLinearSolverBackendProvider | None = None,
                  newton_diag_config: NewtonDiagnosticsConfig | None = None,
                  progress_signal: DummySignal | None = None,
-                 cancel_checker: Callable[[], bool] | None = None)-> None:
+                 cancel_checker: Callable[[], bool] | None = None,
+                 newton_tolerance: float = 1.0e-6)-> None:
         """
         :param problem: The DAE problem definition.
         :param t0: Initial time.
@@ -1224,6 +1142,7 @@ class StructuralVectorizedSolver:
         :param dense_threshold: Threshold to switch between dense and sparse linear solvers.
         :param verbose: Print compilation and simulation timings.
         :param newton_max_iter: Maximum Newton iterations per local EMT substep.
+        :param newton_tolerance: Absolute infinity-norm tolerance for Newton residual convergence.
         :param sparse_solver_backend_provider: Sparse linear solver backend provider.
         :type sparse_solver_backend_provider: SparseLinearSolverBackendProvider | None
         :param progress_signal: Optional progress signal updated during the simulation loop.
@@ -1238,6 +1157,9 @@ class StructuralVectorizedSolver:
         self.dense_threshold = dense_threshold
         self.verbose = verbose
         self.newton_max_iter: int = int(newton_max_iter)
+        self._newton_tolerance: float = float(newton_tolerance)
+        if not np.isfinite(self._newton_tolerance) or self._newton_tolerance <= 0.0:
+            raise ValueError("newton_tolerance must be finite and greater than zero.")
         self._newton_diag_config = newton_diag_config or NewtonDiagnosticsConfig(
             compute_dense_cond=False,
             enable_fallback=False,
@@ -1776,7 +1698,7 @@ class StructuralVectorizedSolver:
                         residual_out=res_global,
                     )
 
-                    if res_norm < 1e-6:
+                    if res_norm < self._newton_tolerance:
                         substep_converged = True
                         break
                     else:
@@ -1888,7 +1810,16 @@ class StructuralVectorizedSolver:
                         boundary_updater=boundary_updater,
                         accepted=substep_converged,
                         params=full_params,
+                        committed_time=float(t_curr),
+                        committed_state=x_iter,
                     )
+                else:
+                    pass
+
+                if substep_converged and state_event_retry_time is None:
+                    # A post-acceptance native sample may publish new held
+                    # outputs. Retain them for the next aligned sub-step.
+                    ev_params[:] = full_params[:len(ev_params)]
                 else:
                     pass
 

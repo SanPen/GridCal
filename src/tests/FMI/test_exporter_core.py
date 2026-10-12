@@ -7,19 +7,19 @@ import numpy as np
 import pytest
 from fmpy import simulate_fmu
 
-from VeraGridEngine.enumerations import FmiVersion
-from VeraGridEngine.IO.fmu.exporter.api import export_fmu
-from VeraGridEngine.IO.fmu.exporter.build import host_build_capable
-from VeraGridEngine.IO.fmu.exporter.compat import Block, Const, Var
-from VeraGridEngine.IO.fmu.exporter.config import ExportConfig
-from VeraGridEngine.IO.fmu.exporter.export_ir import build_export_model
-from VeraGridEngine.IO.fmu.exporter.flatten import flatten_block
-from VeraGridEngine.IO.fmu.exporter.packager import package_fmu, prepare_fmu_staging_dir
-from VeraGridEngine.IO.fmu.exporter.procedural_ir import build_logic_entries
-from VeraGridEngine.IO.fmu.exporter.snapshot import build_model_snapshot, reconstruct_block
-from VeraGridEngine.IO.fmu.exporter.xml_writer import emit_model_description
-from VeraGridEngine.IO.fmu.exporter_me.api import export_fmu_me
-from VeraGridEngine.IO.fmu.exporter_me.config import ExportConfig as MeExportConfig
+from VeraGridEngine.enumerations import FmiVersion, InterfaceType
+from VeraGridEngine.IO.fmu.interface import export_model_as_fmu
+from VeraGridEngine.IO.fmu.CosimulationInterface.build import host_build_capable
+from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
+from VeraGridEngine.IO.fmu.config import ExportConfig
+from VeraGridEngine.IO.fmu.CosimulationInterface.export_ir import build_export_model
+from VeraGridEngine.IO.fmu.model import flatten_block
+from VeraGridEngine.IO.fmu.archive import package_fmu, prepare_fmu_staging_dir
+from VeraGridEngine.IO.fmu.logic import build_co_simulation_logic_entries
+from VeraGridEngine.IO.fmu.model import build_model_snapshot, reconstruct_block
+from VeraGridEngine.IO.fmu.CosimulationInterface.xml_writer import emit_model_description
+from VeraGridEngine.IO.fmu.config import ExportConfig as MeExportConfig
 
 
 def build_simple_block() -> Block:
@@ -67,7 +67,7 @@ def test_export_ir_and_xml_generation(tmp_path: Path) -> None:
     snapshot = build_model_snapshot(block)
     flat = flatten_block(block)
     cfg = ExportConfig(model_name="SimpleModel", output_path=tmp_path / "simple.fmu", compile_binary=False)
-    logic_entries = build_logic_entries(flat)
+    logic_entries = build_co_simulation_logic_entries(flat)
     export_model = build_export_model(flat, cfg, snapshot, logic_entries)
     xml_text = emit_model_description(export_model)
 
@@ -110,7 +110,7 @@ def test_cs_export_failure_removes_owned_build_root(tmp_path: Path) -> None:
     )
 
     with pytest.raises(OSError):
-        export_fmu(model=build_simple_block(), cfg=cfg)
+        export_model_as_fmu(model=build_simple_block(), cfg=cfg)
 
     automatic_build_roots: tuple[Path, ...] = tuple(
         tmp_path.glob("veragrid_fmu_build_*")
@@ -129,6 +129,7 @@ def test_me_export_failure_removes_owned_build_root(tmp_path: Path) -> None:
     blocked_output_path: Path = tmp_path / "blocked_me.fmu"
     blocked_output_path.mkdir()
     cfg: MeExportConfig = MeExportConfig(
+        interface_type=InterfaceType.MODEL_EXCHANGE,
         model_name="CleanupMeModel",
         output_path=blocked_output_path,
         compile_binary=True,
@@ -136,7 +137,7 @@ def test_me_export_failure_removes_owned_build_root(tmp_path: Path) -> None:
     )
 
     with pytest.raises(OSError):
-        export_fmu_me(model=build_simple_block(), cfg=cfg)
+        export_model_as_fmu(model=build_simple_block(), cfg=cfg)
 
     automatic_build_roots: tuple[Path, ...] = tuple(
         tmp_path.glob("veragrid_fmu_me_build_*")
@@ -177,9 +178,10 @@ def test_me_export_accepts_exact_continuous_state_start_values(
         name="ExactStateStart",
     )
     model_identifier: str = "ExactStateStart" + fmi_version.value.replace(".", "")
-    archive_path: Path = export_fmu_me(
+    archive_path: Path = export_model_as_fmu(
         model=source_block,
         cfg=MeExportConfig(
+            interface_type=InterfaceType.MODEL_EXCHANGE,
             model_name=model_identifier,
             output_path=tmp_path / (model_identifier + ".fmu"),
             fixed_step=1.0e-3,

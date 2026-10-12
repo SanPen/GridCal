@@ -8,12 +8,7 @@
 from VeraGridEngine.enumerations import DeviceType, ParamPowerFlowReferenceType, VarPowerFlowReferenceType
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
-from VeraGridEngine.Utils.Symbolic.block import (
-    Block,
-    EmtTerminalConductor,
-    EmtTerminalCurrentContribution,
-    EmtTerminalSide,
-)
+from VeraGridEngine.Utils.Symbolic.block import Block
 
 """
 EMT DC load template.
@@ -30,8 +25,8 @@ def get_dc_load_emt_template(
     """
     Build an EMT DC load model.
 
-    Static parameters are provided through ``api_obj_mapping`` using the
-    associated load device.
+    Device-backed initial values are provided through ``api_obj_mapping``.
+    Active power remains event-capable, while conductance is immutable.
 
     Args:
         vf: Variable factory
@@ -47,8 +42,10 @@ def get_dc_load_emt_template(
     p_dc_static = vf.add_var(name=f"Pl0")
     g_dc_static = vf.add_var(name=f"g")
     block = Block()
-    block.parameters[p_dc_static] = vf.add_const(0.0)
-    block.parameters[g_dc_static] = vf.add_const(0.0)
+    # DC power can receive scheduled events after its device-backed baseline is
+    # resolved. Conductance remains a fixed physical parameter.
+    block.event_dict[p_dc_static] = vf.add_const(None)
+    block.parameters[g_dc_static] = vf.add_const(None)
 
     v_dc = vf.add_var(name=f"v_dc", reference=VarPowerFlowReferenceType.Vdc)
 
@@ -84,20 +81,6 @@ def get_dc_load_emt_template(
 
     templ.block.children.append(block)
     templ.block.external_mapping = block.external_mapping
-    templ.block.api_obj_mapping = block.api_obj_mapping
-    templ.block.parameters = block.parameters
     templ.block.in_vars = block.in_vars
     templ.block.out_vars = block.out_vars
-    # The network assembler owns KCL through physical device topology. The
-    # current remains independently selectable as a visible control signal.
-    templ.block.dynamic_model_contract.emt_terminal_current_contributions = list((
-        EmtTerminalCurrentContribution(
-            terminal_side=EmtTerminalSide.BUS,
-            conductor=EmtTerminalConductor.DC,
-            current_reference=VarPowerFlowReferenceType.Idc,
-        ),
-    ))
-
     return templ
-
-

@@ -176,3 +176,5 @@ def test_refresh_translated_splitter_layouts_respects_updated_widget_hints(qt_ap
 
     window.close()
     window.deleteLater()
+
+

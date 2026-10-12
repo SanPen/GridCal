@@ -248,7 +248,6 @@ class TrafoRmsTemplate(RmsModelTemplate):
 
         self._block.children.append(block)
         self._block.external_mapping = block.external_mapping
-        self._block.api_obj_mapping = block.api_obj_mapping
         self._block.in_vars = inputs
         self._block.out_vars = block.out_vars
 

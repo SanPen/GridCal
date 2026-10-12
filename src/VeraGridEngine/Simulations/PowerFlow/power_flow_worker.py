@@ -28,6 +28,7 @@ from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import compute_slack_distribution
+from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.static_generator_droop import StaticGeneratorDroop
 from VeraGridEngine.Devices.Substation.bus import Bus
 from VeraGridEngine.Devices.Aggregation.area import Area
 from VeraGridEngine.basic_structures import CxVec, Vec
@@ -1011,7 +1012,9 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                 logger.add_warning("Ignoring unusable power flow voltage guess")
                 V0 = nc.bus_data.Vbus
 
-    if nc.active_branch_data.any_pf_control and options.solver_type != SolverType.HELM:
+    static_droop: StaticGeneratorDroop = StaticGeneratorDroop(nc)
+    has_static_droop: bool = len(static_droop.idx) > 0
+    if has_static_droop or (nc.active_branch_data.any_pf_control and options.solver_type != SolverType.HELM):
 
         results = __multi_island_pf_nc_complete_support(
             nc=nc,
@@ -1021,7 +1024,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
             Sbus_input=Sbus_input,
         )
 
-        if not results.converged:
+        if not results.converged and not has_static_droop:
             logger.add_warning(
                 msg="Control-aware power flow did not converge; falling back to the "
                     "limited-support solver, which does NOT enforce branch/VSC/HVDC "
@@ -1045,6 +1048,11 @@ def multi_island_pf_nc(nc: NumericalCircuit,
 
         V_for_q = results.voltage[nc.bus_data.original_idx] if nc.topology_performed else results.voltage
         q0_gen = _get_generator_q_for_split(nc=nc, V=V_for_q)
+        droop_q: Vec = static_droop.delta_q_bus(V_for_q) * nc.Sbase
+        if nc.topology_performed:
+            droop_q = nc.propagate_bus_result(droop_q)
+        else:
+            pass
 
         vm_abs: Vec = np.abs(results.voltage)
         slack_bus_mask: np.ndarray = (
@@ -1061,10 +1069,12 @@ def multi_island_pf_nc(nc: NumericalCircuit,
             nc.shunt_data.get_injections_per_bus() * results.voltage
         )
         fixed_non_generator_bus: CxVec = fixed_load_bus + fixed_shunt_bus
+        fixed_non_generator_bus += 1j * droop_q
         qfixed_bus: Vec = (
                 nc.bus_data.q_fixed
                 - (nc.bus_data.ii_fixed + nc.bus_data.b_fixed * vm_abs) * vm_abs
         )
+        qfixed_bus += droop_q
 
         # Reconstruct the fixed shunt-like device reactive power from the final
         # solved voltage so the reported device values remain in nodal balance.

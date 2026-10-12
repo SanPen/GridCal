@@ -4,17 +4,21 @@
 # SPDX-License-Identifier: MPL-2.0
 
 """
-Unified static API-object parameter mapping.
+Unified API-object parameter initialization mapping.
 
 This module contains the static-device to problem-parameter assignment layer
 shared by EMT and RMS problem builders. The contract is intentionally narrow:
 
-* ``Block.api_obj_mapping`` maps ``ParamPowerFlowReferenceType`` keys to
-  constant symbolic problem parameters.
+* Entries in ``Block.api_obj_mapping`` map ``ParamPowerFlowReferenceType``
+  keys to variables declared by the same block. ``Block.parameters`` declares
+  immutable values and ``Block.event_dict`` declares event-capable values.
+  The mapping only selects the initial value source; it does not select the
+  runtime role.
 * Only values that come from the static grid device, or from static network
   bases such as ``Sbase`` and ``fBase``, are assigned here.
-* ``Block.event_dict`` is never written by this module. Runtime/event
-  parameters belong to explicit/native initialization and runtime event logic.
+* Neither ``Block.parameters`` nor ``Block.event_dict`` is written by this
+  module. Resolved values are stored in the problem-side mapping consumed by
+  both RMS and EMT assembly.
 
 The unified mapper combines two strategies:
 
@@ -25,9 +29,9 @@ The unified mapper combines two strategies:
   the target dynamic model contract.
 
 The problem parser should call ``assign_static_api_object_mapping_for_device``
-after processing each device block. The dynamic model template chooses which
-static values it consumes by exposing only the desired enum keys in
-``api_obj_mapping``.
+for each device model root. The function recursively visits all blocks, and the
+dynamic model template chooses which static values it consumes by exposing only
+the desired enum keys in each owner block's ``api_obj_mapping``.
 """
 
 from __future__ import annotations
@@ -42,7 +46,7 @@ from VeraGridEngine.Devices.Branches.dc_line import DcLine
 from VeraGridEngine.Devices.Branches.transformer import Transformer2W
 from VeraGridEngine.Templates.Emt.line_matrix_conversion import build_physical_line_matrices_from_stored_admittances
 from VeraGridEngine.Utils.Symbolic.block import Block
-from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var, Expr
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.enumerations import (
     ConverterControlType,
@@ -187,7 +191,6 @@ if TYPE_CHECKING:
 #         ParamPowerFlowReferenceType.device_active,
 #         ParamPowerFlowReferenceType.injection_connection_type,
 #         ParamPowerFlowReferenceType.omega_base,
-#         ParamPowerFlowReferenceType.fn,
 #         ParamPowerFlowReferenceType.ws,
 #         ParamPowerFlowReferenceType.R1,
 #         ParamPowerFlowReferenceType.X1,
@@ -215,7 +218,6 @@ if TYPE_CHECKING:
 #         ParamPowerFlowReferenceType.device_active,
 #         ParamPowerFlowReferenceType.injection_connection_type,
 #         ParamPowerFlowReferenceType.omega_base,
-#         ParamPowerFlowReferenceType.fn,
 #         ParamPowerFlowReferenceType.ws,
 #         ParamPowerFlowReferenceType.R1,
 #         ParamPowerFlowReferenceType.X1,
@@ -389,54 +391,61 @@ def assign_api_mapping_value_if_present(
         problem_mapping: Dict[Var, Const] | None = None,
 ) -> bool:
     """
-    Assign one static API-object value to the problem-side mapping if exposed.
+    Assign one API-object initial value to the problem-side mapping if exposed.
 
     This function is the only low-level writer used by this module. It never
-    writes into ``mdl.event_dict`` or ``mdl.parameters`` because runtime
-    parameters and static parameter storage belong to the problem assembly path,
-    not to the symbolic model object itself.
+    writes into ``mdl.event_dict`` or ``mdl.parameters``. Those collections
+    define whether the target is event-capable or immutable; the problem-side
+    mapping supplies only its initial value.
 
-    :param mdl: EMT symbolic block receiving the static parameter.
-    :param key: Static API-object reference key.
-    :param value: Static numerical value to assign.
+    :param mdl: Symbolic block receiving the parameter initial value.
+    :param key: API-object reference key.
+    :param value: Numerical initial value to assign.
     :param logger: Optional logger used to report invalid mapping contracts.
     :param device_name: Device name used in diagnostics.
-    :param problem_mapping: mapping to save parameters values in RMS problem
+    :param problem_mapping: Problem-side mapping shared by RMS and EMT assembly.
     :return: ``True`` if the value was assigned, ``False`` otherwise.
     """
     assigned: bool = False
     api_obj_mapping: Dict[ParamPowerFlowReferenceType, Var] = mdl.api_obj_mapping
 
-    # The mapping is optional: a model receives only the static parameters it
+    # The mapping is optional: a model receives only the parameter values it
     # explicitly requests by exposing the enum key.
     target: Var | None = api_obj_mapping.get(key, None)
 
     if target is None:
         assigned = False
     else:
-        event_dict: Dict[Var, Expr | Const] = mdl.event_dict
+        target_is_constant: bool = target in mdl.parameters
+        target_is_runtime: bool = target in mdl.event_dict
 
-        if target in event_dict:
-            # A target present in event_dict means the model declared a
-            # runtime parameter as a static API-object parameter. That is
-            # a contract error unless the caller explicitly opted into
-            # seeding runtime parameters from static device data.
+        if target_is_constant and target_is_runtime:
             add_static_mapping_warning(
                 logger=logger,
                 device_name=device_name,
-                message="Static api_obj_mapping points to an event_dict parameter.",
-                value=str(key),
-                expected_value="api_obj_mapping target must be a constant parameter",
-                device_property="api_obj_mapping",
+                message="Scripted model-template mapping conflict: API mapping target has both constant and runtime roles; value skipped.",
+                value=f"{mdl.name}: {key} -> {target.name}",
+                expected_value="Declare the mapped variable in exactly one of Block.parameters or Block.event_dict.",
+                device_property="model template api_obj_mapping",
+            )
+            assigned = False
+        elif not target_is_constant and not target_is_runtime:
+            # API mappings are owner-local. A wrapper must not borrow a target
+            # declared by a descendant because recursive discovery visits the
+            # actual owner in both RMS and EMT.
+            add_static_mapping_warning(
+                logger=logger,
+                device_name=device_name,
+                message="Scripted model-template mapping conflict: API mapping target is not declared by the same block; value skipped.",
+                value=f"{mdl.name}: {key} -> {target.name}",
+                expected_value="Declare the mapped variable in the same block's parameters or event_dict collection.",
+                device_property="model template api_obj_mapping",
             )
             assigned = False
         else:
-            # The static mapping declares the symbolic parameter target.
-            # Keep the canonical value in the flat problem-side mapping. EMT may
-            # temporarily mirror child parameters into wrapper roots during its
-            # own assembly path, but the shared mapper must not eagerly populate
-            # wrapper ``parameters`` because RMS recursively registers both root
-            # and child blocks and would otherwise observe duplicate constants.
+            # Keep the value in the flat problem-side mapping. The destination
+            # problem decides from the owner's declaration whether to register a
+            # constant parameter or an event-capable runtime parameter.
             resolved_value: Const = value if isinstance(value, Const) else Const(float(value))
             if problem_mapping is not None:
                 problem_mapping[target] = resolved_value
@@ -445,6 +454,68 @@ def assign_api_mapping_value_if_present(
             assigned = True
 
     return assigned
+
+
+def get_api_parameter_initial_value_by_uid(
+        parameter: Var,
+        problem_mapping: Dict[Var, Const],
+) -> Const | None:
+    """Return one resolved API-object initial value by symbolic UID.
+
+    Saved dynamic models may contain cloned ``Var`` instances which preserve
+    their canonical UID. Both RMS and EMT must therefore resolve the same
+    problem-side mapping by UID instead of relying only on Python identity.
+
+    :param parameter: Symbolic parameter whose initial value is requested.
+    :param problem_mapping: Values resolved from owner-local API mappings.
+    :return: Resolved constant, or ``None`` when the parameter has no mapping.
+    """
+    direct_value: Const | None = problem_mapping.get(parameter, None)
+
+    if direct_value is not None:
+        resolved_value: Const | None = direct_value
+    else:
+        resolved_value = None
+        mapped_parameter: Var
+        mapped_value: Const
+        for mapped_parameter, mapped_value in problem_mapping.items():
+            if resolved_value is None and mapped_parameter.uid == parameter.uid:
+                resolved_value = mapped_value
+            else:
+                pass
+
+    return resolved_value
+
+
+def build_api_parameter_initial_values_by_uid(
+        problem_mapping: Dict[Var, Const],
+) -> Dict[int, Const]:
+    """Index resolved API-object initial values by symbolic UID.
+
+    EMT constructs flat parameter vectors from a complete block hierarchy. A
+    UID-indexed snapshot gives constant and event-capable parameters the same
+    lookup semantics used by RMS while avoiding repeated hierarchy scans.
+
+    :param problem_mapping: Values resolved from owner-local API mappings.
+    :return: Initial values indexed by canonical symbolic UID.
+    """
+    values_by_uid: Dict[int, Const] = dict()
+    mapped_parameter: Var
+    mapped_value: Const
+
+    for mapped_parameter, mapped_value in problem_mapping.items():
+        existing_value: Const | None = values_by_uid.get(mapped_parameter.uid, None)
+        if existing_value is None:
+            values_by_uid[mapped_parameter.uid] = mapped_value
+        elif existing_value.value == mapped_value.value:
+            pass
+        else:
+            raise ValueError(
+                "Conflicting API-object initial values resolve to symbolic uid="
+                + f"{mapped_parameter.uid}: {existing_value.value} and {mapped_value.value}."
+            )
+
+    return values_by_uid
 
 
 def api_mapping_has_any_key(
@@ -1187,7 +1258,6 @@ def resolve_direct_dyn_ref_value(
         pass
 
     if key in (
-            ParamPowerFlowReferenceType.device_active,
             ParamPowerFlowReferenceType.branch_rate_mva,
             ParamPowerFlowReferenceType.branch_temp_base_deg_c,
             ParamPowerFlowReferenceType.branch_temp_oper_deg_c,
@@ -1445,18 +1515,51 @@ def assign_static_api_object_mapping_for_device(
         problem_mapping: Dict[Var, Const] | None = None,
         logger: Logger | None = None,
 ) -> None:
+    """Resolve device-backed initial values for a complete block hierarchy.
+
+    Both RMS and EMT call this public entry point once for each device model.
+    Recursion is kept here so every descendant is treated by the same
+    owner-local mapping rules and wrappers never need to duplicate a child's
+    ``api_obj_mapping`` entries.
+
+    :param grid: Static network model containing system base values.
+    :param device: Static grid device associated with the dynamic model.
+    :param mdl: Root block of the RMS or EMT model hierarchy.
+    :param problem_mapping: Destination for resolved initial values.
+    :param logger: Optional driver logger used for mapping diagnostics.
+    :return: None.
     """
-    Assign static API-object parameters for one EMT device block.
+    if problem_mapping is None:
+        problem_mapping = dict()
+    for block in mdl.get_all_blocks():
+        _assign_static_api_object_mapping_for_block(
+            grid=grid,
+            device=device,
+            mdl=block,
+            problem_mapping=problem_mapping,
+            logger=logger,
+        )
+
+
+def _assign_static_api_object_mapping_for_block(
+        grid: MultiCircuit,
+        device: ALL_DEV_TYPES,
+        mdl: Block,
+        problem_mapping: Dict[Var, Const] | None = None,
+        logger: Logger | None = None,
+) -> None:
+    """
+    Assign API-object parameter initial values for one dynamic-model block.
 
     The dispatcher is generic with respect to RMS/EMT templates. A template receives
     values only for the ``ParamPowerFlowReferenceType`` keys it exposes in
     ``mdl.api_obj_mapping``. Adding a new EMT model for an already-supported
-    ``DeviceType`` should not require modifying ``EmtProblemDae``.
+    ``DeviceType`` should not require modifying either problem builder.
 
     :param grid: Static network model containing base values.
     :param device: Static grid device owning the EMT model.
-    :param mdl: EMT block receiving static parameter constants.
-    :param problem_mapping: Dictionary that stores each parameter with their value.
+    :param mdl: Owner block requesting device-backed initial values.
+    :param problem_mapping: Dictionary that stores each parameter with its initial value.
     :param logger: Optional logger used for diagnostics.
     :return: None.
     """
@@ -1466,6 +1569,21 @@ def assign_static_api_object_mapping_for_device(
         problem_mapping = dict()
     else:
         pass
+
+    # Grid bases are available to any device declaring these static mappings.
+    for reference, value in (
+        (ParamPowerFlowReferenceType.freq, float(grid.fBase)),
+        (ParamPowerFlowReferenceType.omega_base, 2.0 * np.pi * float(grid.fBase)),
+        (ParamPowerFlowReferenceType.ws, 2.0 * np.pi * float(grid.fBase)),
+    ):
+        assign_api_mapping_value_if_present(
+            mdl=mdl,
+            key=reference,
+            value=value,
+            logger=logger,
+            device_name=str(device.name),
+            problem_mapping=problem_mapping,
+        )
 
     direct_assigned_keys = assign_direct_dyn_ref_properties_for_device(
         grid=grid,
@@ -1935,7 +2053,13 @@ def compute_transformer_equivalent_circuit_values(
     if abs(transformer_b_pu) > eps_value:
         x_magnetizing = 1.0 / abs(transformer_b_pu)
     else:
-        x_magnetizing = max(1000.0, 100.0 * max(abs(transformer_x_pu), 1.0))
+        # A zero static shunt susceptance means that the PF model has no
+        # magnetizing branch.  Keep a finite value for the coupled-winding
+        # matrix, but make the approximation electrically negligible.  The
+        # former 1000 pu fallback injected 0.001 pu of unmodelled magnetizing
+        # current and produced a deterministic 0.2 MW peak-to-peak power ripple
+        # on a 100 MVA base immediately after EMT initialization.
+        x_magnetizing = max(1.0e7, 1.0e6 * max(abs(transformer_x_pu), 1.0))
 
     magnetizing_l_primary: float = x_magnetizing / (omega_base + eps_value)
     magnetizing_l_secondary: float = magnetizing_l_primary / (total_voltage_ratio_square + eps_value)
@@ -2055,6 +2179,41 @@ def get_line_c_keys() -> List[List[ParamPowerFlowReferenceType]]:
     return keys
 
 
+def get_line_g_keys() -> List[List[ParamPowerFlowReferenceType]]:
+    """Return physical per-terminal shunt-conductance keys in fixed NABC order.
+
+    :return: Four rows of physical conductance API references, including coupling.
+    """
+    keys: List[List[ParamPowerFlowReferenceType]] = list([
+        list([
+            ParamPowerFlowReferenceType.Gnn,
+            ParamPowerFlowReferenceType.Gna,
+            ParamPowerFlowReferenceType.Gnb,
+            ParamPowerFlowReferenceType.Gnc,
+        ]),
+        list([
+            ParamPowerFlowReferenceType.Gan,
+            ParamPowerFlowReferenceType.Gaa,
+            ParamPowerFlowReferenceType.Gab,
+            ParamPowerFlowReferenceType.Gac,
+        ]),
+        list([
+            ParamPowerFlowReferenceType.Gbn,
+            ParamPowerFlowReferenceType.Gba,
+            ParamPowerFlowReferenceType.Gbb,
+            ParamPowerFlowReferenceType.Gbc,
+        ]),
+        list([
+            ParamPowerFlowReferenceType.Gcn,
+            ParamPowerFlowReferenceType.Gca,
+            ParamPowerFlowReferenceType.Gcb,
+            ParamPowerFlowReferenceType.Gcc,
+        ]),
+    ])
+
+    return keys
+
+
 def flatten_matrix_keys(
         matrix_keys: List[List[ParamPowerFlowReferenceType]],
 ) -> List[ParamPowerFlowReferenceType]:
@@ -2081,7 +2240,7 @@ def flatten_matrix_keys(
 
 def get_all_line_matrix_keys() -> List[ParamPowerFlowReferenceType]:
     """
-    Return every line R, Linv and C API-object key.
+    Return every line R, Linv, C and physical G API-object key.
 
     :return: Flat list of all line matrix mapping keys.
     """
@@ -2090,6 +2249,7 @@ def get_all_line_matrix_keys() -> List[ParamPowerFlowReferenceType]:
         get_line_r_keys(),
         get_line_linv_keys(),
         get_line_c_keys(),
+        get_line_g_keys(),
     ])
     matrix_index: int = 0
 
@@ -2171,13 +2331,14 @@ def build_uncoupled_line_static_matrices(
 def build_line_static_matrices(
         grid: MultiCircuit,
         line: dev.Line,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
-    Build line R, L and C matrices in EMT per-unit form.
+    Build line R, L, C and physical G matrices in EMT per-unit form.
 
     :param grid: Static network model.
     :param line: Line-like branch device.
-    :return: Tuple ``(R, L, C)`` in reduced active-phase coordinates.
+    :return: Tuple ``(R, L, C, G)`` in reduced active-phase coordinates. C and
+        physical G are per-terminal half-shunts; R and L are total series values.
     """
     frequency_base: float = float(grid.fBase)
     omega_base: float = 2.0 * np.pi * frequency_base
@@ -2188,6 +2349,7 @@ def build_line_static_matrices(
     r_full: np.ndarray
     l_full: np.ndarray
     c_full: np.ndarray
+    g_full: np.ndarray
     z_phys: np.ndarray | None = None
     y_phys: np.ndarray | None = None
 
@@ -2227,6 +2389,8 @@ def build_line_static_matrices(
         l_full = x_full / (omega_base + 1.0e-20)
         bsh_full: np.ndarray = np.imag(ysh_pu)
         c_full = (bsh_full / (omega_base + 1.0e-20)) / 2.0
+        # Stored real shunts use the same historical scale as static compilation.
+        g_full = np.real(ysh_pu) * 1.0e-6 / 2.0
     else:
         z_pu = z_phys / zbase
         y_pu = y_phys / ybase
@@ -2235,12 +2399,14 @@ def build_line_static_matrices(
         l_full = x_full / (omega_base + 1.0e-20)
         bsh_full = np.imag(y_pu)
         c_full = (bsh_full / (omega_base + 1.0e-20)) / 2.0
+        # The canonical conversion already recovered total physical admittance.
+        g_full = np.real(y_pu) / 2.0
 
     active_indices: List[int] = get_line_active_global_indices(line)
     matrix_size: int = int(r_full.shape[0])
 
     if matrix_size == len(active_indices):
-        return r_full, l_full, c_full
+        return r_full, l_full, c_full, g_full
     else:
         pass
 
@@ -2249,9 +2415,10 @@ def build_line_static_matrices(
         r_reduced: np.ndarray = r_full[np.ix_(reduced_selector, reduced_selector)]
         l_reduced: np.ndarray = l_full[np.ix_(reduced_selector, reduced_selector)]
         c_reduced: np.ndarray = c_full[np.ix_(reduced_selector, reduced_selector)]
-        return r_reduced, l_reduced, c_reduced
+        g_reduced: np.ndarray = g_full[np.ix_(reduced_selector, reduced_selector)]
+        return r_reduced, l_reduced, c_reduced, g_reduced
     else:
-        return r_full, l_full, c_full
+        return r_full, l_full, c_full, g_full
 
 
 def validate_line_static_matrices(
@@ -2259,6 +2426,7 @@ def validate_line_static_matrices(
         r_full: np.ndarray,
         l_full: np.ndarray,
         c_full: np.ndarray,
+        g_full: np.ndarray,
         n_active: int,
         logger: Logger | None,
 ) -> bool:
@@ -2269,6 +2437,7 @@ def validate_line_static_matrices(
     :param r_full: Reduced resistance matrix.
     :param l_full: Reduced inductance matrix.
     :param c_full: Reduced capacitance matrix.
+    :param g_full: Reduced per-terminal physical conductance matrix.
     :param n_active: Number of active physical phases.
     :param logger: Optional logger.
     :return: ``True`` if all matrices match the active-phase shape.
@@ -2316,6 +2485,19 @@ def validate_line_static_matrices(
     else:
         pass
 
+    if g_full.shape != expected_shape:
+        add_static_mapping_warning(
+            logger=logger,
+            device_name=device_name,
+            message="Line physical conductance mapping skipped because G matrix shape is inconsistent.",
+            value=str(g_full.shape),
+            expected_value=str(expected_shape),
+            device_property="line_static_matrix_shape",
+        )
+        valid = False
+    else:
+        pass
+
     return valid
 
 
@@ -2329,9 +2511,9 @@ def assign_common_injection_static_api_mapping(
     """
     Assign static parameters inherited from ``InjectionParent``.
 
-    ``injection_use_kw`` is a static boolean flag and
     ``injection_connection_type`` is a stable numeric encoding of the static
-    connection enum.
+    connection enum. The inherited ``device_active`` property follows the
+    common direct ``GCProp.dyn_ref`` path used by every device family.
 
     :param grid: Static network model.
     :param device: Injection-like static device.
@@ -2341,15 +2523,6 @@ def assign_common_injection_static_api_mapping(
     :return: None.
     """
     device_name: str = str(device.name)
-
-    assign_api_mapping_value_if_present(
-        mdl=mdl,
-        key=ParamPowerFlowReferenceType.device_active,
-        value=1.0 if bool(device.active) else 0.0,
-        logger=logger,
-        device_name=device_name,
-        problem_mapping=problem_mapping,
-    )
 
     assign_api_mapping_value_if_present(
         mdl=mdl,
@@ -2368,7 +2541,11 @@ def assign_common_branch_static_api_mapping(
         logger: Logger | None,
 ) -> None:
     """
-    Assign static parameters inherited from ``BranchParent``.
+    Assign contract-sensitive static parameters inherited from ``BranchParent``.
+
+    The inherited ``device_active`` property follows the common direct
+    ``GCProp.dyn_ref`` path. This handler is reserved for branch properties
+    whose conversion remains explicit in the shared RMS/EMT mapper.
 
     :param device: Branch-like static device.
     :param mdl: EMT block receiving constants.
@@ -2378,14 +2555,6 @@ def assign_common_branch_static_api_mapping(
     """
     device_name: str = str(device.name)
 
-    assign_api_mapping_value_if_present(
-        mdl=mdl,
-        key=ParamPowerFlowReferenceType.device_active,
-        value=1.0 if bool(device.active) else 0.0,
-        logger=logger,
-        device_name=device_name,
-        problem_mapping=problem_mapping,
-    )
     assign_api_mapping_value_if_present(
         mdl=mdl,
         key=ParamPowerFlowReferenceType.branch_rate_mva,
@@ -2664,9 +2833,14 @@ def assign_shunt_static_api_mapping(
             (ParamPowerFlowReferenceType.g, float(shunt.G) / float(grid.Sbase)),
             (ParamPowerFlowReferenceType.b, float(shunt.B) / float(grid.Sbase)),
     ):
-        target: Var | None = mdl.api_obj_mapping.get(key, None)
-        if target is not None:
-            problem_mapping[target] = Const(value)
+        assign_api_mapping_value_if_present(
+            mdl=mdl,
+            key=key,
+            value=value,
+            logger=logger,
+            device_name=device_name,
+            problem_mapping=problem_mapping,
+        )
 
     # Also support templates using the unambiguous shunt-specific references.
     assign_api_mapping_value_if_present(
@@ -2770,16 +2944,17 @@ def assign_generator_static_api_mapping(
 
     assign_api_mapping_value_if_present(
         mdl=mdl,
-        key=ParamPowerFlowReferenceType.omega_base,
-        value=omega_base,
+        key=ParamPowerFlowReferenceType.Sbase,
+        value=float(grid.Sbase),
         logger=logger,
         device_name=device_name,
         problem_mapping=problem_mapping,
     )
+
     assign_api_mapping_value_if_present(
         mdl=mdl,
-        key=ParamPowerFlowReferenceType.fn,
-        value=float(grid.fBase),
+        key=ParamPowerFlowReferenceType.omega_base,
+        value=omega_base,
         logger=logger,
         device_name=device_name,
         problem_mapping=problem_mapping,
@@ -2860,6 +3035,14 @@ def assign_generator_static_api_mapping(
         mdl=mdl,
         key=ParamPowerFlowReferenceType.generator_snom_mva,
         value=float(generator.Snom),
+        logger=logger,
+        device_name=device_name,
+        problem_mapping=problem_mapping,
+    )
+    assign_api_mapping_value_if_present(
+        mdl=mdl,
+        key=ParamPowerFlowReferenceType.pv_rated_power_pu,
+        value=float(generator.Snom) / float(grid.Sbase),
         logger=logger,
         device_name=device_name,
         problem_mapping=problem_mapping,
@@ -3069,7 +3252,7 @@ def assign_vsc_static_api_mapping(
     Loss coefficients are static device data, unlike the operating-point losses
     and terminal powers that must be obtained from power-flow initialization.
 
-    :param problem_mapping: Destination for resolved constant parameters.
+    :param problem_mapping: Destination for resolved initial parameter values.
     :param grid: Static network model.
     :param vsc: VSC device.
     :param mdl: VSC RMS or EMT block exposing the requested static mappings.
@@ -3704,6 +3887,15 @@ def assign_line_static_api_mapping(
         device_name=device_name,
         problem_mapping=problem_mapping,
     )
+    # Unlike injection G, Line.G is already the total system per-unit shunt.
+    assign_api_mapping_value_if_present(
+        mdl=mdl,
+        key=ParamPowerFlowReferenceType.shunt_g_pu,
+        value=float(line.G),
+        logger=logger,
+        device_name=device_name,
+        problem_mapping=problem_mapping,
+    )
 
     active_indices: List[int] = get_line_active_global_indices(line)
     n_active: int = len(active_indices)
@@ -3721,7 +3913,8 @@ def assign_line_static_api_mapping(
         r_full: np.ndarray
         l_full: np.ndarray
         c_full: np.ndarray
-        r_full, l_full, c_full = build_line_static_matrices(
+        g_full: np.ndarray
+        r_full, l_full, c_full, g_full = build_line_static_matrices(
             grid=grid,
             line=line,
         )
@@ -3731,11 +3924,39 @@ def assign_line_static_api_mapping(
             r_full=r_full,
             l_full=l_full,
             c_full=c_full,
+            g_full=g_full,
             n_active=n_active,
             logger=logger,
         )
 
         if matrices_are_valid:
+            # Project physical shunts independently of unrequested series inversion.
+            # Inactive exposed slots remain zero in the fixed NABC contract.
+            g_keys: List[List[ParamPowerFlowReferenceType]] = get_line_g_keys()
+            g_nabc: np.ndarray = np.zeros((4, 4), dtype=np.float64)
+            phase_selector: np.ndarray = np.array(active_indices, dtype=int)
+            g_nabc[np.ix_(phase_selector, phase_selector)] = g_full
+            g_row: int
+            g_col: int
+            for g_row in range(4):
+                for g_col in range(4):
+                    assign_api_mapping_value_if_present(
+                        mdl=mdl,
+                        key=g_keys[g_row][g_col],
+                        value=float(g_nabc[g_row, g_col]),
+                        logger=logger,
+                        device_name=device_name,
+                        problem_mapping=problem_mapping,
+                    )
+        else:
+            pass
+
+        legacy_matrices_requested: bool = (
+            api_mapping_has_any_key(mdl=mdl, keys=flatten_matrix_keys(get_line_r_keys()))
+            or api_mapping_has_any_key(mdl=mdl, keys=flatten_matrix_keys(get_line_linv_keys()))
+            or api_mapping_has_any_key(mdl=mdl, keys=flatten_matrix_keys(get_line_c_keys()))
+        )
+        if matrices_are_valid and legacy_matrices_requested:
             linv_full: np.ndarray
 
             try:

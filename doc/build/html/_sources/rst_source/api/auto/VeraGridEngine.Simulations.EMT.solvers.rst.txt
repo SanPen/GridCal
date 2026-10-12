@@ -12,14 +12,6 @@ VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver module
    :show-inheritance:
    :undoc-members:
 
-VeraGridEngine.Simulations.EMT.solvers.emt\_mti\_back\_euler\_solver module
----------------------------------------------------------------------------
-
-.. automodule:: VeraGridEngine.Simulations.EMT.solvers.emt_mti_back_euler_solver
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 VeraGridEngine.Simulations.EMT.solvers.jit\_symbolic\_solver module
 -------------------------------------------------------------------
 

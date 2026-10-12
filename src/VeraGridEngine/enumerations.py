@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class BusMode(Enum):
@@ -190,6 +190,32 @@ class ShuntControlMode(str, Enum):
             return ShuntControlMode[s]
         except KeyError:
             return s
+
+
+class StaticGeneratorControlMode(str, Enum):
+    """Reactive-power objectives of a static AC injection."""
+
+    PQ = "PQ"
+    QVDroop = "Q-V droop"
+
+    def __str__(self) -> str:
+        """Return the GUI label.
+
+        :return: Control objective label.
+        """
+        return self.value
+
+    @staticmethod
+    def argparse(value: str) -> "StaticGeneratorControlMode | str":
+        """Read a stored control objective using the existing enum convention.
+
+        :param value: Member name.
+        :return: Enum member or the unrecognised input.
+        """
+        try:
+            return StaticGeneratorControlMode[value]
+        except KeyError:
+            return value
 
 
 class GeneratorControlMode(str, Enum):
@@ -511,6 +537,26 @@ class CandidateKind(Enum):
             return s
 
 
+class CableResistanceInput(str, Enum):
+    """Common input method for a cable's core and sheath resistances."""
+
+    Resistivity = "Resistivity and filling factor"
+    DcResistance = "DC resistance"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return CableResistanceInput[s]
+        except KeyError:
+            return s
+
+
 class BranchImpedanceMode(Enum):
     """
     Enumeration of branch impedance modes
@@ -664,6 +710,106 @@ class FmuTemplateMode(Enum):
     MODEL_EXCHANGE = "ModelExchange"
 
 
+class NativeModelInterface(Enum):
+    """Native manufacturer model interfaces recognized by VeraGrid."""
+
+    IEEE_CIGRE_V1_1 = "ieee_cigre_v1_1"
+    IEEE_CIGRE_V1_0 = "ieee_cigre_v1_0"
+    IEC_ESE = "iec_ese"
+
+    def __str__(self) -> str:
+        """Return the persistent interface identifier.
+
+        :return: Persistent interface identifier.
+        """
+
+        return str(self.value)
+
+
+class NativeCompilerFramework(Enum):
+    """Native compiler providers supported by VeraGrid build consumers."""
+
+    LOCAL_LLVM = "local_llvm"
+
+    def __str__(self) -> str:
+        """Return the stable provider identifier.
+
+        :return: Stable provider identifier.
+        """
+
+        return str(self.value)
+
+
+class NativeSampleTimeSource(Enum):
+    """Origin of the effective sample time used by a native model."""
+
+    MANUFACTURER_DECLARED = "manufacturer_declared"
+
+    def __str__(self) -> str:
+        """Return the persistent sample-time source identifier.
+
+        :return: Persistent sample-time source identifier.
+        """
+
+        return str(self.value)
+
+
+class IeeeCigreDllPlatform(Enum):
+    """Qualified host platforms for IEEE/CIGRE manufacturer libraries."""
+
+    WINDOWS_X86 = "windows_x86"
+    WINDOWS_X64 = "windows_x64"
+    LINUX_X64 = "linux_x64"
+
+    def __str__(self) -> str:
+        """Return the persistent platform identifier.
+
+        :return: Persistent platform identifier.
+        """
+
+        return str(self.value)
+
+
+class IeeeCigreDllDataType(Enum):
+    """Primitive data types declared by the IEEE/CIGRE V1.1 ABI."""
+
+    CHAR = 1
+    INT8 = 2
+    UINT8 = 3
+    INT16 = 4
+    UINT16 = 5
+    INT32 = 6
+    UINT32 = 7
+    REAL32 = 8
+    REAL64 = 9
+    C_STRING = 10
+
+
+class IeeeCigreDllModelMode(Enum):
+    """Simulation domains declared by an IEEE/CIGRE model."""
+
+    UNSPECIFIED = 0
+    EMT = 1
+    RMS = 2
+    EMT_AND_RMS = 3
+
+
+class IeeeCigreDllVerificationStatus(Enum):
+    """Verification state for one manufacturer binary variant."""
+
+    UNVERIFIED = "unverified"
+    DECLARED_AND_QUALIFIED = "declared_and_qualified"
+    REJECTED = "rejected"
+
+    def __str__(self) -> str:
+        """Return the persistent verification state.
+
+        :return: Persistent verification state.
+        """
+
+        return str(self.value)
+
+
 class FmiVersion(str, Enum):
     """FMI specification families recognized by VeraGrid.
 
@@ -725,6 +871,225 @@ class FmuSourceKind(str, Enum):
 
     ZIP = "zip"
     DIRECTORY = "directory"
+
+
+class FmuBinaryInterface(Enum):
+    """Native FMI binary entry-point family required by one FMU."""
+
+    FMI_ONE_CO_SIMULATION = "fmi_one_co_simulation"
+    FMI_ONE_MODEL_EXCHANGE = "fmi_one_model_exchange"
+    FMI_TWO_CO_SIMULATION = "fmi_two_co_simulation"
+    FMI_TWO_MODEL_EXCHANGE = "fmi_two_model_exchange"
+    FMI_THREE_CO_SIMULATION = "fmi_three_co_simulation"
+    FMI_THREE_MODEL_EXCHANGE = "fmi_three_model_exchange"
+
+
+class InterfaceType(str, Enum):
+    """FMI interface selected when exporting a VeraGrid model."""
+
+    CO_SIMULATION = "co-simulation"
+    MODEL_EXCHANGE = "model-exchange"
+
+
+class IntegrationMethod(str, Enum):
+    """Numerical integration schemes supported by generated FMU code."""
+
+    BACKWARD_EULER = "backward_euler"
+    TRAPEZOIDAL = "trapezoidal"
+    BDF2 = "bdf2"
+
+
+class TargetPlatform(str, Enum):
+    """Native platform directory supported by an FMU binary."""
+
+    WIN64 = "win64"
+    LINUX64 = "linux64"
+    DARWIN64 = "darwin64"
+    DARWIN_ARM64 = "darwin64-arm64"
+
+
+class VariableCategory(str, Enum):
+    """Internal variable categories used by both FMU export modes."""
+
+    STATE = "state"
+    DERIVATIVE = "derivative"
+    DIFF = "diff"
+    ALGEBRAIC = "algebraic"
+    INPUT = "input"
+    CONST_PARAM = "const_param"
+    RUNTIME_PARAM = "runtime_param"
+
+
+class RuntimeGroup(str, Enum):
+    """Runtime event or mode group assigned to an FMU parameter."""
+
+    EVENT = "event"
+    MODE = "mode"
+
+
+class EquationGroup(str, Enum):
+    """Equation sections emitted by the FMU export pipeline."""
+
+    STATE = "state"
+    DERIVATIVE = "derivative"
+    ALGEBRAIC = "algebraic"
+    RUNTIME_INIT = "runtime_init"
+    INIT = "init"
+    DIFF_INIT = "diff_init"
+
+
+class StorageSegment(str, Enum):
+    """Generated runtime storage segments addressed by exported variables."""
+
+    STATES = "states"
+    DERIVATIVES = "derivatives"
+    ALGEBRAICS = "algebraics"
+    INPUTS = "inputs"
+    CONST_PARAMS = "const_params"
+    RUNTIME_PARAMS = "runtime_params"
+
+
+class Precedence(IntEnum):
+    """C expression precedence levels used by FMU code generation."""
+
+    COMPARISON = 1
+    ADDITIVE = 2
+    MULTIPLICATIVE = 3
+    UNARY = 4
+    CALL = 5
+    ATOM = 6
+
+
+class FmuBindingDirection(str, Enum):
+    """Direction of a VeraGrid-to-FMU signal binding."""
+
+    INPUT = "input"
+    OUTPUT = "output"
+    PARAMETER = "parameter"
+
+
+class FmuDeviceDomain(str, Enum):
+    """VeraGrid simulation domain hosting an FMU device."""
+
+    RMS = "rms"
+    EMT = "emt"
+
+
+class FmiThreeWorkerFloat64Profile(Enum):
+    """Supported FMI 3 Float64 variable shapes for a worker."""
+
+    SCALAR = 1
+    CONSTANT_ARRAY = 2
+    CONFIGURABLE_ARRAY = 3
+
+
+class FmiThreeWorkerProtocolVersion(IntEnum):
+    """FMI 3 worker wire-protocol versions recognized by VeraGrid."""
+
+    VERSION_THREE = 3
+    VERSION_FOUR = 4
+    VERSION_FIVE = 5
+    VERSION_SIX = 6
+    VERSION_SEVEN = 7
+    VERSION_EIGHT = 8
+    VERSION_NINE = 9
+    VERSION_TEN = 10
+    VERSION_ELEVEN = 11
+
+
+class FmiThreeWorkerFrameDirection(IntEnum):
+    """Direction of one FMI 3 worker protocol frame."""
+
+    REQUEST = 1
+    RESPONSE = 2
+
+
+class FmiThreeWorkerRequestKind(IntEnum):
+    """Operations accepted by the FMI 3 worker."""
+
+    START = 1
+    INITIALIZE = 2
+    CLOSE = 3
+    SET_FLOAT64 = 4
+    GET_FLOAT64 = 5
+    DO_STEP = 6
+    CONFIGURE_FLOAT64 = 7
+    CONFIGURE_UINT64 = 8
+    SET_TIME = 9
+    SET_CONTINUOUS_STATES = 10
+    GET_CONTINUOUS_STATES = 11
+    GET_DERIVATIVES = 12
+    COMPLETED_INTEGRATOR_STEP = 13
+    ENTER_EVENT_MODE = 14
+    UPDATE_DISCRETE_STATES = 15
+    ENTER_CONTINUOUS_TIME_MODE = 16
+    GET_EVENT_INDICATORS = 17
+    GET_NOMINALS_OF_CONTINUOUS_STATES = 18
+    SAVE_CHECKPOINT = 19
+    RESTORE_CHECKPOINT = 20
+    DISCARD_CHECKPOINT = 21
+    EVALUATE_MODEL_EXCHANGE = 22
+    SET_INT32 = 23
+    GET_INT32 = 24
+
+
+class FmiThreeWorkerResponseKind(IntEnum):
+    """Successful and failed outcomes returned by the FMI 3 worker."""
+
+    READY = 1
+    INITIALIZED = 2
+    CLOSED = 3
+    FLOAT64_SET = 4
+    FLOAT64_VALUES = 5
+    STEP_COMPLETED = 6
+    CONFIGURED = 7
+    TIME_SET = 8
+    CONTINUOUS_STATES_SET = 9
+    CONTINUOUS_STATES_VALUES = 10
+    DERIVATIVE_VALUES = 11
+    INTEGRATOR_STEP_COMPLETED = 12
+    EVENT_MODE_ENTERED = 13
+    DISCRETE_STATES_UPDATED = 14
+    CONTINUOUS_TIME_MODE_ENTERED = 15
+    EVENT_INDICATOR_VALUES = 16
+    CONTINUOUS_STATE_NOMINAL_VALUES = 17
+    CHECKPOINT_SAVED = 18
+    CHECKPOINT_RESTORED = 19
+    CHECKPOINT_DISCARDED = 20
+    MODEL_EXCHANGE_EVALUATED = 21
+    INT32_SET = 22
+    INT32_VALUES = 23
+    ERROR = 255
+
+
+class FmiThreeWorkerFailureKind(IntEnum):
+    """Stable failure categories returned by the FMI 3 worker."""
+
+    PROTOCOL = 1
+    DEPENDENCY = 2
+    ARCHIVE = 3
+    LIFECYCLE = 4
+    NATIVE = 5
+    VARIABLE_ACCESS = 6
+
+
+class FmiThreeWorkerHostState(Enum):
+    """Lifecycle state of the parent-side FMI 3 worker host."""
+
+    CREATED = 1
+    STARTING = 2
+    READY = 3
+    CONFIGURING = 4
+    INITIALIZING = 5
+    INITIALIZED = 6
+    INPUT_VALUES_PENDING_STEP = 7
+    TERMINATION_REQUESTED = 8
+    EVENT_MODE_REQUESTED = 9
+    CONTINUOUS_TIME = 10
+    EVENT_MODE = 11
+    STOPPING = 12
+    CLOSED = 13
+    FAILED = 14
 
 
 class MIPSolvers(Enum):
@@ -2029,6 +2394,7 @@ class DeviceType(Enum):
     DynamicModelHostDevice = "Dynamic Model Host"
 
     RmsModelTemplateDevice = "RMS template"
+    ManufacturerNativeModelDevice = "Manufacturer native model"
     FmuTemplateDevice = "FMU template"
     RmsEventDevice = "Rms Event"
     RmsEventsGroupDevice = "Rms Events Group"
@@ -2090,6 +2456,7 @@ class SubObjectType(Enum):
     VarType = "VarType"
     ConstType = "ConstType"
     MergeInformation = "MergeInformation"
+    ManufacturerNativeModelInfo = "IEEE CIGRE DLL ModelInfo"
 
     def __str__(self) -> str:
         return str(self.value)
@@ -3850,6 +4217,7 @@ class EraSvdSolverType(Enum):
 class RmsInitializationMethod(Enum):
     Explicit = "Explicit"
     ReducedExplicit = "ReducedExplicit"
+    ConsistentNewton = "ConsistentNewton"
     PseudoTransient = "PseudoTransient"
     Auto = "Auto"
     CustomValues = "CustomValues"
@@ -4250,6 +4618,23 @@ class ParamPowerFlowReferenceType(Enum):
     Linv_cb = "Linv_cb"  # C-B line inverse series inductance
     Linv_cc = "Linv_cc"  # C-C line inverse series inductance
 
+    Gnn = "Gnn"  # N-N per-terminal physical shunt conductance
+    Gna = "Gna"  # N-A per-terminal physical shunt conductance
+    Gnb = "Gnb"  # N-B per-terminal physical shunt conductance
+    Gnc = "Gnc"  # N-C per-terminal physical shunt conductance
+    Gan = "Gan"  # A-N per-terminal physical shunt conductance
+    Gaa = "Gaa"  # A-A per-terminal physical shunt conductance
+    Gab = "Gab"  # A-B per-terminal physical shunt conductance
+    Gac = "Gac"  # A-C per-terminal physical shunt conductance
+    Gbn = "Gbn"  # B-N per-terminal physical shunt conductance
+    Gba = "Gba"  # B-A per-terminal physical shunt conductance
+    Gbb = "Gbb"  # B-B per-terminal physical shunt conductance
+    Gbc = "Gbc"  # B-C per-terminal physical shunt conductance
+    Gcn = "Gcn"  # C-N per-terminal physical shunt conductance
+    Gca = "Gca"  # C-A per-terminal physical shunt conductance
+    Gcb = "Gcb"  # C-B per-terminal physical shunt conductance
+    Gcc = "Gcc"  # C-C per-terminal physical shunt conductance
+
     Cnn = "Cnn"  # N-N line shunt capacitance
     Cna = "Cna"  # N-A line shunt capacitance
     Cnb = "Cnb"  # N-B line shunt capacitance
@@ -4320,7 +4705,6 @@ class ParamPowerFlowReferenceType(Enum):
     phC = "phC"  # 1 if the C wire is active, else 0.
 
     # Machine / power flow parameters
-    fn = "fn"
     ws = "ws"
     M = "M"
     D = "D"
@@ -4445,6 +4829,9 @@ class ParamPowerFlowReferenceType(Enum):
     generator_use_reactive_power_curve = "generator_use_reactive_power_curve"
     generator_device_sbase_mva = "generator_device_sbase_mva"
 
+    # PV EMT parameters derived from the owning static generator
+    pv_rated_power_pu = "pv_rated_power_pu"
+
     # Battery static parameters
     battery_enom_mwh = "battery_enom_mwh"
     battery_soc_0_pu = "battery_soc_0_pu"
@@ -4505,6 +4892,71 @@ class ParamPowerFlowReferenceType(Enum):
     # VSC static parameters
     vsc_kdp_pu = "vsc_kdp_pu"
     vsc_min_ac_voltage_pu = "vsc_min_ac_voltage_pu"
+
+    def is_runtime_parameter_reference(self) -> bool:
+        """Return whether this key identifies a special runtime operating value.
+
+        Generator sharing targets and converter operating controls depend on
+        the initialized operating point and use dedicated runtime initialization
+        paths. This classification does not decide whether a general API mapping
+        target belongs to ``Block.parameters`` or ``Block.event_dict``; that role
+        is declared by the target block itself.
+
+        :return: Whether the key uses a special operating-point runtime path.
+        """
+        if self == ParamPowerFlowReferenceType.generator_share_enable:
+            result: bool = True
+        elif self == ParamPowerFlowReferenceType.generator_share_p_ref:
+            result = True
+        elif self == ParamPowerFlowReferenceType.generator_share_q_ref:
+            result = True
+        elif self == ParamPowerFlowReferenceType.P0:
+            result = True
+        elif self == ParamPowerFlowReferenceType.converter_control_mode_1:
+            result = True
+        elif self == ParamPowerFlowReferenceType.converter_control_mode_2:
+            result = True
+        elif self == ParamPowerFlowReferenceType.converter_control_target_1:
+            result = True
+        elif self == ParamPowerFlowReferenceType.converter_control_target_2:
+            result = True
+        else:
+            result = False
+        return result
+
+    def is_legacy_governor_dynamic_reference(self) -> bool:
+        """Return whether this key could identify an old governor dynamic value.
+
+        Historical governor files wrote editable model parameters to both
+        ``Block.event_dict`` and ``Block.api_obj_mapping``. These references are
+        retained in the enumeration so those files remain readable. The parser
+        must additionally verify the complete legacy governor mapping signature,
+        because ``P0`` is also a runtime operating-point reference in converter
+        models.
+
+        :return: Whether this reference can identify an old governor dynamic value.
+        """
+        if self == ParamPowerFlowReferenceType.K:
+            result: bool = True
+        elif self == ParamPowerFlowReferenceType.Uc:
+            result = True
+        elif self == ParamPowerFlowReferenceType.Uo:
+            result = True
+        elif self == ParamPowerFlowReferenceType.T_aux:
+            result = True
+        elif self == ParamPowerFlowReferenceType.Kp:
+            result = True
+        elif self == ParamPowerFlowReferenceType.Ki:
+            result = True
+        elif self == ParamPowerFlowReferenceType.omega_ref:
+            result = True
+        elif self == ParamPowerFlowReferenceType.p0:
+            result = True
+        elif self == ParamPowerFlowReferenceType.P0:
+            result = True
+        else:
+            result = False
+        return result
 
     def __str__(self):
         return self.value
@@ -4858,6 +5310,7 @@ class DynamicDeviceTemplateType(Enum):
     """Identify one built-in complete dynamic-device template."""
 
     RMS_COMPLETE_GENERATOR = "rms:get_complete_generator_template_rms"
+    RMS_GENCLS = "rms:get_gencls_rms_template"
     RMS_GENQEC = "rms:get_genqec_rms"
     RMS_GENROW = "rms:get_genrow_rms_template"
     RMS_LINE = "rms:get_line_rms_template"
@@ -5195,6 +5648,14 @@ class EquationExportSection(Enum):
     DERIVATIVE_INITIALIZATION = "Derivative initialization equations"
 
 
+class ValidationFilterType(Enum):
+    """Available scopes for a grouped validation result collection."""
+
+    ALL_CHECKS = "All checks"
+    ISSUES_ONLY = "Issues only"
+    SECTION = "Section"
+
+
 class JMartiDataSourceMode(Enum):
     """Available sources for the offline JMarti frequency-domain fit."""
 
@@ -5275,6 +5736,7 @@ class ProceduralLogicType(Enum):
     ValveState = "valve_state"
     ThreePhaseCarrierPwm = "three_phase_carrier_pwm"
     ThreePhaseCarrierSampledModulation = "three_phase_carrier_sampled_modulation"
+    ManufacturerNativeController = "manufacturer_native_controller"
 
     def __str__(self) -> str:
         return str(self.value)
@@ -5521,6 +5983,7 @@ class InductionMachineRole(Enum):
     GENERATOR = "generator"
     MOTOR = "motor"
 
+
 class MeasurementVarType(Enum):
     """
     this class contains the existing measurement variables
@@ -5588,3 +6051,19 @@ class DynamicEditorContentType(Enum):
 
     MODEL = "Model"
     EVENTS = "Events"
+
+
+class OperatingSystem(Enum):
+    """Operating systems supported by native compiler selection."""
+
+    LINUX = "linux"
+    MACOS = "darwin"
+    WINDOWS = "windows"
+
+
+class CompilerName(Enum):
+    """Native compiler toolchains supported by the engine."""
+
+    GCC = "gcc"
+    CLANG = "clang"
+    MSVC = "msvc"

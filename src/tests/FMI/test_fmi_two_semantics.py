@@ -10,14 +10,13 @@ from pathlib import Path
 
 import pytest
 
-from VeraGridEngine.IO.fmu.importer.bindings import FmuImportConfig
-from VeraGridEngine.IO.fmu.importer.errors import FmuArchiveError, FmuModeError
-from VeraGridEngine.IO.fmu.importer.model_description import (
+from VeraGridEngine.IO.fmu.Elements.bindings import FmuImportConfig
+from VeraGridEngine.IO.fmu.model_description import (
     FmuInterfaceMode,
     FmuModelDescription,
     read_fmu_model_description,
 )
-from VeraGridEngine.IO.fmu.importer.model_description_metadata import (
+from VeraGridEngine.IO.fmu.Elements.description import (
     FmiOneCoSimulationCapabilities,
 )
 
@@ -77,7 +76,7 @@ def test_required_root_identity_attributes_fail_closed(
         '<CoSimulation modelIdentifier="semantic_model"/>',
     )
 
-    with pytest.raises(FmuArchiveError, match=attribute_name):
+    with pytest.raises(ValueError, match=attribute_name):
         read_fmu_model_description(source)
 
 
@@ -112,7 +111,7 @@ def test_interface_cardinality_fails_closed(
         interface_xml,
     )
 
-    with pytest.raises(FmuArchiveError, match="interface|duplicated"):
+    with pytest.raises(ValueError, match="interface|duplicated"):
         read_fmu_model_description(source)
 
 
@@ -142,7 +141,7 @@ def test_required_interface_identifier_fails_closed(
         interface_xml,
     )
 
-    with pytest.raises(FmuArchiveError, match="modelIdentifier"):
+    with pytest.raises(ValueError, match="modelIdentifier"):
         read_fmu_model_description(source)
 
 
@@ -216,7 +215,7 @@ def test_co_simulation_execution_tool_requirement_fails_closed(
         ),
     )
 
-    with pytest.raises(FmuModeError, match="external execution tool"):
+    with pytest.raises(RuntimeError, match="external execution tool"):
         read_fmu_model_description(source)
 
 
@@ -247,7 +246,7 @@ def test_invalid_fmi_boolean_lexical_forms_fail_closed(
         ),
     )
 
-    with pytest.raises(FmuArchiveError, match="valid FMI boolean"):
+    with pytest.raises(ValueError, match="valid FMI boolean"):
         read_fmu_model_description(source)
 
 
@@ -278,7 +277,7 @@ def test_required_variable_identity_fails_closed(
         scalar_variable_xml,
     )
 
-    with pytest.raises(FmuArchiveError, match="name|valueReference"):
+    with pytest.raises(ValueError, match="name|valueReference"):
         read_fmu_model_description(source)
 
 
@@ -307,7 +306,7 @@ def test_value_reference_requires_unsigned_32_bit_integer(
         ),
     )
 
-    with pytest.raises(FmuArchiveError, match="unsigned 32-bit"):
+    with pytest.raises(ValueError, match="unsigned 32-bit"):
         read_fmu_model_description(source)
 
 
@@ -353,7 +352,7 @@ def test_event_indicator_count_requires_unsigned_32_bit_integer(
         '<CoSimulation modelIdentifier="semantic_model"/>',
     )
 
-    with pytest.raises(FmuArchiveError, match="unsigned 32-bit"):
+    with pytest.raises(ValueError, match="unsigned 32-bit"):
         read_fmu_model_description(source)
 
 
@@ -393,7 +392,7 @@ def test_variable_requires_one_known_primitive_type(
         f'<ScalarVariable name="value" valueReference="1">{type_xml}</ScalarVariable>',
     )
 
-    with pytest.raises(FmuArchiveError, match="primitive type|unknown type"):
+    with pytest.raises(ValueError, match="primitive type|unknown type"):
         read_fmu_model_description(source)
 
 
@@ -426,7 +425,7 @@ def test_variable_names_are_unique_and_annotations_remain_supported(tmp_path: Pa
     )
 
     assert valid_metadata.get_variable_names() == ("value",)
-    with pytest.raises(FmuArchiveError, match="duplicated"):
+    with pytest.raises(ValueError, match="duplicated"):
         read_fmu_model_description(duplicate_source)
 
 
@@ -453,7 +452,7 @@ def test_derivative_index_requires_valid_one_based_variable_reference(
         ),
     )
 
-    with pytest.raises(FmuArchiveError, match="derivative|unsigned 32-bit"):
+    with pytest.raises(ValueError, match="derivative|unsigned 32-bit"):
         read_fmu_model_description(source)
 
 
@@ -497,7 +496,7 @@ def test_derivative_index_requires_real_state_variable(tmp_path: Path) -> None:
         ),
     )
 
-    with pytest.raises(FmuArchiveError, match="Real variable"):
+    with pytest.raises(ValueError, match="Real variable"):
         read_fmu_model_description(source)
 
 
@@ -532,7 +531,7 @@ def test_namespace_qualified_fmi_vocabulary_fails_closed(
         pass
     (source / "modelDescription.xml").write_text(xml_text, encoding="utf-8")
 
-    with pytest.raises(FmuArchiveError, match="namespaces"):
+    with pytest.raises(ValueError, match="namespaces"):
         read_fmu_model_description(source)
 
 
@@ -573,7 +572,7 @@ def test_nested_namespace_qualified_fmi_elements_fail_closed(
         variables_xml,
     )
 
-    with pytest.raises(FmuArchiveError, match="namespaces"):
+    with pytest.raises(ValueError, match="namespaces"):
         read_fmu_model_description(source)
 
 
@@ -592,7 +591,7 @@ def test_fmi_three_namespace_rules_apply_after_version_dispatch(tmp_path: Path) 
     )
     (source / "modelDescription.xml").write_text(xml_text, encoding="utf-8")
 
-    with pytest.raises(FmuArchiveError, match="namespaces are not accepted for FMI 3.0"):
+    with pytest.raises(ValueError, match="namespaces are not accepted for FMI 3.0"):
         read_fmu_model_description(source)
 
 

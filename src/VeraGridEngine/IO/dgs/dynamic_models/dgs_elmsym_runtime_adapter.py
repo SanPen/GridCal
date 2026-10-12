@@ -2248,7 +2248,7 @@ def _build_dgs_elmsym_runtime_block(
     else:
         pass
     api_mapping: Dict[ParamPowerFlowReferenceType, Var] = dict()
-    api_mapping[ParamPowerFlowReferenceType.fn] = nominal_frequency
+    api_mapping[ParamPowerFlowReferenceType.freq] = nominal_frequency
     api_mapping[ParamPowerFlowReferenceType.omega_base] = angular_frequency
     api_mapping[ParamPowerFlowReferenceType.M] = acceleration_time
     api_mapping[ParamPowerFlowReferenceType.Rs] = stator_resistance

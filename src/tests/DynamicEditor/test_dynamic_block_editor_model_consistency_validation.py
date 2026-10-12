@@ -10,13 +10,13 @@ import pytest
 from PySide6 import QtWidgets
 
 import VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor as dynamic_block_editor_module
-from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_graphics import MeasurementsItem, PortItem, ProtectedConnectionBlockItem
+# from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_graphics import MeasurementsItem, PortItem, ProtectedConnectionBlockItem
 from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor import DynamicBlockEditorGUI
 from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_validation import ValidationRow, ValidationSection
-from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_validation import add_validation_port_detail
+# from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_validation import add_validation_port_detail
 from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_validation import format_validation_block_label
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
-from VeraGridEngine.Devices.Diagrams.block_diagram import BlockDiagramNode
+# from VeraGridEngine.Devices.Diagrams.block_diagram import BlockDiagramNode
 from VeraGridEngine.Devices.types import ALL_DEV_TYPES
 from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
@@ -303,6 +303,8 @@ def _get_row_detail_map(section: ValidationSection) -> dict[str, list[str]]:
     return detail_map
 
 
+'''Port Connectivity validation tests are disabled with the validation section.
+
 def _get_section_row_labels(section: ValidationSection) -> list[str]:
     """
     Return one ordered list of row labels from the section.
@@ -317,7 +319,10 @@ def _get_section_row_labels(section: ValidationSection) -> list[str]:
         row_labels.append(row.get_block_label())
 
     return row_labels
+'''
 
+
+'''Port Connectivity validation tests are disabled with the validation section.
 
 def _connect_root_interface_ref(editor: DynamicBlockEditorGUI, reference: VarPowerFlowReferenceType) -> None:
     """
@@ -455,6 +460,7 @@ def _find_protected_item_by_ref(
             pass
 
     raise AssertionError(f"Root-interface block with ref '{reference}' not found")
+'''
 
 
 def test_validation_sections_skip_phase_consistency_for_pure_dc_injection() -> None:
@@ -592,6 +598,8 @@ def test_validation_sections_skip_phase_consistency_for_mixed_branch_with_ac_sid
     assert phase_section is None
     editor.close()
 
+
+'''Port Connectivity validation tests are disabled with the validation section.
 
 def test_validation_port_connectivity_skips_absent_protected_emt_phase_pair() -> None:
     """
@@ -861,6 +869,7 @@ def test_zero_wire_emt_connectivity_emits_neutral_and_current_refs() -> None:
     assert VarPowerFlowReferenceType.i_B in collected_refs
     assert VarPowerFlowReferenceType.i_C in collected_refs
     editor.close()
+'''
 
 
 def test_show_issues_highlights_block_for_repeated_variable_names() -> None:
@@ -885,7 +894,7 @@ def test_show_issues_highlights_block_for_repeated_variable_names() -> None:
     sections: list[ValidationSection] = editor.collect_model_consistency_sections()
     editor.show_validation_issues_in_model(section_results=sections)
 
-    duplicate_section: ValidationSection | None = _get_section_by_title(sections, "Repeated Variable Names")
+    duplicate_section: ValidationSection | None = _get_section_by_title(sections, "Repeated variable names")
     assert duplicate_section is not None
     block_found: bool = False
     row = None
@@ -895,7 +904,7 @@ def test_show_issues_highlights_block_for_repeated_variable_names() -> None:
         else:
             pass
     assert block_found
-    assert editor._find_scene_block_item_by_validation_label(format_validation_block_label(editor.main_block)) is None
+    assert editor._find_scene_block_item_by_validation_uid(editor.main_block.uid) is None
     editor.close()
 
 
@@ -919,7 +928,7 @@ def test_show_issues_highlights_block_for_equation_count_issue() -> None:
     sections: list[ValidationSection] = editor.collect_model_consistency_sections()
     editor.show_validation_issues_in_model(section_results=sections)
 
-    equation_section = _get_section_by_title(sections, "Equation Counts")
+    equation_section = _get_section_by_title(sections, "Equation counts")
     assert equation_section is not None
     block_found: bool = False
     row = None
@@ -952,7 +961,7 @@ def test_show_issues_highlights_block_for_parameter_mapping_issue() -> None:
     sections: list[ValidationSection] = editor.collect_model_consistency_sections()
     editor.show_validation_issues_in_model(section_results=sections)
 
-    parameter_section = _get_section_by_title(sections, "Parameter Mappings")
+    parameter_section = _get_section_by_title(sections, "Static parameter mappings")
     assert parameter_section is not None
     block_found: bool = False
     row = None
@@ -989,7 +998,7 @@ def test_show_issues_highlights_block_for_variable_initialization_issue() -> Non
     sections: list[ValidationSection] = editor.collect_model_consistency_sections()
     editor.show_validation_issues_in_model(section_results=sections)
 
-    init_section = _get_section_by_title(sections, "Variable Initialization")
+    init_section = _get_section_by_title(sections, "Variable initialization")
     assert init_section is not None
     block_found: bool = False
     row = None
@@ -1002,6 +1011,8 @@ def test_show_issues_highlights_block_for_variable_initialization_issue() -> Non
     assert block_found
     editor.close()
 
+
+'''Port Connectivity validation tests are disabled with the validation section.
 
 def test_show_issues_globally_highlights_generic_visible_ports_from_connectivity_rows() -> None:
     """
@@ -1082,3 +1093,4 @@ def test_show_issues_highlights_unconnected_internal_emt_ac_ports_by_ref() -> No
     assert VarPowerFlowReferenceType.v_A in collected_refs
     assert VarPowerFlowReferenceType.i_A in collected_refs
     editor.close()
+'''

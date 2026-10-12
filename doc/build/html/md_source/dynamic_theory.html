@@ -1,0 +1,357 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dynamic simulation theory &mdash; VeraGrid 6.7.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/style.css?v=ba3a54df" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="⏱️ RMS simulations" href="rms_simulations.html" />
+    <link rel="prev" title="🧲 Dynamic simulations" href="dynamic_simulations.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            VeraGrid
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">💽 Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_interface.html">📊 User interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="veragrid_scripting_guide.html">📑 VeraGrid scripting guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="grid_analysis.html">🔎 Grid analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">🌁 Structure of VeraGrid</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modelling.html">📐 Grid Modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_debugging.html">🪲 Model debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="file_operations.html">💾 File loading and saving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="topology.html">🌵 Topology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clustering.html">🎳 Clustering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="grid_reduction.html">👾 Grid Reduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedural_grid.html">🕸️ Procedural Grid Expansion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="power_flow.html">🔥 Power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linear_analysis.html">📏 Linear analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimal_power_flow.html">🏁 Optimal power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="short_circuit.html">⚡ Short-Circuit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stochastic_power_flow.html">🎲 Stochastic power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="continuation_power_flow.html">➿ Continuation power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sigma_analysis.html">🌘 Sigma analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="solar_wizard.html">☀️ Solar power wizard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contingency_analysis.html">💥 Contingency analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="investment_optimization.html">🏦 Investment optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cascading.html">🎢 Cascading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="net_transfer_capacity.html">🚢 Net transfer capacity optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reliability.html">🚧 Reliability</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state_estimation.html">🌀 State estimation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="dynamic_simulations.html">🧲 Dynamic simulations</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dynamic_simulations.html#dynamic-simulation-theory">1. Dynamic simulation theory</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Dynamic simulation theory</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#rms-and-emt-domains">RMS and EMT domains</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#differential-algebraic-equations">Differential-algebraic equations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#from-blocks-to-one-system">From blocks to one system</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#initialization">Initialization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#time-integration">Time integration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#events-and-scenarios">Events and scenarios</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#results-and-interpretation">Results and interpretation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model-validation-checklist">Model validation checklist</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#further-reading">Further reading</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rms_simulations.html">⏱️ RMS simulations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="emt_simulations.html">🔬 EMT simulations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dynamic_simulations.html#small-signal-stability">Small-signal stability</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-editor-and-model-construction">2. Dynamic editor and model construction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-model-library">3. Dynamic model library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#recommended-reading-paths">Recommended reading paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#end-to-end-workflow">End-to-end workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">🧩 Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">📜 License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_models.html">Data Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rst_source/api/auto/modules.html">VeraGrid</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">VeraGrid</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+      <li class="breadcrumb-item active">Dynamic simulation theory</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/md_source/dynamic_theory.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="dynamic-simulation-theory">
+<h1>Dynamic simulation theory<a class="headerlink" href="#dynamic-simulation-theory" title="Link to this heading"></a></h1>
+<p>Dynamic simulation computes how a power system evolves after a disturbance. Unlike a power flow, which solves one steady operating point, a dynamic study advances a set of state and algebraic variables through time while enforcing the electrical-network constraints.</p>
+<p>This page contains the concepts shared by RMS and EMT. Formulation-specific settings, examples, and results are documented in <a class="reference internal" href="rms_simulations.html"><span class="std std-doc">RMS simulations</span></a> and <a class="reference internal" href="emt_simulations.html"><span class="std std-doc">EMT simulations</span></a>.</p>
+<section id="rms-and-emt-domains">
+<h2>RMS and EMT domains<a class="headerlink" href="#rms-and-emt-domains" title="Link to this heading"></a></h2>
+<p>RMS and EMT represent the same physical system at different levels of detail.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Aspect</p></th>
+<th class="head"><p>RMS</p></th>
+<th class="head"><p>EMT</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Electrical representation</p></td>
+<td><p>Fundamental-frequency phasors</p></td>
+<td><p>Instantaneous phase-domain waveforms</p></td>
+</tr>
+<tr class="row-odd"><td><p>Typical phenomena</p></td>
+<td><p>Frequency, rotor angle, outer controls, transient stability</p></td>
+<td><p>Switching, inner controls, waveform and phase interactions</p></td>
+</tr>
+<tr class="row-even"><td><p>Typical time step</p></td>
+<td><p>Milliseconds</p></td>
+<td><p>Microseconds or smaller, depending on the fastest phenomenon</p></td>
+</tr>
+<tr class="row-odd"><td><p>Computational cost</p></td>
+<td><p>Moderate</p></td>
+<td><p>High</p></td>
+</tr>
+<tr class="row-even"><td><p>Network detail</p></td>
+<td><p>Averaged electrical behaviour</p></td>
+<td><p>Detailed electromagnetic behaviour</p></td>
+</tr>
+</tbody>
+</table>
+<p>Use the least detailed formulation that still resolves the phenomenon of interest. An RMS study is normally the first system-wide dynamic study. EMT is appropriate when waveform, switching, unbalance, or very fast control detail is essential.</p>
+</section>
+<section id="differential-algebraic-equations">
+<h2>Differential-algebraic equations<a class="headerlink" href="#differential-algebraic-equations" title="Link to this heading"></a></h2>
+<p>VeraGrid assembles dynamic models as a differential-algebraic equation (DAE) system. A common semi-explicit representation is</p>
+<div class="math">
+<p><img src="../_images/math/9a765b03244dc33ca12187a48852630747af55d0.svg" alt="\dot{x} = f(x, z, p, t), \qquad 0 = g(x, z, p, t),"/></p>
+</div><p>where:</p>
+<ul class="simple">
+<li><p><img class="math" src="../_images/math/888f7c323ac0341871e867220ae2d76467d74d6e.svg" alt="x"/> contains dynamic states;</p></li>
+<li><p><img class="math" src="../_images/math/8d051150f8669295ecdbe92367941012175a824d.svg" alt="z"/> contains algebraic variables;</p></li>
+<li><p><img class="math" src="../_images/math/141bbefb74014fc5e43499901bf78607ae335583.svg" alt="p"/> contains constant and event-modifiable parameters;</p></li>
+<li><p><img class="math" src="../_images/math/907a4add6d5db5b7f197f7924f1371b8ac404fe6.svg" alt="t"/> is simulation time;</p></li>
+<li><p><img class="math" src="../_images/math/5b7752c757e0b691a80ab8227eadb8a8389dc58a.svg" alt="f"/> defines state evolution;</p></li>
+<li><p><img class="math" src="../_images/math/157ba5711de84b4c715a0478fd8ae440e596d96e.svg" alt="g"/> enforces instantaneous device and network constraints.</p></li>
+</ul>
+<p>The algebraic part includes quantities such as bus voltages, injected currents, and controller constraints. The differential part includes stored-energy and controller states. A valid model must provide enough independent equations to determine all unknowns without creating conflicting constraints.</p>
+<section id="current-dae-authoring-contract">
+<h3>Current DAE authoring contract<a class="headerlink" href="#current-dae-authoring-contract" title="Link to this heading"></a></h3>
+<p>New blocks declare their unknowns and equations through these collections:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Collection</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">state_vars</span></code></p></td>
+<td><p>Variables that are integrated through time</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">algebraic_vars</span></code></p></td>
+<td><p>Variables determined by algebraic constraints</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">diff_vars</span></code></p></td>
+<td><p>Derivative symbols associated with states</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">state_eqs</span></code></p></td>
+<td><p>Equations that relate states and derivatives</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">algebraic_eqs</span></code></p></td>
+<td><p>Algebraic residual equations</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">init_eqs</span></code></p></td>
+<td><p>Explicit initialization equations for variables</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">diff_init_eqs</span></code></p></td>
+<td><p>Explicit initialization equations for derivatives</p></td>
+</tr>
+</tbody>
+</table>
+<p><code class="docutils literal notranslate"><span class="pre">differential_eqs</span></code> is not the current authoring interface. It remains only as a compatibility field when loading older saved models. New models must use <code class="docutils literal notranslate"><span class="pre">state_vars</span></code>, <code class="docutils literal notranslate"><span class="pre">diff_vars</span></code>, and <code class="docutils literal notranslate"><span class="pre">state_eqs</span></code>.</p>
+<p>For the detailed API and equation ownership rules, see <a class="reference internal" href="dae_block_authoring.html"><span class="std std-doc">Writing DAE models in VeraGrid</span></a>.</p>
+</section>
+</section>
+<section id="from-blocks-to-one-system">
+<h2>From blocks to one system<a class="headerlink" href="#from-blocks-to-one-system" title="Link to this heading"></a></h2>
+<p>A device model is a graph of blocks. Each block owns variables, parameters, equations, ports, and optional runtime logic. Connections identify expressions that must be shared between blocks. The simulator then:</p>
+<ol class="arabic simple">
+<li><p>traverses the dynamic models assigned to grid devices;</p></li>
+<li><p>resolves block connections and physical terminal bindings;</p></li>
+<li><p>collects states, algebraic variables, derivatives, and parameters;</p></li>
+<li><p>assembles local equations into one global DAE;</p></li>
+<li><p>maps symbolic variable identifiers to numerical vector positions;</p></li>
+<li><p>initializes the global problem;</p></li>
+<li><p>integrates every event-group scenario;</p></li>
+<li><p>stores trajectories together with the variable-to-column metadata.</p></li>
+</ol>
+<p>The model graph is therefore not just a diagram. Its variable identities and connections define the global numerical problem.</p>
+</section>
+<section id="initialization">
+<h2>Initialization<a class="headerlink" href="#initialization" title="Link to this heading"></a></h2>
+<p>Time integration requires a consistent initial state. In general, the initial values must satisfy the algebraic equations and must be compatible with the selected operating point.</p>
+<p>The usual sequence is:</p>
+<ol class="arabic simple">
+<li><p>Solve the static network operating point.</p></li>
+<li><p>Copy relevant bus and device quantities into the dynamic-model initialization expressions.</p></li>
+<li><p>Evaluate explicit initialization equations where a variable can be computed directly.</p></li>
+<li><p>Apply the selected consistency method to the remaining coupled variables.</p></li>
+<li><p>Check the reported initialization status before interpreting trajectories.</p></li>
+</ol>
+<section id="explicit-initialization">
+<h3>Explicit initialization<a class="headerlink" href="#explicit-initialization" title="Link to this heading"></a></h3>
+<p>Explicit initialization evaluates the <code class="docutils literal notranslate"><span class="pre">init_eqs</span></code> and <code class="docutils literal notranslate"><span class="pre">diff_init_eqs</span></code> supplied by the blocks. It is fast and predictable when the model provides a complete dependency order. Missing or circular initialization dependencies cannot be repaired by time integration and should be corrected in the model.</p>
+</section>
+<section id="consistent-and-pseudo-transient-initialization">
+<h3>Consistent and pseudo-transient initialization<a class="headerlink" href="#consistent-and-pseudo-transient-initialization" title="Link to this heading"></a></h3>
+<p>A coupled initialization method solves or relaxes the DAE residuals until the starting point is consistent. Pseudo-transient continuation introduces an artificial transient that can improve robustness for difficult initial points. EMT also provides an automatic selection that chooses the configured initialization path for the problem.</p>
+<p>Initialization is not a substitute for a valid model. Large residuals can indicate an incorrect operating point, incompatible set-points, missing equations, incorrect units, or a disconnected physical terminal.</p>
+</section>
+</section>
+<section id="time-integration">
+<h2>Time integration<a class="headerlink" href="#time-integration" title="Link to this heading"></a></h2>
+<p>At each time step, the integration method approximates the relation between state values and derivatives. The algebraic equations must remain satisfied at the new time. Implicit DAE methods are commonly used because electrical and control models can be stiff.</p>
+<p>The time step controls both accuracy and cost. It must be small enough to resolve the fastest phenomenon retained by the chosen model. A useful convergence check is to repeat the study with a smaller step and confirm that the quantities of interest do not change materially.</p>
+<p>The integration method, initialization method, and available solver backend are selected in the RMS or EMT settings. See the formulation-specific pages for the choices exposed by the GUI.</p>
+</section>
+<section id="events-and-scenarios">
+<h2>Events and scenarios<a class="headerlink" href="#events-and-scenarios" title="Link to this heading"></a></h2>
+<p>Dynamic events change model parameters while the simulation is running. VeraGrid organizes them in event groups:</p>
+<ul class="simple">
+<li><p>an <strong>event group</strong> is one complete scenario and produces one result group;</p></li>
+<li><p>a <strong>step event</strong> changes a parameter at one time;</p></li>
+<li><p>a <strong>ramp event</strong> changes a parameter continuously between two times.</p></li>
+</ul>
+<p>A base case is represented by an event group with no events. At least one event group is required for the driver to produce a scenario trajectory.</p>
+<p>Events act on parameters declared by the model. Saving the dynamic model before creating events ensures that the Events page sees the current parameter identities.</p>
+</section>
+<section id="results-and-interpretation">
+<h2>Results and interpretation<a class="headerlink" href="#results-and-interpretation" title="Link to this heading"></a></h2>
+<p>Each result group contains a common time axis and trajectories for the variables assembled into the numerical problem. The result metadata preserves the association between a column, its symbolic variable, and its owning device or block.</p>
+<p>Always verify the following before drawing conclusions:</p>
+<ul class="simple">
+<li><p>the expected event group produced results;</p></li>
+<li><p>initialization completed successfully;</p></li>
+<li><p>the simulation converged;</p></li>
+<li><p>the chosen time step resolves the observed transient;</p></li>
+<li><p>plotted variables belong to the intended device and model;</p></li>
+<li><p>discontinuities coincide with configured events rather than numerical failure.</p></li>
+</ul>
+<p>The GUI workflow and API access patterns are described in the RMS and EMT result sections.</p>
+</section>
+<section id="model-validation-checklist">
+<h2>Model validation checklist<a class="headerlink" href="#model-validation-checklist" title="Link to this heading"></a></h2>
+<p>Before a simulation:</p>
+<ul class="simple">
+<li><p>solve and inspect the static operating point;</p></li>
+<li><p>ensure every required device has the intended RMS or EMT model;</p></li>
+<li><p>connect every required grid terminal and block port;</p></li>
+<li><p>verify that variables and equations are neither missing nor duplicated;</p></li>
+<li><p>provide initialization equations for model-owned states and derivatives;</p></li>
+<li><p>use consistent SI or per-unit bases throughout each model;</p></li>
+<li><p>create at least one event group;</p></li>
+<li><p>save editor changes before using Events, Comparison, or Plots.</p></li>
+</ul>
+<p>After a simulation:</p>
+<ul class="simple">
+<li><p>check initialization and convergence per event group;</p></li>
+<li><p>compare important signals against physical bounds;</p></li>
+<li><p>repeat sensitive cases with a smaller time step;</p></li>
+<li><p>compare RMS and EMT only at compatible signal definitions and time scales.</p></li>
+</ul>
+</section>
+<section id="further-reading">
+<h2>Further reading<a class="headerlink" href="#further-reading" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="dynamic_modeling.html"><span class="std std-doc">Building dynamic models</span></a></p></li>
+<li><p><a class="reference internal" href="dynamic_editor.html"><span class="std std-doc">Dynamic workspace and editors</span></a></p></li>
+<li><p><a class="reference internal" href="dae_block_authoring.html"><span class="std std-doc">Writing DAE models in VeraGrid</span></a></p></li>
+<li><p><a class="reference internal" href="dynamic_physical_network_contracts.html"><span class="std std-doc">Dynamic physical network contracts</span></a></p></li>
+<li><p><a class="reference internal" href="rms_simulations.html"><span class="std std-doc">RMS simulations</span></a></p></li>
+<li><p><a class="reference internal" href="emt_simulations.html"><span class="std std-doc">EMT simulations</span></a></p></li>
+<li><p><a class="reference internal" href="small_signal_stability_rms.html"><span class="std std-doc">RMS Small-Signal stability</span></a></p></li>
+<li><p><a class="reference internal" href="small_signal_stability_emt.html"><span class="std std-doc">EMT Small-Signal stability: Floquet analysis</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="dynamic_simulations.html" class="btn btn-neutral float-left" title="🧲 Dynamic simulations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="rms_simulations.html" class="btn btn-neutral float-right" title="⏱️ RMS simulations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Santiago Peñate Vera et. al..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

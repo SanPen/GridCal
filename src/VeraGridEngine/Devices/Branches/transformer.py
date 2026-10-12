@@ -14,6 +14,7 @@ from VeraGridEngine.enumerations import (WindingsConnection, BuildStatus, TapPha
 from VeraGridEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from VeraGridEngine.Devices.Branches.transformer_type import TransformerType, reverse_transformer_short_circuit_study
 from VeraGridEngine.Devices.Parents.editable_device import DeviceType, GCProp
+from VeraGridEngine.Utils.NumericalMethods.common import fortescue_012_to_abc
 
 
 class Transformer2W(ControllableBranchParent):
@@ -489,6 +490,7 @@ class Transformer2W(ControllableBranchParent):
             self.Vsc = obj.Vsc
 
             self.tap_changer = obj.get_tap_changer()
+            self.vector_group_number = obj.vector_group_number
 
             # set the from and to connection types of the windings
             _, _, hv_at_from = self.get_from_to_nominal_voltages()
@@ -698,41 +700,40 @@ class Transformer2W(ControllableBranchParent):
     def transformer_admittance(self,
                                vtap_f: float,
                                vtap_t: float,
-                               logger: Logger) -> Tuple[Mat, Mat, Mat, Mat]:
+                               logger: Logger,
+                               conn_f: WindingType | None = None,
+                               conn_t: WindingType | None = None,
+                               clock_phase: float | None = None) -> Tuple[Mat, Mat, Mat, Mat]:
         """
         Get the transformer 3-phase primitives
         :param vtap_f: virtual tap from
         :param vtap_t: virtual tap to
+        :param logger: Calculation diagnostics.
+        :param conn_f: Optional connection used by a multi-winding equivalent.
+        :param conn_t: Optional connection used by a multi-winding equivalent.
+        :param clock_phase: Optional from-to clock angle in radians.
         :param logger: Logger
-        :return: 3x3 matrices -> Yff, Yft, Ytf, Ytt
+        :return: NABC primitive matrices -> Yff, Yft, Ytf, Ytt
         """
 
-        conn_y_from = self.conn_f == WindingType.NeutralStar or self.conn_f == WindingType.GroundedStar
-        conn_y_to = self.conn_t == WindingType.NeutralStar or self.conn_t == WindingType.GroundedStar
-
-        # phase_displacement = np.deg2rad(self.vector_group_number * 30.0)
-        if self.conn_f == WindingType.Delta and conn_y_to:  # Dy
-            phase_displacement = np.deg2rad(60.0)
-
-        elif conn_y_from and self.conn_t == WindingType.Delta:  # Yd
-            phase_displacement = np.deg2rad(0.0)
-
-        else:
-            phase_displacement = 0.0
+        conn_f = self.conn_f if conn_f is None else conn_f
+        conn_t = self.conn_t if conn_t is None else conn_t
+        conn_y_from = conn_f == WindingType.NeutralStar or conn_f == WindingType.GroundedStar
+        conn_y_to = conn_t == WindingType.NeutralStar or conn_t == WindingType.GroundedStar
 
         ys = 1.0 / (self.R + 1j * self.X + 1e-20)
         ysh = self.G + 1j * self.B
 
         yff = (ys + ysh / 2) / (self.tap_module * self.tap_module * vtap_f * vtap_f)
-        yft = -ys / (self.tap_module * np.exp(-1.0j * (self.tap_phase + phase_displacement)) * vtap_f * vtap_t)
-        ytf = -ys / (self.tap_module * np.exp(1.0j * (self.tap_phase + phase_displacement)) * vtap_t * vtap_f)
+        yft = -ys / (self.tap_module * np.exp(-1.0j * self.tap_phase) * vtap_f * vtap_t)
+        ytf = -ys / (self.tap_module * np.exp(1.0j * self.tap_phase) * vtap_t * vtap_f)
         ytt = (ys + ysh / 2) / (vtap_t * vtap_t)
 
         # Single-phase D-D and Y-Y transformers
         single_phase_connections = (WindingType.Delta, WindingType.FloatingStar)
         if (len(self.phases) == 2
-                and self.conn_f in single_phase_connections
-                and self.conn_t in single_phase_connections):
+                and conn_f in single_phase_connections
+                and conn_t in single_phase_connections):
             phase_1, phase_2 = self.phases
             if not 0 <= phase_1 < phase_2 <= 3:
                 logger.add_error("transformer_admittance: Unknown phase pair", device=self.name)
@@ -752,6 +753,7 @@ class Transformer2W(ControllableBranchParent):
             return Yff, Yft, Ytf, Ytt
 
         # Three Phase Transformer
+        winding_phase: float = 0.0
         if conn_y_from and conn_y_to:  # Yy
             Yff = np.array([
                 [0, 0, 0, 0],
@@ -778,7 +780,8 @@ class Transformer2W(ControllableBranchParent):
                 [0, 0, 0, ytt]
             ])
 
-        elif conn_y_from and self.conn_t == WindingType.Delta:  # 'Yd'
+        elif conn_y_from and conn_t == WindingType.Delta:  # 'Yd'
+            winding_phase = np.pi / 6
             Yff = np.array([
                 [0, 0, 0, 0],
                 [0, yff, 0, 0],
@@ -805,6 +808,7 @@ class Transformer2W(ControllableBranchParent):
             ])
 
         elif conn_y_from and self.conn_t == WindingType.GroundedZigZag:  # 'Yz'
+            winding_phase = -np.pi / 6
             Yff = np.array([
                 [yff, 0, 0],
                 [0, yff, 0],
@@ -826,7 +830,8 @@ class Transformer2W(ControllableBranchParent):
                 [0, 0, ytt]
             ])
 
-        elif self.conn_f == WindingType.Delta and conn_y_to:  # 'Dy'
+        elif conn_f == WindingType.Delta and conn_y_to:  # 'Dy'
+            winding_phase = -np.pi / 6
             Yff = np.array([
                 [0, 0, 0, 0],
                 [0, 2 * yff / 3, -yff / 3, -yff / 3],
@@ -852,7 +857,7 @@ class Transformer2W(ControllableBranchParent):
                 [0, 0, 0, ytt]
             ])
 
-        elif self.conn_f == WindingType.Delta and self.conn_t == WindingType.Delta:  # 'Dd'
+        elif conn_f == WindingType.Delta and conn_t == WindingType.Delta:  # 'Dd'
             Yff = np.array([
                 [0, 0, 0, 0],
                 [0, 2 * yff / 3, -yff / 3, -yff / 3],
@@ -878,7 +883,8 @@ class Transformer2W(ControllableBranchParent):
                 [0, -ytt / 3, -ytt / 3, 2 * ytt / 3]
             ])
 
-        elif self.conn_f == WindingType.Delta and self.conn_t == WindingType.GroundedZigZag:  # 'Dz':
+        elif conn_f == WindingType.Delta and conn_t == WindingType.GroundedZigZag:  # 'Dz':
+            winding_phase = -np.pi / 3
             Yff = np.array([
                 [0, 0, 0, 0],
                 [0, 2 * yff / 3, -yff / 3, -yff / 3],
@@ -904,7 +910,8 @@ class Transformer2W(ControllableBranchParent):
                 [0, 0, 0, ytt]
             ])
 
-        elif self.conn_f == WindingType.GroundedZigZag and conn_y_to:  # 'Zy':
+        elif conn_f == WindingType.GroundedZigZag and conn_y_to:  # 'Zy':
+            winding_phase = np.pi / 6
             Yff = np.array([
                 [0, 0, 0, 0],
                 [0, yff, 0, 0],
@@ -930,7 +937,8 @@ class Transformer2W(ControllableBranchParent):
                 [0, 0, 0, ytt]
             ])
 
-        elif self.conn_f == WindingType.GroundedZigZag and self.conn_t == WindingType.Delta:  # 'Zd':
+        elif conn_f == WindingType.GroundedZigZag and conn_t == WindingType.Delta:  # 'Zd':
+            winding_phase = np.pi / 3
             Yff = np.array([
                 [0, 0, 0, 0],
                 [0, yff, 0, 0],
@@ -956,7 +964,7 @@ class Transformer2W(ControllableBranchParent):
                 [0, -ytt / 3, -ytt / 3, 2 * ytt / 3]
             ])
 
-        elif self.conn_f == WindingType.GroundedZigZag and self.conn_t == WindingType.GroundedZigZag:  # 'Zz':
+        elif conn_f == WindingType.GroundedZigZag and conn_t == WindingType.GroundedZigZag:  # 'Zz':
             Yff = np.array([
                 [0, 0, 0, 0],
                 [0, yff, 0, 0],
@@ -987,6 +995,20 @@ class Transformer2W(ControllableBranchParent):
             zeros = np.zeros((4, 4), dtype=float)
             return zeros, zeros, zeros, zeros
 
+        # The clock specifies the total HV-to-LV lag, including the winding rotation.
+        # Rotate opposite sequences oppositely and leave the zero-sequence path intact.
+        if self.bus_from is not None and self.bus_to is not None:
+            _, _, hv_at_from = self.get_from_to_nominal_voltages()
+        else:
+            hv_at_from = True
+        if clock_phase is None:
+            clock_phase = np.deg2rad(self.vector_group_number * 30.0) * (1 if hv_at_from else -1)
+        else:
+            pass
+        correction: complex = np.exp(1j * (clock_phase - winding_phase))
+        rotation: Mat = fortescue_012_to_abc(1.0, correction, correction.conjugate()).real
+        Yft[-3:, -3:] = Yft[-3:, -3:] @ rotation
+        Ytf[-3:, -3:] = rotation.T @ Ytf[-3:, -3:]
         return Yff, Yft, Ytf, Ytt
 
     # Scalar property accessors coerce assignments to the declared schema types.

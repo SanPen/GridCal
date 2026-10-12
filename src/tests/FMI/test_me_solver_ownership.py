@@ -11,11 +11,11 @@ import numpy as np
 import scipy.sparse as sp
 import pytest
 
-from VeraGridEngine.IO.fmu.exporter.compat import Block, Const, Var
-from VeraGridEngine.IO.fmu.importer.bindings import FmuImportConfig
-from VeraGridEngine.IO.fmu.importer.emt_boundary import CompositeEmtBoundaryUpdater
-from VeraGridEngine.IO.fmu.importer.errors import FmuImportError, FmuModeError
-from VeraGridEngine.IO.fmu.importer.model_exchange import (
+from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
+from VeraGridEngine.IO.fmu.Elements.bindings import FmuImportConfig
+from VeraGridEngine.IO.fmu.fmu_device_integration import CompositeEmtBoundaryUpdater
+from VeraGridEngine.IO.fmu.model_exchange import (
     FmuMeDomain,
     FmuMeDeviceAdapter,
     FmuMeSolverPolicy,
@@ -24,17 +24,17 @@ from VeraGridEngine.IO.fmu.importer.model_exchange import (
     build_fmu_me_device_spec,
     _prepare_rms_fmu_me_state_event_retry,
 )
-from VeraGridEngine.IO.fmu.importer.model_description import FmuInterfaceMode
-from VeraGridEngine.IO.fmu.importer.runtime_coordinator import (
+from VeraGridEngine.IO.fmu.model_description import FmuInterfaceMode
+from VeraGridEngine.IO.fmu.coordinator import (
     FmiThreeModelExchangeCoordinator,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_host import (
+from VeraGridEngine.IO.fmu.host import (
     FmiOneEventUpdate,
     FmiTwoEventUpdate,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_profile import FmuMeEvaluationBudget
-from VeraGridEngine.IO.fmu.importer.runtime_worker_host import FmiThreeWorkerHostLimits
-from VeraGridEngine.IO.fmu.importer.runtime_protocol import (
+from VeraGridEngine.IO.fmu.profile import FmuMeEvaluationBudget
+from VeraGridEngine.IO.fmu.worker_host import FmiThreeWorkerHostLimits
+from VeraGridEngine.IO.fmu.Elements.protocol import (
     FmiThreeWorkerCompletedIntegratorStepResult,
     FmiThreeWorkerDiscreteStatesResult,
 )
@@ -622,6 +622,23 @@ class _CurrentPointCouplingProblem:
         else:
             pass
 
+    def resolve_manufacturer_native_boundary(
+        self,
+        t: float,
+        x: np.ndarray,
+    ) -> None:
+        """Validate the committed manufacturer-native solver boundary.
+
+        :param t: Converged boundary time.
+        :param x: Converged network state.
+        :return: None.
+        """
+
+        if math.isfinite(t) and x.size == 1:
+            self.operation_log.append("native_commit")
+        else:
+            raise AssertionError("Current-point native commit is invalid")
+
     def close_fmu_me_devices(self) -> None:
         """Close the synthetic ME owner.
 
@@ -777,7 +794,7 @@ def test_fmi_one_event_update_stops_on_termination_request() -> None:
     runtime_host: Mock = Mock()
     adapter.runtime_host = runtime_host
     adapter.fmi_three_coordinator = None
-    with pytest.raises(FmuImportError, match="requested simulation termination"):
+    with pytest.raises(RuntimeError, match="requested simulation termination"):
         adapter._settle_fmi_one_event(
             event_update=FmiOneEventUpdate(
                 iteration_converged=True,
@@ -1058,7 +1075,7 @@ def test_fmi_me_policy_rejects_unsupported_method_before_runtime() -> None:
     :return: None.
     """
 
-    with pytest.raises(FmuModeError, match="DaeBackEuler"):
+    with pytest.raises(RuntimeError, match="DaeBackEuler"):
         FmuMeSolverPolicy(
             integration_method=DynamicIntegrationMethod.DaeTrapezoidal,
             absolute_tolerance=1.0e-8,
@@ -1079,7 +1096,7 @@ def test_fmi_me_runtime_budget_call_mapping() -> None:
     evaluation_budget.consume()
     evaluation_budget.consume()
     assert evaluation_budget.get_consumed_count() == 2
-    with pytest.raises(FmuModeError, match="before the next native call"):
+    with pytest.raises(RuntimeError, match="before the next native call"):
         evaluation_budget.consume()
     assert evaluation_budget.get_consumed_count() == 2
 
@@ -1219,7 +1236,7 @@ def test_fmi_me_runtime_budget_call_mapping() -> None:
     assert retained_bound_readable_values == tuple()
     assert bound_coordinator.evaluate_probe.call_count == 2582
     assert retained_bound_budget.get_consumed_count() == 2582
-    with pytest.raises(FmuModeError, match="before the next native call"):
+    with pytest.raises(RuntimeError, match="before the next native call"):
         retained_bound_budget.consume()
 
     # The FMI 3 retained candidate transaction adds exactly one charge after
@@ -1256,7 +1273,7 @@ def test_fmi_me_runtime_budget_call_mapping() -> None:
     default_operation_index: int
     for default_operation_index in range(100000):
         default_limit_budget.consume()
-    with pytest.raises(FmuModeError, match="before the next native call"):
+    with pytest.raises(RuntimeError, match="before the next native call"):
         default_limit_budget.consume()
     raised_limit_budget: FmuMeEvaluationBudget = FmuMeEvaluationBudget(100001)
     raised_operation_index: int
@@ -1792,7 +1809,7 @@ def test_backward_euler_rejects_nonfinite_singular_and_exhausted() -> None:
     nonfinite_adapter, nonfinite_coordinator = _build_mock_backward_euler_adapter()
     nonfinite_coordinator.evaluate_probe.side_effect = None
     nonfinite_coordinator.evaluate_probe.return_value = ((math.nan,), tuple())
-    with pytest.raises(FmuModeError, match="derivative vector"):
+    with pytest.raises(RuntimeError, match="derivative vector"):
         nonfinite_adapter._solve_backward_euler_candidate(
             current_time=0.0,
             step_size=1.0,
@@ -1810,7 +1827,7 @@ def test_backward_euler_rejects_nonfinite_singular_and_exhausted() -> None:
         ((1.0,), tuple()),
         ((1.0 + perturbation,), tuple()),
     ]
-    with pytest.raises(FmuModeError, match="Jacobian is singular"):
+    with pytest.raises(RuntimeError, match="Jacobian is singular"):
         singular_adapter._solve_backward_euler_candidate(
             current_time=0.0,
             step_size=1.0,
@@ -1837,7 +1854,7 @@ def test_backward_euler_rejects_nonfinite_singular_and_exhausted() -> None:
         ((1.0,), tuple()),
         ((0.0,), tuple()),
     ]
-    with pytest.raises(FmuModeError, match="iteration limit was exhausted"):
+    with pytest.raises(RuntimeError, match="iteration limit was exhausted"):
         exhausted_adapter._solve_backward_euler_candidate(
             current_time=0.0,
             step_size=1.0,
@@ -1874,7 +1891,7 @@ def test_backward_euler_state_and_shared_evaluation_bounds() -> None:
 
     coordinator.reset_mock()
     rejected_budget: FmuMeEvaluationBudget = FmuMeEvaluationBudget(2)
-    with pytest.raises(FmuModeError, match="state count exceeds"):
+    with pytest.raises(RuntimeError, match="state count exceeds"):
         adapter._solve_backward_euler_candidate(
             current_time=0.0,
             step_size=0.1,
@@ -1891,7 +1908,7 @@ def test_backward_euler_state_and_shared_evaluation_bounds() -> None:
         owner_budget.consume()
     assert operation_index == 99999
     assert owner_budget.get_consumed_count() == 100000
-    with pytest.raises(FmuModeError, match="before the next native call"):
+    with pytest.raises(RuntimeError, match="before the next native call"):
         owner_budget.consume()
     assert owner_budget.get_consumed_count() == 100000
 
@@ -1953,6 +1970,7 @@ def test_fmi_me_budget_survives_localized_retry_emt() -> None:
 
     problem: SimpleNamespace = SimpleNamespace(
         emt_boundary_update=Mock(),
+        commit_boundary=Mock(),
         options=SimpleNamespace(
             fmi_state_event_time_tolerance=1.0e-9,
             fmi_state_event_max_iterations=40,
@@ -1995,6 +2013,9 @@ def test_fmi_me_budget_survives_localized_retry_emt() -> None:
         event_time=0.5,
         evaluation_budget=updater.me_evaluation_budget,
     )
+    problem.commit_boundary.assert_not_called()
+    updater.resolve_step(accepted=False, params=params)
+    problem.commit_boundary.assert_not_called()
 
     me_runtime_adapter.get_pending_state_event_time.return_value = None
     updater.update(
@@ -2003,6 +2024,10 @@ def test_fmi_me_budget_survives_localized_retry_emt() -> None:
         full_params=params,
     )
     cs_adapter.advance.assert_called_once()
+    problem.commit_boundary.assert_not_called()
+    committed_state: np.ndarray = np.zeros(1, dtype=float)
+    updater.commit_boundary(0.5, committed_state, params)
+    problem.commit_boundary.assert_called_once_with(0.5, committed_state, params)
 
     initial_adapter: Mock = Mock()
     initial_adapter.pending_previous_time = None
@@ -2048,7 +2073,7 @@ def test_state_event_localization_supports_one_transition_per_indicator() -> Non
     coordinator.reset_mock()
     preflight_budget: FmuMeEvaluationBudget = FmuMeEvaluationBudget(100000)
     with pytest.raises(
-        FmuModeError,
+        RuntimeError,
         match="localization bound cannot meet its tolerance",
     ):
         adapter.get_pending_state_event_time(
@@ -2351,6 +2376,17 @@ def test_backward_euler_variants_refresh_me_from_current_network_iterate() -> No
         assert problem.me_advance_snapshots[0][0] == pytest.approx(1.0)
         assert problem.me_advance_snapshots[1][0] == pytest.approx(1.1)
         assert problem.resolve_acceptances == [True]
+        if solver_type in (
+                BackEulerImplicitIntegration,
+                BackEulerImplicitIntegrationVec,
+        ):
+            assert problem.operation_log.count("native_commit") == 1
+            assert problem.operation_log.index("native_commit") < problem.operation_log.index("close_me")
+        else:
+            # FullVec is an existing FMI regression participant; the sealed
+            # manufacturer-native scope owns only scalar and vector RMS.
+            assert solver_type is BackEulerImplicitIntegrationFullVec
+            assert problem.operation_log.count("native_commit") == 0
 
 
 def test_backward_euler_pure_me_and_pre_cs_events_retry_before_cs() -> None:
@@ -2375,6 +2411,7 @@ def test_backward_euler_pure_me_and_pre_cs_events_retry_before_cs() -> None:
     assert pure_me_problem.cs_advance_count == 0
     assert pure_me_problem.operation_log[:2] == ["me", "me"]
     assert pure_me_problem.resolve_acceptances == [True, True]
+    assert pure_me_problem.operation_log.count("native_commit") == 2
 
     pre_cs_problem: _CurrentPointCouplingProblem = _CurrentPointCouplingProblem(
         enable_cs=True,
@@ -2393,6 +2430,7 @@ def test_backward_euler_pure_me_and_pre_cs_events_retry_before_cs() -> None:
     assert pre_cs_problem.operation_log[:3] == ["me", "me", "cs"]
     assert pre_cs_problem.cs_advance_count == 2
     assert pre_cs_problem.resolve_acceptances == [True, True]
+    assert pre_cs_problem.operation_log.count("native_commit") == 2
 
 
 def test_backward_euler_variants_fail_closed_after_real_cs_advance() -> None:
@@ -2424,10 +2462,32 @@ def test_backward_euler_variants_fail_closed_after_real_cs_advance() -> None:
             max_iter=4,
             tolerance=1.0e-10,
         )
-        with pytest.raises(RuntimeError, match=expected_message):
-            solver.simulate()
+        # The full-vector solver still raises, while the other two variants
+        # report the failed step through their logger and truncated results.
+        if solver_type is BackEulerImplicitIntegrationFullVec:
+            with pytest.raises(RuntimeError, match=expected_message):
+                solver.simulate()
+        else:
+            result_time: np.ndarray
+            result_state: np.ndarray
+            well_initialized: bool
+            converged: bool
+            result_time, result_state, well_initialized, converged = solver.simulate()
+            problem.logger.add_error.assert_called_once()
+            logged_message: str = problem.logger.add_error.call_args.kwargs["msg"]
+            assert "RMS FMI ME state event" in logged_message
+            assert "cannot retry after Co-Simulation devices advanced" in logged_message
+            assert "failed step is omitted" in logged_message
+            assert result_time.tolist() == [0.0]
+            assert result_state.shape == (1, 1)
+            assert result_state[0, 0] == pytest.approx(1.0)
+            assert well_initialized is True
+            assert converged is False
+            assert problem.resolve_acceptances == [False]
         assert problem.cs_advance_count == 1
+        assert len(problem.me_advance_snapshots) == 2
         assert problem.me_advance_snapshots[1][0] == pytest.approx(1.1)
+        assert problem.operation_log.count("native_commit") == 0
         assert problem.operation_log[-2:] == ["close_cs", "close_me"]
 
 
@@ -2657,7 +2717,7 @@ def test_fmi_two_me_spec_rejects_non_continuous_runtime_inputs(
             '<ModelStructure/></fmiModelDescription>'
         )
         (source / "modelDescription.xml").write_text(xml_text, encoding="utf-8")
-        with pytest.raises(FmuModeError, match="runtime input must be continuous input"):
+        with pytest.raises(RuntimeError, match="runtime input must be continuous input"):
             build_fmu_me_device_spec(
                 domain=FmuMeDomain.RMS,
                 config=FmuImportConfig(
@@ -2736,7 +2796,7 @@ def test_fmi_three_me_spec_rejects_non_continuous_runtime_inputs(
             '</ModelVariables><ModelStructure/></fmiModelDescription>'
         )
         (source / "modelDescription.xml").write_text(xml_text, encoding="utf-8")
-        with pytest.raises(FmuModeError, match="runtime input must be continuous input"):
+        with pytest.raises(RuntimeError, match="runtime input must be continuous input"):
             build_fmu_me_device_spec(
                 domain=FmuMeDomain.RMS,
                 config=FmuImportConfig(

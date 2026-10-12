@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>💾 File loading and saving &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>💾 File loading and saving &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -319,26 +319,26 @@ From there you may further edit or export in any of the supported formats.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
 <span class="c1"># load a grid (.veragrid, .m (Matpower), .raw (PSS/e), .rawx (PSS/e), .epc (PSLF), .dgs (PowerFactory), .pwf (ANAREDE))</span>
-<span class="n">my_grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;my_file.veragrid&quot;</span><span class="p">)</span>
+<span class="n">my_grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"my_file.veragrid"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In the case of CIM/CGMES, you may need to pass a list of files or a single zip file:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
 <span class="c1"># load a grid from many xml files</span>
-<span class="n">my_grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">([</span><span class="s2">&quot;grid_EQ.xml&quot;</span><span class="p">,</span> <span class="s2">&quot;grid_TP.xml&quot;</span><span class="p">,</span> <span class="s2">&quot;grid_SV.xml&quot;</span><span class="p">,</span> <span class="p">])</span>
+<span class="n">my_grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">([</span><span class="s2">"grid_EQ.xml"</span><span class="p">,</span> <span class="s2">"grid_TP.xml"</span><span class="p">,</span> <span class="s2">"grid_SV.xml"</span><span class="p">,</span> <span class="p">])</span>
 
 <span class="c1"># or from a single zip assumed to contain CGMES files</span>
-<span class="n">my_grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;my_cgmes_set_of_files.zip&quot;</span><span class="p">)</span>
+<span class="n">my_grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"my_cgmes_set_of_files.zip"</span><span class="p">)</span>
 
 <span class="c1"># or load a grid from a combination of xml and zip files assumed to be CGMES</span>
-<span class="n">my_grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">([</span><span class="s2">&quot;grid_EQ.xml&quot;</span><span class="p">,</span> <span class="s2">&quot;grid_TP.xml&quot;</span><span class="p">,</span> <span class="s2">&quot;grid_SV.xml&quot;</span><span class="p">,</span> <span class="s2">&quot;boundary.zip&quot;</span><span class="p">])</span>
+<span class="n">my_grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">([</span><span class="s2">"grid_EQ.xml"</span><span class="p">,</span> <span class="s2">"grid_TP.xml"</span><span class="p">,</span> <span class="s2">"grid_SV.xml"</span><span class="p">,</span> <span class="s2">"boundary.zip"</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>If you need to explore the CGMEs assets before conversion, you’ll need to dive deeper in the API:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;tests/data/grids/CGMES_2_4_15/IEEE 118 Bus v2.zip&quot;</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="s2">"tests/data/grids/CGMES_2_4_15/IEEE 118 Bus v2.zip"</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Logger</span><span class="p">()</span>
 <span class="n">data_parser</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">CgmesDataParser</span><span class="p">()</span>
@@ -372,10 +372,10 @@ From there you may further edit or export in any of the supported formats.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
 <span class="c1"># load a grid</span>
-<span class="n">my_grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;my_file.veragrid&quot;</span><span class="p">)</span>
+<span class="n">my_grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"my_file.veragrid"</span><span class="p">)</span>
 
 <span class="c1"># save</span>
-<span class="n">gce</span><span class="o">.</span><span class="n">save_file</span><span class="p">(</span><span class="n">my_grid</span><span class="p">,</span> <span class="s2">&quot;my_file_2.veragrid&quot;</span><span class="p">)</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">save_file</span><span class="p">(</span><span class="n">my_grid</span><span class="p">,</span> <span class="s2">"my_file_2.veragrid"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In the case of saving a model in CGMES mode, we need to specify some extra parameters.
@@ -383,15 +383,15 @@ To simplify we can use the API function <code class="docutils literal notranslat
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
 <span class="c1"># load a grid</span>
-<span class="n">my_grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;my_file.veragrid&quot;</span><span class="p">)</span>
+<span class="n">my_grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"my_file.veragrid"</span><span class="p">)</span>
 
 <span class="c1"># run power flow (this is optional and it is used to generate the SV profile)</span>
 <span class="n">pf_results</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">power_flow</span><span class="p">(</span><span class="n">my_grid</span><span class="p">)</span>
 
 <span class="c1"># save the grid in CGMES mode</span>
 <span class="n">gce</span><span class="o">.</span><span class="n">save_cgmes_file</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">my_grid</span><span class="p">,</span>
-                    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;My_cgmes_model.zip&quot;</span><span class="p">,</span>
-                    <span class="n">cgmes_boundary_set_path</span><span class="o">=</span><span class="s2">&quot;path_to_the_boundary_set.zip&quot;</span><span class="p">,</span>
+                    <span class="n">filename</span><span class="o">=</span><span class="s2">"My_cgmes_model.zip"</span><span class="p">,</span>
+                    <span class="n">cgmes_boundary_set_path</span><span class="o">=</span><span class="s2">"path_to_the_boundary_set.zip"</span><span class="p">,</span>
                     <span class="n">cgmes_version</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">CGMESVersions</span><span class="o">.</span><span class="n">v2_4_15</span><span class="p">,</span>
                     <span class="n">pf_results</span><span class="o">=</span><span class="n">pf_results</span><span class="p">)</span>
 
@@ -454,35 +454,35 @@ bus-branch steady-state case and you want to preserve most of the transmission-m
 <p>Loading:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;network.raw&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"network.raw"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Saving one selected time point:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;network.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"network.veragrid"</span><span class="p">)</span>
 
 <span class="n">options</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">FileSavingOptions</span><span class="p">(</span>
     <span class="n">file_type</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">FileType</span><span class="o">.</span><span class="n">PSSE_raw</span><span class="p">,</span>
-    <span class="n">raw_version</span><span class="o">=</span><span class="s2">&quot;35&quot;</span><span class="p">,</span>
+    <span class="n">raw_version</span><span class="o">=</span><span class="s2">"35"</span><span class="p">,</span>
     <span class="n">t_idx</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;network_t3.raw&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">"network_t3.raw"</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Saving the full profile as a zip package:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;network.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"network.veragrid"</span><span class="p">)</span>
 
 <span class="n">batch_options</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">FileSavingOptions</span><span class="p">(</span>
     <span class="n">file_type</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">FileType</span><span class="o">.</span><span class="n">PSSE_rawx</span><span class="p">,</span>
-    <span class="n">raw_version</span><span class="o">=</span><span class="s2">&quot;35&quot;</span><span class="p">,</span>
+    <span class="n">raw_version</span><span class="o">=</span><span class="s2">"35"</span><span class="p">,</span>
     <span class="n">psse_export_mode</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">PsseExportMode</span><span class="o">.</span><span class="n">BatchZip</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;network_profiles.zip&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">batch_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">"network_profiles.zip"</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">batch_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -512,7 +512,7 @@ patterns.</p>
 <h4>Example<a class="headerlink" href="#id2" title="Link to this heading"></a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;network.pwf&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"network.pwf"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -532,6 +532,155 @@ This is useful, but it is not a lossless import of the full PowerFactory project
 </ul>
 <p>So DGS import is best understood as “bring the electrical model into VeraGrid”, not “reproduce the full
 PowerFactory project database exactly”.</p>
+<p>Without explicit VSC import, voltage-droop <code class="docutils literal notranslate"><span class="pre">ElmSvs</span></code> elements (<code class="docutils literal notranslate"><span class="pre">i_ctrl=1</span></code>, <code class="docutils literal notranslate"><span class="pre">i_droop!=0</span></code>)
+become <span class="xref myst">StaticGenerator</span> devices in Q-V droop mode.
+<code class="docutils literal notranslate"><span class="pre">Srated</span></code>, <code class="docutils literal notranslate"><span class="pre">ddroop</span></code> and <code class="docutils literal notranslate"><span class="pre">usetp</span></code> retain the existing VSC curve’s rating, percentage
+and local voltage reference; P/Q references remain zero. Positive-sequence and
+ABC power flow evaluate this curve inside the nonlinear solve; ABC uses <code class="docutils literal notranslate"><span class="pre">abs(U1)</span></code>
+and positive-sequence current. Other SVC modes and the explicit VSC import route
+keep their existing mappings. The voltage clamps are 0.9 and 1.1 pu by default;
+the VSC curve currently does not clip reactive power. Native <code class="docutils literal notranslate"><span class="pre">.veragrid</span></code> files
+retain these settings; DGS export does not yet represent this static-generator control.</p>
+<p>Voltage-controlled <code class="docutils literal notranslate"><span class="pre">ElmSvs</span></code> without droop remains a
+<span class="xref myst">ControllableShunt</span>, with its physical AB/BC/CA connection.
+Continuous ABC shunts now regulate <code class="docutils literal notranslate"><span class="pre">abs(U1)</span></code> by adjusting a common susceptance, so phase
+voltage magnitudes can differ. The bank’s available capacitor/reactor data determine
+the nominal susceptance limits using the same range as the existing VSC import route;
+native <code class="docutils literal notranslate"><span class="pre">qmin</span></code> alone is a single capacitor step. Reimport the DGS to refresh those limits
+and the connection. The control uses existing solvers and Jacobian routines.</p>
+<p>Without explicit VSC import, <code class="docutils literal notranslate"><span class="pre">ElmGenstat</span></code> elements with <code class="docutils literal notranslate"><span class="pre">av_mode=constv</span></code>, including wind units,
+use the existing PV generator model and retain their active-power and voltage setpoints.
+All PV generators in three-phase power flow regulate <code class="docutils literal notranslate"><span class="pre">abs(U1)</span></code> to <code class="docutils literal notranslate"><span class="pre">Vset</span></code>, where
+<code class="docutils literal notranslate"><span class="pre">U1</span> <span class="pre">=</span> <span class="pre">(Ua</span> <span class="pre">+</span> <span class="pre">a*Ub</span> <span class="pre">+</span> <span class="pre">a^2*Uc)/3</span></code> and <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">=</span> <span class="pre">exp(j*2*pi/3)</span></code>.
+The three phase magnitudes may differ. Balanced power flow continues to use the existing PV model.</p>
+<p>This behaviour applies automatically to manually created and imported generators in
+voltage-control mode (<code class="docutils literal notranslate"><span class="pre">control_mode</span> <span class="pre">=</span> <span class="pre">V</span></code>) on non-slack buses. There is no option to fix
+the three phase magnitudes independently. Existing files use the same U1 regulation;
+an older phase/sequence selector has no effect. The ideal ABC slack retains its equations.</p>
+<p>The U1 model fixes total active power and solves for total reactive power. Its controlled
+positive-sequence current can coexist with passive negative- and zero-sequence responses.
+When reactive limits are enabled,
+the generator’s compiled <code class="docutils literal notranslate"><span class="pre">Qmin</span></code>/<code class="docutils literal notranslate"><span class="pre">Qmax</span></code> replace voltage regulation with fixed Q at a violated
+bound. Colocated U1 generators must have the same setpoint and share their aggregate Q
+capability. Remote U1 control and missing phases are rejected explicitly.</p>
+<p>U1 generators automatically use <code class="docutils literal notranslate"><span class="pre">R2</span> <span class="pre">+</span> <span class="pre">j*X2</span></code>. The existing <code class="docutils literal notranslate"><span class="pre">conn</span></code> property determines
+the homopolar response: <strong>Yg</strong> uses <code class="docutils literal notranslate"><span class="pre">R0</span> <span class="pre">+</span> <span class="pre">j*X0</span></code>, whereas <strong>Y</strong> and <strong>D</strong> block terminal
+zero-sequence current. There are no separate switches for using the impedances. All
+required impedances are in system-base pu and must be finite and nonzero; missing data
+and legacy near-zero short-circuit placeholders are rejected before the U1 calculation.
+Supply physical sequence data for three-phase voltage-controlled generators. The explicit
+neutral connection <strong>Yn</strong> is not supported by this U1 controller and is rejected rather
+than interpreted as a direct earth connection. Connection and impedance data persist
+in native VeraGrid files. Balanced positive-sequence power flow and the ideal ABC slack
+retain their existing equations.</p>
+<p>The ABC solver reuses the Fortescue transformation to form the passive admittance
+<code class="docutils literal notranslate"><span class="pre">Yabc</span> <span class="pre">=</span> <span class="pre">T</span> <span class="pre">*</span> <span class="pre">diag(Y0,</span> <span class="pre">0,</span> <span class="pre">Y2)</span> <span class="pre">*</span> <span class="pre">inverse(T)</span></code>, with <code class="docutils literal notranslate"><span class="pre">Y2</span> <span class="pre">=</span> <span class="pre">1/Z2</span></code> and <code class="docutils literal notranslate"><span class="pre">Y0</span> <span class="pre">=</span> <span class="pre">1/Z0</span></code> for Yg,
+or <code class="docutils literal notranslate"><span class="pre">Y0</span> <span class="pre">=</span> <span class="pre">0</span></code> for Y/D. It adds <code class="docutils literal notranslate"><span class="pre">-Yabc</span> <span class="pre">*</span> <span class="pre">Uabc</span></code> to the controlled positive-sequence
+current. The positive-sequence source compensates the powers absorbed by these passive
+responses so that the specified P and solved/limited Q remain <strong>total terminal powers</strong>.
+The positive-sequence PV source is not replaced by a passive <code class="docutils literal notranslate"><span class="pre">1/Z1</span></code> shunt. A blocked
+zero-sequence path means <code class="docutils literal notranslate"><span class="pre">Y0</span> <span class="pre">=</span> <span class="pre">0</span></code>, not <code class="docutils literal notranslate"><span class="pre">Z0</span> <span class="pre">=</span> <span class="pre">0</span></code>.</p>
+<p>Fixed-PQ <code class="docutils literal notranslate"><span class="pre">ElmGenstat</span></code> devices imported as <code class="docutils literal notranslate"><span class="pre">StaticGenerator</span></code> use the same connection
+and impedance conversion. Without explicit phase powers, ABC injects positive-sequence
+current from P1/Q1 and adds passive I2 and connection-dependent I0. This matches the
+native constq cases validated against PowerFactory; total terminal power includes
+passive sequence absorption, unlike the PV compensation described above. Existing
+explicit phase-power inputs keep their model. No additional earth connection or U0
+constraint is introduced. See <span class="xref myst">StaticGenerator</span> for
+units, legacy defaults and the distinction between PQ and Q-V droop.</p>
+<p>For DGS <code class="docutils literal notranslate"><span class="pre">ElmGenstat</span></code> PV and PQ import, export <code class="docutils literal notranslate"><span class="pre">phtech</span></code>, <code class="docutils literal notranslate"><span class="pre">nneutral</span></code>, <code class="docutils literal notranslate"><span class="pre">r0</span></code>, <code class="docutils literal notranslate"><span class="pre">x0</span></code>, <code class="docutils literal notranslate"><span class="pre">r2</span></code> and <code class="docutils literal notranslate"><span class="pre">x2</span></code>.
+Include these permanent variables in the <strong>Static Generator (ElmGenstat)</strong> variable set
+of the PowerFactory DGS export definition (for example, <strong>DGS Export Definitions 8 - VeraGrid</strong>).
+Their variable-set identifiers are <code class="docutils literal notranslate"><span class="pre">e:phtech</span></code>, <code class="docutils literal notranslate"><span class="pre">e:nneutral</span></code>, <code class="docutils literal notranslate"><span class="pre">e:r0</span></code>, <code class="docutils literal notranslate"><span class="pre">e:x0</span></code>, <code class="docutils literal notranslate"><span class="pre">e:r2</span></code> and <code class="docutils literal notranslate"><span class="pre">e:x2</span></code>.
+Updating this definition affects subsequent exports; an existing DGS must be exported again.
+The importer converts machine-base impedances using <code class="docutils literal notranslate"><span class="pre">Z_system</span> <span class="pre">=</span> <span class="pre">Z_machine</span> <span class="pre">*</span> <span class="pre">Sbase/sgn</span></code>
+for each parallel machine. <code class="docutils literal notranslate"><span class="pre">3PH</span></code> (<code class="docutils literal notranslate"><span class="pre">phtech=0</span></code>) maps to <strong>Y</strong>, an ungrounded three-wire
+equivalent, and retains <code class="docutils literal notranslate"><span class="pre">I0=0</span></code> even when Z0 data exist. <code class="docutils literal notranslate"><span class="pre">3PH-E</span></code> (<code class="docutils literal notranslate"><span class="pre">phtech=1</span></code>) with
+<code class="docutils literal notranslate"><span class="pre">nneutral=0</span></code> maps to <strong>Yg</strong>. Explicit terminal/separate neutral connections map to <strong>Yn</strong>
+with an import warning and are rejected by the U1 calculation. Missing connection data
+or missing/invalid impedance data also produce import warnings; required impedances
+must be completed before running U1 power flow. Other phase technologies and externally
+controlled negative-sequence currents are outside this passive three-phase model.</p>
+<p>An older DGS without these optional columns cannot reproduce the corresponding sequence
+response; re-export the required fields or supply verified data manually. Missing or
+invalid required impedances produce a diagnostic identifying
+<strong>Z0 or Z2</strong>, the affected generator and the resistance/reactance fields to check.
+The three-phase GUI displays the simulation error log instead of suggesting a missing
+slack when the engine has reported such an error. DGS reactive-limit import behaviour
+is unchanged; inspect the imported generator’s Q limits
+before enabling them. These additions do not establish complete PowerFactory equivalence
+for other equipment or control functions.</p>
+<p>Lines defined by <code class="docutils literal notranslate"><span class="pre">TypLne</span></code> sequence parameters use the line length, connected-bus voltage base
+and system power base for both scalar parameters and ABC matrices. Capacitance inputs use
+the network frequency. Geometrical tower and cable templates retain their physical matrix calculation.</p>
+<p>Series reactors (<code class="docutils literal notranslate"><span class="pre">ElmSind</span></code> / <code class="docutils literal notranslate"><span class="pre">SeriesReactance</span></code>) participate in ABC power flow using
+their existing <code class="docutils literal notranslate"><span class="pre">R/X</span></code>, <code class="docutils literal notranslate"><span class="pre">R0/X0</span></code> and <code class="docutils literal notranslate"><span class="pre">R2/X2</span></code> on the system base. The compiler transforms
+the three sequence admittances to ABC and stamps a series-only branch, without
+charging. Missing legacy Z0 or Z2 values inherit Z1, as in the line fallback.</p>
+<p>Series capacitors (<code class="docutils literal notranslate"><span class="pre">ElmScap</span></code>) already use the same <code class="docutils literal notranslate"><span class="pre">SeriesReactance</span></code> model with
+negative <code class="docutils literal notranslate"><span class="pre">X</span></code>, so this ABC calculation also applies to them. The current scalar
+import uses <code class="docutils literal notranslate"><span class="pre">xcap</span></code> and does not import separate capacitor sequence or phase data;
+the missing Z0/Z2 values therefore inherit the capacitive Z1. No separate ABC
+capacitor model is needed for this representation.</p>
+<p>Standard single-cage asynchronous generators (<code class="docutils literal notranslate"><span class="pre">ElmAsm</span></code>, <code class="docutils literal notranslate"><span class="pre">GeneratorType.Asynchronous</span></code>)
+also participate in ABC power flow. Use <code class="docutils literal notranslate"><span class="pre">Q</span></code> control mode: the machine model computes
+reactive power; the stored Q setpoint is not imposed. The existing <code class="docutils literal notranslate"><span class="pre">Rs/Xs/Xm/Rr/Xr</span></code>
+parameters use the machine <code class="docutils literal notranslate"><span class="pre">Snom</span></code> base. A common slip is solved from U1 and the
+positive-sequence electrical P setpoint, matching PF’s AS mode. Positive sequence
+uses slip <code class="docutils literal notranslate"><span class="pre">s</span></code>; negative sequence uses <code class="docutils literal notranslate"><span class="pre">2-s</span></code>. Passive negative- and zero-sequence
+losses reduce total terminal active injection under imbalance, without redispatching
+P1. The existing generating slip solver and interval are retained.
+No Jacobian selection or derivative formulas are changed.</p>
+<p><code class="docutils literal notranslate"><span class="pre">TypAsmo.nslty</span></code> maps <code class="docutils literal notranslate"><span class="pre">D</span></code> and isolated <code class="docutils literal notranslate"><span class="pre">Y</span></code> to connections that block zero-sequence
+current. A manually defined <code class="docutils literal notranslate"><span class="pre">Yg</span></code> machine uses effective <code class="docutils literal notranslate"><span class="pre">R0/X0</span></code> on the system base,
+including any neutral grounding contribution. Missing or invalid required Z0 produces
+an explicit error. DGS <code class="docutils literal notranslate"><span class="pre">YN</span></code> machines retain an explicit-neutral connection with an
+import warning: their neutral/grounding network is not represented by this extension.
+Double-cage, saturated, DFIG, motor and mechanical-power/torque modes are not added.
+Validate machine reactive power as well as bus voltages: a colocated voltage regulator
+can hide an incorrect machine Q. The general ABC device-Q result partition remains
+unimplemented; its zero-filled per-generator tables are not machine Q measurements.</p>
+<p>For three-phase two-winding transformers, <code class="docutils literal notranslate"><span class="pre">TypTr2.nt2ag</span></code> is imported as
+<code class="docutils literal notranslate"><span class="pre">vector_group_number</span></code> (0 to 11). In ABC power flow it specifies the <strong>total</strong>
+positive-sequence HV-to-LV lag in steps of 30 degrees, rather than an additional
+shift on top of the winding connection. Clock 0 therefore gives no structural
+shift, including for Y-D and D-Y connections; clock 1 gives a 30-degree lag and
+clock 11 a 30-degree lead. The negative sequence rotates in the opposite direction.
+The existing zero-sequence connection and neutral paths are preserved. The clock
+direction is reversed when LV is the from terminal, and the existing <code class="docutils literal notranslate"><span class="pre">tap_phase</span></code>
+remains separate. Applying a transformer catalogue template also copies its clock.
+This corrects the previous ABC behaviour, which ignored the clock and imposed an
+implicit winding shift. Single-phase transformer primitives and the balanced
+power-flow equations are unchanged.</p>
+<p>Three-winding transformers use their existing internal bus and three <code class="docutils literal notranslate"><span class="pre">Winding</span></code>
+branches in ABC power flow. Export <code class="docutils literal notranslate"><span class="pre">TypTr3.uk0hm</span></code>, <code class="docutils literal notranslate"><span class="pre">uk0ml</span></code>, <code class="docutils literal notranslate"><span class="pre">uk0hl</span></code> and
+<code class="docutils literal notranslate"><span class="pre">ur0hm</span></code>, <code class="docutils literal notranslate"><span class="pre">ur0ml</span></code>, <code class="docutils literal notranslate"><span class="pre">ur0hl</span></code> to preserve the separate zero-sequence leakage data.
+The pairwise percentages are converted on the smaller rating of each pair before
+forming the star equivalent. Negative-sequence leakage uses <code class="docutils literal notranslate"><span class="pre">Z2</span> <span class="pre">=</span> <span class="pre">Z1</span></code> for this
+passive PF model. Each winding clock is its terminal lag relative to the common
+internal reference, so terminal-to-terminal shifts are clock differences.
+The existing winding fields retain these values when saving a native model;
+DGS export reconstructs the zero-sequence pairwise tests and connections.
+See <span class="xref myst">Transformer3W</span> for supported connections and limits.</p>
+<p>For coupled overhead lines (<code class="docutils literal notranslate"><span class="pre">ElmTow</span></code>), include <code class="docutils literal notranslate"><span class="pre">e:dphasing</span></code>, <code class="docutils literal notranslate"><span class="pre">e:dpolar</span></code> and
+<code class="docutils literal notranslate"><span class="pre">e:ctransp</span></code> in the PowerFactory export definition, together with <code class="docutils literal notranslate"><span class="pre">pGeo</span></code> and
+<code class="docutils literal notranslate"><span class="pre">plines</span></code>. Export the DGS again after updating the definition. <code class="docutils literal notranslate"><span class="pre">dphasing</span></code> maps
+the physical conductor positions to electrical ABC phases; the importer creates
+a separate geometric template variant when needed, preserving the shared catalogue.
+<code class="docutils literal notranslate"><span class="pre">dpolar</span></code> preserves circuit orientation.</p>
+<p>Each imported physical tower section has a common <code class="docutils literal notranslate"><span class="pre">Line.coupling_group</span></code> and
+per-line <code class="docutils literal notranslate"><span class="pre">coupling_reversed</span></code> flag. ABC compilation retains the complete series
+and shunt matrices between its circuits. Merely sharing a catalogue template
+does not couple unrelated lines. The existing tower calculation supplies the
+matrices, including its earth-wire reduction; a tower guard wire is not exposed
+as a load neutral. These associations survive native <code class="docutils literal notranslate"><span class="pre">.veragrid</span></code> save/load.</p>
+<p>This supports one untransposed geometry and distinct ABC circuits. Each self block
+uses its circuit’s own length; mutual blocks use the shorter of the two circuit
+lengths, preserving unequal lengths as in PowerFactory. Transposed or multi-section
+couplings retain the previous independent templates with an import warning.
+Older exports without <code class="docutils literal notranslate"><span class="pre">dphasing</span></code> are readable,
+but warn that ABC is assumed: their original phase arrangement cannot be recovered.
+DGS export from VeraGrid does not currently reconstruct these <code class="docutils literal notranslate"><span class="pre">ElmTow</span></code> associations.</p>
 </section>
 <section id="id4">
 <h4>Export assumptions<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
@@ -558,13 +707,13 @@ PowerFactory project database exactly”.</p>
 <p>Loading:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;network.dgs&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"network.dgs"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Saving one selected time point:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;network.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"network.veragrid"</span><span class="p">)</span>
 
 <span class="n">single_options</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">FileSavingOptions</span><span class="p">(</span>
     <span class="n">file_type</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">FileType</span><span class="o">.</span><span class="n">DGS</span><span class="p">,</span>
@@ -572,20 +721,20 @@ PowerFactory project database exactly”.</p>
     <span class="n">t_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;network_t0.dgs&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">single_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">"network_t0.dgs"</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">single_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Saving the full profile:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;network.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"network.veragrid"</span><span class="p">)</span>
 
 <span class="n">batch_options</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">FileSavingOptions</span><span class="p">(</span>
     <span class="n">file_type</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">FileType</span><span class="o">.</span><span class="n">DGS</span><span class="p">,</span>
     <span class="n">dgs_export_mode</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">DgsExportMode</span><span class="o">.</span><span class="n">BatchZip</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;network_profiles.zip&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">batch_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">"network_profiles.zip"</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">batch_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -636,13 +785,13 @@ non-canonical real-world variants.</p>
 <p>Loading:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;network.uct&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"network.uct"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Saving one snapshot:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;network.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"network.veragrid"</span><span class="p">)</span>
 
 <span class="n">single_options</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">FileSavingOptions</span><span class="p">(</span>
     <span class="n">file_type</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">FileType</span><span class="o">.</span><span class="n">UCTE</span><span class="p">,</span>
@@ -650,20 +799,20 @@ non-canonical real-world variants.</p>
     <span class="n">t_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;network_snapshot.uct&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">single_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">"network_snapshot.uct"</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">single_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Saving the whole profile:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;network.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"network.veragrid"</span><span class="p">)</span>
 
 <span class="n">batch_options</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">FileSavingOptions</span><span class="p">(</span>
     <span class="n">file_type</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">FileType</span><span class="o">.</span><span class="n">UCTE</span><span class="p">,</span>
     <span class="n">ucte_export_mode</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">UcteExportMode</span><span class="o">.</span><span class="n">BatchZip</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;network_profiles.zip&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">batch_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">"network_profiles.zip"</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">batch_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -708,13 +857,13 @@ MATLAB-side modeling pattern surrounding them.</p>
 <p>Loading:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;case14.matpower&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"case14.matpower"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Saving one selected time point:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;network.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"network.veragrid"</span><span class="p">)</span>
 
 <span class="n">single_options</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">FileSavingOptions</span><span class="p">(</span>
     <span class="n">file_type</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">FileType</span><span class="o">.</span><span class="n">Matpower</span><span class="p">,</span>
@@ -722,20 +871,20 @@ MATLAB-side modeling pattern surrounding them.</p>
     <span class="n">t_idx</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;network_t5.m&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">single_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">"network_t5.m"</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">single_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Saving the whole profile:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;network.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"network.veragrid"</span><span class="p">)</span>
 
 <span class="n">batch_options</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">FileSavingOptions</span><span class="p">(</span>
     <span class="n">file_type</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">FileType</span><span class="o">.</span><span class="n">Matpower</span><span class="p">,</span>
     <span class="n">matpower_export_mode</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">MatpowerExportMode</span><span class="o">.</span><span class="n">BatchZip</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;network_profiles.zip&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">batch_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">"network_profiles.zip"</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">batch_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -901,18 +1050,18 @@ The exporter exposes the following profile registries today.</p>
 <p>Loading a CGMES package:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;cgmes_model.zip&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"cgmes_model.zip"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Saving one selected time point with SV:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;network.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"network.veragrid"</span><span class="p">)</span>
 <span class="n">pf_results</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">power_flow</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
 
 <span class="n">single_options</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">FileSavingOptions</span><span class="p">(</span>
     <span class="n">file_type</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">FileType</span><span class="o">.</span><span class="n">CGMES</span><span class="p">,</span>
-    <span class="n">cgmes_boundary_set</span><span class="o">=</span><span class="s2">&quot;boundary_set.zip&quot;</span><span class="p">,</span>
+    <span class="n">cgmes_boundary_set</span><span class="o">=</span><span class="s2">"boundary_set.zip"</span><span class="p">,</span>
     <span class="n">cgmes_version</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">CGMESVersions</span><span class="o">.</span><span class="n">v3_0_0</span><span class="p">,</span>
     <span class="n">cgmes_profiles</span><span class="o">=</span><span class="p">[</span>
         <span class="n">gce</span><span class="o">.</span><span class="n">CgmesProfileType</span><span class="o">.</span><span class="n">EQ</span><span class="p">,</span>
@@ -923,24 +1072,24 @@ The exporter exposes the following profile registries today.</p>
     <span class="n">t_idx</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">sessions_data</span><span class="o">=</span><span class="p">[</span>
         <span class="n">gce</span><span class="o">.</span><span class="n">DriverToSave</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;powerflow results&quot;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">"powerflow results"</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">SimulationTypes</span><span class="o">.</span><span class="n">PowerFlow_run</span><span class="p">,</span>
             <span class="n">results</span><span class="o">=</span><span class="n">pf_results</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="p">],</span>
 <span class="p">)</span>
 
-<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;network_t2.zip&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">single_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">"network_t2.zip"</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">single_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Saving the full profile as repeated CGMES packages:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;network.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"network.veragrid"</span><span class="p">)</span>
 
 <span class="n">batch_options</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">FileSavingOptions</span><span class="p">(</span>
     <span class="n">file_type</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">FileType</span><span class="o">.</span><span class="n">CGMES</span><span class="p">,</span>
-    <span class="n">cgmes_boundary_set</span><span class="o">=</span><span class="s2">&quot;boundary_set.zip&quot;</span><span class="p">,</span>
+    <span class="n">cgmes_boundary_set</span><span class="o">=</span><span class="s2">"boundary_set.zip"</span><span class="p">,</span>
     <span class="n">cgmes_version</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">CGMESVersions</span><span class="o">.</span><span class="n">v3_0_0</span><span class="p">,</span>
     <span class="n">cgmes_profiles</span><span class="o">=</span><span class="p">[</span>
         <span class="n">gce</span><span class="o">.</span><span class="n">CgmesProfileType</span><span class="o">.</span><span class="n">EQ</span><span class="p">,</span>
@@ -950,7 +1099,7 @@ The exporter exposes the following profile registries today.</p>
     <span class="n">cgmes_export_mode</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">CgmesExportMode</span><span class="o">.</span><span class="n">BatchZip</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;network_profiles.zip&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">batch_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">"network_profiles.zip"</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">batch_options</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -961,7 +1110,7 @@ The exporter exposes the following profile registries today.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;grids&quot;</span><span class="p">,</span> <span class="s2">&quot;IEEE39_1W.veragrid&quot;</span><span class="p">)</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="s2">"grids"</span><span class="p">,</span> <span class="s2">"IEEE39_1W.veragrid"</span><span class="p">)</span>
 <span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 
 <span class="c1"># create the driver</span>
@@ -972,7 +1121,7 @@ The exporter exposes the following profile registries today.</p>
 <span class="n">pf_driver</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
 <span class="c1"># Save the driver results in a zip file with CSV files inside</span>
-<span class="n">gce</span><span class="o">.</span><span class="n">export_drivers</span><span class="p">(</span><span class="n">drivers_list</span><span class="o">=</span><span class="p">[</span><span class="n">pf_driver</span><span class="p">],</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;IEEE39_1W_results.zip&quot;</span><span class="p">)</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">export_drivers</span><span class="p">(</span><span class="n">drivers_list</span><span class="o">=</span><span class="p">[</span><span class="n">pf_driver</span><span class="p">],</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">"IEEE39_1W_results.zip"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You could save many drivers in the same zip file passing then into the list <code class="docutils literal notranslate"><span class="pre">drivers_list</span></code>.</p>
@@ -980,7 +1129,7 @@ The exporter exposes the following profile registries today.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;grids&quot;</span><span class="p">,</span> <span class="s2">&quot;IEEE39_1W.veragrid&quot;</span><span class="p">)</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="s2">"grids"</span><span class="p">,</span> <span class="s2">"IEEE39_1W.veragrid"</span><span class="p">)</span>
 <span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 
 <span class="c1"># run with the API shortcut functions</span>
@@ -988,7 +1137,7 @@ The exporter exposes the following profile registries today.</p>
 <span class="n">pf_ts_results</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">power_flow_ts</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
 
 <span class="c1"># Save the driver results in a zip file with CSV files inside</span>
-<span class="n">gce</span><span class="o">.</span><span class="n">export_results</span><span class="p">(</span><span class="n">results_list</span><span class="o">=</span><span class="p">[</span><span class="n">pf_results</span><span class="p">,</span> <span class="n">pf_ts_results</span><span class="p">],</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;IEEE39_1W_results.zip&quot;</span><span class="p">)</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">export_results</span><span class="p">(</span><span class="n">results_list</span><span class="o">=</span><span class="p">[</span><span class="n">pf_results</span><span class="p">,</span> <span class="n">pf_ts_results</span><span class="p">],</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">"IEEE39_1W_results.zip"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -1004,7 +1153,7 @@ on port 8000. This is <code class="docutils literal notranslate"><span class="pr
 <span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
 <span class="c1"># path to your file</span>
-<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;Grids_and_profiles&#39;</span><span class="p">,</span> <span class="s1">&#39;grids&#39;</span><span class="p">,</span> <span class="s2">&quot;IEEE57.veragrid&quot;</span><span class="p">)</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'..'</span><span class="p">,</span> <span class="s1">'..'</span><span class="p">,</span> <span class="s1">'..'</span><span class="p">,</span> <span class="s1">'Grids_and_profiles'</span><span class="p">,</span> <span class="s1">'grids'</span><span class="p">,</span> <span class="s2">"IEEE57.veragrid"</span><span class="p">)</span>
 
 <span class="c1"># read veragrid file</span>
 <span class="n">grid_</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
@@ -1016,14 +1165,14 @@ on port 8000. This is <code class="docutils literal notranslate"><span class="pr
 <span class="n">model_data</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">gather_model_as_jsons_for_communication</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid_</span><span class="p">,</span> <span class="n">instruction</span><span class="o">=</span><span class="n">instruction</span><span class="p">)</span>
 
 <span class="c1"># get the sever certificate</span>
-<span class="n">gce</span><span class="o">.</span><span class="n">get_certificate</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;https://localhost:8000&quot;</span><span class="p">,</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">get_certificate</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="s2">"https://localhost:8000"</span><span class="p">,</span>
                     <span class="n">certificate_path</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">get_certificate_path</span><span class="p">(),</span>
-                    <span class="n">pwd</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="n">pwd</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span>
 
 <span class="c1"># send json</span>
 <span class="n">reply_from_server</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span>
     <span class="n">gce</span><span class="o">.</span><span class="n">send_json_data</span><span class="p">(</span><span class="n">json_data</span><span class="o">=</span><span class="n">model_data</span><span class="p">,</span>
-                       <span class="n">endpoint_url</span><span class="o">=</span><span class="s2">&quot;https://localhost:8000/upload&quot;</span><span class="p">,</span>
+                       <span class="n">endpoint_url</span><span class="o">=</span><span class="s2">"https://localhost:8000/upload"</span><span class="p">,</span>
                        <span class="n">certificate</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">get_certificate_path</span><span class="p">())</span>
 <span class="p">)</span>
 

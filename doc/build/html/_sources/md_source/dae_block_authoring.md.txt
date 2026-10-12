@@ -2,7 +2,7 @@
 
 This guide explains how to author dynamic models with VeraGrid's symbolic `Block` system. It covers the mathematical contract, every user-facing part of a block, initialization, network and API mappings, hierarchical composition, retained runtime values, procedural logic, and the equivalent workflows in Python and the Dynamic Model Editor.
 
-Use this guide when you need to create a new RMS or EMT model. Use the [Dynamic model library](dynamic_model_library_index.md) when you need the reference page for an existing model or reusable block, and [Dynamic simulations](dynamic_simulations.md) for the theory and simulation workflow.
+Use this guide when you need to create a new RMS or EMT model. Use [Dynamic workspace and editors](dynamic_editor.md) for the complete GUI workflow, the [Dynamic model library](dynamic_model_library_index.md) for an existing model or reusable block, and [Dynamic simulation theory](dynamic_theory.md) for the mathematical context.
 
 ## The mental model
 
@@ -36,7 +36,7 @@ The main stages are:
 2. Primitive `Block` objects declare their variables, equations, parameters, initialization, and ports.
 3. A root `Block` groups the primitive blocks and exposes the device-level interface.
 4. `external_mapping` connects that interface to grid and power-flow semantics.
-5. `api_obj_mapping` copies compatible static device data into model parameters.
+5. `api_obj_mapping` copies compatible device data into a model parameter's initial value.
 6. `set_rms_model()` or `set_emt_model()` attaches the model and connects it to its bus or buses.
 7. The RMS or EMT problem builder flattens the hierarchy, initializes the model, and compiles the numerical evaluators.
 8. During the simulation, scheduled events update `event_dict` parameters and procedural entries update retained values stored internally in `mode_dict` at accepted boundaries.
@@ -62,17 +62,18 @@ The `Block` class is defined in `VeraGridEngine.Utils.Symbolic.block`. The follo
 | `out_vars` | Variables exposed to other blocks or the root interface | An output is normally also a state, algebraic variable, or retained value. |
 | `children` | Nested blocks | Use children to preserve physical and control structure. |
 | `external_mapping` | Semantic network and power-flow references | Map a `VarPowerFlowReferenceType` to the exact model `Var` representing it. `None` is reserved for an optional or currently unconnected semantic slot managed by connection helpers. |
-| `api_obj_mapping` | Static device-property references | Map a `ParamPowerFlowReferenceType` to the exact parameter `Var` that receives the value. |
+| `api_obj_mapping` | Device-property initialization references | Map a `ParamPowerFlowReferenceType` to the exact immutable or event-capable parameter `Var` that receives the initial value. |
 | `procedural_logic` | Ordered runtime logic entries | Writers execute in list order at accepted boundaries. |
 | `inequalities` | Inequality constraints | Treat as an advanced formulation feature; verify solver support before relying on it. |
 | `diff_vars` | Explicit derivative variables | Use only when the chosen formulation requires explicit derivative symbols. |
-| `differential_eqs` | Legacy differential residual representation | Prefer `state_vars` plus `state_eqs` for new models. |
 | `discrete_eqs` and `boolean_guards` | Advanced discrete/guard representation | Prefer the public procedural-logic API for new stateful switching logic unless implementing a solver-specific formulation. |
 | `reformulated_vars` | Auxiliary variables introduced during reformulation | Normally compiler-owned rather than manually authored. |
 | `is_decomposable` | Whether equations may be exposed as smaller graphical blocks | Leave enabled unless the model must remain atomic. |
 | `diagram` and `connection_intents` | Persisted editor layout and semantic connection state | Let the Dynamic Model Editor manage these in normal authoring workflows. |
 
 `uid` and each variable's symbolic identities are infrastructure, not model parameters. Do not generate, copy, or rewrite them manually. Use `VarFactory` and the connection helpers so identity propagation remains consistent.
+
+The current authoring contract has no `differential_eqs` collection. Declare dynamic behaviour with `state_vars` and `state_eqs`, and use `diff_vars` plus `diff_init_eqs` only when explicit derivative symbols are required. Older saved models can contain compatibility data that the loader migrates internally; do not copy that representation into new models.
 
 ## Variables and symbolic expressions
 
@@ -221,7 +222,7 @@ For composite models, keep the authoritative device-level mapping on the root bl
 
 ## API object mappings
 
-`api_obj_mapping` maps static grid-device properties to dynamic model parameter variables:
+`api_obj_mapping` maps grid-device properties to initial values of dynamic model parameters:
 
 ```python
 root.api_obj_mapping = dict({
@@ -235,9 +236,13 @@ This is different from `external_mapping`:
 - `external_mapping` identifies operating-point and network-interface variables;
 - `api_obj_mapping` identifies configuration values copied from the associated API device.
 
-The public mapping contract is static-device data to a fixed model parameter. The mapped value must therefore be the same `Var` that appears in `parameters`, not in `event_dict` or `mode_dict`. Use one semantic mapping key only once in the effective block hierarchy. The available keys and their intended units are defined by `ParamPowerFlowReferenceType`; use the GUI selector or inspect that enum rather than inventing a string key.
+The mapping selects the source of the initial value; it does not select the parameter's runtime role. The mapped `Var` must be declared by the same block in exactly one collection: `parameters` for a value that remains fixed, or `event_dict` for a value that scheduled events may change. A mapping-only variable is not registered by either RMS or EMT. New GUI-authored parameters use one explicit source: a concrete local `Const(value)`, or `Const(None)` together with `api_obj_mapping` when the associated grid device supplies the value.
 
-Dynamic parameters do not expose an API mapping selector in the GUI. If a runtime reference must start from static device data, map that data to a fixed parameter and use the fixed parameter in the runtime reference's initialization expression. Controller-specific gains with no corresponding static device property should retain their template value; place them in `parameters` unless they are genuine event targets.
+Mappings follow block ownership recursively. When a child owns a parameter, declare both its storage entry and its `api_obj_mapping` entry on that child. Do not copy either entry to the root wrapper; the RMS and EMT problem builders traverse the hierarchy. A block flattened with `unify_blocks()` owns the merged declarations after its children have been consumed, so it also does not need a second wrapper copy.
+
+Use one semantic mapping key only once in the effective block hierarchy. The available keys and their intended units are defined by `ParamPowerFlowReferenceType`; use the GUI selector or inspect that enum rather than inventing a string key. The file loader repairs historical mapping-only static targets with `Const(None)` so old `.veragrid` files remain readable, but new templates must always declare the parameter explicitly.
+
+Dynamic parameters may also expose a device initialization mapping in the GUI. The numeric-value control and device-source selector are mutually exclusive. Seeding a variable already owned by `event_dict` does not make it static: RMS and EMT use the mapped value as the pre-event baseline and retain the variable in their runtime parameter vectors. The loader preserves the serialized storage role and never promotes an event target into `parameters` merely because of its mapping key. Controller-specific gains with no corresponding device property should retain their template value; place them in `parameters` unless they are genuine event targets.
 
 ## Ports, children, and connections
 
@@ -392,8 +397,8 @@ def build_lagged_load_rms(
     active_power_reference: Var = var_factory.add_var(name="Pl_ref")
     reactive_power_reference: Var = var_factory.add_var(name="Ql_ref")
 
-    # API mappings populate fixed parameters only. These seed parameters
-    # receive the associated static Load values and initialize the references.
+    # These particular API mappings populate fixed seed parameters. A mapped
+    # event_dict target would instead remain event-capable after initialization.
     initial_active_power: Var = var_factory.add_var(name="Pl0_device")
     initial_reactive_power: Var = var_factory.add_var(name="Ql0_device")
     time_constant: Var = var_factory.add_var(name="T_p")
@@ -473,7 +478,7 @@ A reusable template builder may subclass `TemplateDefinition` and expose structu
 
 ## Authoring in the Dynamic Model Editor
 
-The GUI edits the same `Block` objects used by scripting. There is no separate graphical model format.
+The GUI edits the same `Block` objects used by scripting. There is no separate graphical model format. This section focuses on equation authoring inside an RMS or EMT Editor tab; [Dynamic workspace and editors](dynamic_editor.md) documents the Events, Comparison, Plots, and Results pages.
 
 ### Open and compose a model
 
@@ -493,12 +498,7 @@ The [RMS practical session](RMS_practical_session.md) and [EMT practical session
 Double-click a block to open **Block properties**. The main pages are:
 
 - **General options**: block identity, generated structural settings, fixed parameters, and dynamic parameters. Retained runtime values are deliberately not edited here.
-
-![General options](figures/dynamics/block_properties_general_options.png)
-
 - **DAE model**: recursive Variables and Parameters tables, the equation owner selector, safe Python-like DAE code with mathematical algebraic equalities, copyable LaTeX source, and rendered PDF export.
-
-![Block Properties](figures/dynamics/block_properties_DAE_model.png)
 
 - **Runtime logic**: retained runtime values and ordered procedural entries. Its two subpages are **Procedural entries** and **Retained modes**.
 - **Special settings**: structured builder data for blocks that need it, such as lookup tables.
@@ -514,7 +514,7 @@ Use the Variables and Parameters tables to declare DAE symbols and parameter sto
 - **Parameters** offers Parameter for fixed constants and Dynamic parameter for `event_dict` values.
 - **Runtime logic → Retained modes** is the only current GUI location for creating and editing `mode_dict` values. There is no Mode parameter choice in the add-symbol form or either visible symbol table.
 
-The mapping column assigns `VarPowerFlowReferenceType` to network-facing variables and `ParamPowerFlowReferenceType` to fixed parameters. Dynamic parameters do not accept a static API mapping in the GUI. Do not simulate a mapping by merely renaming a variable to `Vm`, `P`, or `r`; the semantic enum selection is what creates the contract.
+The mapping column assigns `VarPowerFlowReferenceType` to network-facing variables and `ParamPowerFlowReferenceType` to fixed or dynamic parameters. For a dynamic parameter, the selected device value is only its initial baseline; the value remains available to scheduled events. Do not simulate a mapping by merely renaming a variable to `Vm`, `P`, or `r`; the semantic enum selection is what creates the contract.
 
 The Output checkbox exposes an existing variable as a port or result. It does not turn an input into an equation, and it does not remove a variable from its original role.
 

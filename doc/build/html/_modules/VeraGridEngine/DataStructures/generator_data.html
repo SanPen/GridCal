@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.DataStructures.generator_data &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.DataStructures.generator_data &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -69,7 +69,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -112,87 +112,89 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">coo_matrix</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine.Topology.topology</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.basic_structures</span><span class="w"> </span><span class="kn">import</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">BoolVec</span><span class="p">,</span> <span class="n">StrVec</span><span class="p">,</span> <span class="n">Logger</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeneratorControlMode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeneratorControlMode</span><span class="p">,</span> <span class="n">ShuntConnectionType</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.compare</span><span class="w"> </span><span class="kn">import</span> <span class="n">compare_arr</span>
 
 
 <div class="viewcode-block" id="GeneratorData">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GeneratorData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    GeneratorData</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;nelm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nbus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idtag&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control_mode_int&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;installed_p&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;active&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;is_static_generator&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;p&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;p3_star&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;q&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;v&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;k_droop&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dead_band&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;qmin&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;qmax&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;snom&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;q_share&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mttf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mttr&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;controllable_bus_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;r0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;r1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;r2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;x0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;x1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;x2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Rs&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Xs&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Xm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Rr&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Xr&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tpe_int&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dispatchable&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;must_run&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pmax&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pmin&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cost_1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cost_0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cost_2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;startup_cost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;shut_down_cost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ramp_up&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ramp_down&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;min_time_up&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;min_time_down&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;capex&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;discount_rate&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;is_candidate&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;shift_key&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;scalable&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;original_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;name_to_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;is_at_dc_bus&quot;</span><span class="p">,</span>
+        <span class="s2">"nelm"</span><span class="p">,</span>
+        <span class="s2">"nbus"</span><span class="p">,</span>
+        <span class="s2">"names"</span><span class="p">,</span>
+        <span class="s2">"idtag"</span><span class="p">,</span>
+        <span class="s2">"control_mode_int"</span><span class="p">,</span>
+        <span class="s2">"conn"</span><span class="p">,</span>
+        <span class="s2">"installed_p"</span><span class="p">,</span>
+        <span class="s2">"active"</span><span class="p">,</span>
+        <span class="s2">"is_static_generator"</span><span class="p">,</span>
+        <span class="s2">"p"</span><span class="p">,</span>
+        <span class="s2">"p3_star"</span><span class="p">,</span>
+        <span class="s2">"q"</span><span class="p">,</span>
+        <span class="s2">"v"</span><span class="p">,</span>
+        <span class="s2">"k_droop"</span><span class="p">,</span>
+        <span class="s2">"dead_band"</span><span class="p">,</span>
+        <span class="s2">"qmin"</span><span class="p">,</span>
+        <span class="s2">"qmax"</span><span class="p">,</span>
+        <span class="s2">"snom"</span><span class="p">,</span>
+        <span class="s2">"q_share"</span><span class="p">,</span>
+        <span class="s2">"mttf"</span><span class="p">,</span>
+        <span class="s2">"mttr"</span><span class="p">,</span>
+        <span class="s2">"bus_idx"</span><span class="p">,</span>
+        <span class="s2">"controllable_bus_idx"</span><span class="p">,</span>
+        <span class="s2">"r0"</span><span class="p">,</span>
+        <span class="s2">"r1"</span><span class="p">,</span>
+        <span class="s2">"r2"</span><span class="p">,</span>
+        <span class="s2">"x0"</span><span class="p">,</span>
+        <span class="s2">"x1"</span><span class="p">,</span>
+        <span class="s2">"x2"</span><span class="p">,</span>
+        <span class="s2">"Rs"</span><span class="p">,</span>
+        <span class="s2">"Xs"</span><span class="p">,</span>
+        <span class="s2">"Xm"</span><span class="p">,</span>
+        <span class="s2">"Rr"</span><span class="p">,</span>
+        <span class="s2">"Xr"</span><span class="p">,</span>
+        <span class="s2">"tpe_int"</span><span class="p">,</span>
+        <span class="s2">"dispatchable"</span><span class="p">,</span>
+        <span class="s2">"must_run"</span><span class="p">,</span>
+        <span class="s2">"pmax"</span><span class="p">,</span>
+        <span class="s2">"pmin"</span><span class="p">,</span>
+        <span class="s2">"cost_1"</span><span class="p">,</span>
+        <span class="s2">"cost_0"</span><span class="p">,</span>
+        <span class="s2">"cost_2"</span><span class="p">,</span>
+        <span class="s2">"startup_cost"</span><span class="p">,</span>
+        <span class="s2">"shut_down_cost"</span><span class="p">,</span>
+        <span class="s2">"ramp_up"</span><span class="p">,</span>
+        <span class="s2">"ramp_down"</span><span class="p">,</span>
+        <span class="s2">"min_time_up"</span><span class="p">,</span>
+        <span class="s2">"min_time_down"</span><span class="p">,</span>
+        <span class="s2">"capex"</span><span class="p">,</span>
+        <span class="s2">"discount_rate"</span><span class="p">,</span>
+        <span class="s2">"is_candidate"</span><span class="p">,</span>
+        <span class="s2">"shift_key"</span><span class="p">,</span>
+        <span class="s2">"scalable"</span><span class="p">,</span>
+        <span class="s2">"original_idx"</span><span class="p">,</span>
+        <span class="s2">"name_to_idx"</span><span class="p">,</span>
+        <span class="s2">"is_at_dc_bus"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Generator data arrays</span>
 <span class="sd">        :param nelm: number of generator</span>
 <span class="sd">        :param nbus: number of buses</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">nelm</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">nbus</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span> <span class="n">StrVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span><span class="p">:</span> <span class="n">StrVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">control_mode_int</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>  <span class="c1"># int representation of GeneratorControlMode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">ShuntConnectionType</span><span class="o">.</span><span class="n">GroundedStar</span><span class="o">.</span><span class="n">idx</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">installed_p</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
@@ -267,13 +269,13 @@
 <div class="viewcode-block" id="GeneratorData.slice">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.slice">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elm_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_map</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Slice generator data by given indices</span>
 <span class="sd">        :param elm_idx: array of element indices</span>
 <span class="sd">        :param bus_idx: array of bus indices</span>
 <span class="sd">        :param bus_map: map from bus index to element index</span>
 <span class="sd">        :return: new GeneratorData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">data</span><span class="p">:</span> <span class="n">GeneratorData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">nelm</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">elm_idx</span><span class="p">),</span>
                                               <span class="n">nbus</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">bus_idx</span><span class="p">))</span>
@@ -282,6 +284,7 @@
         <span class="n">data</span><span class="o">.</span><span class="n">idtag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
 
         <span class="n">data</span><span class="o">.</span><span class="n">control_mode_int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">control_mode_int</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
         <span class="n">data</span><span class="o">.</span><span class="n">installed_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">installed_p</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
 
         <span class="n">data</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
@@ -363,10 +366,10 @@
 <div class="viewcode-block" id="GeneratorData.remap">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.remap">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">remap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_map_arr</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Remapping of the elm buses</span>
 <span class="sd">        :param bus_map_arr: array of old-to-new buses</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
             <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
             <span class="n">new_i</span> <span class="o">=</span> <span class="n">bus_map_arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -380,10 +383,10 @@
 <div class="viewcode-block" id="GeneratorData.size">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get size of the structure</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span></div>
 
@@ -391,10 +394,10 @@
 <div class="viewcode-block" id="GeneratorData.copy">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.copy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a deep copy of this object</span>
 <span class="sd">        :return: new GeneratorData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">data</span><span class="p">:</span> <span class="n">GeneratorData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">nelm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">)</span>
 
@@ -402,6 +405,7 @@
         <span class="n">data</span><span class="o">.</span><span class="n">idtag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="n">data</span><span class="o">.</span><span class="n">control_mode_int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">control_mode_int</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">data</span><span class="o">.</span><span class="n">installed_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">installed_p</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="n">data</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -471,24 +475,24 @@
 
 <div class="viewcode-block" id="GeneratorData.compare">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.compare">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;GeneratorData&quot;</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"GeneratorData"</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compare generator fields used by NumericalCircuit.compare().</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;GenData&#39;</span><span class="p">,</span> <span class="s1">&#39;active&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;GenData&#39;</span><span class="p">,</span> <span class="s1">&#39;P&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;GenData&#39;</span><span class="p">,</span> <span class="s1">&#39;Vset&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qmin</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">qmin</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;GenData&#39;</span><span class="p">,</span> <span class="s1">&#39;Qmin&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qmax</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">qmax</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;GenData&#39;</span><span class="p">,</span> <span class="s1">&#39;Qmax&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'GenData'</span><span class="p">,</span> <span class="s1">'active'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'GenData'</span><span class="p">,</span> <span class="s1">'P'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'GenData'</span><span class="p">,</span> <span class="s1">'Vset'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qmin</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">qmin</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'GenData'</span><span class="p">,</span> <span class="s1">'Qmin'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qmax</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">qmax</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'GenData'</span><span class="p">,</span> <span class="s1">'Qmax'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GeneratorData.get_injections">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_injections">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_injections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the active and reactive power of non-controlled generators (assuming all)</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
         <span class="n">c</span><span class="o">.</span><span class="n">real</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span>
         <span class="n">c</span><span class="o">.</span><span class="n">imag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q</span>
@@ -498,21 +502,21 @@
 <div class="viewcode-block" id="GeneratorData.get_q_at">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_q_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_q_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param i:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">[</span><span class="n">i</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="GeneratorData.get_Yshunt">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_Yshunt">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Yshunt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Obtain the vector of shunt admittances of a given sequence per bus</span>
 <span class="sd">        :param seq: sequence (0, 1 or 2)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">seq</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">r0</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="p">))</span>
         <span class="k">elif</span> <span class="n">seq</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -520,7 +524,7 @@
         <span class="k">elif</span> <span class="n">seq</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">r2</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">x2</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Sequence must be 0, 1, 2&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Sequence must be 0, 1, 2'</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus_cx</span><span class="p">(</span><span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">bus_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span> <span class="n">magnitude</span><span class="o">=</span><span class="n">y</span><span class="p">)</span></div>
 
@@ -528,21 +532,21 @@
 <div class="viewcode-block" id="GeneratorData.get_effective_generation">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_effective_generation">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_effective_generation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get generator effective power</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span></div>
 
 
 <div class="viewcode-block" id="GeneratorData.get_array_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_array_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_array_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get generator array per bus</span>
 <span class="sd">        :param arr:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span>
         <span class="k">return</span> <span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus</span><span class="p">(</span><span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">bus_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span> <span class="n">magnitude</span><span class="o">=</span><span class="n">arr</span><span class="p">)</span></div>
 
@@ -550,10 +554,10 @@
 <div class="viewcode-block" id="GeneratorData.get_injections_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_injections_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_injections_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get generator Injections per bus</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus_cx</span><span class="p">(</span><span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">bus_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span>
                                  <span class="n">magnitude</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_injections</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">)</span></div>
 
@@ -561,71 +565,71 @@
 <div class="viewcode-block" id="GeneratorData.get_dispatchable_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_dispatchable_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dispatchable_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BoolVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get generator Injections per bus</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus_bool</span><span class="p">(</span><span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">bus_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span> <span class="n">magnitude</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dispatchable</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GeneratorData.get_installed_power_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_installed_power_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_installed_power_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get generator installed power per bus</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus</span><span class="p">(</span><span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">bus_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span> <span class="n">magnitude</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">installed_p</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GeneratorData.get_qmax_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_qmax_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_qmax_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get generator Qmax per bus</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus</span><span class="p">(</span><span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">bus_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span> <span class="n">magnitude</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GeneratorData.get_qmin_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_qmin_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_qmin_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get generator Qmin per bus</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus</span><span class="p">(</span><span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">bus_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span> <span class="n">magnitude</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">qmin</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GeneratorData.get_pmax_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_pmax_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_pmax_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get generator Pmax per bus</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus</span><span class="p">(</span><span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">bus_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span> <span class="n">magnitude</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pmax</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GeneratorData.get_pmin_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_pmin_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_pmin_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get generator Pmin per bus</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus</span><span class="p">(</span><span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">bus_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span> <span class="n">magnitude</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pmin</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GeneratorData.get_array_per_bus_obj">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_array_per_bus_obj">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_array_per_bus_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Sum per bus in python mode (it can add objects)</span>
 <span class="sd">        :param arr: any array of size nelm</span>
 <span class="sd">        :return: array of size nbus</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
@@ -636,47 +640,47 @@
 <div class="viewcode-block" id="GeneratorData.dev_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.dev_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">dev_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get number of devices per bus</span>
 <span class="sd">        :return: array with the number of elements per bus</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">tp</span><span class="o">.</span><span class="n">dev_per_bus</span><span class="p">(</span><span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">bus_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get generator count</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span>
 
 <div class="viewcode-block" id="GeneratorData.get_bus_indices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_bus_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_bus_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the bus indices</span>
 <span class="sd">        :return: array with the bus indices</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span></div>
 
 
 <div class="viewcode-block" id="GeneratorData.get_dispatchable_indices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_dispatchable_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dispatchable_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the indices of dispatchable generators</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dispatchable</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="GeneratorData.get_dispatchable_active_indices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_dispatchable_active_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dispatchable_active_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the indices of dispatchable generators</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dispatchable</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
@@ -684,10 +688,10 @@
 <div class="viewcode-block" id="GeneratorData.get_non_dispatchable_indices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_non_dispatchable_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_non_dispatchable_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the indices of dispatchable generators</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">dispatchable</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
@@ -695,10 +699,10 @@
 <div class="viewcode-block" id="GeneratorData.get_controllable_and_not_controllable_indices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_controllable_and_not_controllable_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_controllable_and_not_controllable_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the indices of controllable generators</span>
 <span class="sd">        :return: idx_controllable, idx_non_controllable</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">v_idx</span> <span class="o">=</span> <span class="n">GeneratorControlMode</span><span class="o">.</span><span class="n">V</span><span class="o">.</span><span class="n">idx</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control_mode_int</span> <span class="o">==</span> <span class="n">v_idx</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control_mode_int</span> <span class="o">!=</span> <span class="n">v_idx</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span></div>
@@ -722,14 +726,14 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dispatchable_active_indices_per_area</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                                  <span class="n">bus_area_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                                                  <span class="n">area_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the active dispatchable generator indices grouped by area.</span>
 
 <span class="sd">        :param bus_area_indices: Area index of each bus. A value of ``-1`` means</span>
 <span class="sd">                                 that the bus does not belong to any area.</span>
 <span class="sd">        :param area_count: Number of declared areas.</span>
 <span class="sd">        :return: List where position ``a`` stores the generator-index array for area ``a``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">area_generators</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">area_count</span><span class="p">):</span>
             <span class="n">area_generators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">())</span>
@@ -756,10 +760,10 @@
 <div class="viewcode-block" id="GeneratorData.get_C_bus_elm">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_C_bus_elm">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_C_bus_elm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the connectivity matrix</span>
 <span class="sd">        :return: CSC matrix</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># C_bus_elm = lil_matrix((self.nbus, self.nelm), dtype=int)</span>
         <span class="c1"># for k, i in enumerate(self.bus_idx):</span>
         <span class="c1">#     C_bus_elm[i, k] = 1</span>
@@ -772,10 +776,10 @@
 <div class="viewcode-block" id="GeneratorData.get_pf">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.get_pf">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_pf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the array of power factors</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">q</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">)</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">s</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">)</span>

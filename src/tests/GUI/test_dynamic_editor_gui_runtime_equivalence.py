@@ -135,7 +135,7 @@ def _build_emt_options() -> EmtOptions:
         tolerance=1e-6,
         solver_type=EmtSolverTypes.StructuralCompiled,
         integration_method=DynamicIntegrationMethod.DaeTrapezoidal,
-        initialization_method=EmtInitializationMethod.PseudoTransient,
+        initialization_method=EmtInitializationMethod.ConsistentNewton,
         verbose=0,
     )
 
@@ -187,7 +187,9 @@ def _build_two_bus_emt_grid() -> Tuple[MultiCircuit, Generator, Line, Load]:
     v_ph: float = vnom / (3.0 ** 0.5)
     p_ph: float = (v_ph ** 2) / r_ph
     q_ph: float = 0.0
-    load: Load = Load(name="load", P1=p_ph, P2=p_ph, P3=p_ph, Q1=q_ph, Q2=q_ph, Q3=q_ph)
+    # Balanced PF reads the total P/Q fields; PF3 and EMT read phase fields.
+    load: Load = Load(name="load", P=3.0 * p_ph, Q=3.0 * q_ph,
+                      P1=p_ph, P2=p_ph, P3=p_ph, Q1=q_ph, Q2=q_ph, Q3=q_ph)
     load.conn = ShuntConnectionType.GroundedStar
 
     gen0: Generator = Generator(name="Gen0", vset=1.0, Snom=grid.Sbase, freq=50.0, r1=0.001, x1=1.7)
@@ -994,7 +996,12 @@ def test_empty_generic_nested_editor_contains_only_boundary_ports(
     :return: None.
     """
     circuit: MultiCircuit = MultiCircuit()
+    bus: Bus = Bus(name="Generic EMT bus", Vnom=10.0)
     generator: Generator = Generator(name="Generic owner")
+    circuit.add_bus(bus)
+    circuit.add_generator(bus=bus, api_obj=generator)
+    get_bus_emt_template(grid=circuit, bus=bus)
+
     generic_block: Block = create_generic_block(
         var_factory=circuit.var_factory,
         inputs=3,
@@ -1020,7 +1027,7 @@ def test_empty_generic_nested_editor_contains_only_boundary_ports(
         current_block=generic_block,
         api_object=generator,
         circuit=circuit,
-        mode=DynamicSimulationMode.RMS,
+        mode=DynamicSimulationMode.EMT,
         current_theme=DynEditorGraphicsModes.LIGHT,
         templates_list=list(),
         is_root_editor=False,

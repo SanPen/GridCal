@@ -5,8 +5,7 @@
 """Physical corrective states with a shared passive network factorization.
 
 A removed branch is replaced by an unknown compensation transaction. Its
-would be flow equals that transaction. Unlike division by 1-PTDF[k,k], this
-equation remains valid for bridges as it enforces the separated island's balance.
+flow equals that transaction. 
 Only converter powers, compensation transactions and component reference shifts
 are optimization variables. Bus potentials and branch flows are expressions.
 This file allows us to compute contingency NTC cases with Pmode3 VSCs much faster.
@@ -268,6 +267,8 @@ class PassiveResponse:
         'lower',
         'upper',
         'slacks',
+        'has_slack',
+        'live',
         'tin',
         'bridges',
     )
@@ -280,6 +281,7 @@ class PassiveResponse:
         """
         k: int
         root: int
+        slack: int
         # Match the lossless NTC branch equations before factoring each connected island.
         bd: PassiveBranchData = nc.passive_branch_data
         n: int = nc.nbus
@@ -289,6 +291,7 @@ class PassiveResponse:
         x: Vec = np.where(bd.dc, bd.R, bd.X)
         self.b: Vec = np.zeros(m)
         live: IntVec = np.flatnonzero(bd.active)
+        self.live: IntVec = live
         self.b[live] = np.divide(1., x[live], out=np.full(len(live), 1e-6), where=x[live] != 0)
         self.A: csc_matrix = coo_matrix((np.r_[np.ones(len(live)), -np.ones(len(live))],
                              (np.r_[live, live], np.r_[self.f[live], self.t[live]])),
@@ -301,6 +304,15 @@ class PassiveResponse:
         self.labels: IntVec = components[1]
         self.refs: IntVec = np.full(count, n, dtype=int)
         np.minimum.at(self.refs, self.labels, np.arange(n))
+        # The reference bus absorbs whatever imbalance a contingency leaves in its component.
+        self.slacks: IntVec = nc.get_simulation_indices().vd
+        self.has_slack: BoolVec = np.zeros(count, dtype=bool)
+        for slack in self.slacks:
+            if nc.bus_data.is_dc[slack]:
+                pass  # DC voltage references belong to converter controls.
+            else:
+                self.refs[self.labels[slack]] = slack
+                self.has_slack[self.labels[slack]] = True
         self.keep: IntVec = np.setdiff1d(np.arange(n), self.refs)
         B: csc_matrix = coo_matrix((np.r_[self.b[live], self.b[live], -self.b[live], -self.b[live]],
                         (np.r_[self.f[live], self.t[live], self.f[live], self.t[live]],
@@ -322,7 +334,6 @@ class PassiveResponse:
         np.add.at(self.component_c, self.labels, converter_incidence)
         self.lower: Vec = np.where(nc.bus_data.is_dc, nc.bus_data.Vmin, nc.bus_data.angle_min)
         self.upper: Vec = np.where(nc.bus_data.is_dc, nc.bus_data.Vmax, nc.bus_data.angle_max)
-        self.slacks: IntVec = nc.get_simulation_indices().vd
         # Graph bridges have exact integer transfer factors
         graph: nx.MultiGraph = nx.MultiGraph()
         graph.add_nodes_from(range(n))
@@ -408,6 +419,35 @@ class PassiveResponse:
         else:
             return np.zeros(len(buses), dtype=float)
 
+    def post_outage_labels(self: PassiveResponse, out: IntVec) -> IntVec:
+        """Label the connected parts of the passive network once some branches are removed.
+
+        :param out: In service passive branch indices tripped by the contingency.
+        :return: Part label per bus after the outage.
+        """
+        if len(out) == 0:
+            return self.labels
+        elif len(out) == 1:
+            bridge: tuple[int, int, float] | None = self.bridges.get(int(out[0]), None)
+            if bridge is None:
+                # one branch that is not a bridge cannot split its component
+                return self.labels
+            else:
+                # the side of the bridge away from the reference becomes a part of its own
+                split: IntVec = self.labels.copy()
+                split[(self.tin >= bridge[0]) & (self.tin < bridge[1])] = len(self.refs)
+                return split
+        else:
+            # several branches can form a cut that none of them forms alone, so rebuild the graph
+            remaining: IntVec = np.setdiff1d(self.live, out)
+            n: int = len(self.labels)
+            adjacency: csc_matrix = coo_matrix(
+                (np.ones(2 * len(remaining)),
+                 (np.r_[self.f[remaining], self.t[remaining]], np.r_[self.t[remaining], self.f[remaining]])),
+                shape=(n, n)).tocsc()
+            components: tuple[int, IntVec] = connected_components(adjacency, directed=False)
+            return components[1]
+
 
 class CompactState:
     """One small corrective block with no bus or branch optimization variable arrays."""
@@ -424,6 +464,8 @@ class CompactState:
         'on',
         'n',
         'converters',
+        'active',
+        'absorbed',
         'droops',
         'variables',
         'exact',
@@ -439,6 +481,7 @@ class CompactState:
         :return: None.
         """
         k: int
+        sweep: int
         self.owner: CompactContingencies = owner
         self.index: int = index
         nc: NumericalCircuit = owner.nc
@@ -464,9 +507,59 @@ class CompactState:
         self.on: int = len(self.out)
         self.n: int = self.qn + self.on + len(net.refs)
         self.converters: ObjVec = owner.converter_data(self.out, event.vsc_indices, event.hvdc_indices)
+        item: Converter
+
+        # Which buses remain connected to each other once the tripped branches are gone.
+        post: IntVec = net.post_outage_labels(self.out)
+        post_count: int = int(post.max()) + 1 if len(post) > 0 else 0
+
+        # A converter left alone on its DC side cannot move power. 
+        self.active: BoolVec = np.zeros(self.qn, dtype=bool)
+        for k in range(self.qn):
+            item = cast(Converter, self.converters[k])
+            self.active[k] = item.active
+        dc_from: BoolVec = nc.bus_data.is_dc[net.converter_f].astype(bool)
+        dc_to: BoolVec = nc.bus_data.is_dc[net.converter_t].astype(bool)
+        for sweep in range(self.qn):
+            attached: IntVec = np.zeros(post_count, dtype=int)
+            np.add.at(attached, post[net.converter_f[self.active & dc_from]], 1)
+            np.add.at(attached, post[net.converter_t[self.active & dc_to]], 1)
+            stranded: BoolVec = self.active & ((dc_from & (attached[post[net.converter_f]] == 1))
+                                               | (dc_to & (attached[post[net.converter_t]] == 1)))
+            self.active[stranded] = False
+        for k in range(self.qn):
+            item = cast(Converter, self.converters[k])
+            item.active = bool(self.active[k])
+
+        # Parts that a converter free to change its power still links can exchange power, so they
+        # can be rebalanced. Instead, parts without such a link cannot.
+        linked: IntVec = np.arange(post_count)
+        for k in range(self.qn):
+            item = cast(Converter, self.converters[k])
+            if item.active and item.fixed is None:
+                group_from: int = int(linked[post[net.converter_f[k]]])
+                group_to: int = int(linked[post[net.converter_t[k]]])
+                if group_from != group_to:
+                    linked[linked == group_to] = group_from
+                else:
+                    pass  # both terminals already belong to the same linked group
+            else:
+                pass  # tripped, stranded or fixed converters cannot rebalance anything
+
+        # A tripped branch whose ends are now in different parts belongs to a cut. If converters
+        # can still feed the separated part, the exact outage applies and they rebalance it.
+        part_from: IntVec = post[net.f[self.out]]
+        part_to: IntVec = post[net.t[self.out]]
+        in_cut: BoolVec = part_from != part_to
+        if owner.absorb_islands:
+            # feasibility retry: absorb every cut, whether or not converters could rebalance it
+            self.absorbed: BoolVec = in_cut
+        else:
+            self.absorbed = in_cut & (linked[part_from] != linked[part_to])
+
         droop_mask: BoolVec = np.zeros(self.qn, dtype=bool)
         for k in range(self.qn):
-            item: Converter = cast(Converter, self.converters[k])
+            item = cast(Converter, self.converters[k])
             droop_mask[k] = item.active and item.droop is not None
         self.droops: IntVec = np.flatnonzero(droop_mask)
         self.variables: ObjVec | None = None
@@ -549,16 +642,27 @@ class CompactState:
         for component in range(len(net.refs)):
             coefficients: Vec = net.component_c[component]
             rows[row_index, :self.qn] = coefficients
-            changed: Vec = self.inj_factor * (net.labels[self.inj_bus] == component)
-            rhs[row_index] = (linear_dot(self.owner.prob, coefficients, base.q)
-                              - linear_dot(self.owner.prob, changed, base.inj[self.inj_bus]))
+            if net.has_slack[component]:
+                # The slack of this component picks up a lost injection and the power of a lost
+                # converter, so only the surviving converters must keep their net exchange with it.
+                rhs[row_index] = linear_dot(self.owner.prob, coefficients * self.active, base.q)
+            else:
+                # Without a slack (a DC grid) the converters must restore the balance themselves.
+                changed: Vec = self.inj_factor * (net.labels[self.inj_bus] == component)
+                rhs[row_index] = (linear_dot(self.owner.prob, coefficients, base.q)
+                                  - linear_dot(self.owner.prob, changed, base.inj[self.inj_bus]))
             row_index += 1
-        # Compensation flow equals the flow on each removed branch
         for j in range(self.on):
             branch: int = int(self.out[j])
-            rows[row_index] = self.flow_row(branch)
-            rows[row_index, self.qn + j] -= 1.
-            rhs[row_index] = -self.flow_constant(base, branch)
+            if self.absorbed[j]:
+                # Cut that no converter can rebalance: no transaction, so nothing else moves.
+                rows[row_index, self.qn + j] = 1.
+                rhs[row_index] = 0.
+            else:
+                # Compensation flow equals the flow on the removed branch
+                rows[row_index] = self.flow_row(branch)
+                rows[row_index, self.qn + j] -= 1.
+                rhs[row_index] = -self.flow_constant(base, branch)
             row_index += 1
         for bus in net.slacks:
             if not nc.bus_data.is_dc[bus]:
@@ -856,6 +960,7 @@ class CompactContingencies:
         'objective',
         'final_base',
         'complete',
+        'absorb_islands',
     )
 
     def __init__(self: CompactContingencies,
@@ -865,7 +970,8 @@ class CompactContingencies:
                  prob: LpModel,
                  logger: Logger,
                  strict: bool = False,
-                 droop_tolerance_mw: float = 0.01) -> None:
+                 droop_tolerance_mw: float = 0.01,
+                 absorb_islands: bool = False) -> None:
         """Initialize shared responses and fixed-capacity contingency bookkeeping.
 
         :param nc: Compiled numerical circuit for the current time step.
@@ -875,11 +981,13 @@ class CompactContingencies:
         :param logger: Destination for diagnostics and certification failures.
         :param strict: Enforce hard contingency limits instead of penalized overload slacks.
         :param droop_tolerance_mw: Solved droop-law tolerance in MW, defaults to 10 kW.
+        :param absorb_islands: Absorb every part a contingency cuts off, even where converters could
+                               rebalance it. Used only as the feasibility retry.
         :return: None.
         """
-        event: LinearMultiContingency
         hvdc_control: HvdcControlType
         vsc_control: Control
+        self.absorb_islands: bool = absorb_islands
         self.nc: NumericalCircuit = nc
         self.base_vars: BaseVariables = base_vars
         self.contingencies: LinearMultiContingencies = multi_contingencies
@@ -909,27 +1017,6 @@ class CompactContingencies:
         self.objective: LpExp = prob.sum(np.empty(0, dtype=object))
         self.final_base: OperatingPoint | None = None
         self.complete: bool = False
-        # A bridge with no converter response separates unchanged injections.
-        balanced_bridges: BoolVec = np.zeros(nc.nbr, dtype=bool)
-        for event in multi_contingencies.multi_contingencies:
-            live: IntVec = event.branch_indices[nc.passive_branch_data.active[event.branch_indices].astype(bool)]
-            if len(live) == 1 and len(event.bus_indices) == 0:
-                k: int = int(live[0])
-                if not balanced_bridges[k] and k in self.net.bridges:
-                    converter_response: Vec = (self.net.cut_injections(k, self.net.converter_f) - self.net.cut_injections(k, self.net.converter_t))
-                    if not np.any(converter_response):
-                        prob.add_cst(base_vars.branch_vars.flows[0, k] == 0., name=f'compact_island_balance_{k}')
-                        balanced_bridges[k] = True
-                    else:
-                        pass  # A converter can rebalance this cut, so retain its corrective equations.
-                else:
-                    pass  # This cut is already constrained or is not a bridge.
-            else:
-                pass  # Multiple outages and injection changes require the full compact balance.
-        if np.any(balanced_bridges):
-            logger.add_info('Islanding contingencies requiring zero pre-outage cut flow', value=int(np.count_nonzero(balanced_bridges)))
-        else:
-            pass  # No uncontrollable island cut requires a preliminary balance row.
 
     def converter_data(self: CompactContingencies, out: IntVec, vsc_out: IntVec, hvdc_out: IntVec) -> ObjVec:
         """Build surviving converter controls using hourly contingency ratings.

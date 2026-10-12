@@ -226,6 +226,13 @@ def get_generator_thevenin_rl_emt_template_with_ref(
         out_vars=list([i_A, i_B, i_C]),
     )
 
+    # The electrical values come directly from the static generator and are
+    # therefore required. Using a fallback source impedance would change the
+    # first EMT derivative and hide a physical-device mapping regression.
+    block.parameters[omega_base] = vf.add_const(None)
+    block.parameters[R_s] = vf.add_const(None)
+    block.parameters[X_s] = vf.add_const(None)
+
     block.diff_vars = list([
         d_i_A,
         d_i_B,
@@ -268,7 +275,6 @@ def get_generator_thevenin_rl_emt_template_with_ref(
         ParamPowerFlowReferenceType.omega_base: omega_base,
         ParamPowerFlowReferenceType.R1: R_s,
         ParamPowerFlowReferenceType.X1: X_s,
-        ParamPowerFlowReferenceType.X0: None,
         ParamPowerFlowReferenceType.generator_share_enable: share_enable,
         ParamPowerFlowReferenceType.generator_share_p_ref: P_share_ref,
         ParamPowerFlowReferenceType.generator_share_q_ref: Q_share_ref,
@@ -290,6 +296,12 @@ def get_generator_thevenin_rl_emt_template_with_ref(
         E_scale: vf.add_const(1.0),
         theta_deviation_param: vf.add_const(0.0),
         w_scale: vf.add_const(1.0),
+        # Sharing data depends on the solved operating point and bus topology.
+        # Required runtime placeholders prevent a static fallback from hiding a
+        # missing PF seed while keeping the static parameter contract physical.
+        share_enable: vf.add_const(None),
+        P_share_ref: vf.add_const(None),
+        Q_share_ref: vf.add_const(None),
     })
 
     # ------------------------------------------------------------------
@@ -323,8 +335,6 @@ def get_generator_thevenin_rl_emt_template_with_ref(
 
     templ.block.children.append(block)
     templ.block.external_mapping = block.external_mapping
-    templ.block.api_obj_mapping = block.api_obj_mapping
-    templ.block.parameters = block.parameters
     templ.block.in_vars = inputs
     templ.block.out_vars = block.out_vars
 

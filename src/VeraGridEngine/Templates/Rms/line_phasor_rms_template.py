@@ -46,6 +46,7 @@ def get_line_phasor_rms_template(vfactory: VarFactory, name="Line_phasor_rms_tem
     g = vfactory.add_var("g")
     b = vfactory.add_var("b")
     bsh = vfactory.add_var("bsh")
+    gsh: Var = vfactory.add_var("gsh")
     vtap_f = vfactory.add_var("vtap_f")
     vtap_t = vfactory.add_var("vtap_t")
 
@@ -53,6 +54,7 @@ def get_line_phasor_rms_template(vfactory: VarFactory, name="Line_phasor_rms_tem
     templ.block.parameters[g] = vfactory.add_const(5)
     templ.block.parameters[b] = vfactory.add_const(-12)
     templ.block.parameters[bsh] = vfactory.add_const(0.03)
+    templ.block.parameters[gsh] = vfactory.add_const(0.0)
     templ.block.parameters[vtap_f] = vfactory.add_const(None)
     templ.block.parameters[vtap_t] = vfactory.add_const(None)
 
@@ -64,9 +66,10 @@ def get_line_phasor_rms_template(vfactory: VarFactory, name="Line_phasor_rms_tem
     Vrt = inputs[2]
     Vit = inputs[3]
     
-    gff = g / (vtap_f * vtap_f)
+    # Apply existing virtual taps to both the series and physical half-shunt.
+    gff = (g + gsh / 2) / (vtap_f * vtap_f)
     bff = (b + bsh / 2) / (vtap_f * vtap_f)
-    gtt = g / (vtap_t * vtap_t)
+    gtt = (g + gsh / 2) / (vtap_t * vtap_t)
     btt = (b + bsh / 2) / (vtap_t * vtap_t)
     gft = -g / (vtap_f * vtap_t)
     bft = -b / (vtap_f * vtap_t)
@@ -94,6 +97,7 @@ def get_line_phasor_rms_template(vfactory: VarFactory, name="Line_phasor_rms_tem
         ParamPowerFlowReferenceType.g: g,
         ParamPowerFlowReferenceType.b: b,
         ParamPowerFlowReferenceType.bsh: bsh,
+        ParamPowerFlowReferenceType.shunt_g_pu: gsh,
         ParamPowerFlowReferenceType.vtap_f: vtap_f,
         ParamPowerFlowReferenceType.vtap_t: vtap_t,
     }

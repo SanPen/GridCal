@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine package &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine package &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -149,6 +149,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.BusMode"><code class="docutils literal notranslate"><span class="pre">BusMode</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.BusReductionMethod"><code class="docutils literal notranslate"><span class="pre">BusReductionMethod</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.CGMESVersions"><code class="docutils literal notranslate"><span class="pre">CGMESVersions</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.CableResistanceInput"><code class="docutils literal notranslate"><span class="pre">CableResistanceInput</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.CandidateKind"><code class="docutils literal notranslate"><span class="pre">CandidateKind</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.CascadeType"><code class="docutils literal notranslate"><span class="pre">CascadeType</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.CgmesBoundaryPlaceholderMode"><code class="docutils literal notranslate"><span class="pre">CgmesBoundaryPlaceholderMode</span></code></a></li>
@@ -207,6 +208,10 @@
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.GeneratorType"><code class="docutils literal notranslate"><span class="pre">GeneratorType</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.GridReductionMethod"><code class="docutils literal notranslate"><span class="pre">GridReductionMethod</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.HvdcControlType"><code class="docutils literal notranslate"><span class="pre">HvdcControlType</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.IeeeCigreDllDataType"><code class="docutils literal notranslate"><span class="pre">IeeeCigreDllDataType</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.IeeeCigreDllModelMode"><code class="docutils literal notranslate"><span class="pre">IeeeCigreDllModelMode</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.IeeeCigreDllPlatform"><code class="docutils literal notranslate"><span class="pre">IeeeCigreDllPlatform</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.IeeeCigreDllVerificationStatus"><code class="docutils literal notranslate"><span class="pre">IeeeCigreDllVerificationStatus</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.InductionMachineRole"><code class="docutils literal notranslate"><span class="pre">InductionMachineRole</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.InternationalStandardModel"><code class="docutils literal notranslate"><span class="pre">InternationalStandardModel</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.InvestmentEvaluationMethod"><code class="docutils literal notranslate"><span class="pre">InvestmentEvaluationMethod</span></code></a></li>
@@ -219,6 +224,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.MatpowerExportMode"><code class="docutils literal notranslate"><span class="pre">MatpowerExportMode</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.MeasurementVarType"><code class="docutils literal notranslate"><span class="pre">MeasurementVarType</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.MethodShortCircuit"><code class="docutils literal notranslate"><span class="pre">MethodShortCircuit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.NativeCompilerFramework"><code class="docutils literal notranslate"><span class="pre">NativeCompilerFramework</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.NativeModelInterface"><code class="docutils literal notranslate"><span class="pre">NativeModelInterface</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.NativeSampleTimeSource"><code class="docutils literal notranslate"><span class="pre">NativeSampleTimeSource</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.NodalCapacityMethod"><code class="docutils literal notranslate"><span class="pre">NodalCapacityMethod</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.OpfDispatchMode"><code class="docutils literal notranslate"><span class="pre">OpfDispatchMode</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.ParamPowerFlowReferenceType"><code class="docutils literal notranslate"><span class="pre">ParamPowerFlowReferenceType</span></code></a></li>
@@ -257,6 +265,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.SolutionState"><code class="docutils literal notranslate"><span class="pre">SolutionState</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.SolverType"><code class="docutils literal notranslate"><span class="pre">SolverType</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.SparseSolver"><code class="docutils literal notranslate"><span class="pre">SparseSolver</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.StaticGeneratorControlMode"><code class="docutils literal notranslate"><span class="pre">StaticGeneratorControlMode</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.StationControlBusSelection"><code class="docutils literal notranslate"><span class="pre">StationControlBusSelection</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.StationControlMode"><code class="docutils literal notranslate"><span class="pre">StationControlMode</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.StationReactivePowerDistribution"><code class="docutils literal notranslate"><span class="pre">StationReactivePowerDistribution</span></code></a></li>
@@ -277,6 +286,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.TreeStateNodeKind"><code class="docutils literal notranslate"><span class="pre">TreeStateNodeKind</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.UcteExportMode"><code class="docutils literal notranslate"><span class="pre">UcteExportMode</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.V_I_CurveSequenceType"><code class="docutils literal notranslate"><span class="pre">V_I_CurveSequenceType</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.ValidationFilterType"><code class="docutils literal notranslate"><span class="pre">ValidationFilterType</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.ValveEmtModelVariant"><code class="docutils literal notranslate"><span class="pre">ValveEmtModelVariant</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.ValveEmtType"><code class="docutils literal notranslate"><span class="pre">ValveEmtType</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#VeraGridEngine.enumerations.ValveInitializationState"><code class="docutils literal notranslate"><span class="pre">ValveInitializationState</span></code></a></li>
@@ -346,6 +356,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="VeraGridEngine.Compilers.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="VeraGridEngine.Compilers.html#module-VeraGridEngine.Compilers.circuit_to_data">VeraGridEngine.Compilers.circuit_to_data module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_data.compile_line_couplings"><code class="docutils literal notranslate"><span class="pre">compile_line_couplings()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_data.compile_numerical_circuit_at"><code class="docutils literal notranslate"><span class="pre">compile_numerical_circuit_at()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_data.delta2StarAdmittance"><code class="docutils literal notranslate"><span class="pre">delta2StarAdmittance()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_data.fill_controllable_branch"><code class="docutils literal notranslate"><span class="pre">fill_controllable_branch()</span></code></a></li>
@@ -610,6 +621,7 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.bus_idx"><code class="docutils literal notranslate"><span class="pre">GeneratorData.bus_idx</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.capex"><code class="docutils literal notranslate"><span class="pre">GeneratorData.capex</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.compare"><code class="docutils literal notranslate"><span class="pre">GeneratorData.compare()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.conn"><code class="docutils literal notranslate"><span class="pre">GeneratorData.conn</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.control_mode_int"><code class="docutils literal notranslate"><span class="pre">GeneratorData.control_mode_int</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.controllable_bus_idx"><code class="docutils literal notranslate"><span class="pre">GeneratorData.controllable_bus_idx</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.generator_data.GeneratorData.copy"><code class="docutils literal notranslate"><span class="pre">GeneratorData.copy()</span></code></a></li>
@@ -755,6 +767,7 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.get_non_static_generator_injections_per_bus"><code class="docutils literal notranslate"><span class="pre">LoadData.get_non_static_generator_injections_per_bus()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.get_static_generator_injections_per_bus"><code class="docutils literal notranslate"><span class="pre">LoadData.get_static_generator_injections_per_bus()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.idtag"><code class="docutils literal notranslate"><span class="pre">LoadData.idtag</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.is_positive_sequence"><code class="docutils literal notranslate"><span class="pre">LoadData.is_positive_sequence</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.is_static_generator"><code class="docutils literal notranslate"><span class="pre">LoadData.is_static_generator</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.mttf"><code class="docutils literal notranslate"><span class="pre">LoadData.mttf</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.mttr"><code class="docutils literal notranslate"><span class="pre">LoadData.mttr</span></code></a></li>
@@ -762,6 +775,11 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.nbus"><code class="docutils literal notranslate"><span class="pre">LoadData.nbus</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.nelm"><code class="docutils literal notranslate"><span class="pre">LoadData.nelm</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.original_idx"><code class="docutils literal notranslate"><span class="pre">LoadData.original_idx</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.q_droop"><code class="docutils literal notranslate"><span class="pre">LoadData.q_droop</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.q_droop_snom"><code class="docutils literal notranslate"><span class="pre">LoadData.q_droop_snom</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.q_droop_vmax"><code class="docutils literal notranslate"><span class="pre">LoadData.q_droop_vmax</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.q_droop_vmin"><code class="docutils literal notranslate"><span class="pre">LoadData.q_droop_vmin</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.q_droop_vset"><code class="docutils literal notranslate"><span class="pre">LoadData.q_droop_vset</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.remap"><code class="docutils literal notranslate"><span class="pre">LoadData.remap()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.scalable"><code class="docutils literal notranslate"><span class="pre">LoadData.scalable</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.shift_key"><code class="docutils literal notranslate"><span class="pre">LoadData.shift_key</span></code></a></li>
@@ -869,6 +887,7 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData.X"><code class="docutils literal notranslate"><span class="pre">PassiveBranchData.X</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData.X0"><code class="docutils literal notranslate"><span class="pre">PassiveBranchData.X0</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData.X2"><code class="docutils literal notranslate"><span class="pre">PassiveBranchData.X2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData.Ycoupling3"><code class="docutils literal notranslate"><span class="pre">PassiveBranchData.Ycoupling3</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData.Yff3"><code class="docutils literal notranslate"><span class="pre">PassiveBranchData.Yff3</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData.Yft3"><code class="docutils literal notranslate"><span class="pre">PassiveBranchData.Yft3</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData.Ytf3"><code class="docutils literal notranslate"><span class="pre">PassiveBranchData.Ytf3</span></code></a></li>
@@ -906,6 +925,7 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.shunt_data.ShuntData.b_steps"><code class="docutils literal notranslate"><span class="pre">ShuntData.b_steps</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.shunt_data.ShuntData.bus_idx"><code class="docutils literal notranslate"><span class="pre">ShuntData.bus_idx</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.shunt_data.ShuntData.compare"><code class="docutils literal notranslate"><span class="pre">ShuntData.compare()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.shunt_data.ShuntData.conn"><code class="docutils literal notranslate"><span class="pre">ShuntData.conn</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.shunt_data.ShuntData.control_mode_int"><code class="docutils literal notranslate"><span class="pre">ShuntData.control_mode_int</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.shunt_data.ShuntData.controllable_bus_idx"><code class="docutils literal notranslate"><span class="pre">ShuntData.controllable_bus_idx</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.shunt_data.ShuntData.copy"><code class="docutils literal notranslate"><span class="pre">ShuntData.copy()</span></code></a></li>
@@ -1052,8 +1072,6 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#module-VeraGridEngine.Devices.Dynamic.emt_template">VeraGridEngine.Devices.Dynamic.emt_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#module-VeraGridEngine.Devices.Dynamic.fmu_template">VeraGridEngine.Devices.Dynamic.fmu_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#module-VeraGridEngine.Devices.Dynamic.rms_template">VeraGridEngine.Devices.Dynamic.rms_template module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#module-VeraGridEngine.Devices.Dynamic.static_parameter_mapping">VeraGridEngine.Devices.Dynamic.static_parameter_mapping module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#module-VeraGridEngine.Devices.Dynamic.static_parameter_mapping_rms">VeraGridEngine.Devices.Dynamic.static_parameter_mapping_rms module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#module-VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified">VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#module-VeraGridEngine.Devices.Dynamic.var_factory">VeraGridEngine.Devices.Dynamic.var_factory module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#module-VeraGridEngine.Devices.Dynamic">Module contents</a></li>
@@ -1203,6 +1221,7 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.add_it_measurement"><code class="docutils literal notranslate"><span class="pre">Assets.add_it_measurement()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.add_line"><code class="docutils literal notranslate"><span class="pre">Assets.add_line()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.add_load"><code class="docutils literal notranslate"><span class="pre">Assets.add_load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.add_manufacturer_native_model"><code class="docutils literal notranslate"><span class="pre">Assets.add_manufacturer_native_model()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.add_market_unit"><code class="docutils literal notranslate"><span class="pre">Assets.add_market_unit()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.add_market_unit_group"><code class="docutils literal notranslate"><span class="pre">Assets.add_market_unit_group()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.add_modelling_authority"><code class="docutils literal notranslate"><span class="pre">Assets.add_modelling_authority()</span></code></a></li>
@@ -1309,6 +1328,7 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.delete_line"><code class="docutils literal notranslate"><span class="pre">Assets.delete_line()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.delete_line_template_dependency"><code class="docutils literal notranslate"><span class="pre">Assets.delete_line_template_dependency()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.delete_load"><code class="docutils literal notranslate"><span class="pre">Assets.delete_load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.delete_manufacturer_native_model"><code class="docutils literal notranslate"><span class="pre">Assets.delete_manufacturer_native_model()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.delete_market_unit"><code class="docutils literal notranslate"><span class="pre">Assets.delete_market_unit()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.delete_market_unit_group"><code class="docutils literal notranslate"><span class="pre">Assets.delete_market_unit_group()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.delete_market_unit_groups"><code class="docutils literal notranslate"><span class="pre">Assets.delete_market_unit_groups()</span></code></a></li>
@@ -1451,6 +1471,7 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_dynamic_plots_names"><code class="docutils literal notranslate"><span class="pre">Assets.get_dynamic_plots_names()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_dynamic_templates_by_device_type_and_domain"><code class="docutils literal notranslate"><span class="pre">Assets.get_dynamic_templates_by_device_type_and_domain()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_dynamic_templates_by_domain"><code class="docutils literal notranslate"><span class="pre">Assets.get_dynamic_templates_by_domain()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_element_deletion_blockers"><code class="docutils literal notranslate"><span class="pre">Assets.get_element_deletion_blockers()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_elements_by_type"><code class="docutils literal notranslate"><span class="pre">Assets.get_elements_by_type()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_elements_dict_by_type"><code class="docutils literal notranslate"><span class="pre">Assets.get_elements_dict_by_type()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_emission_names"><code class="docutils literal notranslate"><span class="pre">Assets.get_emission_names()</span></code></a></li>
@@ -1540,6 +1561,8 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_loaded_rms_models_by_device_type"><code class="docutils literal notranslate"><span class="pre">Assets.get_loaded_rms_models_by_device_type()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_loads"><code class="docutils literal notranslate"><span class="pre">Assets.get_loads()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_loads_number"><code class="docutils literal notranslate"><span class="pre">Assets.get_loads_number()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_manufacturer_native_consumers"><code class="docutils literal notranslate"><span class="pre">Assets.get_manufacturer_native_consumers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_manufacturer_native_model_by_idtag"><code class="docutils literal notranslate"><span class="pre">Assets.get_manufacturer_native_model_by_idtag()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_market_unit_group_dict"><code class="docutils literal notranslate"><span class="pre">Assets.get_market_unit_group_dict()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_market_unit_group_names"><code class="docutils literal notranslate"><span class="pre">Assets.get_market_unit_group_names()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.get_market_unit_group_number"><code class="docutils literal notranslate"><span class="pre">Assets.get_market_unit_group_number()</span></code></a></li>
@@ -1682,6 +1705,7 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.items"><code class="docutils literal notranslate"><span class="pre">Assets.items()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.lines"><code class="docutils literal notranslate"><span class="pre">Assets.lines</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.loads"><code class="docutils literal notranslate"><span class="pre">Assets.loads</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.manufacturer_native_models"><code class="docutils literal notranslate"><span class="pre">Assets.manufacturer_native_models</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.market_unit_groups"><code class="docutils literal notranslate"><span class="pre">Assets.market_unit_groups</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.market_units"><code class="docutils literal notranslate"><span class="pre">Assets.market_units</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.merge_object"><code class="docutils literal notranslate"><span class="pre">Assets.merge_object()</span></code></a></li>
@@ -1704,6 +1728,7 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.qt_measurements"><code class="docutils literal notranslate"><span class="pre">Assets.qt_measurements</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.re_index_time"><code class="docutils literal notranslate"><span class="pre">Assets.re_index_time()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.re_index_time2"><code class="docutils literal notranslate"><span class="pre">Assets.re_index_time2()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.rebind_manufacturer_native_consumer"><code class="docutils literal notranslate"><span class="pre">Assets.rebind_manufacturer_native_consumer()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.refine_pointer_objects"><code class="docutils literal notranslate"><span class="pre">Assets.refine_pointer_objects()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.regions"><code class="docutils literal notranslate"><span class="pre">Assets.regions</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.assets.Assets.remedial_action_groups"><code class="docutils literal notranslate"><span class="pre">Assets.remedial_action_groups</span></code></a></li>
@@ -2268,7 +2293,6 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Simulations.Rms.html#module-VeraGridEngine.Simulations.Rms.rms_options">VeraGridEngine.Simulations.Rms.rms_options module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Simulations.Rms.html#module-VeraGridEngine.Simulations.Rms.rms_problem_factory">VeraGridEngine.Simulations.Rms.rms_problem_factory module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Simulations.Rms.html#module-VeraGridEngine.Simulations.Rms.rms_results">VeraGridEngine.Simulations.Rms.rms_results module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Simulations.Rms.html#module-VeraGridEngine.Simulations.Rms.rms_worker">VeraGridEngine.Simulations.Rms.rms_worker module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Simulations.Rms.html#module-VeraGridEngine.Simulations.Rms">Module contents</a></li>
 </ul>
 </li>
@@ -2543,16 +2567,13 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bergeron_line_emt_template">VeraGridEngine.Templates.Emt.bergeron_line_emt_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bergeron_line_symbolic_runtime">VeraGridEngine.Templates.Emt.bergeron_line_symbolic_runtime module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bess_avm_emt_template">VeraGridEngine.Templates.Emt.bess_avm_emt_template module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bridge_2level_3ph_emt_mti_template">VeraGridEngine.Templates.Emt.bridge_2level_3ph_emt_mti_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bridge_2level_3ph_emt_multilinear_template">VeraGridEngine.Templates.Emt.bridge_2level_3ph_emt_multilinear_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bridge_2level_3ph_emt_soft_pwm_compatible_template">VeraGridEngine.Templates.Emt.bridge_2level_3ph_emt_soft_pwm_compatible_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bridge_2level_3ph_emt_soft_pwm_template">VeraGridEngine.Templates.Emt.bridge_2level_3ph_emt_soft_pwm_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bridge_2level_3ph_emt_template">VeraGridEngine.Templates.Emt.bridge_2level_3ph_emt_template module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bridge_filter_2level_3ph_emt_mti_template">VeraGridEngine.Templates.Emt.bridge_filter_2level_3ph_emt_mti_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bridge_filter_2level_3ph_emt_multilinear_template">VeraGridEngine.Templates.Emt.bridge_filter_2level_3ph_emt_multilinear_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bridge_filter_2level_3ph_emt_template">VeraGridEngine.Templates.Emt.bridge_filter_2level_3ph_emt_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bridge_filter_2level_3ph_soft_emt_template">VeraGridEngine.Templates.Emt.bridge_filter_2level_3ph_soft_emt_template module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bridge_filter_control_2level_3ph_emt_mti_template">VeraGridEngine.Templates.Emt.bridge_filter_control_2level_3ph_emt_mti_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bridge_filter_control_2level_3ph_emt_multilinear_template">VeraGridEngine.Templates.Emt.bridge_filter_control_2level_3ph_emt_multilinear_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bridge_filter_control_2level_3ph_emt_template">VeraGridEngine.Templates.Emt.bridge_filter_control_2level_3ph_emt_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.bridge_filter_control_2level_3ph_soft_emt_template">VeraGridEngine.Templates.Emt.bridge_filter_control_2level_3ph_soft_emt_template module</a></li>
@@ -2560,7 +2581,6 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.converter_emt_template">VeraGridEngine.Templates.Emt.converter_emt_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.converter_emt_template_pq_inverse_test">VeraGridEngine.Templates.Emt.converter_emt_template_pq_inverse_test module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.converter_soft_switched_emt_template">VeraGridEngine.Templates.Emt.converter_soft_switched_emt_template module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.converter_switched_emt_mti_template">VeraGridEngine.Templates.Emt.converter_switched_emt_mti_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.converter_switched_emt_multilinear_template">VeraGridEngine.Templates.Emt.converter_switched_emt_multilinear_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.converter_switched_emt_template">VeraGridEngine.Templates.Emt.converter_switched_emt_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Emt.html#module-VeraGridEngine.Templates.Emt.dc_line_emt_template">VeraGridEngine.Templates.Emt.dc_line_emt_template module</a></li>
@@ -2607,7 +2627,6 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Rms.html#module-VeraGridEngine.Templates.Rms.basic_devices">VeraGridEngine.Templates.Rms.basic_devices module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Rms.html#module-VeraGridEngine.Templates.Rms.bus_complex_rms_template">VeraGridEngine.Templates.Rms.bus_complex_rms_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Rms.html#module-VeraGridEngine.Templates.Rms.bus_phasor_rms_template">VeraGridEngine.Templates.Rms.bus_phasor_rms_template module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Rms.html#veragridengine-templates-rms-common-module">VeraGridEngine.Templates.Rms.common module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Rms.html#module-VeraGridEngine.Templates.Rms.dc_voltage_source">VeraGridEngine.Templates.Rms.dc_voltage_source module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Rms.html#module-VeraGridEngine.Templates.Rms.empty_rms_template">VeraGridEngine.Templates.Rms.empty_rms_template module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Templates.Rms.html#module-VeraGridEngine.Templates.Rms.esd1_rms_template">VeraGridEngine.Templates.Rms.esd1_rms_template module</a></li>
@@ -2995,10 +3014,15 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater"><code class="docutils literal notranslate"><span class="pre">BlockProceduralLogicUpdater</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.close"><code class="docutils literal notranslate"><span class="pre">BlockProceduralLogicUpdater.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.commit_boundary"><code class="docutils literal notranslate"><span class="pre">BlockProceduralLogicUpdater.commit_boundary()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.get_next_forced_event_time"><code class="docutils literal notranslate"><span class="pre">BlockProceduralLogicUpdater.get_next_forced_event_time()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.initialize_modes"><code class="docutils literal notranslate"><span class="pre">BlockProceduralLogicUpdater.initialize_modes()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.logic_entries"><code class="docutils literal notranslate"><span class="pre">BlockProceduralLogicUpdater.logic_entries</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.model_mode"><code class="docutils literal notranslate"><span class="pre">BlockProceduralLogicUpdater.model_mode</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.problem"><code class="docutils literal notranslate"><span class="pre">BlockProceduralLogicUpdater.problem</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.runtime_initialized"><code class="docutils literal notranslate"><span class="pre">BlockProceduralLogicUpdater.runtime_initialized</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.runtime_session"><code class="docutils literal notranslate"><span class="pre">BlockProceduralLogicUpdater.runtime_session</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.update"><code class="docutils literal notranslate"><span class="pre">BlockProceduralLogicUpdater.update()</span></code></a></li>
 </ul>
 </li>
@@ -3115,6 +3139,42 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.HardSaturationLogic.update"><code class="docutils literal notranslate"><span class="pre">HardSaturationLogic.update()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.IeeeCigreDllParameterOverride"><code class="docutils literal notranslate"><span class="pre">IeeeCigreDllParameterOverride</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.IeeeCigreDllParameterOverride.data_type"><code class="docutils literal notranslate"><span class="pre">IeeeCigreDllParameterOverride.data_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.IeeeCigreDllParameterOverride.fixed_value"><code class="docutils literal notranslate"><span class="pre">IeeeCigreDllParameterOverride.fixed_value</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.IeeeCigreDllParameterOverride.parameter_ordinal"><code class="docutils literal notranslate"><span class="pre">IeeeCigreDllParameterOverride.parameter_ordinal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.IeeeCigreDllParameterOverride.value"><code class="docutils literal notranslate"><span class="pre">IeeeCigreDllParameterOverride.value</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.IeeeCigreDllSignalBinding"><code class="docutils literal notranslate"><span class="pre">IeeeCigreDllSignalBinding</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.IeeeCigreDllSignalBinding.element_ordinal"><code class="docutils literal notranslate"><span class="pre">IeeeCigreDllSignalBinding.element_ordinal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.IeeeCigreDllSignalBinding.get_variable"><code class="docutils literal notranslate"><span class="pre">IeeeCigreDllSignalBinding.get_variable()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.IeeeCigreDllSignalBinding.is_input"><code class="docutils literal notranslate"><span class="pre">IeeeCigreDllSignalBinding.is_input</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.IeeeCigreDllSignalBinding.port_ordinal"><code class="docutils literal notranslate"><span class="pre">IeeeCigreDllSignalBinding.port_ordinal</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeControllerLogic"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeControllerLogic</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeControllerLogic.logic_tpe"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeControllerLogic.logic_tpe</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeControllerLogic.model_info_sha256"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeControllerLogic.model_info_sha256</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeControllerLogic.parameter_overrides"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeControllerLogic.parameter_overrides</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeControllerLogic.provider_idtag"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeControllerLogic.provider_idtag</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeControllerLogic.remap"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeControllerLogic.remap()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeControllerLogic.remap_with_structural_vars"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeControllerLogic.remap_with_structural_vars()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeControllerLogic.signal_bindings"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeControllerLogic.signal_bindings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeControllerLogic.to_data"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeControllerLogic.to_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeRebindPlan"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeRebindPlan</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeRebindPlan.consumer_idtag"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeRebindPlan.consumer_idtag</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeRebindPlan.destination_model_info_sha256"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeRebindPlan.destination_model_info_sha256</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeRebindPlan.destination_provider_idtag"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeRebindPlan.destination_provider_idtag</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeRebindPlan.replacement_override_records"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeRebindPlan.replacement_override_records</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeRebindPlan.replacement_signal_records"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeRebindPlan.replacement_signal_records</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeRebindPlan.source_model_info_sha256"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeRebindPlan.source_model_info_sha256</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeRebindPlan.source_occurrence_fingerprints"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeRebindPlan.source_occurrence_fingerprints</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ManufacturerNativeRebindPlan.source_provider_idtag"><code class="docutils literal notranslate"><span class="pre">ManufacturerNativeRebindPlan.source_provider_idtag</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.MovingAverageLogic"><code class="docutils literal notranslate"><span class="pre">MovingAverageLogic</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.MovingAverageLogic.bind"><code class="docutils literal notranslate"><span class="pre">MovingAverageLogic.bind()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.MovingAverageLogic.delay_expr"><code class="docutils literal notranslate"><span class="pre">MovingAverageLogic.delay_expr</span></code></a></li>
@@ -3155,6 +3215,7 @@
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ProceduralLogicBase.logic_tpe"><code class="docutils literal notranslate"><span class="pre">ProceduralLogicBase.logic_tpe</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ProceduralLogicBase.name"><code class="docutils literal notranslate"><span class="pre">ProceduralLogicBase.name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ProceduralLogicBase.remap"><code class="docutils literal notranslate"><span class="pre">ProceduralLogicBase.remap()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ProceduralLogicBase.remap_with_structural_vars"><code class="docutils literal notranslate"><span class="pre">ProceduralLogicBase.remap_with_structural_vars()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ProceduralLogicBase.to_data"><code class="docutils literal notranslate"><span class="pre">ProceduralLogicBase.to_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.html#VeraGridEngine.Utils.procedural_logic.ProceduralLogicBase.update"><code class="docutils literal notranslate"><span class="pre">ProceduralLogicBase.update()</span></code></a></li>
 </ul>
@@ -3438,7 +3499,7 @@ indices that best represent the whole time series. It included each sample proba
 
 <dl class="py function">
 <dt class="sig sig-object py" id="VeraGridEngine.api.continuation_power_flow">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.api.</span></span><span class="sig-name descname"><span class="pre">continuation_power_flow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">grid:</span> <span class="pre">~VeraGridEngine.Devices.multi_circuit.MultiCircuit,</span> <span class="pre">options:</span> <span class="pre">~VeraGridEngine.Simulations.ContinuationPowerFlow.continuation_power_flow_options.ContinuationPowerFlowOptions</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">pf_options:</span> <span class="pre">~VeraGridEngine.Simulations.PowerFlow.power_flow_options.PowerFlowOptions</span> <span class="pre">=</span> <span class="pre">.::aaf059a96b3346e9b0ed385873bb56c5::PowerFlowOptions,</span> <span class="pre">pf_results:</span> <span class="pre">~VeraGridEngine.Simulations.PowerFlow.power_flow_results.PowerFlowResults</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">factor:</span> <span class="pre">~numpy.ndarray[tuple[~typing.Any,</span> <span class="pre">...],</span> <span class="pre">~numpy.dtype[~numpy.float64]]</span> <span class="pre">|</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2.0,</span> <span class="pre">stop_at=CpfStopAt.Full</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Simulations.ShortCircuitStudies.html#VeraGridEngine.Simulations.ShortCircuitStudies.short_circuit_results.ShortCircuitResults" title="VeraGridEngine.Simulations.ShortCircuitStudies.short_circuit_results.ShortCircuitResults"><span class="pre">ShortCircuitResults</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/api.html#continuation_power_flow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.api.continuation_power_flow" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.api.</span></span><span class="sig-name descname"><span class="pre">continuation_power_flow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">grid:</span> <span class="pre">~VeraGridEngine.Devices.multi_circuit.MultiCircuit,</span> <span class="pre">options:</span> <span class="pre">~VeraGridEngine.Simulations.ContinuationPowerFlow.continuation_power_flow_options.ContinuationPowerFlowOptions</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">pf_options:</span> <span class="pre">~VeraGridEngine.Simulations.PowerFlow.power_flow_options.PowerFlowOptions</span> <span class="pre">=</span> <span class="pre">.::1ed564ab3cdc49288384081fbf5bbaa1::PowerFlowOptions,</span> <span class="pre">pf_results:</span> <span class="pre">~VeraGridEngine.Simulations.PowerFlow.power_flow_results.PowerFlowResults</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">factor:</span> <span class="pre">~numpy.ndarray[tuple[~typing.Any,</span> <span class="pre">...],</span> <span class="pre">~numpy.dtype[~numpy.float64]]</span> <span class="pre">|</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2.0,</span> <span class="pre">stop_at=CpfStopAt.Full</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Simulations.ShortCircuitStudies.html#VeraGridEngine.Simulations.ShortCircuitStudies.short_circuit_results.ShortCircuitResults" title="VeraGridEngine.Simulations.ShortCircuitStudies.short_circuit_results.ShortCircuitResults"><span class="pre">ShortCircuitResults</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/api.html#continuation_power_flow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.api.continuation_power_flow" title="Link to this definition"></a></dt>
 <dd><p>Run continuation power flow circuit
 :param grid: MultiCircuit instance
 :param options: ContinuationPowerFlowOptions instance (optional)
@@ -3460,7 +3521,7 @@ indices that best represent the whole time series. It included each sample proba
 
 <dl class="py function">
 <dt class="sig sig-object py" id="VeraGridEngine.api.linear_opf">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.api.</span></span><span class="sig-name descname"><span class="pre">linear_opf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.multi_circuit.MultiCircuit" title="VeraGridEngine.Devices.multi_circuit.MultiCircuit"><span class="pre">MultiCircuit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_options.OptimalPowerFlowOptions" title="VeraGridEngine.Simulations.OPF.opf_options.OptimalPowerFlowOptions"><span class="pre">OptimalPowerFlowOptions</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">.::a1f8b2e15d644575bd94876fd746aff0::Optimal</span> <span class="pre">power</span> <span class="pre">flow</span> <span class="pre">options</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_results.OptimalPowerFlowResults" title="VeraGridEngine.Simulations.OPF.opf_results.OptimalPowerFlowResults"><span class="pre">OptimalPowerFlowResults</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/api.html#linear_opf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.api.linear_opf" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.api.</span></span><span class="sig-name descname"><span class="pre">linear_opf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.multi_circuit.MultiCircuit" title="VeraGridEngine.Devices.multi_circuit.MultiCircuit"><span class="pre">MultiCircuit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_options.OptimalPowerFlowOptions" title="VeraGridEngine.Simulations.OPF.opf_options.OptimalPowerFlowOptions"><span class="pre">OptimalPowerFlowOptions</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">.::452a4c58540e4f05921a11cf6f0c6d04::Optimal</span> <span class="pre">power</span> <span class="pre">flow</span> <span class="pre">options</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_results.OptimalPowerFlowResults" title="VeraGridEngine.Simulations.OPF.opf_results.OptimalPowerFlowResults"><span class="pre">OptimalPowerFlowResults</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/api.html#linear_opf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.api.linear_opf" title="Link to this definition"></a></dt>
 <dd><p>Run Linear Optimal Power Flow
 :param grid: MultiCircuit instance
 :param options: Optimal Power Flow Options instance (optional)
@@ -3487,7 +3548,7 @@ indices that best represent the whole time series. It included each sample proba
 
 <dl class="py function">
 <dt class="sig sig-object py" id="VeraGridEngine.api.nonlinear_opf">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.api.</span></span><span class="sig-name descname"><span class="pre">nonlinear_opf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.multi_circuit.MultiCircuit" title="VeraGridEngine.Devices.multi_circuit.MultiCircuit"><span class="pre">MultiCircuit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">opf_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_options.OptimalPowerFlowOptions" title="VeraGridEngine.Simulations.OPF.opf_options.OptimalPowerFlowOptions"><span class="pre">OptimalPowerFlowOptions</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">.::d62c11d0c869416cad8325fa1b4c6c4a::Optimal</span> <span class="pre">power</span> <span class="pre">flow</span> <span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Simulations.OPF.Formulations.html#VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem.NonlinearOPFResults" title="VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem.NonlinearOPFResults"><span class="pre">NonlinearOPFResults</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/api.html#nonlinear_opf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.api.nonlinear_opf" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.api.</span></span><span class="sig-name descname"><span class="pre">nonlinear_opf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.multi_circuit.MultiCircuit" title="VeraGridEngine.Devices.multi_circuit.MultiCircuit"><span class="pre">MultiCircuit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">opf_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_options.OptimalPowerFlowOptions" title="VeraGridEngine.Simulations.OPF.opf_options.OptimalPowerFlowOptions"><span class="pre">OptimalPowerFlowOptions</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">.::76775dd9dfa843fd9cc91d1b9145af7d::Optimal</span> <span class="pre">power</span> <span class="pre">flow</span> <span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Simulations.OPF.Formulations.html#VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem.NonlinearOPFResults" title="VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem.NonlinearOPFResults"><span class="pre">NonlinearOPFResults</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/api.html#nonlinear_opf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.api.nonlinear_opf" title="Link to this definition"></a></dt>
 <dd><p>Run AC Optimal Power Flow
 :param grid: MultiCircuit instance
 :param opf_options: Optimal Power Flow Options instance (optional)
@@ -3608,7 +3669,7 @@ indices that best represent the whole time series. It included each sample proba
 
 <dl class="py function">
 <dt class="sig sig-object py" id="VeraGridEngine.api.short_circuit">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.api.</span></span><span class="sig-name descname"><span class="pre">short_circuit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.multi_circuit.MultiCircuit" title="VeraGridEngine.Devices.multi_circuit.MultiCircuit"><span class="pre">MultiCircuit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fault_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fault_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">LG</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pf_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_options.PowerFlowOptions" title="VeraGridEngine.Simulations.PowerFlow.power_flow_options.PowerFlowOptions"><span class="pre">PowerFlowOptions</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">.::6acedae41e004d13b4df8d1f911e53fb::PowerFlowOptions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pf_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_results.PowerFlowResults" title="VeraGridEngine.Simulations.PowerFlow.power_flow_results.PowerFlowResults"><span class="pre">PowerFlowResults</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pf_results3ph</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow3ph.html#VeraGridEngine.Simulations.PowerFlow3ph.power_flow_results_3ph.PowerFlowResults3Ph" title="VeraGridEngine.Simulations.PowerFlow3ph.power_flow_results_3ph.PowerFlowResults3Ph"><span class="pre">PowerFlowResults3Ph</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Simulations.ShortCircuitStudies.html#VeraGridEngine.Simulations.ShortCircuitStudies.short_circuit_results.ShortCircuitResults" title="VeraGridEngine.Simulations.ShortCircuitStudies.short_circuit_results.ShortCircuitResults"><span class="pre">ShortCircuitResults</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/api.html#short_circuit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.api.short_circuit" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.api.</span></span><span class="sig-name descname"><span class="pre">short_circuit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.multi_circuit.MultiCircuit" title="VeraGridEngine.Devices.multi_circuit.MultiCircuit"><span class="pre">MultiCircuit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fault_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fault_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">LG</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pf_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_options.PowerFlowOptions" title="VeraGridEngine.Simulations.PowerFlow.power_flow_options.PowerFlowOptions"><span class="pre">PowerFlowOptions</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">.::f6338f7155f5426d8814b0624d0b299d::PowerFlowOptions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pf_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_results.PowerFlowResults" title="VeraGridEngine.Simulations.PowerFlow.power_flow_results.PowerFlowResults"><span class="pre">PowerFlowResults</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pf_results3ph</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Simulations.PowerFlow3ph.html#VeraGridEngine.Simulations.PowerFlow3ph.power_flow_results_3ph.PowerFlowResults3Ph" title="VeraGridEngine.Simulations.PowerFlow3ph.power_flow_results_3ph.PowerFlowResults3Ph"><span class="pre">PowerFlowResults3Ph</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Simulations.ShortCircuitStudies.html#VeraGridEngine.Simulations.ShortCircuitStudies.short_circuit_results.ShortCircuitResults" title="VeraGridEngine.Simulations.ShortCircuitStudies.short_circuit_results.ShortCircuitResults"><span class="pre">ShortCircuitResults</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/api.html#short_circuit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.api.short_circuit" title="Link to this definition"></a></dt>
 <dd><p>Run short circuit
 :param grid: MultiCircuit instance
 :param fault_index: Bus fault index
@@ -3621,7 +3682,7 @@ indices that best represent the whole time series. It included each sample proba
 
 <dl class="py function">
 <dt class="sig sig-object py" id="VeraGridEngine.api.simple_opf">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.api.</span></span><span class="sig-name descname"><span class="pre">simple_opf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.multi_circuit.MultiCircuit" title="VeraGridEngine.Devices.multi_circuit.MultiCircuit"><span class="pre">MultiCircuit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_options.OptimalPowerFlowOptions" title="VeraGridEngine.Simulations.OPF.opf_options.OptimalPowerFlowOptions"><span class="pre">OptimalPowerFlowOptions</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">.::f164d6da4a9545b988ced95f72bdd7a6::Optimal</span> <span class="pre">power</span> <span class="pre">flow</span> <span class="pre">options</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_results.OptimalPowerFlowResults" title="VeraGridEngine.Simulations.OPF.opf_results.OptimalPowerFlowResults"><span class="pre">OptimalPowerFlowResults</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/api.html#simple_opf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.api.simple_opf" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.api.</span></span><span class="sig-name descname"><span class="pre">simple_opf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.multi_circuit.MultiCircuit" title="VeraGridEngine.Devices.multi_circuit.MultiCircuit"><span class="pre">MultiCircuit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_options.OptimalPowerFlowOptions" title="VeraGridEngine.Simulations.OPF.opf_options.OptimalPowerFlowOptions"><span class="pre">OptimalPowerFlowOptions</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">.::b3634e70d38046acaa1d6285a1b64bbf::Optimal</span> <span class="pre">power</span> <span class="pre">flow</span> <span class="pre">options</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_results.OptimalPowerFlowResults" title="VeraGridEngine.Simulations.OPF.opf_results.OptimalPowerFlowResults"><span class="pre">OptimalPowerFlowResults</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/api.html#simple_opf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.api.simple_opf" title="Link to this definition"></a></dt>
 <dd><p>Run Linear Optimal Power Flow
 :param grid: MultiCircuit instance
 :param options: Optimal Power Flow Options instance (optional)
@@ -6261,6 +6322,28 @@ returns the corresponding probability values given the CDF.
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.CableResistanceInput">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">CableResistanceInput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#CableResistanceInput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.CableResistanceInput" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Common input method for a cable’s core and sheath resistances.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.CableResistanceInput.DcResistance">
+<span class="sig-name descname"><span class="pre">DcResistance</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'DC</span> <span class="pre">resistance'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.CableResistanceInput.DcResistance" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.CableResistanceInput.Resistivity">
+<span class="sig-name descname"><span class="pre">Resistivity</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Resistivity</span> <span class="pre">and</span> <span class="pre">filling</span> <span class="pre">factor'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.CableResistanceInput.Resistivity" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.CableResistanceInput.argparse">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">argparse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#CableResistanceInput.argparse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.CableResistanceInput.argparse" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="VeraGridEngine.enumerations.CandidateKind">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">CandidateKind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#CandidateKind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.CandidateKind" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
@@ -7122,6 +7205,11 @@ returns the corresponding probability values given the CDF.
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.DeviceType.ManufacturerNativeModelDevice">
+<span class="sig-name descname"><span class="pre">ManufacturerNativeModelDevice</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Manufacturer</span> <span class="pre">native</span> <span class="pre">model'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.DeviceType.ManufacturerNativeModelDevice" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="VeraGridEngine.enumerations.DeviceType.MarketUnitDevice">
 <span class="sig-name descname"><span class="pre">MarketUnitDevice</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Market</span> <span class="pre">unit'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.DeviceType.MarketUnitDevice" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -7686,6 +7774,11 @@ returns the corresponding probability values given the CDF.
 <dl class="py attribute">
 <dt class="sig sig-object py" id="VeraGridEngine.enumerations.DynamicDeviceTemplateType.RMS_ESD1">
 <span class="sig-name descname"><span class="pre">RMS_ESD1</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'rms:get_esd1_rms_template'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.DynamicDeviceTemplateType.RMS_ESD1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.DynamicDeviceTemplateType.RMS_GENCLS">
+<span class="sig-name descname"><span class="pre">RMS_GENCLS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'rms:get_gencls_rms_template'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.DynamicDeviceTemplateType.RMS_GENCLS" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -9121,6 +9214,134 @@ every interface in that family.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllDataType">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">IeeeCigreDllDataType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#IeeeCigreDllDataType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllDataType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Primitive data types declared by the IEEE/CIGRE V1.1 ABI.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllDataType.CHAR">
+<span class="sig-name descname"><span class="pre">CHAR</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllDataType.CHAR" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllDataType.C_STRING">
+<span class="sig-name descname"><span class="pre">C_STRING</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllDataType.C_STRING" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllDataType.INT16">
+<span class="sig-name descname"><span class="pre">INT16</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllDataType.INT16" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllDataType.INT32">
+<span class="sig-name descname"><span class="pre">INT32</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllDataType.INT32" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllDataType.INT8">
+<span class="sig-name descname"><span class="pre">INT8</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllDataType.INT8" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllDataType.REAL32">
+<span class="sig-name descname"><span class="pre">REAL32</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllDataType.REAL32" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllDataType.REAL64">
+<span class="sig-name descname"><span class="pre">REAL64</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">9</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllDataType.REAL64" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllDataType.UINT16">
+<span class="sig-name descname"><span class="pre">UINT16</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllDataType.UINT16" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllDataType.UINT32">
+<span class="sig-name descname"><span class="pre">UINT32</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">7</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllDataType.UINT32" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllDataType.UINT8">
+<span class="sig-name descname"><span class="pre">UINT8</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllDataType.UINT8" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllModelMode">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">IeeeCigreDllModelMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#IeeeCigreDllModelMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllModelMode" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Simulation domains declared by an IEEE/CIGRE model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllModelMode.EMT">
+<span class="sig-name descname"><span class="pre">EMT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllModelMode.EMT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllModelMode.EMT_AND_RMS">
+<span class="sig-name descname"><span class="pre">EMT_AND_RMS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllModelMode.EMT_AND_RMS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllModelMode.RMS">
+<span class="sig-name descname"><span class="pre">RMS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllModelMode.RMS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllModelMode.UNSPECIFIED">
+<span class="sig-name descname"><span class="pre">UNSPECIFIED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllModelMode.UNSPECIFIED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllPlatform">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">IeeeCigreDllPlatform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#IeeeCigreDllPlatform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllPlatform" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Qualified host platforms for IEEE/CIGRE manufacturer libraries.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllPlatform.LINUX_X64">
+<span class="sig-name descname"><span class="pre">LINUX_X64</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'linux_x64'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllPlatform.LINUX_X64" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllPlatform.WINDOWS_X64">
+<span class="sig-name descname"><span class="pre">WINDOWS_X64</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'windows_x64'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllPlatform.WINDOWS_X64" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllPlatform.WINDOWS_X86">
+<span class="sig-name descname"><span class="pre">WINDOWS_X86</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'windows_x86'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllPlatform.WINDOWS_X86" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllVerificationStatus">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">IeeeCigreDllVerificationStatus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#IeeeCigreDllVerificationStatus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllVerificationStatus" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Verification state for one manufacturer binary variant.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllVerificationStatus.DECLARED_AND_QUALIFIED">
+<span class="sig-name descname"><span class="pre">DECLARED_AND_QUALIFIED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'declared_and_qualified'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllVerificationStatus.DECLARED_AND_QUALIFIED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllVerificationStatus.REJECTED">
+<span class="sig-name descname"><span class="pre">REJECTED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'rejected'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllVerificationStatus.REJECTED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.IeeeCigreDllVerificationStatus.UNVERIFIED">
+<span class="sig-name descname"><span class="pre">UNVERIFIED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'unverified'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.IeeeCigreDllVerificationStatus.UNVERIFIED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="VeraGridEngine.enumerations.InductionMachineRole">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">InductionMachineRole</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#InductionMachineRole"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.InductionMachineRole" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
@@ -10215,6 +10436,57 @@ every interface in that family.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.NativeCompilerFramework">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">NativeCompilerFramework</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#NativeCompilerFramework"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.NativeCompilerFramework" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Native compiler providers supported by VeraGrid build consumers.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.NativeCompilerFramework.CLANG_TOOL_CHAIN">
+<span class="sig-name descname"><span class="pre">CLANG_TOOL_CHAIN</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'clang_tool_chain'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.NativeCompilerFramework.CLANG_TOOL_CHAIN" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.NativeCompilerFramework.LOCAL_LLVM">
+<span class="sig-name descname"><span class="pre">LOCAL_LLVM</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'local_llvm'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.NativeCompilerFramework.LOCAL_LLVM" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.NativeModelInterface">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">NativeModelInterface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#NativeModelInterface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.NativeModelInterface" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Native manufacturer model interfaces recognized by VeraGrid.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.NativeModelInterface.IEC_ESE">
+<span class="sig-name descname"><span class="pre">IEC_ESE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'iec_ese'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.NativeModelInterface.IEC_ESE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.NativeModelInterface.IEEE_CIGRE_V1_0">
+<span class="sig-name descname"><span class="pre">IEEE_CIGRE_V1_0</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ieee_cigre_v1_0'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.NativeModelInterface.IEEE_CIGRE_V1_0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.NativeModelInterface.IEEE_CIGRE_V1_1">
+<span class="sig-name descname"><span class="pre">IEEE_CIGRE_V1_1</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ieee_cigre_v1_1'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.NativeModelInterface.IEEE_CIGRE_V1_1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.NativeSampleTimeSource">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">NativeSampleTimeSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#NativeSampleTimeSource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.NativeSampleTimeSource" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Origin of the effective sample time used by a native model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.NativeSampleTimeSource.MANUFACTURER_DECLARED">
+<span class="sig-name descname"><span class="pre">MANUFACTURER_DECLARED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'manufacturer_declared'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.NativeSampleTimeSource.MANUFACTURER_DECLARED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="VeraGridEngine.enumerations.NodalCapacityMethod">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">NodalCapacityMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#NodalCapacityMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.NodalCapacityMethod" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
@@ -11032,11 +11304,6 @@ every interface in that family.</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.enumerations.ParamPowerFlowReferenceType.fn">
-<span class="sig-name descname"><span class="pre">fn</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'fn'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.ParamPowerFlowReferenceType.fn" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="VeraGridEngine.enumerations.ParamPowerFlowReferenceType.freq">
 <span class="sig-name descname"><span class="pre">freq</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'freq'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.ParamPowerFlowReferenceType.freq" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -11145,6 +11412,39 @@ every interface in that family.</p>
 <dt class="sig sig-object py" id="VeraGridEngine.enumerations.ParamPowerFlowReferenceType.injection_connection_type">
 <span class="sig-name descname"><span class="pre">injection_connection_type</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'injection_connection_type'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.ParamPowerFlowReferenceType.injection_connection_type" title="Link to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.ParamPowerFlowReferenceType.is_legacy_governor_dynamic_reference">
+<span class="sig-name descname"><span class="pre">is_legacy_governor_dynamic_reference</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#ParamPowerFlowReferenceType.is_legacy_governor_dynamic_reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.ParamPowerFlowReferenceType.is_legacy_governor_dynamic_reference" title="Link to this definition"></a></dt>
+<dd><p>Return whether this key could identify an old governor dynamic value.</p>
+<p>Historical governor files wrote editable model parameters to both
+<code class="docutils literal notranslate"><span class="pre">Block.event_dict</span></code> and <code class="docutils literal notranslate"><span class="pre">Block.api_obj_mapping</span></code>. These references are
+retained in the enumeration so those files remain readable. The parser
+must additionally verify the complete legacy governor mapping signature,
+because <code class="docutils literal notranslate"><span class="pre">P0</span></code> is also a runtime operating-point reference in converter
+models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Whether this reference can identify an old governor dynamic value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.ParamPowerFlowReferenceType.is_runtime_parameter_reference">
+<span class="sig-name descname"><span class="pre">is_runtime_parameter_reference</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#ParamPowerFlowReferenceType.is_runtime_parameter_reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.ParamPowerFlowReferenceType.is_runtime_parameter_reference" title="Link to this definition"></a></dt>
+<dd><p>Return whether this key identifies a special runtime operating value.</p>
+<p>Generator sharing targets and converter operating controls depend on
+the initialized operating point and use dedicated runtime initialization
+paths. This classification does not decide whether a general API mapping
+target belongs to <code class="docutils literal notranslate"><span class="pre">Block.parameters</span></code> or <code class="docutils literal notranslate"><span class="pre">Block.event_dict</span></code>; that role
+is declared by the target block itself.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Whether the key uses a special operating-point runtime path.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="VeraGridEngine.enumerations.ParamPowerFlowReferenceType.l">
@@ -11274,6 +11574,11 @@ every interface in that family.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="VeraGridEngine.enumerations.ParamPowerFlowReferenceType.phN">
 <span class="sig-name descname"><span class="pre">phN</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'phN'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.ParamPowerFlowReferenceType.phN" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.ParamPowerFlowReferenceType.pv_rated_power_pu">
+<span class="sig-name descname"><span class="pre">pv_rated_power_pu</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'pv_rated_power_pu'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.ParamPowerFlowReferenceType.pv_rated_power_pu" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -11820,6 +12125,11 @@ every interface in that family.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="VeraGridEngine.enumerations.ProceduralLogicType.HardSaturation">
 <span class="sig-name descname"><span class="pre">HardSaturation</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'hard_saturation'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.ProceduralLogicType.HardSaturation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.ProceduralLogicType.ManufacturerNativeController">
+<span class="sig-name descname"><span class="pre">ManufacturerNativeController</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'manufacturer_native_controller'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.ProceduralLogicType.ManufacturerNativeController" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -14077,6 +14387,11 @@ particular simulation.</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.RmsInitializationMethod.ConsistentNewton">
+<span class="sig-name descname"><span class="pre">ConsistentNewton</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ConsistentNewton'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.RmsInitializationMethod.ConsistentNewton" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="VeraGridEngine.enumerations.RmsInitializationMethod.CustomValues">
 <span class="sig-name descname"><span class="pre">CustomValues</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'CustomValues'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.RmsInitializationMethod.CustomValues" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -15166,6 +15481,37 @@ algorithms supported by <strong>VeraGrid</strong>.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.StaticGeneratorControlMode">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">StaticGeneratorControlMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#StaticGeneratorControlMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.StaticGeneratorControlMode" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Reactive-power objectives of a static AC injection.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.StaticGeneratorControlMode.PQ">
+<span class="sig-name descname"><span class="pre">PQ</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'PQ'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.StaticGeneratorControlMode.PQ" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.StaticGeneratorControlMode.QVDroop">
+<span class="sig-name descname"><span class="pre">QVDroop</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Q-V</span> <span class="pre">droop'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.StaticGeneratorControlMode.QVDroop" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.StaticGeneratorControlMode.argparse">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">argparse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#VeraGridEngine.enumerations.StaticGeneratorControlMode" title="VeraGridEngine.enumerations.StaticGeneratorControlMode"><span class="pre">StaticGeneratorControlMode</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#StaticGeneratorControlMode.argparse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.StaticGeneratorControlMode.argparse" title="Link to this definition"></a></dt>
+<dd><p>Read a stored control objective using the existing enum convention.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> – Member name.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Enum member or the unrecognised input.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="VeraGridEngine.enumerations.StationControlBusSelection">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">StationControlBusSelection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#StationControlBusSelection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.StationControlBusSelection" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
@@ -15538,6 +15884,11 @@ algorithms supported by <strong>VeraGrid</strong>.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="VeraGridEngine.enumerations.SubObjectType.ListOfWires">
 <span class="sig-name descname"><span class="pre">ListOfWires</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ListOfWires'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.SubObjectType.ListOfWires" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.SubObjectType.ManufacturerNativeModelInfo">
+<span class="sig-name descname"><span class="pre">ManufacturerNativeModelInfo</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'IEEE</span> <span class="pre">CIGRE</span> <span class="pre">DLL</span> <span class="pre">ModelInfo'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.SubObjectType.ManufacturerNativeModelInfo" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -16051,6 +16402,28 @@ algorithms supported by <strong>VeraGrid</strong>.</p>
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">V_I_CurveSequenceType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_class_name</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#V_I_CurveSequenceType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.V_I_CurveSequenceType" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
 <p>Squence points type</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.ValidationFilterType">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.enumerations.</span></span><span class="sig-name descname"><span class="pre">ValidationFilterType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/enumerations.html#ValidationFilterType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.enumerations.ValidationFilterType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Available scopes for a grouped validation result collection.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.ValidationFilterType.ALL_CHECKS">
+<span class="sig-name descname"><span class="pre">ALL_CHECKS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'All</span> <span class="pre">checks'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.ValidationFilterType.ALL_CHECKS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.ValidationFilterType.ISSUES_ONLY">
+<span class="sig-name descname"><span class="pre">ISSUES_ONLY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Issues</span> <span class="pre">only'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.ValidationFilterType.ISSUES_ONLY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.enumerations.ValidationFilterType.SECTION">
+<span class="sig-name descname"><span class="pre">SECTION</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Section'</span></span><a class="headerlink" href="#VeraGridEngine.enumerations.ValidationFilterType.SECTION" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">

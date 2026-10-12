@@ -24,7 +24,7 @@ from typing import List
 
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
-from VeraGridEngine.enumerations import DeviceType
+from VeraGridEngine.enumerations import DeviceType, ParamPowerFlowReferenceType
 from VeraGridEngine.enumerations import VarPowerFlowReferenceType
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import Const
@@ -301,7 +301,7 @@ def set_rms_model_parameter(
     value: float,
     vfactory: VarFactory,
 ) -> None:
-    """Set exactly one named event parameter.
+    """Set exactly one named static or event parameter.
 
     The function fails if the parameter is absent or duplicated so an explicit
     model configuration can never leave a default active silently.
@@ -315,7 +315,7 @@ def set_rms_model_parameter(
     """
     matching_parameters: List[Var] = list()
     parameter: Var
-    for parameter in block.event_dict.keys():
+    for parameter in list(block.parameters) + list(block.event_dict):
         if parameter.name == parameter_name:
             matching_parameters.append(parameter)
         else:
@@ -329,7 +329,9 @@ def set_rms_model_parameter(
     else:
         pass
 
-    block.event_dict[matching_parameters[0]] = vfactory.add_const(
+    target = matching_parameters[0]
+    destination = block.parameters if target in block.parameters else block.event_dict
+    destination[target] = vfactory.add_const(
         value=value,
         name=parameter_name,
     )
@@ -754,7 +756,9 @@ def get_genrou_rms_template(
 
     block: Block = Block(name=name)
 
-    fn_var: Var = _add_parameter(block, vfactory, "fn", 60.0)
+    fn_var: Var = vfactory.add_var("fn")
+    block.parameters[fn_var] = vfactory.add_const(60.0)
+    block.api_obj_mapping[ParamPowerFlowReferenceType.freq] = fn_var
     ws_expr: Expr = sym.Const(2.0 * math.pi) * fn_var
     m_var: Var = _add_parameter(block, vfactory, "M", 8.0)
     d_var: Var = _add_parameter(block, vfactory, "D", 0.0)

@@ -19,10 +19,12 @@ from VeraGrid.Gui.DeviceEditors.UndergroundCableBuilder.underground_cable_builde
 )
 from VeraGrid.Gui.dialog_lifecycle import exec_dialog_safely
 from VeraGrid.Gui.general_dialogues import LogsDialogue
+from VeraGrid.Gui.gui_functions import ComboDelegate
 from VeraGrid.Gui.pandas_model import PandasModel
 from VeraGridEngine.basic_structures import CxMat, Logger
 from VeraGridEngine.Devices.Branches.underground_cable_type import UndergroundCableType
 from VeraGridEngine.Devices.Branches.underground_line_type import CableInSystem, UndergroundLineType
+from VeraGridEngine.enumerations import CableResistanceInput
 
 
 class UndergroundCableBuilderGUI(QtWidgets.QDialog):
@@ -62,6 +64,12 @@ class UndergroundCableBuilderGUI(QtWidgets.QDialog):
             edit_callback=self.compute,
         )
         self.ui.wires_tableView.setModel(self.catalogue_model)
+        mode_column = next(i for i, prop in enumerate(self.catalogue_model.properties)
+                           if prop.name == 'resistance_input')
+        modes = list(CableResistanceInput)
+        self.ui.wires_tableView.setItemDelegateForColumn(
+            mode_column, ComboDelegate(self.ui.wires_tableView, modes, [mode.value for mode in modes])
+        )
         self.ui.tower_tableView.setModel(self.composition_model)
         self.ui.wires_tableView.horizontalHeader().setSectionResizeMode(
             QtWidgets.QHeaderView.ResizeMode.ResizeToContents

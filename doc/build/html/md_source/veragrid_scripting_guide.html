@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📑 VeraGrid scripting guide &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>📑 VeraGrid scripting guide &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -150,7 +150,7 @@ project.</p>
 <li><p>the console, where individual commands can be executed interactively.</p></li>
 </ul>
 <p>Saved scripts are stored in the VeraGrid user folder under <code class="docutils literal notranslate"><span class="pre">scripts</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scripts_folder</span> <span class="o">=</span> <span class="n">user_folder</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;/scripts&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scripts_folder</span> <span class="o">=</span> <span class="n">user_folder</span><span class="p">()</span> <span class="o">+</span> <span class="s2">"/scripts"</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">scripts_folder</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -313,7 +313,7 @@ return their result directly and do not need <code class="docutils literal notra
 <span class="k">if</span> <span class="n">results</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No GUI power-flow result is available&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"No GUI power-flow result is available"</span><span class="p">)</span>
 </pre></div>
 </div>
 <table class="docutils align-default">
@@ -429,14 +429,14 @@ in the Results tab.</p>
 <section id="opening-and-saving-files">
 <h2>Opening and saving files<a class="headerlink" href="#opening-and-saving-files" title="Link to this heading"></a></h2>
 <p>Use the API helpers when the path is known.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;case.veragrid&quot;</span><span class="p">)</span>
-<span class="n">vg</span><span class="o">.</span><span class="n">save_file</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="s2">&quot;case_copy.veragrid&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"case.veragrid"</span><span class="p">)</span>
+<span class="n">vg</span><span class="o">.</span><span class="n">save_file</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="s2">"case_copy.veragrid"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>To make a file from a path the active GUI circuit, open it with the engine API
 and pass the loaded grid to the GUI setter. This replaces <code class="docutils literal notranslate"><span class="pre">app.circuit</span></code>, clears
 old study results, updates time controls, and creates a bus-branch diagram.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/grids/case.veragrid&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s2">"/home/user/grids/case.veragrid"</span>
 <span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
 <span class="n">app</span><span class="o">.</span><span class="n">set_circuit</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">create_diagram</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -448,8 +448,8 @@ old study results, updates time controls, and creates a bus-branch diagram.</p>
 scripted studies and do not need the schematic immediately.</p>
 <p>CGMES can be loaded from a ZIP file, a list of XML files, or a mixture of XML
 and ZIP boundary files.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">([</span><span class="s2">&quot;grid_EQ.xml&quot;</span><span class="p">,</span> <span class="s2">&quot;grid_TP.xml&quot;</span><span class="p">,</span> <span class="s2">&quot;grid_SV.xml&quot;</span><span class="p">])</span>
-<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_cgmes</span><span class="p">(</span><span class="s2">&quot;model_cgmes.zip&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">([</span><span class="s2">"grid_EQ.xml"</span><span class="p">,</span> <span class="s2">"grid_TP.xml"</span><span class="p">,</span> <span class="s2">"grid_SV.xml"</span><span class="p">])</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_cgmes</span><span class="p">(</span><span class="s2">"model_cgmes.zip"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>For CGMES export, provide the boundary set and optionally a solved power flow
@@ -458,8 +458,8 @@ so the SV profile can be written.</p>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">save_cgmes_file</span><span class="p">(</span>
     <span class="n">grid</span><span class="o">=</span><span class="n">app</span><span class="o">.</span><span class="n">circuit</span><span class="p">,</span>
-    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;exported_cgmes.zip&quot;</span><span class="p">,</span>
-    <span class="n">cgmes_boundary_set_path</span><span class="o">=</span><span class="s2">&quot;boundary.zip&quot;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">"exported_cgmes.zip"</span><span class="p">,</span>
+    <span class="n">cgmes_boundary_set_path</span><span class="o">=</span><span class="s2">"boundary.zip"</span><span class="p">,</span>
     <span class="n">cgmes_version</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">CGMESVersions</span><span class="o">.</span><span class="n">v2_4_15</span><span class="p">,</span>
     <span class="n">pf_results</span><span class="o">=</span><span class="n">pf_results</span><span class="p">,</span>
 <span class="p">)</span>
@@ -470,13 +470,13 @@ so the SV profile can be written.</p>
 <p>For PSS/E RAW or RAWX export with a selected time step, use <code class="docutils literal notranslate"><span class="pre">FileSave</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">options</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">FileSavingOptions</span><span class="p">(</span>
     <span class="n">file_type</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">FileType</span><span class="o">.</span><span class="n">PSSE_raw</span><span class="p">,</span>
-    <span class="n">raw_version</span><span class="o">=</span><span class="s2">&quot;35&quot;</span><span class="p">,</span>
+    <span class="n">raw_version</span><span class="o">=</span><span class="s2">"35"</span><span class="p">,</span>
     <span class="n">t_idx</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">vg</span><span class="o">.</span><span class="n">FileSave</span><span class="p">(</span>
     <span class="n">circuit</span><span class="o">=</span><span class="n">app</span><span class="o">.</span><span class="n">circuit</span><span class="p">,</span>
-    <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;network_t3.raw&quot;</span><span class="p">,</span>
+    <span class="n">file_name</span><span class="o">=</span><span class="s2">"network_t3.raw"</span><span class="p">,</span>
     <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
 <span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
@@ -488,13 +488,13 @@ so the SV profile can be written.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">circuit</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
-<span class="n">bus1</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Bus 1&quot;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">110.0</span><span class="p">))</span>
-<span class="n">bus2</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Bus 2&quot;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">110.0</span><span class="p">))</span>
+<span class="n">bus1</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Bus 1"</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">110.0</span><span class="p">))</span>
+<span class="n">bus2</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Bus 2"</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">110.0</span><span class="p">))</span>
 
-<span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;G1&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">100.0</span><span class="p">))</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;L2&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">80.0</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mf">30.0</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"G1"</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">100.0</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"L2"</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">80.0</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mf">30.0</span><span class="p">))</span>
 
-<span class="n">line</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus_from</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Line 1-2&quot;</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">line</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus_from</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Line 1-2"</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
 
 <span class="n">app</span><span class="o">.</span><span class="n">create_schematic_from_api</span><span class="p">()</span>
@@ -676,8 +676,8 @@ tolerances.</p>
 <p>Plot bus voltage magnitudes:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">voltage</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Bus index&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Voltage [p.u.]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Bus index"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Voltage [p.u.]"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -771,7 +771,7 @@ analysis can use linear factors or full power flow, depending on the options.</p
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">circuit</span>
 <span class="n">line</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="n">group</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">ContingencyGroup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Line 1 outage&quot;</span><span class="p">)</span>
+<span class="n">group</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">ContingencyGroup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Line 1 outage"</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_contingency_group</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
 
 <span class="n">contingency</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">Contingency</span><span class="p">(</span>
@@ -1111,11 +1111,11 @@ flow model.</p>
 Create the candidate investments in the grid first, then select the investment
 evaluation driver and options matching the optimization method documented in
 <code class="docutils literal notranslate"><span class="pre">investment_optimization.md</span></code> and <code class="docutils literal notranslate"><span class="pre">catalogue_element_optimization.md</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">group</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">InvestmentsGroup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Candidate reinforcements&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">group</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">InvestmentsGroup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Candidate reinforcements"</span><span class="p">)</span>
 <span class="n">app</span><span class="o">.</span><span class="n">circuit</span><span class="o">.</span><span class="n">add_investments_group</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
 
 <span class="n">investment</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">Investment</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Build line 1-2&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"Build line 1-2"</span><span class="p">,</span>
     <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span>
     <span class="n">CAPEX</span><span class="o">=</span><span class="mf">100000.0</span><span class="p">,</span>
 <span class="p">)</span>
@@ -1217,22 +1217,22 @@ matrix structures.</p>
 <p>Many result objects expose data-frame helpers.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pf</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">power_flow</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">circuit</span><span class="p">)</span>
 
-<span class="n">pf</span><span class="o">.</span><span class="n">get_bus_df</span><span class="p">()</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;bus_results.csv&quot;</span><span class="p">)</span>
-<span class="n">pf</span><span class="o">.</span><span class="n">get_branch_df</span><span class="p">()</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="s2">&quot;branch_results.xlsx&quot;</span><span class="p">)</span>
+<span class="n">pf</span><span class="o">.</span><span class="n">get_bus_df</span><span class="p">()</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"bus_results.csv"</span><span class="p">)</span>
+<span class="n">pf</span><span class="o">.</span><span class="n">get_branch_df</span><span class="p">()</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="s2">"branch_results.xlsx"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>When a result table is available through <code class="docutils literal notranslate"><span class="pre">mdl</span></code>, convert it through the table
 model:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">mdl</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">ResultTypes</span><span class="o">.</span><span class="n">BusVoltageModule</span><span class="p">)</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span>
-<span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;voltage_table.csv&quot;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"voltage_table.csv"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Matplotlib is already available as <code class="docutils literal notranslate"><span class="pre">plt</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pf</span><span class="o">.</span><span class="n">voltage</span><span class="p">),</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Bus&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Voltage [p.u.]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pf</span><span class="o">.</span><span class="n">voltage</span><span class="p">),</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Bus"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Voltage [p.u.]"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -1245,12 +1245,12 @@ model:</p>
 <span class="k">if</span> <span class="n">pf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">pf</span><span class="o">.</span><span class="n">get_bus_df</span><span class="p">())</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No result returned&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"No result returned"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Save model edits explicitly:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">app</span><span class="o">.</span><span class="n">circuit</span><span class="o">.</span><span class="n">buses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Main bus&quot;</span>
-<span class="n">vg</span><span class="o">.</span><span class="n">save_file</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">circuit</span><span class="p">,</span> <span class="s2">&quot;edited_case.veragrid&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">app</span><span class="o">.</span><span class="n">circuit</span><span class="o">.</span><span class="n">buses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"Main bus"</span>
+<span class="n">vg</span><span class="o">.</span><span class="n">save_file</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">circuit</span><span class="p">,</span> <span class="s2">"edited_case.veragrid"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Refresh the schematic after programmatic model edits:</p>
@@ -1259,7 +1259,7 @@ model:</p>
 </pre></div>
 </div>
 <p>Run the same calculation for many files:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;case1.veragrid&quot;</span><span class="p">,</span> <span class="s2">&quot;case2.veragrid&quot;</span><span class="p">,</span> <span class="s2">&quot;case3.veragrid&quot;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"case1.veragrid"</span><span class="p">,</span> <span class="s2">"case2.veragrid"</span><span class="p">,</span> <span class="s2">"case3.veragrid"</span><span class="p">]</span>
 <span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
 <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
@@ -1267,7 +1267,7 @@ model:</p>
     <span class="n">pf</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">power_flow</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
     <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">path</span><span class="p">,</span> <span class="nb">bool</span><span class="p">(</span><span class="n">pf</span><span class="o">.</span><span class="n">converged</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pf</span><span class="o">.</span><span class="n">loading</span><span class="p">)))])</span>
 
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="s2">&quot;converged&quot;</span><span class="p">,</span> <span class="s2">&quot;max_loading&quot;</span><span class="p">])</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"file"</span><span class="p">,</span> <span class="s2">"converged"</span><span class="p">,</span> <span class="s2">"max_loading"</span><span class="p">])</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </pre></div>
 </div>

@@ -20,7 +20,7 @@ from typing import List
 
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
-from VeraGridEngine.enumerations import DeviceType
+from VeraGridEngine.enumerations import DeviceType, ParamPowerFlowReferenceType
 from VeraGridEngine.enumerations import VarPowerFlowReferenceType
 from VeraGridEngine.Templates.Rms.genrou_exc_gov_rms_template import get_genrou_rms_template
 from VeraGridEngine.Templates.Rms.genrou_exc_gov_rms_template import get_tgov1_rms_template
@@ -185,7 +185,9 @@ def _get_bus_frequency_measurement_block(
     block: Block = Block(name=name)
     filter_time: Var = _add_parameter(block, vfactory, "Tf", 0.02)
     washout_time: Var = _add_parameter(block, vfactory, "Tw", 0.02)
-    nominal_frequency: Var = _add_parameter(block, vfactory, "fn", 60.0)
+    nominal_frequency: Var = vfactory.add_var("fn")
+    block.parameters[nominal_frequency] = vfactory.add_const(60.0)
+    block.api_obj_mapping[ParamPowerFlowReferenceType.freq] = nominal_frequency
     initial_angle: Var = _add_parameter(block, vfactory, "a0", None)
     inverse_nominal_speed: Expr = (
         sym.Const(1.0)

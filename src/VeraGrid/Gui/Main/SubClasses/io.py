@@ -43,6 +43,9 @@ from VeraGridEngine.IO.veragrid.contingency_parser import import_contingencies_f
 from VeraGridEngine.IO.veragrid.catalogue import save_catalogue, load_catalogue
 from VeraGridEngine.Compilers.Gslv.activation import install_gslv_license
 from VeraGrid.Gui.CatalogueElementsDialogue.catalogue_elements_dialogue import CatalogueElementsSelectionDialogue
+from VeraGrid.Gui.FmuTemplateEditor.fmu_template_editor import FmuTemplateEditorDialog
+from VeraGrid.Gui.ManufacturerNativeImporter.manufacturer_native_importer import ManufacturerNativeImporterDialog
+from VeraGridEngine.Devices.Dynamic.fmu_template import FmuTemplate
 
 
 def get_session_tree_icon_map(session_data_dict: Dict[str, Dict[str, List[str]]]) -> Dict[str, str]:
@@ -138,6 +141,8 @@ class IoMain(ScenariosMain):
         self.ui.actionNew_project.triggered.connect(self.new_project)
         self.ui.actionOpen_file.triggered.connect(self.open_file)
         self.ui.actionAdd_circuit.triggered.connect(self.import_circuit)
+        self.ui.actionImport_FMU.triggered.connect(self.import_oem_fmu_model)
+        self.ui.actionImport_IEEE_CIGRE_DLL.triggered.connect(self.import_oem_manufacturer_native_model)
         self.ui.actionExport_circuit_differential.triggered.connect(self.export_circuit_differential)
         self.ui.actionSave.triggered.connect(self.save_file)
         self.ui.actionSave_as.triggered.connect(self.save_file_as)
@@ -168,6 +173,63 @@ class IoMain(ScenariosMain):
         self.ui.exportSimulationDataButton.clicked.connect(self.export_simulation_data)
         self.ui.diskSessionsTreeView.customContextMenuRequested.connect(self.show_disk_sessions_context_menu)
         self.ui.diskSessionsTreeView.setContextMenuPolicy(QtGui.Qt.ContextMenuPolicy.CustomContextMenu)
+
+    def import_oem_fmu_model(self) -> None:
+        """
+        Import one manufacturer FMU as a reusable dynamic model template.
+
+        The dialog configures a transient template first, so cancelling or
+        rejecting invalid metadata leaves the circuit catalogue unchanged.
+
+        :return: None.
+        """
+        # Build the candidate outside the canonical catalogue. The template
+        # becomes project data only after the existing FMU editor validates it.
+        template_number: int = self.circuit.get_fmu_templates_number() + 1
+        candidate: FmuTemplate = FmuTemplate(name=f"FMU template {template_number}")
+        dialog: FmuTemplateEditorDialog = FmuTemplateEditorDialog(
+            circuit=self.circuit,
+            template=candidate,
+            project_directory=self.project_directory,
+            parent=self,
+        )
+        dialog_result: int = exec_dialog_safely(dialog=dialog)
+        import_accepted: bool = dialog_result == int(QtWidgets.QDialog.DialogCode.Accepted)
+        if import_accepted:
+            # Register the validated template once, then rebuild each open
+            # editor library from the circuit-owned catalogue.
+            self.circuit.add_fmu_template(candidate)
+            self.dynamic_editor_workspace_session.refresh_dynamic_library_templates(
+                circuit=self.circuit,
+            )
+            self.view_objects_data()
+        else:
+            pass
+
+    def import_oem_manufacturer_native_model(self) -> None:
+        """
+        Import one manufacturer supplied IEEE/CIGRE DLL or shared library.
+
+        The established importer qualifies the binary in an isolated worker
+        and updates the circuit only after all contract checks succeed.
+
+        :return: None.
+        """
+        dialog: ManufacturerNativeImporterDialog = ManufacturerNativeImporterDialog(
+            assets=self.circuit,
+            parent=self,
+        )
+        dialog_result: int = exec_dialog_safely(dialog=dialog)
+        import_accepted: bool = dialog_result == int(QtWidgets.QDialog.DialogCode.Accepted)
+        if import_accepted:
+            # Qualification may create provider-backed RMS and EMT templates.
+            # Refresh both the database view and every live editor catalogue.
+            self.dynamic_editor_workspace_session.refresh_dynamic_library_templates(
+                circuit=self.circuit,
+            )
+            self.view_objects_data()
+        else:
+            pass
 
     def check_extension(self, path: str) -> bool:
         """

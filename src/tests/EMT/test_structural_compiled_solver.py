@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Sequence, Tuple, cast
 
 import numba as nb
 import numpy as np
+import pytest
 from scipy.sparse import csc_matrix
 
 from VeraGridEngine.Utils.Symbolic.block import Block
@@ -16,13 +17,17 @@ from VeraGridEngine.Utils.Symbolic.diagnostic import (
     maybe_apply_backtracking,
     maybe_check_index1,
 )
-from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
-from VeraGridEngine.Utils.Symbolic.jit_compiler import EagerEquationCompiler
+from VeraGridEngine.Utils.Symbolic.symbolic import BinOp, Const, Expr, Func, UnOp, Var
+from VeraGridEngine.Utils.Symbolic.jit_compiler import EagerEquationCompiler, _fingerprint_codegen_expr
 from VeraGridEngine.Simulations.EMT.problems.emt_problem_template import EmtProblemTemplate
-from VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver import StructuralVectorizedSolver
+from VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver import (
+    StructuralVectorizedSolver,
+    canonicalize_expression as canonicalize_vectorized_expression,
+)
 from VeraGridEngine.Simulations.EMT.solvers.structural_compiled_solver import (
     StructuralCompiledBoundaryUpdateWrapper,
     StructuralCompiledSolver,
+    canonicalize_expression as canonicalize_compiled_expression,
 )
 from VeraGridEngine.enumerations import DynamicIntegrationMethod
 
@@ -91,6 +96,7 @@ def build_zero_dynamics_block() -> Block:
     x: Var = Var("x")
     dx: Var = Var("d_x", base_var=x)
 
+    held_output: Var = Var("held_native_output")
     block: Block = Block(
         name="ZeroDynamics",
         state_vars=[x],
@@ -99,6 +105,7 @@ def build_zero_dynamics_block() -> Block:
         parameters=dict(),
     )
     block.unify_blocks()
+    block.mode_dict = {held_output: Const(0.0)}
     return block
 
 
@@ -297,7 +304,15 @@ class ForcedEventTracker(StructuralCompiledBoundaryUpdateWrapper):
     :ivar query_calls: Record of get_next_forced_event_time calls.
     :ivar update_calls: Record of update() calls.
     """
-    __slots__ = ["_forced_times", "_tol", "_cursor", "query_calls", "update_calls"]
+    __slots__ = [
+        "_forced_times",
+        "_tol",
+        "_cursor",
+        "query_calls",
+        "update_calls",
+        "update_parameter_values",
+        "commit_calls",
+    ]
 
     def __init__(self, forced_times: Sequence[float], tol: float = 1e-12) -> None:
         self._forced_times = [float(v) for v in forced_times]
@@ -305,6 +320,8 @@ class ForcedEventTracker(StructuralCompiledBoundaryUpdateWrapper):
         self._cursor = 0
         self.query_calls: List[Tuple[float, float]] = list()
         self.update_calls: List[float] = list()
+        self.update_parameter_values: List[float] = list()
+        self.commit_calls: List[float] = list()
 
     def get_next_forced_event_time(self, t_prev: float, t_target: float) -> float | None:
         """Return next forced event time within the target interval."""
@@ -321,20 +338,643 @@ class ForcedEventTracker(StructuralCompiledBoundaryUpdateWrapper):
 
     def update(self, t: float, x: np.ndarray, params: np.ndarray) -> None:
         """Record update call and advance cursor."""
-        _unused = (x, params)
+        _unused: np.ndarray = x
         t_float: float = float(t)
         self.update_calls.append(t_float)
 
+        self.update_parameter_values.append(float(params[0]))
         while self._cursor < len(self._forced_times):
             if self._forced_times[self._cursor] <= t_float + self._tol:
                 self._cursor += 1
             else:
                 break
 
+    def commit_boundary(
+            self,
+            t: float,
+            x: np.ndarray,
+            params: np.ndarray,
+    ) -> None:
+        """Record one post-convergence manufacturer sample boundary.
+
+        :param t: Accepted solver boundary time.
+        :param x: Accepted network state.
+        :param params: Runtime parameter vector receiving held outputs.
+        :return: None.
+        """
+        _unused: np.ndarray = x
+        commit_time: float = float(t)
+        self.commit_calls.append(commit_time)
+        params[0] = commit_time
+
 
 # =============================================================================
 # TESTS
 # =============================================================================
+
+@pytest.mark.parametrize("compiled", (False, True))
+def test_canonical_signatures_preserve_runtime_derivative_roles(compiled: bool) -> None:
+    """
+    Check occurrence roles without changing UID-based runtime gather columns.
+
+    :param compiled: Whether to check the compiled backend canonicalizer.
+    :return: None.
+    """
+    x: Var = Var("role_x")
+    y: Var = Var("role_y")
+    dx: Var = Var("role_dx", base_var=x)
+    dy: Var = Var("role_dy", base_var=y)
+    x_alias: Var = Var("role_x", uid=x.uid)
+    dx_alias: Var = Var("role_dx", uid=dx.uid, base_var=x_alias)
+    expressions: List[Expr] = list((x, dx, y, dy, dx + x, dy + y,
+                                    dx_alias + x_alias, x + x, dx + dx,
+                                    dx + y, x + dy, dx_alias + y))
+    runtime_uids: set[int] = set((x.uid, y.uid))
+    signatures: List[str] = list("" for _ in expressions)
+    collected: List[List[Var]] = list(list() for _ in expressions)
+    expression_index: int
+    expression: Expr
+
+    # Renaming and aliasing may change objects, but must preserve structural roles.
+    for expression_index, expression in enumerate(expressions):
+        if compiled:
+            signatures[expression_index], collected[expression_index] = canonicalize_compiled_expression(
+                expression, runtime_uids, set(),
+            )
+        else:
+            signatures[expression_index], collected[expression_index] = canonicalize_vectorized_expression(
+                expression, runtime_uids, set(),
+            )
+
+    assert signatures[0] != signatures[1]
+    assert signatures[0] == signatures[2]
+    assert signatures[1] == signatures[3]
+    assert signatures[4] == signatures[5] == signatures[6]
+    assert signatures[7] != signatures[8]
+    assert signatures[9] == signatures[11]
+    assert signatures[9] != signatures[10]
+    assert signatures[4] != signatures[9]
+
+    # A value and its derivative still consume one base-variable column, even
+    # when the first occurrence is a derivative or a fresh same-UID alias.
+    for expression_index in (4, 6, 7, 8):
+        assert len(collected[expression_index]) == 1
+        variable: Var = collected[expression_index][0]
+        runtime_uid: int = variable.uid if variable.base_var is None else variable.base_var.uid
+        assert runtime_uid == x.uid
+    assert collected[9][0] is dx
+    assert collected[9][1] is y
+    assert collected[10][0] is x
+    assert collected[10][1] is dy
+
+
+@pytest.mark.parametrize("method", (DynamicIntegrationMethod.DaeBackEuler,
+                                   DynamicIntegrationMethod.DaeTrapezoidal,
+                                   DynamicIntegrationMethod.DaeBDF2))
+@pytest.mark.parametrize("compiled", (False, True))
+@pytest.mark.parametrize("permuted", (False, True))
+def test_structural_backends_separate_derivative_and_value_residuals(
+        method: DynamicIntegrationMethod, compiled: bool, permuted: bool,
+) -> None:
+    """
+    Compare grouped residuals and Jacobians with independent linear DAE oracles.
+
+    The system has two states satisfying ``x'=1`` and two algebraic rows
+    satisfying ``z-1=0``. Equivalent rows must share two kernels, while the
+    differential and algebraic roles must remain distinct. Fresh renamed models
+    and repeated evaluations cover sequential construction and warm execution.
+
+    :param method: Existing implicit discretization to verify.
+    :param compiled: Whether to construct the compiled structural backend.
+    :param permuted: Whether to reverse variable ordering independently of algebraic rows.
+    :return: None.
+    """
+    h: float = 0.1
+    epsilon: float = 1e-6
+    generation: int
+
+    for generation in range(2):
+        x0: Var = Var(f"mixed_{generation}_x0")
+        x1: Var = Var(f"mixed_{generation}_x1")
+        z0: Var = Var(f"mixed_{generation}_z0")
+        z1: Var = Var(f"mixed_{generation}_z1")
+        dx0: Var = Var(f"mixed_{generation}_dx0", base_var=x0)
+        dx1: Var = Var(f"mixed_{generation}_dx1", base_var=x1)
+        state_vars: List[Var]
+        algebraic_vars: List[Var]
+        diff_vars: List[Var]
+        if permuted:
+            state_vars = list((x1, x0))
+            algebraic_vars = list((z1, z0))
+            diff_vars = list((dx1, dx0))
+        else:
+            state_vars = list((x0, x1))
+            algebraic_vars = list((z0, z1))
+            diff_vars = list((dx0, dx1))
+        algebraic_z0: Var
+        algebraic_z1: Var
+        # Persisted expressions may refer to fresh objects sharing the runtime
+        # UID. Exercise that identity boundary through the actual grouped kernel.
+        if generation == 1:
+            algebraic_z0 = Var(z0.name, uid=z0.uid)
+            algebraic_z1 = Var(z1.name, uid=z1.uid)
+        else:
+            algebraic_z0 = z0
+            algebraic_z1 = z1
+        block: Block = Block(
+            name="MixedRuntimeRoles", state_vars=state_vars, algebraic_vars=algebraic_vars,
+            diff_vars=diff_vars, state_eqs=list((Const(1.0), Const(1.0))),
+            algebraic_eqs=list((algebraic_z0 - Const(1.0), algebraic_z1 - Const(1.0))),
+            parameters=dict(),
+        )
+        block.unify_blocks()
+        problem: GenericEmtProblem = GenericEmtProblem(
+            sys_block=block, glob_time=Var(f"mixed_{generation}_time"),
+            static_parameter_values_mapping=dict(),
+        )
+        assert problem.get_state_vars() == state_vars
+        assert problem.get_algebraic_vars() == algebraic_vars
+        history: np.ndarray = np.zeros(4, dtype=np.float64)
+        history2: np.ndarray = np.zeros(4, dtype=np.float64)
+        d_history: np.ndarray = np.zeros(4, dtype=np.float64)
+        history[problem.get_var_idx(x1)] = 0.2
+        history2[problem.get_var_idx(x0)] = -0.08
+        history2[problem.get_var_idx(x1)] = 0.11
+        d_history[problem.get_var_idx(x0)] = 1.0
+        d_history[problem.get_var_idx(x1)] = 0.7
+        params: np.ndarray = build_full_params(problem)
+        samples: np.ndarray = np.ones((11, 4), dtype=np.float64)
+        expected: np.ndarray = np.zeros_like(samples)
+        expected_jacobian: np.ndarray = np.zeros((4, 4), dtype=np.float64)
+        coefficient: float
+        row: int
+        variable: Var
+        column: int
+
+        # Solve each scalar history formula independently for the zero-residual
+        # point. Algebraic rows keep their own order when variables reverse.
+        for variable in state_vars:
+            column = problem.get_var_idx(variable)
+            if method == DynamicIntegrationMethod.DaeBackEuler:
+                samples[0, column] = history[column] + h
+            elif method == DynamicIntegrationMethod.DaeTrapezoidal:
+                samples[0, column] = history[column] + 0.5 * h * (1.0 + d_history[column])
+            else:
+                samples[0, column] = (h + 2.0 * history[column] - 0.5 * history2[column]) / 1.5
+        samples[1, problem.get_var_idx(x0)] = 0.15
+        samples[1, problem.get_var_idx(x1)] = 0.4
+        samples[1, problem.get_var_idx(z0)] = 1.25
+        samples[1, problem.get_var_idx(z1)] = 0.75
+        samples[2] = samples[1]
+        for column in range(4):
+            samples[3 + 2 * column] = samples[1]
+            samples[4 + 2 * column] = samples[1]
+            samples[3 + 2 * column, column] += epsilon
+            samples[4 + 2 * column, column] -= epsilon
+
+        # These analytic residuals do not call either compiler or canonicalizer.
+        for row, variable in enumerate(state_vars):
+            column = problem.get_var_idx(variable)
+            if method == DynamicIntegrationMethod.DaeBackEuler:
+                coefficient = 1.0 / h
+                expected[:, row] = (samples[:, column] - history[column]) / h - 1.0
+            elif method == DynamicIntegrationMethod.DaeTrapezoidal:
+                coefficient = 2.0 / h
+                expected[:, row] = 2.0 * (samples[:, column] - history[column]) / h - d_history[column] - 1.0
+            else:
+                coefficient = 1.5 / h
+                expected[:, row] = (
+                    1.5 * samples[:, column] - 2.0 * history[column] + 0.5 * history2[column]
+                ) / h - 1.0
+            expected_jacobian[row, column] = coefficient
+        for row, variable in enumerate((z0, z1), start=2):
+            column = problem.get_var_idx(variable)
+            expected[:, row] = samples[:, column] - 1.0
+            expected_jacobian[row, column] = 1.0
+
+        solver: StructuralCompiledSolver | StructuralVectorizedSolver
+        if compiled:
+            solver = StructuralCompiledSolver(
+                problem=problem, t0=0.0, t_end=0.2, h=h, method=method,
+                verbose=False, auto_build=True,
+            )
+            assert solver._residual_assembler is not None
+            assert len(solver._residual_assembler._kernel_specs) == 2
+        else:
+            solver = StructuralVectorizedSolver(
+                problem=problem, t0=0.0, t_end=0.2, h=h, method=method,
+                verbose=False, auto_vectorization=True,
+            )
+            assert len(solver.vec_kernels) == 2
+            assert solver._backend_build_stats["direct_residual_mode"] == 0.0
+
+        # Evaluate true grouped residuals including central-difference probes.
+        # An AD-only comparison would miss the original shared residual defect.
+        actual: np.ndarray = np.zeros_like(samples)
+        sample_index: int
+        sample: np.ndarray
+        for sample_index, sample in enumerate(samples):
+            if isinstance(solver, StructuralCompiledSolver):
+                assert solver._residual_assembler is not None
+                solver._residual_assembler.evaluate(
+                    sample, params, history, d_history, h, history2, actual[sample_index],
+                )
+            else:
+                solver.fused_residual.evaluate(
+                    sample, params, history, d_history, h, history2, actual[sample_index],
+                )
+        np.testing.assert_allclose(actual, expected, rtol=0.0, atol=1e-12)
+        np.testing.assert_allclose(actual[0], np.zeros(4), rtol=0.0, atol=1e-12)
+
+        jacobian: np.ndarray
+        if isinstance(solver, StructuralCompiledSolver):
+            assert solver._jacobian_evaluator is not None
+            jacobian = solver._jacobian_evaluator.evaluate(
+                samples[1], params, history, d_history, h, history2,
+            ).toarray()
+        else:
+            jacobian = solver.vec_jacobian(
+                samples[1], params, history, d_history, h, history2,
+            ).toarray()
+        finite_difference: np.ndarray = np.zeros((4, 4), dtype=np.float64)
+        for column in range(4):
+            finite_difference[:, column] = (
+                actual[3 + 2 * column] - actual[4 + 2 * column]
+            ) / (2.0 * epsilon)
+        np.testing.assert_allclose(jacobian, expected_jacobian, rtol=0.0, atol=1e-12)
+        np.testing.assert_allclose(finite_difference, expected_jacobian, rtol=1e-7, atol=1e-7)
+
+
+@pytest.mark.parametrize("method", (DynamicIntegrationMethod.DaeBackEuler,
+                                   DynamicIntegrationMethod.DaeTrapezoidal,
+                                   DynamicIntegrationMethod.DaeBDF2))
+@pytest.mark.parametrize("compiled", (False, True))
+@pytest.mark.parametrize("reverse_equations", (False, True))
+@pytest.mark.parametrize("permuted", (False, True))
+def test_structural_grouping_preserves_exact_constants(
+        method: DynamicIntegrationMethod, compiled: bool,
+        reverse_equations: bool, permuted: bool,
+) -> None:
+    """
+    Compare grouped kernels with each row's original constant and analytic slope.
+
+    Four nearby constants appear twice each. The next float after one must not
+    use the kernel containing one, even though a tolerant comparison would pass.
+    Independent equation and variable permutations exercise the gather contract.
+
+    :param method: Existing implicit discretization of the zero-dynamics state.
+    :param compiled: Whether to exercise the compiled structural backend.
+    :param reverse_equations: Whether to reverse the algebraic equation rows.
+    :param permuted: Whether to reverse the algebraic runtime variable vector.
+    :return: None.
+    """
+    constants: np.ndarray = np.array(
+        (1.0000001, 1.0000002, 1.0, float(np.nextafter(1.0, 2.0))), dtype=np.float64,
+    )
+    h: float = 0.1
+    epsilon: float = 1e-6
+    generation: int
+
+    # A second, renamed construction must also remain correct with warm caches
+    # and same-UID expression aliases, independently of the first template.
+    for generation in range(2):
+        x: Var = Var(f"exact_{generation}_x")
+        dx: Var = Var(f"exact_{generation}_dx", base_var=x)
+        variables: List[Var] = list(Var(f"exact_{generation}_z{i}") for i in range(8))
+        ordered_variables: List[Var]
+        if permuted:
+            ordered_variables = list(reversed(variables))
+        else:
+            ordered_variables = list(variables)
+        equation_order: np.ndarray = np.arange(8, dtype=np.int32)
+        if reverse_equations:
+            equation_order = equation_order[::-1].copy()
+        else:
+            pass
+        equations: List[Expr] = list(Const(0.0) for _ in range(8))
+        row: int
+        source_index: np.int32
+        variable: Var
+        for row, source_index in enumerate(equation_order):
+            if generation == 1:
+                variable = Var(variables[source_index].name, uid=variables[source_index].uid)
+            else:
+                variable = variables[source_index]
+            equations[row] = variable - Const(float(constants[source_index // 2]))
+        block: Block = Block(
+            name="ExactStructuralConstants", state_vars=list((x,)), diff_vars=list((dx,)),
+            state_eqs=list((Const(0.0),)), algebraic_vars=ordered_variables,
+            algebraic_eqs=equations, parameters=dict(),
+        )
+        block.unify_blocks()
+        problem: GenericEmtProblem = GenericEmtProblem(
+            sys_block=block, glob_time=Var(f"exact_{generation}_time"),
+            static_parameter_values_mapping=dict(),
+        )
+        solver: StructuralCompiledSolver | StructuralVectorizedSolver
+        if compiled:
+            solver = StructuralCompiledSolver(
+                problem=problem, t0=0.0, t_end=0.2, h=h, method=method,
+                verbose=False, auto_build=True,
+            )
+        else:
+            solver = StructuralVectorizedSolver(
+                problem=problem, t0=0.0, t_end=0.2, h=h, method=method,
+                verbose=False, auto_vectorization=True,
+            )
+            assert solver._backend_build_stats["direct_residual_mode"] == 0.0
+        params: np.ndarray = build_full_params(problem)
+        history: np.ndarray = np.zeros(9, dtype=np.float64)
+        history2: np.ndarray = np.zeros(9, dtype=np.float64)
+        d_history: np.ndarray = np.zeros(9, dtype=np.float64)
+        state_column: int = problem.get_var_idx(x)
+        history[state_column] = 0.13
+        history2[state_column] = 0.08
+        d_history[state_column] = 0.07
+        samples: np.ndarray = np.zeros((21, 9), dtype=np.float64)
+        samples[1] = np.linspace(0.3, 2.1, 9)
+        samples[2] = samples[1]
+        column: int
+        for column in range(9):
+            samples[3 + 2 * column] = samples[1]
+            samples[4 + 2 * column] = samples[1]
+            samples[3 + 2 * column, column] += epsilon
+            samples[4 + 2 * column, column] -= epsilon
+        expected: np.ndarray = np.zeros_like(samples)
+        expected_jacobian: np.ndarray = np.zeros((9, 9), dtype=np.float64)
+        coefficient: float
+
+        # Compute the scalar discretization and each literal residual without
+        # either canonicalizer or compiler, so shared mistakes cannot agree.
+        if method == DynamicIntegrationMethod.DaeBackEuler:
+            coefficient = 1.0 / h
+            expected[:, 0] = (samples[:, state_column] - history[state_column]) / h
+        elif method == DynamicIntegrationMethod.DaeTrapezoidal:
+            coefficient = 2.0 / h
+            expected[:, 0] = (
+                2.0 * (samples[:, state_column] - history[state_column]) / h
+                - d_history[state_column]
+            )
+        else:
+            coefficient = 1.5 / h
+            expected[:, 0] = (
+                1.5 * samples[:, state_column] - 2.0 * history[state_column]
+                + 0.5 * history2[state_column]
+            ) / h
+        expected_jacobian[0, state_column] = coefficient
+        for row, source_index in enumerate(equation_order, start=1):
+            column = problem.get_var_idx(variables[source_index])
+            expected[:, row] = samples[:, column] - constants[source_index // 2]
+            expected_jacobian[row, column] = 1.0
+        actual: np.ndarray = np.zeros_like(samples)
+        sample_index: int
+        sample: np.ndarray
+        for sample_index, sample in enumerate(samples):
+            if isinstance(solver, StructuralCompiledSolver):
+                assert solver._residual_assembler is not None
+                solver._residual_assembler.evaluate(
+                    sample, params, history, d_history, h, history2, actual[sample_index],
+                )
+            else:
+                solver.fused_residual.evaluate(
+                    sample, params, history, d_history, h, history2, actual[sample_index],
+                )
+
+        # Exact zero-input subtraction exposes even a one-ulp substitution.
+        # Equal literal pairs must still batch; fixing this by disabling grouping
+        # would violate the five-group invariant.
+        np.testing.assert_array_equal(actual[0, 1:], expected[0, 1:])
+        np.testing.assert_allclose(actual, expected, rtol=0.0, atol=1e-12)
+        np.testing.assert_array_equal(actual[1], actual[2])
+        jacobian: np.ndarray
+        if isinstance(solver, StructuralCompiledSolver):
+            assert solver._residual_assembler is not None
+            assert len(solver._residual_assembler._kernel_specs) == 5
+            assert solver._jacobian_evaluator is not None
+            jacobian = solver._jacobian_evaluator.evaluate(
+                samples[1], params, history, d_history, h, history2,
+            ).toarray()
+        else:
+            assert len(solver.vec_kernels) == 5
+            jacobian = solver.vec_jacobian(
+                samples[1], params, history, d_history, h, history2,
+            ).toarray()
+        finite_difference: np.ndarray = np.zeros((9, 9), dtype=np.float64)
+        for column in range(9):
+            finite_difference[:, column] = (
+                actual[3 + 2 * column] - actual[4 + 2 * column]
+            ) / (2.0 * epsilon)
+        np.testing.assert_allclose(jacobian, expected_jacobian, rtol=0.0, atol=1e-12)
+        np.testing.assert_allclose(finite_difference, expected_jacobian, rtol=1e-7, atol=1e-7)
+
+
+@pytest.mark.parametrize("compiled", (False, True))
+def test_structural_signatures_preserve_binding_semantics(compiled: bool) -> None:
+    """
+    Check lossless tokens, occurrence bindings and unchanged default fingerprints.
+
+    Parameters with identical names remain bound by UID. Their independent
+    grouped residuals must read modified input parameters without rebuilding.
+    Captured scalar and matrix fingerprint strings guard the absent-context path.
+
+    :param compiled: Whether to use the compiled backend's keyword-compatible entry.
+    :return: None.
+    """
+    x: Var = Var("binding_x")
+    y: Var = Var("binding_y")
+    dx: Var = Var("binding_dx", base_var=x)
+    dy: Var = Var("binding_dy", base_var=y)
+    x_alias: Var = Var(x.name, uid=x.uid)
+    dx_alias: Var = Var(dx.name, uid=dx.uid, base_var=x_alias)
+    k0: Var = Var("shared_parameter_name")
+    k1: Var = Var("shared_parameter_name")
+    k0_alias: Var = Var(k0.name, uid=k0.uid)
+    runtime_uids: set[int] = set((x.uid, y.uid))
+    parameter_uids: set[int] = set((k0.uid, k1.uid))
+    constants: Tuple[float | int, ...] = (
+        1.0000001, 1.0000002, 1.0, float(np.nextafter(1.0, 2.0)), 0.0, -0.0,
+        1e-10, 1.0000001e-10, -1.0000001, -1.0000002,
+        1e100, float(np.nextafter(1e100, np.inf)), 9007199254740992, 9007199254740993, 1,
+    )
+    literal_signatures: List[str] = list("" for _ in constants)
+    index: int
+    value: float | int
+    gathered: List[Var]
+
+    # Literal identity is conservative: signed zero, integer versus float and
+    # large integers must not disappear through an intermediate float cast.
+    for index, value in enumerate(constants):
+        if compiled:
+            literal_signatures[index], gathered = canonicalize_compiled_expression(
+                expr=Const(value), runtime_uids=runtime_uids, parameter_uids=parameter_uids,
+            )
+        else:
+            literal_signatures[index], gathered = canonicalize_vectorized_expression(
+                expr=Const(value), runtime_uids=runtime_uids, param_uids=parameter_uids,
+            )
+        assert len(gathered) == 0
+    assert len(set(literal_signatures)) == len(constants)
+
+    expressions: Tuple[Expr, ...] = (
+        x, dx, y, dy, dx + x, dy + y, dx_alias + x_alias,
+        x + y, y + x, dx + y, x + dy, x - Const(2) * y, Const(2) * x - y,
+        BinOp(x, "/", y), BinOp(x, "*", y), BinOp(x, "+", y),
+        Func(UnOp("-", dx - y), "sin"), Func(UnOp("-", dy - x), "sin"),
+        Func(UnOp("-", dx_alias - y), "sin"), Func(UnOp("-", x - dy), "sin"),
+        UnOp("-", x), Func(x, "sin"), k0 - x, k1 - x, k0_alias - x,
+        dx + dx, x + x,
+    )
+    signatures: List[str] = list("" for _ in expressions)
+    collected: List[List[Var]] = list(list() for _ in expressions)
+    expression: Expr
+    for index, expression in enumerate(expressions):
+        if compiled:
+            signatures[index], collected[index] = canonicalize_compiled_expression(
+                expr=expression, runtime_uids=runtime_uids, parameter_uids=parameter_uids,
+            )
+        else:
+            signatures[index], collected[index] = canonicalize_vectorized_expression(
+                expr=expression, runtime_uids=runtime_uids, param_uids=parameter_uids,
+            )
+    assert signatures[0] == signatures[2] != signatures[1]
+    assert signatures[1] == signatures[3]
+    assert signatures[4] == signatures[5] == signatures[6]
+    assert signatures[7] == signatures[8] == signatures[15]
+    assert signatures[9] != signatures[10]
+    assert signatures[11] != signatures[12]
+    assert len(set(signatures[13:16])) == 3
+    assert signatures[16] == signatures[17] == signatures[18]
+    assert signatures[16] != signatures[19]
+    assert signatures[20].startswith("U[-|")
+    assert signatures[21].startswith("F[sin|")
+    assert signatures[22] == signatures[24] != signatures[23]
+    assert signatures[25] != signatures[26]
+    assert collected[7][0] is x and collected[7][1] is y
+    assert collected[8][0] is y and collected[8][1] is x
+    assert collected[16][0] is dx and collected[16][1] is y
+    assert collected[18][0] is dx_alias and collected[18][1] is y
+    assert collected[22][0] is x and len(collected[22]) == 1
+    for index in (4, 5, 6, 25, 26):
+        assert len(collected[index]) == 1
+
+    # An overlapping classification retains runtime precedence. Unclassified
+    # supported variables still fail before a template can enter a group.
+    overlapping_signature: str
+    overlapping_vars: List[Var]
+    if compiled:
+        overlapping_signature, overlapping_vars = canonicalize_compiled_expression(
+            expr=x, runtime_uids=runtime_uids, parameter_uids=set((x.uid,)),
+        )
+    else:
+        overlapping_signature, overlapping_vars = canonicalize_vectorized_expression(
+            expr=x, runtime_uids=runtime_uids, param_uids=set((x.uid,)),
+        )
+    assert overlapping_signature == signatures[0]
+    assert len(overlapping_vars) == 1 and overlapping_vars[0] is x
+    unknown: Var = Var("unclassified_binding")
+    with pytest.raises(RuntimeError):
+        if compiled:
+            canonicalize_compiled_expression(unknown, runtime_uids, parameter_uids)
+        else:
+            canonicalize_vectorized_expression(unknown, runtime_uids, parameter_uids)
+
+    # These golden strings were captured before the refactor from all three
+    # default cache contexts, including a derivative beneath a unary function.
+    default_expressions: Tuple[Expr, ...] = (
+        Const(1.0000000000000002), Const(-0.0), Const(9007199254740993), x - k0, y - x,
+        UnOp("-", Func(dx + x, "sin")), dx * x,
+    )
+    contexts: Tuple[Tuple[Dict[str, int] | None, Dict[int, int] | None], ...] = (
+        (None, None), (None, dict(((x.uid, 1),))), (dict(((x.name, 0), (y.name, 1))), None),
+    )
+    expected_fingerprints: Tuple[Tuple[str, ...], ...] = (
+        ("C[1.0000000000000002]", "C[-0.0]", "C[9007199254740993]", "B[-|S0|P0]",
+         "B[-|S1|S0]", "U[-|F[sin|B[+|D[Trapezoidal|S0|H0]|S0]]]",
+         "B[*|D[Trapezoidal|S0|H0]|S0]"),
+        ("C[1.0000000000000002]", "C[-0.0]", "C[9007199254740993]", "B[-|S0|P0]",
+         "B[-|S1|S0]", "U[-|F[sin|B[+|D[Trapezoidal|S0|H1]|S0]]]",
+         "B[*|D[Trapezoidal|S0|H1]|S0]"),
+        ("C[1.0000000000000002]", "C[-0.0]", "C[9007199254740993]", "B[-|M0|P0]",
+         "B[-|M1|M0]", "U[-|F[sin|B[+|D[Trapezoidal|M0]|M0]]]",
+         "B[*|D[Trapezoidal|M0]|M0]"),
+    )
+    var_map: Dict[int, int] = dict(((x.uid, 0), (y.uid, 1)))
+    param_map: Dict[int, int] = dict(((k0.uid, 0),))
+    context_index: int
+    col_map: Dict[str, int] | None
+    diff_map: Dict[int, int] | None
+    for context_index, (col_map, diff_map) in enumerate(contexts):
+        for index, expression in enumerate(default_expressions):
+            assert _fingerprint_codegen_expr(
+                expression, var_map, param_map, "Trapezoidal", col_map, diff_map,
+            ) == expected_fingerprints[context_index][index]
+
+    # Same-named global parameters must retain separate concrete vector entries,
+    # even when their initial values coincide and runtime rows are renamed.
+    generation: int
+    for generation in range(2):
+        state: Var = Var(f"parameter_{generation}_state")
+        derivative: Var = Var(f"parameter_{generation}_derivative", base_var=state)
+        variables: List[Var] = list(Var(f"parameter_{generation}_z{i}") for i in range(4))
+        p0: Var = Var("same_parameter_name")
+        p1: Var = Var("same_parameter_name")
+        block: Block = Block(
+            name="ParameterBindingGroups", state_vars=list((state,)),
+            diff_vars=list((derivative,)), state_eqs=list((Const(0.0),)),
+            algebraic_vars=list(reversed(variables)),
+            algebraic_eqs=list((variables[0] - p0, variables[1] - p0,
+                               variables[2] - p1, variables[3] - p1)),
+            parameters=dict(((p0, Const(1.0)), (p1, Const(1.0)))),
+        )
+        block.unify_blocks()
+        problem: GenericEmtProblem = GenericEmtProblem(
+            sys_block=block, glob_time=Var(f"parameter_{generation}_time"),
+            static_parameter_values_mapping=dict(),
+        )
+        solver: StructuralCompiledSolver | StructuralVectorizedSolver
+        if compiled:
+            solver = StructuralCompiledSolver(
+                problem=problem, t0=0.0, t_end=0.2, h=0.1,
+                method=DynamicIntegrationMethod.DaeBackEuler, verbose=False, auto_build=True,
+            )
+            assert solver._residual_assembler is not None
+            assert len(solver._residual_assembler._kernel_specs) == 3
+        else:
+            solver = StructuralVectorizedSolver(
+                problem=problem, t0=0.0, t_end=0.2, h=0.1,
+                method=DynamicIntegrationMethod.DaeBackEuler, verbose=False, auto_vectorization=True,
+            )
+            assert solver._backend_build_stats["direct_residual_mode"] == 0.0
+            assert len(solver.vec_kernels) == 3
+        params: np.ndarray = build_full_params(problem)
+        p0_column: int = problem.get_variable_parameter_number() + problem.get_constant_parameters().index(p0)
+        p1_column: int = problem.get_variable_parameter_number() + problem.get_constant_parameters().index(p1)
+        assert p0_column != p1_column
+        sample: np.ndarray = np.zeros(5, dtype=np.float64)
+        history: np.ndarray = np.zeros(5, dtype=np.float64)
+        row: int
+        variable: Var
+        for row, variable in enumerate(variables):
+            sample[problem.get_var_idx(variable)] = 0.25 * (row + 1)
+        actual: np.ndarray = np.zeros(5, dtype=np.float64)
+        expected: np.ndarray = np.zeros(5, dtype=np.float64)
+        p0_value: float
+        p1_value: float
+        for p0_value, p1_value in ((1.0, 1.0), (2.0, 7.0), (-4.0, 0.25), (1.0, 1.0)):
+            params[p0_column] = p0_value
+            params[p1_column] = p1_value
+            for row, variable in enumerate(variables, start=1):
+                if row <= 2:
+                    expected[row] = sample[problem.get_var_idx(variable)] - p0_value
+                else:
+                    expected[row] = sample[problem.get_var_idx(variable)] - p1_value
+            if isinstance(solver, StructuralCompiledSolver):
+                assert solver._residual_assembler is not None
+                solver._residual_assembler.evaluate(sample, params, history, history, 0.1, history, actual)
+            else:
+                solver.fused_residual.evaluate(sample, params, history, history, 0.1, history, actual)
+            np.testing.assert_array_equal(actual, expected)
+
 
 def test_eager_compiler_smoke_for_residual_ad_and_matrix_kernels() -> None:
     """
@@ -733,8 +1373,20 @@ def test_structural_compiled_solver_uses_forced_alignment_and_boundary_updates()
     )
 
     rounded_updates: List[float] = [round(v, 8) for v in updater.update_calls]
+    np.testing.assert_allclose(
+        np.array(updater.update_parameter_values, dtype=np.float64),
+        np.array([0.00, 0.00, 0.05, 0.10, 0.15], dtype=np.float64),
+        rtol=0.0,
+        atol=1e-12,
+    )
     assert 0.05 in rounded_updates
     assert 0.15 in rounded_updates
+    np.testing.assert_allclose(
+        np.array(updater.commit_calls, dtype=np.float64),
+        np.array([0.05, 0.10, 0.15, 0.20], dtype=np.float64),
+        rtol=0.0,
+        atol=1e-12,
+    )
 
 
 def test_structural_solvers_record_newton_trace_data() -> None:
@@ -1033,5 +1685,4 @@ def test_index1_guard_triggers_runtime_error_during_simulation() -> None:
 
 
 if __name__ == "__main__":
-    import pytest
     pytest.main([__file__, "-v"])

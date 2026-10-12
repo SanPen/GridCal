@@ -1092,6 +1092,10 @@ class EditableDevice(metaclass=EditableDeviceMeta):
                 # return the normal property
                 return getattr(self, prop.name)
 
+    def is_property_editable(self, prop: GCProp) -> bool:
+        """Return instance-specific GUI editability without mutating shared metadata."""
+        return prop.editable
+
     def set_value(self, prop: GCProp, t_idx: Union[None, int], value: Any) -> None:
         """
         Return value regardless of the property index

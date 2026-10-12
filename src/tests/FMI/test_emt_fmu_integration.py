@@ -8,11 +8,12 @@ import pytest
 from VeraGridEngine.Devices.Events.emt_events_group import EmtEventsGroup
 from VeraGridEngine.Devices.Injections.load import Load
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
-from VeraGridEngine.IO.fmu.exporter.build import host_build_capable
-from VeraGridEngine.IO.fmu.exporter.compat import Block, Var
-from VeraGridEngine.IO.fmu.importer.bindings import FmuRefBinding
-from VeraGridEngine.IO.fmu.importer.model_description import FmuInterfaceMode
-from VeraGridEngine.IO.fmu.importer.user_api import (
+from VeraGridEngine.IO.fmu.CosimulationInterface.build import host_build_capable
+from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Utils.Symbolic.symbolic import Var
+from VeraGridEngine.IO.fmu.Elements.bindings import FmuRefBinding
+from VeraGridEngine.IO.fmu.model_description import FmuInterfaceMode
+from VeraGridEngine.IO.fmu.fmu_device_integration import (
     FmuDeviceAttachmentRequest,
     FmuDeviceDomain,
     FmuReferenceValue,
@@ -63,10 +64,13 @@ def test_emt_fmu_co_simulation_runs_end_to_end(tmp_path: Path) -> None:
         driver: EmtSimulationDriver
         load: Load
         fmu_path: Path
+        # The time proxy divides current by the 0.01 ramp slope. Resolve each
+        # 5 us EMT sample below that scale before checking the 100 us FMU step.
         driver, load, fmu_path = execute_test_emt_fmu_case(
             output_dir=run_directory,
             mode=FmuInterfaceMode.CO_SIMULATION,
             fmi_version=fmi_version,
+            emt_tolerance=1.0e-9,
         )
 
         if driver.results is None:

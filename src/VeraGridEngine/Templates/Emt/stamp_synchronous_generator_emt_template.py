@@ -169,19 +169,7 @@ def get_stamp_synchronous_machine_6th_order_emt_template(
     templ.block.name = name
 
     templ.block.event_dict = {
-        xq: vf.add_const(1.70),
-        xdp: vf.add_const(0.30),
-        xqp: vf.add_const(0.55),
-        xdpp: vf.add_const(0.25),
-        xqpp: vf.add_const(0.25),
-        xl: vf.add_const(0.20),
-        x0: vf.add_const(0.14),
-        td0p: vf.add_const(8.0),
-        tq0p: vf.add_const(0.4),
-        td0pp: vf.add_const(0.03),
-        tq0pp: vf.add_const(0.05),
         h: vf.add_const(6.5),
-        d: vf.add_const(0.0),
         omega_s: vf.add_const(1.0),
         gamma_d1: (xdpp - xl) / (xdp - xl),
         gamma_q1: (xqpp - xl) / (xqp - xl),
@@ -197,6 +185,23 @@ def get_stamp_synchronous_machine_6th_order_emt_template(
         p_c: vf.add_const(None),
         q_c: vf.add_const(None),
     }
+    templ.block.parameters.update({
+        omega_b: vf.add_const(None),
+        ra: vf.add_const(None),
+        xd: vf.add_const(None),
+        xq: vf.add_const(1.70),
+        xdp: vf.add_const(0.30),
+        xqp: vf.add_const(0.55),
+        xdpp: vf.add_const(0.25),
+        xqpp: vf.add_const(0.25),
+        xl: vf.add_const(0.20),
+        x0: vf.add_const(0.14),
+        td0p: vf.add_const(8.0),
+        tq0p: vf.add_const(0.4),
+        td0pp: vf.add_const(0.03),
+        tq0pp: vf.add_const(0.05),
+        d: vf.add_const(0.0),
+    })
 
     templ.block.api_obj_mapping = {
         ParamPowerFlowReferenceType.omega_base: omega_b,
@@ -610,15 +615,6 @@ def get_stamp_synchronous_generator_emt_template(
         VarPowerFlowReferenceType.Q_B: gen_mdl.external_mapping[VarPowerFlowReferenceType.Q_B],
         VarPowerFlowReferenceType.P_C: gen_mdl.external_mapping[VarPowerFlowReferenceType.P_C],
         VarPowerFlowReferenceType.Q_C: gen_mdl.external_mapping[VarPowerFlowReferenceType.Q_C],
-    }
-
-    templ.block.api_obj_mapping = {
-        ParamPowerFlowReferenceType.omega_base: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.omega_base],
-        ParamPowerFlowReferenceType.R1: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.R1],
-        ParamPowerFlowReferenceType.X1: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.X1],
-        ParamPowerFlowReferenceType.X0: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.X0],
-        ParamPowerFlowReferenceType.generator_share_p_ref:
-            governor_mdl.api_obj_mapping[ParamPowerFlowReferenceType.generator_share_p_ref],
     }
 
     return templ

@@ -468,10 +468,15 @@ class Var(Expr):
         super().__init__(uid=uid)
         # Preserve the physical variable identity independently from the
         # mutable UID used to represent the currently connected signal.
+
+        resolved_non_mutable_uid: int
+
         if non_mutable_uid is None:
-            self.non_mutable_uid: int = _new_uid() if uid is None else uid
+            resolved_non_mutable_uid = self.uid
         else:
-            self.non_mutable_uid = non_mutable_uid
+            resolved_non_mutable_uid = non_mutable_uid
+
+        self.non_mutable_uid: int = resolved_non_mutable_uid
         self.name: str = name
         self._ref: VarPowerFlowReferenceType | None = reference
         self._network_conn: bool = network_conn

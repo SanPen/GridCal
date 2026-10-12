@@ -27,6 +27,10 @@ from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.dae_code_linter impo
     find_text_diagnostic,
     normalize_algebraic_equality_syntax,
 )
+from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.add_symbol_dialog import (
+    AddSymbolDialog,
+    AddSymbolSelection,
+)
 from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.dynamic_block_properties import (
     BlockCodeBuffer,
     BlockEquationDraft,

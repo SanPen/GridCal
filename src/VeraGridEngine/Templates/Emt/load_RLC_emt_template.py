@@ -1070,23 +1070,19 @@ def _get_delta_shunt_rlc_combo_emt_template(
     return templ
 
 
-def _build_resistor_api_mapping(pl0_vars: Dict[str, Var]) -> Dict[ParamPowerFlowReferenceType, Var | None]:
+def _build_resistor_api_mapping(pl0_vars: Dict[str, Var]) -> Dict[ParamPowerFlowReferenceType, Var]:
     """Build the API mapping for an EMT shunt resistor.
 
     :param pl0_vars: Active per-phase active-power variables.
     :return: API mapping dictionary.
     """
-    # Only active phases publish parameter variables so the generated metadata
-    # remains dimensionally aligned with the equations created above.
-    mapping: Dict[ParamPowerFlowReferenceType, Var | None] = dict({
-        ParamPowerFlowReferenceType.omega_base: None,
-        ParamPowerFlowReferenceType.Pl0_A: pl0_vars.get("A", None),
-        ParamPowerFlowReferenceType.Pl0_B: pl0_vars.get("B", None),
-        ParamPowerFlowReferenceType.Pl0_C: pl0_vars.get("C", None),
-        ParamPowerFlowReferenceType.Ql0_A: None,
-        ParamPowerFlowReferenceType.Ql0_B: None,
-        ParamPowerFlowReferenceType.Ql0_C: None,
-    })
+    # Only active phases publish mapping entries. A missing physical phase is
+    # represented by an absent key, never by an API key with a ``None`` target.
+    mapping: Dict[ParamPowerFlowReferenceType, Var] = dict()
+    phase_label: str
+    pl0_var: Var
+    for phase_label, pl0_var in pl0_vars.items():
+        mapping[_get_pl0_reference(phase_label=phase_label)] = pl0_var
 
     return mapping
 
@@ -1094,24 +1090,23 @@ def _build_resistor_api_mapping(pl0_vars: Dict[str, Var]) -> Dict[ParamPowerFlow
 def _build_reactive_api_mapping(
     omega_base_var: Var,
     ql0_vars: Dict[str, Var],
-) -> Dict[ParamPowerFlowReferenceType, Var | None]:
+) -> Dict[ParamPowerFlowReferenceType, Var]:
     """Build the API mapping for an EMT shunt inductor or capacitor.
 
     :param omega_base_var: Shared base-frequency variable.
     :param ql0_vars: Active per-phase reactive-power variables.
     :return: API mapping dictionary.
     """
-    # The EMT initializer writes base frequency and per-phase reactive power into
-    # these enum slots before the symbolic expressions are evaluated.
-    mapping: Dict[ParamPowerFlowReferenceType, Var | None] = dict({
+    # The EMT initializer writes base frequency and active-phase reactive power
+    # through concrete owner-local targets. Inactive and unrelated references
+    # stay absent instead of publishing placeholder mappings.
+    mapping: Dict[ParamPowerFlowReferenceType, Var] = dict({
         ParamPowerFlowReferenceType.omega_base: omega_base_var,
-        ParamPowerFlowReferenceType.Pl0_A: None,
-        ParamPowerFlowReferenceType.Pl0_B: None,
-        ParamPowerFlowReferenceType.Pl0_C: None,
-        ParamPowerFlowReferenceType.Ql0_A: ql0_vars.get("A", None),
-        ParamPowerFlowReferenceType.Ql0_B: ql0_vars.get("B", None),
-        ParamPowerFlowReferenceType.Ql0_C: ql0_vars.get("C", None),
     })
+    phase_label: str
+    ql0_var: Var
+    for phase_label, ql0_var in ql0_vars.items():
+        mapping[_get_ql0_reference(phase_label=phase_label)] = ql0_var
 
     return mapping
 
@@ -1205,8 +1200,6 @@ def get_shunt_r_emt_template(
     templ.block.children.append(block)
     templ.block.name = resolved_name
     templ.block.external_mapping = block.external_mapping
-    templ.block.api_obj_mapping = block.api_obj_mapping
-    templ.block.parameters = block.parameters
     templ.block.in_vars = block.in_vars
     templ.block.out_vars = block.out_vars
 
@@ -1254,6 +1247,7 @@ def get_shunt_l_emt_template(
     vnom_var: Var = vf.add_var("Vnom_" + resolved_name)
     block = Block()
     block.event_dict[vnom_var] = vf.add_const(1.0)
+    block.parameters[omega_base_var] = vf.add_const(None)
 
     for phase_label in active_phases:
         # Each active phase gets one terminal input, one current state, and one
@@ -1270,6 +1264,7 @@ def get_shunt_l_emt_template(
 
         ql0_var: Var = vf.add_var(f"Ql0_{phase_label}")
         ql0_vars[phase_label] = ql0_var
+        block.parameters[ql0_var] = vf.add_const(None)
         block.event_dict[inductance_var] = vnom_var ** 2 / (ql0_var * omega_base_var)
 
         current_var: Var = vf.add_var(
@@ -1298,8 +1293,6 @@ def get_shunt_l_emt_template(
     templ.block.children.append(block)
     templ.block.name = resolved_name
     templ.block.external_mapping = block.external_mapping
-    templ.block.api_obj_mapping = block.api_obj_mapping
-    templ.block.parameters = block.parameters
     templ.block.in_vars = block.in_vars
     templ.block.out_vars = block.out_vars
 
@@ -1349,6 +1342,7 @@ def get_shunt_c_emt_template(
 
     block = Block()
     block.event_dict[vnom_var] = vf.add_const(1.0)
+    block.parameters[omega_base_var] = vf.add_const(None)
 
     for phase_label in active_phases:
         # Each active phase gets one bus voltage input, one implicit capacitor
@@ -1365,6 +1359,7 @@ def get_shunt_c_emt_template(
 
         ql0_var: Var = vf.add_var(f"Ql0_{phase_label}")
         ql0_vars[phase_label] = ql0_var
+        block.parameters[ql0_var] = vf.add_const(None)
         block.event_dict[capacitance_var] = ql0_var / (vnom_var ** 2 * omega_base_var)
 
         current_var: Var = vf.add_var(
@@ -1401,8 +1396,6 @@ def get_shunt_c_emt_template(
     templ.block.children.append(block)
     templ.block.name = resolved_name
     templ.block.external_mapping = block.external_mapping
-    templ.block.api_obj_mapping = block.api_obj_mapping
-    templ.block.parameters = block.parameters
     templ.block.in_vars = block.in_vars
     templ.block.out_vars = block.out_vars
 
@@ -1641,6 +1634,7 @@ def get_shunt_rlc_combo_emt_template(
 
         omega_base_var = vf.add_var("w_base_" + name)
         templ.block.api_obj_mapping[ParamPowerFlowReferenceType.omega_base] = omega_base_var
+        templ.block.parameters[omega_base_var] = vf.add_const(None)
     else:
         pass
 
@@ -1661,6 +1655,7 @@ def get_shunt_rlc_combo_emt_template(
             if direct_r_value is None:
                 pl0_var: Var = vf.add_var(f"Pl0_{phase_label}")
                 templ.block.api_obj_mapping[_get_pl0_reference(phase_label)] = pl0_var
+                templ.block.parameters[pl0_var] = vf.add_const(None)
                 if vnom_var is None:
                     raise ValueError("Missing nominal-voltage variable for EMT RLC resistor initialization")
                 else:
@@ -1680,6 +1675,7 @@ def get_shunt_rlc_combo_emt_template(
             if direct_l_value is None:
                 ql0_var: Var = vf.add_var(f"Ql0_{phase_label}")
                 templ.block.api_obj_mapping[_get_ql0_reference(phase_label)] = ql0_var
+                templ.block.parameters[ql0_var] = vf.add_const(None)
                 if vnom_var is None or omega_base_var is None:
                     raise ValueError("Missing base variables for EMT RLC inductive initialization")
                 else:
@@ -1705,6 +1701,7 @@ def get_shunt_rlc_combo_emt_template(
             if direct_c_value is None:
                 ql0_var = vf.add_var(f"Ql0_{phase_label}")
                 templ.block.api_obj_mapping[_get_ql0_reference(phase_label)] = ql0_var
+                templ.block.parameters[ql0_var] = vf.add_const(None)
                 if vnom_var is None or omega_base_var is None:
                     raise ValueError("Missing base variables for EMT RLC capacitive initialization")
                 else:

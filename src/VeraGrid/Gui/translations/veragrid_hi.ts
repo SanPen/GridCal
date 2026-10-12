@@ -1344,7 +1344,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
     <message>
         <source>Are you sure that you want to delete_with_dialogue the selected elements?</source>
-        <translation>क्या आप चयनित तत्वों को delete_with_dialogue करना चाहते हैं?</translation>
+        <translation type="vanished">क्या आप चयनित तत्वों को delete_with_dialogue करना चाहते हैं?</translation>
     </message>
     <message>
         <source>Are you sure that you want to duplicate the selected elements?</source>
@@ -1564,6 +1564,18 @@ Are you sure?</source>
         <source>{device_type} {property_name} distribution</source>
         <translation>{device_type} {property_name} वितरण</translation>
     </message>
+    <message>
+        <source>Are you sure that you want to delete the selected elements?</source>
+        <translation>क्या आप निश्चित हैं कि आप चयनित तत्वों को हटाना चाहते हैं?</translation>
+    </message>
+    <message>
+        <source>Element in use</source>
+        <translation>उपयोग में तत्व</translation>
+    </message>
+    <message>
+        <source>The element is still referenced by: {names}</source>
+        <translation>तत्व अभी भी निम्न द्वारा संदर्भित है: {names}</translation>
+    </message>
 </context>
 <context>
     <name>DcLineDeviceEditor</name>
@@ -1580,15 +1592,43 @@ Are you sure?</source>
     <name>DcLineEditor</name>
     <message>
         <source>Line editor</source>
-        <translation>लाइन संपादक</translation>
+        <translation type="vanished">लाइन संपादक</translation>
     </message>
     <message>
         <source>Load template</source>
-        <translation>टेम्पलेट लोड करें</translation>
+        <translation type="vanished">टेम्पलेट लोड करें</translation>
     </message>
     <message>
         <source>The template {template_name} contains errors</source>
-        <translation>टेम्पलेट {template_name} में त्रुटियाँ हैं</translation>
+        <translation type="vanished">टेम्पलेट {template_name} में त्रुटियाँ हैं</translation>
+    </message>
+    <message>
+        <source>Apply Cable System</source>
+        <translation>केबल सिस्टम लागू करें</translation>
+    </message>
+    <message>
+        <source>Available Cable Systems</source>
+        <translation>उपलब्ध केबल सिस्टम</translation>
+    </message>
+    <message>
+        <source>Branch current rating [kA] @ {voltage:g} kV</source>
+        <translation>शाखा करंट रेटिंग [kA] @ {voltage:g} kV</translation>
+    </message>
+    <message>
+        <source>Cable System conductor</source>
+        <translation>केबल सिस्टम कंडक्टर</translation>
+    </message>
+    <message>
+        <source>DC line editor</source>
+        <translation>DC लाइन संपादक</translation>
+    </message>
+    <message>
+        <source>Positive length, voltage and power base are required</source>
+        <translation>सकारात्मक लंबाई, वोल्टेज और पावर बेस आवश्यक हैं</translation>
+    </message>
+    <message>
+        <source>Use Cable System</source>
+        <translation>केबल सिस्टम का उपयोग करें</translation>
     </message>
 </context>
 <context>
@@ -2614,6 +2654,38 @@ Are you sure?</source>
         <source>This symbol is not available in dynamic results. Apply and save model changes before adding a new symbol to a plot.</source>
         <translation>यह प्रतीक डायनेमिक परिणामों में उपलब्ध नहीं है। प्लॉट में नया प्रतीक जोड़ने से पहले मॉडल परिवर्तनों को लागू करें और सहेजें।</translation>
     </message>
+    <message>
+        <source>Invalid — ModelInfo digest mismatch</source>
+        <translation>अमान्य — ModelInfo डाइजेस्ट बेमेल</translation>
+    </message>
+    <message>
+        <source>Invalid — provider not found</source>
+        <translation>अमान्य — प्रदाता नहीं मिला</translation>
+    </message>
+    <message>
+        <source>Manufacturer native controller
+Provider: {provider}
+Interface: {interface}    Domain: {domain}
+Inputs: {input_count}    Outputs: {output_count}
+Reference: {status}</source>
+        <translation>निर्माता मूल नियंत्रक
+प्रदाता: {provider}
+इंटरफ़ेस: {interface}    डोमेन: {domain}
+इनपुट्स: {input_count}    आउटपुट्स: {output_count}
+संदर्भ: {status}</translation>
+    </message>
+    <message>
+        <source>Missing provider</source>
+        <translation>प्रदाता अनुपलब्ध</translation>
+    </message>
+    <message>
+        <source>Unavailable</source>
+        <translation>अनुपलब्ध</translation>
+    </message>
+    <message>
+        <source>Valid</source>
+        <translation>मान्य</translation>
+    </message>
 </context>
 <context>
     <name>DynamicBlockPropertiesDialog</name>
@@ -3071,6 +3143,18 @@ Are you sure?</source>
     <message>
         <source>Apply the new symbol before adding it to a plot</source>
         <translation>प्लॉट में जोड़ने से पहले नया प्रतीक लागू करें</translation>
+    </message>
+    <message>
+        <source>Block properties - {name} (read-only manufacturer model)</source>
+        <translation>ब्लॉक गुण - {name} (केवल पढ़ने योग्य निर्माता मॉडल)</translation>
+    </message>
+    <message>
+        <source>Manufacturer model bindings are managed by their provider and are read-only here.</source>
+        <translation>निर्माता मॉडल बाइंडिंग उनके प्रदाता द्वारा प्रबंधित की जाती हैं और यहां केवल पढ़ने योग्य हैं।</translation>
+    </message>
+    <message>
+        <source>Manufacturer model bindings are read-only in Block Properties.</source>
+        <translation>निर्माता मॉडल बाइंडिंग ब्लॉक गुणों में केवल पढ़ने योग्य होती हैं।</translation>
     </message>
 </context>
 <context>
@@ -12965,6 +13049,10 @@ You need to load or create a grid!</source>
         <source>PhysicalDeviceType</source>
         <translation>PhysicalDeviceType</translation>
     </message>
+    <message>
+        <source>Manufacturer native model</source>
+        <translation>निर्माता मूल मॉडल</translation>
+    </message>
 </context>
 <context>
     <name>VerticalHeaderWidthResizer</name>
@@ -13177,7 +13265,7 @@ You need to load or create a grid!</source>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="86"/>
-        <location filename="../Main/MainWindow.ui" line="11256"/>
+        <location filename="../Main/MainWindow.ui" line="11258"/>
         <source>Model</source>
         <translation>मॉडल</translation>
     </message>
@@ -13678,7 +13766,7 @@ You need to load or create a grid!</source>
     <message>
         <location filename="../Main/MainWindow.ui" line="2391"/>
         <location filename="../Main/MainWindow.ui" line="2456"/>
-        <location filename="../Main/MainWindow.ui" line="13028"/>
+        <location filename="../Main/MainWindow.ui" line="13054"/>
         <source>Results</source>
         <translation>परिणाम</translation>
     </message>
@@ -13773,37 +13861,37 @@ You need to load or create a grid!</source>
         <translation type="vanished">इंटरफ़ेस अनलॉक करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12854"/>
+        <location filename="../Main/MainWindow.ui" line="12880"/>
         <source>Add RMS event</source>
         <translation>RMS इवेंट जोड़ें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12857"/>
+        <location filename="../Main/MainWindow.ui" line="12883"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add RMS event&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Open the Dynamic events editor preferring RMS events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;RMS इवेंट जोड़ें&lt;/span&gt;&lt;/p&gt;&lt;p&gt;RMS इवेंट को प्राथमिकता देते हुए डायनेमिक इवेंट्स संपादक खोलें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13079"/>
+        <location filename="../Main/MainWindow.ui" line="13105"/>
         <source>Candidate investment generator</source>
         <translation>उम्मीदवार निवेश जनरेटर</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13082"/>
+        <location filename="../Main/MainWindow.ui" line="13108"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Candidate investment generator&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Generate candidate reinforcements (new lines and upgrades) for N-1 violations via LODF/PTDF screening&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Candidate investment generator&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Generate candidate reinforcements (new lines and upgrades) for N-1 violations via LODF/PTDF screening&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13185"/>
+        <location filename="../Main/MainWindow.ui" line="13211"/>
         <source>Add EMT event</source>
         <translation>EMT इवेंट जोड़ें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13188"/>
+        <location filename="../Main/MainWindow.ui" line="13214"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add EMT event&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Open the Dynamic events editor preferring EMT events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;EMT इवेंट जोड़ें&lt;/span&gt;&lt;/p&gt;&lt;p&gt;EMT इवेंट को प्राथमिकता देते हुए डायनेमिक इवेंट्स संपादक खोलें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13260"/>
+        <location filename="../Main/MainWindow.ui" line="13286"/>
         <source>Community chat</source>
         <translation>सामुदायिक चैट</translation>
     </message>
@@ -14308,7 +14396,7 @@ You need to load or create a grid!</source>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="5043"/>
-        <location filename="../Main/MainWindow.ui" line="11570"/>
+        <location filename="../Main/MainWindow.ui" line="11572"/>
         <source>Continuation power flow</source>
         <translation>सतत शक्ति प्रवाह</translation>
     </message>
@@ -14339,7 +14427,7 @@ You need to load or create a grid!</source>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="5312"/>
-        <location filename="../Main/MainWindow.ui" line="12884"/>
+        <location filename="../Main/MainWindow.ui" line="12910"/>
         <source>State estimation</source>
         <translation>राज्य का अनुमान</translation>
     </message>
@@ -14705,8 +14793,8 @@ You need to load or create a grid!</source>
     <message>
         <location filename="../Main/MainWindow.ui" line="6497"/>
         <location filename="../Main/MainWindow.ui" line="7569"/>
-        <location filename="../Main/MainWindow.ui" line="13019"/>
-        <location filename="../Main/MainWindow.ui" line="13046"/>
+        <location filename="../Main/MainWindow.ui" line="13045"/>
+        <location filename="../Main/MainWindow.ui" line="13072"/>
         <source>Contingencies</source>
         <translation>आकस्मिकताएँ</translation>
     </message>
@@ -15187,7 +15275,7 @@ You need to load or create a grid!</source>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="9335"/>
-        <location filename="../Main/MainWindow.ui" line="12374"/>
+        <location filename="../Main/MainWindow.ui" line="12400"/>
         <source>Clustering</source>
         <translation>क्लस्टरिंग</translation>
     </message>
@@ -15284,7 +15372,7 @@ You need to load or create a grid!</source>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="9983"/>
-        <location filename="../Main/MainWindow.ui" line="11555"/>
+        <location filename="../Main/MainWindow.ui" line="11557"/>
         <source>Stochastic power flow</source>
         <translation>स्टोकेस्टिक शक्ति प्रवाह</translation>
     </message>
@@ -15330,7 +15418,7 @@ You need to load or create a grid!</source>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="10298"/>
-        <location filename="../Main/MainWindow.ui" line="12791"/>
+        <location filename="../Main/MainWindow.ui" line="12817"/>
         <source>Grid reduction</source>
         <translation>ग्रिड में कमी</translation>
     </message>
@@ -15466,118 +15554,118 @@ You need to load or create a grid!</source>
         <translation>डेटा आयात करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11187"/>
+        <location filename="../Main/MainWindow.ui" line="11189"/>
         <source>Help</source>
         <translation>मदद</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11196"/>
+        <location filename="../Main/MainWindow.ui" line="11198"/>
         <source>Actions</source>
         <translation>क्रियाएँ</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11209"/>
+        <location filename="../Main/MainWindow.ui" line="11211"/>
         <source>Simulations</source>
         <translation>सिमुलेशन</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11286"/>
+        <location filename="../Main/MainWindow.ui" line="11288"/>
         <source>Diagram</source>
         <translation>आरेख</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11290"/>
+        <location filename="../Main/MainWindow.ui" line="11292"/>
         <source>Branches drawing style</source>
         <translation>शाखाएँ रेखांकन शैली</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11330"/>
+        <location filename="../Main/MainWindow.ui" line="11332"/>
         <source>plugins</source>
         <translation>प्लगइन्स</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11335"/>
+        <location filename="../Main/MainWindow.ui" line="11337"/>
         <source>Events</source>
         <translation>घटनाएँ</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11356"/>
+        <location filename="../Main/MainWindow.ui" line="11358"/>
         <source>toolBar</source>
         <translation>उपकरण पट्टी</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11423"/>
+        <location filename="../Main/MainWindow.ui" line="11425"/>
         <source>Open file</source>
         <translation>फ़ाइल खोलें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11429"/>
+        <location filename="../Main/MainWindow.ui" line="11431"/>
         <source>Ctrl+O</source>
         <translation>Ctrl+O</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11438"/>
+        <location filename="../Main/MainWindow.ui" line="11440"/>
         <source>Save</source>
         <translation>सहेजें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11444"/>
-        <location filename="../Main/MainWindow.ui" line="13242"/>
+        <location filename="../Main/MainWindow.ui" line="11446"/>
+        <location filename="../Main/MainWindow.ui" line="13268"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11453"/>
+        <location filename="../Main/MainWindow.ui" line="11455"/>
         <source>Take picture</source>
         <translation>चित्र लें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11465"/>
+        <location filename="../Main/MainWindow.ui" line="11467"/>
         <source>New project</source>
         <translation>नया प्रोजेक्ट</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11471"/>
+        <location filename="../Main/MainWindow.ui" line="11473"/>
         <source>Ctrl+N</source>
         <translation>Ctrl+N</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11480"/>
+        <location filename="../Main/MainWindow.ui" line="11482"/>
         <source>Power Flow</source>
         <translation>शक्ति प्रवाह</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11483"/>
+        <location filename="../Main/MainWindow.ui" line="11485"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power Flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a power flow analysis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;शक्ति प्रवाह&lt;/span&gt;&lt;/p&gt;&lt;p&gt;विद्युत प्रवाह विश्लेषण चलाएँ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11489"/>
+        <location filename="../Main/MainWindow.ui" line="11491"/>
         <source>F5</source>
         <translation>F5</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11501"/>
+        <location filename="../Main/MainWindow.ui" line="11503"/>
         <source>Power flow time series</source>
         <translation>विद्युत प्रवाह समय श्रृंखला</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11504"/>
+        <location filename="../Main/MainWindow.ui" line="11506"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the power flow study with time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;शक्ति प्रवाह&lt;/span&gt;&lt;/p&gt;&lt;p&gt;समय श्रृंखला डेटा के साथ विद्युत प्रवाह अध्ययन चलाएँ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11510"/>
+        <location filename="../Main/MainWindow.ui" line="11512"/>
         <source>Ctrl+F5</source>
         <translation>Ctrl+F5</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11519"/>
+        <location filename="../Main/MainWindow.ui" line="11521"/>
         <source>Expand</source>
         <translation>विस्तार करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11522"/>
+        <location filename="../Main/MainWindow.ui" line="11524"/>
         <source>Expand distances</source>
         <translation>दूरियां बढ़ाओ</translation>
     </message>
@@ -15586,12 +15674,12 @@ You need to load or create a grid!</source>
         <translation type="vanished">Ctrl+Alt++</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11537"/>
+        <location filename="../Main/MainWindow.ui" line="11539"/>
         <source>Shrink</source>
         <translation>सिकुड़ना</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11540"/>
+        <location filename="../Main/MainWindow.ui" line="11542"/>
         <source>Shrink distances</source>
         <translation>दूरियाँ कम करें</translation>
     </message>
@@ -15600,282 +15688,302 @@ You need to load or create a grid!</source>
         <translation type="vanished">Ctrl+Alt+-</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11528"/>
+        <location filename="../Main/MainWindow.ui" line="11530"/>
         <source>Ctrl+Shift++</source>
         <translation>Ctrl+Shift++</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11546"/>
+        <location filename="../Main/MainWindow.ui" line="11548"/>
         <source>Ctrl+Shift+-</source>
         <translation>Ctrl+Shift+-</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11558"/>
+        <location filename="../Main/MainWindow.ui" line="11560"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Stochastic power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a stochastic power flow over the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;स्टोकेस्टिक शक्ति प्रवाह&lt;/span&gt;&lt;/p&gt;&lt;p&gt;समय श्रृंखला डेटा पर स्टोकेस्टिक पावर प्रवाह निष्पादित करें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11573"/>
+        <location filename="../Main/MainWindow.ui" line="11575"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Continuation power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a continuation power flow over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;सतत शक्ति प्रवाह&lt;/span&gt;&lt;/p&gt;&lt;p&gt;स्नैपशॉट डेटा पर एक सतत शक्ति प्रवाह चलाएँ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11585"/>
+        <location filename="../Main/MainWindow.ui" line="11587"/>
         <source>About</source>
         <translation>परिचय</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11597"/>
+        <location filename="../Main/MainWindow.ui" line="11599"/>
         <source>center view</source>
         <translation>केंद्र दृश्य</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11600"/>
+        <location filename="../Main/MainWindow.ui" line="11602"/>
         <source>Center view</source>
         <translation>केंद्र का दृश्य</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11606"/>
+        <location filename="../Main/MainWindow.ui" line="11608"/>
         <source>Ctrl+E</source>
         <translation>Ctrl+E</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11615"/>
+        <location filename="../Main/MainWindow.ui" line="11617"/>
         <source>Short Circuit</source>
         <translation>शॉर्ट सर्किट</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11618"/>
+        <location filename="../Main/MainWindow.ui" line="11620"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Short Circuit&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a short circuit study over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;शॉर्ट सर्किट&lt;/span&gt;&lt;/p&gt;&lt;p&gt;स्नैपशॉट डेटा पर शॉर्ट सर्किट अध्ययन चलाएँ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11630"/>
+        <location filename="../Main/MainWindow.ui" line="11632"/>
         <source>Automatic grid layout</source>
         <translation>स्वचालित ग्रिड लेआउट</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11633"/>
+        <location filename="../Main/MainWindow.ui" line="11635"/>
         <source>Automatic layout the of the grid</source>
         <translation>ग्रिड का स्वचालित लेआउट</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11648"/>
+        <location filename="../Main/MainWindow.ui" line="11650"/>
         <source>Blackout cascade</source>
         <translation>ब्लैकआउट कैस्केड</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11651"/>
+        <location filename="../Main/MainWindow.ui" line="11653"/>
         <source>Run a simulation or step by step blackout cascade</source>
         <translation>एक सिमुलेशन या चरण दर चरण ब्लैकआउट कैस्केड चलाएँ</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11663"/>
+        <location filename="../Main/MainWindow.ui" line="11665"/>
         <source>Optimal power flow</source>
         <translation>इष्टतम विद्युत प्रवाह</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11666"/>
+        <location filename="../Main/MainWindow.ui" line="11668"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an optimal power flow&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;इष्टतम विद्युत प्रवाह&lt;/span&gt;&lt;/p&gt;&lt;p&gt;यह एक इष्टतम विद्युत प्रवाह चलाता है&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11672"/>
+        <location filename="../Main/MainWindow.ui" line="11674"/>
         <source>F6</source>
         <translation>F6</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11681"/>
+        <location filename="../Main/MainWindow.ui" line="11683"/>
         <source>Optimal power flow time series</source>
         <translation>इष्टतम विद्युत प्रवाह समय श्रृंखला</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11684"/>
+        <location filename="../Main/MainWindow.ui" line="11686"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an optimal power flow for the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;इष्टतम विद्युत प्रवाह&lt;/span&gt;&lt;/p&gt;&lt;p&gt;यह समय श्रृंखला डेटा के लिए एक इष्टतम विद्युत प्रवाह चलाता है&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11690"/>
+        <location filename="../Main/MainWindow.ui" line="11692"/>
         <source>Ctrl+F6</source>
         <translation>Ctrl+F6</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11699"/>
+        <location filename="../Main/MainWindow.ui" line="11701"/>
         <source>Detect transformers</source>
         <translation>ट्रांसफार्मर का पता लगाएं</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11702"/>
+        <location filename="../Main/MainWindow.ui" line="11704"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Detect transformers.&lt;/p&gt;&lt;p&gt;Use the nodes nominal voltage to determine which branches should be a transformer.&lt;/p&gt;&lt;p&gt;If a branch joins two nodes with different voltage levels, the branch should be a transformer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ट्रांसफार्मर का पता लगाएं.&lt;/p&gt;&lt;p&gt;यह निर्धारित करने के लिए कि कौन सी शाखाएं ट्रांसफार्मर होनी चाहिए, नोड्स नाममात्र वोल्टेज का उपयोग करें।&lt;/p&gt;&lt;p&gt;यदि एक शाखा विभिन्न वोल्टेज स्तरों के साथ दो नोड्स को जोड़ती है, तो शाखा एक ट्रांसफार्मर होनी चाहिए।&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11714"/>
+        <location filename="../Main/MainWindow.ui" line="11716"/>
         <source>Auto rate branches</source>
         <translation>ऑटो दर शाखाएँ</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11717"/>
+        <location filename="../Main/MainWindow.ui" line="11719"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatic rating of the branches.&lt;/p&gt;&lt;p&gt;Use the branches calculated power to establish a rate, if the branch rate is unknown. A factor is available in the settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;शाखाओं की स्वचालित रेटिंग.&lt;/p&gt;&lt;p&gt;यदि शाखा दर अज्ञात है, तो दर स्थापित करने के लिए शाखाओं की गणना की गई शक्ति का उपयोग करें। सेटिंग्स में एक कारक उपलब्ध है.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11732"/>
+        <location filename="../Main/MainWindow.ui" line="11734"/>
         <source>Storage location suggestion</source>
         <translation>भंडारण स्थान का सुझाव</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11735"/>
+        <location filename="../Main/MainWindow.ui" line="11737"/>
         <source>Suggest places where storage devices are useful</source>
         <translation>उन स्थानों का सुझाव दें जहां भंडारण उपकरण उपयोगी हों</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11747"/>
+        <location filename="../Main/MainWindow.ui" line="11749"/>
         <source>Launch data analysis tool</source>
         <translation>डेटा विश्लेषण उपकरण लॉन्च करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11750"/>
+        <location filename="../Main/MainWindow.ui" line="11752"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Data analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Launch the data analysis tool that finds and tries to repair common grid modelling issues&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;डेटा विश्लेषण&lt;/span&gt;&lt;/p&gt;&lt;p&gt;डेटा विश्लेषण टूल लॉन्च करें जो सामान्य ग्रिड मॉडलिंग समस्याओं का पता लगाता है और उन्हें सुधारने का प्रयास करता है&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11756"/>
+        <location filename="../Main/MainWindow.ui" line="11758"/>
         <source>F12</source>
         <translation>F12</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11765"/>
+        <location filename="../Main/MainWindow.ui" line="11767"/>
         <source>Online documentation</source>
         <translation>ऑनलाइन दस्तावेज़ीकरण</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11771"/>
+        <location filename="../Main/MainWindow.ui" line="11773"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11780"/>
+        <location filename="../Main/MainWindow.ui" line="11782"/>
         <source>Save as</source>
         <translation>के रूप में सहेजें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11792"/>
+        <location filename="../Main/MainWindow.ui" line="11794"/>
         <source>Delete selected</source>
         <translation>चयनित हटाएँ</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11795"/>
+        <location filename="../Main/MainWindow.ui" line="11797"/>
         <source>Delete selected objects from the diagrams and optionally from the database</source>
         <translation>चयनित ऑब्जेक्ट को आरेख से और वैकल्पिक रूप से डेटाबेस से हटाएं</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11801"/>
+        <location filename="../Main/MainWindow.ui" line="11803"/>
         <source>Del</source>
         <translation>हटाएँ</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11810"/>
+        <location filename="../Main/MainWindow.ui" line="11812"/>
         <source>Linear analysis</source>
         <translation>रेखीय विश्लेषण</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11813"/>
+        <location filename="../Main/MainWindow.ui" line="11815"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Linear analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform linear analysis with distribution factors (PTDF, LODF)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;रेखीय विश्लेषण&lt;/span&gt;&lt;/p&gt;&lt;p&gt;वितरण कारकों के साथ रैखिक विश्लेषण करें (PTDF, LODF)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11819"/>
+        <location filename="../Main/MainWindow.ui" line="11821"/>
         <source>F7</source>
         <translation>F7</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11828"/>
+        <location filename="../Main/MainWindow.ui" line="11830"/>
         <source>Reset console</source>
         <translation>कंसोल रीसेट करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11843"/>
+        <location filename="../Main/MainWindow.ui" line="11845"/>
         <source>Set OPF results to power flow (non destructive)</source>
         <translation>OPF परिणामों को विद्युत प्रवाह (गैर विनाशकारी) पर सेट करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11846"/>
+        <location filename="../Main/MainWindow.ui" line="11848"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Copy OPF data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Set the OPF results into the power flow or time series simulations (non destructive)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;OPF डेटा कॉपी करें&lt;/span&gt;&lt;/p&gt;&lt;p&gt;OPF परिणामों को विद्युत प्रवाह या समय श्रृंखला सिमुलेशन (गैर विनाशकारी) में सेट करें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11858"/>
+        <location filename="../Main/MainWindow.ui" line="11860"/>
         <source>Correct buses location</source>
         <translation>बसों का सही स्थान</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11861"/>
+        <location filename="../Main/MainWindow.ui" line="11863"/>
         <source>Set selected buses location closer to their neighbours</source>
         <translation>चयनित बसों का स्थान उनके पड़ोसियों के निकट निर्धारित करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11873"/>
+        <location filename="../Main/MainWindow.ui" line="11875"/>
         <source>Copy OPF generation to database (destructive)</source>
         <translation>OPF पीढ़ी को डेटाबेस में कॉपी करें (विनाशकारी)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11876"/>
+        <location filename="../Main/MainWindow.ui" line="11878"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Copy OPF data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Destructive copy of the OPF generation results to the input profiles&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;OPF डेटा कॉपी करें&lt;/span&gt;&lt;/p&gt;&lt;p&gt;OPF पीढ़ी की विनाशकारी प्रतिलिपि इनपुट प्रोफाइल पर परिणाम देती है&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11888"/>
+        <location filename="../Main/MainWindow.ui" line="11890"/>
         <source>Linear analysis time series power flow</source>
         <translation>रैखिक विश्लेषण समय श्रृंखला शक्ति प्रवाह</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11891"/>
+        <location filename="../Main/MainWindow.ui" line="11893"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Linear analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;PTDF based time series power flow&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;रेखीय विश्लेषण&lt;/span&gt;&lt;/p&gt;&lt;p&gt;PTDF आधारित समय श्रृंखला विद्युत प्रवाह&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11897"/>
+        <location filename="../Main/MainWindow.ui" line="11899"/>
         <source>Ctrl+F7</source>
         <translation>Ctrl+F7</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11906"/>
+        <location filename="../Main/MainWindow.ui" line="11908"/>
         <source>Import circuit</source>
         <translation>सर्किट आयात करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11909"/>
+        <location filename="../Main/MainWindow.ui" line="11911"/>
         <source>Add circuit to the current circuit</source>
         <translation>वर्तमान सर्किट में सर्किट जोड़ें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11915"/>
+        <location filename="../Main/MainWindow.ui" line="11917"/>
         <source>Ctrl+N, Ctrl+O</source>
         <translation>Ctrl+N, Ctrl+O</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11927"/>
+        <location filename="../Main/MainWindow.ui" line="11926"/>
+        <source>FMU</source>
+        <translation>FMU</translation>
+    </message>
+    <message>
+        <location filename="../Main/MainWindow.ui" line="11929"/>
+        <source>Import a manufacturer FMU as a reusable dynamic model</source>
+        <translation>पुन: प्रयोज्य गतिशील मॉडल के रूप में एक निर्माता FMU आयात करें</translation>
+    </message>
+    <message>
+        <location filename="../Main/MainWindow.ui" line="11938"/>
+        <source>Native library (IEEE/CIGRE or IEC ESE)...</source>
+        <translation>नेटिव लाइब्रेरी (IEEE/CIGRE या IEC ESE)...</translation>
+    </message>
+    <message>
+        <location filename="../Main/MainWindow.ui" line="11941"/>
+        <source>Import a manufacturer supplied native model library</source>
+        <translation>निर्माता द्वारा प्रदान की गई मूल मॉडल लाइब्रेरी आयात करें</translation>
+    </message>
+    <message>
+        <location filename="../Main/MainWindow.ui" line="11953"/>
         <source>Sync</source>
         <translation>सिंक करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11930"/>
+        <location filename="../Main/MainWindow.ui" line="11956"/>
         <source>Sync with the file for colaborative editing of the grid</source>
         <translation>ग्रिड के सहयोगात्मक संपादन के लिए फ़ाइल के साथ सिंक करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11939"/>
+        <location filename="../Main/MainWindow.ui" line="11965"/>
         <source>Draw schematic</source>
         <translation>स्कीमैटिक बनाएँ</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11948"/>
+        <location filename="../Main/MainWindow.ui" line="11974"/>
         <source>Sigma analysis</source>
         <translation>Sigma विश्लेषण</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11951"/>
+        <location filename="../Main/MainWindow.ui" line="11977"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Sigma analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform HELM-Sigma analysis over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Sigma विश्लेषण&lt;/span&gt;&lt;/p&gt;&lt;p&gt;स्नैपशॉट डेटा पर HELM-Sigma विश्लेषण करें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -15884,72 +15992,72 @@ You need to load or create a grid!</source>
         <translation type="vanished">अभी चल रही प्रक्रियाएँ साफ़ करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11978"/>
+        <location filename="../Main/MainWindow.ui" line="12004"/>
         <source>Add default catalogue</source>
         <translation>डिफ़ॉल्ट कैटलॉग जोड़ें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11993"/>
+        <location filename="../Main/MainWindow.ui" line="12019"/>
         <source>Find node groups</source>
         <translation>नोड समूह खोजें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11996"/>
+        <location filename="../Main/MainWindow.ui" line="12022"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Finds the electrically related nodes by using their electrical distance and the DBSCAN clustering method&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;उनकी विद्युतीय दूरी और DBSCAN क्लस्टरिंग विधि का उपयोग करके विद्युतीय रूप से संबंधित नोड्स का पता लगाता है&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12008"/>
+        <location filename="../Main/MainWindow.ui" line="12034"/>
         <source>Grid Generator</source>
         <translation>ग्रिड जेनरेटर</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12014"/>
+        <location filename="../Main/MainWindow.ui" line="12040"/>
         <source>Ctrl+G</source>
         <translation>Ctrl+G</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12023"/>
+        <location filename="../Main/MainWindow.ui" line="12049"/>
         <source>Node load</source>
         <translation>नोड लोड</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12032"/>
+        <location filename="../Main/MainWindow.ui" line="12058"/>
         <source>Generator generation</source>
         <translation>जेनरेटर पीढ़ी</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12041"/>
+        <location filename="../Main/MainWindow.ui" line="12067"/>
         <source>Contingency analysis time series</source>
         <translation>आकस्मिकता विश्लेषण समय श्रृंखला</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12044"/>
+        <location filename="../Main/MainWindow.ui" line="12070"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Per form a contingency analysis with the selected method over the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;आकस्मिकता विश्लेषण&lt;/span&gt;&lt;/p&gt;&lt;p&gt;समय श्रृंखला डेटा पर चयनित विधि के साथ एक आकस्मिक विश्लेषण तैयार करें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12050"/>
+        <location filename="../Main/MainWindow.ui" line="12076"/>
         <source>Ctrl+F8</source>
         <translation>Ctrl+F8</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12059"/>
+        <location filename="../Main/MainWindow.ui" line="12085"/>
         <source>Branch rates</source>
         <translation>शाखा दरें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12068"/>
+        <location filename="../Main/MainWindow.ui" line="12094"/>
         <source>Set selected buses&apos; Area</source>
         <translation>चयनित बसों का क्षेत्र निर्धारित करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12080"/>
+        <location filename="../Main/MainWindow.ui" line="12106"/>
         <source>Set selected buses&apos; Zone</source>
         <translation>चयनित बसों का क्षेत्र निर्धारित करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12092"/>
+        <location filename="../Main/MainWindow.ui" line="12118"/>
         <source>Set seleted buses&apos; Country</source>
         <translation>चयनित बसों का देश निर्धारित करें</translation>
     </message>
@@ -15958,420 +16066,420 @@ You need to load or create a grid!</source>
         <translation type="vanished">बस निर्देशांक आयात करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11963"/>
-        <location filename="../Main/MainWindow.ui" line="11966"/>
+        <location filename="../Main/MainWindow.ui" line="11989"/>
+        <location filename="../Main/MainWindow.ui" line="11992"/>
         <source>Stop &quot;stuff running right now&quot;</source>
         <translation>&quot;अभी चल रही चीज़ें&quot; रोकें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12104"/>
+        <location filename="../Main/MainWindow.ui" line="12130"/>
         <source>Coordinates</source>
         <translation>निर्देशांक</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12116"/>
+        <location filename="../Main/MainWindow.ui" line="12142"/>
         <source>Available Transfer Capacity</source>
         <translation>उपलब्ध स्थानांतरण क्षमता</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12119"/>
+        <location filename="../Main/MainWindow.ui" line="12145"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a linear net transfer capacity assesment for the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;शुद्ध अंतरण क्षमता&lt;/span&gt;&lt;/p&gt;&lt;p&gt;स्नैपशॉट डेटा के लिए एक रैखिक शुद्ध स्थानांतरण क्षमता आकलन करें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12131"/>
+        <location filename="../Main/MainWindow.ui" line="12157"/>
         <source>Available Transfer Capacity Time Series</source>
         <translation>उपलब्ध स्थानांतरण क्षमता समय श्रृंखला</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12134"/>
+        <location filename="../Main/MainWindow.ui" line="12160"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a linear net transfer capacity assesment for the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;शुद्ध अंतरण क्षमता&lt;/span&gt;&lt;/p&gt;&lt;p&gt;समय श्रृंखला डेटा के लिए एक रैखिक शुद्ध स्थानांतरण क्षमता आकलन करें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12146"/>
+        <location filename="../Main/MainWindow.ui" line="12172"/>
         <source>Contingency analysis</source>
         <translation>आकस्मिकता विश्लेषण</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12149"/>
+        <location filename="../Main/MainWindow.ui" line="12175"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a contingency analysis with the selected method&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;आकस्मिकता विश्लेषण&lt;/span&gt;&lt;/p&gt;&lt;p&gt;चयनित विधि से आकस्मिकता विश्लेषण करें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12155"/>
+        <location filename="../Main/MainWindow.ui" line="12181"/>
         <source>F8</source>
         <translation>F8</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12164"/>
+        <location filename="../Main/MainWindow.ui" line="12190"/>
         <source>Optimal net transfer capacity</source>
         <translation>इष्टतम शुद्ध अंतरण क्षमता</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12167"/>
+        <location filename="../Main/MainWindow.ui" line="12193"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform an optimal net transfer capacity optimization&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;इष्टतम शुद्ध अंतरण क्षमता&lt;/span&gt;&lt;/p&gt;&lt;p&gt;इष्टतम शुद्ध अंतरण क्षमता अनुकूलन निष्पादित करें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12179"/>
+        <location filename="../Main/MainWindow.ui" line="12205"/>
         <source>Set schematic (x,y) from (lat,lon)</source>
         <translation>(lat,lon) से योजनाबद्ध (x,y) सेट करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12191"/>
+        <location filename="../Main/MainWindow.ui" line="12217"/>
         <source>Inputs analysis</source>
         <translation>इनपुट विश्लेषण</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12194"/>
+        <location filename="../Main/MainWindow.ui" line="12220"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Inputs analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform an analysis of the inputs for both the snapshot and time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;इनपुट विश्लेषण&lt;/span&gt;&lt;/p&gt;&lt;p&gt;स्नैपशॉट और समय श्रृंखला डेटा दोनों के लिए इनपुट का विश्लेषण करें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12200"/>
+        <location filename="../Main/MainWindow.ui" line="12226"/>
         <source>F11</source>
         <translation>F11</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12209"/>
+        <location filename="../Main/MainWindow.ui" line="12235"/>
         <source>Fuse devices</source>
         <translation>फ़्यूज़ डिवाइस</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12212"/>
+        <location filename="../Main/MainWindow.ui" line="12238"/>
         <source>Fuse devices into a single device of each category per node</source>
         <translation>प्रत्येक श्रेणी के प्रत्येक नोड के एक डिवाइस में डिवाइसों को फ्यूज करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12224"/>
-        <location filename="../Main/MainWindow.ui" line="12227"/>
+        <location filename="../Main/MainWindow.ui" line="12250"/>
+        <location filename="../Main/MainWindow.ui" line="12253"/>
         <source>Delete inconsistencies</source>
         <translation>विसंगतियों को दूर करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12239"/>
+        <location filename="../Main/MainWindow.ui" line="12265"/>
         <source>Optimal NTC time series</source>
         <translation>इष्टतम NTC समय श्रृंखला</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12242"/>
+        <location filename="../Main/MainWindow.ui" line="12268"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a net transfer capacity optimization over the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;शुद्ध अंतरण क्षमता&lt;/span&gt;&lt;/p&gt;&lt;p&gt;समय श्रृंखला डेटा पर शुद्ध स्थानांतरण क्षमता अनुकूलन करें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12254"/>
+        <location filename="../Main/MainWindow.ui" line="12280"/>
         <source>re-index time</source>
         <translation>पुनः अनुक्रमणिका समय</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12266"/>
+        <location filename="../Main/MainWindow.ui" line="12292"/>
         <source>Fix generators active based on the power</source>
         <translation>बिजली के आधार पर सक्रिय जनरेटर ठीक करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12278"/>
-        <location filename="../Main/MainWindow.ui" line="12281"/>
+        <location filename="../Main/MainWindow.ui" line="12304"/>
+        <location filename="../Main/MainWindow.ui" line="12307"/>
         <source>Fix loads active based on the power</source>
         <translation>शक्ति के आधार पर सक्रिय लोड ठीक करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12293"/>
+        <location filename="../Main/MainWindow.ui" line="12319"/>
         <source>Initialize contingencies</source>
         <translation>आकस्मिकताओं को आरंभ करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12296"/>
+        <location filename="../Main/MainWindow.ui" line="12322"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingencies wizard&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Launch the contingencies wizard to automatically set up the contingency objects&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;आकस्मिकता विज़ार्ड&lt;/span&gt;&lt;/p&gt;&lt;p&gt;आकस्मिक वस्तुओं को स्वचालित रूप से सेट करने के लिए आकस्मिकता विज़ार्ड लॉन्च करें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12308"/>
+        <location filename="../Main/MainWindow.ui" line="12334"/>
         <source>Add selected as new contingency</source>
         <translation>नई आकस्मिकता के रूप में चयनित जोड़ें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12311"/>
+        <location filename="../Main/MainWindow.ui" line="12337"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add contingency&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create a new contingency from the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;आकस्मिकता जोड़ें&lt;/span&gt;&lt;/p&gt;&lt;p&gt;योजनाबद्ध चयन से एक नई आकस्मिकता बनाएँ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12317"/>
+        <location filename="../Main/MainWindow.ui" line="12343"/>
         <source>Ctrl+A, Ctrl+C</source>
         <translation>Ctrl+A, Ctrl+C</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12326"/>
+        <location filename="../Main/MainWindow.ui" line="12352"/>
         <source>Add selected as new investment</source>
         <translation>नए निवेश के रूप में चयनित जोड़ें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12329"/>
+        <location filename="../Main/MainWindow.ui" line="12355"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Investments&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create new investment with the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;निवेश&lt;/span&gt;&lt;/p&gt;&lt;p&gt;योजनाबद्ध चयन के साथ नया निवेश बनाएं&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12335"/>
+        <location filename="../Main/MainWindow.ui" line="12361"/>
         <source>Ctrl+A, Ctrl+I</source>
         <translation>Ctrl+A, Ctrl+I</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12344"/>
+        <location filename="../Main/MainWindow.ui" line="12370"/>
         <source>Zoom in</source>
         <translation>ज़ूम इन</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12350"/>
+        <location filename="../Main/MainWindow.ui" line="12376"/>
         <source>Ctrl++</source>
         <translation>Ctrl++</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12359"/>
+        <location filename="../Main/MainWindow.ui" line="12385"/>
         <source>Zoom out</source>
         <translation>ज़ूम आउट</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12365"/>
+        <location filename="../Main/MainWindow.ui" line="12391"/>
         <source>Ctrl+-</source>
         <translation>Ctrl+-</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12377"/>
+        <location filename="../Main/MainWindow.ui" line="12403"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clustering&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a clustering study of the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;क्लस्टरिंग&lt;/span&gt;&lt;/p&gt;&lt;p&gt;समय श्रृंखला डेटा का क्लस्टरिंग अध्ययन करें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12395"/>
+        <location filename="../Main/MainWindow.ui" line="12421"/>
         <source>Use clustering</source>
         <translation>क्लस्टरिंग का प्रयोग करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12398"/>
+        <location filename="../Main/MainWindow.ui" line="12424"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clustering&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If active, the available clustering results are used in all the simulations that handle time series data non-destructivelly&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;क्लस्टरिंग&lt;/span&gt;&lt;/p&gt;&lt;p&gt;यदि सक्रिय है, तो उपलब्ध क्लस्टरिंग परिणाम उन सभी सिमुलेशन में उपयोग किए जाते हैं जो समय श्रृंखला डेटा को गैर-विनाशकारी तरीके से संभालते हैं&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12410"/>
+        <location filename="../Main/MainWindow.ui" line="12436"/>
         <source>Investments evaluation</source>
         <translation>निवेश मूल्यांकन</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12413"/>
+        <location filename="../Main/MainWindow.ui" line="12439"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Investments&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform the investments evaluation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;निवेश&lt;/span&gt;&lt;/p&gt;&lt;p&gt;निवेश मूल्यांकन करें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12419"/>
+        <location filename="../Main/MainWindow.ui" line="12445"/>
         <source>Ctrl+I, Ctrl+E</source>
         <translation>Ctrl+I, Ctrl+E</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12428"/>
+        <location filename="../Main/MainWindow.ui" line="12454"/>
         <source>New schematic from selection</source>
         <translation>चयन से नई योजना</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12440"/>
+        <location filename="../Main/MainWindow.ui" line="12466"/>
         <source>New schematic</source>
         <translation>नया योजनाबद्ध</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12452"/>
+        <location filename="../Main/MainWindow.ui" line="12478"/>
         <source>New map</source>
         <translation>नया नक्शा</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12464"/>
+        <location filename="../Main/MainWindow.ui" line="12490"/>
         <source>Remove selected diagram</source>
         <translation>चयनित आरेख हटाएँ</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12473"/>
+        <location filename="../Main/MainWindow.ui" line="12499"/>
         <source>Report a bug or feature</source>
         <translation>किसी बग या सुविधा की रिपोर्ट करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12485"/>
+        <location filename="../Main/MainWindow.ui" line="12511"/>
         <source>Search</source>
         <translation>खोजें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12497"/>
+        <location filename="../Main/MainWindow.ui" line="12523"/>
         <source>Process topology</source>
         <translation>प्रक्रिया टोपोलॉजी</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12509"/>
+        <location filename="../Main/MainWindow.ui" line="12535"/>
         <source>Edit simulation time limits</source>
         <translation>सिमुलेशन समय सीमा संपादित करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12512"/>
+        <location filename="../Main/MainWindow.ui" line="12538"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time series&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Edit simulation time limits&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;समय शृंखला&lt;/span&gt;&lt;/p&gt;&lt;p&gt;सिमुलेशन समय सीमा संपादित करें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12527"/>
+        <location filename="../Main/MainWindow.ui" line="12553"/>
         <source>activate time series</source>
         <translation>समय श्रृंखला सक्रिय करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12530"/>
+        <location filename="../Main/MainWindow.ui" line="12556"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time series mode&lt;/span&gt;&lt;/p&gt;&lt;p&gt;When activated, the simulations run their time series version&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;समय श्रृंखला मोड&lt;/span&gt;&lt;/p&gt;&lt;p&gt;सक्रिय होने पर, सिमुलेशन अपना समय श्रृंखला संस्करण चलाते हैं&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12536"/>
+        <location filename="../Main/MainWindow.ui" line="12562"/>
         <source>Ctrl+T</source>
         <translation>Ctrl+T</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12545"/>
+        <location filename="../Main/MainWindow.ui" line="12571"/>
         <source>Clean database</source>
         <translation>स्वच्छ डेटाबेस</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12551"/>
+        <location filename="../Main/MainWindow.ui" line="12577"/>
         <source>Ctrl+C, Ctrl+D</source>
         <translation>Ctrl+C, Ctrl+D</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12560"/>
+        <location filename="../Main/MainWindow.ui" line="12586"/>
         <source>Scale</source>
         <translation>पैमाना</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12563"/>
+        <location filename="../Main/MainWindow.ui" line="12589"/>
         <source>Scale the system load and or generation</source>
         <translation>सिस्टम लोड और या जेनरेशन को स्केल करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12575"/>
+        <location filename="../Main/MainWindow.ui" line="12601"/>
         <source>Disable all results tags</source>
         <translation>सभी परिणाम टैग अक्षम करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12587"/>
+        <location filename="../Main/MainWindow.ui" line="12613"/>
         <source>Enable all results tags</source>
         <translation>सभी परिणाम टैग सक्षम करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12599"/>
+        <location filename="../Main/MainWindow.ui" line="12625"/>
         <source>Detect substations</source>
         <translation>सबस्टेशनों का पता लगाएं</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12611"/>
+        <location filename="../Main/MainWindow.ui" line="12637"/>
         <source>Optimal hosting capacity</source>
         <translation>इष्टतम होस्टिंग क्षमता</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12614"/>
+        <location filename="../Main/MainWindow.ui" line="12640"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Nodal hosting capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the nodal hosting capacity calculation using the selected optimization method&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;नोडल होस्टिंग क्षमता&lt;/span&gt;&lt;/p&gt;&lt;p&gt;चयनित अनुकूलन विधि का उपयोग करके नोडल होस्टिंग क्षमता गणना चलाएँ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12629"/>
+        <location filename="../Main/MainWindow.ui" line="12655"/>
         <source>Enable server mode</source>
         <translation>सर्वर मोड सक्षम करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12641"/>
+        <location filename="../Main/MainWindow.ui" line="12667"/>
         <source>Record video</source>
         <translation>वीडियो रिकॉर्ड करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12644"/>
+        <location filename="../Main/MainWindow.ui" line="12670"/>
         <source>Record video of the schematic</source>
         <translation>योजनाबद्ध का वीडियो रिकॉर्ड करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12656"/>
+        <location filename="../Main/MainWindow.ui" line="12682"/>
         <source>Save  differential</source>
         <translation>अंतर सहेजें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12668"/>
+        <location filename="../Main/MainWindow.ui" line="12694"/>
         <source>Consolidate coordinates</source>
         <translation>निर्देशांक समेकित करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12680"/>
+        <location filename="../Main/MainWindow.ui" line="12706"/>
         <source>Add selected as new remedial action</source>
         <translation>नई उपचारात्मक कार्रवाई के रूप में चयनित जोड़ें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12683"/>
+        <location filename="../Main/MainWindow.ui" line="12709"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add remedial action&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create a new remedial action from the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;उपचारात्मक कार्रवाई जोड़ें&lt;/span&gt;&lt;/p&gt;&lt;p&gt;योजनाबद्ध चयन से एक नई उपचारात्मक कार्रवाई बनाएं&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12689"/>
+        <location filename="../Main/MainWindow.ui" line="12715"/>
         <source>Ctrl+A, Ctrl+R</source>
         <translation>Ctrl+A, Ctrl+R</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12698"/>
+        <location filename="../Main/MainWindow.ui" line="12724"/>
         <source>Detect facilities</source>
         <translation>सुविधाओं का पता लगाएं</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12707"/>
+        <location filename="../Main/MainWindow.ui" line="12733"/>
         <source>Rotate</source>
         <translation>घुमाएँ</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12719"/>
+        <location filename="../Main/MainWindow.ui" line="12745"/>
         <source>Reset diagram coordinates to database values</source>
         <translation>आरेख निर्देशांक को डेटाबेस मानों पर रीसेट करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12731"/>
+        <location filename="../Main/MainWindow.ui" line="12757"/>
         <source>Reliability analysis</source>
         <translation>विश्वसनीयता विश्लेषण</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12734"/>
+        <location filename="../Main/MainWindow.ui" line="12760"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Reliability study&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the reliability calculation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;विश्वसनीयता अध्ययन&lt;/span&gt;&lt;/p&gt;&lt;p&gt;विश्वसनीयता गणना चलाएँ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12749"/>
+        <location filename="../Main/MainWindow.ui" line="12775"/>
         <source>Color buses by...</source>
         <translation>रंग बसों द्वारा...</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12761"/>
+        <location filename="../Main/MainWindow.ui" line="12787"/>
         <source>Color substations by...</source>
         <translation>रंग सबस्टेशन द्वारा...</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12776"/>
+        <location filename="../Main/MainWindow.ui" line="12802"/>
         <source>Select buses by...</source>
         <translation>बसों का चयन करें...</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12803"/>
+        <location filename="../Main/MainWindow.ui" line="12829"/>
         <source>Substation wizard</source>
         <translation>सबस्टेशन विज़ार्ड</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12806"/>
+        <location filename="../Main/MainWindow.ui" line="12832"/>
         <source>Add substation with a wizard form</source>
         <translation>विज़ार्ड फॉर्म के साथ सबस्टेशन जोड़ें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12809"/>
+        <location filename="../Main/MainWindow.ui" line="12835"/>
         <source>Ctrl+A, Ctrl+S</source>
         <translation>Ctrl+A, Ctrl+S</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12821"/>
+        <location filename="../Main/MainWindow.ui" line="12847"/>
         <source>Dynamic RMS Simulation</source>
         <translation>गतिशील RMS सिमुलेशन</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12824"/>
+        <location filename="../Main/MainWindow.ui" line="12850"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;RMS Simulation&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a dynamic RMS simulation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;RMS सिमुलेशन&lt;/span&gt;&lt;/p&gt;&lt;p&gt;एक गतिशील RMS सिमुलेशन चलाएँ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -16384,13 +16492,13 @@ You need to load or create a grid!</source>
         <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;RMS गतिशील प्लॉट तैयार करें&lt;/span&gt;&lt;/p&gt;&lt;p&gt;सिमुलेशन चलाने से पहले RMS डायनेमिक प्लॉट एडिटर खोलें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12836"/>
-        <location filename="../Main/MainWindow.ui" line="12839"/>
+        <location filename="../Main/MainWindow.ui" line="12862"/>
+        <location filename="../Main/MainWindow.ui" line="12865"/>
         <source>Small-Signal RMS Simulation</source>
         <translation>लघु-सिग्नल RMS सिमुलेशन</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12842"/>
+        <location filename="../Main/MainWindow.ui" line="12868"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Small Signal Simulation (RMS)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run an RMS Small Signal stability analysis simulation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;लघु सिग्नल सिमुलेशन (RMS)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;एक RMS छोटा सिग्नल स्थिरता विश्लेषण सिमुलेशन चलाएँ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -16403,113 +16511,113 @@ You need to load or create a grid!</source>
         <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;RMS ईवेंट जोड़ें&lt;/span&gt;&lt;/p&gt;&lt;p&gt;योजनाबद्ध चयन के लिए एक नया RMS ईवेंट बनाएं&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12872"/>
+        <location filename="../Main/MainWindow.ui" line="12898"/>
         <source>Clear highlights</source>
         <translation>स्पष्ट हाइलाइट्स</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12887"/>
+        <location filename="../Main/MainWindow.ui" line="12913"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;State estimation&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a state estimation analysis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;राज्य का अनुमान&lt;/span&gt;&lt;/p&gt;&lt;p&gt;राज्य अनुमान विश्लेषण चलाएँ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12899"/>
+        <location filename="../Main/MainWindow.ui" line="12925"/>
         <source>Add short circuit events</source>
         <translation>शॉर्ट सर्किट घटनाएँ जोड़ें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12911"/>
+        <location filename="../Main/MainWindow.ui" line="12937"/>
         <source>PSS/e Raw / Rawx</source>
         <translation>PSS/e Raw / Rawx</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12920"/>
+        <location filename="../Main/MainWindow.ui" line="12946"/>
         <source>Power Factory DGS</source>
         <translation>पावर फ़ैक्टरी DGS</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12929"/>
+        <location filename="../Main/MainWindow.ui" line="12955"/>
         <source>Matpower</source>
         <translation>Matpower</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12938"/>
+        <location filename="../Main/MainWindow.ui" line="12964"/>
         <source>UCTE</source>
         <translation>UCTE</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12947"/>
+        <location filename="../Main/MainWindow.ui" line="12973"/>
         <source>CGMES</source>
         <translation>CGMES</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12956"/>
+        <location filename="../Main/MainWindow.ui" line="12982"/>
         <source>Power Grid Models</source>
         <translation>पावर ग्रिड मॉडल</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12965"/>
+        <location filename="../Main/MainWindow.ui" line="12991"/>
         <source>CIM</source>
         <translation>CIM</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12974"/>
+        <location filename="../Main/MainWindow.ui" line="13000"/>
         <source>H5</source>
         <translation>H5</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12983"/>
+        <location filename="../Main/MainWindow.ui" line="13009"/>
         <source>JSON</source>
         <translation>JSON</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12992"/>
+        <location filename="../Main/MainWindow.ui" line="13018"/>
         <source>Microsoft Excel</source>
         <translation>Microsoft Excel</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13001"/>
+        <location filename="../Main/MainWindow.ui" line="13027"/>
         <source>SQLite</source>
         <translation>SQLite</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13010"/>
+        <location filename="../Main/MainWindow.ui" line="13036"/>
         <source>Profiles</source>
         <translation>प्रोफ़ाइल</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13037"/>
-        <location filename="../Main/MainWindow.ui" line="13055"/>
+        <location filename="../Main/MainWindow.ui" line="13063"/>
+        <location filename="../Main/MainWindow.ui" line="13081"/>
         <source>Catalogue</source>
         <translation>कैटलॉग</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13064"/>
+        <location filename="../Main/MainWindow.ui" line="13090"/>
         <source>Clean Room</source>
         <translation>साफ़ कमरा</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13067"/>
+        <location filename="../Main/MainWindow.ui" line="13093"/>
         <source>Cleam room utility to produce an machine learning statistical representation of the static time series</source>
         <translation>स्थैतिक समय श्रृंखला का एक मशीन लर्निंग सांख्यिकीय प्रतिनिधित्व तैयार करने के लिए क्लीम रूम उपयोगिता</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13091"/>
+        <location filename="../Main/MainWindow.ui" line="13117"/>
         <source>Procedural grid expansion</source>
         <translation>प्रक्रियात्मक ग्रिड विस्तार</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13100"/>
+        <location filename="../Main/MainWindow.ui" line="13126"/>
         <source>Catalogue element optimization</source>
         <translation>कैटलॉग तत्व अनुकूलन</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13109"/>
+        <location filename="../Main/MainWindow.ui" line="13135"/>
         <source>Dynamic EMT Simulation</source>
         <translation>गतिशील EMT सिमुलेशन</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13112"/>
+        <location filename="../Main/MainWindow.ui" line="13138"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;EMT Simulation&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a dynamic EMT simulation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;EMT सिमुलेशन&lt;/span&gt;&lt;/p&gt;&lt;p&gt;एक गतिशील EMT सिमुलेशन चलाएँ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -16522,43 +16630,43 @@ You need to load or create a grid!</source>
         <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;EMT गतिशील प्लॉट तैयार करें&lt;/span&gt;&lt;/p&gt;&lt;p&gt;सिमुलेशन चलाने से पहले EMT डायनेमिक प्लॉट एडिटर खोलें&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13124"/>
-        <location filename="../Main/MainWindow.ui" line="13127"/>
+        <location filename="../Main/MainWindow.ui" line="13150"/>
+        <location filename="../Main/MainWindow.ui" line="13153"/>
         <source>Small-Signal EMT Simulation</source>
         <translation>लघु-सिग्नल EMT सिमुलेशन</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13130"/>
+        <location filename="../Main/MainWindow.ui" line="13156"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Small Signal Simulation (EMT)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run an EMT Small Signal stability analysis simulation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;लघु सिग्नल सिमुलेशन (EMT)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;एक EMT छोटा सिग्नल स्थिरता विश्लेषण सिमुलेशन चलाएँ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13138"/>
+        <location filename="../Main/MainWindow.ui" line="13164"/>
         <source>Reticular</source>
         <translation>जालीदार</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13143"/>
+        <location filename="../Main/MainWindow.ui" line="13169"/>
         <source>Straight</source>
         <translation>सीधा</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13152"/>
+        <location filename="../Main/MainWindow.ui" line="13178"/>
         <source>ai_chat</source>
         <translation>ai_चैट</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13155"/>
+        <location filename="../Main/MainWindow.ui" line="13181"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;VeraGrid AI &lt;/span&gt;&lt;/p&gt;&lt;p&gt;Show the VeraGrid AI chat&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;VeraGrid AI &lt;/span&gt;&lt;/p&gt;&lt;p&gt;VeraGrid AI चैट दिखाएँ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13167"/>
+        <location filename="../Main/MainWindow.ui" line="13193"/>
         <source>Power Flow 3-phase</source>
         <translation>विद्युत प्रवाह 3-चरण</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13170"/>
+        <location filename="../Main/MainWindow.ui" line="13196"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power Flow 3-phase&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run an unbalanced 3-phase power flow analysis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;विद्युत प्रवाह 3-चरण&lt;/span&gt;&lt;/p&gt;&lt;p&gt;असंतुलित 3-चरण विद्युत प्रवाह विश्लेषण चलाएँ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -16571,32 +16679,32 @@ You need to load or create a grid!</source>
         <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;EMT ईवेंट जोड़ें&lt;/span&gt;&lt;/p&gt;&lt;p&gt;योजनाबद्ध चयन के लिए एक नया EMT ईवेंट बनाएं&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13197"/>
+        <location filename="../Main/MainWindow.ui" line="13223"/>
         <source>Set model (x,y) based on (lat, lon)</source>
         <translation>(अक्षांश, देशांतर) के आधार पर मॉडल (x,y) सेट करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13206"/>
+        <location filename="../Main/MainWindow.ui" line="13232"/>
         <source>Restore investments</source>
         <translation>निवेश बहाल करें</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13218"/>
+        <location filename="../Main/MainWindow.ui" line="13244"/>
         <source>Veragrid Scenario</source>
         <translation>वेराग्रिड परिदृश्य</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13227"/>
+        <location filename="../Main/MainWindow.ui" line="13253"/>
         <source>Show dynamic models editor</source>
         <translation>गतिशील मॉडल संपादक दिखाएँ</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13239"/>
+        <location filename="../Main/MainWindow.ui" line="13265"/>
         <source>Repair diagram</source>
         <translation>मरम्मत आरेख</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13251"/>
+        <location filename="../Main/MainWindow.ui" line="13277"/>
         <source>Clear cache</source>
         <translation>कैश साफ़ करें</translation>
     </message>
@@ -16618,6 +16726,183 @@ You need to load or create a grid!</source>
     <message>
         <source>Question</source>
         <translation>प्रश्न</translation>
+    </message>
+</context>
+<context>
+    <name>ManufacturerNativeImporterDialog</name>
+    <message>
+        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
+        <translation>दोनों घोषणाएं निर्माता वितरण अनुबंध का हिस्सा हैं और योग्यता से पहले आवश्यक हैं।</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>ब्राउज़...</translation>
+    </message>
+    <message>
+        <source>Choose an existing manufacturer binary.</source>
+        <translation>एक मौजूदा निर्माता बाइनरी चुनें।</translation>
+    </message>
+    <message>
+        <source>Complete the manufacturer declarations required by the selected interface.</source>
+        <translation>चयनित इंटरफ़ेस द्वारा आवश्यक निर्माता घोषणाएं पूरी करें।</translation>
+    </message>
+    <message>
+        <source>Destination provider</source>
+        <translation>गंतव्य प्रदाता</translation>
+    </message>
+    <message>
+        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
+        <translation>प्रत्येक कॉमा-पृथक मान उस स्थिति पर स्रोत क्रम के लिए गंतव्य क्रम है। उदाहरण: 1,0 स्रोत 0 को गंतव्य 1 और स्रोत 1 को गंतव्य 0 मैप करता है।</translation>
+    </message>
+    <message>
+        <source>Example: 0,1</source>
+        <translation>उदाहरण: 0,1</translation>
+    </message>
+    <message>
+        <source>Example: 1,0</source>
+        <translation>उदाहरण: 1,0</translation>
+    </message>
+    <message>
+        <source>Example: 2,0,1</source>
+        <translation>उदाहरण: 2,0,1</translation>
+    </message>
+    <message>
+        <source>Import manufacturer native model</source>
+        <translation>निर्माता मूल मॉडल आयात करें</translation>
+    </message>
+    <message>
+        <source>Input destination ordinals</source>
+        <translation>इनपुट गंतव्य क्रम</translation>
+    </message>
+    <message>
+        <source>Inspect and attach variant</source>
+        <translation>विविधता का निरीक्षण करें और संलग्न करें</translation>
+    </message>
+    <message>
+        <source>Inspect and import</source>
+        <translation>निरीक्षण करें और आयात करें</translation>
+    </message>
+    <message>
+        <source>Inspecting the binary in an isolated worker...</source>
+        <translation>एक अलग वर्कर में बाइनरी का निरीक्षण किया जा रहा है...</translation>
+    </message>
+    <message>
+        <source>Linux libraries (*.so)</source>
+        <translation>लिनक्स लाइब्रेरी (*.so)</translation>
+    </message>
+    <message>
+        <source>Manufacturer binary</source>
+        <translation>निर्माता बाइनरी</translation>
+    </message>
+    <message>
+        <source>Manufacturer interface</source>
+        <translation>निर्माता इंटरफ़ेस</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model ready</source>
+        <translation>निर्माता मूल मॉडल तैयार</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model variants</source>
+        <translation>निर्माता मूल मॉडल विविधताएं</translation>
+    </message>
+    <message>
+        <source>No provider has been imported yet.</source>
+        <translation>अभी तक कोई प्रदाता आयात नहीं किया गया है।</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>कोई नहीं</translation>
+    </message>
+    <message>
+        <source>Output destination ordinals</source>
+        <translation>आउटपुट गंतव्य क्रम</translation>
+    </message>
+    <message>
+        <source>Parameter destination ordinals</source>
+        <translation>पैरामीटर गंतव्य क्रम</translation>
+    </message>
+    <message>
+        <source>Platform variant</source>
+        <translation>प्लेटफ़ॉर्म विविधता</translation>
+    </message>
+    <message>
+        <source>Provider: {name}</source>
+        <translation>प्रदाता: {name}</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform attached: {platform}
+Templates created: None (existing templates retained).</source>
+        <translation>प्रदाता: {provider}
+संलग्न प्लेटफ़ॉर्म: {platform}
+टेम्पलेट बनाए गए: कोई नहीं (मौजूदा टेम्पलेट बरकरार)।</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform: {platform}
+RMS templates created: {rms}
+EMT templates created: {emt}</source>
+        <translation>प्रदाता: {provider}
+प्लेटफ़ॉर्म: {platform}
+RMS टेम्पलेट बनाए गए: {rms}
+EMT टेम्पलेट बनाए गए: {emt}</translation>
+    </message>
+    <message>
+        <source>Qualified and attached {platform}: {digest}</source>
+        <translation>योग्य और संलग्न {platform}: {digest}</translation>
+    </message>
+    <message>
+        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
+        <translation>{name} योग्य और आयात किया गया। {rms} RMS और {emt} EMT टेम्पलेट(s) बनाए गए।</translation>
+    </message>
+    <message>
+        <source>Rebind an existing template</source>
+        <translation>मौजूदा टेम्पलेट को पुन: बाँधें</translation>
+    </message>
+    <message>
+        <source>Rebind selected template</source>
+        <translation>चयनित टेम्पलेट को पुन: बाँधें</translation>
+    </message>
+    <message>
+        <source>Rebound {consumer} to {provider}.</source>
+        <translation>{consumer} को {provider} से पुन: जोड़ा गया।</translation>
+    </message>
+    <message>
+        <source>Select a source, destination and template.</source>
+        <translation>एक स्रोत, गंतव्य और टेम्पलेट चुनें।</translation>
+    </message>
+    <message>
+        <source>Select manufacturer library</source>
+        <translation>निर्माता लाइब्रेरी चुनें</translation>
+    </message>
+    <message>
+        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
+        <translation>निर्माता अनुबंध और इसकी पूर्व-संकलित प्लेटफ़ॉर्म लाइब्रेरी चुनें। VeraGrid बाइनरी को एक अलग वर्कर में मान्य और चलाता है।</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>टेम्पलेट</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
+        <translation>निर्माता घोषणा करता है कि सभी परिवर्तनीय मॉडल स्थिति प्रत्येक Instance के स्वामित्व में है।</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that the library performs no late native loading.</source>
+        <translation>निर्माता घोषणा करता है कि लाइब्रेरी कोई देर से नेटिव लोडिंग नहीं करती है।</translation>
+    </message>
+    <message>
+        <source>Windows libraries (*.dll)</source>
+        <translation>विंडोज लाइब्रेरी (*.dll)</translation>
+    </message>
+    <message>
+        <source>{platform}: missing</source>
+        <translation>{platform}: अनुपलब्ध</translation>
+    </message>
+    <message>
+        <source>{platform}: {status}, SHA-256 {digest}</source>
+        <translation>{platform}: {status}, SHA-256 {digest}</translation>
     </message>
 </context>
 </TS>

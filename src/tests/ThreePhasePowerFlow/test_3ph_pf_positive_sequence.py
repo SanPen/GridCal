@@ -35,7 +35,8 @@ def test_3bus_ps_3ph() -> None:
     gen_slack = vge.Generator()
     grid.add_generator(bus=bus_slack, api_obj=gen_slack)
 
-    gen_pv = vge.Generator(P=5, control_mode=vge.GeneratorControlMode.V)
+    gen_pv = vge.Generator(P=5, control_mode=vge.GeneratorControlMode.V,
+                          r0=0.01, x0=0.08, r2=0.02, x2=0.10)
     grid.add_generator(bus=bus_pv, api_obj=gen_pv)
 
     # ----------------------------------------------------------------------------------------------------------------------
@@ -113,7 +114,8 @@ def test_3bus_ps_3ph_with_q_control_enabled() -> None:
     gen_slack = vge.Generator()
     grid.add_generator(bus=bus_slack, api_obj=gen_slack)
 
-    gen_pv = vge.Generator(P=5.0, control_mode=vge.GeneratorControlMode.V)
+    gen_pv = vge.Generator(P=5.0, control_mode=vge.GeneratorControlMode.V,
+                          r0=0.01, x0=0.08, r2=0.02, x2=0.10)
     grid.add_generator(bus=bus_pv, api_obj=gen_pv)
 
     grid.add_line(obj=vge.Line(bus_from=bus_slack, bus_to=bus_pv, name='Slack-PV', r=0.1, x=1.0, b=0.1))
@@ -160,6 +162,13 @@ def test_ieee_grids_3ph() -> None:
 
         fname = os.path.join(TEST_DATA_DIR, 'grids', 'RAW', f1)
         main_circuit = FileOpen(fname).open()
+
+        # These balanced RAW fixtures do not include sequence machine data.
+        # Complete the test inputs; Z0/Z2 do not affect the balanced reference solution.
+        generator: vge.Generator
+        for generator in main_circuit.generators:
+            generator.R0, generator.X0 = 0.01, 0.08
+            generator.R2, generator.X2 = 0.02, 0.10
 
         # vge.save_file(grid=main_circuit, filename='positive_sequence_3ph_pf.veragrid')
 

@@ -4,7 +4,7 @@ import pytest
 
 import VeraGridEngine.api as vge
 from VeraGridEngine.basic_structures import Logger
-from VeraGridEngine.Devices.Branches.dc_cable_type import DcCableType
+from VeraGridEngine.Devices.Branches.underground_line_type import UndergroundLineType
 from VeraGridEngine.Devices.Branches.dc_line import DcLine
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Devices.Substation.bus import Bus
@@ -18,7 +18,7 @@ from VeraGridEngine.IO.veragrid.pack_unpack import get_objects_dictionary
 from VeraGridEngine.enumerations import DynamicSimulationMode, FileType
 
 
-def _build_dc_cable_grid() -> tuple[MultiCircuit, DcCableType, DcLine]:
+def _build_dc_cable_grid() -> tuple[MultiCircuit, UndergroundLineType, DcLine]:
     """
     Build a small DC grid with one physical cable template.
 
@@ -28,13 +28,14 @@ def _build_dc_cable_grid() -> tuple[MultiCircuit, DcCableType, DcLine]:
     grid.Sbase = 100.0
     bus_from: Bus = grid.add_bus(Bus(name='DC from', Vnom=320.0, is_dc=True))
     bus_to: Bus = grid.add_bus(Bus(name='DC to', Vnom=320.0, is_dc=True))
-    cable_type: DcCableType = DcCableType(
+    cable_type: UndergroundLineType = UndergroundLineType(
         name='320 kV cable',
         Vnom=320.0,
         Imax=1.5,
         R=0.02,
-        L=0.001,
-        C=0.000001,
+        X=2.0 * 3.141592653589793 * 50.0 * 0.001,
+        C=1.0,
+        freq=50.0,
     )
     line: DcLine = DcLine(
         bus_from=bus_from,
@@ -46,7 +47,7 @@ def _build_dc_cable_grid() -> tuple[MultiCircuit, DcCableType, DcLine]:
 
     # Register the provider before its consumer, matching the persistence
     # dependency that must be reconstructed when the file is reopened.
-    grid.add_dc_cable_type(obj=cable_type)
+    grid.add_underground_line(obj=cable_type)
     grid.add_dc_line(obj=line)
     line.apply_template(obj=cable_type, Sbase=grid.Sbase)
     return grid, cable_type, line
@@ -90,7 +91,7 @@ def test_dgs_dc_cable_import_rejects_ac_type_even_when_cable() -> None:
     )
     source_type.systp = 0
     logger: Logger = Logger()
-    cable_type: DcCableType | None = convert_dgs_to_dc_cable_type(
+    cable_type: UndergroundLineType | None = convert_dgs_to_dc_cable_type(
         typlne=source_type,
         logger=logger,
     )
@@ -111,7 +112,7 @@ def test_dgs_dc_cable_import_rejects_missing_installation_evidence() -> None:
     )
     source_type.cohl_declared = False
     logger: Logger = Logger()
-    cable_type: DcCableType | None = convert_dgs_to_dc_cable_type(
+    cable_type: UndergroundLineType | None = convert_dgs_to_dc_cable_type(
         typlne=source_type,
         logger=logger,
     )
@@ -120,7 +121,7 @@ def test_dgs_dc_cable_import_rejects_missing_installation_evidence() -> None:
     assert logger.warning_count() == 1
     assert logger.entries[0].device_property == 'aohl_/cohl_'
     assert logger.entries[0].msg == (
-        'DGS line type does not explicitly identify a cable; not creating DcCableType'
+        'DGS line type does not explicitly identify a cable; not creating Cable System'
     )
 
 
@@ -128,7 +129,7 @@ def test_dgs_dc_cable_import_rejects_missing_installation_evidence() -> None:
     ('legacy_code', 'current_code', 'expected_message'),
     (
         (None, 1, 'DC line type is explicitly overhead; keeping resistive DcLine without a cable template'),
-        ('cab', 1, 'DGS line installation fields disagree; not creating DcCableType'),
+        ('cab', 1, 'DGS line installation fields disagree; not creating Cable System'),
     ),
 )
 def test_dgs_dc_cable_import_rejects_overhead_or_conflicting_installation(
@@ -151,7 +152,7 @@ def test_dgs_dc_cable_import_rejects_overhead_or_conflicting_installation(
     source_type.aohl_declared = legacy_code is not None
     source_type.cohl_ = current_code
     logger: Logger = Logger()
-    cable_type: DcCableType | None = convert_dgs_to_dc_cable_type(
+    cable_type: UndergroundLineType | None = convert_dgs_to_dc_cable_type(
         typlne=source_type,
         logger=logger,
     )
@@ -185,14 +186,14 @@ def test_dgs_dc_cable_import_accepts_either_capacitance_representation(
         susceptance_us_per_km=susceptance_us_per_km,
     )
     logger: Logger = Logger()
-    cable_type: DcCableType | None = convert_dgs_to_dc_cable_type(
+    cable_type: UndergroundLineType | None = convert_dgs_to_dc_cable_type(
         typlne=source_type,
         logger=logger,
     )
 
     assert cable_type is not None
-    assert cable_type.L == pytest.approx(0.001)
-    assert cable_type.C == pytest.approx(0.25e-6)
+    assert cable_type.get_dc_parameters()[1] == pytest.approx(0.001)
+    assert cable_type.get_dc_parameters()[2] == pytest.approx(0.25e-6)
     assert logger.warning_count() == 0
 
 
@@ -207,13 +208,13 @@ def test_dgs_dc_cable_import_prefers_capacitance_when_fields_disagree() -> None:
         susceptance_us_per_km=100.0,
     )
     logger: Logger = Logger()
-    cable_type: DcCableType | None = convert_dgs_to_dc_cable_type(
+    cable_type: UndergroundLineType | None = convert_dgs_to_dc_cable_type(
         typlne=source_type,
         logger=logger,
     )
 
     assert cable_type is not None
-    assert cable_type.C == pytest.approx(0.25e-6)
+    assert cable_type.get_dc_parameters()[2] == pytest.approx(0.25e-6)
     assert logger.warning_count() == 1
     assert logger.entries[0].device_property == 'bline'
     assert logger.entries[0].msg == (
@@ -248,10 +249,10 @@ def test_dgs_v3_dc_cable_import_preserves_template_identity(
 
     assert grid is not None
     assert file_open.logger.error_count() == 0
-    assert len(grid.dc_cable_types) == 1
+    assert len(grid.underground_cable_types) == 1
     assert len(grid.dc_lines) > 0
     assert all(
-        line.template is grid.dc_cable_types[0]
+        line.template is grid.underground_cable_types[0]
         for line in grid.dc_lines
     )
 
@@ -259,10 +260,10 @@ def test_dgs_v3_dc_cable_import_preserves_template_identity(
     vge.save_file(grid=grid, filename=str(roundtrip_path))
     roundtrip_grid: MultiCircuit = vge.open_file(filename=str(roundtrip_path))
 
-    assert len(roundtrip_grid.dc_cable_types) == 1
+    assert len(roundtrip_grid.underground_cable_types) == 1
     assert len(roundtrip_grid.dc_lines) == len(grid.dc_lines)
     assert all(
-        line.template is roundtrip_grid.dc_cable_types[0]
+        line.template is roundtrip_grid.underground_cable_types[0]
         for line in roundtrip_grid.dc_lines
     )
 
@@ -274,7 +275,7 @@ def test_dc_cable_type_applies_physical_values_without_overwriting_rating() -> N
     :return: None.
     """
     grid: MultiCircuit
-    cable_type: DcCableType
+    cable_type: UndergroundLineType
     line: DcLine
     grid, cable_type, line = _build_dc_cable_grid()
     logger: Logger = Logger()
@@ -322,17 +323,18 @@ def test_dc_cable_type_precedes_dc_line_and_survives_copy() -> None:
     :return: None.
     """
     grid: MultiCircuit
-    cable_type: DcCableType
+    cable_type: UndergroundLineType
     line: DcLine
     grid, cable_type, line = _build_dc_cable_grid()
     object_keys: list[str] = list(get_objects_dictionary().keys())
     copied_grid: MultiCircuit = grid.copy()
-    copied_type: DcCableType = copied_grid.dc_cable_types[0]
+    copied_type: UndergroundLineType = copied_grid.underground_cable_types[0]
     copied_line: DcLine = copied_grid.dc_lines[0]
 
-    assert object_keys.index('dc_cable_types') < object_keys.index('dc_line')
-    assert cable_type.device_type == DeviceType.DcCableTypeDevice
-    assert grid.get_elements_by_type(DeviceType.DcCableTypeDevice) == list([cable_type])
+    assert 'dc_cable_types' not in object_keys
+    assert object_keys.index('underground_cable_types') < object_keys.index('dc_line')
+    assert cable_type.device_type == DeviceType.UnderGroundLineDevice
+    assert grid.get_elements_by_type(DeviceType.UnderGroundLineDevice) == list([cable_type])
     assert copied_type is not cable_type
     assert copied_line is not line
     assert copied_line.template is copied_type
@@ -345,7 +347,7 @@ def test_dc_line_copy_keeps_cable_length_and_dynamic_values() -> None:
     :return: None.
     """
     grid: MultiCircuit
-    cable_type: DcCableType
+    cable_type: UndergroundLineType
     line: DcLine
     grid, cable_type, line = _build_dc_cable_grid()
     copied_line: DcLine = line.copy()
@@ -369,16 +371,16 @@ def test_dc_cable_type_roundtrip_preserves_template_identity(tmp_path: Path) -> 
     :return: None.
     """
     grid: MultiCircuit
-    cable_type: DcCableType
+    cable_type: UndergroundLineType
     line: DcLine
     grid, cable_type, line = _build_dc_cable_grid()
     file_name: Path = tmp_path / 'dc_cable_type.veragrid'
     vge.save_file(grid=grid, filename=str(file_name))
     loaded_grid: MultiCircuit = vge.open_file(filename=str(file_name))
 
-    assert len(loaded_grid.dc_cable_types) == 1
+    assert len(loaded_grid.underground_cable_types) == 1
     assert len(loaded_grid.dc_lines) == 1
-    assert loaded_grid.dc_lines[0].template is loaded_grid.dc_cable_types[0]
+    assert loaded_grid.dc_lines[0].template is loaded_grid.underground_cable_types[0]
 
 
 def test_deleting_dc_cable_type_clears_dc_line_dependency() -> None:
@@ -388,12 +390,12 @@ def test_deleting_dc_cable_type_clears_dc_line_dependency() -> None:
     :return: None.
     """
     grid: MultiCircuit
-    cable_type: DcCableType
+    cable_type: UndergroundLineType
     line: DcLine
     grid, cable_type, line = _build_dc_cable_grid()
-    grid.delete_dc_cable_type(obj=cable_type)
+    grid.delete_underground_line(obj=cable_type)
 
-    assert len(grid.dc_cable_types) == 0
+    assert len(grid.underground_cable_types) == 0
     assert line.template is None
 
 
@@ -404,7 +406,7 @@ def test_dgs_export_emits_dc_cable_provider_before_line() -> None:
     :return: None.
     """
     grid: MultiCircuit
-    cable_type: DcCableType
+    cable_type: UndergroundLineType
     line: DcLine
     grid, cable_type, line = _build_dc_cable_grid()
     dgs_grid: DgsCircuit = circuit_to_dgs(grid=grid)
@@ -417,11 +419,11 @@ def test_dgs_export_emits_dc_cable_provider_before_line() -> None:
     assert dgs_grid.elmlnes[0].typ_id == dc_types[0].ID
     assert dc_types[0].rline == pytest.approx(cable_type.R)
     assert dc_types[0].xline == pytest.approx(
-        2.0 * 3.141592653589793 * grid.fBase * cable_type.L
+        2.0 * 3.141592653589793 * grid.fBase * cable_type.get_dc_parameters()[1]
     )
-    assert dc_types[0].cline == pytest.approx(cable_type.C * 1.0e6)
+    assert dc_types[0].cline == pytest.approx(cable_type.get_dc_parameters()[2] * 1.0e6)
     assert dc_types[0].bline == pytest.approx(
-        2.0 * 3.141592653589793 * grid.fBase * cable_type.C * 1.0e6
+        2.0 * 3.141592653589793 * grid.fBase * cable_type.get_dc_parameters()[2] * 1.0e6
     )
 
 

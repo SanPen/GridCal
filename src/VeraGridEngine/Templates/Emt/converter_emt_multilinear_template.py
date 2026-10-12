@@ -78,6 +78,7 @@ def get_emt_ideal_converter_multilinear(
         control2_val=control2_val,
         p0=P0,
         vdc_nom=Vdc_nom,
+        sbase=sbase,
     )
 
     eps = vf.add_const(1e-10)
@@ -177,16 +178,16 @@ def get_emt_ideal_converter_multilinear(
     templ.block.event_dict.update({
         P_loss: vf.add_const(0.0),
         P0: vf.add_const(0.0),
-        omega_base: vf.add_const(2.0 * np.pi * 50.0),
-        sbase: vf.add_const(1.0),
-        control1: vf.add_const(float(_converter_control_type_code(None))),
-        control2: vf.add_const(float(_converter_control_type_code(None))),
-        control1_val: vf.add_const(0.0),
-        control2_val: vf.add_const(0.0),
         phi_v: vf.add_const(0.0),
         Vpk: vf.add_const(np.sqrt(2.0)),
         Vdc_nom: vf.add_const(1.0),
     })
+    templ.block.parameters[omega_base] = vf.add_const(2.0 * np.pi * 50.0)
+    templ.block.parameters[sbase] = vf.add_const(1.0)
+    templ.block.event_dict[control1] = vf.add_const(float(_converter_control_type_code(None)))
+    templ.block.event_dict[control2] = vf.add_const(float(_converter_control_type_code(None)))
+    templ.block.event_dict[control1_val] = vf.add_const(0.0)
+    templ.block.event_dict[control2_val] = vf.add_const(0.0)
 
     templ.block.external_mapping = {
         VarPowerFlowReferenceType.v_A: v_A,
@@ -205,8 +206,6 @@ def get_emt_ideal_converter_multilinear(
 
     templ.block.api_obj_mapping = {
         ParamPowerFlowReferenceType.Sbase: sbase,
-        ParamPowerFlowReferenceType.converter_loss_power_0: P_loss,
-        ParamPowerFlowReferenceType.P0: P0,
         ParamPowerFlowReferenceType.omega_base: omega_base,
         ParamPowerFlowReferenceType.converter_control_mode_1: control1,
         ParamPowerFlowReferenceType.converter_control_mode_2: control2,

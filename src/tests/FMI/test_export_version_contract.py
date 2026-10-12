@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from VeraGridEngine.IO.fmu.exporter.config import ExportConfig as CoSimulationExportConfig
-from VeraGridEngine.IO.fmu.exporter_me.config import ExportConfig as ModelExchangeExportConfig
+from VeraGridEngine.IO.fmu.config import ExportConfig as CoSimulationExportConfig
+from VeraGridEngine.IO.fmu.config import ExportConfig as ModelExchangeExportConfig
 from VeraGridEngine.enumerations import FmiVersion
 
 

@@ -388,7 +388,8 @@ def _build_equation_compiler_residual_cache_key(equations: List[Expr],
                                                 method_name: str,
                                                 use_cse: bool,
                                                 offset: int,
-                                                inplace: bool) -> str:
+                                                inplace: bool,
+                                                diff_var_map: Dict[int, int] | None = None) -> str:
     """
     Return a deterministic cache key for one ``EquationCompiler`` residual kernel.
 
@@ -406,6 +407,8 @@ def _build_equation_compiler_residual_cache_key(equations: List[Expr],
     :type offset: int
     :param inplace: Whether the kernel writes in place.
     :type inplace: bool
+    :param diff_var_map: Base UID to derivative-history slot; missing entries use the state slot.
+    :type diff_var_map: Dict[int, int] | None
     :return: Deterministic cache key.
     :rtype: str
     """
@@ -420,6 +423,7 @@ def _build_equation_compiler_residual_cache_key(equations: List[Expr],
                 param_map,
                 method_name,
                 None,
+                diff_var_map,
             )
         )
         equation_index += 1
@@ -442,7 +446,8 @@ def _build_equation_compiler_ad_cache_key(equations: List[Expr],
                                           param_map: Dict[int, int],
                                           method_name: str,
                                           use_cse: bool,
-                                          active_indices: set | None) -> str:
+                                          active_indices: set | None,
+                                          diff_var_map: Dict[int, int] | None = None) -> str:
     """
     Return a deterministic cache key for one ``EquationCompiler`` AD kernel.
 
@@ -458,11 +463,14 @@ def _build_equation_compiler_ad_cache_key(equations: List[Expr],
     :type use_cse: bool
     :param active_indices: Optional active seed indices.
     :type active_indices: set | None
+    :param diff_var_map: Base UID to derivative-history slot; missing entries use the state slot.
+    :type diff_var_map: Dict[int, int] | None
     :return: Deterministic cache key.
     :rtype: str
     """
     expr_fingerprints: List[str] = list()
     active_index_tokens: List[str] = list()
+    dynamic_seeds: bool = active_indices is None
     equation_index: int = 0
 
     while equation_index < len(equations):
@@ -473,6 +481,7 @@ def _build_equation_compiler_ad_cache_key(equations: List[Expr],
                 param_map,
                 method_name,
                 None,
+                diff_var_map,
             )
         )
         equation_index += 1
@@ -488,6 +497,8 @@ def _build_equation_compiler_ad_cache_key(equations: List[Expr],
         str(use_cse),
         str(len(var_map)),
         str(len(param_map)),
+        # A runtime seed vector and an explicitly empty selection emit different code.
+        str(dynamic_seeds),
         ",".join(active_index_tokens),
         "::".join(expr_fingerprints),
     ])
@@ -666,7 +677,8 @@ def _build_codegen_cache_key(payload: str) -> str:
     :return: Cache key.
     :rtype: str
     """
-    cache_version: str = "jit-codegen-v1"
+    # Regenerate kernels whose old identity omitted history bindings or seed mode.
+    cache_version: str = "jit-codegen-v2"
     return _stable_digest(cache_version + "|" + payload)
 
 
@@ -674,7 +686,9 @@ def _fingerprint_codegen_var(node: Var,
                              var_map: Dict[int, int],
                              param_map: Dict[int, int],
                              method_name: str,
-                             col_map: Dict[str, int] | None = None) -> str:
+                             col_map: Dict[str, int] | None = None,
+                             diff_var_map: Dict[int, int] | None = None,
+                             force_derivative_discretization: bool = False) -> str:
     """
     Return a stable code-generation fingerprint for one variable node.
 
@@ -688,12 +702,19 @@ def _fingerprint_codegen_var(node: Var,
     :type method_name: str
     :param col_map: Optional matrix-kernel column map.
     :type col_map: Dict[str, int] | None
+    :param diff_var_map: Base UID to scalar derivative-history slot, with state-slot fallback.
+    :type diff_var_map: Dict[int, int] | None
+    :param force_derivative_discretization: Follow scalar nested visitor recursion directly,
+        bypassing an intermediate derivative's own runtime or parameter mapping.
+    :type force_derivative_discretization: bool
     :return: Stable fingerprint string.
     :rtype: str
     """
-    if node.uid in param_map:
+    # Top-level variables keep their mapped meaning. Nested scalar visitors call
+    # visit_diffvar directly, so their intermediate derivatives must follow the base.
+    if not force_derivative_discretization and node.uid in param_map:
         return f"P{param_map[node.uid]}"
-    elif col_map is None and node.uid in var_map:
+    elif not force_derivative_discretization and col_map is None and node.uid in var_map:
         return f"S{var_map[node.uid]}"
     elif col_map is not None and node.uid in var_map:
         mapped_name: str = node.name
@@ -706,10 +727,21 @@ def _fingerprint_codegen_var(node: Var,
             return f"MN:{mapped_name}"
     elif node.base_var is not None:
         if node.base_var.base_var is not None:
-            nested_fp: str = _fingerprint_codegen_var(node.base_var, var_map, param_map, method_name, col_map)
+            # Preserve matrix traversal; only scalar nested code bypasses mappings.
+            nested_fp: str = _fingerprint_codegen_var(
+                node.base_var, var_map, param_map, method_name, col_map,
+                diff_var_map, col_map is None)
             return f"DD[{method_name}|{nested_fp}]"
         elif col_map is None:
-            return f"D[{method_name}|S{var_map[node.base_var.uid]}]"
+            state_index: int = var_map[node.base_var.uid]
+            history_index: int
+            if diff_var_map is None:
+                history_index = state_index
+            else:
+                history_index = diff_var_map.get(node.base_var.uid, state_index)
+            # Encode only the binding consumed by this leaf. Unused mappings and
+            # renamed UIDs must not prevent equivalent kernels from being reused.
+            return f"D[{method_name}|S{state_index}|H{history_index}]"
         else:
             return f"D[{method_name}|M{col_map[node.origin_var.name]}]"
     elif node.name == 'h':
@@ -718,11 +750,78 @@ def _fingerprint_codegen_var(node: Var,
         return f"N:{node.name}"
 
 
+class _StructuralExpressionContext:
+    """
+    Bind structural variable occurrences during one expression fingerprint walk.
+
+    Runtime slots follow first occurrence, whereas parameter tokens retain
+    concrete identity because grouped kernels read a shared parameter vector.
+    This context is discarded after its ordered runtime variables are returned.
+    """
+
+    __slots__: Tuple[str, ...] = (
+        "runtime_uids", "parameter_uids", "runtime_slots", "parameter_slots", "runtime_variables",
+    )
+
+    def __init__(self, runtime_uids: Set[int], parameter_uids: Set[int]) -> None:
+        """
+        Initialize expression-local binding lookups without copying the model.
+
+        :param runtime_uids: UIDs belonging to the runtime state/algebraic vector.
+        :param parameter_uids: UIDs belonging to the shared parameter vector.
+        :return: None.
+        """
+        # Borrow the classification sets only for this traversal. The number of
+        # encountered variables is unknown until the expression has been walked.
+        self.runtime_uids: Set[int] = runtime_uids
+        self.parameter_uids: Set[int] = parameter_uids
+        self.runtime_slots: Dict[int, str] = dict()
+        self.parameter_slots: Dict[int, str] = dict()
+        self.runtime_variables: List[Var] = list()
+
+    def fingerprint_variable(self, node: Var) -> str:
+        """
+        Classify an occurrence and retain its role and first runtime gather slot.
+
+        :param node: Variable occurrence, including a derivative or same-UID alias.
+        :return: Structural token preserving the occurrence's binding semantics.
+        :raises RuntimeError: If the immediate-base UID has no classification.
+        """
+        # Group gather tables use the immediate base UID. Derivative order is
+        # separate metadata: a value and its derivative share a column, not code.
+        target_uid: int = node.uid if node.base_var is None else node.base_var.uid
+        if target_uid in self.runtime_uids:
+            runtime_slot: str | None = self.runtime_slots.get(target_uid, None)
+            if runtime_slot is None:
+                runtime_slot = f"__RVAR_{len(self.runtime_slots)}__"
+                self.runtime_slots[target_uid] = runtime_slot
+                self.runtime_variables.append(node)
+            else:
+                pass
+            return f"{runtime_slot}:D{node.diff_order}"
+        elif target_uid in self.parameter_uids:
+            parameter_slot: str | None = self.parameter_slots.get(target_uid, None)
+            if parameter_slot is None:
+                # Keep the original first-name-per-UID policy. Different global
+                # parameter entries must not normalize into a runtime placeholder.
+                parameter_slot = f"__PARAM_{node.name}_{target_uid}__"
+                self.parameter_slots[target_uid] = parameter_slot
+            else:
+                pass
+            return parameter_slot
+        else:
+            raise RuntimeError(
+                f"Unclassified symbolic variable name={node.name}, target_uid={target_uid}"
+            )
+
+
 def _fingerprint_codegen_expr(node: Expr,
                               var_map: Dict[int, int],
                               param_map: Dict[int, int],
                               method_name: str,
-                              col_map: Dict[str, int] | None = None) -> str:
+                              col_map: Dict[str, int] | None = None,
+                              diff_var_map: Dict[int, int] | None = None,
+                              structural_context: _StructuralExpressionContext | None = None) -> str:
     """
     Return a stable code-generation fingerprint for one symbolic expression.
 
@@ -736,16 +835,30 @@ def _fingerprint_codegen_expr(node: Expr,
     :type method_name: str
     :param col_map: Optional matrix-kernel column map.
     :type col_map: Dict[str, int] | None
+    :param diff_var_map: Base UID to scalar derivative-history slot; propagated through all nodes.
+    :type diff_var_map: Dict[int, int] | None
+    :param structural_context: Optional expression-local structural variable bindings.
+        When present, code-generation maps and method are not consumed by variable nodes.
+    :type structural_context: _StructuralExpressionContext | None
     :return: Stable fingerprint string.
     :rtype: str
     """
     if isinstance(node, Const):
+        # Exact literal tokens are shared by grouping and cache identity; decimal
+        # rounding here would substitute a different constant in grouped kernels.
         return f"C[{repr(node.value)}]"
     elif isinstance(node, Var):
-        return _fingerprint_codegen_var(node, var_map, param_map, method_name, col_map)
+        if structural_context is None:
+            return _fingerprint_codegen_var(node, var_map, param_map, method_name, col_map, diff_var_map)
+        else:
+            return structural_context.fingerprint_variable(node)
     elif isinstance(node, BinOp):
-        left_fp: str = _fingerprint_codegen_expr(node.left, var_map, param_map, method_name, col_map)
-        right_fp: str = _fingerprint_codegen_expr(node.right, var_map, param_map, method_name, col_map)
+        # Visit operands before sorting their tokens: runtime gather columns must
+        # stay in source occurrence order for the corresponding compiled template.
+        left_fp: str = _fingerprint_codegen_expr(
+            node.left, var_map, param_map, method_name, col_map, diff_var_map, structural_context)
+        right_fp: str = _fingerprint_codegen_expr(
+            node.right, var_map, param_map, method_name, col_map, diff_var_map, structural_context)
 
         if node.op in ['+', '*'] and left_fp > right_fp:
             left_fp, right_fp = right_fp, left_fp
@@ -754,10 +867,12 @@ def _fingerprint_codegen_expr(node: Expr,
 
         return f"B[{node.op}|{left_fp}|{right_fp}]"
     elif isinstance(node, UnOp):
-        operand_fp: str = _fingerprint_codegen_expr(node.operand, var_map, param_map, method_name, col_map)
+        operand_fp: str = _fingerprint_codegen_expr(
+            node.operand, var_map, param_map, method_name, col_map, diff_var_map, structural_context)
         return f"U[{node.op}|{operand_fp}]"
     elif isinstance(node, Func):
-        arg_fp: str = _fingerprint_codegen_expr(node.arg, var_map, param_map, method_name, col_map)
+        arg_fp: str = _fingerprint_codegen_expr(
+            node.arg, var_map, param_map, method_name, col_map, diff_var_map, structural_context)
         return f"F[{node.op}|{arg_fp}]"
     else:
         return f"RAW[{type(node).__name__}|{str(node)}]"
@@ -770,7 +885,8 @@ def _build_residual_codegen_cache_key(equations: List[Expr],
                                       use_cse: bool,
                                       offset: int,
                                       n_variables: int,
-                                      n_parameters: int) -> str:
+                                      n_parameters: int,
+                                      diff_var_map: Dict[int, int] | None = None) -> str:
     """
     Return the cache key of one residual kernel.
 
@@ -790,6 +906,8 @@ def _build_residual_codegen_cache_key(equations: List[Expr],
     :type n_variables: int
     :param n_parameters: Number of parameters.
     :type n_parameters: int
+    :param diff_var_map: Base UID to derivative-history slot; missing entries use the state slot.
+    :type diff_var_map: Dict[int, int] | None
     :return: Deterministic cache key.
     :rtype: str
     """
@@ -797,7 +915,8 @@ def _build_residual_codegen_cache_key(equations: List[Expr],
     equation_index: int = 0
 
     while equation_index < len(equations):
-        expr_fingerprints.append(_fingerprint_codegen_expr(equations[equation_index], var_map, param_map, method_name, None))
+        expr_fingerprints.append(_fingerprint_codegen_expr(
+            equations[equation_index], var_map, param_map, method_name, None, diff_var_map))
         equation_index += 1
 
     payload: str = "|".join([
@@ -820,7 +939,8 @@ def _build_ad_codegen_cache_key(equations: List[Expr],
                                 use_cse: bool,
                                 active_indices: set | None,
                                 n_variables: int,
-                                n_parameters: int) -> str:
+                                n_parameters: int,
+                                diff_var_map: Dict[int, int] | None = None) -> str:
     """
     Return the cache key of one AD kernel.
 
@@ -840,15 +960,19 @@ def _build_ad_codegen_cache_key(equations: List[Expr],
     :type n_variables: int
     :param n_parameters: Number of parameters.
     :type n_parameters: int
+    :param diff_var_map: Base UID to derivative-history slot; missing entries use the state slot.
+    :type diff_var_map: Dict[int, int] | None
     :return: Deterministic cache key.
     :rtype: str
     """
     expr_fingerprints: List[str] = list()
     active_index_list: List[str] = list()
+    dynamic_seeds: bool = active_indices is None
     equation_index: int = 0
 
     while equation_index < len(equations):
-        expr_fingerprints.append(_fingerprint_codegen_expr(equations[equation_index], var_map, param_map, method_name, None))
+        expr_fingerprints.append(_fingerprint_codegen_expr(
+            equations[equation_index], var_map, param_map, method_name, None, diff_var_map))
         equation_index += 1
 
     if active_indices is None:
@@ -863,6 +987,8 @@ def _build_ad_codegen_cache_key(equations: List[Expr],
         str(n_variables),
         str(n_parameters),
         str(len(equations)),
+        # None consumes runtime seeds; an empty set emits a zero JVP.
+        str(dynamic_seeds),
         ",".join(active_index_list),
         "::".join(expr_fingerprints),
     ])
@@ -1623,6 +1749,7 @@ class EquationCompiler:
             use_cse,
             offset,
             inplace,
+            self.diff_var_map,
         )
         cache_entry: GeneratedKernelCacheEntry | None = GENERATED_KERNEL_CACHE.get_entry("residual", cache_key)
 
@@ -1699,6 +1826,7 @@ class EquationCompiler:
             type(self.strategy).__name__,
             use_cse,
             active_indices,
+            self.diff_var_map,
         )
         cache_entry: GeneratedKernelCacheEntry | None = GENERATED_KERNEL_CACHE.get_entry("ad", cache_key)
 
@@ -2082,6 +2210,7 @@ class EagerEquationCompiler(EquationCompiler):
             offset,
             len(self.variables_objs),
             len(self.parameters_objs),
+            self.diff_var_map,
         )
         cache_entry = GENERATED_KERNEL_CACHE.get_entry("residual", cache_key)
 
@@ -2182,6 +2311,7 @@ class EagerEquationCompiler(EquationCompiler):
             active_indices,
             len(self.variables_objs),
             len(self.parameters_objs),
+            self.diff_var_map,
         )
         cache_entry = GENERATED_KERNEL_CACHE.get_entry("ad", cache_key)
 
@@ -2343,7 +2473,6 @@ class RMSCompiler(EquationCompiler):
                  diff_vars: List[Var],
                  v_params: List[Var],
                  c_params: List[Var],
-                 dt_var: Var,
                  compiler_names_dict: Dict[int, str]) -> None:
         """
         Initializes the RMS Compiler with the system's mathematical components.
@@ -2353,16 +2482,15 @@ class RMSCompiler(EquationCompiler):
             diff_vars (List[Var]): Differential variables (dx/dt).
             v_params (List[Var]): Variable (event-driven) parameters.
             c_params (List[Var]): Constant parameters.
-            dt_var (Var): The symbolic variable representing the integration time step.
             compiler_names_dict (Dict[int, str]): Dictionary mapping variable UIDs to
                                                   their executable string representations.
         """
         super().__init__(variables=variables, parameters=c_params, method=DynamicIntegrationMethod.DaeBackEuler)
-        self.dt_var = dt_var
+        self.dt_var = Var(name="dt")
         self.compiler_names_dict = compiler_names_dict
         self.diff_vars = diff_vars
         self.v_params = v_params
-        self.compiler_names_dict[dt_var.uid] = 'h'
+        self.compiler_names_dict[self.dt_var.uid] = 'h'
 
     def compile_rhs(self, equations: List[Expr], func_name: str) -> Callable[[Vec, Vec, Vec, Vec], Vec]:
         """
@@ -2493,6 +2621,8 @@ class RMSCompiler(EquationCompiler):
             expr_str = expression2numba(eq, final_names_dict)
             lines.append(f"    out[{i}] = {expr_str}")
 
+        lines.append("    return out")
+
         raw_fn = _compile_to_file("\n".join(lines), func_name)
         return EventParameterFunctionWrapper(raw_fn=raw_fn, equation_count=len(eqs))
 
@@ -2549,7 +2679,6 @@ class RMSCompilerVec(EquationCompiler):
                  diff_vars: List[Var],
                  v_params: List[Var],
                  c_params: List[Var],
-                 dt_var: Var,
                  compiler_names_dict: Dict[int, str]) -> None:
         """
         Initializes the RMS Compiler with the system's mathematical components.
@@ -2559,16 +2688,15 @@ class RMSCompilerVec(EquationCompiler):
             diff_vars (List[Var]): Differential variables (dx/dt).
             v_params (List[Var]): Variable (event-driven) parameters.
             c_params (List[Var]): Constant parameters.
-            dt_var (Var): The symbolic variable representing the integration time step.
             compiler_names_dict (Dict[int, str]): Dictionary mapping variable UIDs to
                                                   their executable string representations.
         """
         super().__init__(variables=variables, parameters=c_params, method=DynamicIntegrationMethod.DaeBackEuler)
-        self.dt_var = dt_var
+        self.dt_var = Var(name="dt")
         self.compiler_names_dict = compiler_names_dict
         self.diff_vars = diff_vars
         self.v_params = v_params
-        self.compiler_names_dict[dt_var.uid] = 'h'
+        self.compiler_names_dict[self.dt_var.uid] = 'h'
 
     def compile_rhs(self, equations: List[Expr], func_name: str) -> Callable[[Vec, Vec, Vec, Vec], Vec]:
         """
@@ -2702,6 +2830,8 @@ class RMSCompilerVec(EquationCompiler):
             # evaluate a simplified step-like path instead of the intended ramp.
             expr_str = expression2numba(eq, final_names_dict)
             lines.append(f"    out[{i}] = {expr_str}")
+
+        lines.append("    return out")
 
         raw_fn = _compile_to_file("\n".join(lines), func_name)
         return EventParameterFunctionWrapper(raw_fn=raw_fn, equation_count=len(eqs))

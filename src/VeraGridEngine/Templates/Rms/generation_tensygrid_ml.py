@@ -7,6 +7,7 @@ from typing import List
 import numpy as np
 import math
 
+from VeraGridEngine.enumerations import ParamPowerFlowReferenceType
 from VeraGridEngine.enumerations import DeviceType, VarPowerFlowReferenceType
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Utils.Symbolic.block import (Block, find_name_in_block)
@@ -215,8 +216,6 @@ def GenqecBuild(vfactory: VarFactory, name: str = "GENQEC RMS template", hard_sa
     Xqaux3 = vfactory.add_var('Xqaux3')
 
     event_dict = {
-        fn: vfactory.add_const(50.0),
-        ws: vfactory.add_const(2 * pi * 50),
         M: vfactory.add_const(3.5),
         H: vfactory.add_const(1) / M,
         D: vfactory.add_const(10.0),
@@ -385,7 +384,9 @@ def GenqecBuild(vfactory: VarFactory, name: str = "GENQEC RMS template", hard_sa
         in_vars=inputs,
         event_dict=event_dict,
         children=[ml_positive_part, ml_trig_block],
-        name="genqec"
+        name="genqec",
+        api_obj_mapping={ParamPowerFlowReferenceType.freq: fn, ParamPowerFlowReferenceType.omega_base: ws},
+        parameters={fn: vfactory.add_const(50.0), ws: vfactory.add_const(2 * pi * 50)},
     )
 
     templ.comment = 'Generator GENQEC RMS model'

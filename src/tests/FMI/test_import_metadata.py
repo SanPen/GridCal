@@ -4,10 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from VeraGridEngine.IO.fmu.importer.bindings import FmuBindingDirection, FmuVariableBinding, validate_bindings
-from VeraGridEngine.IO.fmu.importer.errors import FmuArchiveError, FmuBindingError
-from VeraGridEngine.IO.fmu.importer.inspection import FmuArchiveInspectionPolicy
-from VeraGridEngine.IO.fmu.importer.model_description import (
+from VeraGridEngine.IO.fmu.Elements.bindings import FmuBindingDirection, FmuVariableBinding, validate_bindings
+from VeraGridEngine.IO.fmu.Elements.inspection import FmuArchiveInspectionPolicy
+from VeraGridEngine.IO.fmu.model_description import (
     FmuInterfaceMode,
     FmuModelDescription,
     FmuVariableDescription,
@@ -165,7 +164,7 @@ def test_metadata_reader_propagates_custom_inspection_policy(tmp_path: Path) -> 
         max_model_description_bytes=32
     )
 
-    with pytest.raises(FmuArchiveError, match="inspection byte limit"):
+    with pytest.raises(ValueError, match="inspection byte limit"):
         read_fmu_model_description(fmu_path, inspection_policy=policy)
 
 
@@ -200,7 +199,7 @@ def test_validate_bindings_uses_fmu_causality() -> None:
         ),
     )
 
-    with pytest.raises(FmuBindingError):
+    with pytest.raises(ValueError, match="is not bindable as FMU output"):
         validate_bindings(
             metadata,
             (
@@ -227,7 +226,7 @@ def test_fmi_three_cannot_inherit_the_fmi_two_root_contract(
 
     fmu_path: Path = _write_minimal_model_description(tmp_path / "legacy-root", fmi_version)
 
-    with pytest.raises(FmuArchiveError, match="attribute 'guid'.*outside"):
+    with pytest.raises(ValueError, match="attribute 'guid'.*outside"):
         read_fmu_model_description(fmu_path)
 
 
@@ -245,7 +244,7 @@ def test_invalid_import_version_declarations_fail_closed(
 
     fmu_path: Path = _write_minimal_model_description(tmp_path / "invalid", fmi_version)
 
-    with pytest.raises(FmuArchiveError, match="Invalid FMI version declaration"):
+    with pytest.raises(ValueError, match="Invalid FMI version declaration"):
         read_fmu_model_description(fmu_path)
 
 
@@ -258,7 +257,7 @@ def test_missing_import_version_declaration_fails_closed(tmp_path: Path) -> None
 
     fmu_path: Path = _write_minimal_model_description(tmp_path / "missing", None)
 
-    with pytest.raises(FmuArchiveError, match="missing fmiVersion"):
+    with pytest.raises(ValueError, match="missing fmiVersion"):
         read_fmu_model_description(fmu_path)
 
 
@@ -284,7 +283,7 @@ def test_dtd_and_entity_declarations_fail_before_xml_parsing(
     fmu_path.mkdir()
     (fmu_path / "modelDescription.xml").write_text(xml_text, encoding="utf-8")
 
-    with pytest.raises(FmuArchiveError, match="DTD and entity declarations"):
+    with pytest.raises(ValueError, match="DTD and entity declarations"):
         read_fmu_model_description(fmu_path)
 
 
@@ -302,5 +301,5 @@ def test_invalid_model_description_root_fails_closed(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    with pytest.raises(FmuArchiveError, match="root element"):
+    with pytest.raises(ValueError, match="root element"):
         read_fmu_model_description(fmu_path)

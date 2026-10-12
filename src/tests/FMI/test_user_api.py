@@ -1,4 +1,5 @@
 from __future__ import annotations
+from VeraGridEngine.enumerations import InterfaceType
 
 import ast
 import math
@@ -9,11 +10,12 @@ from unittest.mock import Mock
 import numpy as np
 import pytest
 
-from VeraGridEngine.IO.fmu.exporter.api import export_fmu
-from VeraGridEngine.IO.fmu.exporter.build import host_build_capable
-from VeraGridEngine.IO.fmu.exporter.config import ExportConfig as CsExportConfig, detect_target_platform as detect_cs_target_platform
-from VeraGridEngine.IO.fmu.exporter.compat import Block, Const, Var
-from VeraGridEngine.IO.fmu.importer.bindings import (
+from VeraGridEngine.IO.fmu.interface import export_model_as_fmu
+from VeraGridEngine.IO.fmu.CosimulationInterface.build import host_build_capable
+from VeraGridEngine.IO.fmu.config import ExportConfig as CsExportConfig, detect_target_platform as detect_cs_target_platform
+from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
+from VeraGridEngine.IO.fmu.Elements.bindings import (
     FmuBindingDirection,
     FmiThreeFloat64ConfigurationValue,
     FmiThreeUInt64ConfigurationValue,
@@ -22,7 +24,7 @@ from VeraGridEngine.IO.fmu.importer.bindings import (
     FmuRefBinding,
     FmuVariableBinding,
 )
-from VeraGridEngine.IO.fmu.importer.device_config import (
+from VeraGridEngine.IO.fmu.fmu_device_integration import (
     FmuCsDeviceConfigRecord,
     FmuMeDeviceConfigRecord,
     load_fmu_cs_device_config,
@@ -30,15 +32,14 @@ from VeraGridEngine.IO.fmu.importer.device_config import (
     restore_fmu_cs_spec_from_record,
     restore_fmu_me_spec_from_record,
 )
-from VeraGridEngine.IO.fmu.importer.device_api import attach_rms_fmu_cs_device
-from VeraGridEngine.IO.fmu.importer.errors import FmuImportError, FmuModeError
-from VeraGridEngine.IO.fmu.importer.co_simulation import (
+from VeraGridEngine.IO.fmu.fmu_device_integration import attach_rms_fmu_cs_device
+from VeraGridEngine.IO.fmu.co_simulation import (
     FmuCsDeviceAdapter,
     FmuCsDeviceSpec,
     FmuCsDomain,
     build_fmu_cs_device_spec,
 )
-from VeraGridEngine.IO.fmu.importer.model_exchange import (
+from VeraGridEngine.IO.fmu.model_exchange import (
     FmuMeDeviceAdapter,
     FmuMeDeviceSpec,
     FmuMeDomain,
@@ -49,31 +50,30 @@ from VeraGridEngine.IO.fmu.importer.model_exchange import (
     _prepare_rms_fmu_me_state_event_retry,
     resolve_rms_fmu_me_devices,
 )
-from VeraGridEngine.IO.fmu.importer.model_description import (
+from VeraGridEngine.IO.fmu.model_description import (
     FmuInterfaceMode,
     read_fmu_model_description,
 )
-from VeraGridEngine.IO.fmu.importer.model_description_metadata import (
+from VeraGridEngine.IO.fmu.Elements.description import (
     FmuModelDescription,
 )
-from VeraGridEngine.IO.fmu.importer.template_api import (
+from VeraGridEngine.IO.fmu.fmu_device_integration import (
     append_fmu_parameter_entries,
 )
-from VeraGridEngine.IO.fmu.importer.user_api import (
+from VeraGridEngine.IO.fmu.fmu_device_integration import (
     FmuDeviceAttachmentRequest,
     FmuDeviceDomain,
     FmuReferenceValue,
 )
-from VeraGridEngine.IO.fmu.importer.user_api import attach_fmu_to_device
-from VeraGridEngine.IO.fmu.importer.runtime_worker_host import (
+from VeraGridEngine.IO.fmu.fmu_device_integration import attach_fmu_to_device
+from VeraGridEngine.IO.fmu.worker_host import (
     FmiThreeWorkerHostLimits,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_profile import (
+from VeraGridEngine.IO.fmu.profile import (
     FmuMeEvaluationBudget,
     FmiThreeWorkerFloat64Profile,
 )
-from VeraGridEngine.IO.fmu.exporter_me.api import export_fmu_me
-from VeraGridEngine.IO.fmu.exporter_me.config import ExportConfig as MeExportConfig, detect_target_platform as detect_me_target_platform
+from VeraGridEngine.IO.fmu.config import ExportConfig as MeExportConfig, detect_target_platform as detect_me_target_platform
 from VeraGridEngine.enumerations import (
     DeviceType,
     DynamicIntegrationMethod,
@@ -161,7 +161,7 @@ def test_attach_fmu_parameter_validation_rolls_back_before_device_mutation(
             ),
         ),
     )
-    with pytest.raises(FmuImportError, match="was not found"):
+    with pytest.raises(ValueError, match="was not found"):
         attach_fmu_to_device(device, FakeGrid(), request)
     assert device.rms_model is original_block
     assert device.rms_fmu_import_config == original_config
@@ -297,7 +297,7 @@ def test_fmi_two_cs_and_me_parameters_are_initialize_only(tmp_path: Path) -> Non
     cs_fmu_path: Path = output_root / "fmi_two_parameter_initialize_only_cs.fmu"
     me_fmu_path: Path = output_root / "fmi_two_parameter_initialize_only_me.fmu"
     try:
-        exported_cs_fmu: Path = export_fmu(
+        exported_cs_fmu: Path = export_model_as_fmu(
             build_parameterized_output_block(),
             CsExportConfig(
                 model_name="FmiTwoParameterInitializeOnlyCs",
@@ -351,9 +351,9 @@ def test_fmi_two_cs_and_me_parameters_are_initialize_only(tmp_path: Path) -> Non
         finally:
             cs_adapter.close()
 
-        exported_me_fmu: Path = export_fmu_me(
+        exported_me_fmu: Path = export_model_as_fmu(
             build_parameterized_output_block(),
-            MeExportConfig(
+            MeExportConfig(interface_type=InterfaceType.MODEL_EXCHANGE, 
                 model_name="FmiTwoParameterInitializeOnlyMe",
                 output_path=me_fmu_path,
                 target_platform=detect_me_target_platform(),
@@ -415,7 +415,7 @@ def test_user_api_attaches_rms_cs_device(tmp_path: Path) -> None:
     output_root: Path = tmp_path
     fmu_path = output_root / "user_api_rms_cs.fmu"
     try:
-        exported_fmu = export_fmu(
+        exported_fmu = export_model_as_fmu(
             build_cs_output_block(),
             CsExportConfig(
                 model_name="UserApiRmsCs",
@@ -681,7 +681,7 @@ def test_indexed_bindings_fail_before_any_runtime() -> None:
         spec=cs_spec,
         output_param_indices=dict(),
     )
-    with pytest.raises(FmuModeError, match="indexed device bindings"):
+    with pytest.raises(RuntimeError, match="indexed device bindings"):
         cs_adapter.initialize_outputs(
             time_value=0.0,
             x_snapshot=np.zeros(0, dtype=float),
@@ -710,7 +710,7 @@ def test_indexed_bindings_fail_before_any_runtime() -> None:
         spec=fmi_two_configuration_spec,
         output_param_indices=dict(),
     )
-    with pytest.raises(FmuModeError, match="require FMI 3"):
+    with pytest.raises(RuntimeError, match="require FMI 3"):
         fmi_two_configuration_adapter.initialize_outputs(
             time_value=0.0,
             x_snapshot=np.zeros(0, dtype=float),
@@ -735,7 +735,7 @@ def test_indexed_bindings_fail_before_any_runtime() -> None:
         me_spec,
         _build_test_me_solver_policy(),
     )
-    with pytest.raises(FmuModeError, match="indexed device bindings"):
+    with pytest.raises(RuntimeError, match="indexed device bindings"):
         me_adapter.initialize(start_time=0.0)
 
 
@@ -816,7 +816,7 @@ def test_fmi_three_cs_device_spec_owns_derived_worker_profile(
     finally:
         indexed_adapter.close()
 
-    with pytest.raises(FmuModeError, match="complete value provider"):
+    with pytest.raises(RuntimeError, match="complete value provider"):
         build_fmu_cs_device_spec(
             domain=FmuCsDomain.RMS,
             config=FmuImportConfig(
@@ -1025,7 +1025,7 @@ def test_fmi_three_cs_device_adapter_uses_isolated_session(
         adapter.apply_outputs(target, stepped_outputs)
         assert target.tolist() == pytest.approx([2.25])
 
-        with pytest.raises(FmuImportError, match="requested simulation termination"):
+        with pytest.raises(RuntimeError, match="requested simulation termination"):
             adapter.advance(
                 current_time=0.25,
                 step_size=0.25,
@@ -1288,9 +1288,9 @@ def test_user_api_attaches_emt_me_device(tmp_path: Path) -> None:
     output_root: Path = tmp_path
     fmu_path = output_root / "user_api_emt_me.fmu"
     try:
-        exported_fmu = export_fmu_me(
+        exported_fmu = export_model_as_fmu(
             build_me_output_block(),
-            MeExportConfig(
+            MeExportConfig(interface_type=InterfaceType.MODEL_EXCHANGE, 
                 model_name="UserApiEmtMe",
                 output_path=fmu_path,
                 target_platform=detect_me_target_platform(),
@@ -1459,7 +1459,7 @@ def test_fmi_three_me_device_spec_owns_derived_worker_profile(
                 maximum_event_iterations=rejected_event_bound,
             )
 
-    with pytest.raises(FmuModeError, match="array inputs require a complete"):
+    with pytest.raises(RuntimeError, match="array inputs require a complete"):
         build_fmu_me_device_spec(
             domain=FmuMeDomain.RMS,
             config=FmuImportConfig(
@@ -1623,7 +1623,7 @@ def test_fmi_three_me_device_adapter_uses_isolated_session(
             input_values=dict(control_input=5.0),
         )
         with pytest.raises(
-            FmuModeError,
+            RuntimeError,
             match="solver-owned localization path",
         ):
             direct_state_event_adapter.prepare_step(
@@ -1775,7 +1775,7 @@ def test_fmi_three_me_state_events_use_global_earliest_retry(
         )
 
         with pytest.raises(
-            FmuModeError,
+            RuntimeError,
             match="localization bound cannot meet its tolerance",
         ):
             first_wrapper.runtime_adapter.get_pending_state_event_time(

@@ -301,6 +301,7 @@ class GridMapWidget(BaseDiagramWidget):
                              editor=self,
                              zoom_callback=self.zoom_callback,
                              position_callback=self.position_callback)
+        self.register_video_time_label_canvas(view=self.map.view)
         self.diagram_scene.selectionChanged.connect(self._sync_line_handle_visibility)
 
         # Draw the overlay at a stable base zoom, then move to the persisted

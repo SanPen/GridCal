@@ -94,6 +94,7 @@ def get_load_ZIP_emt_multilinear_template(
     templ.block.event_dict[a4] = vf.add_const(1.0)
     templ.block.event_dict[a5] = vf.add_const(0.0)
     templ.block.event_dict[a6] = vf.add_const(0.0)
+    templ.block.parameters[omega] = vf.add_const(None)
 
     voltage_vars: Dict[str, Var] = dict()
     voltage_derivative_vars: Dict[str, Var] = dict()
@@ -119,6 +120,10 @@ def get_load_ZIP_emt_multilinear_template(
         q0_var: Var = vf.add_var(name=f"Q0_{phase_label}")
 
         templ.block.event_dict[voltage_derivative_var] = vf.add_const(None)
+        # Device P/Q values establish the baseline, but load-power references
+        # remain event targets throughout the EMT simulation.
+        templ.block.event_dict[p0_var] = vf.add_const(None)
+        templ.block.event_dict[q0_var] = vf.add_const(None)
         voltage_vars[phase_label] = voltage_var
         voltage_derivative_vars[phase_label] = voltage_derivative_var
         p0_vars[phase_label] = p0_var
@@ -211,7 +216,9 @@ def get_load_ZIP_emt_multilinear_template(
         VarPowerFlowReferenceType.d_v_C: voltage_derivative_vars.get("C", None),
     }
 
-    api_obj_mapping: Dict[ParamPowerFlowReferenceType, Var | None] = {ParamPowerFlowReferenceType.omega_base: omega}
+    api_obj_mapping: Dict[ParamPowerFlowReferenceType, Var] = dict({
+        ParamPowerFlowReferenceType.omega_base: omega,
+    })
     for phase_label in active_phases:
         p_reference: ParamPowerFlowReferenceType
         q_reference: ParamPowerFlowReferenceType

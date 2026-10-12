@@ -594,6 +594,21 @@ At least one slack bus is required in order to solve the power flow problem.
 | PQ    | Computed | Computed | Set      | Set      |
 | PV    | Set      | Computed | Set      | Computed |
 
+Passive neutral nodes with zero injected current are eliminated algebraically
+before iteration. Partitioning the existing admittance matrix into retained
+conductors $a$ and passive neutrals $n$ gives
+
+$$
+Y_{\mathrm{red}} = Y_{aa} - Y_{an}Y_{nn}^{-1}Y_{na},
+\qquad V_n = -Y_{nn}^{-1}Y_{na}V_a.
+$$
+
+The same power-flow solvers operate on this reduced system. Neutral voltages
+are reconstructed before calculating branch currents and powers. Neutrals used
+by explicit star constant-power or constant-current loads remain in the nonlinear
+system; singular neutral blocks also remain explicit. This reduction introduces
+no grounding and does not constrain the common-mode voltage of floating ABC buses.
+It is separate from the physical earth-wire reduction of overhead tower templates.
 
 ### The Newton-Raphson Method
 

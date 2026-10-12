@@ -5,7 +5,7 @@
 
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Templates.template_definition import TemplateDefinition, TemplateProp
-from VeraGridEngine.enumerations import ParamPowerFlowReferenceType, VarPowerFlowReferenceType, DeviceType
+from VeraGridEngine.enumerations import VarPowerFlowReferenceType, DeviceType
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Utils.Symbolic.block import Block
 import VeraGridEngine.Utils.Symbolic.symbolic as sym
@@ -16,7 +16,7 @@ class PvLoadRmsTemplate(TemplateDefinition):
 
     def __init__(self, vf):
         super().__init__(vf, params=[
-            TemplateProp(name="Pg0_val", units="pu", descr="Initial active power.", tpe=float),
+            TemplateProp(name="Pg0_val", units="pu", descr="Optional initial active power override; otherwise use power flow.", tpe=float),
             TemplateProp(name="Vg0_val", units="pu", descr="Initial voltage reference.", tpe=float),
             TemplateProp(name="name", units="", descr="Name of the rms model.", tpe=str),
         ])
@@ -26,7 +26,7 @@ class PvLoadRmsTemplate(TemplateDefinition):
 
 
 def PVLoadBuild(vfactory: VarFactory, name: str = "PV load RMS template",
-                Pg0_val: float = 1.0, Vg0_val: float = 1.0) -> RmsModelTemplate:
+                Pg0_val: float | None = None, Vg0_val: float = 1.0) -> RmsModelTemplate:
     """
     Builds an RMS model template for a PV load with reactive power limits.
     
@@ -44,7 +44,7 @@ def PVLoadBuild(vfactory: VarFactory, name: str = "PV load RMS template",
     
     :param vfactory: Factory that owns the model's symbolic variables.
     :param name: Name assigned to the generated RMS model template.
-    :param Pg0_val: Initial active power in per unit.
+    :param Pg0_val: Optional initial active power in per unit; otherwise use the solved power-flow value.
     :param Vg0_val: Initial voltage reference in per unit.
     :return: Configured PV-load RMS model template.
     """
@@ -68,7 +68,7 @@ def PVLoadBuild(vfactory: VarFactory, name: str = "PV load RMS template",
     
     # Event dictionary with default values
     event_dict = {
-        Pg0: vfactory.add_const(Pg0_val),
+        Pg0: P if Pg0_val is None else vfactory.add_const(Pg0_val),
         Vg0: Vm,
         Qmax_G: vfactory.add_const(1.0),
         Qmin_G: vfactory.add_const(-1.0),
@@ -102,12 +102,7 @@ def PVLoadBuild(vfactory: VarFactory, name: str = "PV load RMS template",
         VarPowerFlowReferenceType.Vm: inputs[0],
     }
     
-    templ.block.api_obj_mapping = {
-        ParamPowerFlowReferenceType.Pl0: Pg0,
-    }
-    
     templ.block.in_vars = inputs
     
     templ.comment = 'Load RMS PV voltage-dependent model'
     return templ
-

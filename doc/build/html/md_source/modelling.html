@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📐 Grid Modelling &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>📐 Grid Modelling &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -157,6 +157,8 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#controllableshunt">ControllableShunt</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#continuous-voltage-control-in-abc-power-flow">Continuous voltage control in ABC power flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#powerfactory-import">PowerFactory import</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id26">Registered properties</a></li>
 </ul>
 </li>
@@ -165,6 +167,10 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#staticgenerator">StaticGenerator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#q-v-droop-inputs-and-convention">Q-V droop inputs and convention</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#q-v-droop-in-positive-sequence-and-abc-power-flow">Q-V droop in positive-sequence and ABC power flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fixed-pq-with-sequence-responses-in-abc-power-flow">Fixed PQ with sequence responses in ABC power flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#powerfactory-import-and-persistence">PowerFactory import and persistence</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id28">Registered properties</a></li>
 </ul>
 </li>
@@ -216,6 +222,8 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#transformer3w">Transformer3W</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sequence-impedances-and-connections">Sequence impedances and connections</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#powerfactory-dgs">PowerFactory DGS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id36">Registered properties</a></li>
 </ul>
 </li>
@@ -273,6 +281,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#positioned-cable-inputs">Positioned cable inputs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#sequence-only-inputs-and-calculated-results">Sequence-only inputs and calculated results</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#validation-and-applying-a-template">Validation and applying a template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#applying-cable-system-to-a-dc-line">Applying Cable System to a DC line</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#powerfactory-and-legacy-dc-catalogue-compatibility">PowerFactory and legacy DC catalogue compatibility</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id47">Registered properties</a></li>
 </ul>
 </li>
@@ -2336,7 +2346,7 @@ in parallel with the generator’s impedance, as shown in the schematic bellow:<
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">)</span>
+<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -2845,7 +2855,7 @@ in parallel with the generator’s impedance, as shown in the schematic bellow:<
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Set voltage. This is used for controlled generators.</p></td>
+<td><p>Voltage setpoint for controlled generators; positive-sequence magnitude in three-phase power flow.</p></td>
 <td><p>True</p></td>
 <td><p></p></td>
 </tr>
@@ -2917,7 +2927,7 @@ in parallel with the generator’s impedance, as shown in the schematic bellow:<
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total zero sequence resistance.</p></td>
+<td><p>Total zero sequence resistance on system base; used in U1 power flow for a grounded connection.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -2926,7 +2936,7 @@ in parallel with the generator’s impedance, as shown in the schematic bellow:<
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total zero sequence reactance.</p></td>
+<td><p>Total zero sequence reactance on system base; used in U1 power flow for a grounded connection.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -2935,7 +2945,7 @@ in parallel with the generator’s impedance, as shown in the schematic bellow:<
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total negative sequence resistance.</p></td>
+<td><p>Total negative sequence resistance on system base; used automatically in U1 power flow.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -2944,7 +2954,7 @@ in parallel with the generator’s impedance, as shown in the schematic bellow:<
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total negative sequence reactance.</p></td>
+<td><p>Total negative sequence reactance on system base; used automatically in U1 power flow.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -3634,7 +3644,7 @@ in parallel with the generator’s impedance, as shown in the schematic bellow:<
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Set voltage. This is used for controlled generators.</p></td>
+<td><p>Voltage setpoint for controlled generators; positive-sequence magnitude in three-phase power flow.</p></td>
 <td><p>True</p></td>
 <td><p></p></td>
 </tr>
@@ -3706,7 +3716,7 @@ in parallel with the generator’s impedance, as shown in the schematic bellow:<
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total zero sequence resistance.</p></td>
+<td><p>Total zero sequence resistance on system base; used in U1 power flow for a grounded connection.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -3715,7 +3725,7 @@ in parallel with the generator’s impedance, as shown in the schematic bellow:<
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total zero sequence reactance.</p></td>
+<td><p>Total zero sequence reactance on system base; used in U1 power flow for a grounded connection.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -3724,7 +3734,7 @@ in parallel with the generator’s impedance, as shown in the schematic bellow:<
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total negative sequence resistance.</p></td>
+<td><p>Total negative sequence resistance on system base; used automatically in U1 power flow.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -3733,7 +3743,7 @@ in parallel with the generator’s impedance, as shown in the schematic bellow:<
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total negative sequence reactance.</p></td>
+<td><p>Total negative sequence reactance on system base; used automatically in U1 power flow.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -4032,7 +4042,7 @@ stored in the vector <img class="math" src="../_images/math/ccc5ea44709362a042f4
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
+<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -4081,7 +4091,7 @@ will be updated in each iteration, adding significant complexity compared to the
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
+<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -4127,7 +4137,7 @@ other phase-to-phase currents remain zero:</p>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
+<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -4172,7 +4182,7 @@ star-connected loads. The difference lies in the fact that the absent phases are
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
+<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -4217,7 +4227,7 @@ star, the values defined by the user are stored in the <img class="math" src="..
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
+<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -4263,7 +4273,7 @@ updated in each iteration, adding significant complexity compared to the traditi
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
+<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -4309,7 +4319,7 @@ other phase-to-phase powers remain zero:</p>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
+<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -4354,7 +4364,7 @@ star-connected loads. The difference lies in the fact that the absent phases are
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
+<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -5053,7 +5063,7 @@ matrix <img class="math" src="../_images/math/dfc432d3011794e330285a4634e41ebd17
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
+<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -5098,7 +5108,7 @@ model the load or the shunt element:</p>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
+<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -5150,7 +5160,7 @@ the resulting current in each phase by its corresponding voltage, the power valu
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
+<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -5195,7 +5205,7 @@ the admittance value for the active phase, for instance phase <img class="math" 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
+<span class="n">bus</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -5730,8 +5740,52 @@ the admittance value for the active phase, for instance phase <img class="math" 
 </section>
 <section id="controllableshunt">
 <h2>ControllableShunt<a class="headerlink" href="#controllableshunt" title="Link to this heading"></a></h2>
-<p>A <code class="docutils literal notranslate"><span class="pre">ControllableShunt</span></code> extends shunt modelling with discrete or controllable reactive support behaviour.</p>
-<p>This device connects to a bus and contributes power, current, or admittance to the solved network model.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">ControllableShunt</span></code> provides reactive support with continuous, discrete or locked control.</p>
+<section id="continuous-voltage-control-in-abc-power-flow">
+<h3>Continuous voltage control in ABC power flow<a class="headerlink" href="#continuous-voltage-control-in-abc-power-flow" title="Link to this heading"></a></h3>
+<p>Continuous control automatically regulates the local positive-sequence voltage magnitude,
+<code class="docutils literal notranslate"><span class="pre">abs(U1)</span> <span class="pre">=</span> <span class="pre">Vset</span></code>, where <code class="docutils literal notranslate"><span class="pre">U1</span> <span class="pre">=</span> <span class="pre">(Ua</span> <span class="pre">+</span> <span class="pre">a*Ub</span> <span class="pre">+</span> <span class="pre">a^2*Uc)/3</span></code> and <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">=</span> <span class="pre">exp(j*2*pi/3)</span></code>.
+It adjusts one common susceptance for the three phases. Phase voltage magnitudes may
+differ under imbalance; there is no option to constrain them independently.</p>
+<p>The device retains its physical shunt response: current is proportional to voltage,
+including its negative-sequence component. <strong>Yg</strong> also carries zero-sequence current;
+<strong>Y</strong> and <strong>D</strong> block terminal I0. No extra earth connection or U0 constraint is added.
+For Y/D, the current depends on <code class="docutils literal notranslate"><span class="pre">Uabc</span> <span class="pre">-</span> <span class="pre">U0</span></code>; for Yg it depends on <code class="docutils literal notranslate"><span class="pre">Uabc</span></code>.
+All three phases and local voltage control are required. Explicit-neutral and remote
+continuous ABC regulation currently produce a diagnostic instead of changing the connection.</p>
+<p>The existing <code class="docutils literal notranslate"><span class="pre">Bmin</span></code>/<code class="docutils literal notranslate"><span class="pre">Bmax</span></code> convention is retained: the injected nominal susceptance lies
+between <code class="docutils literal notranslate"><span class="pre">-Bmax</span></code> and <code class="docutils literal notranslate"><span class="pre">-Bmin</span></code>, in MVAr at 1 pu. With reactive-limit enforcement enabled,
+reaching a bound releases voltage regulation and holds susceptance constant. Terminal
+reactive power therefore varies with voltage squared; it is not clamped as a constant Q.
+Total conductance <code class="docutils literal notranslate"><span class="pre">G</span></code> remains a fixed balanced admittance. The initial <code class="docutils literal notranslate"><span class="pre">B</span></code> is replaced
+by the solved susceptance, so it is not counted twice. At an ideal slack bus, the shunt
+keeps its fixed <code class="docutils literal notranslate"><span class="pre">G</span> <span class="pre">+</span> <span class="pre">j*B</span></code> and does not add another voltage constraint.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Vset</span></code> and <code class="docutils literal notranslate"><span class="pre">active</span></code> profiles are respected. With <code class="docutils literal notranslate"><span class="pre">use_kw</span></code>, conductance and nominal
+susceptance inputs are converted from kW/kVAr to MW/MVAr. Independent phase inputs
+do not define separate controls in continuous mode.</p>
+<p>Colocated U1 generators and continuous shunts share one voltage constraint and must
+use the same setpoint. Their existing capability ranges determine participation:
+the common control variable moves each device through the same fraction of its range.
+Generator limits apply to terminal Q; shunt limits apply to nominal susceptance.
+The implementation reuses the existing U1 residual and limit enforcement, without
+changes to numerical solvers or Jacobian routines.</p>
+<p>Discrete and locked control retain their existing behaviour. Positive-sequence power
+flow retains its existing formulation. This extension does not add short-circuit or
+dynamic control equations.</p>
+</section>
+<section id="powerfactory-import">
+<h3>PowerFactory import<a class="headerlink" href="#powerfactory-import" title="Link to this heading"></a></h3>
+<p>Without explicit VSC import, an <code class="docutils literal notranslate"><span class="pre">ElmSvs</span></code> in voltage control without droop is represented
+by a continuous <code class="docutils literal notranslate"><span class="pre">ControllableShunt</span></code>. Its susceptances connect AB/BC/CA, so import uses
+<strong>D</strong>. ABC regulation uses U1 and a common susceptance, as for PowerFactory’s balanced
+SVS control with positive-sequence voltage selected.</p>
+<p>When bank data are available, the importer reuses the existing VSC-route range:
+<code class="docutils literal notranslate"><span class="pre">Bmin</span> <span class="pre">=</span> <span class="pre">qmin*nxcap</span> <span class="pre">+</span> <span class="pre">Qfixcap*nfixcap</span></code> and <code class="docutils literal notranslate"><span class="pre">Bmax</span> <span class="pre">=</span> <span class="pre">tcrmax</span> <span class="pre">+</span> <span class="pre">Qfixcap*nfixcap</span></code>.
+Here, native <code class="docutils literal notranslate"><span class="pre">qmin</span></code> describes one capacitor step, not the whole bank. Legacy exports
+without bank data retain the earlier <code class="docutils literal notranslate"><span class="pre">qmin/qmax</span></code> fallback. Reimport the DGS to update
+previously imported connections and bank limits.</p>
+<p>The separate <a class="reference internal" href="#static_generator.md"><span class="xref myst">StaticGenerator Q-V droop</span></a> route is unchanged.</p>
+</section>
 <section id="id26">
 <h3>Registered properties<a class="headerlink" href="#id26" title="Link to this heading"></a></h3>
 <p>Profile-enabled properties: <code class="docutils literal notranslate"><span class="pre">active</span></code>, <code class="docutils literal notranslate"><span class="pre">Cost</span></code>, <code class="docutils literal notranslate"><span class="pre">shift_key</span></code>, <code class="docutils literal notranslate"><span class="pre">G</span></code>, <code class="docutils literal notranslate"><span class="pre">G0</span></code>, <code class="docutils literal notranslate"><span class="pre">Ga</span></code>, <code class="docutils literal notranslate"><span class="pre">Gb</span></code>, <code class="docutils literal notranslate"><span class="pre">Gc</span></code>, <code class="docutils literal notranslate"><span class="pre">B</span></code>, <code class="docutils literal notranslate"><span class="pre">B0</span></code>, <code class="docutils literal notranslate"><span class="pre">Ba</span></code>, <code class="docutils literal notranslate"><span class="pre">Bb</span></code>, <code class="docutils literal notranslate"><span class="pre">Bc</span></code>, <code class="docutils literal notranslate"><span class="pre">step</span></code>, <code class="docutils literal notranslate"><span class="pre">Vset</span></code>.</p>
@@ -6858,8 +6912,109 @@ the admittance value for the active phase, for instance phase <img class="math" 
 </section>
 <section id="staticgenerator">
 <h2>StaticGenerator<a class="headerlink" href="#staticgenerator" title="Link to this heading"></a></h2>
-<p>A <code class="docutils literal notranslate"><span class="pre">StaticGenerator</span></code> represents a fixed injection without the full control surface of a synchronous generator.</p>
-<p>This device connects to a bus and contributes power, current, or admittance to the solved network model.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">StaticGenerator</span></code> is a bus-connected injection. The default <code class="docutils literal notranslate"><span class="pre">control_mode</span> <span class="pre">=</span> <span class="pre">PQ</span></code>
+preserves fixed P/Q behaviour, including existing phase inputs and profiles.
+<code class="docutils literal notranslate"><span class="pre">control_mode</span> <span class="pre">=</span> <span class="pre">Q-V</span> <span class="pre">droop</span></code> enables the same steady-state reactive droop curve as a VSC,
+without introducing a DC bus or a converter branch.</p>
+<section id="q-v-droop-inputs-and-convention">
+<h3>Q-V droop inputs and convention<a class="headerlink" href="#q-v-droop-inputs-and-convention" title="Link to this heading"></a></h3>
+<p>Select <strong>Q-V droop</strong> in the Static Generator properties and provide:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">P</span></code>, <code class="docutils literal notranslate"><span class="pre">Q</span></code></p></td>
+<td><p>Total active injection and reactive reference, MW and MVAr. Positive values inject into the network.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Snom</span></code></p></td>
+<td><p>Positive nominal apparent power in MVA; base of the droop percentage.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">droop</span></code></p></td>
+<td><p>Positive voltage droop in percent on <code class="docutils literal notranslate"><span class="pre">Snom</span></code>. For example, 3 means 3%, not 0.03.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Vset</span></code></p></td>
+<td><p>Voltage reference in pu.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Vset_min</span></code>, <code class="docutils literal notranslate"><span class="pre">Vset_max</span></code></p></td>
+<td><p>Clamps on the measured voltage used by the curve; defaults 0.9 and 1.1 pu. These do not enforce network voltage limits.</p></td>
+</tr>
+</tbody>
+</table>
+<p>If <code class="docutils literal notranslate"><span class="pre">use_kw</span></code> is enabled, enter <code class="docutils literal notranslate"><span class="pre">P</span></code>, <code class="docutils literal notranslate"><span class="pre">Q</span></code> and <code class="docutils literal notranslate"><span class="pre">Snom</span></code> in kW, kVAr and kVA;
+compilation converts them to MW, MVAr and MVA, following the generator convention.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">u</span> <span class="pre">=</span> <span class="pre">clip(abs(U1),</span> <span class="pre">Vset_min,</span> <span class="pre">Vset_max)</span></code>, the injected reactive power is
+<code class="docutils literal notranslate"><span class="pre">Qinj</span> <span class="pre">=</span> <span class="pre">Q</span> <span class="pre">+</span> <span class="pre">(100</span> <span class="pre">*</span> <span class="pre">Snom</span> <span class="pre">/</span> <span class="pre">droop)</span> <span class="pre">*</span> <span class="pre">(Vset</span> <span class="pre">-</span> <span class="pre">u)</span></code> in MVAr.
+The implementation calls the existing VSC <code class="docutils literal notranslate"><span class="pre">voltage_q_droop()</span></code> function and converts
+between absorbed and injected power signs and system pu units.
+It retains that function’s present behaviour: voltage clamping, with no additional
+reactive-power clipping. The curve is not an SVC capability-limit or dynamic model.</p>
+</section>
+<section id="q-v-droop-in-positive-sequence-and-abc-power-flow">
+<h3>Q-V droop in positive-sequence and ABC power flow<a class="headerlink" href="#q-v-droop-in-positive-sequence-and-abc-power-flow" title="Link to this heading"></a></h3>
+<p>In positive-sequence power flow, <code class="docutils literal notranslate"><span class="pre">U1</span></code> is the local bus voltage. The controller is
+evaluated in the residual of the existing full nonlinear formulation, using the
+same curve as the VSC. For NR, LM or Powell, select the existing
+<code class="docutils literal notranslate"><span class="pre">use_autodiff_jacobian</span> <span class="pre">=</span> <span class="pre">True</span></code> option, as in the VSC droop study: it evaluates the
+Jacobian numerically from the residual. No analytic droop derivatives are added,
+and neither the Jacobian implementation nor its selection is changed.</p>
+<p>In ABC power flow, <code class="docutils literal notranslate"><span class="pre">U1</span> <span class="pre">=</span> <span class="pre">(Ua</span> <span class="pre">+</span> <span class="pre">a*Ub</span> <span class="pre">+</span> <span class="pre">a^2*Uc)/3</span></code>, with <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">=</span> <span class="pre">exp(j*2*pi/3)</span></code>.
+The existing positive-sequence controller projects this voltage and injects balanced
+positive-sequence current corresponding to the total <code class="docutils literal notranslate"><span class="pre">P</span> <span class="pre">+</span> <span class="pre">j*Qinj</span></code>.
+It does not impose equal phase voltages or equal phase powers under imbalance.
+There are no passive zero- or negative-sequence branches for this static equivalent.
+All three AC phases are required. In this mode, total <code class="docutils literal notranslate"><span class="pre">P</span></code> and <code class="docutils literal notranslate"><span class="pre">Q</span></code> (and their profiles)
+are used; separate per-phase power inputs do not define the controlled injection.
+The ABC formulation retains its existing numerical Jacobian by default.</p>
+</section>
+<section id="fixed-pq-with-sequence-responses-in-abc-power-flow">
+<h3>Fixed PQ with sequence responses in ABC power flow<a class="headerlink" href="#fixed-pq-with-sequence-responses-in-abc-power-flow" title="Link to this heading"></a></h3>
+<p>For a three-phase PQ device without explicit phase powers, a floating-star <code class="docutils literal notranslate"><span class="pre">conn</span> <span class="pre">=</span> <span class="pre">Y</span></code>
+or nonzero sequence-impedance data selects the sequence model automatically.
+There is no separate selector. The source maintains <code class="docutils literal notranslate"><span class="pre">P</span> <span class="pre">+</span> <span class="pre">j*Q</span></code> in positive sequence:
+<code class="docutils literal notranslate"><span class="pre">I1</span> <span class="pre">=</span> <span class="pre">conj((P</span> <span class="pre">+</span> <span class="pre">j*Q)</span> <span class="pre">/</span> <span class="pre">(Sbase</span> <span class="pre">*</span> <span class="pre">U1))</span></code> in system pu.
+Passive negative-sequence current is <code class="docutils literal notranslate"><span class="pre">I2</span> <span class="pre">=</span> <span class="pre">-U2</span> <span class="pre">/</span> <span class="pre">(R2</span> <span class="pre">+</span> <span class="pre">j*X2)</span></code>.
+Terminal total power includes the absorption in the passive sequence branches;
+the source does not compensate those losses. Balanced power flow is unchanged.</p>
+<p>The existing <code class="docutils literal notranslate"><span class="pre">conn</span></code> property determines the return path. <strong>Y</strong> and <strong>D</strong> block
+terminal zero-sequence current. <strong>Yg</strong> uses <code class="docutils literal notranslate"><span class="pre">I0</span> <span class="pre">=</span> <span class="pre">-U0</span> <span class="pre">/</span> <span class="pre">(R0</span> <span class="pre">+</span> <span class="pre">j*X0)</span></code> and requires
+a finite, nonzero effective zero-sequence impedance. An explicit neutral (<strong>Yn</strong>)
+is not supported by this sequence model. <code class="docutils literal notranslate"><span class="pre">R0</span></code>, <code class="docutils literal notranslate"><span class="pre">X0</span></code>, <code class="docutils literal notranslate"><span class="pre">R2</span></code> and <code class="docutils literal notranslate"><span class="pre">X2</span></code> are in pu on the
+network’s <code class="docutils literal notranslate"><span class="pre">Sbase</span></code>, irrespective of <code class="docutils literal notranslate"><span class="pre">use_kw</span></code>. All three AC phases must be connected.
+An unset <code class="docutils literal notranslate"><span class="pre">R2</span> <span class="pre">=</span> <span class="pre">X2</span> <span class="pre">=</span> <span class="pre">0</span></code> means no passive negative-sequence response, not a short circuit;
+provide the physical impedance when that response is required.</p>
+<p>The implementation reuses the existing Fortescue transform, shunt-admittance storage
+and positive-sequence current projection. It adds no earth connections or voltage
+reference constraints. In a component with no homopolar return path, absolute
+phase-to-earth voltages can remain indeterminate; compare phase-to-phase voltages
+and the determined sequence components without interpreting a common displacement
+as a physical voltage drop.</p>
+<p>Explicit phase powers and their profiles take precedence and retain the phase-power
+model, without passive sequence branches. Existing Yg/D PQ devices with no sequence
+data also retain that model. Q-V droop keeps its separate behaviour described above.
+These are steady-state power-flow models, not converter fault-current-limit controls.</p>
+</section>
+<section id="powerfactory-import-and-persistence">
+<h3>PowerFactory import and persistence<a class="headerlink" href="#powerfactory-import-and-persistence" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">ElmGenstat</span></code> devices imported as fixed-PQ static generators retain <code class="docutils literal notranslate"><span class="pre">phtech</span></code>,
+<code class="docutils literal notranslate"><span class="pre">nneutral</span></code> and <code class="docutils literal notranslate"><span class="pre">r0/x0/r2/x2</span></code> through the same connection and impedance conversion
+as PV generators. Machine-base impedances are converted to system base, including
+parallel units. In particular, <strong>3PH</strong> blocks terminal I0 rather than creating an
+earth connection. The PQ sequence source reproduces the P1/Q1 behaviour validated
+against native PowerFactory constq cases; it does not copy the PV controller’s
+terminal-power compensation. Connection and sequence data survive native save/load.</p>
+<p>Without the explicit VSC import option, <code class="docutils literal notranslate"><span class="pre">ElmSvs</span></code> with voltage droop
+(<code class="docutils literal notranslate"><span class="pre">i_ctrl</span> <span class="pre">=</span> <span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">i_droop</span> <span class="pre">!=</span> <span class="pre">0</span></code>) becomes a <code class="docutils literal notranslate"><span class="pre">StaticGenerator</span></code> in Q-V droop mode.
+<code class="docutils literal notranslate"><span class="pre">Srated</span></code>, <code class="docutils literal notranslate"><span class="pre">ddroop</span></code> and <code class="docutils literal notranslate"><span class="pre">usetp</span></code> map to <code class="docutils literal notranslate"><span class="pre">Snom</span></code>, <code class="docutils literal notranslate"><span class="pre">droop</span></code> and <code class="docutils literal notranslate"><span class="pre">Vset</span></code>;
+the P/Q references are zero, as in the existing SVC-to-VSC route.
+Other SVC modes keep their previous shunt mapping. Selecting VSC import retains
+the converter mapping. This is a local terminal-voltage equivalent.</p>
+<p>The control settings survive native <code class="docutils literal notranslate"><span class="pre">.veragrid</span></code> save/load. Older native static
+generators default to PQ. This addition extends power flow and DGS import;
+it does not add the droop equations to OPF, dynamic simulation or the DGS exporter.</p>
+</section>
 <section id="id28">
 <h3>Registered properties<a class="headerlink" href="#id28" title="Link to this heading"></a></h3>
 <p>Profile-enabled properties: <code class="docutils literal notranslate"><span class="pre">active</span></code>, <code class="docutils literal notranslate"><span class="pre">Cost</span></code>, <code class="docutils literal notranslate"><span class="pre">shift_key</span></code>, <code class="docutils literal notranslate"><span class="pre">P</span></code>, <code class="docutils literal notranslate"><span class="pre">Pa</span></code>, <code class="docutils literal notranslate"><span class="pre">Pb</span></code>, <code class="docutils literal notranslate"><span class="pre">Pc</span></code>, <code class="docutils literal notranslate"><span class="pre">Q</span></code>, <code class="docutils literal notranslate"><span class="pre">Qa</span></code>, <code class="docutils literal notranslate"><span class="pre">Qb</span></code>, <code class="docutils literal notranslate"><span class="pre">Qc</span></code>.</p>
@@ -7344,12 +7499,93 @@ the admittance value for the active phase, for instance phase <img class="math" 
 <td><p>True</p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-even"><td><p>R0</p></td>
+<td><p>float</p></td>
+<td><p>p.u.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Zero-sequence resistance on the system base; used by grounded sequence injections.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>X0</p></td>
+<td><p>float</p></td>
+<td><p>p.u.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Zero-sequence reactance on the system base; used by grounded sequence injections.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>R2</p></td>
+<td><p>float</p></td>
+<td><p>p.u.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Negative-sequence resistance on the system base. R2=X2=0 omits the passive response.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>X2</p></td>
+<td><p>float</p></td>
+<td><p>p.u.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Negative-sequence reactance on the system base. R2=X2=0 omits the passive response.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-even"><td><p>Snom</p></td>
 <td><p>float</p></td>
 <td><p>MVA</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 <td><p>Nominal power.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>control_mode</p></td>
+<td><p>enum StaticGeneratorControlMode</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Fixed P/Q or the VSC Q-V droop law; ABC control uses positive-sequence voltage.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>Vset</p></td>
+<td><p>float</p></td>
+<td><p>p.u.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Droop voltage reference.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>droop</p></td>
+<td><p>float</p></td>
+<td><p>%</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Voltage droop on Snom; must be positive in Q-V droop mode.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>Vset_min</p></td>
+<td><p>float</p></td>
+<td><p>p.u.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Lower clamp on the voltage used by the droop curve.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>Vset_max</p></td>
+<td><p>float</p></td>
+<td><p>p.u.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Upper clamp on the voltage used by the droop curve.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -8084,11 +8320,11 @@ incorporating the effect of the eliminated ground nodes <img class="math" src=".
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus_632</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;632&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">bus_632</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'632'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">bus_632</span><span class="o">.</span><span class="n">is_slack</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_632</span><span class="p">)</span>
 
-<span class="n">bus_671</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;671&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">bus_671</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'671'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_671</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -8109,7 +8345,7 @@ incorporating the effect of the eliminated ground nodes <img class="math" src=".
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Line Configuration</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">config_601</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Config. 601&#39;</span><span class="p">,</span>
+<span class="n">config_601</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Config. 601'</span><span class="p">,</span>
                                                     <span class="n">z_nabc</span><span class="o">=</span><span class="n">z_601</span><span class="p">,</span>
                                                     <span class="n">ysh_nabc</span><span class="o">=</span><span class="n">y_601</span><span class="p">,</span>
                                                     <span class="n">phases</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
@@ -8255,8 +8491,19 @@ calculation uses <img class="math" src="../_images/math/cbc2d275815da3658da2693e
 <p><img src="../_images/math/72fcef52733c8c456e87750031c9f03a2056df41.svg" alt="\rho=\frac{10^{-8}\rho_{\mu\Omega\mathrm{cm}}}{C_f/100}\quad[\Omega\,\mathrm{m}],\qquad
 \mu=\mu_0\mu_r,\qquad \mu_0=4\pi\,10^{-7}\ \mathrm{H/m},\qquad \omega=2\pi f."/></p>
 </div><p><img class="math" src="../_images/math/5e998cc1e7ab825c2a7af04180dd1ad2ea6892b8.svg" alt="C_f"/> is the conducting filling factor in percent, <strong>not capacitance</strong>. It accounts for the conducting fraction
-of the geometric cross-section. Resistance is calculated from material resistivity and geometry; the informational
-<code class="docutils literal notranslate"><span class="pre">core_dc_resistance</span></code> does not replace it.</p>
+of the geometric cross-section. This expression applies to both conducting layers when the shared
+<code class="docutils literal notranslate"><span class="pre">resistance_input</span></code> selector is <code class="docutils literal notranslate"><span class="pre">Resistivity</span> <span class="pre">and</span> <span class="pre">filling</span> <span class="pre">factor</span></code>. Their DC resistances are derived as
+<img class="math" src="../_images/math/493f17f0064f0a0ea57863fe523b33e3d90d223f.svg" alt="R_{\mathrm{dc},c}=1000\rho_c/(\pi r_c^2)"/> and
+<img class="math" src="../_images/math/f03057c2eca7dd68ce87928b1a78c8490cadad16.svg" alt="R_{\mathrm{dc},s}=1000\rho_s/[\pi(r_{so}^2-r_{si}^2)]"/> in Ω/km.</p>
+<p>Alternatively, select <code class="docutils literal notranslate"><span class="pre">DC</span> <span class="pre">resistance</span></code> and supply <strong>both</strong> <code class="docutils literal notranslate"><span class="pre">core_dc_resistance</span></code> and <code class="docutils literal notranslate"><span class="pre">sheath_dc_resistance</span></code>
+at 20 °C in Ω/km. The effective resistivities used in the same equations below are then</p>
+<div class="math">
+<p><img src="../_images/math/14afe2013640d5801a15572db980bda9e7195ed5.svg" alt="\rho_c=\frac{R_{\mathrm{dc},c}\pi r_c^2}{1000},\qquad
+\rho_s=\frac{R_{\mathrm{dc},s}\pi(r_{so}^2-r_{si}^2)}{1000}\quad[\Omega\,\mathrm m]."/></p>
+</div><p>The four material resistivity/filling-factor inputs are inactive in this mode; the numerical routine receives
+each effective resistivity with a 100% effective filling factor. One selector governs both layers, preventing
+two independent resistance definitions from competing. See the
+<a class="reference internal" href="#undergroundcabletype"><span class="std std-ref">cable catalogue</span></a> for editing, validation and file-compatibility details.</p>
 <p>Using modified Bessel functions <img class="math" src="../_images/math/d9e9f12867495c4bbbc81fcec66f5bf6734a89da.svg" alt="I_\nu"/> and <img class="math" src="../_images/math/32a947e28288a0fb4bab662644b189e6882ede27.svg" alt="K_\nu"/>, the solid-core surface impedance is</p>
 <div class="math">
 <p><img src="../_images/math/de85acacae42a8f01904a05b1324d318254dda33.svg" alt="m_c=\sqrt{\frac{j\omega\mu_c}{\rho_c}}\sqrt{k_s},\qquad
@@ -8355,10 +8602,14 @@ summarize diagonal sequence entries when available; they do not replace the full
 <p>The following example uses three identical 10 kV cables with the construction defaults listed in
 <a class="reference internal" href="#undergroundcabletype"><span class="std std-ref">UndergroundCableType</span></a>.</p>
 <ol class="arabic">
-<li><p>In <code class="docutils literal notranslate"><span class="pre">Model</span> <span class="pre">/</span> <span class="pre">Database</span> <span class="pre">-&gt;</span> <span class="pre">Catalogue</span> <span class="pre">-&gt;</span> <span class="pre">Underground</span> <span class="pre">cable</span> <span class="pre">type</span></code>, add an entry named <code class="docutils literal notranslate"><span class="pre">Demo</span> <span class="pre">cable</span></code>.
+<li><p>In <code class="docutils literal notranslate"><span class="pre">Model</span> <span class="pre">/</span> <span class="pre">Database</span> <span class="pre">-&gt;</span> <span class="pre">Catalogue</span> <span class="pre">-&gt;</span> <span class="pre">Cable</span></code>, add an entry named <code class="docutils literal notranslate"><span class="pre">Demo</span> <span class="pre">cable</span></code>.
 Set <code class="docutils literal notranslate"><span class="pre">nominal</span> <span class="pre">voltage</span></code> to 10 kV. Keep the default 10 mm core diameter, 5 mm main insulation thickness,
-1 mm sheath thickness and 30 mm overall cable diameter, with the remaining material defaults.</p></li>
-<li><p>In <code class="docutils literal notranslate"><span class="pre">Catalogue</span> <span class="pre">-&gt;</span> <span class="pre">Underground</span> <span class="pre">line</span></code>, create <code class="docutils literal notranslate"><span class="pre">Buried</span> <span class="pre">circuit</span></code> and open its editor using the edit button.
+1 mm sheath thickness and 30 mm overall cable diameter, with the remaining material defaults.
+Leave the common <code class="docutils literal notranslate"><span class="pre">resistance</span> <span class="pre">input</span></code> selector at <code class="docutils literal notranslate"><span class="pre">Resistivity</span> <span class="pre">and</span> <span class="pre">filling</span> <span class="pre">factor</span></code>: both layers’ material
+inputs are editable and their derived DC resistances are read-only. Alternatively choose <code class="docutils literal notranslate"><span class="pre">DC</span> <span class="pre">resistance</span></code>,
+enter positive core and sheath values in Ω/km at 20 °C, and use the same geometry; all four material-input
+cells become inactive.</p></li>
+<li><p>In <code class="docutils literal notranslate"><span class="pre">Catalogue</span> <span class="pre">-&gt;</span> <span class="pre">Cable</span> <span class="pre">System</span></code>, create <code class="docutils literal notranslate"><span class="pre">Buried</span> <span class="pre">circuit</span></code> and open its editor using the edit button.
 Set voltage to 10 kV, frequency to 50 Hz, earth resistivity to 100 <img class="math" src="../_images/math/8b79605e88e6ebb950c74a1319cdc046dae2069c.svg" alt="\Omega"/> m and rated current to 0.4 kA.</p></li>
 <li><p>Select <code class="docutils literal notranslate"><span class="pre">Demo</span> <span class="pre">cable</span></code> in the cable catalogue and press <code class="docutils literal notranslate"><span class="pre">+</span></code> three times. Set the composition rows to:</p>
 <table class="docutils align-default">
@@ -8417,23 +8668,23 @@ because its template reference or a construction field changed.</p>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">underground_line_example</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a cable construction, calculate its system and apply it to a branch.</span>
+<span class="w">    </span><span class="sd">"""Create a cable construction, calculate its system and apply it to a branch.</span>
 
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">grid</span><span class="p">:</span> <span class="n">vg</span><span class="o">.</span><span class="n">MultiCircuit</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">MultiCircuit</span><span class="p">()</span>
     <span class="n">grid</span><span class="o">.</span><span class="n">fBase</span> <span class="o">=</span> <span class="mf">50.0</span>
     <span class="n">logger</span><span class="p">:</span> <span class="n">vg</span><span class="o">.</span><span class="n">Logger</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">Logger</span><span class="p">()</span>
 
     <span class="c1"># The reusable construction describes layers, not their installation positions.</span>
     <span class="n">cable</span><span class="p">:</span> <span class="n">vg</span><span class="o">.</span><span class="n">UndergroundCableType</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">UndergroundCableType</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Demo cable&quot;</span><span class="p">,</span> <span class="n">nominal_voltage</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"Demo cable"</span><span class="p">,</span> <span class="n">nominal_voltage</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
         <span class="n">core_diameter</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">main_insulation_thickness</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
         <span class="n">sheath_thickness</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">cable_diameter</span><span class="o">=</span><span class="mf">30.0</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">grid</span><span class="o">.</span><span class="n">add_underground_cable</span><span class="p">(</span><span class="n">cable</span><span class="p">)</span>
     <span class="n">system</span><span class="p">:</span> <span class="n">vg</span><span class="o">.</span><span class="n">UndergroundLineType</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">UndergroundLineType</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Buried circuit&quot;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">Imax</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"Buried circuit"</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">Imax</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
         <span class="n">freq</span><span class="o">=</span><span class="mf">50.0</span><span class="p">,</span> <span class="n">earth_resistivity</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span>
     <span class="p">)</span>
 
@@ -8445,12 +8696,12 @@ because its template reference or a construction field changed.</p>
     <span class="n">calculated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">calculated</span><span class="p">:</span>
         <span class="n">grid</span><span class="o">.</span><span class="n">add_underground_line</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Z phase [ohm/km]:&quot;</span><span class="p">,</span> <span class="n">system</span><span class="o">.</span><span class="n">z_nabc</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Y phase [S/km]:&quot;</span><span class="p">,</span> <span class="n">system</span><span class="o">.</span><span class="n">y_nabc</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Z phase [ohm/km]:"</span><span class="p">,</span> <span class="n">system</span><span class="o">.</span><span class="n">z_nabc</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Y phase [S/km]:"</span><span class="p">,</span> <span class="n">system</span><span class="o">.</span><span class="n">y_nabc</span><span class="p">)</span>
 
         <span class="c1"># Applying the template includes the branch length and the network base.</span>
-        <span class="n">source</span><span class="p">:</span> <span class="n">vg</span><span class="o">.</span><span class="n">Bus</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Source&quot;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">10.0</span><span class="p">))</span>
-        <span class="n">destination</span><span class="p">:</span> <span class="n">vg</span><span class="o">.</span><span class="n">Bus</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Destination&quot;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">10.0</span><span class="p">))</span>
+        <span class="n">source</span><span class="p">:</span> <span class="n">vg</span><span class="o">.</span><span class="n">Bus</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Source"</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">10.0</span><span class="p">))</span>
+        <span class="n">destination</span><span class="p">:</span> <span class="n">vg</span><span class="o">.</span><span class="n">Bus</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Destination"</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">10.0</span><span class="p">))</span>
         <span class="n">line</span><span class="p">:</span> <span class="n">vg</span><span class="o">.</span><span class="n">Line</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span>
             <span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus_from</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">destination</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
         <span class="p">)</span>
@@ -9032,6 +9283,24 @@ its shunt susceptance is approximately 57.99 <img class="math" src="../_images/m
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-odd"><td><p>coupling_group</p></td>
+<td><p>str</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Physical tower section shared by coupled circuits; empty for independent lines.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>coupling_reversed</p></td>
+<td><p>bool</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>The line runs opposite to the reference direction of its coupling group.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-odd"><td><p>template</p></td>
 <td><p>Any line template</p></td>
 <td><p></p></td>
@@ -9083,7 +9352,7 @@ its shunt susceptance is approximately 57.99 <img class="math" src="../_images/m
 </section>
 <section id="dcline">
 <h2>DcLine<a class="headerlink" href="#dcline" title="Link to this heading"></a></h2>
-<p>A <code class="docutils literal notranslate"><span class="pre">DcLine</span></code> models a physical line inside a detailed DC grid, unlike the aggregated <code class="docutils literal notranslate"><span class="pre">HvdcLine</span></code> transfer model.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">DcLine</span></code> models a physical line inside a detailed DC grid. It applies the common <a class="reference internal" href="#underground_line_type.md#applying-cable-system-to-a-dc-line"><span class="xref myst">Cable System</span></a> catalogue, selecting one conductor with <code class="docutils literal notranslate"><span class="pre">dc_conductor</span></code>. The system supplies DC resistance and dynamic L/C; length and rating belong to the branch. A branch without a template remains a resistive line.</p>
 <p>This device links terminals or represents a network element between buses.</p>
 <section id="id33">
 <h3>Registered properties<a class="headerlink" href="#id33" title="Link to this heading"></a></h3>
@@ -9497,7 +9766,16 @@ its shunt susceptance is approximately 57.99 <img class="math" src="../_images/m
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p>R</p></td>
+<tr class="row-even"><td><p>dc_conductor</p></td>
+<td><p>int</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Global conductor number in the Cable System (one-based).</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>R</p></td>
 <td><p>float</p></td>
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
@@ -9506,7 +9784,7 @@ its shunt susceptance is approximately 57.99 <img class="math" src="../_images/m
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p>length</p></td>
+<tr class="row-even"><td><p>length</p></td>
 <td><p>float</p></td>
 <td><p>km</p></td>
 <td><p>False</p></td>
@@ -9515,7 +9793,7 @@ its shunt susceptance is approximately 57.99 <img class="math" src="../_images/m
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p>r_fault</p></td>
+<tr class="row-odd"><td><p>r_fault</p></td>
 <td><p>float</p></td>
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
@@ -9524,7 +9802,7 @@ its shunt susceptance is approximately 57.99 <img class="math" src="../_images/m
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p>fault_pos</p></td>
+<tr class="row-even"><td><p>fault_pos</p></td>
 <td><p>float</p></td>
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
@@ -9533,16 +9811,16 @@ its shunt susceptance is approximately 57.99 <img class="math" src="../_images/m
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p>template</p></td>
-<td><p>DC cable type</p></td>
+<tr class="row-odd"><td><p>template</p></td>
+<td><p>Underground line</p></td>
 <td><p></p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Physical DC cable type applied to this line.</p></td>
+<td><p>Cable System applied to this DC line.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p>locations</p></td>
+<tr class="row-even"><td><p>locations</p></td>
 <td><p>Line locations</p></td>
 <td><p></p></td>
 <td><p>False</p></td>
@@ -10522,16 +10800,16 @@ illustrated in the figure above.</p>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus_1</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;633&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">bus_1</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'633'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_1</span><span class="p">)</span>
 
-<span class="n">bus_2</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;634&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">bus_2</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'634'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_2</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Transformer Definition</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">trafo_1</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Transformer2W</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Transformer&#39;</span><span class="p">,</span>
+<span class="n">trafo_1</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Transformer2W</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Transformer'</span><span class="p">,</span>
                             <span class="n">bus_from</span><span class="o">=</span><span class="n">bus_1</span><span class="p">,</span>
                             <span class="n">bus_to</span><span class="o">=</span><span class="n">bus_2</span><span class="p">,</span>
                             <span class="n">HV</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span>
@@ -11383,8 +11661,54 @@ Can only be computed if <img class="math" src="../_images/math/7ae72c8ad77113c5a
 </section>
 <section id="transformer3w">
 <h2>Transformer3W<a class="headerlink" href="#transformer3w" title="Link to this heading"></a></h2>
-<p>A <code class="docutils literal notranslate"><span class="pre">Transformer3W</span></code> stores a three-winding transformer and its associated winding objects.</p>
-<p>This device links terminals or represents a network element between buses.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">Transformer3W</span></code> retains three <code class="docutils literal notranslate"><span class="pre">Winding</span></code> branches connected to its existing internal
+bus. ABC power flow compiles each branch into four 4-by-4 NABC admittance blocks,
+using the same network assembly and solver as other three-phase branches.
+The internal bus is a mathematical star-equivalent node, not a shared physical neutral.</p>
+<section id="sequence-impedances-and-connections">
+<h3>Sequence impedances and connections<a class="headerlink" href="#sequence-impedances-and-connections" title="Link to this heading"></a></h3>
+<p>The existing positive-sequence conversion from pairwise tests is unchanged.
+On a common system base, the three equivalent leg impedances are
+<code class="docutils literal notranslate"><span class="pre">zH</span> <span class="pre">=</span> <span class="pre">(zHM</span> <span class="pre">+</span> <span class="pre">zHL</span> <span class="pre">-</span> <span class="pre">zML)/2</span></code>, <code class="docutils literal notranslate"><span class="pre">zM</span> <span class="pre">=</span> <span class="pre">(zHM</span> <span class="pre">+</span> <span class="pre">zML</span> <span class="pre">-</span> <span class="pre">zHL)/2</span></code> and
+<code class="docutils literal notranslate"><span class="pre">zL</span> <span class="pre">=</span> <span class="pre">(zHL</span> <span class="pre">+</span> <span class="pre">zML</span> <span class="pre">-</span> <span class="pre">zHM)/2</span></code>. Individual equivalent legs may have negative resistance
+or reactance; they must not be clipped independently.</p>
+<p>Set zero-sequence data in the existing <code class="docutils literal notranslate"><span class="pre">R0</span></code>/<code class="docutils literal notranslate"><span class="pre">X0</span></code> fields of each winding, or use
+<code class="docutils literal notranslate"><span class="pre">Transformer3W.fill_zero_sequence(z12,</span> <span class="pre">z23,</span> <span class="pre">z31)</span></code> with pairwise complex impedances
+in system p.u. These values are independent of the positive-sequence design data
+and persist with the winding objects. Missing or near-zero required <code class="docutils literal notranslate"><span class="pre">Z0</span></code> produces
+a diagnostic identifying the winding. It is not replaced with <code class="docutils literal notranslate"><span class="pre">Z1</span></code>.</p>
+<p>For the passive transformer model, an unspecified negative-sequence impedance
+uses <code class="docutils literal notranslate"><span class="pre">Z2</span> <span class="pre">=</span> <span class="pre">Z1</span></code>, as in PowerFactory. Explicit finite <code class="docutils literal notranslate"><span class="pre">R2</span></code>/<code class="docutils literal notranslate"><span class="pre">X2</span></code> values on a winding
+are used by ABC power flow.</p>
+<p>The external connection is <code class="docutils literal notranslate"><span class="pre">conn_f</span></code>; the internal star is <code class="docutils literal notranslate"><span class="pre">conn_t</span></code> for the default
+external-to-internal branch orientation. Grounded star carries zero-sequence
+current. Floating star blocks it. Delta blocks external zero-sequence current
+but retains its internal circulating path, including when the tertiary has no load.
+<code class="docutils literal notranslate"><span class="pre">NeutralStar</span></code> with phase N included represents an explicit neutral terminal.
+Older native DGS imports with the external connection stored at the internal end
+are interpreted compatibly during compilation and DGS export.</p>
+<p>Each winding’s <code class="docutils literal notranslate"><span class="pre">vector_group_number</span></code> gives its terminal lag relative to the common
+internal reference, in multiples of 30 degrees. Terminal-to-terminal displacements
+are the differences between these clocks; negative sequence rotates oppositely.
+Zero clocks introduce no additional displacement for star or delta windings.
+Tap modules, tap phases and virtual voltage ratios remain separate.</p>
+<p>This extension covers the leakage-star equivalent with star and delta windings.
+It does not add a galvanic autotransformer model, zigzag winding primitives, or a
+common zero-sequence magnetising branch. Existing positive-sequence treatment of
+no-load losses is unchanged. An out-of-service winding removes its branch; a
+disconnected delta that must remain physically present requires a separate model
+of its internal circulating path.</p>
+</section>
+<section id="powerfactory-dgs">
+<h3>PowerFactory DGS<a class="headerlink" href="#powerfactory-dgs" title="Link to this heading"></a></h3>
+<p>Export <code class="docutils literal notranslate"><span class="pre">TypTr3.uk0hm</span></code>, <code class="docutils literal notranslate"><span class="pre">uk0ml</span></code>, <code class="docutils literal notranslate"><span class="pre">uk0hl</span></code>, <code class="docutils literal notranslate"><span class="pre">ur0hm</span></code>, <code class="docutils literal notranslate"><span class="pre">ur0ml</span></code> and <code class="docutils literal notranslate"><span class="pre">ur0hl</span></code>, alongside
+the existing winding ratings, connections and clocks. Percentages use the smaller
+rating of each winding pair and are converted to the network power base before
+forming the star equivalent. DGS export reconstructs these pairwise tests from
+the winding <code class="docutils literal notranslate"><span class="pre">R0</span></code>/<code class="docutils literal notranslate"><span class="pre">X0</span></code> values. DGS has no independent negative-sequence test here;
+the imported passive model uses <code class="docutils literal notranslate"><span class="pre">Z2</span> <span class="pre">=</span> <span class="pre">Z1</span></code>.</p>
+<p>See <a class="reference internal" href="#../file_operations.md#dgs"><span class="xref myst">DGS conversion assumptions</span></a> for the export workflow.</p>
+</section>
 <section id="id36">
 <h3>Registered properties<a class="headerlink" href="#id36" title="Link to this heading"></a></h3>
 <p>Profile-enabled properties: <code class="docutils literal notranslate"><span class="pre">active</span></code>.</p>
@@ -12615,27 +12939,27 @@ or have more than one cable at a time.</p>
 <span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">MultiCircuit</span><span class="p">()</span>
 
 <span class="c1"># Define buses</span>
-<span class="n">bus1</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;B1&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">,</span> <span class="n">is_slack</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-<span class="n">bus2</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;B2&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">))</span>
-<span class="n">bus5</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;B5&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">))</span>
-<span class="n">bus6</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;B6&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">))</span>
+<span class="n">bus1</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'B1'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">,</span> <span class="n">is_slack</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">bus2</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'B2'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">))</span>
+<span class="n">bus5</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'B5'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">))</span>
+<span class="n">bus6</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'B6'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">))</span>
 
 <span class="c1"># Define AC lines</span>
-<span class="n">line12</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;L12&#39;</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.01</span><span class="p">))</span>
-<span class="n">line25</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;L25&#39;</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.05</span><span class="p">))</span>
-<span class="n">line56</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;L56&#39;</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus6</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.01</span><span class="p">))</span>
-<span class="n">line256</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;L562&#39;</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus6</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.01</span><span class="p">))</span>
+<span class="n">line12</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'L12'</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.01</span><span class="p">))</span>
+<span class="n">line25</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'L25'</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.05</span><span class="p">))</span>
+<span class="n">line56</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'L56'</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus6</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.01</span><span class="p">))</span>
+<span class="n">line256</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'L562'</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus6</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.01</span><span class="p">))</span>
 
 <span class="c1"># Define Hvdc Line</span>
-<span class="n">line34</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_hvdc</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">HvdcLine</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;L34&#39;</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">Pset</span><span class="o">=</span><span class="mf">0.2</span><span class="p">))</span>
+<span class="n">line34</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_hvdc</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">HvdcLine</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'L34'</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">Pset</span><span class="o">=</span><span class="mf">0.2</span><span class="p">))</span>
 
 <span class="c1"># Define generators</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Gen1&#39;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">vset</span><span class="o">=</span><span class="mf">1.01</span><span class="p">))</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus6</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Gen2&#39;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">vset</span><span class="o">=</span><span class="mf">1.02</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Gen1'</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">vset</span><span class="o">=</span><span class="mf">1.01</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus6</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Gen2'</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">vset</span><span class="o">=</span><span class="mf">1.02</span><span class="p">))</span>
 
 <span class="c1"># Define loads</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Load1&#39;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mf">0.3</span><span class="p">))</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Load2&#39;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mf">0.5</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Load1'</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mf">0.3</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Load2'</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mf">0.5</span><span class="p">))</span>
 
 <span class="c1"># Run power flow</span>
 <span class="n">pf_options</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">PowerFlowOptions</span><span class="p">(</span><span class="n">solver_type</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">SolverType</span><span class="o">.</span><span class="n">PowellDogLeg</span><span class="p">,</span>
@@ -12643,15 +12967,15 @@ or have more than one cable at a time.</p>
 <span class="n">pf_driver</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">PowerFlowDriver</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">pf_options</span><span class="p">)</span>
 <span class="n">pf_driver</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Bus values&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Bus values'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">pf_driver</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get_bus_df</span><span class="p">())</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Branch values&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Branch values'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">pf_driver</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get_branch_df</span><span class="p">())</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;error:&quot;</span><span class="p">,</span> <span class="n">pf_driver</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"error:"</span><span class="p">,</span> <span class="n">pf_driver</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
 
-<span class="n">vg</span><span class="o">.</span><span class="n">save_file</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="s2">&quot;6bus_a.veragrid&quot;</span><span class="p">)</span>
+<span class="n">vg</span><span class="o">.</span><span class="n">save_file</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="s2">"6bus_a.veragrid"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -13278,31 +13602,31 @@ and further developed in VeraGrid from 2024 to 2025.</p>
 <span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">MultiCircuit</span><span class="p">()</span>
 
 <span class="c1"># Define buses</span>
-<span class="n">bus1</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;B1&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">,</span> <span class="n">is_slack</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-<span class="n">bus2</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;B2&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">))</span>
-<span class="n">bus3</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;B3&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">is_dc</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-<span class="n">bus4</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;B4&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">is_dc</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-<span class="n">bus5</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;B5&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">))</span>
-<span class="n">bus6</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;B6&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">))</span>
+<span class="n">bus1</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'B1'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">,</span> <span class="n">is_slack</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">bus2</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'B2'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">))</span>
+<span class="n">bus3</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'B3'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">is_dc</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">bus4</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'B4'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">is_dc</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">bus5</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'B5'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">))</span>
+<span class="n">bus6</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'B6'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">135</span><span class="p">))</span>
 
 <span class="c1"># Define AC lines</span>
-<span class="n">line12</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;L12&#39;</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
-<span class="n">line25</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;L25&#39;</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">1.05</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="n">line56</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;L56&#39;</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus6</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
-<span class="n">line256</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;L562&#39;</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus6</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
+<span class="n">line12</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'L12'</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
+<span class="n">line25</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'L25'</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">1.05</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.5</span><span class="p">))</span>
+<span class="n">line56</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'L56'</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus6</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
+<span class="n">line256</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'L562'</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus6</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
 
 <span class="c1"># Define DC lines</span>
-<span class="n">line34</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_dc_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">DcLine</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;L34&#39;</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus3</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus4</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">2.05</span><span class="p">))</span>
+<span class="n">line34</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_dc_line</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">DcLine</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'L34'</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus3</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus4</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">2.05</span><span class="p">))</span>
 
 <span class="c1"># Define VSCs</span>
-<span class="n">vsc1</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_vsc</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">VSC</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;VSC1&#39;</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus3</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> 
+<span class="n">vsc1</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_vsc</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">VSC</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'VSC1'</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus3</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> 
                            <span class="n">rate</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">alpha1</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">alpha2</span><span class="o">=</span><span class="mf">0.015</span><span class="p">,</span> <span class="n">alpha3</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
                            <span class="n">control1</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Vm_ac</span><span class="p">,</span> 
                            <span class="n">control2</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Pdc</span><span class="p">,</span>
                            <span class="n">control1_val</span><span class="o">=</span><span class="mf">1.0333</span><span class="p">,</span> 
                            <span class="n">control2_val</span><span class="o">=</span><span class="mf">0.2</span><span class="p">))</span>
 
-<span class="n">vsc2</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_vsc</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">VSC</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;VSC2&#39;</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus4</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> 
+<span class="n">vsc2</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">add_vsc</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">VSC</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'VSC2'</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus4</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> 
                            <span class="n">rate</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">alpha1</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">alpha2</span><span class="o">=</span><span class="mf">0.015</span><span class="p">,</span> <span class="n">alpha3</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
                            <span class="n">control1</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Vm_dc</span><span class="p">,</span> 
                            <span class="n">control2</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Qac</span><span class="p">,</span>
@@ -13310,12 +13634,12 @@ and further developed in VeraGrid from 2024 to 2025.</p>
                            <span class="n">control2_val</span><span class="o">=-</span><span class="mf">7.21</span><span class="p">))</span>
 
 <span class="c1"># Define generators</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Gen1&#39;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">vset</span><span class="o">=</span><span class="mf">1.01</span><span class="p">))</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus6</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Gen2&#39;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">vset</span><span class="o">=</span><span class="mf">1.02</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Gen1'</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">vset</span><span class="o">=</span><span class="mf">1.01</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus6</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Gen2'</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">vset</span><span class="o">=</span><span class="mf">1.02</span><span class="p">))</span>
 
 <span class="c1"># Define loads</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Load1&#39;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mf">0.3</span><span class="p">))</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Load2&#39;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mf">0.5</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Load1'</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mf">0.3</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus5</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Load2'</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mf">0.5</span><span class="p">))</span>
 
 <span class="c1"># Run power flow</span>
 <span class="n">pf_options</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">PowerFlowOptions</span><span class="p">(</span><span class="n">solver_type</span><span class="o">=</span><span class="n">vg</span><span class="o">.</span><span class="n">SolverType</span><span class="o">.</span><span class="n">PowellDogLeg</span><span class="p">,</span>
@@ -13323,17 +13647,17 @@ and further developed in VeraGrid from 2024 to 2025.</p>
 <span class="n">pf_driver</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">PowerFlowDriver</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">pf_options</span><span class="p">)</span>
 <span class="n">pf_driver</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Bus values&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Bus values'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">pf_driver</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get_bus_df</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">pf_driver</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get_bus_df</span><span class="p">()</span><span class="o">.</span><span class="n">to_markdown</span><span class="p">(</span><span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;grid&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pf_driver</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get_bus_df</span><span class="p">()</span><span class="o">.</span><span class="n">to_markdown</span><span class="p">(</span><span class="n">tablefmt</span><span class="o">=</span><span class="s2">"grid"</span><span class="p">))</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Branch values&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Branch values'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">pf_driver</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get_branch_df</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">pf_driver</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get_branch_df</span><span class="p">()</span><span class="o">.</span><span class="n">to_markdown</span><span class="p">(</span><span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;grid&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pf_driver</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get_branch_df</span><span class="p">()</span><span class="o">.</span><span class="n">to_markdown</span><span class="p">(</span><span class="n">tablefmt</span><span class="o">=</span><span class="s2">"grid"</span><span class="p">))</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;error:&quot;</span><span class="p">,</span> <span class="n">pf_driver</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"error:"</span><span class="p">,</span> <span class="n">pf_driver</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
 
-<span class="n">vg</span><span class="o">.</span><span class="n">save_file</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="s2">&quot;6bus.veragrid&quot;</span><span class="p">)</span>
+<span class="n">vg</span><span class="o">.</span><span class="n">save_file</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="s2">"6bus.veragrid"</span><span class="p">)</span>
 </pre></div>
 </div>
 <table class="docutils align-default">
@@ -15769,6 +16093,18 @@ and further developed in VeraGrid from 2024 to 2025.</p>
 </section>
 <section id="conducting-materials-and-correction-factors">
 <h3>Conducting materials and correction factors<a class="headerlink" href="#conducting-materials-and-correction-factors" title="Link to this heading"></a></h3>
+<p>Choose <strong>resistance input</strong> in either the <strong>Cable</strong> database table or the cable-system builder:</p>
+<ul class="simple">
+<li><p><strong>Resistivity and filling factor</strong> (default): enter <code class="docutils literal notranslate"><span class="pre">core_resistivity</span></code>, <code class="docutils literal notranslate"><span class="pre">core_filling_factor</span></code>,
+<code class="docutils literal notranslate"><span class="pre">sheath_resistivity</span></code> and <code class="docutils literal notranslate"><span class="pre">sheath_filling_factor</span></code>. Both <code class="docutils literal notranslate"><span class="pre">core_dc_resistance</span></code> and <code class="docutils literal notranslate"><span class="pre">sheath_dc_resistance</span></code>
+are calculated, read-only results that update with the material inputs and geometry.</p></li>
+<li><p><strong>DC resistance</strong>: enter positive <code class="docutils literal notranslate"><span class="pre">core_dc_resistance</span></code> and <code class="docutils literal notranslate"><span class="pre">sheath_dc_resistance</span></code> values in Ω/km at <strong>20 °C</strong>.
+All four resistivity/filling-factor fields are greyed out and cannot be edited. Their retained values are
+inactive; they are not additional constraints on the resistances or inputs to the calculation in this mode.</p></li>
+</ul>
+<p>There is <strong>one selector shared by the core and sheath</strong>. Switching modes in either GUI table converts the
+active inputs to preserve both resistances before further edits. Only the selected representation governs
+the impedances of both conducting layers.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Python property</p></th>
@@ -15779,53 +16115,65 @@ and further developed in VeraGrid from 2024 to 2025.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">core_resistivity</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">resistance_input</span></code></p></td>
+<td><p>Shared resistance input method</p></td>
+<td><p>—</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Resistivity</span> <span class="pre">and</span> <span class="pre">filling</span> <span class="pre">factor</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">CableResistanceInput.Resistivity</span></code> or <code class="docutils literal notranslate"><span class="pre">CableResistanceInput.DcResistance</span></code>; selects the inputs for both core and sheath.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">core_resistivity</span></code></p></td>
 <td><p>Core material resistivity</p></td>
 <td><p>μΩ·cm</p></td>
 <td><p>1.7241</p></td>
-<td><p>Resistivity at 20 °C used to calculate the core impedance.</p></td>
+<td><p>Resistivity at 20 °C; editable and used only in resistivity mode.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sheath_resistivity</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sheath_resistivity</span></code></p></td>
 <td><p>Sheath material resistivity</p></td>
 <td><p>μΩ·cm</p></td>
 <td><p>1.7241</p></td>
-<td><p>Resistivity at 20 °C used to calculate the sheath impedance.</p></td>
+<td><p>Resistivity at 20 °C; editable and used only in resistivity mode.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">core_filling_factor</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">core_filling_factor</span></code></p></td>
 <td><p>Core conducting filling factor</p></td>
 <td><p>%</p></td>
 <td><p>100.0</p></td>
-<td><p>Percentage of the modelled core section occupied by conducting material. Effective resistivity is divided by this fraction; this is not a capacitance.</p></td>
+<td><p>Editable and used only in resistivity mode. Percentage of the modelled core section occupied by conducting material; this is not a capacitance.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sheath_filling_factor</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sheath_filling_factor</span></code></p></td>
 <td><p>Sheath conducting filling factor</p></td>
 <td><p>%</p></td>
 <td><p>100.0</p></td>
-<td><p>Corresponding conducting fraction of the sheath section; applied to sheath resistivity.</p></td>
+<td><p>Editable and used only in resistivity mode. Conducting fraction of the annular sheath section.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">core_relative_permeability</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">core_relative_permeability</span></code></p></td>
 <td><p>Core relative magnetic permeability</p></td>
 <td><p>—</p></td>
 <td><p>1.0</p></td>
 <td><p>Dimensionless permeability relative to vacuum, used in the core internal impedance.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sheath_relative_permeability</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sheath_relative_permeability</span></code></p></td>
 <td><p>Sheath relative magnetic permeability</p></td>
 <td><p>—</p></td>
 <td><p>1.0</p></td>
 <td><p>Dimensionless permeability used in the sheath internal impedance.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">skin_effect_factor</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">skin_effect_factor</span></code></p></td>
 <td><p>Core skin-effect factor</p></td>
 <td><p>—</p></td>
 <td><p>1.0</p></td>
 <td><p>Factor used in the frequency-dependent core internal impedance calculation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">core_dc_resistance</span></code></p></td>
-<td><p>Reference core DC resistance</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">core_dc_resistance</span></code></p></td>
+<td><p>Core DC resistance at 20 °C</p></td>
 <td><p>Ω/km</p></td>
-<td><p>0.0</p></td>
-<td><p>Informational value at 20 °C, read-only in the catalogue tables. The geometric calculation uses dimensions, resistivity and filling factor instead.</p></td>
+<td><p>≈0.219519, derived</p></td>
+<td><p>Calculated and read-only in resistivity mode; editable and used by the impedance calculation in DC resistance mode.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sheath_dc_resistance</span></code></p></td>
+<td><p>Sheath DC resistance at 20 °C</p></td>
+<td><p>Ω/km</p></td>
+<td><p>Derived from material and geometry</p></td>
+<td><p>Calculated and read-only in resistivity mode; editable and used by the tubular sheath impedance calculation in DC resistance mode.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">proximity_effect_factor</span></code></p></td>
 <td><p>Reference proximity-effect factor</p></td>
@@ -15836,6 +16184,44 @@ and further developed in VeraGrid from 2024 to 2025.</p>
 </tbody>
 </table>
 <p>Use positive material resistivities and relative permeabilities. Filling factors are percentages, with physically meaningful values greater than zero and no greater than 100. There is no construction-temperature input: these material values are not automatically converted to another operating temperature by the geometric cable calculation.</p>
+<p>For either conducting layer, using its geometric section <img class="math" src="../_images/math/211284f68205c3e66773eaf026f32a0acdd3dfb3.svg" alt="A"/> in m², the two parameterisations are:</p>
+<div class="math">
+<p><img src="../_images/math/0a105326cf6d8d684fda5b4b2540730b943f35cf.svg" alt="R_{\mathrm{dc}}=\frac{1000\,\rho_{\mathrm{material}}}{A(C_f/100)}\quad[\Omega/\mathrm{km}],
+\qquad
+\rho_{\mathrm{effective}}=\frac{R_{\mathrm{dc}} A}{1000}\quad[\Omega\,\mathrm m]."/></p>
+</div><p>The core uses <img class="math" src="../_images/math/46685bb1cffce0253943026c233dc6a42c6b57c6.svg" alt="A_c=\pi r_c^2"/>. The sheath uses its <strong>annular</strong> area <img class="math" src="../_images/math/e45fea70370bcf6bb0e63270f4308dd37130d169.svg" alt="A_s=\pi(r_{so}^2-r_{si}^2)"/>,
+where <img class="math" src="../_images/math/ee7dc836eb5b025933d03a3b2f07f9cd7c5a43d1.svg" alt="r_{si}=d_c/2+t_i"/> and <img class="math" src="../_images/math/b96d470bc2deeff07c9a536de1b43387db31b524.svg" alt="r_{so}=r_{si}+t_s"/> (dimensions converted to metres).
+The insulation and core are not part of the sheath’s conducting section.</p>
+<p>DC resistance mode supplies each layer’s effective resistivity and a 100% effective filling factor to the
+existing Bessel-function calculations. It therefore affects both the core and tubular sheath impedances,
+including the resulting reduced system matrix. This does not infer a manufacturer’s material or actual
+packing fraction. The same geometry and electromagnetic model apply in both modes.</p>
+<p>For direct resistance input through Python, select the mode explicitly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Branches.underground_cable_type</span><span class="w"> </span><span class="kn">import</span> <span class="n">UndergroundCableType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">CableResistanceInput</span>
+
+<span class="n">cable</span> <span class="o">=</span> <span class="n">UndergroundCableType</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"Cable specified by resistance"</span><span class="p">,</span>
+    <span class="n">core_diameter</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
+    <span class="n">resistance_input</span><span class="o">=</span><span class="n">CableResistanceInput</span><span class="o">.</span><span class="n">DcResistance</span><span class="p">,</span>
+    <span class="n">core_dc_resistance</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>  <span class="c1"># Ohm/km at 20 degrees Celsius</span>
+    <span class="n">sheath_dc_resistance</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Setting either DC resistance alone does not select its mode. Supply both positive values when constructing
+a cable with <code class="docutils literal notranslate"><span class="pre">resistance_input=CableResistanceInput.DcResistance</span></code>. The constructor and snapshot setters restore
+the explicitly supplied inputs; GUI edits through <code class="docutils literal notranslate"><span class="pre">set_value()</span></code> additionally convert values when changing mode.
+Native files store the single selector and both active resistances. Files without a selector, and current PowerFactory DGS
+<code class="docutils literal notranslate"><span class="pre">TypCab</span></code> imports, use <strong>Resistivity and filling factor</strong>, preserving their previous impedance calculation.
+An old imported <code class="docutils literal notranslate"><span class="pre">rpha</span></code> value is not a competing input in that mode: the displayed/saved resistance is derived
+from the active material data. The PowerFactory input-method option shown in its UI is not part of the currently
+mapped DGS cable fields.</p>
+<p>The earlier <code class="docutils literal notranslate"><span class="pre">core_resistance_input</span></code> name is accepted as a compatibility alias, not a second selector.
+Native JSON files saved with that core-only selector and no sheath resistance retain their core input and
+derive the sheath resistance from the saved sheath materials and annular geometry during loading. They then
+use the common selector. The old constructor keyword also derives an omitted sheath resistance from its
+material inputs. New files and examples use <code class="docutils literal notranslate"><span class="pre">resistance_input</span></code> and explicit DC values for both layers.</p>
 </section>
 <section id="insulation-materials">
 <h3>Insulation materials<a class="headerlink" href="#insulation-materials" title="Link to this heading"></a></h3>
@@ -15979,12 +16365,30 @@ and further developed in VeraGrid from 2024 to 2025.</p>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p>core_dc_resistance</p></td>
+<tr class="row-odd"><td><p>resistance_input</p></td>
+<td><p>enum CableResistanceInput</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Choose the resistance inputs for both core and sheath at 20 degrees Celsius: DC resistances, or resistivities and filling factors</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>core_dc_resistance</p></td>
 <td><p>float</p></td>
 <td><p>Ohm/km</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Imported core DC resistance at 20 degrees Celsius; informational, not used by the geometric calculation</p></td>
+<td><p>Core DC resistance at 20 degrees Celsius: input in DC resistance mode, otherwise calculated from resistivity, filling factor and diameter</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>sheath_dc_resistance</p></td>
+<td><p>float</p></td>
+<td><p>Ohm/km</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Sheath DC resistance at 20 degrees Celsius: input in DC resistance mode, otherwise calculated from resistivity, filling factor and annular area</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -16038,7 +16442,7 @@ and further developed in VeraGrid from 2024 to 2025.</p>
 <td><p>uOhm*cm</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Core resistivity at 20 degrees Celsius</p></td>
+<td><p>Core resistivity at 20 degrees Celsius; inactive in DC resistance mode</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -16047,7 +16451,7 @@ and further developed in VeraGrid from 2024 to 2025.</p>
 <td><p>uOhm*cm</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Sheath resistivity at 20 degrees Celsius</p></td>
+<td><p>Sheath resistivity at 20 degrees Celsius; inactive in DC resistance mode</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -16056,7 +16460,7 @@ and further developed in VeraGrid from 2024 to 2025.</p>
 <td><p>%</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Core conducting filling factor</p></td>
+<td><p>Core conducting filling factor; inactive in DC resistance mode</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -16065,7 +16469,7 @@ and further developed in VeraGrid from 2024 to 2025.</p>
 <td><p>%</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Sheath conducting filling factor</p></td>
+<td><p>Sheath conducting filling factor; inactive in DC resistance mode</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -16147,7 +16551,7 @@ and further developed in VeraGrid from 2024 to 2025.</p>
 </section>
 <section id="undergroundlinetype">
 <h2>UndergroundLineType<a class="headerlink" href="#undergroundlinetype" title="Link to this heading"></a></h2>
-<p>An <code class="docutils literal notranslate"><span class="pre">UndergroundLineType</span></code> is a reusable underground line template. It can be defined either from positioned <a class="reference internal" href="#undergroundcabletype"><span class="std std-ref">cable constructions</span></a>, or directly from per-kilometre sequence parameters. A network <code class="docutils literal notranslate"><span class="pre">Line</span></code> then selects this template and supplies its buses, length and circuit index.</p>
+<p><img alt="img.png" src="md_source/img.png" />An <code class="docutils literal notranslate"><span class="pre">UndergroundLineType</span></code> is a reusable underground line template. It can be defined either from positioned <a class="reference internal" href="#undergroundcabletype"><span class="std std-ref">cable constructions</span></a>, or directly from per-kilometre sequence parameters. Both AC <code class="docutils literal notranslate"><span class="pre">Line</span></code> and DC <code class="docutils literal notranslate"><span class="pre">DcLine</span></code> use this common <strong>Cable System</strong> catalogue. The branch supplies its buses and length; an AC line selects a circuit, and a DC line selects a conductor.</p>
 <section id="system-identification-environment-and-rating">
 <h3>System identification, environment and rating<a class="headerlink" href="#system-identification-environment-and-rating" title="Link to this heading"></a></h3>
 <table class="docutils align-default">
@@ -16194,7 +16598,7 @@ and further developed in VeraGrid from 2024 to 2025.</p>
 <td><p>Rated current</p></td>
 <td><p>kA</p></td>
 <td><p>1.0</p></td>
-<td><p>User-supplied current rating, not calculated from cable dimensions or soil data. Applying the template converts this to a line power rating using the applicable voltage.</p></td>
+<td><p>User-supplied current rating, not calculated from cable dimensions or soil data. AC application converts this to a power rating. DC application preserves the existing branch rating; set that rating in the DC line editor.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">freq</span></code></p></td>
 <td><p>Calculation frequency</p></td>
@@ -16387,7 +16791,7 @@ negative sequence equals positive sequence. Physical primitive matrices are not 
 </section>
 <section id="validation-and-applying-a-template">
 <h3>Validation and applying a template<a class="headerlink" href="#validation-and-applying-a-template" title="Link to this heading"></a></h3>
-<p>A physical calculation requires at least one construction, consecutive unique phases, distinct cable-centre positions, positive burial depths, positive core diameters and sheath thicknesses, overall diameters larger than the core diameters, and positive filling factors. The current checks do not enforce every physical constraint: also ensure positive main and outer insulation thicknesses, sensible material properties, positive frequency and soil resistivity, and a non-overlapping cable arrangement. Successful input conversion in a table cell is not a full geometry validation.</p>
+<p>A physical calculation requires at least one construction, consecutive unique phases, distinct cable-centre positions, positive burial depths, positive core diameters, main insulation and sheath thicknesses, overall diameters larger than the core diameters, and a finite positive sheath annular area. The selected inputs of both layers must be finite: either two positive DC resistances, or positive resistivities and filling factors greater than zero and at most 100%. Inactive material inputs do not participate in validation. The current checks do not enforce every physical constraint: also ensure positive outer insulation thickness, sensible permeabilities, positive frequency and soil resistivity, and a non-overlapping cable arrangement. Successful input conversion in a table cell is not a full geometry validation.</p>
 <p>The Python workflow is:</p>
 <ol class="arabic simple">
 <li><p>Create the construction entries and register them with <code class="docutils literal notranslate"><span class="pre">grid.add_underground_cable()</span></code>.</p></li>
@@ -16397,6 +16801,71 @@ negative sequence equals positive sequence. Physical primitive matrices are not 
 </ol>
 <p>The system’s own <code class="docutils literal notranslate"><span class="pre">freq</span></code> controls its physical calculation. Set it consistently with the network frequency; the <code class="docutils literal notranslate"><span class="pre">freq</span></code> argument to <code class="docutils literal notranslate"><span class="pre">Line.apply_template()</span></code> does not replace it for an underground template.</p>
 <p>Assigning <code class="docutils literal notranslate"><span class="pre">line.template</span></code> alone does not calculate or copy the electrical parameters. Recompute the system after changing construction, positions or environmental inputs, then reapply it to each affected line. Reapply the template after changing line length as well, so both scalar parameters and phase matrices correspond to the new length. Line length and circuit selection belong to the network branch, not to the reusable construction or system.</p>
+</section>
+<section id="applying-cable-system-to-a-dc-line">
+<h3>Applying Cable System to a DC line<a class="headerlink" href="#applying-cable-system-to-a-dc-line" title="Link to this heading"></a></h3>
+<p>The <strong>Cable</strong> and <strong>Cable System</strong> creation workflow is shared by AC and DC:</p>
+<ol class="arabic simple">
+<li><p>Define the physical Cable, including the shared core/sheath resistance-input selector.</p></li>
+<li><p>Position the required cables in the Cable System builder and calculate its matrices at a positive reference frequency (50 Hz by default).</p></li>
+<li><p>Create a <code class="docutils literal notranslate"><span class="pre">DcLine</span></code> between DC buses. In its design tab, choose the Cable System and press <strong>Load template values</strong>.</p></li>
+<li><p>Select <strong>Cable System conductor</strong>, enter the installed length and branch current rating, then apply the design.</p></li>
+</ol>
+<p>The conductor number is the builder’s global <strong>Phase</strong> number (1, 2, …), reused as a conductor identifier for DC. A one- or two-cable layout is valid; a complete ABC circuit is unnecessary. In the design tab, <strong>Use Cable System</strong> keeps resistance derived from the template. Clear it to enter a resistance manually and remove the template association. This manual branch has no stored L/C evidence.</p>
+<p>For a physical system and selected conductor <code class="docutils literal notranslate"><span class="pre">i</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Rdc</span></code> is the selected Cable’s <code class="docutils literal notranslate"><span class="pre">core_dc_resistance</span></code> in Ω/km, from its active resistance input method. It is not the real part of the AC impedance matrix.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">L</span> <span class="pre">=</span> <span class="pre">Im(Z[i,</span> <span class="pre">i])</span> <span class="pre">/</span> <span class="pre">(2*pi*freq)</span></code> in H/km.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">C</span> <span class="pre">=</span> <span class="pre">Im(Y[i,</span> <span class="pre">i])</span> <span class="pre">/</span> <span class="pre">(2*pi*freq)</span></code> in F/km.</p></li>
+</ul>
+<p>These use the existing sheath-reduced phase matrices at the reference frequency. Each scalar <code class="docutils literal notranslate"><span class="pre">DcLine</span></code> represents one selected conductor; it does not retain mutual coupling with other DC branches, automatically combine an outgoing and return conductor, or introduce a new sheath-bonding model. Represent a metallic return as a separate DC branch where required. The material-based resistance is at 20 °C; the existing branch temperature correction remains controlled by the simulation options.</p>
+<p>For an equivalent imported without geometry, <code class="docutils literal notranslate"><span class="pre">get_dc_parameters()</span></code> returns <code class="docutils literal notranslate"><span class="pre">R</span></code>, <code class="docutils literal notranslate"><span class="pre">X/(2*pi*freq)</span></code> and <code class="docutils literal notranslate"><span class="pre">C*1e-6</span></code>. If <code class="docutils literal notranslate"><span class="pre">C</span></code> is zero it uses <code class="docutils literal notranslate"><span class="pre">B*1e-6/(2*pi*freq)</span></code>. Only conductor 1 is available for this scalar equivalent. <strong>Cable System C is always in µF/km</strong>, including imported DC systems; the DC parameter API returns F/km.</p>
+<p>With length <code class="docutils literal notranslate"><span class="pre">ell</span></code> in km and <code class="docutils literal notranslate"><span class="pre">Zbase</span> <span class="pre">=</span> <span class="pre">Vnom**2/Sbase</span></code>, application retains the previous DC conversions:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Rpu = Rdc * ell / Zbase
+Lpu_seconds = L * ell / Zbase
+Cpu_seconds = C * ell * Zbase
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">DcLine.apply_template()</span></code> copies R into the branch and preserves its existing rating. Dynamic consumers request L/C through <code class="docutils literal notranslate"><span class="pre">get_applied_dynamic_values_pu_seconds()</span></code>; this catalogue change does not add new dynamic models or mutual-coupling equations. The catalogue can reference AC or DC dynamic templates, but application only copies a template compatible with the receiving branch (or a generic template); an incompatible AC/DC model is skipped with a warning. Assign separate dynamic models on the branches when a system is shared across both domains. Reapply the system after changing Cable data, geometry or the selected conductor.</p>
+<p>The following standalone example creates a physical cable system and applies it
+to a DC branch. Its construction defaults illustrate the workflow; replace them
+with the cable’s actual dimensions and material data for a network study.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.basic_structures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Branches.dc_line</span><span class="w"> </span><span class="kn">import</span> <span class="n">DcLine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Branches.underground_cable_type</span><span class="w"> </span><span class="kn">import</span> <span class="n">UndergroundCableType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Branches.underground_line_type</span><span class="w"> </span><span class="kn">import</span> <span class="n">UndergroundLineType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Substation.bus</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bus</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.multi_circuit</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultiCircuit</span>
+
+<span class="n">grid</span> <span class="o">=</span> <span class="n">MultiCircuit</span><span class="p">(</span><span class="n">Sbase</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
+
+<span class="n">cable</span> <span class="o">=</span> <span class="n">UndergroundCableType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Example cable"</span><span class="p">,</span> <span class="n">nominal_voltage</span><span class="o">=</span><span class="mf">15.0</span><span class="p">)</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_underground_cable</span><span class="p">(</span><span class="n">cable</span><span class="p">)</span>
+<span class="n">system</span> <span class="o">=</span> <span class="n">UndergroundLineType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Example system"</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mf">50.0</span><span class="p">)</span>
+<span class="n">system</span><span class="o">.</span><span class="n">add_cable_relationship</span><span class="p">(</span><span class="n">cable</span><span class="o">=</span><span class="n">cable</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">phase</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_underground_line</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
+
+<span class="n">dc_bus_1</span> <span class="o">=</span> <span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"DC from"</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">is_dc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">dc_bus_2</span> <span class="o">=</span> <span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"DC to"</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">is_dc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">dc_bus_1</span><span class="p">)</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">dc_bus_2</span><span class="p">)</span>
+
+<span class="n">dc_line</span> <span class="o">=</span> <span class="n">DcLine</span><span class="p">(</span><span class="n">bus_from</span><span class="o">=</span><span class="n">dc_bus_1</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">dc_bus_2</span><span class="p">,</span>
+                 <span class="n">length</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mf">30.0</span><span class="p">,</span> <span class="n">dc_conductor</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_dc_line</span><span class="p">(</span><span class="n">dc_line</span><span class="p">)</span>
+<span class="n">dc_line</span><span class="o">.</span><span class="n">apply_template</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">system</span><span class="p">,</span> <span class="n">Sbase</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">Sbase</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">logger</span><span class="o">.</span><span class="n">has_errors</span><span class="p">():</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">logger</span><span class="p">))</span>
+<span class="n">r_ohm_km</span><span class="p">,</span> <span class="n">l_h_km</span><span class="p">,</span> <span class="n">c_f_km</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_dc_parameters</span><span class="p">(</span><span class="n">conductor</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="powerfactory-and-legacy-dc-catalogue-compatibility">
+<h3>PowerFactory and legacy DC catalogue compatibility<a class="headerlink" href="#powerfactory-and-legacy-dc-catalogue-compatibility" title="Link to this heading"></a></h3>
+<p>DC <code class="docutils literal notranslate"><span class="pre">TypLne</span></code> import retains its existing classification, completeness checks and conversions: <code class="docutils literal notranslate"><span class="pre">L</span> <span class="pre">=</span> <span class="pre">xline/(2*pi*frnom)</span></code>, and C from <code class="docutils literal notranslate"><span class="pre">cline</span></code> or <code class="docutils literal notranslate"><span class="pre">bline/(2*pi*frnom)</span></code>, with direct capacitance taking precedence. Values are now stored in a parameter-only Cable System; missing construction data is not invented. Incomplete or unclassified types keep the existing resistive-line fallback. DGS export emits a DC equivalent for each system/conductor used by a DC line.</p>
+<p>Older <code class="docutils literal notranslate"><span class="pre">.veragrid</span></code> DC catalogue records migrate to Cable System before line references are resolved. Identifiers and dynamic associations are retained; old H/km and F/km values are converted to the common X and µF/km fields. New files save only the common catalogue. The separate <strong>DC cable type</strong> GUI category has been removed.</p>
+<p>For Python migration, prefer <code class="docutils literal notranslate"><span class="pre">UndergroundLineType</span></code> and <code class="docutils literal notranslate"><span class="pre">grid.add_underground_line()</span></code>. The deprecated <code class="docutils literal notranslate"><span class="pre">DcCableType(R=...,</span> <span class="pre">L=...,</span> <span class="pre">C=...)</span></code> constructor still accepts its old H/km and F/km arguments, but produces a common Cable System whose <strong>C property uses µF/km</strong>. Read DC quantities with <code class="docutils literal notranslate"><span class="pre">get_dc_parameters()</span></code> or <code class="docutils literal notranslate"><span class="pre">get_dc_values()</span></code> instead of the old <code class="docutils literal notranslate"><span class="pre">.L</span></code>/<code class="docutils literal notranslate"><span class="pre">.C</span></code>/<code class="docutils literal notranslate"><span class="pre">get_values()</span></code> interface. The old <code class="docutils literal notranslate"><span class="pre">dc_cable_types</span></code> collection and add/delete methods are compatibility aliases for the common AC/DC catalogue, not a filtered DC list.</p>
 </section>
 <section id="id47">
 <h3>Registered properties<a class="headerlink" href="#id47" title="Link to this heading"></a></h3>
@@ -24011,47 +24480,47 @@ the results are printed on the console.</p>
 <span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">MultiCircuit</span><span class="p">()</span>
 
 <span class="c1"># Add the buses and the generators and loads attached</span>
-<span class="n">bus1</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">&#39;Bus 1&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">bus1</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">'Bus 1'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 <span class="c1"># bus1.is_slack = True  # we may mark the bus a slack</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">bus1</span><span class="p">)</span>
 
 <span class="c1"># add a generator to the bus 1</span>
-<span class="n">gen1</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="s1">&#39;Slack Generator&#39;</span><span class="p">,</span> <span class="n">vset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">gen1</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="s1">'Slack Generator'</span><span class="p">,</span> <span class="n">vset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus1</span><span class="p">,</span> <span class="n">gen1</span><span class="p">)</span>
 
 <span class="c1"># add bus 2 with a load attached</span>
-<span class="n">bus2</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">&#39;Bus 2&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">bus2</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">'Bus 2'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">bus2</span><span class="p">)</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus2</span><span class="p">,</span> <span class="n">gce</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="s1">&#39;load 2&#39;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus2</span><span class="p">,</span> <span class="n">gce</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="s1">'load 2'</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
 
 <span class="c1"># add bus 3 with a load attached</span>
-<span class="n">bus3</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">&#39;Bus 3&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">bus3</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">'Bus 3'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">bus3</span><span class="p">)</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus3</span><span class="p">,</span> <span class="n">gce</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="s1">&#39;load 3&#39;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">15</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus3</span><span class="p">,</span> <span class="n">gce</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="s1">'load 3'</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">15</span><span class="p">))</span>
 
 <span class="c1"># add bus 4 with a load attached</span>
-<span class="n">bus4</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">&#39;Bus 4&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">bus4</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">'Bus 4'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">bus4</span><span class="p">)</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus4</span><span class="p">,</span> <span class="n">gce</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="s1">&#39;load 4&#39;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus4</span><span class="p">,</span> <span class="n">gce</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="s1">'load 4'</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
 
 <span class="c1"># add bus 5 with a load attached</span>
-<span class="n">bus5</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">&#39;Bus 5&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">bus5</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">'Bus 5'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">bus5</span><span class="p">)</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus5</span><span class="p">,</span> <span class="n">gce</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="s1">&#39;load 5&#39;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus5</span><span class="p">,</span> <span class="n">gce</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="s1">'load 5'</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
 
 <span class="c1"># add Lines connecting the buses</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus1</span><span class="p">,</span> <span class="n">bus2</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;line 1-2&#39;</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.11</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.02</span><span class="p">))</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus1</span><span class="p">,</span> <span class="n">bus3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;line 1-3&#39;</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.11</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.02</span><span class="p">))</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus1</span><span class="p">,</span> <span class="n">bus5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;line 1-5&#39;</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.08</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.02</span><span class="p">))</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus2</span><span class="p">,</span> <span class="n">bus3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;line 2-3&#39;</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.04</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.09</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.02</span><span class="p">))</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus2</span><span class="p">,</span> <span class="n">bus5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;line 2-5&#39;</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.04</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.09</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.02</span><span class="p">))</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus3</span><span class="p">,</span> <span class="n">bus4</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;line 3-4&#39;</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.06</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.13</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.03</span><span class="p">))</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus4</span><span class="p">,</span> <span class="n">bus5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;line 4-5&#39;</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.04</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.09</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.02</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus1</span><span class="p">,</span> <span class="n">bus2</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'line 1-2'</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.11</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.02</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus1</span><span class="p">,</span> <span class="n">bus3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'line 1-3'</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.11</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.02</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus1</span><span class="p">,</span> <span class="n">bus5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'line 1-5'</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.08</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.02</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus2</span><span class="p">,</span> <span class="n">bus3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'line 2-3'</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.04</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.09</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.02</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus2</span><span class="p">,</span> <span class="n">bus5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'line 2-5'</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.04</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.09</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.02</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus3</span><span class="p">,</span> <span class="n">bus4</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'line 3-4'</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.06</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.13</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.03</span><span class="p">))</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">bus4</span><span class="p">,</span> <span class="n">bus5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'line 4-5'</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.04</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.09</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.02</span><span class="p">))</span>
 
 <span class="n">results</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">power_flow</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converged:&#39;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="s1">&#39;error:&#39;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Converged:'</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="s1">'error:'</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">get_bus_df</span><span class="p">())</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">get_branch_df</span><span class="p">())</span>
 </pre></div>

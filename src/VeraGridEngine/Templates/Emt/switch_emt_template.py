@@ -117,6 +117,8 @@ class SwitchEmtTemplate(TemplateDefinition):
                 TemplateProp(name="open_conductance", units="S", descr="Open-state leakage conductance.", tpe=float, value=1.0e-8),
                 TemplateProp(name="switch_time_constant", units="s", descr="First-order current time constant.", tpe=float, value=1.0e-4),
                 TemplateProp(name="command_threshold", units="", descr="Control threshold for the external command.", tpe=float, value=0.5),
+                TemplateProp(name="algebraic_branch", units="", descr="Use an instantaneous resistive branch without artificial current dynamics.", tpe=bool, value=False),
+                TemplateProp(name="closed_parallel_conductance", units="S", descr="Parallel snubber conductance present while the switch is closed.", tpe=float, value=0.0),
                 TemplateProp(name="name", units="", descr="Symbolic model name.", tpe=str, value="switch_emt_template"),
             ]
         )
@@ -133,12 +135,26 @@ class SwitchEmtTemplate(TemplateDefinition):
         open_conductance: float = self.get_value("open_conductance")
         switch_time_constant: float = self.get_value("switch_time_constant")
         command_threshold: float = self.get_value("command_threshold")
+        algebraic_branch: bool = self.get_value("algebraic_branch")
+        closed_parallel_conductance: float = self.get_value("closed_parallel_conductance")
         name: str = self.get_value("name")
 
         return get_switch_emt_template(
-            self.vf, phA, phB, phC, signal_controlled, seed_from_pf_active,
-            initial_closed, use_device_conductance, manual_closed_conductance,
-            open_conductance, switch_time_constant, command_threshold, name,
+            vf=self.vf,
+            phA=phA,
+            phB=phB,
+            phC=phC,
+            signal_controlled=signal_controlled,
+            seed_from_pf_active=seed_from_pf_active,
+            initial_closed=initial_closed,
+            use_device_conductance=use_device_conductance,
+            manual_closed_conductance=manual_closed_conductance,
+            open_conductance=open_conductance,
+            switch_time_constant=switch_time_constant,
+            command_threshold=command_threshold,
+            name=name,
+            algebraic_branch=algebraic_branch,
+            closed_parallel_conductance=closed_parallel_conductance,
         )
 
 
@@ -156,6 +172,8 @@ def get_switch_emt_template(
     switch_time_constant: float = 1.0e-4,
     command_threshold: float = 0.5,
     name: str = "switch_emt_template",
+    algebraic_branch: bool = False,
+    closed_parallel_conductance: float = 0.0,
 ) -> EmtModelTemplate:
     """
     Build one phase-selective EMT switch branch template.
@@ -173,6 +191,8 @@ def get_switch_emt_template(
     :param switch_time_constant: First-order current time constant.
     :param command_threshold: Control threshold for the external command.
     :param name: Symbolic model name.
+    :param algebraic_branch: If True, reproduce an instantaneous resistive breaker instead of adding a current lag.
+    :param closed_parallel_conductance: Parallel snubber conductance also present in the closed state.
     :return: EMT switch template.
     """
     active_phases: List[str] = _get_active_phases(phA=phA, phB=phB, phC=phC)
@@ -188,6 +208,7 @@ def get_switch_emt_template(
     g_manual: Var = vf.add_var(f"switch_closed_g_manual")
     g_open: Var = vf.add_var(f"switch_open_g")
     tau_var: Var = vf.add_var(f"switch_tau")
+    g_parallel: Var = vf.add_var(f"switch_closed_parallel_g")
     seed_from_pf_var: Var = vf.add_var(f"switch_seed_from_pf")
 
     templ.block.parameters[g_device] = Const(0.0, name="switch_closed_g_api")
@@ -195,9 +216,17 @@ def get_switch_emt_template(
     templ.block.event_dict[g_manual] = Const(float(manual_closed_conductance), name="switch_closed_g_manual")
     templ.block.event_dict[g_open] = Const(float(open_conductance), name="switch_open_g")
     templ.block.event_dict[tau_var] = Const(float(switch_time_constant), name="switch_tau")
+    templ.block.event_dict[g_parallel] = Const(
+        float(closed_parallel_conductance),
+        name="switch_closed_parallel_g",
+    )
     templ.block.event_dict[seed_from_pf_var] = Const(1.0 if seed_from_pf_active else 0.0, name="switch_seed_from_pf")
 
-    g_closed_eff: Expr = seed_from_pf_var * g_device + (Const(1.0) - seed_from_pf_var) * g_manual
+    g_closed_eff: Expr = (
+        seed_from_pf_var * g_device
+        + (Const(1.0) - seed_from_pf_var) * g_manual
+        + g_parallel
+    )
     g_eff: Expr = closed_mode * g_closed_eff + (Const(1.0) - closed_mode) * g_open
 
     in_vars: List[Var] = list()
@@ -253,20 +282,24 @@ def get_switch_emt_template(
 
     phase_label: str
     for phase_label in active_phases:
-        v_from = vf.add_var(f"vf_{phase_label}", reference=_get_from_voltage_reference(phase_label))
-        v_to = vf.add_var(f"vt_{phase_label}", reference=_get_to_voltage_reference(phase_label))
-        i_state = vf.add_var(f"i_{phase_label}")
-        di_state = vf.add_diff_var(name=f"di_{phase_label}", base_var=i_state)
-        i_from = vf.add_var(f"if_{phase_label}", reference=_get_from_current_reference(phase_label))
-        i_to = vf.add_var(f"it_{phase_label}", reference=_get_to_current_reference(phase_label))
+        v_from: Var = vf.add_var(f"vf_{phase_label}", reference=_get_from_voltage_reference(phase_label))
+        v_to: Var = vf.add_var(f"vt_{phase_label}", reference=_get_to_voltage_reference(phase_label))
+        i_from: Var = vf.add_var(f"if_{phase_label}", reference=_get_from_current_reference(phase_label))
+        i_to: Var = vf.add_var(f"it_{phase_label}", reference=_get_to_current_reference(phase_label))
 
         in_vars.extend(list([v_from, v_to]))
-        state_vars.append(i_state)
-        diff_vars.append(di_state)
         algebraic_vars.extend(list([i_from, i_to]))
-        state_eqs.append((g_eff * (v_from - v_to) - i_state) / tau_var)
-        algebraic_eqs.append(i_from - i_state)
-        algebraic_eqs.append(i_to + i_state)
+        if algebraic_branch:
+            algebraic_eqs.append(i_from - g_eff * (v_from - v_to))
+            algebraic_eqs.append(i_to + i_from)
+        else:
+            i_state: Var = vf.add_var(f"i_{phase_label}")
+            di_state: Var = vf.add_diff_var(name=f"di_{phase_label}", base_var=i_state)
+            state_vars.append(i_state)
+            diff_vars.append(di_state)
+            state_eqs.append((g_eff * (v_from - v_to) - i_state) / tau_var)
+            algebraic_eqs.append(i_from - i_state)
+            algebraic_eqs.append(i_to + i_state)
         out_vars.extend(list([i_from, i_to]))
         external_mapping[_get_from_voltage_reference(phase_label)] = v_from
         external_mapping[_get_to_voltage_reference(phase_label)] = v_to

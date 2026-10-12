@@ -14,6 +14,12 @@ from VeraGridEngine.Utils.Symbolic.symbolic import (
     get_symbolic_parser_function_names,
 )
 from VeraGridEngine.enumerations import ProceduralFieldType, ProceduralLogicType
+from VeraGridEngine.Templates.ProceduralLogicCatalog import (
+    ProceduralBlockTemplateDescriptor,
+)
+from VeraGrid.Gui.DynamicModelEditor.Editor.DynamicLibrary.dynamic_editor_library import (
+    get_dynamic_library_procedural_descriptors,
+)
 from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.dynamic_procedural_logic import (
     build_procedural_logic_call_lines,
     get_procedural_code_field_type,
@@ -453,52 +459,49 @@ def build_symbolic_function_entries() -> List[DaeCompletionEntry]:
 def build_procedural_function_entries(
         line_indentation: str,
 ) -> List[DaeCompletionEntry]:
-    """Build completion entries for every concrete procedural logic type.
+    """Build completion entries for every editable procedural logic type.
 
     :param line_indentation: Leading whitespace already present before the function name.
     :return: Ordered procedural call completions.
     """
     result: List[DaeCompletionEntry] = list()
-    logic_tpe: ProceduralLogicType
-    for logic_tpe in ProceduralLogicType:
-        if logic_tpe != ProceduralLogicType.Base:
-            relative_lines: List[str]
-            first_placeholder: str | None
-            relative_lines, first_placeholder = build_procedural_logic_call_lines(
-                logic_tpe
-            )
-            insertion_parts: List[str] = list((relative_lines[0],))
-            relative_line: str
-            for relative_line in relative_lines[1:]:
-                insertion_parts.append(f"\n{line_indentation}{relative_line}")
-            insertion_text: str = "".join(insertion_parts)
-            if first_placeholder is not None:
-                placeholder_start: int = insertion_text.find(first_placeholder)
-            else:
-                placeholder_start = -1
-            if placeholder_start >= 0 and first_placeholder is not None:
-                cursor_backtrack: int = (
-                    len(insertion_text)
-                    - placeholder_start
-                    - len(first_placeholder)
-                )
-                selection_length: int = len(first_placeholder)
-            else:
-                cursor_backtrack = 0
-                selection_length = 0
-            result.append(DaeCompletionEntry(
-                name=logic_tpe.value,
-                display_text=get_procedural_logic_signature(logic_tpe),
-                insertion_text=insertion_text,
-                description=get_procedural_logic_summary(logic_tpe),
-                cursor_backtrack=cursor_backtrack,
-                selection_length=selection_length,
-                tooltip=get_procedural_logic_help(logic_tpe),
-            ))
+    descriptor: ProceduralBlockTemplateDescriptor
+    for descriptor in get_dynamic_library_procedural_descriptors():
+        logic_tpe: ProceduralLogicType = descriptor.logic_tpe
+        relative_lines: List[str]
+        first_placeholder: str | None
+        relative_lines, first_placeholder = build_procedural_logic_call_lines(
+            logic_tpe
+        )
+        insertion_parts: List[str] = list((relative_lines[0],))
+        relative_line: str
+        for relative_line in relative_lines[1:]:
+            insertion_parts.append(f"\n{line_indentation}{relative_line}")
+        insertion_text: str = "".join(insertion_parts)
+        if first_placeholder is not None:
+            placeholder_start: int = insertion_text.find(first_placeholder)
         else:
-            pass
+            placeholder_start = -1
+        if placeholder_start >= 0 and first_placeholder is not None:
+            cursor_backtrack: int = (
+                len(insertion_text)
+                - placeholder_start
+                - len(first_placeholder)
+            )
+            selection_length: int = len(first_placeholder)
+        else:
+            cursor_backtrack = 0
+            selection_length = 0
+        result.append(DaeCompletionEntry(
+            name=logic_tpe.value,
+            display_text=get_procedural_logic_signature(logic_tpe),
+            insertion_text=insertion_text,
+            description=get_procedural_logic_summary(logic_tpe),
+            cursor_backtrack=cursor_backtrack,
+            selection_length=selection_length,
+            tooltip=get_procedural_logic_help(logic_tpe),
+        ))
     return result
-
 
 def extract_dae_identifier_prefix(source: str, cursor_position: int) -> str:
     """Return the Python-identifier fragment immediately before the cursor.
@@ -720,12 +723,10 @@ def get_procedural_call_context(
         elif source_token.type == tokenize.OP and token_text == "(":
             bracket_depth += 1
             matched_tpe: ProceduralLogicType | None = None
-            logic_tpe: ProceduralLogicType
-            for logic_tpe in ProceduralLogicType:
-                if (
-                        logic_tpe != ProceduralLogicType.Base
-                        and logic_tpe.value == pending_name
-                ):
+            descriptor: ProceduralBlockTemplateDescriptor
+            for descriptor in get_dynamic_library_procedural_descriptors():
+                logic_tpe: ProceduralLogicType = descriptor.logic_tpe
+                if logic_tpe.value == pending_name:
                     matched_tpe = logic_tpe
                 else:
                     pass

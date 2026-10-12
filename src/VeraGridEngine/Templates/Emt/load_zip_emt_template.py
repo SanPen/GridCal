@@ -183,9 +183,11 @@ def get_load_ZIP_emt_template(
     templ.name = resolved_name
     templ.block.name = resolved_name
 
-    # Shared constants are reused by every active phase and keep the original ZIP
-    # formulation numerically identical when all three phases are enabled.
+    # Shared constants are reused by every active phase.
     c2: Expr = vf.add_const(2.0)
+    # Phase powers are mapped on the grid's total three-phase Sbase.  Convert
+    # them to a per-phase base before deriving instantaneous phase currents.
+    c3: Expr = vf.add_const(3.0)
     c05: Expr = vf.add_const(0.5)
 
     # ZIP coefficients remain device-wide EMT parameters because the existing load
@@ -204,13 +206,15 @@ def get_load_ZIP_emt_template(
     templ.block.event_dict[v0] = vf.add_const(float(np.sqrt(2.0)))
     templ.block.event_dict[k_sogi] = vf.add_const(float(np.sqrt(2.0)))
     templ.block.event_dict[eps] = vf.add_const(1e-12)
-    # a1=a4=1 ct impedance,  a2=a5=1 ct current ,a3=a6=1 ct  power
-    templ.block.event_dict[a1] = vf.add_const(1.0)
+    # Pl0/Ql0 come from the static Load.P/Q fields, which power flow treats as
+    # constant power. Match that operating-point model by default; callers can
+    # still override the ZIP coefficients for current or impedance behavior.
+    templ.block.event_dict[a1] = vf.add_const(0.0)
     templ.block.event_dict[a2] = vf.add_const(0.0)
-    templ.block.event_dict[a3] = vf.add_const(0.0)
-    templ.block.event_dict[a4] = vf.add_const(1.0)
+    templ.block.event_dict[a3] = vf.add_const(1.0)
+    templ.block.event_dict[a4] = vf.add_const(0.0)
     templ.block.event_dict[a5] = vf.add_const(0.0)
-    templ.block.event_dict[a6] = vf.add_const(0.0)
+    templ.block.event_dict[a6] = vf.add_const(1.0)
 
     # Every phase-indexed structure is instantiated strictly in filtered A-B-C
     # order so 1-phase and 2-phase realizations have compact indexing.
@@ -251,6 +255,10 @@ def get_load_ZIP_emt_template(
         q0_var: Var = vf.add_var(name=f"Q0_{phase_label}")
 
         templ.block.event_dict[voltage_derivative_var] = vf.add_const(None)
+        # Device P/Q values establish the baseline, but load-power references
+        # remain event targets throughout the EMT simulation.
+        templ.block.event_dict[p0_var] = vf.add_const(None)
+        templ.block.event_dict[q0_var] = vf.add_const(None)
 
         voltage_vars[phase_label] = voltage_var
         voltage_derivative_vars[phase_label] = voltage_derivative_var
@@ -329,11 +337,11 @@ def get_load_ZIP_emt_template(
         # The injected current is also evaluated with the guaranteed non-negative squared
         # magnitude to prevent sign-inconsistent or undefined denominators during Newton.
         algebraic_eqs.append(
-            current_var + (c2 * (u_var * (-p_var) + q_var * (-q_load_var)) / (u_var ** 2 + q_var ** 2 + eps))
+            current_var + (c3 * c2 * (u_var * (-p_var) + q_var * (-q_load_var)) / (u_var ** 2 + q_var ** 2 + eps))
         )
 
-        # The initializer keeps the same seeds as the legacy ZIP template so the
-        # change stays limited to phase-selective sizing and naming.
+        # Explicit seeds use the same three-phase-base current convention as the
+        # runtime algebraic equation.
         init_eqs[u_var] = voltage_var
         init_eqs[q_var] = -voltage_derivative_var / omega
         init_eqs[v2_var] = u_var ** 2 + q_var ** 2
@@ -342,7 +350,7 @@ def get_load_ZIP_emt_template(
         init_eqs[p_var] = -(p0_var * (a1 * ratio_var ** 2 + a2 * ratio_var + a3))
         init_eqs[q_load_var] = -(q0_var * (a4 * ratio_var ** 2 + a5 * ratio_var + a6))
         init_eqs[current_var] = -(
-            c2 * (u_var * (-p_var) + q_var * (-q_load_var)) / (u_var ** 2 + q_var ** 2 + eps)
+            c3 * c2 * (u_var * (-p_var) + q_var * (-q_load_var)) / (u_var ** 2 + q_var ** 2 + eps)
         )
 
         diff_init_eqs[d_u_var] = voltage_derivative_var
@@ -367,7 +375,18 @@ def get_load_ZIP_emt_template(
         diff_init_eqs=diff_init_eqs,
     )
     block_model.name = resolved_name
-    block_model.event_dict = templ.block.event_dict
+    block_model.event_dict = dict()
+    # Move only device-backed runtime parameters to the physical child that
+    # owns their API mappings. ZIP coefficients and numerical controls remain
+    # exposed by the root without being duplicated in the child.
+    for phase_label in active_phases:
+        p0_var = p0_vars[phase_label]
+        q0_var = q0_vars[phase_label]
+        block_model.event_dict[p0_var] = templ.block.event_dict.pop(p0_var)
+        block_model.event_dict[q0_var] = templ.block.event_dict.pop(q0_var)
+    block_model.parameters = templ.block.parameters
+    templ.block.parameters = dict()
+    block_model.parameters[omega] = vf.add_const(None)
 
     # The external mapping stays compatible with the fixed EMT enum contract, but
     # only active phases carry symbolic variables into the topology assembler.
@@ -392,7 +411,7 @@ def get_load_ZIP_emt_template(
 
     # Only active per-phase load powers are published to the EMT initializer, and
     # the shared omega parameter remains mapped exactly as in the 3-phase model.
-    api_obj_mapping: Dict[ParamPowerFlowReferenceType, Var | None] = dict({
+    api_obj_mapping: Dict[ParamPowerFlowReferenceType, Var] = dict({
         ParamPowerFlowReferenceType.omega_base: omega,
     })
 
@@ -407,7 +426,6 @@ def get_load_ZIP_emt_template(
 
     templ.block.children.append(block_model)
     templ.block.external_mapping = block_model.external_mapping
-    templ.block.api_obj_mapping = block_model.api_obj_mapping
     templ.block.in_vars = block_model.in_vars
     templ.block.out_vars = block_model.out_vars
 

@@ -6,4 +6,9 @@
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
 from VeraGridEngine.Devices.Dynamic.fmu_template import FmuTemplate
+from VeraGridEngine.Devices.Dynamic.manufacturer_native_model import (
+    ManufacturerNativeBinarySource,
+    ManufacturerNativeBinaryVariant,
+    ManufacturerNativeModel,
+)
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory

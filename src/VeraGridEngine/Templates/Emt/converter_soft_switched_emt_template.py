@@ -218,13 +218,11 @@ def _build_pseudo_emt_converter_vsc_block(vf: VarFactory, name: str) -> Block:
         ]),
         algebraic_vars=list([P_ref, Q_ref, Vdc_ref, i_dc, P, Q, i_mag, P_loss, i_dc_conv]),
         event_dict=dict([
-            (sbase, vf.add_const(1.0)),
-            (P0_sched, vf.add_const(0.0)),
             (control1, vf.add_const(float(_converter_control_type_code(ConverterControlType.Vm_dc)))),
             (control2, vf.add_const(float(_converter_control_type_code(ConverterControlType.Qac)))),
             (control1_val, vf.add_const(1.0)),
             (control2_val, vf.add_const(0.0)),
-            (omega_base, vf.add_const(2.0 * np.pi * 50.0)),
+            (P0_sched, vf.add_const(0.0)),
             (phi_v, vf.add_const(0.0)),
             (Vpk, vf.add_const(np.sqrt(2.0))),
             (R_eq, vf.add_const(max(0.02, 1e-9))),
@@ -242,13 +240,17 @@ def _build_pseudo_emt_converter_vsc_block(vf: VarFactory, name: str) -> Block:
             (q_ki, vf.add_const(25.0)),
             (i_max, vf.add_const(max(1.2, 1e-6))),
             (m_max, vf.add_const(max(0.95, 1e-6))),
-            (P_loss0, vf.add_const(0.0)),
             (P_loss_i1, vf.add_const(0.01)),
             (P_loss_i2, vf.add_const(0.01)),
             (tau_meas, vf.add_const(max(0.01, 1e-6))),
             (aw_gain, vf.add_const(1.0)),
             (vdc_floor, vf.add_const(max(0.05, 1e-6))),
         ]),
+        parameters={
+            sbase: vf.add_const(1.0),
+            omega_base: vf.add_const(2.0 * np.pi * 50.0),
+            P_loss0: vf.add_const(0.0),
+        },
         init_eqs=dict([
             (v_dc, v_dc0),
             (P_ref, p_ref_expr),
@@ -277,8 +279,7 @@ def _build_pseudo_emt_converter_vsc_block(vf: VarFactory, name: str) -> Block:
     )
     block.api_obj_mapping = dict([
         (ParamPowerFlowReferenceType.Sbase, sbase),
-        (ParamPowerFlowReferenceType.P0, P0_sched),
-        (ParamPowerFlowReferenceType.converter_loss_power_0, P_loss0),
+        (ParamPowerFlowReferenceType.alpha1, P_loss0),
         (ParamPowerFlowReferenceType.omega_base, omega_base),
         (ParamPowerFlowReferenceType.converter_control_mode_1, control1),
         (ParamPowerFlowReferenceType.converter_control_mode_2, control2),
@@ -1032,17 +1033,23 @@ def get_soft_switched_emt_converter(vf: VarFactory, name: str = "switched_conver
         (VarPowerFlowReferenceType.v_A, v_A),
         (VarPowerFlowReferenceType.v_B, v_B),
         (VarPowerFlowReferenceType.v_C, v_C),
+        (VarPowerFlowReferenceType.vt_A, v_A),
+        (VarPowerFlowReferenceType.vt_B, v_B),
+        (VarPowerFlowReferenceType.vt_C, v_C),
         (VarPowerFlowReferenceType.Vdc, v_dc_bus),
+        (VarPowerFlowReferenceType.Vf_dc, v_dc_bus),
         (VarPowerFlowReferenceType.i_A, i_A),
         (VarPowerFlowReferenceType.i_B, i_B),
         (VarPowerFlowReferenceType.i_C, i_C),
+        (VarPowerFlowReferenceType.it_A, i_A),
+        (VarPowerFlowReferenceType.it_B, i_B),
+        (VarPowerFlowReferenceType.it_C, i_C),
         (VarPowerFlowReferenceType.Idc, data_idc),
+        (VarPowerFlowReferenceType.If_dc, data_idc),
         (VarPowerFlowReferenceType.P, data_p),
         (VarPowerFlowReferenceType.Q, data_q),
         (VarPowerFlowReferenceType.phi_v, data_phi_v),
         (VarPowerFlowReferenceType.Vpk, data_vpk),
     ])
-
-    templ.block.api_obj_mapping = dict(data_block.api_obj_mapping)
 
     return templ

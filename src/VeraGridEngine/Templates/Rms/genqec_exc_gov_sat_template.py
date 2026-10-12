@@ -104,8 +104,6 @@ def get_genqec_rms(vfactory: VarFactory, name: str = "Genqec_rms_template") -> R
     Xqaux3 = vfactory.add_var('Xqaux3')
 
     event_dict = {
-        fn: vfactory.add_const(50.0),
-        ws: vfactory.add_const(2 * pi * 50),
         M: vfactory.add_const(3.5),
         D: vfactory.add_const(10.0),
         Rs: vfactory.add_const(0.003),
@@ -238,12 +236,13 @@ def get_genqec_rms(vfactory: VarFactory, name: str = "Genqec_rms_template") -> R
             VarPowerFlowReferenceType.Va: inputs[1],
         },
 
-        api_obj_mapping={  },
+        api_obj_mapping={ParamPowerFlowReferenceType.freq: fn, ParamPowerFlowReferenceType.omega_base: ws},
 
         out_vars=[Pg, Qg, omega, IRPu, Te],
         in_vars=inputs,
         event_dict=event_dict,
-        name="genqec"
+        name="genqec",
+        parameters={fn: vfactory.add_const(50.0), ws: vfactory.add_const(2 * pi * 50)},
     )
 
     templ.comment = 'Generator GENQEC RMS model with quadratic saturation'
@@ -318,8 +317,6 @@ def get_governor_rms(vfactory: VarFactory, name: str = "Governor") -> RmsModelTe
         omega_ref: vfactory.add_const(1),
         # Governor parameters
         K: vfactory.add_const(10.0),  # governor gain (inverse droop)
-        Pmax: vfactory.add_const(12.0),  # max mechanical power (pu)
-        Pmin: vfactory.add_const(-1.0),  # min mechanical power (pu)
         Uc: vfactory.add_const(-0.5),  # max valve closing rate (pu/s)
         Uo: vfactory.add_const(0.5),  # max valve opening rate (pu/s)
         T_aux: vfactory.add_const(0.0),
@@ -406,6 +403,7 @@ def get_governor_rms(vfactory: VarFactory, name: str = "Governor") -> RmsModelTe
         out_vars=[Tm],
         in_vars=inputs,
         event_dict=events_dict,
+        parameters={Pmax: vfactory.add_const(12.0), Pmin: vfactory.add_const(-1.0)},
         name="governor",
 
         init_eqs={
@@ -421,20 +419,9 @@ def get_governor_rms(vfactory: VarFactory, name: str = "Governor") -> RmsModelTe
             Tm: Pm_ref
         },
         api_obj_mapping={
-            # Gains and limits
-            ParamPowerFlowReferenceType.K: K,  # governor gain (inverse droop)
+            # Generator power limits use the grid power base.
             ParamPowerFlowReferenceType.Pmax: Pmax,  # max mechanical power (pu)
             ParamPowerFlowReferenceType.Pmin: Pmin,  # min mechanical power (pu)
-            ParamPowerFlowReferenceType.Uc: Uc,  # max valve closing rate (pu/s)
-            ParamPowerFlowReferenceType.Uo: Uo,  # max valve opening rate (pu/s)
-            ParamPowerFlowReferenceType.T_aux: T_aux,
-
-            # Control
-            ParamPowerFlowReferenceType.Kp: Kp,
-            ParamPowerFlowReferenceType.Ki: Ki,
-            ParamPowerFlowReferenceType.omega_ref: omega_ref,
-            ParamPowerFlowReferenceType.p0: p0,
-            ParamPowerFlowReferenceType.P0: P0,
         }
 
     )

@@ -1902,7 +1902,7 @@ li.checked::marker { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&gt;&lt
     </message>
     <message>
         <source>Are you sure that you want to delete_with_dialogue the selected elements?</source>
-        <translation>Are you sure that you want to delete_with_dialogue the selected elements?</translation>
+        <translation type="vanished">Are you sure that you want to delete_with_dialogue the selected elements?</translation>
     </message>
     <message>
         <source>Are you sure that you want to duplicate the selected elements?</source>
@@ -2124,6 +2124,18 @@ Are you sure?</translation>
         <source>{device_type} {property_name} distribution</source>
         <translation>Κατανομή {property_name} για {device_type}</translation>
     </message>
+    <message>
+        <source>Are you sure that you want to delete the selected elements?</source>
+        <translation>Είστε βέβαιοι ότι θέλετε να διαγράψετε τα επιλεγμένα στοιχεία?</translation>
+    </message>
+    <message>
+        <source>Element in use</source>
+        <translation>Στοιχείο σε χρήση</translation>
+    </message>
+    <message>
+        <source>The element is still referenced by: {names}</source>
+        <translation>Το στοιχείο αναφέρεται ακόμα από: {names}</translation>
+    </message>
 </context>
 <context>
     <name>DcLineDeviceEditor</name>
@@ -2140,15 +2152,43 @@ Are you sure?</translation>
     <name>DcLineEditor</name>
     <message>
         <source>Line editor</source>
-        <translation>Επεξεργαστής γραμμής</translation>
+        <translation type="vanished">Επεξεργαστής γραμμής</translation>
     </message>
     <message>
         <source>Load template</source>
-        <translation>Φόρτωση πρότυπου</translation>
+        <translation type="vanished">Φόρτωση πρότυπου</translation>
     </message>
     <message>
         <source>The template {template_name} contains errors</source>
-        <translation>Το πρότυπο {template_name} περιέχει σφάλματα</translation>
+        <translation type="vanished">Το πρότυπο {template_name} περιέχει σφάλματα</translation>
+    </message>
+    <message>
+        <source>Apply Cable System</source>
+        <translation>Εφαρμογή Συστήματος Καλωδίωσης</translation>
+    </message>
+    <message>
+        <source>Available Cable Systems</source>
+        <translation>Διαθέσιμα Συστήματα Καλωδίωσης</translation>
+    </message>
+    <message>
+        <source>Branch current rating [kA] @ {voltage:g} kV</source>
+        <translation>Ροπή ρεύματος κλάδου [kA] @ {voltage:g} kV</translation>
+    </message>
+    <message>
+        <source>Cable System conductor</source>
+        <translation>Ηλεκτρόοδη Συστήματος Καλωδίωσης</translation>
+    </message>
+    <message>
+        <source>DC line editor</source>
+        <translation>Επεξεργαστής γραμμής DC</translation>
+    </message>
+    <message>
+        <source>Positive length, voltage and power base are required</source>
+        <translation>Απαιτούνται θετική μήκος, τάση και βάση ισχύος</translation>
+    </message>
+    <message>
+        <source>Use Cable System</source>
+        <translation>Χρήση Συστήματος Καλωδίωσης</translation>
     </message>
 </context>
 <context>
@@ -3174,6 +3214,38 @@ Are you sure?</translation>
         <source>This symbol is not available in dynamic results. Apply and save model changes before adding a new symbol to a plot.</source>
         <translation>Αυτό το σύμβολο δεν είναι διαθέσιμο στα δυναμικά αποτελέσματα. Εφαρμόστε και αποθηκεύστε τις αλλαγές του μοντέλου πριν προσθέσετε ένα νέο σύμβολο σε ένα διάγραμμα.</translation>
     </message>
+    <message>
+        <source>Invalid — ModelInfo digest mismatch</source>
+        <translation>Άκυρο — Διαφωνία καταγραφής ModelInfo</translation>
+    </message>
+    <message>
+        <source>Invalid — provider not found</source>
+        <translation>Άκυρο — Παροχέας δεν βρέθηκε</translation>
+    </message>
+    <message>
+        <source>Manufacturer native controller
+Provider: {provider}
+Interface: {interface}    Domain: {domain}
+Inputs: {input_count}    Outputs: {output_count}
+Reference: {status}</source>
+        <translation>Εγγενής ελεγκτής κατασκευαστή
+Παροχέας: {provider}
+Διεπαφή: {interface}    Τομέας: {domain}
+Είσοδοι: {input_count}    Εξόδοι: {output_count}
+Αναφορά: {status}</translation>
+    </message>
+    <message>
+        <source>Missing provider</source>
+        <translation>Απαιτείται παροχέας</translation>
+    </message>
+    <message>
+        <source>Unavailable</source>
+        <translation>Αδιάθετο</translation>
+    </message>
+    <message>
+        <source>Valid</source>
+        <translation>Βαίσιμο</translation>
+    </message>
 </context>
 <context>
     <name>DynamicBlockPropertiesDialog</name>
@@ -3635,6 +3707,18 @@ Are you sure?</translation>
     <message>
         <source>Apply the new symbol before adding it to a plot</source>
         <translation>Εφαρμόστε το νέο σύμβολο πριν το προσθέσετε σε ένα διάγραμμα</translation>
+    </message>
+    <message>
+        <source>Block properties - {name} (read-only manufacturer model)</source>
+        <translation>Ιδιότητες μπλοκ - {name} (αọcυρο μοντέλο κατασκευαστή)</translation>
+    </message>
+    <message>
+        <source>Manufacturer model bindings are managed by their provider and are read-only here.</source>
+        <translation>Οι συνδέσεις μοντέλου κατασκευαστή διαχειρίζονται από τον παροχέα τους και είναι μόνο για ανάγνωση εδώ.</translation>
+    </message>
+    <message>
+        <source>Manufacturer model bindings are read-only in Block Properties.</source>
+        <translation>Οι συνδέσεις μοντέλου κατασκευαστή είναι μόνο για ανάγνωση στις Ιδιότητες Μπλοκ.</translation>
     </message>
 </context>
 <context>
@@ -13706,6 +13790,10 @@ You need to load or create a grid!</source>
         <source>PhysicalDeviceType</source>
         <translation>PhysicalDeviceType</translation>
     </message>
+    <message>
+        <source>Manufacturer native model</source>
+        <translation>Εγγενές μοντέλο κατασκευαστή</translation>
+    </message>
 </context>
 <context>
     <name>VerticalHeaderWidthResizer</name>
@@ -13918,7 +14006,7 @@ You need to load or create a grid!</source>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="86"/>
-        <location filename="../Main/MainWindow.ui" line="11256"/>
+        <location filename="../Main/MainWindow.ui" line="11258"/>
         <source>Model</source>
         <translation>Μοντέλο</translation>
     </message>
@@ -14419,7 +14507,7 @@ You need to load or create a grid!</source>
     <message>
         <location filename="../Main/MainWindow.ui" line="2391"/>
         <location filename="../Main/MainWindow.ui" line="2456"/>
-        <location filename="../Main/MainWindow.ui" line="13028"/>
+        <location filename="../Main/MainWindow.ui" line="13054"/>
         <source>Results</source>
         <translation>Αποτελέσματα</translation>
     </message>
@@ -14514,37 +14602,37 @@ You need to load or create a grid!</source>
         <translation type="vanished">Ξεκλείδωμα της Εμφίδρασης</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12854"/>
+        <location filename="../Main/MainWindow.ui" line="12880"/>
         <source>Add RMS event</source>
         <translation>Προσθήκη συμβάντος RMS</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12857"/>
+        <location filename="../Main/MainWindow.ui" line="12883"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add RMS event&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Open the Dynamic events editor preferring RMS events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Προσθήκη συμβάντος RMS&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ανοίξτε τον επεξεργαστή δυναμικών συμβάντων προτιμώντας τα συμβάντα RMS&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13079"/>
+        <location filename="../Main/MainWindow.ui" line="13105"/>
         <source>Candidate investment generator</source>
         <translation>Γεννήτρια υποψήφιων επενδύσεων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13082"/>
+        <location filename="../Main/MainWindow.ui" line="13108"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Candidate investment generator&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Generate candidate reinforcements (new lines and upgrades) for N-1 violations via LODF/PTDF screening&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Γεννήτρια υποψήφιων επενδύσεων&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Δημιουργία υποψήφιων ενισχύσεων (νέες γραμμές και αναβαθμίσεις) για παραβιάσεις N-1 μέσω غربαλίσματος LODF/PTDF&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13185"/>
+        <location filename="../Main/MainWindow.ui" line="13211"/>
         <source>Add EMT event</source>
         <translation>Προσθήκη συμβάντος EMT</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13188"/>
+        <location filename="../Main/MainWindow.ui" line="13214"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add EMT event&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Open the Dynamic events editor preferring EMT events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Προσθήκη συμβάντος EMT&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ανοίξτε τον επεξεργαστή δυναμικών συμβάντων προτιμώντας τα συμβάντα EMT&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13260"/>
+        <location filename="../Main/MainWindow.ui" line="13286"/>
         <source>Community chat</source>
         <translation>Συобщеστριακό chat</translation>
     </message>
@@ -15053,7 +15141,7 @@ You need to load or create a grid!</source>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="5043"/>
-        <location filename="../Main/MainWindow.ui" line="11570"/>
+        <location filename="../Main/MainWindow.ui" line="11572"/>
         <source>Continuation power flow</source>
         <translation>Συνεχής ροή ισχύος</translation>
     </message>
@@ -15084,7 +15172,7 @@ You need to load or create a grid!</source>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="5312"/>
-        <location filename="../Main/MainWindow.ui" line="12884"/>
+        <location filename="../Main/MainWindow.ui" line="12910"/>
         <source>State estimation</source>
         <translation>Εκτίμηση του κράτους</translation>
     </message>
@@ -15450,8 +15538,8 @@ You need to load or create a grid!</source>
     <message>
         <location filename="../Main/MainWindow.ui" line="6497"/>
         <location filename="../Main/MainWindow.ui" line="7569"/>
-        <location filename="../Main/MainWindow.ui" line="13019"/>
-        <location filename="../Main/MainWindow.ui" line="13046"/>
+        <location filename="../Main/MainWindow.ui" line="13045"/>
+        <location filename="../Main/MainWindow.ui" line="13072"/>
         <source>Contingencies</source>
         <translation>Απρόβλεπτα</translation>
     </message>
@@ -15932,7 +16020,7 @@ You need to load or create a grid!</source>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="9335"/>
-        <location filename="../Main/MainWindow.ui" line="12374"/>
+        <location filename="../Main/MainWindow.ui" line="12400"/>
         <source>Clustering</source>
         <translation>Ομαδοποίηση</translation>
     </message>
@@ -16029,7 +16117,7 @@ You need to load or create a grid!</source>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="9983"/>
-        <location filename="../Main/MainWindow.ui" line="11555"/>
+        <location filename="../Main/MainWindow.ui" line="11557"/>
         <source>Stochastic power flow</source>
         <translation>Στοχαστική ροή ισχύος</translation>
     </message>
@@ -16075,7 +16163,7 @@ You need to load or create a grid!</source>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="10298"/>
-        <location filename="../Main/MainWindow.ui" line="12791"/>
+        <location filename="../Main/MainWindow.ui" line="12817"/>
         <source>Grid reduction</source>
         <translation>Μείωση πλέγματος</translation>
     </message>
@@ -16211,118 +16299,118 @@ You need to load or create a grid!</source>
         <translation>Εισαγωγή δεδομένων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11187"/>
+        <location filename="../Main/MainWindow.ui" line="11189"/>
         <source>Help</source>
         <translation>Βοήθεια</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11196"/>
+        <location filename="../Main/MainWindow.ui" line="11198"/>
         <source>Actions</source>
         <translation>Δράσεις</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11209"/>
+        <location filename="../Main/MainWindow.ui" line="11211"/>
         <source>Simulations</source>
         <translation>Προσομοιώσεις</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11286"/>
+        <location filename="../Main/MainWindow.ui" line="11288"/>
         <source>Diagram</source>
         <translation>Διάγραμμα</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11290"/>
+        <location filename="../Main/MainWindow.ui" line="11292"/>
         <source>Branches drawing style</source>
         <translation>Στυλ σχεδίασης κλάδων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11330"/>
+        <location filename="../Main/MainWindow.ui" line="11332"/>
         <source>plugins</source>
         <translation>πρόσθετα</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11335"/>
+        <location filename="../Main/MainWindow.ui" line="11337"/>
         <source>Events</source>
         <translation>Εκδηλώσεις</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11356"/>
+        <location filename="../Main/MainWindow.ui" line="11358"/>
         <source>toolBar</source>
         <translation>toolBar</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11423"/>
+        <location filename="../Main/MainWindow.ui" line="11425"/>
         <source>Open file</source>
         <translation>Άνοιγμα αρχείου</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11429"/>
+        <location filename="../Main/MainWindow.ui" line="11431"/>
         <source>Ctrl+O</source>
         <translation>Ctrl+O</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11438"/>
+        <location filename="../Main/MainWindow.ui" line="11440"/>
         <source>Save</source>
         <translation>Εκτός</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11444"/>
-        <location filename="../Main/MainWindow.ui" line="13242"/>
+        <location filename="../Main/MainWindow.ui" line="11446"/>
+        <location filename="../Main/MainWindow.ui" line="13268"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11453"/>
+        <location filename="../Main/MainWindow.ui" line="11455"/>
         <source>Take picture</source>
         <translation>Τραβήξτε φωτογραφία</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11465"/>
+        <location filename="../Main/MainWindow.ui" line="11467"/>
         <source>New project</source>
         <translation>Νέο έργο</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11471"/>
+        <location filename="../Main/MainWindow.ui" line="11473"/>
         <source>Ctrl+N</source>
         <translation>Ctrl+N</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11480"/>
+        <location filename="../Main/MainWindow.ui" line="11482"/>
         <source>Power Flow</source>
         <translation>Ροή ισχύος</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11483"/>
+        <location filename="../Main/MainWindow.ui" line="11485"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power Flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a power flow analysis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ροή ισχύος&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια ανάλυση ροής ισχύος&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11489"/>
+        <location filename="../Main/MainWindow.ui" line="11491"/>
         <source>F5</source>
         <translation>F5</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11501"/>
+        <location filename="../Main/MainWindow.ui" line="11503"/>
         <source>Power flow time series</source>
         <translation>Χρονική σειρά ροής ισχύος</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11504"/>
+        <location filename="../Main/MainWindow.ui" line="11506"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the power flow study with time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ροή ισχύος&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε τη μελέτη ροής ισχύος με δεδομένα χρονοσειρών&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11510"/>
+        <location filename="../Main/MainWindow.ui" line="11512"/>
         <source>Ctrl+F5</source>
         <translation>Ctrl+F5</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11519"/>
+        <location filename="../Main/MainWindow.ui" line="11521"/>
         <source>Expand</source>
         <translation>Διαστέλλω</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11522"/>
+        <location filename="../Main/MainWindow.ui" line="11524"/>
         <source>Expand distances</source>
         <translation>Επεκτείνετε τις αποστάσεις</translation>
     </message>
@@ -16331,12 +16419,12 @@ You need to load or create a grid!</source>
         <translation type="vanished">Ctrl+Alt++</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11537"/>
+        <location filename="../Main/MainWindow.ui" line="11539"/>
         <source>Shrink</source>
         <translation>Μαζεύω</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11540"/>
+        <location filename="../Main/MainWindow.ui" line="11542"/>
         <source>Shrink distances</source>
         <translation>Συρρίκνωση αποστάσεων</translation>
     </message>
@@ -16345,282 +16433,302 @@ You need to load or create a grid!</source>
         <translation type="vanished">Ctrl+Alt+-</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11528"/>
+        <location filename="../Main/MainWindow.ui" line="11530"/>
         <source>Ctrl+Shift++</source>
         <translation>Ctrl+Shift++</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11546"/>
+        <location filename="../Main/MainWindow.ui" line="11548"/>
         <source>Ctrl+Shift+-</source>
         <translation>Ctrl+Shift+-</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11558"/>
+        <location filename="../Main/MainWindow.ui" line="11560"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Stochastic power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a stochastic power flow over the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Στοχαστική ροή ισχύος&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια στοχαστική ροή ισχύος στα δεδομένα χρονοσειρών&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11573"/>
+        <location filename="../Main/MainWindow.ui" line="11575"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Continuation power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a continuation power flow over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Συνεχής ροή ισχύος&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια συνεχή ροή ισχύος πάνω από τα δεδομένα στιγμιότυπου&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11585"/>
+        <location filename="../Main/MainWindow.ui" line="11587"/>
         <source>About</source>
         <translation>Για</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11597"/>
+        <location filename="../Main/MainWindow.ui" line="11599"/>
         <source>center view</source>
         <translation>κεντρική όψη</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11600"/>
+        <location filename="../Main/MainWindow.ui" line="11602"/>
         <source>Center view</source>
         <translation>Κεντρική όψη</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11606"/>
+        <location filename="../Main/MainWindow.ui" line="11608"/>
         <source>Ctrl+E</source>
         <translation>Ctrl+E</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11615"/>
+        <location filename="../Main/MainWindow.ui" line="11617"/>
         <source>Short Circuit</source>
         <translation>Βραχυκύκλωμα</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11618"/>
+        <location filename="../Main/MainWindow.ui" line="11620"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Short Circuit&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a short circuit study over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Βραχυκύκλωμα&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια μελέτη βραχυκυκλώματος στα δεδομένα στιγμιότυπου&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11630"/>
+        <location filename="../Main/MainWindow.ui" line="11632"/>
         <source>Automatic grid layout</source>
         <translation>Αυτόματη διάταξη πλέγματος</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11633"/>
+        <location filename="../Main/MainWindow.ui" line="11635"/>
         <source>Automatic layout the of the grid</source>
         <translation>Αυτόματη διάταξη του πλέγματος</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11648"/>
+        <location filename="../Main/MainWindow.ui" line="11650"/>
         <source>Blackout cascade</source>
         <translation>Καταρράκτης συσκότισης</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11651"/>
+        <location filename="../Main/MainWindow.ui" line="11653"/>
         <source>Run a simulation or step by step blackout cascade</source>
         <translation>Εκτελέστε μια προσομοίωση ή έναν καταρράκτη συσκότισης βήμα προς βήμα</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11663"/>
+        <location filename="../Main/MainWindow.ui" line="11665"/>
         <source>Optimal power flow</source>
         <translation>Βέλτιστη ροή ισχύος</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11666"/>
+        <location filename="../Main/MainWindow.ui" line="11668"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an optimal power flow&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Βέλτιστη ροή ισχύος&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Αυτό εκτελεί μια βέλτιστη ροή ισχύος&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11672"/>
+        <location filename="../Main/MainWindow.ui" line="11674"/>
         <source>F6</source>
         <translation>F6</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11681"/>
+        <location filename="../Main/MainWindow.ui" line="11683"/>
         <source>Optimal power flow time series</source>
         <translation>Βέλτιστη χρονική σειρά ροής ισχύος</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11684"/>
+        <location filename="../Main/MainWindow.ui" line="11686"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an optimal power flow for the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Βέλτιστη ροή ισχύος&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Αυτό εκτελεί μια βέλτιστη ροή ισχύος για τα δεδομένα χρονοσειράς&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11690"/>
+        <location filename="../Main/MainWindow.ui" line="11692"/>
         <source>Ctrl+F6</source>
         <translation>Ctrl+F6</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11699"/>
+        <location filename="../Main/MainWindow.ui" line="11701"/>
         <source>Detect transformers</source>
         <translation>Ανίχνευση μετασχηματιστών</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11702"/>
+        <location filename="../Main/MainWindow.ui" line="11704"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Detect transformers.&lt;/p&gt;&lt;p&gt;Use the nodes nominal voltage to determine which branches should be a transformer.&lt;/p&gt;&lt;p&gt;If a branch joins two nodes with different voltage levels, the branch should be a transformer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ανίχνευση μετασχηματιστών.&lt;/p&gt;&lt;p&gt;Χρησιμοποιήστε την ονομαστική τάση των κόμβων για να προσδιορίσετε ποιοι κλάδοι πρέπει να είναι μετασχηματιστής.&lt;/p&gt;&lt;p&gt;Εάν ένας κλάδος ενώνει δύο κόμβους με διαφορετικά επίπεδα τάσης, ο κλάδος πρέπει να είναι μετασχηματιστής.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11714"/>
+        <location filename="../Main/MainWindow.ui" line="11716"/>
         <source>Auto rate branches</source>
         <translation>Αυτόματη βαθμολογία υποκαταστημάτων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11717"/>
+        <location filename="../Main/MainWindow.ui" line="11719"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatic rating of the branches.&lt;/p&gt;&lt;p&gt;Use the branches calculated power to establish a rate, if the branch rate is unknown. A factor is available in the settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Αυτόματη βαθμολόγηση των υποκαταστημάτων.&lt;/p&gt;&lt;p&gt;Χρησιμοποιήστε την υπολογιζόμενη ισχύ των κλάδων για να καθορίσετε μια τιμή, εάν η τιμή διακλάδωσης είναι άγνωστη. Ένας παράγοντας είναι διαθέσιμος στις ρυθμίσεις.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11732"/>
+        <location filename="../Main/MainWindow.ui" line="11734"/>
         <source>Storage location suggestion</source>
         <translation>Πρόταση τοποθεσίας αποθήκευσης</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11735"/>
+        <location filename="../Main/MainWindow.ui" line="11737"/>
         <source>Suggest places where storage devices are useful</source>
         <translation>Προτείνετε μέρη όπου οι συσκευές αποθήκευσης είναι χρήσιμες</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11747"/>
+        <location filename="../Main/MainWindow.ui" line="11749"/>
         <source>Launch data analysis tool</source>
         <translation>Εκκινήστε το εργαλείο ανάλυσης δεδομένων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11750"/>
+        <location filename="../Main/MainWindow.ui" line="11752"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Data analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Launch the data analysis tool that finds and tries to repair common grid modelling issues&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ανάλυση δεδομένων&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκκινήστε το εργαλείο ανάλυσης δεδομένων που βρίσκει και προσπαθεί να επιδιορθώσει κοινά προβλήματα μοντελοποίησης πλέγματος&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11756"/>
+        <location filename="../Main/MainWindow.ui" line="11758"/>
         <source>F12</source>
         <translation>F12</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11765"/>
+        <location filename="../Main/MainWindow.ui" line="11767"/>
         <source>Online documentation</source>
         <translation>Ηλεκτρονική τεκμηρίωση</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11771"/>
+        <location filename="../Main/MainWindow.ui" line="11773"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11780"/>
+        <location filename="../Main/MainWindow.ui" line="11782"/>
         <source>Save as</source>
         <translation>Αποθήκευση ως</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11792"/>
+        <location filename="../Main/MainWindow.ui" line="11794"/>
         <source>Delete selected</source>
         <translation>Διαγραφή επιλεγμένων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11795"/>
+        <location filename="../Main/MainWindow.ui" line="11797"/>
         <source>Delete selected objects from the diagrams and optionally from the database</source>
         <translation>Διαγράψτε επιλεγμένα αντικείμενα από τα διαγράμματα και προαιρετικά από τη βάση δεδομένων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11801"/>
+        <location filename="../Main/MainWindow.ui" line="11803"/>
         <source>Del</source>
         <translation>Del</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11810"/>
+        <location filename="../Main/MainWindow.ui" line="11812"/>
         <source>Linear analysis</source>
         <translation>Γραμμική ανάλυση</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11813"/>
+        <location filename="../Main/MainWindow.ui" line="11815"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Linear analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform linear analysis with distribution factors (PTDF, LODF)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Γραμμική ανάλυση&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε γραμμική ανάλυση με συντελεστές κατανομής (PTDF, LODF)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11819"/>
+        <location filename="../Main/MainWindow.ui" line="11821"/>
         <source>F7</source>
         <translation>F7</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11828"/>
+        <location filename="../Main/MainWindow.ui" line="11830"/>
         <source>Reset console</source>
         <translation>Επαναφορά κονσόλας</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11843"/>
+        <location filename="../Main/MainWindow.ui" line="11845"/>
         <source>Set OPF results to power flow (non destructive)</source>
         <translation>Ρυθμίστε τα αποτελέσματα OPF σε ροή ισχύος (μη καταστροφική)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11846"/>
+        <location filename="../Main/MainWindow.ui" line="11848"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Copy OPF data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Set the OPF results into the power flow or time series simulations (non destructive)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Αντιγράψτε τα δεδομένα OPF&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ρυθμίστε τα αποτελέσματα OPF στις προσομοιώσεις ροής ισχύος ή χρονοσειρών (μη καταστροφικές)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11858"/>
+        <location filename="../Main/MainWindow.ui" line="11860"/>
         <source>Correct buses location</source>
         <translation>Σωστή θέση λεωφορείων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11861"/>
+        <location filename="../Main/MainWindow.ui" line="11863"/>
         <source>Set selected buses location closer to their neighbours</source>
         <translation>Ορίστε την επιλεγμένη θέση των λεωφορείων πιο κοντά στους γείτονές τους</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11873"/>
+        <location filename="../Main/MainWindow.ui" line="11875"/>
         <source>Copy OPF generation to database (destructive)</source>
         <translation>Αντιγραφή παραγωγής OPF στη βάση δεδομένων (καταστροφικό)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11876"/>
+        <location filename="../Main/MainWindow.ui" line="11878"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Copy OPF data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Destructive copy of the OPF generation results to the input profiles&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Αντιγράψτε τα δεδομένα OPF&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Καταστροφικό αντίγραφο της γενιάς OPF καταλήγει στα προφίλ εισόδου&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11888"/>
+        <location filename="../Main/MainWindow.ui" line="11890"/>
         <source>Linear analysis time series power flow</source>
         <translation>Ροή ισχύος χρονοσειράς γραμμικής ανάλυσης</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11891"/>
+        <location filename="../Main/MainWindow.ui" line="11893"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Linear analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;PTDF based time series power flow&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Γραμμική ανάλυση&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ροή ισχύος χρονοσειράς βάσει PTDF&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11897"/>
+        <location filename="../Main/MainWindow.ui" line="11899"/>
         <source>Ctrl+F7</source>
         <translation>Ctrl+F7</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11906"/>
+        <location filename="../Main/MainWindow.ui" line="11908"/>
         <source>Import circuit</source>
         <translation>Κύκλωμα εισαγωγής</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11909"/>
+        <location filename="../Main/MainWindow.ui" line="11911"/>
         <source>Add circuit to the current circuit</source>
         <translation>Προσθέστε κύκλωμα στο τρέχον κύκλωμα</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11915"/>
+        <location filename="../Main/MainWindow.ui" line="11917"/>
         <source>Ctrl+N, Ctrl+O</source>
         <translation>Ctrl+N, Ctrl+O</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11927"/>
+        <location filename="../Main/MainWindow.ui" line="11926"/>
+        <source>FMU</source>
+        <translation>FMU</translation>
+    </message>
+    <message>
+        <location filename="../Main/MainWindow.ui" line="11929"/>
+        <source>Import a manufacturer FMU as a reusable dynamic model</source>
+        <translation>Εισαγωγή FMU κατασκευαστή ως επαναχρησιμοποιούμενο δυναμικό μοντέλο</translation>
+    </message>
+    <message>
+        <location filename="../Main/MainWindow.ui" line="11938"/>
+        <source>Native library (IEEE/CIGRE or IEC ESE)...</source>
+        <translation>Εγγενής βιβλιοθήκη (IEEE/CIGRE ή IEC ESE)...</translation>
+    </message>
+    <message>
+        <location filename="../Main/MainWindow.ui" line="11941"/>
+        <source>Import a manufacturer supplied native model library</source>
+        <translation>Εισαγωγή εγγενούς βιβλιοθήκης μοντέλου που παρέχεται από τον κατασκευαστή</translation>
+    </message>
+    <message>
+        <location filename="../Main/MainWindow.ui" line="11953"/>
         <source>Sync</source>
         <translation>Συγχρονισμός</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11930"/>
+        <location filename="../Main/MainWindow.ui" line="11956"/>
         <source>Sync with the file for colaborative editing of the grid</source>
         <translation>Συγχρονισμός με το αρχείο για συνεργατική επεξεργασία του πλέγματος</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11939"/>
+        <location filename="../Main/MainWindow.ui" line="11965"/>
         <source>Draw schematic</source>
         <translation>Σχεδιάστε σχηματικά</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11948"/>
+        <location filename="../Main/MainWindow.ui" line="11974"/>
         <source>Sigma analysis</source>
         <translation>Ανάλυση Sigma</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11951"/>
+        <location filename="../Main/MainWindow.ui" line="11977"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Sigma analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform HELM-Sigma analysis over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ανάλυση Sigma&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε ανάλυση HELM-Sigma πάνω από τα δεδομένα στιγμιότυπου&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -16629,72 +16737,72 @@ You need to load or create a grid!</source>
         <translation type="vanished">Διαγραφή &quot;πράγματα που τρέχουν αυτήν τη στιγμή&quot;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11978"/>
+        <location filename="../Main/MainWindow.ui" line="12004"/>
         <source>Add default catalogue</source>
         <translation>Προσθήκη προεπιλεγμένου καταλόγου</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11993"/>
+        <location filename="../Main/MainWindow.ui" line="12019"/>
         <source>Find node groups</source>
         <translation>Βρείτε ομάδες κόμβων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11996"/>
+        <location filename="../Main/MainWindow.ui" line="12022"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Finds the electrically related nodes by using their electrical distance and the DBSCAN clustering method&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Βρίσκει τους ηλεκτρικά σχετικούς κόμβους χρησιμοποιώντας την ηλεκτρική τους απόσταση και τη μέθοδο ομαδοποίησης DBSCAN&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12008"/>
+        <location filename="../Main/MainWindow.ui" line="12034"/>
         <source>Grid Generator</source>
         <translation>Γεννήτρια Πλέγματος</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12014"/>
+        <location filename="../Main/MainWindow.ui" line="12040"/>
         <source>Ctrl+G</source>
         <translation>Ctrl+G</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12023"/>
+        <location filename="../Main/MainWindow.ui" line="12049"/>
         <source>Node load</source>
         <translation>Φορτίο κόμβου</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12032"/>
+        <location filename="../Main/MainWindow.ui" line="12058"/>
         <source>Generator generation</source>
         <translation>Γεννήτρια γεννήτριας</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12041"/>
+        <location filename="../Main/MainWindow.ui" line="12067"/>
         <source>Contingency analysis time series</source>
         <translation>Χρονοσειρές ανάλυσης έκτακτης ανάγκης</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12044"/>
+        <location filename="../Main/MainWindow.ui" line="12070"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Per form a contingency analysis with the selected method over the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ανάλυση έκτακτης ανάγκης&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια ανάλυση έκτακτης ανάγκης με την επιλεγμένη μέθοδο για τα δεδομένα χρονοσειρών&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12050"/>
+        <location filename="../Main/MainWindow.ui" line="12076"/>
         <source>Ctrl+F8</source>
         <translation>Ctrl+F8</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12059"/>
+        <location filename="../Main/MainWindow.ui" line="12085"/>
         <source>Branch rates</source>
         <translation>Τιμές υποκαταστημάτων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12068"/>
+        <location filename="../Main/MainWindow.ui" line="12094"/>
         <source>Set selected buses&apos; Area</source>
         <translation>Ορίστε την περιοχή επιλεγμένων λεωφορείων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12080"/>
+        <location filename="../Main/MainWindow.ui" line="12106"/>
         <source>Set selected buses&apos; Zone</source>
         <translation>Ορίστε τη ζώνη επιλεγμένων λεωφορείων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12092"/>
+        <location filename="../Main/MainWindow.ui" line="12118"/>
         <source>Set seleted buses&apos; Country</source>
         <translation>Ορίστε τη χώρα επιλεγμένων λεωφορείων</translation>
     </message>
@@ -16703,420 +16811,420 @@ You need to load or create a grid!</source>
         <translation type="vanished">Εισαγωγή συντεταγμένων διαύλου</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11963"/>
-        <location filename="../Main/MainWindow.ui" line="11966"/>
+        <location filename="../Main/MainWindow.ui" line="11989"/>
+        <location filename="../Main/MainWindow.ui" line="11992"/>
         <source>Stop &quot;stuff running right now&quot;</source>
         <translation>Σταμάτησε τα &quot;δυναμικά που τρέχουν τώρα&quot;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12104"/>
+        <location filename="../Main/MainWindow.ui" line="12130"/>
         <source>Coordinates</source>
         <translation>Συντεταγμένες</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12116"/>
+        <location filename="../Main/MainWindow.ui" line="12142"/>
         <source>Available Transfer Capacity</source>
         <translation>Διαθέσιμη χωρητικότητα μεταφοράς</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12119"/>
+        <location filename="../Main/MainWindow.ui" line="12145"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a linear net transfer capacity assesment for the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Καθαρή ικανότητα μεταφοράς&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια γραμμική εκτίμηση καθαρής ικανότητας μεταφοράς για τα δεδομένα στιγμιότυπου&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12131"/>
+        <location filename="../Main/MainWindow.ui" line="12157"/>
         <source>Available Transfer Capacity Time Series</source>
         <translation>Διαθέσιμη χρονική σειρά χωρητικότητας μεταφοράς</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12134"/>
+        <location filename="../Main/MainWindow.ui" line="12160"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a linear net transfer capacity assesment for the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Καθαρή ικανότητα μεταφοράς&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια γραμμική εκτίμηση καθαρής ικανότητας μεταφοράς για τα δεδομένα χρονοσειρών&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12146"/>
+        <location filename="../Main/MainWindow.ui" line="12172"/>
         <source>Contingency analysis</source>
         <translation>Ανάλυση έκτακτης ανάγκης</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12149"/>
+        <location filename="../Main/MainWindow.ui" line="12175"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a contingency analysis with the selected method&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ανάλυση έκτακτης ανάγκης&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια ανάλυση έκτακτης ανάγκης με την επιλεγμένη μέθοδο&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12155"/>
+        <location filename="../Main/MainWindow.ui" line="12181"/>
         <source>F8</source>
         <translation>F8</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12164"/>
+        <location filename="../Main/MainWindow.ui" line="12190"/>
         <source>Optimal net transfer capacity</source>
         <translation>Βέλτιστη καθαρή ικανότητα μεταφοράς</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12167"/>
+        <location filename="../Main/MainWindow.ui" line="12193"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform an optimal net transfer capacity optimization&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Βέλτιστη καθαρή ικανότητα μεταφοράς&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια βέλτιστη βελτιστοποίηση καθαρής ικανότητας μεταφοράς&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12179"/>
+        <location filename="../Main/MainWindow.ui" line="12205"/>
         <source>Set schematic (x,y) from (lat,lon)</source>
         <translation>Ορισμός σχηματικού (x,y) από (lat,lon)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12191"/>
+        <location filename="../Main/MainWindow.ui" line="12217"/>
         <source>Inputs analysis</source>
         <translation>Ανάλυση εισροών</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12194"/>
+        <location filename="../Main/MainWindow.ui" line="12220"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Inputs analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform an analysis of the inputs for both the snapshot and time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ανάλυση εισροών&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια ανάλυση των εισόδων τόσο για τα δεδομένα στιγμιότυπου όσο και για τα δεδομένα χρονοσειρών&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12200"/>
+        <location filename="../Main/MainWindow.ui" line="12226"/>
         <source>F11</source>
         <translation>F11</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12209"/>
+        <location filename="../Main/MainWindow.ui" line="12235"/>
         <source>Fuse devices</source>
         <translation>Συσκευές ασφαλειών</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12212"/>
+        <location filename="../Main/MainWindow.ui" line="12238"/>
         <source>Fuse devices into a single device of each category per node</source>
         <translation>Συνδέστε τις συσκευές σε μια ενιαία συσκευή κάθε κατηγορίας ανά κόμβο</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12224"/>
-        <location filename="../Main/MainWindow.ui" line="12227"/>
+        <location filename="../Main/MainWindow.ui" line="12250"/>
+        <location filename="../Main/MainWindow.ui" line="12253"/>
         <source>Delete inconsistencies</source>
         <translation>Διαγράψτε τις ασυνέπειες</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12239"/>
+        <location filename="../Main/MainWindow.ui" line="12265"/>
         <source>Optimal NTC time series</source>
         <translation>Βέλτιστη χρονοσειρά NTC</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12242"/>
+        <location filename="../Main/MainWindow.ui" line="12268"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a net transfer capacity optimization over the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Καθαρή ικανότητα μεταφοράς&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια βελτιστοποίηση καθαρής ικανότητας μεταφοράς με βάση τα δεδομένα χρονοσειρών&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12254"/>
+        <location filename="../Main/MainWindow.ui" line="12280"/>
         <source>re-index time</source>
         <translation>αναπροσαρμογή του χρόνου</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12266"/>
+        <location filename="../Main/MainWindow.ui" line="12292"/>
         <source>Fix generators active based on the power</source>
         <translation>Διορθώστε τις ενεργές γεννήτριες με βάση την ισχύ</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12278"/>
-        <location filename="../Main/MainWindow.ui" line="12281"/>
+        <location filename="../Main/MainWindow.ui" line="12304"/>
+        <location filename="../Main/MainWindow.ui" line="12307"/>
         <source>Fix loads active based on the power</source>
         <translation>Διορθώστε τα ενεργά φορτία με βάση την ισχύ</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12293"/>
+        <location filename="../Main/MainWindow.ui" line="12319"/>
         <source>Initialize contingencies</source>
         <translation>Αρχικοποιήστε απρόβλεπτα</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12296"/>
+        <location filename="../Main/MainWindow.ui" line="12322"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingencies wizard&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Launch the contingencies wizard to automatically set up the contingency objects&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Οδηγός απρόβλεπτων&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκκινήστε τον οδηγό απρόβλεπτων για να ρυθμίσετε αυτόματα τα αντικείμενα έκτακτης ανάγκης&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12308"/>
+        <location filename="../Main/MainWindow.ui" line="12334"/>
         <source>Add selected as new contingency</source>
         <translation>Προσθήκη επιλεγμένης ως νέας έκτακτης ανάγκης</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12311"/>
+        <location filename="../Main/MainWindow.ui" line="12337"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add contingency&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create a new contingency from the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Προσθήκη έκτακτης ανάγκης&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Δημιουργήστε ένα νέο ενδεχόμενο από τη σχηματική επιλογή&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12317"/>
+        <location filename="../Main/MainWindow.ui" line="12343"/>
         <source>Ctrl+A, Ctrl+C</source>
         <translation>Ctrl+A, Ctrl+C</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12326"/>
+        <location filename="../Main/MainWindow.ui" line="12352"/>
         <source>Add selected as new investment</source>
         <translation>Προσθήκη επιλεγμένης ως νέας επένδυσης</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12329"/>
+        <location filename="../Main/MainWindow.ui" line="12355"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Investments&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create new investment with the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Επενδύσεις&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Δημιουργήστε νέα επένδυση με τη σχηματική επιλογή&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12335"/>
+        <location filename="../Main/MainWindow.ui" line="12361"/>
         <source>Ctrl+A, Ctrl+I</source>
         <translation>Ctrl+A, Ctrl+I</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12344"/>
+        <location filename="../Main/MainWindow.ui" line="12370"/>
         <source>Zoom in</source>
         <translation>Μεγέθυνση</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12350"/>
+        <location filename="../Main/MainWindow.ui" line="12376"/>
         <source>Ctrl++</source>
         <translation>Ctrl++</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12359"/>
+        <location filename="../Main/MainWindow.ui" line="12385"/>
         <source>Zoom out</source>
         <translation>Σμίκρυνση</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12365"/>
+        <location filename="../Main/MainWindow.ui" line="12391"/>
         <source>Ctrl+-</source>
         <translation>Ctrl+-</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12377"/>
+        <location filename="../Main/MainWindow.ui" line="12403"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clustering&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a clustering study of the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ομαδοποίηση&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια μελέτη ομαδοποίησης των δεδομένων χρονοσειρών&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12395"/>
+        <location filename="../Main/MainWindow.ui" line="12421"/>
         <source>Use clustering</source>
         <translation>Χρησιμοποιήστε ομαδοποίηση</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12398"/>
+        <location filename="../Main/MainWindow.ui" line="12424"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clustering&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If active, the available clustering results are used in all the simulations that handle time series data non-destructivelly&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ομαδοποίηση&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εάν είναι ενεργά, τα διαθέσιμα αποτελέσματα ομαδοποίησης χρησιμοποιούνται σε όλες τις προσομοιώσεις που χειρίζονται δεδομένα χρονοσειρών μη καταστροφικά&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12410"/>
+        <location filename="../Main/MainWindow.ui" line="12436"/>
         <source>Investments evaluation</source>
         <translation>Αξιολόγηση επενδύσεων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12413"/>
+        <location filename="../Main/MainWindow.ui" line="12439"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Investments&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform the investments evaluation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Επενδύσεις&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε την αξιολόγηση των επενδύσεων&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12419"/>
+        <location filename="../Main/MainWindow.ui" line="12445"/>
         <source>Ctrl+I, Ctrl+E</source>
         <translation>Ctrl+I, Ctrl+E</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12428"/>
+        <location filename="../Main/MainWindow.ui" line="12454"/>
         <source>New schematic from selection</source>
         <translation>Νέο σχηματικό από την επιλογή</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12440"/>
+        <location filename="../Main/MainWindow.ui" line="12466"/>
         <source>New schematic</source>
         <translation>Νέο σχηματικό</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12452"/>
+        <location filename="../Main/MainWindow.ui" line="12478"/>
         <source>New map</source>
         <translation>Νέος χάρτης</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12464"/>
+        <location filename="../Main/MainWindow.ui" line="12490"/>
         <source>Remove selected diagram</source>
         <translation>Αφαιρέστε το επιλεγμένο διάγραμμα</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12473"/>
+        <location filename="../Main/MainWindow.ui" line="12499"/>
         <source>Report a bug or feature</source>
         <translation>Αναφορά σφάλματος ή λειτουργίας</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12485"/>
+        <location filename="../Main/MainWindow.ui" line="12511"/>
         <source>Search</source>
         <translation>Ερευνα</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12497"/>
+        <location filename="../Main/MainWindow.ui" line="12523"/>
         <source>Process topology</source>
         <translation>Τοπολογία διαδικασίας</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12509"/>
+        <location filename="../Main/MainWindow.ui" line="12535"/>
         <source>Edit simulation time limits</source>
         <translation>Επεξεργασία χρονικών ορίων προσομοίωσης</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12512"/>
+        <location filename="../Main/MainWindow.ui" line="12538"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time series&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Edit simulation time limits&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Χρονικές σειρές&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Επεξεργασία χρονικών ορίων προσομοίωσης&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12527"/>
+        <location filename="../Main/MainWindow.ui" line="12553"/>
         <source>activate time series</source>
         <translation>ενεργοποίηση χρονοσειρών</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12530"/>
+        <location filename="../Main/MainWindow.ui" line="12556"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time series mode&lt;/span&gt;&lt;/p&gt;&lt;p&gt;When activated, the simulations run their time series version&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Λειτουργία χρονοσειράς&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Όταν ενεργοποιηθούν, οι προσομοιώσεις εκτελούν την έκδοση χρονολογικής σειράς τους&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12536"/>
+        <location filename="../Main/MainWindow.ui" line="12562"/>
         <source>Ctrl+T</source>
         <translation>Ctrl+T</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12545"/>
+        <location filename="../Main/MainWindow.ui" line="12571"/>
         <source>Clean database</source>
         <translation>Καθαρή βάση δεδομένων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12551"/>
+        <location filename="../Main/MainWindow.ui" line="12577"/>
         <source>Ctrl+C, Ctrl+D</source>
         <translation>Ctrl+C, Ctrl+D</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12560"/>
+        <location filename="../Main/MainWindow.ui" line="12586"/>
         <source>Scale</source>
         <translation>Κλίμακα</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12563"/>
+        <location filename="../Main/MainWindow.ui" line="12589"/>
         <source>Scale the system load and or generation</source>
         <translation>Κλιμακώστε το φορτίο του συστήματος και/ή την παραγωγή</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12575"/>
+        <location filename="../Main/MainWindow.ui" line="12601"/>
         <source>Disable all results tags</source>
         <translation>Απενεργοποιήστε όλες τις ετικέτες αποτελεσμάτων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12587"/>
+        <location filename="../Main/MainWindow.ui" line="12613"/>
         <source>Enable all results tags</source>
         <translation>Ενεργοποίηση όλων των ετικετών αποτελεσμάτων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12599"/>
+        <location filename="../Main/MainWindow.ui" line="12625"/>
         <source>Detect substations</source>
         <translation>Ανίχνευση υποσταθμών</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12611"/>
+        <location filename="../Main/MainWindow.ui" line="12637"/>
         <source>Optimal hosting capacity</source>
         <translation>Βέλτιστη χωρητικότητα φιλοξενίας</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12614"/>
+        <location filename="../Main/MainWindow.ui" line="12640"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Nodal hosting capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the nodal hosting capacity calculation using the selected optimization method&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Κομβική ικανότητα φιλοξενίας&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε τον υπολογισμό της χωρητικότητας κομβικής φιλοξενίας χρησιμοποιώντας την επιλεγμένη μέθοδο βελτιστοποίησης&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12629"/>
+        <location filename="../Main/MainWindow.ui" line="12655"/>
         <source>Enable server mode</source>
         <translation>Ενεργοποίηση λειτουργίας διακομιστή</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12641"/>
+        <location filename="../Main/MainWindow.ui" line="12667"/>
         <source>Record video</source>
         <translation>Εγγραφή βίντεο</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12644"/>
+        <location filename="../Main/MainWindow.ui" line="12670"/>
         <source>Record video of the schematic</source>
         <translation>Καταγράψτε το σχηματικό βίντεο</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12656"/>
+        <location filename="../Main/MainWindow.ui" line="12682"/>
         <source>Save  differential</source>
         <translation>Αποθήκευση διαφορικού</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12668"/>
+        <location filename="../Main/MainWindow.ui" line="12694"/>
         <source>Consolidate coordinates</source>
         <translation>Ενοποίηση συντεταγμένων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12680"/>
+        <location filename="../Main/MainWindow.ui" line="12706"/>
         <source>Add selected as new remedial action</source>
         <translation>Προσθήκη επιλεγμένη ως νέα διορθωτική ενέργεια</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12683"/>
+        <location filename="../Main/MainWindow.ui" line="12709"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add remedial action&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create a new remedial action from the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Προσθήκη διορθωτικής δράσης&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Δημιουργήστε μια νέα διορθωτική ενέργεια από τη σχηματική επιλογή&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12689"/>
+        <location filename="../Main/MainWindow.ui" line="12715"/>
         <source>Ctrl+A, Ctrl+R</source>
         <translation>Ctrl+A, Ctrl+R</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12698"/>
+        <location filename="../Main/MainWindow.ui" line="12724"/>
         <source>Detect facilities</source>
         <translation>Ανίχνευση εγκαταστάσεων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12707"/>
+        <location filename="../Main/MainWindow.ui" line="12733"/>
         <source>Rotate</source>
         <translation>Γυρίζω</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12719"/>
+        <location filename="../Main/MainWindow.ui" line="12745"/>
         <source>Reset diagram coordinates to database values</source>
         <translation>Επαναφέρετε τις συντεταγμένες του διαγράμματος σε τιμές βάσης δεδομένων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12731"/>
+        <location filename="../Main/MainWindow.ui" line="12757"/>
         <source>Reliability analysis</source>
         <translation>Ανάλυση αξιοπιστίας</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12734"/>
+        <location filename="../Main/MainWindow.ui" line="12760"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Reliability study&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the reliability calculation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Μελέτη αξιοπιστίας&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε τον υπολογισμό αξιοπιστίας&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12749"/>
+        <location filename="../Main/MainWindow.ui" line="12775"/>
         <source>Color buses by...</source>
         <translation>Έγχρωμα λεωφορεία από...</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12761"/>
+        <location filename="../Main/MainWindow.ui" line="12787"/>
         <source>Color substations by...</source>
         <translation>Έγχρωμοι υποσταθμοί από...</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12776"/>
+        <location filename="../Main/MainWindow.ui" line="12802"/>
         <source>Select buses by...</source>
         <translation>Επιλέξτε λεωφορεία με...</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12803"/>
+        <location filename="../Main/MainWindow.ui" line="12829"/>
         <source>Substation wizard</source>
         <translation>Οδηγός υποσταθμού</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12806"/>
+        <location filename="../Main/MainWindow.ui" line="12832"/>
         <source>Add substation with a wizard form</source>
         <translation>Προσθήκη υποσταθμού με φόρμα οδηγού</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12809"/>
+        <location filename="../Main/MainWindow.ui" line="12835"/>
         <source>Ctrl+A, Ctrl+S</source>
         <translation>Ctrl+A, Ctrl+S</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12821"/>
+        <location filename="../Main/MainWindow.ui" line="12847"/>
         <source>Dynamic RMS Simulation</source>
         <translation>Δυναμική προσομοίωση RMS</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12824"/>
+        <location filename="../Main/MainWindow.ui" line="12850"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;RMS Simulation&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a dynamic RMS simulation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Προσομοίωση RMS&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια δυναμική προσομοίωση RMS&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -17129,13 +17237,13 @@ You need to load or create a grid!</source>
         <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Προετοιμάστε δυναμικά σχέδια RMS&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ανοίξτε το πρόγραμμα επεξεργασίας δυναμικής γραφικής παράστασης RMS πριν εκτελέσετε την προσομοίωση&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12836"/>
-        <location filename="../Main/MainWindow.ui" line="12839"/>
+        <location filename="../Main/MainWindow.ui" line="12862"/>
+        <location filename="../Main/MainWindow.ui" line="12865"/>
         <source>Small-Signal RMS Simulation</source>
         <translation>Small-Signal RMS Simulation</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12842"/>
+        <location filename="../Main/MainWindow.ui" line="12868"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Small Signal Simulation (RMS)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run an RMS Small Signal stability analysis simulation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Προσομοίωση μικρού σήματος (RMS)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια προσομοίωση ανάλυσης σταθερότητας μικρού σήματος RMS&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -17148,113 +17256,113 @@ You need to load or create a grid!</source>
         <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Προσθήκη συμβάντος RMS&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Δημιουργήστε ένα νέο συμβάν RMS στη σχηματική επιλογή&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12872"/>
+        <location filename="../Main/MainWindow.ui" line="12898"/>
         <source>Clear highlights</source>
         <translation>Καθαρά σημεία</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12887"/>
+        <location filename="../Main/MainWindow.ui" line="12913"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;State estimation&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a state estimation analysis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Εκτίμηση του κράτους&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια ανάλυση εκτίμησης κατάστασης&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12899"/>
+        <location filename="../Main/MainWindow.ui" line="12925"/>
         <source>Add short circuit events</source>
         <translation>Προσθήκη συμβάντων βραχυκυκλώματος</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12911"/>
+        <location filename="../Main/MainWindow.ui" line="12937"/>
         <source>PSS/e Raw / Rawx</source>
         <translation>PSS/e Raw / Rawx</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12920"/>
+        <location filename="../Main/MainWindow.ui" line="12946"/>
         <source>Power Factory DGS</source>
         <translation>Power Factory DGS</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12929"/>
+        <location filename="../Main/MainWindow.ui" line="12955"/>
         <source>Matpower</source>
         <translation>Matpower</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12938"/>
+        <location filename="../Main/MainWindow.ui" line="12964"/>
         <source>UCTE</source>
         <translation>UCTE</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12947"/>
+        <location filename="../Main/MainWindow.ui" line="12973"/>
         <source>CGMES</source>
         <translation>CGMES</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12956"/>
+        <location filename="../Main/MainWindow.ui" line="12982"/>
         <source>Power Grid Models</source>
         <translation>Μοντέλα ηλεκτρικού δικτύου</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12965"/>
+        <location filename="../Main/MainWindow.ui" line="12991"/>
         <source>CIM</source>
         <translation>CIM</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12974"/>
+        <location filename="../Main/MainWindow.ui" line="13000"/>
         <source>H5</source>
         <translation>H5</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12983"/>
+        <location filename="../Main/MainWindow.ui" line="13009"/>
         <source>JSON</source>
         <translation>JSON</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12992"/>
+        <location filename="../Main/MainWindow.ui" line="13018"/>
         <source>Microsoft Excel</source>
         <translation>Microsoft Excel</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13001"/>
+        <location filename="../Main/MainWindow.ui" line="13027"/>
         <source>SQLite</source>
         <translation>SQLite</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13010"/>
+        <location filename="../Main/MainWindow.ui" line="13036"/>
         <source>Profiles</source>
         <translation>Προφίλ</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13037"/>
-        <location filename="../Main/MainWindow.ui" line="13055"/>
+        <location filename="../Main/MainWindow.ui" line="13063"/>
+        <location filename="../Main/MainWindow.ui" line="13081"/>
         <source>Catalogue</source>
         <translation>Κατάλογος</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13064"/>
+        <location filename="../Main/MainWindow.ui" line="13090"/>
         <source>Clean Room</source>
         <translation>Καθαρό δωμάτιο</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13067"/>
+        <location filename="../Main/MainWindow.ui" line="13093"/>
         <source>Cleam room utility to produce an machine learning statistical representation of the static time series</source>
         <translation>Βοηθητικό πρόγραμμα Cleam room για την παραγωγή στατιστικής αναπαράστασης μηχανικής μάθησης της στατικής χρονοσειράς</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13091"/>
+        <location filename="../Main/MainWindow.ui" line="13117"/>
         <source>Procedural grid expansion</source>
         <translation>Διαδικαστική επέκταση πλέγματος</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13100"/>
+        <location filename="../Main/MainWindow.ui" line="13126"/>
         <source>Catalogue element optimization</source>
         <translation>Βελτιστοποίηση στοιχείων καταλόγου</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13109"/>
+        <location filename="../Main/MainWindow.ui" line="13135"/>
         <source>Dynamic EMT Simulation</source>
         <translation>Δυναμική προσομοίωση EMT</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13112"/>
+        <location filename="../Main/MainWindow.ui" line="13138"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;EMT Simulation&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a dynamic EMT simulation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Προσομοίωση EMT&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια δυναμική προσομοίωση EMT&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -17267,43 +17375,43 @@ You need to load or create a grid!</source>
         <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Προετοιμάστε δυναμικά σχέδια EMT&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ανοίξτε το πρόγραμμα επεξεργασίας δυναμικής γραφικής παράστασης EMT πριν εκτελέσετε την προσομοίωση&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13124"/>
-        <location filename="../Main/MainWindow.ui" line="13127"/>
+        <location filename="../Main/MainWindow.ui" line="13150"/>
+        <location filename="../Main/MainWindow.ui" line="13153"/>
         <source>Small-Signal EMT Simulation</source>
         <translation>Small-Signal EMT Simulation</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13130"/>
+        <location filename="../Main/MainWindow.ui" line="13156"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Small Signal Simulation (EMT)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run an EMT Small Signal stability analysis simulation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Προσομοίωση μικρού σήματος (EMT)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια προσομοίωση ανάλυσης σταθερότητας μικρού σήματος EMT&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13138"/>
+        <location filename="../Main/MainWindow.ui" line="13164"/>
         <source>Reticular</source>
         <translation>Δικτυωτή</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13143"/>
+        <location filename="../Main/MainWindow.ui" line="13169"/>
         <source>Straight</source>
         <translation>Ευθεία</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13152"/>
+        <location filename="../Main/MainWindow.ui" line="13178"/>
         <source>ai_chat</source>
         <translation>ai_chat</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13155"/>
+        <location filename="../Main/MainWindow.ui" line="13181"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;VeraGrid AI &lt;/span&gt;&lt;/p&gt;&lt;p&gt;Show the VeraGrid AI chat&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;VeraGrid AI&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εμφάνιση της συνομιλίας VeraGrid AI&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13167"/>
+        <location filename="../Main/MainWindow.ui" line="13193"/>
         <source>Power Flow 3-phase</source>
         <translation>Ροή ισχύος 3 φάσεων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13170"/>
+        <location filename="../Main/MainWindow.ui" line="13196"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power Flow 3-phase&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run an unbalanced 3-phase power flow analysis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ροή ισχύος 3 φάσεων&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Εκτελέστε μια μη ισορροπημένη τριφασική ανάλυση ροής ισχύος&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -17316,32 +17424,32 @@ You need to load or create a grid!</source>
         <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Προσθήκη συμβάντος EMT&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Δημιουργήστε ένα νέο συμβάν EMT στη σχηματική επιλογή&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13197"/>
+        <location filename="../Main/MainWindow.ui" line="13223"/>
         <source>Set model (x,y) based on (lat, lon)</source>
         <translation>Σύνολο μοντέλου (x,y) με βάση (lat, lon)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13206"/>
+        <location filename="../Main/MainWindow.ui" line="13232"/>
         <source>Restore investments</source>
         <translation>Αποκαταστήστε τις επενδύσεις</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13218"/>
+        <location filename="../Main/MainWindow.ui" line="13244"/>
         <source>Veragrid Scenario</source>
         <translation>Σενάριο Veragrid</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13227"/>
+        <location filename="../Main/MainWindow.ui" line="13253"/>
         <source>Show dynamic models editor</source>
         <translation>Εμφάνιση προγράμματος επεξεργασίας δυναμικών μοντέλων</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13239"/>
+        <location filename="../Main/MainWindow.ui" line="13265"/>
         <source>Repair diagram</source>
         <translation>Διάγραμμα επισκευής</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13251"/>
+        <location filename="../Main/MainWindow.ui" line="13277"/>
         <source>Clear cache</source>
         <translation>Καθαρισμός cache</translation>
     </message>
@@ -17363,6 +17471,183 @@ You need to load or create a grid!</source>
     <message>
         <source>Question</source>
         <translation>Ερώτηση</translation>
+    </message>
+</context>
+<context>
+    <name>ManufacturerNativeImporterDialog</name>
+    <message>
+        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
+        <translation>Και οι δύο δηλώσεις αποτελούν μέρος της σύμβασης παράδοσης του κατασκευαστή και απαιτούνται πριν την πιστοποίηση.</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Ξεφυλλίζω...</translation>
+    </message>
+    <message>
+        <source>Choose an existing manufacturer binary.</source>
+        <translation>Επιλέξτε ένα υπάρχον δυαδικό αρχείο κατασκευαστή.</translation>
+    </message>
+    <message>
+        <source>Complete the manufacturer declarations required by the selected interface.</source>
+        <translation>Ολοκληρώστε τις δηλώσεις κατασκευαστή που απαιτούνται από την επιλεγμένη διεπαφή.</translation>
+    </message>
+    <message>
+        <source>Destination provider</source>
+        <translation>Παρόχου προορισμού</translation>
+    </message>
+    <message>
+        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
+        <translation>Κάθε αριθμητική τιμή που χωρίζεται από κόμμα είναι ο αριθμητικός δείκτης προορισμού για τον αριθμητικό δείκτη πηγής σε αυτή τη θέση. Παράδειγμα: το 1,0 αντιστοιχίζει την πηγή 0 στον προορισμό 1 και την πηγή 1 στον προορισμό 0.</translation>
+    </message>
+    <message>
+        <source>Example: 0,1</source>
+        <translation>Παράδειγμα: 0,1</translation>
+    </message>
+    <message>
+        <source>Example: 1,0</source>
+        <translation>Παράδειγμα: 1,0</translation>
+    </message>
+    <message>
+        <source>Example: 2,0,1</source>
+        <translation>Παράδειγμα: 2,0,1</translation>
+    </message>
+    <message>
+        <source>Import manufacturer native model</source>
+        <translation>Εισαγωγή εγγενούς μοντέλου κατασκευαστή</translation>
+    </message>
+    <message>
+        <source>Input destination ordinals</source>
+        <translation>Είσοδος αριθμητικών δεικτών προορισμού</translation>
+    </message>
+    <message>
+        <source>Inspect and attach variant</source>
+        <translation>Εξέταση και σύνδεση διακύμανσης</translation>
+    </message>
+    <message>
+        <source>Inspect and import</source>
+        <translation>Εξέταση και εισαγωγή</translation>
+    </message>
+    <message>
+        <source>Inspecting the binary in an isolated worker...</source>
+        <translation>Εξέταση του δυαδικού σε απομονωμένο εργατή...</translation>
+    </message>
+    <message>
+        <source>Linux libraries (*.so)</source>
+        <translation>Βιβλιοθήκες Linux (*.so)</translation>
+    </message>
+    <message>
+        <source>Manufacturer binary</source>
+        <translation>Δυαδικό κατασκευαστή</translation>
+    </message>
+    <message>
+        <source>Manufacturer interface</source>
+        <translation>Διεπαφή κατασκευαστή</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model ready</source>
+        <translation>Εγγενές μοντέλο κατασκευαστή έτοιμο</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model variants</source>
+        <translation>Διακυμάνσεις εγγενούς μοντέλου κατασκευαστή</translation>
+    </message>
+    <message>
+        <source>No provider has been imported yet.</source>
+        <translation>Δεν έχει εισαχθεί ακόμη κανένας πάροχος.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Κανένα</translation>
+    </message>
+    <message>
+        <source>Output destination ordinals</source>
+        <translation>Έξοδος αριθμητικών δεικτών προορισμού</translation>
+    </message>
+    <message>
+        <source>Parameter destination ordinals</source>
+        <translation>Αριθμητικοί δείκτες προορισμού παραμέτρων</translation>
+    </message>
+    <message>
+        <source>Platform variant</source>
+        <translation>Διακύμανση πλατφόρμας</translation>
+    </message>
+    <message>
+        <source>Provider: {name}</source>
+        <translation>Πάροχος: {name}</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform attached: {platform}
+Templates created: None (existing templates retained).</source>
+        <translation>Πάροχος: {provider}
+Συδεδεμένη πλατφόρμα: {platform}
+Δημιουργήθηκαν πρότυπα: Καμία (διατηρούνται τα υπάρχοντα πρότυπα).</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform: {platform}
+RMS templates created: {rms}
+EMT templates created: {emt}</source>
+        <translation>Πάροχος: {provider}
+Πλατφόρμα: {platform}
+Δημιουργήθηκαν πρότυπα RMS: {rms}
+Δημιουργήθηκαν πρότυπα EMT: {emt}</translation>
+    </message>
+    <message>
+        <source>Qualified and attached {platform}: {digest}</source>
+        <translation>Προσδιορισμένη και συνδεδεμένη {platform}: {digest}</translation>
+    </message>
+    <message>
+        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
+        <translation>Προσδιορισμένη και εισαχθεί {name}. Δημιουργήθηκαν {rms} πρότυπα RMS και {emt} πρότυπο(α) EMT.</translation>
+    </message>
+    <message>
+        <source>Rebind an existing template</source>
+        <translation>Επανασύνδεση ενός υπάρχοντος προτύπου</translation>
+    </message>
+    <message>
+        <source>Rebind selected template</source>
+        <translation>Επανασύνδεση επιλεγμένου προτύπου</translation>
+    </message>
+    <message>
+        <source>Rebound {consumer} to {provider}.</source>
+        <translation>Επανασύνδεση του {consumer} στο {provider}.</translation>
+    </message>
+    <message>
+        <source>Select a source, destination and template.</source>
+        <translation>Επιλέξτε μια πηγή, έναν προορισμό και ένα πρότυπο.</translation>
+    </message>
+    <message>
+        <source>Select manufacturer library</source>
+        <translation>Επιλέξτε βιβλιοθήκη κατασκευαστή</translation>
+    </message>
+    <message>
+        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
+        <translation>Επιλέξτε τη σύμβαση του κατασκευαστή και τη предварительно μεταγλωττιστειμένη βιβλιοθήκη πλατφόρμας. Το VeraGrid επικυρώνει και εκτελεί το δυαδικό σε έναν απομονωμένο εργαζόμενο.</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>Περίγραμμα</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
+        <translation>Ο κατασκευαστής δηλώνει ότι κάθε μεταβλητή κατάσταση μοντέλου ανήκει σε κάθε Αντίγραφο (Instance).</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that the library performs no late native loading.</source>
+        <translation>Ο κατασκευαστής δηλώνει ότι η βιβλιοθήκη δεν εκτελεί καθυστερημένη εγγενή φόρτωση.</translation>
+    </message>
+    <message>
+        <source>Windows libraries (*.dll)</source>
+        <translation>Βιβλιοθήκες Windows (*.dll)</translation>
+    </message>
+    <message>
+        <source>{platform}: missing</source>
+        <translation>{platform}: λείπει</translation>
+    </message>
+    <message>
+        <source>{platform}: {status}, SHA-256 {digest}</source>
+        <translation>{platform}: {status}, SHA-256 {digest}</translation>
     </message>
 </context>
 </TS>

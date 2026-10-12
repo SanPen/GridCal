@@ -279,7 +279,6 @@ def _build_pll_block(
     pll_error: Expr = voltage_magnitude * sym.sin(voltage_angle - theta)
 
     coordinate_events: dict[Var, Expr] = dict()
-    coordinate_events[nominal_frequency] = vfactory.add_const(50.0)
     coordinate_events[kp_pll] = vfactory.add_const(0.001)
     coordinate_events[ki_pll] = vfactory.add_const(0.1)
     coordinate_init: dict[Var, Expr] = dict()
@@ -297,6 +296,8 @@ def _build_pll_block(
             v_q_grid - voltage_magnitude * sym.cos(voltage_angle - theta),
         )),
         event_dict=coordinate_events,
+        parameters={nominal_frequency: vfactory.add_const(50.0)},
+        api_obj_mapping={ParamPowerFlowReferenceType.freq: nominal_frequency},
         init_eqs=coordinate_init,
         in_vars=list((voltage_magnitude, voltage_angle, omega)),
         out_vars=list((theta, v_d_grid, v_q_grid)),
@@ -803,7 +804,6 @@ def build_vsc_dc_link_rms(
     vdc_state: Var
     pf_vsc: Var
     vdc_state, pf_vsc = outputs
-    qf: Var = vfactory.add_var("Qf", reference=VarPowerFlowReferenceType.Qf)
     a0: Var = vfactory.add_var("a0")
     a1: Var = vfactory.add_var("a1")
     a2: Var = vfactory.add_var("a2")
@@ -817,7 +817,7 @@ def build_vsc_dc_link_rms(
         # Pf is determined through the capacitor differential balance, while
         # this algebraic row enforces the physical bus/DC-link voltage. Keep
         # the coupled rows intact during editor decomposition.
-        is_decomposable=False,
+
         state_vars=list((vdc_state,)),
         state_eqs=list(((pf_vsc + inputs[1] - losses) / (cdc * vdc_state),)),
         algebraic_vars=list((pf_vsc,)),
@@ -834,7 +834,6 @@ def build_vsc_dc_link_rms(
         )),
         event_dict=dict((
             (cdc, vfactory.add_const(0.40)),
-            (qf, vfactory.add_const(0.0)),
         )),
         init_eqs=dict(((vdc_state, inputs[0]),)),
         in_vars=list(inputs),
@@ -843,7 +842,6 @@ def build_vsc_dc_link_rms(
             (VarPowerFlowReferenceType.Vdc, inputs[0]),
             (VarPowerFlowReferenceType.Pt, inputs[1]),
             (VarPowerFlowReferenceType.Pf, pf_vsc),
-            (VarPowerFlowReferenceType.Qf, qf),
         )),
     )
 
@@ -982,17 +980,16 @@ def build_hvdc_vsc_gfl_rms(
     )
     dc_link_block.set_parameter_in_model(var_name="Cdc", new_value=cdc)
 
-    # Complete and manually assembled models use the same parameter owners.
-    # Keep the root mappings needed by the runtime compiler, while each
-    # reusable child also carries the mappings needed by editor save.
-    root_api_mapping: dict[ParamPowerFlowReferenceType, Var] = dict(dc_link_block.api_obj_mapping)
+    # Recursive static-parameter discovery visits the DC-link child directly.
+    # The root therefore publishes only the physical terminal interface; copying
+    # the child's API mapping here would create a second, non-owning declaration
+    # whose targets are absent from the root ``parameters`` collection.
     root_external_mapping: dict[VarPowerFlowReferenceType, Var | None] = dict((
         (VarPowerFlowReferenceType.Vdc, vdc_terminal),
         (VarPowerFlowReferenceType.Vmt, voltage_magnitude),
         (VarPowerFlowReferenceType.Vat, voltage_angle),
         (VarPowerFlowReferenceType.Pf, pf_vsc),
         (VarPowerFlowReferenceType.Pt, pt_vsc),
-        (VarPowerFlowReferenceType.Qf, dc_link_block.external_mapping[VarPowerFlowReferenceType.Qf]),
         (VarPowerFlowReferenceType.Qt, qt_vsc),
     ))
     root_block: Block = Block(
@@ -1001,7 +998,6 @@ def build_hvdc_vsc_gfl_rms(
         in_vars=list((vdc_terminal, voltage_magnitude, voltage_angle)),
         out_vars=list((pf_vsc, pt_vsc, qt_vsc)),
         external_mapping=root_external_mapping,
-        api_obj_mapping=root_api_mapping,
     )
     template: RmsModelTemplate = RmsModelTemplate(name=name)
     template.tpe = DeviceType.VscDevice

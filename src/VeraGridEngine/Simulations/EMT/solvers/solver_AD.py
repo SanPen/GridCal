@@ -679,7 +679,8 @@ class JitAdSolver:
         'state_vars', 'algebraic_vars', 'state_eqs', 'algebraic_eqs', '_newton_diag_config',
         '_predictor', '_runtime_param_count', '_static_parameter_buffer', '_full_parameter_buffer',
         '_residual_buffer', '_trial_state_buffer', '_trial_residual_buffer',
-        '_backend_build_stats', '_last_runtime_stats', '_last_sim_loop_time', '_cancel_checker', '_progress_signal'
+        '_backend_build_stats', '_last_runtime_stats', '_last_sim_loop_time', '_cancel_checker', '_progress_signal',
+        '_newton_tolerance'
     ]
     def __init__(self,
                  problem: EmtProblemTemplate,
@@ -693,7 +694,8 @@ class JitAdSolver:
                  newton_max_iter: int = 15,
                  newton_diag_config: NewtonDiagnosticsConfig | None = None,
                  progress_signal: DummySignal | None = None,
-                 cancel_checker: Callable[[], bool] | None = None)-> None:
+                 cancel_checker: Callable[[], bool] | None = None,
+                 newton_tolerance: float = 1.0e-6)-> None:
         """
         Initializes the JIT AD Solver.
 
@@ -715,6 +717,8 @@ class JitAdSolver:
         :type verbose: bool
         :param newton_max_iter: Maximum Newton iterations per local EMT substep.
         :type newton_max_iter: int
+        :param newton_tolerance: Absolute infinity-norm tolerance for Newton residual convergence.
+        :type newton_tolerance: float
         :param progress_signal: Optional progress signal updated during the simulation loop.
         :type progress_signal: DummySignal | None
         """
@@ -726,6 +730,9 @@ class JitAdSolver:
         self.dense_threshold = dense_threshold
         self.verbose = verbose
         self.newton_max_iter: int = int(newton_max_iter)
+        self._newton_tolerance: float = float(newton_tolerance)
+        if not np.isfinite(self._newton_tolerance) or self._newton_tolerance <= 0.0:
+            raise ValueError("newton_tolerance must be finite and greater than zero.")
         self.t_end = t_end
         self._newton_diag_config = newton_diag_config or NewtonDiagnosticsConfig(
             compute_dense_cond=False,
@@ -1085,7 +1092,7 @@ class JitAdSolver:
                         residual_out=res,
                     )
 
-                    if res_norm_inf < 1e-5:
+                    if res_norm_inf < self._newton_tolerance:
                         substep_converged = True
                         break
                     else:
@@ -1149,7 +1156,16 @@ class JitAdSolver:
                         boundary_updater=active_boundary_updater,
                         accepted=substep_converged,
                         params=full_params,
+                        committed_time=float(t_curr),
+                        committed_state=x_iter,
                     )
+                else:
+                    pass
+
+                if substep_converged and state_event_retry_time is None:
+                    # A post-acceptance native sample may publish new held
+                    # outputs. Retain them for the next aligned sub-step.
+                    ev_params[:] = full_params[:n_event_params]
                 else:
                     pass
 

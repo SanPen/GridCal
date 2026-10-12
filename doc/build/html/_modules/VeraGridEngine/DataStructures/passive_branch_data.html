@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.DataStructures.passive_branch_data &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.DataStructures.passive_branch_data &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -69,7 +69,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -109,6 +109,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">csc_matrix</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.DataStructures.branch_parent_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">BranchParentData</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Sparse.sparse_array</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparseObjectArray</span>
@@ -119,46 +120,47 @@
 <div class="viewcode-block" id="PassiveBranchData">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PassiveBranchData</span><span class="p">(</span><span class="n">BranchParentData</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Structure to host all branches data for calculation</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;R&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;X&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;G&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;B&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;R0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;X0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;G0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;B0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;R2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;X2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;G2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;B2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tau_taps&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;m_taps&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;virtual_tap_f&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;virtual_tap_t&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;phA&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;phB&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;phC&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;phN&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;conn_f&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;conn_t&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;conn&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Yff3&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Yft3&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Ytf3&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Ytt3&quot;</span><span class="p">,</span>
+        <span class="s2">"R"</span><span class="p">,</span>
+        <span class="s2">"X"</span><span class="p">,</span>
+        <span class="s2">"G"</span><span class="p">,</span>
+        <span class="s2">"B"</span><span class="p">,</span>
+        <span class="s2">"R0"</span><span class="p">,</span>
+        <span class="s2">"X0"</span><span class="p">,</span>
+        <span class="s2">"G0"</span><span class="p">,</span>
+        <span class="s2">"B0"</span><span class="p">,</span>
+        <span class="s2">"R2"</span><span class="p">,</span>
+        <span class="s2">"X2"</span><span class="p">,</span>
+        <span class="s2">"G2"</span><span class="p">,</span>
+        <span class="s2">"B2"</span><span class="p">,</span>
+        <span class="s2">"tau_taps"</span><span class="p">,</span>
+        <span class="s2">"m_taps"</span><span class="p">,</span>
+        <span class="s2">"virtual_tap_f"</span><span class="p">,</span>
+        <span class="s2">"virtual_tap_t"</span><span class="p">,</span>
+        <span class="s2">"phA"</span><span class="p">,</span>
+        <span class="s2">"phB"</span><span class="p">,</span>
+        <span class="s2">"phC"</span><span class="p">,</span>
+        <span class="s2">"phN"</span><span class="p">,</span>
+        <span class="s2">"conn_f"</span><span class="p">,</span>
+        <span class="s2">"conn_t"</span><span class="p">,</span>
+        <span class="s2">"conn"</span><span class="p">,</span>
+        <span class="s2">"Yff3"</span><span class="p">,</span>
+        <span class="s2">"Yft3"</span><span class="p">,</span>
+        <span class="s2">"Ytf3"</span><span class="p">,</span>
+        <span class="s2">"Ytt3"</span><span class="p">,</span>
+        <span class="s2">"Ycoupling3"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Branch data arrays</span>
 <span class="sd">        :param nelm: number of elements</span>
 <span class="sd">        :param nbus: number of buses</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">BranchParentData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nelm</span><span class="o">=</span><span class="n">nelm</span><span class="p">,</span> <span class="n">nbus</span><span class="o">=</span><span class="n">nbus</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -190,6 +192,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">Yft3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Ytf3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Ytt3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="c1"># Mutual terminal admittances: all from NABC rows, then all to NABC rows.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ycoupling3</span><span class="p">:</span> <span class="n">csc_matrix</span> <span class="o">=</span> <span class="n">csc_matrix</span><span class="p">((</span><span class="mi">8</span> <span class="o">*</span> <span class="n">nelm</span><span class="p">,</span> <span class="mi">8</span> <span class="o">*</span> <span class="n">nelm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">phN</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">phA</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
@@ -199,10 +203,10 @@
 <div class="viewcode-block" id="PassiveBranchData.size">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData.size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get size of the structure</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span></div>
 
@@ -210,15 +214,15 @@
 <div class="viewcode-block" id="PassiveBranchData.slice">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData.slice">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elm_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
-              <span class="n">bus_map</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PassiveBranchData&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+              <span class="n">bus_map</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"PassiveBranchData"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Slice branch data by given indices</span>
 <span class="sd">        :param elm_idx: array of branch indices</span>
 <span class="sd">        :param bus_idx: array of bus indices</span>
 <span class="sd">        :param bus_map: map from bus index to island bus index {int(o): i for i, o in enumerate(bus_idx)}</span>
 <span class="sd">        :param logger: Logger</span>
 <span class="sd">        :return: new BranchData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span><span class="p">,</span> <span class="n">bus_map</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">elm_idx</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">,</span> <span class="n">bus_map</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">PassiveBranchData</span> <span class="o">=</span> <span class="n">data</span>
 
@@ -253,6 +257,8 @@
         <span class="n">data</span><span class="o">.</span><span class="n">Yft3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Yft3</span><span class="p">[</span><span class="n">elm_idx_4</span><span class="p">,</span> <span class="p">:]</span>
         <span class="n">data</span><span class="o">.</span><span class="n">Ytt3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ytt3</span><span class="p">[</span><span class="n">elm_idx_4</span><span class="p">,</span> <span class="p">:]</span>
         <span class="n">data</span><span class="o">.</span><span class="n">Ytf3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ytf3</span><span class="p">[</span><span class="n">elm_idx_4</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">terminal_idx</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">elm_idx_4</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span> <span class="o">+</span> <span class="n">elm_idx_4</span><span class="p">]</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">Ycoupling3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ycoupling3</span><span class="p">[</span><span class="n">terminal_idx</span><span class="p">,</span> <span class="p">:][:,</span> <span class="n">terminal_idx</span><span class="p">]</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
 
         <span class="n">data</span><span class="o">.</span><span class="n">phN</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phN</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
         <span class="n">data</span><span class="o">.</span><span class="n">phA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phA</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
@@ -264,11 +270,11 @@
 
 <div class="viewcode-block" id="PassiveBranchData.copy">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PassiveBranchData&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"PassiveBranchData"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a deep copy of this object</span>
 <span class="sd">        :return: new BranchData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">PassiveBranchData</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="n">data</span><span class="o">.</span><span class="n">R</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -300,6 +306,7 @@
         <span class="n">data</span><span class="o">.</span><span class="n">Yft3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Yft3</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">data</span><span class="o">.</span><span class="n">Ytf3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ytf3</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">data</span><span class="o">.</span><span class="n">Ytt3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ytt3</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">Ycoupling3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ycoupling3</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="n">data</span><span class="o">.</span><span class="n">phN</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phN</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">data</span><span class="o">.</span><span class="n">phA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phA</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -312,40 +319,40 @@
 <div class="viewcode-block" id="PassiveBranchData.get_series_admittance">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData.get_series_admittance">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_series_admittance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the series admittance of the branches</span>
 <span class="sd">        :return: complex vector</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">+</span> <span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">+</span> <span class="mf">1e-20</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PassiveBranchData.detect_superconductor_at">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData.detect_superconductor_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">detect_superconductor_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        There is a beyond terrible practice of setting branches with R=0 and X=0 as &quot;superconductor&quot;....</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        There is a beyond terrible practice of setting branches with R=0 and X=0 as "superconductor"....</span>
 <span class="sd">        Those must be reduced of course</span>
 <span class="sd">        :param k: index</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># handle &quot;&quot;&quot;superconductor branches&quot;&quot;&quot;</span>
+<span class="sd">        """</span>
+        <span class="c1"># handle """superconductor branches"""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reducible</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span></div>
 
 
 <div class="viewcode-block" id="PassiveBranchData.compare">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.passive_branch_data.PassiveBranchData.compare">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;PassiveBranchData&quot;</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"PassiveBranchData"</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compare passive-branch fields used by NumericalCircuit.compare().</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="n">other</span><span class="o">=</span><span class="n">other</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">R</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BranchData&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BranchData&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BranchData&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">B</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BranchData&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G0</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">G0</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BranchData&#39;</span><span class="p">,</span> <span class="s1">&#39;g0&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">virtual_tap_f</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">virtual_tap_f</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BranchData&#39;</span><span class="p">,</span> <span class="s1">&#39;vtap_f&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">virtual_tap_t</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">virtual_tap_t</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BranchData&#39;</span><span class="p">,</span> <span class="s1">&#39;vtap_t&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span></div>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">R</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BranchData'</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BranchData'</span><span class="p">,</span> <span class="s1">'x'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BranchData'</span><span class="p">,</span> <span class="s1">'g'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">B</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BranchData'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G0</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">G0</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BranchData'</span><span class="p">,</span> <span class="s1">'g0'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">virtual_tap_f</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">virtual_tap_f</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BranchData'</span><span class="p">,</span> <span class="s1">'vtap_f'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">virtual_tap_t</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">virtual_tap_t</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BranchData'</span><span class="p">,</span> <span class="s1">'vtap_t'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

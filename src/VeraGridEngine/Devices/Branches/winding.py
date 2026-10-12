@@ -4,8 +4,11 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from typing import Union
+import numpy as np
+from VeraGridEngine.basic_structures import Logger, Mat
+from VeraGridEngine.Utils.NumericalMethods.common import fortescue_012_to_abc
 from VeraGridEngine.Devices.Substation.bus import Bus
-from VeraGridEngine.enumerations import (WindingsConnection, BuildStatus, TapPhaseControl, TapModuleControl)
+from VeraGridEngine.enumerations import (WindingsConnection, WindingType, BuildStatus, TapPhaseControl, TapModuleControl)
 from VeraGridEngine.Devices.Branches.transformer_type import TransformerType
 from VeraGridEngine.Devices.Branches.transformer import Transformer2W
 from VeraGridEngine.Devices.Parents.editable_device import DeviceType
@@ -180,3 +183,116 @@ class Winding(Transformer2W):
                                build_status=build_status)
 
         self.device_type = DeviceType.WindingDevice
+
+    def get_winding_connections(self) -> tuple[WindingType, WindingType]:
+        """Resolve the external connection of historical DGS star equivalents.
+
+        :return: From/to connections, with the internal star at the internal bus.
+        """
+        # Older DGS imports stored the external connection on the internal end.
+        # Recognise that layout without changing the saved device or its clock.
+        if (self.bus_to is not None and self.bus_to.internal
+                and self.conn_f == WindingType.GroundedStar):
+            return self.conn_t, WindingType.GroundedStar
+        elif (self.bus_from is not None and self.bus_from.internal
+              and self.conn_t == WindingType.GroundedStar):
+            return WindingType.GroundedStar, self.conn_f
+        else:
+            return self.conn_f, self.conn_t
+
+    def transformer_admittance(self, vtap_f: float, vtap_t: float,
+                               logger: Logger) -> tuple[Mat, Mat, Mat, Mat]:
+        """Build NABC blocks for one branch of a multi-winding star equivalent.
+
+        :param vtap_f: From-side virtual tap.
+        :param vtap_t: To-side virtual tap.
+        :param logger: Calculation diagnostics.
+        :return: Yff, Yft, Ytf and Ytt, each in NABC order.
+        """
+        internal_from: bool = self.bus_from is not None and self.bus_from.internal
+        internal_to: bool = self.bus_to is not None and self.bus_to.internal
+        if not internal_from and not internal_to:
+            return super().transformer_admittance(vtap_f, vtap_t, logger)
+        else:
+            pass
+
+        conn_f: WindingType
+        conn_t: WindingType
+        conn_f, conn_t = self.get_winding_connections()
+        allowed: tuple[WindingType, ...] = (WindingType.GroundedStar, WindingType.NeutralStar,
+                                           WindingType.FloatingStar, WindingType.Delta)
+        if conn_f not in allowed or conn_t not in allowed:
+            raise ValueError(f"Three-phase winding connection is not supported: {self.name}, {conn_f}-{conn_t}")
+        else:
+            pass
+
+        z1: complex = complex(self.R, self.X)
+        z2: complex = complex(self.R2, self.X2)
+        if abs(z2) < 1e-12:
+            # Passive transformer leakage is identical in sequences 1 and 2 in PF.
+            z2 = z1
+        else:
+            pass
+        if not np.isfinite(z1) or not np.isfinite(z2) or min(abs(z1), abs(z2)) < 1e-12:
+            raise ValueError(f"Three-phase winding Z1/Z2 must be finite and nonzero: {self.name}")
+        else:
+            pass
+
+        # A winding clock is its terminal lag relative to the common internal
+        # reference, the opposite orientation to a conventional HV-to-LV branch.
+        clock_phase: float = np.deg2rad(self.vector_group_number * 30.0) * (1 if internal_from else -1)
+        yff: Mat
+        yft: Mat
+        ytf: Mat
+        ytt: Mat
+        yff, yft, ytf, ytt = super().transformer_admittance(
+            vtap_f, vtap_t, logger,
+            conn_f=WindingType.NeutralStar if conn_f == WindingType.FloatingStar else conn_f,
+            conn_t=WindingType.NeutralStar if conn_t == WindingType.FloatingStar else conn_t,
+            clock_phase=clock_phase)
+        scaling: Mat = fortescue_012_to_abc(0.0, 1.0, z1 / z2)
+        block: Mat
+        for block in (yff, yft, ytf, ytt):
+            # Keep the existing connection/tap/clock primitive for sequences 1/2.
+            block[1:, 1:] = block[1:, 1:] @ scaling
+
+        external: WindingType = conn_t if internal_from else conn_f
+        explicit_neutral: bool = external == WindingType.NeutralStar and 0 in self.phases
+        if external in (WindingType.GroundedStar, WindingType.Delta) or explicit_neutral:
+            z0: complex = complex(self.R0, self.X0)
+            if not np.isfinite(z0) or abs(z0) < 1e-12:
+                raise ValueError(f"Three-phase winding Z0 must be finite and nonzero: {self.name}; "
+                                 "set R0/X0 or export TypTr3 uk0hm/uk0ml/uk0hl and ur0hm/ur0ml/ur0hl")
+            else:
+                pass
+            zero: Mat = fortescue_012_to_abc(1.0 / z0, 0.0, 0.0)
+            tap_f: float = self.tap_module * vtap_f
+            # A delta has no external I0 but closes a circulating path at the core.
+            if external == WindingType.Delta:
+                if internal_from:
+                    yff[1:, 1:] += zero / (tap_f * tap_f)
+                else:
+                    ytt[1:, 1:] += zero / (vtap_t * vtap_t)
+            else:
+                yff[1:, 1:] += zero / (tap_f * tap_f)
+                yft[1:, 1:] -= zero * np.exp(1j * self.tap_phase) / (tap_f * vtap_t)
+                ytf[1:, 1:] -= zero * np.exp(-1j * self.tap_phase) / (tap_f * vtap_t)
+                ytt[1:, 1:] += zero / (vtap_t * vtap_t)
+        else:
+            # An isolated star point cannot supply a zero-sequence current.
+            pass
+
+        if explicit_neutral:
+            connection: Mat = np.eye(4)
+            connection[1:, 0] = -1.0
+            if internal_from:
+                yft = yft @ connection
+                ytf = connection.T @ ytf
+                ytt = connection.T @ ytt @ connection
+            else:
+                yff = connection.T @ yff @ connection
+                yft = connection.T @ yft
+                ytf = ytf @ connection
+        else:
+            pass
+        return yff, yft, ytf, ytt

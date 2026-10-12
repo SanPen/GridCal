@@ -44,6 +44,12 @@ from VeraGridEngine.Utils.procedural_logic import (
     TimeDelayLogic,
     ValveStateLogic,
 )
+from VeraGridEngine.Templates.ProceduralLogicCatalog import (
+    ProceduralBlockTemplateDescriptor,
+)
+from VeraGrid.Gui.DynamicModelEditor.Editor.DynamicLibrary.dynamic_editor_library import (
+    get_dynamic_library_procedural_descriptors,
+)
 from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.dae_code_linter import (
     normalize_algebraic_equality_syntax,
 )
@@ -935,10 +941,10 @@ def get_procedural_logic_type_from_code_name(code_name: str) -> ProceduralLogicT
     :raises ValueError: If the function is unknown or represents the abstract base type.
     """
     result: ProceduralLogicType | None = None
-    logic_tpe: ProceduralLogicType
-    for logic_tpe in ProceduralLogicType:
-        if logic_tpe != ProceduralLogicType.Base and logic_tpe.value == code_name:
-            result = logic_tpe
+    descriptor: ProceduralBlockTemplateDescriptor
+    for descriptor in get_dynamic_library_procedural_descriptors():
+        if descriptor.logic_tpe.value == code_name:
+            result = descriptor.logic_tpe
         else:
             pass
     if result is None:
@@ -1102,10 +1108,10 @@ def get_procedural_logic_help_by_code_name(code_name: str) -> str | None:
     :return: Complete help text or ``None`` for a non-procedural identifier.
     """
     result: str | None = None
-    logic_tpe: ProceduralLogicType
-    for logic_tpe in ProceduralLogicType:
-        if logic_tpe != ProceduralLogicType.Base and logic_tpe.value == code_name:
-            result = get_procedural_logic_help(logic_tpe)
+    descriptor: ProceduralBlockTemplateDescriptor
+    for descriptor in get_dynamic_library_procedural_descriptors():
+        if descriptor.logic_tpe.value == code_name:
+            result = get_procedural_logic_help(descriptor.logic_tpe)
         else:
             pass
     return result
@@ -1225,20 +1231,31 @@ def build_runtime_logic_code(block: Block) -> List[str]:
     lines.append("procedural_logic = [")
     lines.append("    # List order is preserved; each type runs at its Engine-defined update phase.")
     lines.append("    # Use Add procedural logic above to insert a complete editable call.")
+    editable_types: set[ProceduralLogicType] = set()
+    descriptor: ProceduralBlockTemplateDescriptor
+    for descriptor in get_dynamic_library_procedural_descriptors():
+        editable_types.add(descriptor.logic_tpe)
     entry: ProceduralLogicBase
     for entry in block.procedural_logic:
         logic_tpe: ProceduralLogicType = entry.logic_tpe
-        fields: List[ProceduralFieldDraft] = get_procedural_fields(entry)
-        lines.append(f"    {logic_tpe.value}(")
-        code_keyword: str
-        field_key: str
-        for code_keyword, field_key in get_procedural_code_field_pairs(logic_tpe):
-            field: ProceduralFieldDraft = get_procedural_field_by_key(fields, field_key)
+        if logic_tpe in editable_types:
+            fields: List[ProceduralFieldDraft] = get_procedural_fields(entry)
+            lines.append(f"    {logic_tpe.value}(")
+            code_keyword: str
+            field_key: str
+            for code_keyword, field_key in get_procedural_code_field_pairs(logic_tpe):
+                field: ProceduralFieldDraft = get_procedural_field_by_key(fields, field_key)
+                lines.append(
+                    f"        {code_keyword}={serialize_procedural_code_field(field)},"
+                )
+            lines.append(f"        name={entry.name!r},")
+            lines.append("    ),")
+        else:
+            # Provider-owned entries remain attached to the Block while this
+            # source view exposes only catalogue entries that users can edit.
             lines.append(
-                f"        {code_keyword}={serialize_procedural_code_field(field)},"
+                f"    # Internal {logic_tpe.value} entry is preserved outside editable source."
             )
-        lines.append(f"        name={entry.name!r},")
-        lines.append("    ),")
     lines.append("]")
     return lines
 
@@ -1990,6 +2007,10 @@ class RuntimeLogicDraftCollection:
         self._root: Block = root
         self._modes: List[RuntimeModeDraft] = list()
         self._entries: List[ProceduralLogicDraft] = list()
+        editable_types: set[ProceduralLogicType] = set()
+        descriptor: ProceduralBlockTemplateDescriptor
+        for descriptor in get_dynamic_library_procedural_descriptors():
+            editable_types.add(descriptor.logic_tpe)
         owner: Block
         for owner in root.get_all_blocks():
             mode_variable: Var
@@ -2003,13 +2024,18 @@ class RuntimeLogicDraftCollection:
                 ))
             entry: ProceduralLogicBase
             for entry in owner.procedural_logic:
-                self._entries.append(ProceduralLogicDraft(
-                    owner,
-                    entry.logic_tpe,
-                    entry.name,
-                    get_procedural_fields(entry),
-                    entry,
-                ))
+                if entry.logic_tpe in editable_types:
+                    self._entries.append(ProceduralLogicDraft(
+                        owner,
+                        entry.logic_tpe,
+                        entry.name,
+                        get_procedural_fields(entry),
+                        entry,
+                    ))
+                else:
+                    # Provider-owned entries stay on the Block and never become
+                    # drafts in the catalogue-backed source editor.
+                    pass
 
     def replace_code_drafts(
             self,

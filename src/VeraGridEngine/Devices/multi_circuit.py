@@ -807,7 +807,6 @@ class MultiCircuit(Assets):
                 'wire_types',
                 'underground_cable_constructions',
                 'underground_cable_types',
-                'dc_cable_types',
                 'sequence_line_types',
                 'transformer_types',
                 'substations',
@@ -840,6 +839,7 @@ class MultiCircuit(Assets):
                 'modelling_authorities',
                 'diagrams',
                 'var_factory',
+                'manufacturer_native_models',
                 'rms_models',
                 'emt_models',
                 'fmu_templates',
@@ -3465,15 +3465,13 @@ class MultiCircuit(Assets):
         for tpe in data.underground_cable_constructions:
             self.add_underground_cable(tpe)
 
-        for tpe in data.dc_cable_types:
-            self.add_dc_cable_type(tpe)
-
         for tpe in data.wire_types:
             self.add_wire(tpe)
 
         for tpe in data.sequence_line_types:
             self.add_sequence_line(tpe)
 
+        self.manufacturer_native_models += data.manufacturer_native_models
         self.rms_models += data.rms_models
         self.emt_models += data.emt_models
         self.fmu_templates += data.fmu_templates

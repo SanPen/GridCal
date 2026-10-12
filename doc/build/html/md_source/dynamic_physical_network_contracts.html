@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dynamic physical network contracts &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>Dynamic physical network contracts &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -73,39 +73,19 @@
 <li class="toctree-l1"><a class="reference internal" href="reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="dynamic_simulations.html">🧲 Dynamic simulations</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html">⏱️ RMS simulations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html">🔬 EMT simulations</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="dynamic_model_library_index.html">📚 Dynamic model library</a><ul class="current">
-<li class="toctree-l3 current"><a class="reference internal" href="dynamic_model_library_index.html#authoring-models">Authoring models</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="dae_block_authoring.html">Writing DAE models in VeraGrid</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">Dynamic physical network contracts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-simulation-theory">1. Dynamic simulation theory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-editor-and-model-construction">2. Dynamic editor and model construction</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dynamic_simulations.html#dynamic-model-library">3. Dynamic model library</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="dynamic_model_library_index.html">📚 Dynamic model library</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="dynamic_model_library_index.html#authoring-models">Authoring models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dynamic_model_library_index.html#device-templates">Device templates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dynamic_model_library_index.html#reusable-blocks-and-logic">Reusable blocks and logic</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="dynamic_model_library_index.html#device-templates">Device templates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dynamic_model_library_index.html#reusable-blocks-and-logic">Reusable blocks and logic</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#why-dynamic-simulations-are-different-from-static-simulations">Why dynamic simulations are different from static simulations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#rms-and-emt">RMS and EMT</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dae-formulation">DAE formulation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#from-blocks-to-equations-in-veragrid">From blocks to equations in VeraGrid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#symbolic-numeric-approach">Symbolic-numeric approach</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-blocks-in-veragrid">Dynamic blocks in VeraGrid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#initialization">Initialization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#initialization-references">Initialization references</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#solvers-and-integration-methods">Solvers and integration methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#events-and-simulation-scenarios">Events and simulation scenarios</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#settings">Settings</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#results">Results</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#api-workflow-overview">API workflow overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#rms-example-from-scripting">RMS example from scripting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#emt-example-from-scripting">EMT example from scripting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#working-with-templates-and-model-editors">Working with templates and model editors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#importing-dynamic-models-from-external-tools">Importing dynamic models from external tools</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#benchmarks-and-validation">Benchmarks and validation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#best-practices">Best practices</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#common-pitfalls">Common pitfalls</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#references">References</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#recommended-reading-paths">Recommended reading paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#end-to-end-workflow">End-to-end workflow</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
@@ -314,29 +294,28 @@ meters must resolve an exact device terminal, including the special retained
 series-branch resolution used when PowerFactory omits a native valve row. An
 ambiguous topology produces no fallback binding.</p>
 </section>
-<section id="dc-cable-template-ownership">
-<h2>DC cable template ownership<a class="headerlink" href="#dc-cable-template-ownership" title="Link to this heading"></a></h2>
-<p>Cable construction data does not belong to generic <code class="docutils literal notranslate"><span class="pre">Line</span></code>, because a line is
-not necessarily a cable. A <code class="docutils literal notranslate"><span class="pre">DcCableType</span></code> is associated with <code class="docutils literal notranslate"><span class="pre">DcLine</span></code>, never
-with <code class="docutils literal notranslate"><span class="pre">Line</span></code>, and owns the physical resistance, inductance, and capacitance per
-unit length together with its ratings. <code class="docutils literal notranslate"><span class="pre">DcLine</span></code> owns the installed length and
-the applied template reference.</p>
-<p>A source line type becomes a <code class="docutils literal notranslate"><span class="pre">DcCableType</span></code> only when the source explicitly
-classifies that construction as a cable. Declaring only that the system is DC
-does not establish cable construction. A missing or contradictory installation
-classification must not be replaced by a parser initializer or inferred from
-the type name, resistance, reactance, capacitance, rating, or voltage.</p>
-<p>An importer may derive physical inductance and capacitance from source
-reactance, susceptance, and their positive reference frequency. Neither
-resistance, length, rating, nor nominal voltage can reconstruct missing cable
-geometry. The importer therefore creates and applies a <code class="docutils literal notranslate"><span class="pre">DcCableType</span></code> only when
-the required source values are complete; it does not persist invented zeros or
-a runtime fallback as physical asset data.</p>
-<p>When no complete DC cable template is available, the <code class="docutils literal notranslate"><span class="pre">DcLine</span></code> remains without
-one. RMS must look for its established model default, report the missing value
-and chosen fallback through <code class="docutils literal notranslate"><span class="pre">Logger</span></code>, and continue. A resistive reduction may
-omit cable energy states, but it must not claim that the physical inductance or
-capacitance is known to be zero.</p>
+<section id="shared-cable-system-ownership-for-dc-branches">
+<h2>Shared Cable System ownership for DC branches<a class="headerlink" href="#shared-cable-system-ownership-for-dc-branches" title="Link to this heading"></a></h2>
+<p>Cable construction belongs to <code class="docutils literal notranslate"><span class="pre">UndergroundCableType</span></code> (<strong>Cable</strong>). Installation
+geometry and equivalent parameters belong to <code class="docutils literal notranslate"><span class="pre">UndergroundLineType</span></code> (<strong>Cable
+System</strong>), shared by AC <code class="docutils literal notranslate"><span class="pre">Line</span></code> and DC <code class="docutils literal notranslate"><span class="pre">DcLine</span></code>. <code class="docutils literal notranslate"><span class="pre">DcLine</span></code> owns its installed length,
+selected <code class="docutils literal notranslate"><span class="pre">dc_conductor</span></code> and applied system reference.</p>
+<p>For physical systems, DC resistance comes from the selected core’s active DC
+resistance representation. L/C come from the diagonal of the existing reduced
+Z/Y matrices at the system’s reference frequency. This is a scalar equivalent;
+mutual coupling between DC branches and a new sheath/return model are outside
+this change. See <a class="reference internal" href="modelling.html#applying-cable-system-to-a-dc-line"><span class="std std-ref">Applying Cable System to a DC line</span></a>.</p>
+<p>DC DGS import still requires explicit, consistent cable classification and
+complete R/X/C-or-B/frequency evidence. It preserves the former conversions
+and stores a parameter-only Cable System without inventing geometry. <code class="docutils literal notranslate"><span class="pre">C</span></code> in
+the shared catalogue uses µF/km; <code class="docutils literal notranslate"><span class="pre">get_dc_parameters()</span></code> supplies F/km and H/km.
+<code class="docutils literal notranslate"><span class="pre">get_dc_values()</span></code> retains the former DC per-unit-seconds conversion.</p>
+<p>Incomplete source types leave <code class="docutils literal notranslate"><span class="pre">DcLine</span></code> without a cable template. The existing
+dynamic fallback reports missing data and may use a resistive reduction; it
+does not persist unknown energy parameters as measured zeros. Existing RMS/EMT
+model ownership and parameter mapping are unchanged by the catalogue merger.
+Legacy DC catalogue records migrate before reference resolution, preserving
+identifiers and dynamic associations. New files contain the common catalogue.</p>
 </section>
 <section id="dgs-vsc-ownership">
 <h2>DGS VSC ownership<a class="headerlink" href="#dgs-vsc-ownership" title="Link to this heading"></a></h2>

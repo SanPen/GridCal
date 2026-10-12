@@ -996,6 +996,16 @@ class ElmFeeder(DGSElement):
         self.outserv: int = 0
 
 
+class PowerFactoryGeneratorTechnology(IntEnum):
+    """Native ElmGenstat technology selector, in PowerFactory's declared order."""
+
+    ThreePhase = 0
+    ThreePhaseEarth = 1
+    SinglePhaseEarth = 2
+    SinglePhaseNeutral = 3
+    SinglePhasePhase = 4
+
+
 class ElmGenstat(DGSElement):
     __slots__ = (
         "ID",
@@ -1019,6 +1029,12 @@ class ElmGenstat(DGSElement):
         "usetp",
         "cQ_min",
         "cQ_max",
+        "phtech",
+        "nneutral",
+        "r0",
+        "x0",
+        "r2",
+        "x2",
     )
     element_type = 'ElmGenstat'
     properties_list = [
@@ -1043,6 +1059,12 @@ class ElmGenstat(DGSElement):
         DgsProperty('usetp', 'r', 'Specified voltage setpoint [pu]', py_name='usetp'),
         DgsProperty('cQ_min', 'r', 'Minimum reactive power to inject/absorb [MVAr]', py_name='cQ_min'),
         DgsProperty('cQ_max', 'r', 'Maximum reactive power to inject/absorb [MVAr]', py_name='cQ_max'),
+        DgsProperty('phtech', 'i', 'Generator phase technology', py_name='phtech', optional=True),
+        DgsProperty('nneutral', 'i', 'Neutral conductor connection', py_name='nneutral', optional=True),
+        DgsProperty('r0', 'r', 'Zero-sequence resistance on machine base [pu]', py_name='r0', optional=True),
+        DgsProperty('x0', 'r', 'Zero-sequence reactance on machine base [pu]', py_name='x0', optional=True),
+        DgsProperty('r2', 'r', 'Load-flow negative-sequence resistance on machine base [pu]', py_name='r2', optional=True),
+        DgsProperty('x2', 'r', 'Load-flow negative-sequence reactance on machine base [pu]', py_name='x2', optional=True),
     ]
 
     def __init__(self) -> None:
@@ -1067,6 +1089,12 @@ class ElmGenstat(DGSElement):
         self.usetp: float = 0.0
         self.cQ_min: float = 0.0
         self.cQ_max: float = 0.0
+        self.phtech: int | None = None
+        self.nneutral: int | None = None
+        self.r0: float | None = None
+        self.x0: float | None = None
+        self.r2: float | None = None
+        self.x2: float | None = None
 
 
 # Alex review required: minimal source schema used to build the final three-phase VSC.
@@ -1377,6 +1405,7 @@ class ElmZpu(DGSElement):
         "ratfac",
         "r_pu",
         "x_pu",
+        "r0_pu", "x0_pu", "r2_pu", "x2_pu", "iz2eqz1", "iequalz",
         "outserv",
     )
     element_type = 'ElmZpu'
@@ -1393,6 +1422,14 @@ class ElmZpu(DGSElement):
                     py_name='r_pu'),
         DgsProperty('x_pu', 'r', 'Positive-Sequence Impedance i-j: Imaginary Part in p.u.',
                     py_name='x_pu'),
+        DgsProperty('r0_pu', 'r', 'Zero-sequence resistance in p.u.', py_name='r0_pu', optional=True),
+        DgsProperty('x0_pu', 'r', 'Zero-sequence reactance in p.u.', py_name='x0_pu', optional=True),
+        DgsProperty('r2_pu', 'r', 'Negative-sequence resistance in p.u.', py_name='r2_pu', optional=True),
+        DgsProperty('x2_pu', 'r', 'Negative-sequence reactance in p.u.', py_name='x2_pu', optional=True),
+        DgsProperty('iz2eqz1', 'i', 'Negative-sequence impedance equals positive sequence',
+                    py_name='iz2eqz1', optional=True),
+        DgsProperty('iequalz', 'i', 'Equal forward and reverse series impedances',
+                    py_name='iequalz', optional=True),
 
         DgsProperty('outserv', 'i', 'Out of Service', py_name='outserv'),
     ]
@@ -1408,6 +1445,12 @@ class ElmZpu(DGSElement):
         self.ratfac: float = 0.0
         self.r_pu: float = 0.0
         self.x_pu: float = 0.0
+        self.r0_pu: float | None = None
+        self.x0_pu: float | None = None
+        self.r2_pu: float | None = None
+        self.x2_pu: float | None = None
+        self.iz2eqz1: int | None = None
+        self.iequalz: int | None = None
 
         self.outserv: int = 0
 
@@ -2013,6 +2056,7 @@ class ElmSite(DGSElement):
         "sType",
         "GPSlat",
         "GPSlon",
+        "pDiagram",
     )
     element_type = 'ElmSite'
     properties_list = [
@@ -2050,6 +2094,9 @@ class ElmSubstat(DGSElement):
         "sType",
         "GPSlat",
         "GPSlon",
+        "cpArea",
+        "cpZone",
+        "pDiagram",
     )
     element_type = 'ElmSubstat'
     properties_list = [
@@ -6223,6 +6270,8 @@ class ElmTow(DGSElement):
         "pGeo",
         "plines",
         "dpolar",
+        "dphasing",
+        "ctransp",
     )
 
     element_type = 'ElmTow'
@@ -6250,6 +6299,8 @@ class ElmTow(DGSElement):
         self.pGeo: List[str | None] = list()  # Pointers to TypTow/TypGeo
         self.plines: List[str | None] = list()  # Pointers to ElmLne / ElmLneRoute
         self.dpolar: List[float] = list()  # Polarity flags
+        self.dphasing: List[int] = list()  # Physical phase arrangement per circuit
+        self.ctransp: List[float] = list()  # Transposition per circuit
 
     @classmethod
     def parse_line(cls, line: str, header_map: dict[str, int]):
@@ -6294,5 +6345,18 @@ class ElmTow(DGSElement):
             raw_v = _dgs_get(parts, header_map, f'dpolar:{i}')
             raw_v = raw_v.strip() if raw_v is not None else ''
             obj.dpolar.append(float(raw_v.replace(',', '.')) if raw_v != '' and raw_v != '*' else 0.0)
+
+        raw_count: str | None = _dgs_get(parts, header_map, 'dphasing:SIZEROW')
+        count: int = int(float(raw_count.replace(',', '.'))) if raw_count is not None and raw_count.strip() else 0
+        for i in range(count):
+            raw_value: str | None = _dgs_get(parts, header_map, f'dphasing:{i}')
+            obj.dphasing.append(int(float(raw_value.replace(',', '.')))
+                                if raw_value is not None and raw_value.strip() not in ('', '*') else 0)
+        raw_count = _dgs_get(parts, header_map, 'ctransp:SIZEROW')
+        count = int(float(raw_count.replace(',', '.'))) if raw_count is not None and raw_count.strip() else 0
+        for i in range(count):
+            raw_value = _dgs_get(parts, header_map, f'ctransp:{i}')
+            obj.ctransp.append(float(raw_value.replace(',', '.'))
+                               if raw_value is not None and raw_value.strip() not in ('', '*') else 0.0)
 
         return obj

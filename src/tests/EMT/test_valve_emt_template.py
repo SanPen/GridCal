@@ -15,6 +15,7 @@ from VeraGridEngine.Simulations.EMT.problems.emt_problem_template import EmtProb
 from VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver import BoundaryUpdateWrapper, JitSymbolicSolver
 from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
 from VeraGridEngine.Simulations.PowerFlow3ph.power_flow_driver_3ph import PowerFlowDriver3Ph
+from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from VeraGridEngine.Utils.Symbolic.bus_emt_template import get_bus_emt_template
 from VeraGridEngine.Templates.Emt.dc_line_emt_template import get_dc_line_emt_template
 from VeraGridEngine.Templates.Emt.dc_load_emt_template import get_dc_load_emt_template
@@ -500,7 +501,7 @@ def _run_power_flow(grid: gce.MultiCircuit) -> Tuple[object, object]:
     return pf_results, pf_results_3ph
 
 
-def _run_balanced_power_flow(grid: gce.MultiCircuit) -> object:
+def _run_balanced_power_flow(grid: gce.MultiCircuit) -> PowerFlowResults:
     """
     Run only the balanced PF used by the lightweight runtime valve/DC-line tests.
 
@@ -1181,7 +1182,7 @@ def test_valve_template_initializes_mode_from_dc_power_flow_seed() -> None:
         grid=grid,
         options=_build_default_emt_options(),
         pf_results=pf_results,
-        pf_results_3Ph=pf_results_3ph,
+        pf_results_3ph=pf_results_3ph,
     )
 
     mode_idx: int = _get_runtime_param_index_by_name(problem, "path_mode")
@@ -1214,7 +1215,7 @@ def test_dc_line_runtime_case_responds_to_load_step() -> None:
         grid=grid,
         options=_build_default_emt_options(),
         pf_results=pf_results,
-        pf_results_3Ph=None,
+        pf_results_3ph=None,
     )
     solver = _create_symbolic_solver(problem, simulation_time_s=3.0e-3, time_step_s=1.0e-5)
 
@@ -1274,7 +1275,7 @@ def test_dc_line_runtime_case_matches_pf_initialization() -> None:
         grid=grid,
         options=_build_default_emt_options(),
         pf_results=pf_results,
-        pf_results_3Ph=None,
+        pf_results_3ph=None,
     )
 
     x0 = problem.get_x0()
@@ -1315,7 +1316,7 @@ def test_igbt_runtime_case_follows_gate_schedule() -> None:
         grid=grid,
         options=_build_default_emt_options(),
         pf_results=pf_results,
-        pf_results_3Ph=None,
+        pf_results_3ph=None,
     )
     solver = _create_symbolic_solver(problem, simulation_time_s=4.0e-3, time_step_s=1.0e-5)
 

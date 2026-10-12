@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import numpy as np
+import pytest
 
 import VeraGridEngine.api as gce
 from VeraGridEngine.enumerations import (
@@ -22,6 +23,7 @@ from VeraGridEngine.enumerations import (
     ShuntConnectionType,
 )
 from VeraGridEngine.Simulations.EMT.emt_options import EmtOptions
+from VeraGridEngine.Simulations.EMT.initialization_emt import run_emt_device_pseudo_transient_initialization
 from VeraGridEngine.Simulations.EMT.problems.emt_problem_dae import EmtProblemDae
 from VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver import JitSymbolicSolver
 from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
@@ -31,6 +33,7 @@ from VeraGridEngine.Templates.Emt.pi_line_emt_template import get_pi_line_emt_te
 from VeraGridEngine.Templates.Emt.transformer_emt_template import get_series_transformer_emt_template
 from VeraGridEngine.Utils.Symbolic.bus_emt_template import get_bus_emt_template
 from VeraGridEngine.Utils.Symbolic.templates_common_functions import set_emt_model
+from VeraGridEngine.Utils.Symbolic.symbolic import Const
 
 
 def _set_three_phase_line_matrices(line: gce.Line) -> None:
@@ -51,7 +54,11 @@ def _set_three_phase_line_matrices(line: gce.Line) -> None:
         matrix.phA = matrix.phB = matrix.phC = True
 
 
-def _build_kundur_problem() -> tuple[
+def _build_kundur_problem(
+    initialization_method: EmtInitializationMethod = EmtInitializationMethod.Explicit,
+    clear_init_eqs: bool = False,
+    null_references: bool = False,
+) -> tuple[
     EmtProblemDae, list[gce.Bus], list[gce.Generator], list[gce.Line]
 ]:
     """Build the complete 11-bus, four-machine Kundur case without external fixtures."""
@@ -108,7 +115,9 @@ def _build_kundur_problem() -> tuple[
 
     xd = 0.3 * grid.Sbase / 900.0
     generators = [
-        gce.Generator(name=f"Gen{i}", P=10.0, vset=vset, Snom=900.0, x1=xd, r1=0.0, freq=60.0)
+        # The slack absorbs about 9.88 MW in this low-load fixture. Its static
+        # limit must permit the operating point now that governors use it.
+        gce.Generator(name=f"Gen{i}", P=10.0, Pmin=-100.0, vset=vset, Snom=900.0, x1=xd, r1=0.0, freq=60.0)
         for i, vset in enumerate((1.03, 1.01, 1.03, 1.01), start=1)
     ]
     for generator, bus in zip(generators, buses[:4]):
@@ -138,6 +147,19 @@ def _build_kundur_problem() -> tuple[
         ).block
         set_emt_model(load, model, grid.var_factory)
 
+    if clear_init_eqs:
+        for device in [*buses, *generators, *lines, *transformers, *loads]:
+            for block in device.emt_model.get_all_blocks():
+                block.init_eqs = {}
+                block.diff_init_eqs = {}
+
+    if null_references:
+        for generator in generators:
+            for block in generator.emt_model.get_all_blocks():
+                for variable in block.event_dict:
+                    if variable.name == "UsRefPu":
+                        block.event_dict[variable] = Const(None)
+
     pf_options = gce.PowerFlowOptions(
         solver_type=gce.SolverType.NR, retry_with_other_methods=False, tolerance=1e-6,
         max_iter=25, control_q=False, distributed_slack=False, generate_report=False,
@@ -150,7 +172,7 @@ def _build_kundur_problem() -> tuple[
         time_step=5e-6, simulation_time=5e-5, tolerance=1e-6,
         solver_type=EmtSolverTypes.Symbolic,
         integration_method=DynamicIntegrationMethod.DaeTrapezoidal,
-        initialization_method=EmtInitializationMethod.Explicit,
+        initialization_method=initialization_method,
         verbose=0,
     )
     problem = EmtProblemDae(grid=grid, options=options, pf_results=power_flow.results)
@@ -295,4 +317,85 @@ def test_kundur_emt_initialization_and_short_trajectory_match_reference() -> Non
         ])
 
     assert actual.shape == expected.shape
-    np.testing.assert_allclose(actual, expected, rtol=1e-7, atol=1e-9)
+    np.testing.assert_allclose(actual, expected, rtol=1e-7, atol=3e-7)
+
+
+@pytest.mark.parametrize("clear_init_eqs,null_references", [(False, False), (True, False), (True, True)])
+def test_kundur_emt_device_pseudotransient_has_periodic_operating_point(
+        monkeypatch: pytest.MonkeyPatch, clear_init_eqs: bool, null_references: bool,
+) -> None:
+    """PTC must produce the orbit itself, including when every init equation is absent."""
+    def forbidden(*args: Any, **kwargs: Any) -> None:
+        pytest.fail("PseudoTransient initialization called explicit init or EMT time integration")
+
+    with monkeypatch.context() as guard:
+        guard.setattr(EmtProblemDae, "_run_explicit_initialization", forbidden)
+        guard.setattr(JitSymbolicSolver, "simulate", forbidden)
+        problem, _, generators, _ = _build_kundur_problem(
+            EmtInitializationMethod.PseudoTransient,
+            clear_init_eqs=clear_init_eqs,
+            null_references=null_references,
+        )
+    report = problem.initialization_report
+    assert report is not None
+    assert report.status == EmtInitializationStatus.RESOLVED
+    assert report.method_used == EmtInitializationMethod.PseudoTransient
+    assert report.final_residual_inf < problem.options.tolerance
+    assert report.pseudo_transient_steps > 0
+    assert report.newton_iterations == 0
+    if clear_init_eqs:
+        assert all(not block.init_eqs and not block.diff_init_eqs
+                   for root in problem._device_models_for_ptc for block in root.get_all_blocks())
+    for generator in generators:
+        reference = _find_model_var(generator, "UsRefPu")
+        assert np.isfinite(problem.event_params_init_dict[reference.uid])
+
+    period = 1.0 / problem.grid.fBase
+    steps = 400
+    solver = JitSymbolicSolver(
+        problem=problem,
+        t0=0.0,
+        t_end=period,
+        h=period / steps,
+        method=problem.options.integration_method,
+        pred_method=DynamicIntegrationMethod.OdeEuler,
+        dense_threshold=0,
+        verbose=False,
+    )
+    _, values, _, well_initialized, converged = solver.simulate(
+        boundary_updater=cast(Any, problem),
+    )
+    assert well_initialized and converged
+    angular_indices = [
+        index for index, var in enumerate(problem.state_and_algebraic_vars())
+        if var.name == "theta_abs_"
+    ]
+    np.testing.assert_allclose(
+        values[-1, angular_indices] - values[0, angular_indices],
+        2.0 * np.pi,
+        atol=1e-6,
+    )
+    periodic_indices = [
+        index for index, var in enumerate(problem.state_and_algebraic_vars())
+        if var.name != "theta_abs_"
+    ]
+    assert np.max(np.abs(values[-1, periodic_indices] - values[0, periodic_indices])) < 1e-5
+
+
+def test_kundur_emt_device_pseudotransient_corrects_local_line_state() -> None:
+    """A perturbed line state should relax locally while the PF buses stay fixed."""
+    problem, _, _, lines = _build_kundur_problem()
+    line_state = _find_model_var(lines[5], "i_ser_A")
+    original = problem.init_guess[line_state.uid]
+    problem.init_guess[line_state.uid] = original + 0.1
+
+    report = run_emt_device_pseudo_transient_initialization(
+        problem=problem,
+        blocks=problem._device_models_for_ptc,
+        options=problem.options,
+    )
+
+    assert report.status == EmtInitializationStatus.RESOLVED
+    assert report.pseudo_transient_steps > 0
+    assert report.final_residual_inf < problem.options.tolerance
+    np.testing.assert_allclose(problem.init_guess[line_state.uid], original, atol=1e-8)

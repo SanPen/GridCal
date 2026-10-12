@@ -27,8 +27,8 @@ from fmpy.model_description import (
 )
 from fmpy.template import create_fmu
 
-from VeraGridEngine.IO.fmu.exporter.packager import package_fmu
-from VeraGridEngine.IO.fmu.importer.native_binary import resolve_fmi_three_host_binary
+from VeraGridEngine.IO.fmu.archive import package_fmu
+from VeraGridEngine.IO.fmu.native_binary import resolve_fmi_three_host_binary
 from tests.FMI.cmake_process import (
     FmiThreeCmakeCommandResult,
     run_fmi_three_cmake_command,

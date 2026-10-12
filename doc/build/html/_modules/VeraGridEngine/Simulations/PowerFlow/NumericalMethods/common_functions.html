@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -69,7 +69,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -112,7 +112,28 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">csc_matrix</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.basic_structures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">CscMat</span><span class="p">,</span> <span class="n">CxMat</span><span class="p">,</span> <span class="n">BoolVec</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeneratorType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.NumericalMethods.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">fortescue_012_to_abc</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span>
+
+
+<div class="viewcode-block" id="asynchronous_impedance">
+<a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.asynchronous_impedance">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">asynchronous_impedance</span><span class="p">(</span><span class="n">slip</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Rs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Xs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Xm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                          <span class="n">Rr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Xr</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Return the existing single-cage equivalent on the machine base.</span>
+
+<span class="sd">    :param slip: Sequence slip (s for positive sequence, 2-s for negative).</span>
+<span class="sd">    :param Rs: Stator resistance in pu.</span>
+<span class="sd">    :param Xs: Stator reactance in pu.</span>
+<span class="sd">    :param Xm: Magnetising reactance in pu.</span>
+<span class="sd">    :param Rr: Rotor resistance in pu.</span>
+<span class="sd">    :param Xr: Rotor reactance in pu.</span>
+<span class="sd">    :return: Terminal sequence impedance in pu.</span>
+<span class="sd">    """</span>
+    <span class="n">zr</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="n">Rr</span> <span class="o">/</span> <span class="n">slip</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">Xr</span>
+    <span class="n">zpar</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">Xm</span> <span class="o">*</span> <span class="n">zr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">Xm</span> <span class="o">+</span> <span class="n">zr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Rs</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">Xs</span> <span class="o">+</span> <span class="n">zpar</span></div>
+
 
 
 <div class="viewcode-block" id="active_power_mismatch">
@@ -126,7 +147,7 @@
                           <span class="n">Xr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                           <span class="n">P</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                           <span class="n">Sr</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param slip:</span>
 <span class="sd">    :param u:</span>
@@ -138,12 +159,10 @@
 <span class="sd">    :param P:</span>
 <span class="sd">    :param Sr:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">Zr</span> <span class="o">=</span> <span class="n">Rr</span> <span class="o">/</span> <span class="n">slip</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">Xr</span>
-    <span class="n">Zpar</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">Xm</span> <span class="o">*</span> <span class="n">Zr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">Xm</span> <span class="o">+</span> <span class="n">Zr</span><span class="p">)</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">Rs</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">Xs</span> <span class="o">+</span> <span class="n">Zpar</span>
-    <span class="n">i</span> <span class="o">=</span> <span class="n">u</span> <span class="o">/</span> <span class="n">z</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="o">-</span><span class="n">u</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">z</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="n">asynchronous_impedance</span><span class="p">(</span><span class="n">slip</span><span class="p">,</span> <span class="n">Rs</span><span class="p">,</span> <span class="n">Xs</span><span class="p">,</span> <span class="n">Xm</span><span class="p">,</span> <span class="n">Rr</span><span class="p">,</span> <span class="n">Xr</span><span class="p">)</span>
+    <span class="n">i</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="n">u</span> <span class="o">/</span> <span class="n">z</span>
+    <span class="n">s</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="o">-</span><span class="n">u</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">real</span> <span class="o">-</span> <span class="n">P</span> <span class="o">/</span> <span class="n">Sr</span></div>
 
 
@@ -151,7 +170,7 @@
 <div class="viewcode-block" id="solve_slip">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.solve_slip">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">solve_slip</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="n">max_iter</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">Rs</span><span class="p">,</span> <span class="n">Xs</span><span class="p">,</span> <span class="n">Xm</span><span class="p">,</span> <span class="n">Rr</span><span class="p">,</span> <span class="n">Xr</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">Sr</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param f:</span>
 <span class="sd">    :param a:</span>
@@ -167,13 +186,13 @@
 <span class="sd">    :param P:</span>
 <span class="sd">    :param Sr:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># TODO: Poner typos a todo y no usar punteros a funciones que no pintan nada</span>
     <span class="n">fa</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">Rs</span><span class="p">,</span> <span class="n">Xs</span><span class="p">,</span> <span class="n">Xm</span><span class="p">,</span> <span class="n">Rr</span><span class="p">,</span> <span class="n">Xr</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">Sr</span><span class="p">)</span>
     <span class="n">fb</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">Rs</span><span class="p">,</span> <span class="n">Xs</span><span class="p">,</span> <span class="n">Xm</span><span class="p">,</span> <span class="n">Rr</span><span class="p">,</span> <span class="n">Xr</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">Sr</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">fa</span> <span class="o">*</span> <span class="n">fb</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No sign change in interval.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No sign change in interval."</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iter</span><span class="p">):</span>
         <span class="n">c</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
@@ -203,7 +222,7 @@
                        <span class="n">Xr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                        <span class="n">P</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                        <span class="n">Sr</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param u:</span>
 <span class="sd">    :param Rs:</span>
@@ -214,16 +233,51 @@
 <span class="sd">    :param P:</span>
 <span class="sd">    :param Sr:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">slip</span> <span class="o">=</span> <span class="n">solve_slip</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="n">active_power_mismatch</span><span class="p">,</span>
                       <span class="n">a</span><span class="o">=-</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">b</span><span class="o">=-</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
                       <span class="n">u</span><span class="o">=</span><span class="n">u</span><span class="p">,</span> <span class="n">Rs</span><span class="o">=</span><span class="n">Rs</span><span class="p">,</span> <span class="n">Xs</span><span class="o">=</span><span class="n">Xs</span><span class="p">,</span> <span class="n">Xm</span><span class="o">=</span><span class="n">Xm</span><span class="p">,</span> <span class="n">Rr</span><span class="o">=</span><span class="n">Rr</span><span class="p">,</span> <span class="n">Xr</span><span class="o">=</span><span class="n">Xr</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">Sr</span><span class="o">=</span><span class="n">Sr</span><span class="p">)</span>
-    <span class="n">Zr</span> <span class="o">=</span> <span class="n">Rr</span> <span class="o">/</span> <span class="n">slip</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">Xr</span>
-    <span class="n">Zpar</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">Xm</span> <span class="o">*</span> <span class="n">Zr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">Xm</span> <span class="o">+</span> <span class="n">Zr</span><span class="p">)</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">Rs</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">Xs</span> <span class="o">+</span> <span class="n">Zpar</span>
+    <span class="n">z</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="n">asynchronous_impedance</span><span class="p">(</span><span class="n">slip</span><span class="p">,</span> <span class="n">Rs</span><span class="p">,</span> <span class="n">Xs</span><span class="p">,</span> <span class="n">Xm</span><span class="p">,</span> <span class="n">Rr</span><span class="p">,</span> <span class="n">Xr</span><span class="p">)</span>
     <span class="n">i</span> <span class="o">=</span> <span class="n">u</span> <span class="o">/</span> <span class="n">z</span>
     <span class="n">s</span> <span class="o">=</span> <span class="o">-</span><span class="n">u</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">imag</span> <span class="o">*</span> <span class="n">Sr</span></div>
+
+
+
+<div class="viewcode-block" id="asynchronous_gen_currents">
+<a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.asynchronous_gen_currents">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">asynchronous_gen_currents</span><span class="p">(</span><span class="n">voltage</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Rs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Xs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Xm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                              <span class="n">Rr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Xr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">P</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Sr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                              <span class="n">y0</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="mi">0</span><span class="n">j</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Compute ABC injections with one slip and the existing single-cage model.</span>
+
+<span class="sd">    :param voltage: Three phase-to-ground voltages in pu.</span>
+<span class="sd">    :param Rs: Stator resistance in machine pu.</span>
+<span class="sd">    :param Xs: Stator reactance in machine pu.</span>
+<span class="sd">    :param Xm: Magnetising reactance in machine pu.</span>
+<span class="sd">    :param Rr: Rotor resistance in machine pu.</span>
+<span class="sd">    :param Xr: Rotor reactance in machine pu.</span>
+<span class="sd">    :param P: Positive-sequence electrical active injection in MW, as in PF AS mode.</span>
+<span class="sd">    :param Sr: Machine rated power in MVA.</span>
+<span class="sd">    :param y0: Effective zero-sequence admittance in machine pu (zero for D/Y).</span>
+<span class="sd">    :return: Phase current injections in MW / pu voltage, as used by the ABC residual.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">((</span><span class="n">Rs</span><span class="p">,</span> <span class="n">Xs</span><span class="p">,</span> <span class="n">Xm</span><span class="p">,</span> <span class="n">Rr</span><span class="p">,</span> <span class="n">Xr</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">Sr</span><span class="p">,</span> <span class="n">y0</span><span class="p">)))</span> <span class="ow">or</span> <span class="n">Sr</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">Xm</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">Rr</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Asynchronous generator requires finite parameters, Snom &gt; 0, Xm &gt; 0 and Rr &gt; 0.'</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">rotation</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+    <span class="n">u1</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="n">voltage</span> <span class="o">@</span> <span class="n">rotation</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span> <span class="o">/</span> <span class="mf">3.0</span>
+    <span class="c1"># Keep the established positive-sequence P/slip law. PF AS mode adds passive</span>
+    <span class="c1"># negative/zero-sequence losses to the terminal power without redispatching P1.</span>
+    <span class="n">slip</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">solve_slip</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="n">active_power_mismatch</span><span class="p">,</span> <span class="n">a</span><span class="o">=-</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">b</span><span class="o">=-</span><span class="mf">1e-6</span><span class="p">,</span>
+                             <span class="n">tol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="n">u1</span><span class="p">,</span> <span class="n">Rs</span><span class="o">=</span><span class="n">Rs</span><span class="p">,</span> <span class="n">Xs</span><span class="o">=</span><span class="n">Xs</span><span class="p">,</span> <span class="n">Xm</span><span class="o">=</span><span class="n">Xm</span><span class="p">,</span>
+                             <span class="n">Rr</span><span class="o">=</span><span class="n">Rr</span><span class="p">,</span> <span class="n">Xr</span><span class="o">=</span><span class="n">Xr</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">Sr</span><span class="o">=</span><span class="n">Sr</span><span class="p">)</span>
+    <span class="n">z1</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="n">asynchronous_impedance</span><span class="p">(</span><span class="n">slip</span><span class="p">,</span> <span class="n">Rs</span><span class="p">,</span> <span class="n">Xs</span><span class="p">,</span> <span class="n">Xm</span><span class="p">,</span> <span class="n">Rr</span><span class="p">,</span> <span class="n">Xr</span><span class="p">)</span>
+    <span class="n">z2</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="n">asynchronous_impedance</span><span class="p">(</span><span class="mf">2.0</span><span class="o">-</span><span class="n">slip</span><span class="p">,</span> <span class="n">Rs</span><span class="p">,</span> <span class="n">Xs</span><span class="p">,</span> <span class="n">Xm</span><span class="p">,</span> <span class="n">Rr</span><span class="p">,</span> <span class="n">Xr</span><span class="p">)</span>
+    <span class="c1"># Fortescue preserves terminal coupling. This voltage-dependent injection is</span>
+    <span class="c1"># evaluated in the residual, not added again as a constant Ybus shunt.</span>
+    <span class="k">return</span> <span class="o">-</span><span class="p">(</span><span class="n">fortescue_012_to_abc</span><span class="p">(</span><span class="n">y0</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">z1</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">z2</span><span class="p">)</span> <span class="o">@</span> <span class="n">voltage</span><span class="p">)</span> <span class="o">*</span> <span class="n">Sr</span> <span class="o">/</span> <span class="mf">3.0</span></div>
 
 
 
@@ -242,9 +296,9 @@
         <span class="n">P</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
         <span class="n">Snom</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the voltage-dependent reactive power of asynchronous generators.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gen_bus_idx</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">gen_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gen_bus_idx</span><span class="p">)):</span>
@@ -279,9 +333,9 @@
         <span class="n">P</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
         <span class="n">Snom</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the voltage-dependent asynchronous generator Q summed by bus.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">q_per_bus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">q</span> <span class="o">=</span> <span class="n">compute_asynchronous_generator_q</span><span class="p">(</span><span class="n">V</span><span class="o">=</span><span class="n">V</span><span class="p">,</span>
                                          <span class="n">gen_bus_idx</span><span class="o">=</span><span class="n">gen_bus_idx</span><span class="p">,</span>
@@ -316,7 +370,7 @@
                     <span class="n">Q_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                     <span class="n">Q_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                     <span class="n">S_base</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Find the actual reactive power output for generators controlled with a voltage droop.</span>
 <span class="sd">    :param ut: Actual voltage value at the terminal [pu]</span>
 <span class="sd">    :param u_setpoint_min: Minimum voltage setpoint [pu]</span>
@@ -328,7 +382,7 @@
 <span class="sd">    :param Q_min: Minimum reactive power the converter can inject/absorb [MVAr]</span>
 <span class="sd">    :param Q_max: Maximum reactive power the converter can inject/absorb [MVAr]</span>
 <span class="sd">    :param S_base: Base power of the network [MVA]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ut</span><span class="p">)</span>
     <span class="c1"># Voltage limits</span>
     <span class="k">if</span> <span class="n">u</span> <span class="o">&gt;</span> <span class="n">u_setpoint_max</span><span class="p">:</span>
@@ -367,7 +421,7 @@
                       <span class="n">P_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                       <span class="n">P_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                       <span class="n">S_base</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Find the actual DC power output for converters controlled with a voltage droop,</span>
 <span class="sd">    where the converter terminal sits on the positive pole.</span>
 
@@ -386,7 +440,7 @@
 <span class="sd">    :param P_min: Minimum DC power the converter can inject/absorb [MW]</span>
 <span class="sd">    :param P_max: Maximum DC power the converter can inject/absorb [MW]</span>
 <span class="sd">    :param S_base: Base power of the network [MVA]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># signed pole-to-return voltage, positive for a positive pole</span>
     <span class="n">u</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">ut</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">un</span><span class="p">)</span>
 
@@ -427,7 +481,7 @@
                           <span class="n">P_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                           <span class="n">P_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                           <span class="n">S_base</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Find the actual DC power output for converters controlled with a voltage droop,</span>
 <span class="sd">    where the converter terminal sits on the negative pole</span>
 
@@ -445,7 +499,7 @@
 <span class="sd">    :param P_min: Minimum DC power the converter can inject/absorb [MW]</span>
 <span class="sd">    :param P_max: Maximum DC power the converter can inject/absorb [MW]</span>
 <span class="sd">    :param S_base: Base power of the network [MVA]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># flipped pole to return voltage, positive for a negative pole</span>
     <span class="n">u</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">un</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">ut</span><span class="p">)</span>
 
@@ -477,12 +531,12 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.polar_to_rect">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">polar_to_rect</span><span class="p">(</span><span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Va</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert polar to rectangular coordinates</span>
 <span class="sd">    :param Vm: Module</span>
 <span class="sd">    :param Va: Angle in radians</span>
 <span class="sd">    :return: Polar vector</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">Vm</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">Va</span><span class="p">)</span></div>
 
 
@@ -490,14 +544,14 @@
 <div class="viewcode-block" id="expand">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.expand">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">expand</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Expand array</span>
 <span class="sd">    :param n: number of elements</span>
 <span class="sd">    :param arr: short array</span>
 <span class="sd">    :param idx: indices in the longer array</span>
 <span class="sd">    :param default: default value for the longer array</span>
 <span class="sd">    :return: longer array</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
         <span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span>
@@ -509,14 +563,14 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.compute_zip_power">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_zip_power</span><span class="p">(</span><span class="n">S0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">I0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Y0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the equivalent power injection</span>
 <span class="sd">    :param S0: Base power (P + jQ)</span>
 <span class="sd">    :param I0: Base current (Ir + jIi)</span>
 <span class="sd">    :param Y0: Base admittance (G + jB)</span>
 <span class="sd">    :param Vm: voltage module, for the 3ph power flow the complete voltage phasor is used (Vm + Va)</span>
 <span class="sd">    :return: complex power injection</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">S0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">I0</span> <span class="o">+</span> <span class="n">Y0</span> <span class="o">*</span> <span class="n">Vm</span><span class="p">)</span> <span class="o">*</span> <span class="n">Vm</span></div>
 
 
@@ -524,14 +578,14 @@
 <div class="viewcode-block" id="compute_zip_current">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.compute_zip_current">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_zip_current</span><span class="p">(</span><span class="n">S0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">I0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Y0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the equivalent current injection</span>
 <span class="sd">    :param S0: Base power (P + jQ)</span>
 <span class="sd">    :param I0: Base current (Ir + jIi)</span>
 <span class="sd">    :param Y0: Base admittance (G + jB)</span>
 <span class="sd">    :param Vm: voltage module, for the 3ph power flow the complete voltage phasor is used (Vm + Va)</span>
 <span class="sd">    :return: complex current injection</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">I0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">S0</span> <span class="o">/</span> <span class="n">Vm</span><span class="p">)</span> <span class="o">+</span> <span class="n">Y0</span> <span class="o">*</span> <span class="n">Vm</span></div>
 
 
@@ -539,12 +593,12 @@
 <div class="viewcode-block" id="compute_power">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.compute_power">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_power</span><span class="p">(</span><span class="n">Ybus</span><span class="p">:</span> <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the power from the admittance matrix and the voltage</span>
 <span class="sd">    :param Ybus: Admittance matrix</span>
 <span class="sd">    :param V: Voltage vector</span>
 <span class="sd">    :return: Calculated power injections</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">V</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">Ybus</span> <span class="o">@</span> <span class="n">V</span><span class="p">)</span></div>
 
 
@@ -552,35 +606,13 @@
 <div class="viewcode-block" id="compute_current">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.compute_current">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_current</span><span class="p">(</span><span class="n">Ybus</span><span class="p">:</span> <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the current from the admittance matrix and the voltage</span>
 <span class="sd">    :param Ybus: Admittance matrix</span>
 <span class="sd">    :param V: Voltage vector</span>
 <span class="sd">    :return: Calculated current injections</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">Ybus</span> <span class="o">@</span> <span class="n">V</span></div>
-
-
-
-<div class="viewcode-block" id="fortescue_012_to_abc">
-<a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.fortescue_012_to_abc">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">fortescue_012_to_abc</span><span class="p">(</span><span class="n">z0</span><span class="p">:</span> <span class="nb">complex</span><span class="p">,</span> <span class="n">z1</span><span class="p">:</span> <span class="nb">complex</span><span class="p">,</span> <span class="n">z2</span><span class="p">:</span> <span class="nb">complex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert 012 to abc</span>
-<span class="sd">    :param z0: zero-sequence impedance</span>
-<span class="sd">    :param z1: positive-sequence impedance</span>
-<span class="sd">    :param z2: negative-sequence impedance</span>
-<span class="sd">    :return: abc impedance matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
-    <span class="n">Zabc</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
-        <span class="p">[</span><span class="n">z0</span> <span class="o">+</span> <span class="n">z1</span> <span class="o">+</span> <span class="n">z2</span><span class="p">,</span> <span class="n">z0</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">z1</span> <span class="o">+</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">z2</span><span class="p">,</span> <span class="n">z0</span> <span class="o">+</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">z1</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">z2</span><span class="p">],</span>
-        <span class="p">[</span><span class="n">z0</span> <span class="o">+</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">z1</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">z2</span><span class="p">,</span> <span class="n">z0</span> <span class="o">+</span> <span class="n">z1</span> <span class="o">+</span> <span class="n">z2</span><span class="p">,</span> <span class="n">z0</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">z1</span> <span class="o">+</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">z2</span><span class="p">],</span>
-        <span class="p">[</span><span class="n">z0</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">z1</span> <span class="o">+</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">z2</span><span class="p">,</span> <span class="n">z0</span> <span class="o">+</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">z1</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">z2</span><span class="p">,</span> <span class="n">z0</span> <span class="o">+</span> <span class="n">z1</span> <span class="o">+</span> <span class="n">z2</span><span class="p">]</span>
-    <span class="p">])</span>
-
-    <span class="k">return</span> <span class="n">Zabc</span></div>
 
 
 
@@ -588,7 +620,7 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.compute_fx">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_fx</span><span class="p">(</span><span class="n">Scalc</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Sbus</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">idx_dP</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">idx_dQ</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the NR-like error function</span>
 <span class="sd">    f = [∆P(pqpv), ∆Q(pq)]</span>
 <span class="sd">    :param Scalc: Calculated power injections</span>
@@ -596,7 +628,7 @@
 <span class="sd">    :param idx_dP: Array of node indices updated with dP (pvpq)</span>
 <span class="sd">    :param idx_dQ: Array of node indices updated with dQ (pq)</span>
 <span class="sd">    :return: error</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># dS = Scalc - Sbus  # compute the mismatch</span>
     <span class="c1"># return np.r_[dS[idx_dP].real, dS[idx_dQ].imag]</span>
 
@@ -624,12 +656,12 @@
 <div class="viewcode-block" id="compute_fx_error">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.compute_fx_error">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_fx_error</span><span class="p">(</span><span class="n">fx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the infinite norm of fx</span>
 <span class="sd">    this is the same as max(abs(fx))</span>
 <span class="sd">    :param fx: vector</span>
 <span class="sd">    :return: infinite norm</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span></div>
 
 
@@ -638,7 +670,7 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.get_Sf">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_Sf</span><span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">yff</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">yft</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param k:</span>
 <span class="sd">    :param Vm:</span>
@@ -648,7 +680,7 @@
 <span class="sd">    :param F:</span>
 <span class="sd">    :param T:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">f</span> <span class="o">=</span> <span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">Vm</span><span class="p">[</span><span class="n">f</span><span class="p">],</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">yff</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">+</span> <span class="n">V</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">yft</span><span class="p">[</span><span class="n">k</span><span class="p">])</span></div>
@@ -659,7 +691,7 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.get_St">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_St</span><span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">ytf</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">ytt</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param k:</span>
 <span class="sd">    :param Vm:</span>
@@ -669,7 +701,7 @@
 <span class="sd">    :param F:</span>
 <span class="sd">    :param T:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">f</span> <span class="o">=</span> <span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">Vm</span><span class="p">[</span><span class="n">t</span><span class="p">],</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">ytt</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">+</span> <span class="n">V</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">f</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">ytf</span><span class="p">[</span><span class="n">k</span><span class="p">])</span></div>
@@ -680,7 +712,7 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.get_If">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_If</span><span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">yff</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">yft</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param k:</span>
 <span class="sd">    :param V:</span>
@@ -689,7 +721,7 @@
 <span class="sd">    :param F:</span>
 <span class="sd">    :param T:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">f</span> <span class="o">=</span> <span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">f</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">yff</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">yft</span><span class="p">[</span><span class="n">k</span><span class="p">])</span></div>
@@ -700,7 +732,7 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.get_It">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_It</span><span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">ytf</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">ytt</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param k:</span>
 <span class="sd">    :param V:</span>
@@ -709,7 +741,7 @@
 <span class="sd">    :param F:</span>
 <span class="sd">    :param T:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">f</span> <span class="o">=</span> <span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">ytt</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">f</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">ytf</span><span class="p">[</span><span class="n">k</span><span class="p">])</span></div>
@@ -719,11 +751,11 @@
 <div class="viewcode-block" id="expand_magnitudes">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.expand_magnitudes">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">expand_magnitudes</span><span class="p">(</span><span class="n">magnitude</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">lookup</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    :param magnitude:</span>
 <span class="sd">    :param lookup:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_buses_total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lookup</span><span class="p">)</span>
     <span class="n">magnitude_expanded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_buses_total</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lookup</span><span class="p">):</span>
@@ -740,7 +772,7 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions.floating_star_currents">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">floating_star_currents</span><span class="p">(</span><span class="n">Va</span><span class="p">,</span> <span class="n">Vb</span><span class="p">,</span> <span class="n">Vc</span><span class="p">,</span> <span class="n">Istar_a</span><span class="p">,</span> <span class="n">Istar_b</span><span class="p">,</span> <span class="n">Istar_c</span><span class="p">,</span> <span class="n">Vn0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">complex</span><span class="p">,</span> <span class="nb">complex</span><span class="p">,</span> <span class="nb">complex</span><span class="p">,</span> <span class="nb">complex</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Given the phase voltages and currents of a floating star connected current load,</span>
 <span class="sd">    this function calculates the phase currents (Ia, Ib, Ic) and the neutral voltage (Vn),</span>
 <span class="sd">    such that they meet the condition that the current flowing through the neutral point is equal to zero,</span>
@@ -754,7 +786,7 @@
 <span class="sd">    :param Vn0: Last-iteration neutral point voltage or</span>
 <span class="sd">                just the center of the phase voltages (Va,Vb,Vc) at the first iteration</span>
 <span class="sd">    :return: Ia, Ib, Ic, Vn</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">zero_voltage</span> <span class="o">=</span> <span class="mf">1e-5</span>
     <span class="n">zero_current</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
     <span class="c1"># unknown: Vn (complex). Start from last-iter Vn0 or center of Va,Vb,Vc</span>
@@ -763,7 +795,7 @@
     <span class="n">iteration</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">max_iterations</span> <span class="o">=</span> <span class="mi">25</span>
 
-    <span class="c1"># Remove @nb.jit decorator - nested functions can&#39;t be decorated</span>
+    <span class="c1"># Remove @nb.jit decorator - nested functions can't be decorated</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Iphase</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">Istar</span><span class="p">):</span>
         <span class="n">Umag</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">Umag</span> <span class="o">&lt;</span> <span class="mf">1e-12</span><span class="p">:</span>  <span class="c1"># guard</span>
@@ -915,7 +947,7 @@
                          <span class="n">Sa</span><span class="p">,</span>
                          <span class="n">Sb</span><span class="p">,</span>
                          <span class="n">Sc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">complex</span><span class="p">,</span> <span class="nb">complex</span><span class="p">,</span> <span class="nb">complex</span><span class="p">,</span> <span class="nb">complex</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Given the phase voltages and complex powers of a floating star connected power load,</span>
 <span class="sd">    this function calculates the phase currents (Ia, Ib, Ic) and the neutral voltage (Un),</span>
 <span class="sd">    such that they meet the condition that the current flowing through the neutral point is equal to zero,</span>
@@ -927,7 +959,7 @@
 <span class="sd">    :param Sb: Phase B load complex power</span>
 <span class="sd">    :param Sc: Phase C load complex power</span>
 <span class="sd">    :return: Ia, Ib, Ic, Un</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">zero_current</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="mf">1e-10</span><span class="p">,</span> <span class="mf">1e-10</span><span class="p">)</span>
 
     <span class="c1"># A·x2 + B·x + c = 0</span>
@@ -986,7 +1018,7 @@
                                           <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                           <span class="n">bus_lookup</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                                           <span class="n">branch_lookup</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 
 <span class="sd">    :param Sbus:</span>
@@ -1005,7 +1037,7 @@
 <span class="sd">    :param bus_lookup:</span>
 <span class="sd">    :param branch_lookup:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">V_expanded</span> <span class="o">=</span> <span class="n">expand_magnitudes</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">bus_lookup</span><span class="p">)</span>
     <span class="n">Vn_floating_expanded</span> <span class="o">=</span> <span class="n">expand_magnitudes</span><span class="p">(</span><span class="n">Vn_floating</span><span class="p">,</span> <span class="n">bus_lookup</span><span class="p">)</span>
 
@@ -1072,7 +1104,7 @@
                                       <span class="n">Yshunt_bus</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                                       <span class="n">branch_rates</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                       <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param Sbus:</span>
 <span class="sd">    :param V:</span>
@@ -1087,7 +1119,7 @@
 <span class="sd">    :param branch_rates:</span>
 <span class="sd">    :param Sbase:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># power at the slack nodes</span>
     <span class="n">Sbus</span><span class="p">[</span><span class="n">vd</span><span class="p">]</span> <span class="o">=</span> <span class="n">V</span><span class="p">[</span><span class="n">vd</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">Ybus</span><span class="p">[</span><span class="n">vd</span><span class="p">,</span> <span class="p">:]</span> <span class="o">@</span> <span class="n">V</span><span class="p">)</span>
@@ -1128,7 +1160,7 @@
                                    <span class="n">active</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">tap_module</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">tap_angle</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                    <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                                    <span class="n">branch_rates</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param Sbus:</span>
 <span class="sd">    :param V:</span>
@@ -1141,7 +1173,7 @@
 <span class="sd">    :param branch_rates:</span>
 <span class="sd">    :param Sbase:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># DC power flow</span>
     <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -1197,7 +1229,7 @@
         <span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
         <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-12</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Split a per-bus reactive power quantity among online generators and batteries.</span>
 
 <span class="sd">    The function separates generator-like elements into two families:</span>
@@ -1339,7 +1371,7 @@
 <span class="sd">    :return:</span>
 <span class="sd">        Reactive power assigned to generators and batteries.</span>
 <span class="sd">    :rtype: Tuple[Vec, Vec]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># Sizes are known from the input arrays, so all memory required by the</span>
     <span class="c1"># algorithm is allocated before doing any numerical work.</span>
@@ -1643,7 +1675,7 @@
         <span class="n">enforce_q_limits</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-12</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Split solved bus reactive power between generator-like controlling devices.</span>
 
 <span class="sd">    This routine is the reactive-power post-processing counterpart of the</span>
@@ -1688,7 +1720,7 @@
 <span class="sd">    :param enforce_q_limits: Clip voltage-controller Q reports to the declared capability limits.</span>
 <span class="sd">    :param atol: Numerical zero tolerance.</span>
 <span class="sd">    :return: Tuple with generator and battery reactive power vectors.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_bus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Qbus</span><span class="p">)</span>
     <span class="n">n_gen</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gen_bus_idx</span><span class="p">)</span>
     <span class="n">n_batt</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batt_bus_idx</span><span class="p">)</span>
@@ -1915,7 +1947,7 @@
         <span class="n">Q0_batt</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
         <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-12</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Split one solved bus quantity among online generator-like devices at slack buses.</span>
 
 <span class="sd">    This helper is used after the main power-flow post-processing to reconstruct</span>
@@ -1945,7 +1977,7 @@
 <span class="sd">    :param Q0_batt: Battery baseline values kept at non-slack buses.</span>
 <span class="sd">    :param atol: Numerical zero tolerance.</span>
 <span class="sd">    :return: Tuple with generator and battery reconstructed values.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_bus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Qbus</span><span class="p">)</span>
     <span class="n">n_gen</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gen_bus_idx</span><span class="p">)</span>
     <span class="n">n_batt</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batt_bus_idx</span><span class="p">)</span>

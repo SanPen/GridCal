@@ -15,21 +15,20 @@ import zipfile
 
 import pytest
 
-from VeraGridEngine.IO.fmu.importer.bindings import FmuImportConfig
-from VeraGridEngine.IO.fmu.importer.errors import FmuArchiveError, FmuModeError
-from VeraGridEngine.IO.fmu.importer.model_description import (
+from VeraGridEngine.IO.fmu.Elements.bindings import FmuImportConfig
+from VeraGridEngine.IO.fmu.model_description import (
     FmuInterfaceMode,
     FmuModelDescription,
     FmuVariableDescription,
     FmuVariableType,
     read_fmu_model_description,
 )
-from VeraGridEngine.IO.fmu.importer.model_description_metadata import (
+from VeraGridEngine.IO.fmu.Elements.description import (
     FmiOneCoSimulationCapabilities,
 )
-from VeraGridEngine.IO.fmu.importer.native_binary import _resolve_legacy_host_binary
-from VeraGridEngine.IO.fmu.importer.runtime_host import FmuRuntimeHost, open_fmu_runtime_host
-from VeraGridEngine.IO.fmu.importer.staging import FmuStagingArea, stage_fmu_source
+from VeraGridEngine.IO.fmu.native_binary import _resolve_legacy_host_binary
+from VeraGridEngine.IO.fmu.host import FmuRuntimeHost, open_fmu_runtime_host
+from VeraGridEngine.IO.fmu.staging import FmuStagingArea, stage_fmu_source
 
 
 class _RecordingRuntime:
@@ -397,12 +396,12 @@ def test_fmi_two_integer_initialization_prevalidates_before_native_access(
                 integer_start_variable_names=("integer_input", "integer_input"),
                 integer_start_values=(-2, 3),
             )
-        with pytest.raises(FmuModeError, match="is not Integer"):
+        with pytest.raises(RuntimeError, match="is not Integer"):
             host.initialize(
                 integer_start_variable_names=("real_input",),
                 integer_start_values=(1,),
             )
-        with pytest.raises(FmuModeError, match="not writable"):
+        with pytest.raises(RuntimeError, match="not writable"):
             host.initialize(
                 integer_start_variable_names=("integer_output",),
                 integer_start_values=(1,),
@@ -490,9 +489,9 @@ def test_fmi_two_integer_access_obeys_lifecycle_and_metadata(
         model_description=object(),
         runtime=runtime,
     )
-    with pytest.raises(FmuModeError, match="live initialized runtime"):
+    with pytest.raises(RuntimeError, match="live initialized runtime"):
         host.get_integer(("integer_input",))
-    with pytest.raises(FmuModeError, match="live initialized runtime"):
+    with pytest.raises(RuntimeError, match="live initialized runtime"):
         host.set_integer(("integer_input",), (-2,))
 
     host.initialize(
@@ -508,15 +507,15 @@ def test_fmi_two_integer_access_obeys_lifecycle_and_metadata(
     host.set_integer(("integer_input",), (2147483647,))
     runtime.getInteger.return_value = [2147483647]
     assert host.get_integer(("integer_input",)) == (2147483647,)
-    with pytest.raises(FmuModeError, match="not writable during runtime"):
+    with pytest.raises(RuntimeError, match="not writable during runtime"):
         host.set_integer(("fixed_integer",), (4,))
-    with pytest.raises(FmuModeError, match="not writable during runtime"):
+    with pytest.raises(RuntimeError, match="not writable during runtime"):
         host.set_integer(("integer_output",), (4,))
     with pytest.raises(ValueError, match="Duplicate"):
         host.get_integer(("integer_input", "integer_input"))
 
     host.close()
-    with pytest.raises(FmuModeError, match="live initialized runtime"):
+    with pytest.raises(RuntimeError, match="live initialized runtime"):
         host.get_integer(("integer_input",))
 
 
@@ -733,7 +732,7 @@ def test_unconnected_version_and_mode_fail_before_staging(tmp_path: Path) -> Non
 
     fmi_three_source: Path = _write_fmi_three_fmu(tmp_path / "future.fmu")
     version_parent: Path = tmp_path / "version-runtime"
-    with pytest.raises(FmuModeError, match="supports FMI 1/2 execution only"):
+    with pytest.raises(RuntimeError, match="supports FMI 1/2 execution only"):
         open_fmu_runtime_host(
             FmuImportConfig(fmu_path=fmi_three_source, extraction_root=version_parent)
         )
@@ -745,7 +744,7 @@ def test_unconnected_version_and_mode_fail_before_staging(tmp_path: Path) -> Non
     guard_position: int = host_factory_source.index(
         "FmuRuntimeHost supports FMI 1/2 execution only"
     )
-    dependency_position: int = host_factory_source.index("_require_fmpy_module()")
+    dependency_position: int = host_factory_source.index("fmpy_module: Any = fmpy")
     native_validation_position: int = host_factory_source.index(
         "validate_native_binary("
     )
@@ -755,7 +754,7 @@ def test_unconnected_version_and_mode_fail_before_staging(tmp_path: Path) -> Non
     assert guard_position < staging_position
 
     mode_parent: Path = tmp_path / "mode-runtime"
-    with pytest.raises(FmuModeError):
+    with pytest.raises(RuntimeError, match="does not declare preferred interface ModelExchange"):
         open_fmu_runtime_host(
             FmuImportConfig(
                 fmu_path=_co_simulation_artifact(),
@@ -814,7 +813,7 @@ def test_fmi_one_cs_scheduler_capability_gate_fails_before_staging(
         with zipfile.ZipFile(source, mode="w") as archive:
             archive.writestr("modelDescription.xml", xml_text.encode("utf-8"))
         staging_parent: Path = tmp_path / f"{case_name}-staging"
-        with pytest.raises(FmuModeError, match=expected_message):
+        with pytest.raises(RuntimeError, match=expected_message):
             open_fmu_runtime_host(
                 FmuImportConfig(fmu_path=source, extraction_root=staging_parent)
             )
@@ -874,7 +873,7 @@ def test_fmi_one_cs_rejects_discard_and_pending_statuses(
     )
     host.initialized = True
 
-    with pytest.raises(FmuModeError, match=f"terminal status {terminal_status}"):
+    with pytest.raises(RuntimeError, match=f"terminal status {terminal_status}"):
         host.do_step(current_time=0.0, step_size=0.001)
     assert host.closed
     runtime.terminate.assert_called_once_with()

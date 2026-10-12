@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🏭 Nodal hosting capacity &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>🏭 Nodal hosting capacity &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -163,7 +163,7 @@ linear and non-linear optimal power flow routines.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;grids&#39;</span><span class="p">,</span> <span class="s1">&#39;IEEE 14 zip costs.veragrid&#39;</span><span class="p">)</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'data'</span><span class="p">,</span> <span class="s1">'grids'</span><span class="p">,</span> <span class="s1">'IEEE 14 zip costs.veragrid'</span><span class="p">)</span>
 <span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">FileOpen</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
 
 <span class="c1"># Linear OPF</span>
@@ -175,7 +175,7 @@ linear and non-linear optimal power flow routines.</p>
     <span class="n">capacity_nodes_idx</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">])</span>
 <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;P linear nodal capacity: &#39;</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">nodal_capacity_vars</span><span class="o">.</span><span class="n">P</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'P linear nodal capacity: '</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">nodal_capacity_vars</span><span class="o">.</span><span class="n">P</span><span class="p">)</span>
 </pre></div>
 </div>
 <blockquote>
@@ -190,7 +190,7 @@ Here, the key parameters are passed onto the `OptimalPowerFlowOptions object.</p
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">vg</span>
 
-<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;grids&#39;</span><span class="p">,</span> <span class="s1">&#39;IEEE 14 zip costs.veragrid&#39;</span><span class="p">)</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'data'</span><span class="p">,</span> <span class="s1">'grids'</span><span class="p">,</span> <span class="s1">'IEEE 14 zip costs.veragrid'</span><span class="p">)</span>
 <span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">FileOpen</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
 
 <span class="c1"># Nonlinear OPF</span>
@@ -215,7 +215,7 @@ Here, the key parameters are passed onto the `OptimalPowerFlowOptions object.</p
     <span class="n">capacity_nodes_idx</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">])</span>
 <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;P non-linear nodal capacity: &#39;</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">nodal_capacity</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'P non-linear nodal capacity: '</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">nodal_capacity</span><span class="p">)</span>
 </pre></div>
 </div>
 <blockquote>

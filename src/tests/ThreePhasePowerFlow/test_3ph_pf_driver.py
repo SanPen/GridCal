@@ -55,6 +55,11 @@ def test_three_phase_nonconvergence_preserves_branch_results(disabled_lines: tup
     # Cover the reported island split and connected grids with different branch counts.
     grid_path: Path = Path(__file__).resolve().parents[3] / "Grids_and_profiles" / "grids" / "IEEE 9 Bus.gridcal"
     grid: gce.MultiCircuit = gce.open_file(str(grid_path))
+    # Complete the old balanced fixture's missing sequence data before testing rejection.
+    generator: gce.Generator
+    for generator in grid.generators:
+        generator.R0, generator.X0 = 0.01, 0.08
+        generator.R2, generator.X2 = 0.02, 0.10
     line_idx: int
     for line_idx in disabled_lines:
         grid.lines[line_idx].active = False

@@ -106,5 +106,6 @@ device_type_icons = {
     DeviceType.RmsModelTemplateDevice.value: ":/Icons/icons/dyn_gray.png",
     DeviceType.EmtModelTemplateDevice.value: ":/Icons/icons/dyn_gray.png",
     DeviceType.FmuTemplateDevice.value: ":/Icons/icons/dyn_gray.png",
+    DeviceType.ManufacturerNativeModelDevice.value: ":/Icons/icons/dyn_gray.png",
     DeviceType.DynamicModelHostDevice.value: ":/Icons/icons/dyn_gray.png",
 }

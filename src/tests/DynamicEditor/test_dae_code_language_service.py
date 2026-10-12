@@ -18,6 +18,10 @@ from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.dynamic_procedural_l
     build_procedural_logic_call_lines,
     get_procedural_logic_help,
 )
+from VeraGrid.Gui.DynamicModelEditor.Editor.DynamicLibrary.dynamic_editor_library import (
+    get_dynamic_library_procedural_descriptors,
+)
+from VeraGridEngine.Templates.ProceduralLogicCatalog import ProceduralBlockTemplateDescriptor
 from VeraGridEngine.Utils.Symbolic.symbolic import (
     Comparison,
     Expr,
@@ -239,28 +243,28 @@ def test_procedural_output_completion_only_offers_retained_modes() -> None:
     assert get_completion_names(entries) == list(("held",))
 
 
-def test_every_procedural_type_has_a_complete_template_and_help() -> None:
-    """Every Engine-supported type must expose arguments and contextual help.
+def test_every_user_authorable_procedural_type_has_a_complete_template_and_help() -> None:
+    """Every user-authorable type must expose arguments and contextual help.
 
     :return: None.
     """
-    logic_tpe: ProceduralLogicType
-    for logic_tpe in ProceduralLogicType:
-        if logic_tpe != ProceduralLogicType.Base:
-            lines: list[str]
-            first_placeholder: str | None
-            lines, first_placeholder = build_procedural_logic_call_lines(logic_tpe)
-            source: str = "\n".join(lines)
-            help_text: str = get_procedural_logic_help(logic_tpe)
+    # The Library descriptor inventory is the authoring boundary shared by
+    # completion, lint, help, and the graphical editor.
+    descriptor: ProceduralBlockTemplateDescriptor
+    for descriptor in get_dynamic_library_procedural_descriptors():
+        logic_tpe: ProceduralLogicType = descriptor.logic_tpe
+        lines: list[str]
+        first_placeholder: str | None
+        lines, first_placeholder = build_procedural_logic_call_lines(logic_tpe)
+        source: str = "\n".join(lines)
+        help_text: str = get_procedural_logic_help(logic_tpe)
 
-            assert lines[0] == f"{logic_tpe.value}("
-            assert lines[-1] == "),"
-            assert "name=" in source
-            assert "Named arguments:" in help_text
-            if first_placeholder is not None:
-                assert first_placeholder in source
-            else:
-                pass
+        assert lines[0] == f"{logic_tpe.value}("
+        assert lines[-1] == "),"
+        assert "name=" in source
+        assert "Named arguments:" in help_text
+        if first_placeholder is not None:
+            assert first_placeholder in source
         else:
             pass
 

@@ -27,9 +27,20 @@ def build_emt_problem(grid: MultiCircuit,
                       pf_results: PowerFlowResults | None = None,
                       pf_results_3ph: PowerFlowResults3Ph | None = None,
                       progress_signal: DummySignal | None = None,
-                      logger: Logger|None = None):
+                      logger: Logger | None = None) -> EmtProblemDae:
+    """
+    Build the EMT problem implementation selected in the simulation options.
+
+    :param grid: Electrical grid whose devices define the EMT problem.
+    :param options: EMT configuration, including the requested problem type.
+    :param pf_results: Optional balanced power-flow initialization results.
+    :param pf_results_3ph: Optional three-phase power-flow initialization results.
+    :param progress_signal: Optional signal used to publish numeric progress.
+    :param logger: Optional logger owned by the simulation driver.
+    :return: Configured EMT problem ready to be passed to a solver.
+    """
     if options.problem_type in EMT_PROBLEM_CLASS_MAP:
-        problem_cls = EMT_PROBLEM_CLASS_MAP[options.problem_type]
+        problem_cls: type[EmtProblemDae] = EMT_PROBLEM_CLASS_MAP[options.problem_type]
     else:
         raise ValueError(f"Unsupported EMT problem type: {options.problem_type}")
 

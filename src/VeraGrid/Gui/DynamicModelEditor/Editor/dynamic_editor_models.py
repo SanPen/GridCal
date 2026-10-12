@@ -30,6 +30,7 @@ from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.bus_emt_template import BusEmtTemplate, get_bus_emt_algebraic_vars
 from VeraGridEngine.Utils.Symbolic.bus_rms_template import initialize_bus_rms
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
+from VeraGridEngine.Utils.Symbolic.symbolic_io import duplicate_block_vars_uid
 from VeraGridEngine.Utils.Symbolic.templates_common_functions import (
     emt_bus_shell_matches_grid_topology,
     reconcile_saved_emt_model_against_current_topology,
@@ -161,52 +162,77 @@ def clone_block_for_editing(block: Block) -> Block:
     """
     return copy.deepcopy(block)
 
+def clone_block_and_create_vf_for_editor(
+        block: Block,
+        source_var_factory: VarFactory,
+) -> tuple[Block, VarFactory]:
+    """Create an isolated working block and private symbolic factory.
+
+    :param block: Source block owned by the device or template.
+    :param source_var_factory: Factory owning the persistent connection graph.
+    :return: Working block and private factory used by one editor document.
+    """
+    working_vf: VarFactory = VarFactory()
+    working_block: Block = duplicate_block_vars_uid(
+        block=block,
+        source_var_factory=source_var_factory,
+        target_var_factory=working_vf,
+    )
+    return working_block, working_vf
+
 
 def copy_block_state(source_block: Block, target_block: Block) -> None:
-    """Replace all persistent target-block state with an isolated source copy.
+    """Transfer the complete working state into the persistent block object.
+
+    Symbolic collections are assigned directly so the persistent block and the
+    merged circuit ``VarFactory`` own the exact same variable instances.
 
     :param source_block: Working block whose complete state must be committed.
     :param target_block: Existing owned block whose identity object is retained.
     :return: None.
     """
-    source_clone: Block = clone_block_for_editing(source_block)
+    # Transfer every persistent declaration without introducing a third set of
+    # Var objects between the accepted working tree and the circuit factory.
+    target_block.name = source_block.name
+    target_block.model_family_name = source_block.model_family_name
+    target_block.uid = source_block.uid
+    target_block.is_decomposable = source_block.is_decomposable
+    target_block.tpe_uid = source_block.tpe_uid
+    target_block.vars_glob_name2uid = source_block.vars_glob_name2uid
+    target_block.state_vars = source_block.state_vars
+    target_block.state_eqs = source_block.state_eqs
+    target_block.algebraic_vars = source_block.algebraic_vars
+    target_block.algebraic_eqs = source_block.algebraic_eqs
+    target_block.inequalities = source_block.inequalities
+    target_block.diff_vars = source_block.diff_vars
+    target_block.reformulated_vars = source_block.reformulated_vars
+    target_block.differential_eqs = source_block.differential_eqs
+    target_block.init_eqs = source_block.init_eqs
+    target_block.diff_init_eqs = source_block.diff_init_eqs
+    target_block.post_init_seed_eqs = source_block.post_init_seed_eqs
+    target_block.children = source_block.children
+    target_block.in_vars = source_block.in_vars
+    target_block.out_vars = source_block.out_vars
+    target_block.parameters = source_block.parameters
+    target_block.discrete_eqs = source_block.discrete_eqs
+    target_block.external_mapping = source_block.external_mapping
+    target_block.api_obj_mapping = source_block.api_obj_mapping
+    target_block.init_values = source_block.init_values
+    target_block.var_mapping = source_block.var_mapping
+    target_block.event_dict = source_block.event_dict
+    target_block.mode_dict = source_block.mode_dict
+    target_block.boolean_guards = source_block.boolean_guards
+    target_block.procedural_logic = source_block.procedural_logic
+    target_block.connection_intents = source_block.connection_intents
+    target_block.dynamic_model_contract = source_block.dynamic_model_contract
+    target_block._modal_template_kind = source_block._modal_template_kind
+    target_block._modal_template_config = source_block._modal_template_config
+    target_block._jmarti_fit_bundle = source_block._jmarti_fit_bundle
+    target_block._jmarti_runtime_data = source_block._jmarti_runtime_data
+    target_block.diagram = source_block.diagram
 
-    # Copy every persistent symbolic collection so Apply changes cannot retain
-    # stale equations, mappings, or procedural data from the previous model.
-    target_block.name = source_clone.name
-    target_block.model_family_name = source_clone.model_family_name
-    target_block.uid = source_clone.uid
-    target_block.is_decomposable = source_clone.is_decomposable
-    target_block.tpe_uid = source_clone.tpe_uid
-    target_block.vars_glob_name2uid = source_clone.vars_glob_name2uid
-    target_block.state_vars = source_clone.state_vars
-    target_block.state_eqs = source_clone.state_eqs
-    target_block.algebraic_vars = source_clone.algebraic_vars
-    target_block.algebraic_eqs = source_clone.algebraic_eqs
-    target_block.inequalities = source_clone.inequalities
-    target_block.diff_vars = source_clone.diff_vars
-    target_block.reformulated_vars = source_clone.reformulated_vars
-    target_block.differential_eqs = source_clone.differential_eqs
-    target_block.init_eqs = source_clone.init_eqs
-    target_block.diff_init_eqs = source_clone.diff_init_eqs
-    target_block.children = source_clone.children
-    target_block.in_vars = source_clone.in_vars
-    target_block.out_vars = source_clone.out_vars
-    target_block.parameters = source_clone.parameters
-    target_block.discrete_eqs = source_clone.discrete_eqs
-    target_block.external_mapping = source_clone.external_mapping
-    target_block.api_obj_mapping = source_clone.api_obj_mapping
-    target_block.init_values = source_clone.init_values
-    target_block.var_mapping = source_clone.var_mapping
-    target_block.event_dict = source_clone.event_dict
-    target_block.mode_dict = source_clone.mode_dict
-    target_block.boolean_guards = source_clone.boolean_guards
-    target_block.procedural_logic = source_clone.procedural_logic
-    target_block.connection_intents = source_clone.connection_intents
-    target_block.diagram = source_clone.diagram
 
-
-def _ensure_block_tree_names(block: Block, prefix: str = "block") -> None:
+def ensure_block_tree_names(block: Block, prefix: str = "block") -> None:
     """Assign deterministic display names to unnamed blocks recursively.
 
     :param block: Block subtree to normalize.
@@ -221,7 +247,7 @@ def _ensure_block_tree_names(block: Block, prefix: str = "block") -> None:
     child_index: int
     child_block: Block
     for child_index, child_block in enumerate(block.children, start=1):
-        _ensure_block_tree_names(child_block, prefix=f"{block.name}_{child_index}")
+        ensure_block_tree_names(child_block, prefix=f"{block.name}_{child_index}")
 
 
 def block_requires_editor_connection_bootstrap(block: Block) -> bool:

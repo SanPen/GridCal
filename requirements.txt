@@ -38,6 +38,5 @@ packaging>=25.0
 brotli>=1.2.0
 fmpy>=0.3.26
 psycopg[binary]>=3.3
-clang-tool-chain>=1.5.9
 llvmlite
 mcp>=2.2.0,<3

@@ -23,30 +23,30 @@ from tests.FMI.fmi_three_compiled_fixture import (
     _create_fmi_three_scalar_model_description,
     _install_fmi_three_behavior,
 )
-from VeraGridEngine.IO.fmu.importer.bindings import FmuImportConfig
-from VeraGridEngine.IO.fmu.importer import FmiThreeWorkerHostLimits
-from VeraGridEngine.IO.fmu.importer.device_config import (
+from VeraGridEngine.IO.fmu.Elements.bindings import FmuImportConfig
+from VeraGridEngine.IO.fmu import FmiThreeWorkerHostLimits
+from VeraGridEngine.IO.fmu.fmu_device_integration import (
     FmuCsDeviceConfigRecord,
     FmuMeDeviceConfigRecord,
     load_fmu_cs_device_config,
     load_fmu_me_device_config,
 )
-from VeraGridEngine.IO.fmu.importer.inspection import FmuInspectionResult, inspect_fmu
-from VeraGridEngine.IO.fmu.importer.model_description import (
+from VeraGridEngine.IO.fmu.Elements.inspection import FmuInspectionResult, inspect_fmu
+from VeraGridEngine.IO.fmu.model_description import (
     FmuModelDescription,
     read_fmu_model_description,
 )
-from VeraGridEngine.IO.fmu.importer.model_description_metadata import (
+from VeraGridEngine.IO.fmu.Elements.description import (
     FmiThreeCoSimulationCapabilities,
 )
-from VeraGridEngine.IO.fmu.importer.native_binary import (
+from VeraGridEngine.IO.fmu.native_binary import (
     resolve_fmi_three_host_binary,
     validate_fmi_three_native_binary,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_profile import (
+from VeraGridEngine.IO.fmu.profile import (
     validate_fmi_three_co_simulation_worker_profile,
 )
-from VeraGridEngine.IO.fmu.importer.template_api import configure_fmu_template
+from VeraGridEngine.IO.fmu.fmu_device_integration import configure_fmu_template
 from VeraGridEngine.enumerations import (
     DeviceType,
     FmuInterfaceMode,

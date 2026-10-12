@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 """Independent FMI fixture builders used only by product integration tests."""
 from __future__ import annotations
+from VeraGridEngine.enumerations import InterfaceType
 
 from pathlib import Path
 import uuid
@@ -17,17 +18,17 @@ from VeraGridEngine.Devices.Injections.generator import Generator
 from VeraGridEngine.Devices.Injections.load import Load
 from VeraGridEngine.Devices.Substation.bus import Bus
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
-from VeraGridEngine.IO.fmu.exporter.api import export_fmu
-from VeraGridEngine.IO.fmu.exporter.compat import Block, CmpOp, Comparison, Const, Var
-from VeraGridEngine.IO.fmu.exporter.config import ExportConfig as CsExportConfig, detect_target_platform as detect_cs_target_platform
-from VeraGridEngine.IO.fmu.exporter_me.api import export_fmu_me
-from VeraGridEngine.IO.fmu.exporter_me.config import ExportConfig as MeExportConfig, detect_target_platform as detect_me_target_platform
-from VeraGridEngine.IO.fmu.importer.bindings import FmuRefBinding
-from VeraGridEngine.IO.fmu.importer.model_description import FmuInterfaceMode
-from VeraGridEngine.IO.fmu.importer.runtime_worker_host import (
+from VeraGridEngine.IO.fmu.interface import export_model_as_fmu
+from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Utils.Symbolic.symbolic import CmpOp, Comparison, Const, Var
+from VeraGridEngine.IO.fmu.config import ExportConfig as CsExportConfig, detect_target_platform as detect_cs_target_platform
+from VeraGridEngine.IO.fmu.config import ExportConfig as MeExportConfig, detect_target_platform as detect_me_target_platform
+from VeraGridEngine.IO.fmu.Elements.bindings import FmuRefBinding
+from VeraGridEngine.IO.fmu.model_description import FmuInterfaceMode
+from VeraGridEngine.IO.fmu.worker_host import (
     FmiThreeWorkerHostLimits,
 )
-from VeraGridEngine.IO.fmu.importer.user_api import (
+from VeraGridEngine.IO.fmu.fmu_device_integration import (
     FmuDeviceAttachmentRequest,
     FmuDeviceDomain,
     FmuReferenceValue,
@@ -229,7 +230,7 @@ def export_test_fmi_three_external_discontinuity_cs_fmu(output_dir: Path) -> Pat
         name="FmiThreeExternalDiscontinuityCs",
     )
     unique_name: str = f"FmiThreeExternalDiscontinuityCs_{uuid.uuid4().hex[:8]}"
-    return export_fmu(
+    return export_model_as_fmu(
         source_block,
         CsExportConfig(
             model_name=unique_name,
@@ -271,9 +272,9 @@ def export_test_fmi_three_time_event_me_fmu(output_dir: Path) -> Path:
         ),
     ))
     unique_name: str = f"FmiThreeTimeEventMe_{uuid.uuid4().hex[:8]}"
-    return export_fmu_me(
+    return export_model_as_fmu(
         source_block,
-        MeExportConfig(
+        MeExportConfig(interface_type=InterfaceType.MODEL_EXCHANGE, 
             model_name=unique_name,
             output_path=output_dir / f"{unique_name}.fmu",
             target_platform=detect_me_target_platform(),
@@ -312,9 +313,9 @@ def export_test_fmi_three_state_event_me_fmu(output_dir: Path) -> Path:
         ),
     ))
     unique_name: str = f"FmiThreeStateEventMe_{uuid.uuid4().hex[:8]}"
-    return export_fmu_me(
+    return export_model_as_fmu(
         source_block,
-        MeExportConfig(
+        MeExportConfig(interface_type=InterfaceType.MODEL_EXCHANGE, 
             model_name=unique_name,
             output_path=output_dir / f"{unique_name}.fmu",
             target_platform=detect_me_target_platform(),
@@ -337,7 +338,7 @@ def export_test_rms_cs_fmu(
     """
 
     unique_name: str = f"TestRmsCsDevice_{uuid.uuid4().hex[:8]}"
-    return export_fmu(
+    return export_model_as_fmu(
         _build_test_rms_cs_source_block(),
         CsExportConfig(
             model_name=unique_name,
@@ -362,9 +363,9 @@ def export_test_rms_me_fmu(
     """
 
     unique_name: str = f"TestRmsMeDevice_{uuid.uuid4().hex[:8]}"
-    return export_fmu_me(
+    return export_model_as_fmu(
         _build_test_rms_me_source_block(),
-        MeExportConfig(
+        MeExportConfig(interface_type=InterfaceType.MODEL_EXCHANGE, 
             model_name=unique_name,
             output_path=output_dir / f"{unique_name}.fmu",
             target_platform=detect_me_target_platform(),
@@ -387,7 +388,7 @@ def export_test_emt_cs_fmu(
     """
 
     unique_name: str = f"TestEmtCsDevice_{uuid.uuid4().hex[:8]}"
-    return export_fmu(
+    return export_model_as_fmu(
         _build_test_emt_cs_source_block(),
         CsExportConfig(
             model_name=unique_name,
@@ -412,9 +413,9 @@ def export_test_emt_me_fmu(
     """
 
     unique_name: str = f"TestEmtMeDevice_{uuid.uuid4().hex[:8]}"
-    return export_fmu_me(
+    return export_model_as_fmu(
         _build_test_emt_me_source_block(),
-        MeExportConfig(
+        MeExportConfig(interface_type=InterfaceType.MODEL_EXCHANGE, 
             model_name=unique_name,
             output_path=output_dir / f"{unique_name}.fmu",
             target_platform=detect_me_target_platform(),
@@ -498,7 +499,7 @@ def build_test_rms_grid() -> tuple[MultiCircuit, Load]:
     )
     event_group: RmsEventsGroup = RmsEventsGroup(name="default_rms_example_group")
     grid.add_rms_events_group(event_group)
-    active_power_parameter: Var | None = disturbance_model.api_obj_mapping.get(
+    active_power_parameter: Var | None = disturbance_model.children[0].api_obj_mapping.get(
         ParamPowerFlowReferenceType.Pl0,
         None,
     )
@@ -568,8 +569,8 @@ def execute_test_rms_fmu_case(
 ) -> tuple[RmsSimulationDriver, Load, Path]:
     """Execute one RMS FMU integration case through the product API.
 
-    This test-only orchestration is intentionally independent from the benchmark
-    package under trunk so product tests cannot accidentally depend on examples.
+    This test-only orchestration is intentionally independent from external
+    benchmark packages so product tests depend only on owned fixtures.
 
     :param output_dir: Isolated directory for the FMU and native staging files.
     :param mode: FMI interface mode exercised by the integration test.
@@ -699,6 +700,7 @@ def execute_test_emt_fmu_case(
         mode: FmuInterfaceMode,
         solver_tpe: EmtSolverTypes = EmtSolverTypes.Symbolic,
         fmi_version: FmiVersion = FmiVersion.FMI_2_0,
+        emt_tolerance: float = 1.0e-6,
 ) -> tuple[EmtSimulationDriver, Load, Path]:
     """Execute one EMT FMU integration case through the product API.
 
@@ -706,6 +708,7 @@ def execute_test_emt_fmu_case(
     :param mode: FMI interface mode exercised by the integration test.
     :param solver_tpe: EMT Jacobian backend exercised by the integration test.
     :param fmi_version: FMI generation exported and reimported by the test.
+    :param emt_tolerance: Outer EMT residual tolerance; existing callers retain 1e-6.
     :return: Completed EMT driver, attached load, and generated FMU path.
     """
 
@@ -786,7 +789,7 @@ def execute_test_emt_fmu_case(
         options=EmtOptions(
             time_step=5.0e-6,
             simulation_time=1.0e-3,
-            tolerance=1.0e-6,
+            tolerance=emt_tolerance,
             solver_type=solver_tpe,
             integration_method=integration_method,
             initialization_method=EmtInitializationMethod.Auto,

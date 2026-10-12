@@ -8,7 +8,7 @@ from typing import Dict, Union, Tuple
 import numpy as np
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.Devices.Substation.bus import Bus
-from VeraGridEngine.Devices.Branches.dc_cable_type import DcCableType
+from VeraGridEngine.Devices.Branches.underground_line_type import UndergroundLineType
 from VeraGridEngine.Devices.Parents.branch_parent import BranchParent
 from VeraGridEngine.Devices.Profiles import ProfileFloat
 from VeraGridEngine.enumerations import DeviceType, BuildStatus, SubObjectType, PrpCat, ParamPowerFlowReferenceType
@@ -25,10 +25,14 @@ class DcLine(BranchParent):
         '_fault_pos',
         '_R',
         'template',
+        'dc_conductor',
         '_locations',
     )
 
     LOCAL_PROPERTY_DECLARATIONS: Tuple[GCProp, ...] = (
+        GCProp(prop_name='dc_conductor', units='', tpe=int,
+               definition='Global conductor number in the Cable System (one-based).',
+               cat=[PrpCat.TP]),
         GCProp(
             prop_name='R',
             units='p.u.',
@@ -63,8 +67,8 @@ class DcLine(BranchParent):
         GCProp(
             prop_name='template',
             units='',
-            tpe=DeviceType.DcCableTypeDevice,
-            definition='Physical DC cable type applied to this line.',
+            tpe=DeviceType.UnderGroundLineDevice,
+            definition='Cable System applied to this DC line.',
             editable=False,
             cat=[PrpCat.TP],
         ),
@@ -98,14 +102,15 @@ class DcLine(BranchParent):
                  temp_base=20,
                  temp_oper=20,
                  alpha=0.00330,
-                 template: DcCableType | None = None,
+                 template: UndergroundLineType | None = None,
                  contingency_factor=1.0,
                  protection_rating_factor: float = 1.4,
                  contingency_enabled=True,
                  monitor_loading=True,
                  capex=0,
                  opex=0,
-                 build_status: BuildStatus = BuildStatus.Commissioned):
+                 build_status: BuildStatus = BuildStatus.Commissioned,
+                 dc_conductor: int = 1):
         """
         DC current line
         :param bus_from: Bus from
@@ -127,7 +132,8 @@ class DcLine(BranchParent):
         :param temp_base: base temperature (i.e 25º °C)
         :param temp_oper: Operational temperature (°C)
         :param alpha: Thermal constant of the material (°C)
-        :param template: Basic branch template
+        :param template: Cable System supplying the DC equivalent
+        :param dc_conductor: One-based global conductor number in the Cable System
         :param contingency_factor: Rating factor in case of contingency
         :param contingency_enabled: enabled for contingencies (Legacy)
         :param monitor_loading: monitor the loading (used in OPF)
@@ -178,7 +184,8 @@ class DcLine(BranchParent):
         self.R = float(r) if r is not None else 0.0001
 
         # type template
-        self.template: DcCableType | None = template
+        self.template: UndergroundLineType | None = template
+        self.dc_conductor = int(dc_conductor)
 
         # Line locations
         self._locations: LineLocations = LineLocations()
@@ -243,7 +250,7 @@ class DcLine(BranchParent):
         if isinstance(val, float):
             if val > 0.0:
 
-                if self._length != 0:
+                if self._length != 0 and self.auto_update_enabled:
                     factor = np.round(val / self._length, 6)  # new length / old length
 
                     self.R *= factor
@@ -273,19 +280,19 @@ class DcLine(BranchParent):
         return self.R
 
     def apply_template(self,
-                       obj: DcCableType,
+                       obj: UndergroundLineType,
                        Sbase: float,
                        logger: Logger | None = None) -> None:
         """
-        Apply one physical DC cable type to this line atomically.
+        Apply one Cable System to this line atomically.
 
         The resistance copied to ``DcLine`` is the static per-unit value used
         by network compilation. Inductance and capacitance remain canonical in
-        ``DcCableType`` and are converted on demand by the dynamic consumers.
+        ``UndergroundLineType`` and are converted on demand by the dynamic consumers.
         The branch rating is intentionally preserved until the public DC pole
         voltage convention is defined.
 
-        :param obj: DC cable type to apply.
+        :param obj: Cable System to apply.
         :param Sbase: System power base in MVA.
         :param logger: Optional logger receiving validation failures.
         :return: None.
@@ -296,38 +303,25 @@ class DcLine(BranchParent):
             calculation_logger = logger
 
         line_voltage: float = self.get_max_bus_nominal_voltage()
-        valid_type: bool = isinstance(obj, DcCableType)
-        valid_bases: bool = Sbase > 0.0 and line_voltage > 0.0 and self.length > 0.0
-        valid_parameters: bool = (
-            valid_type
-            and obj.Vnom > 0.0
-            and obj.Imax >= 0.0
-            and obj.R >= 0.0
-            and obj.L >= 0.0
-            and obj.C >= 0.0
-        )
-
-        if valid_type and valid_bases and valid_parameters:
-            resistance_pu: float
-            inductance_pu_seconds: float
-            capacitance_pu_seconds: float
-            resistance_pu, inductance_pu_seconds, capacitance_pu_seconds = obj.get_values(
-                Sbase=Sbase,
-                length=self.length,
-                line_Vnom=line_voltage,
+        try:
+            if not isinstance(obj, UndergroundLineType):
+                raise ValueError('Select a Cable System')
+            if not np.isfinite(obj.Vnom) or obj.Vnom <= 0.0 or not np.isfinite(obj.Imax) or obj.Imax < 0.0:
+                raise ValueError('Invalid Cable System rating')
+            resistance_pu, _, _ = obj.get_dc_values(
+                Sbase=Sbase, length=self.length, line_Vnom=line_voltage,
+                conductor=self.dc_conductor,
             )
+        except ValueError as error:
+            calculation_logger.add_error('DC cable template could not be applied',
+                                         device=self.name, value=str(error))
+            return
 
-            # All validation and conversion finishes before the branch changes,
-            # so a failed application cannot leave a mixed old/new state.
-            self.R = resistance_pu
-            self.template = obj
-            self.rms_template = obj.rms_template
-            self.emt_template = obj.emt_template
-        else:
-            calculation_logger.add_error(
-                msg='DC cable template could not be applied',
-                device=self.name,
-            )
+        # Conversion succeeds before changing the branch; preserve its rating.
+        self.R = resistance_pu
+        self.template = obj
+        self.rms_template, self.emt_template = obj.get_branch_dynamic_templates(
+            device_type=self.device_type, logger=calculation_logger)
 
     def get_applied_dynamic_values_pu_seconds(self,
                                               Sbase: float) -> Tuple[float, float] | None:
@@ -346,10 +340,11 @@ class DcLine(BranchParent):
             resistance_pu: float
             inductance_pu_seconds: float
             capacitance_pu_seconds: float
-            resistance_pu, inductance_pu_seconds, capacitance_pu_seconds = self.template.get_values(
+            resistance_pu, inductance_pu_seconds, capacitance_pu_seconds = self.template.get_dc_values(
                 Sbase=Sbase,
                 length=self.length,
                 line_Vnom=line_voltage,
+                conductor=self.dc_conductor,
             )
             return inductance_pu_seconds, capacitance_pu_seconds
         else:
@@ -377,7 +372,7 @@ class DcLine(BranchParent):
         else:
             # No physical L/C default exists for a DC cable. Returning zero
             # selects the existing resistive simulation reduction without
-            # creating a fictitious physical DcCableType.
+            # creating a fictitious physical UndergroundLineType.
             logger.add_warning(
                 msg='DC line has no cable template; using the resistive fallback',
                 device=self.name,
@@ -415,6 +410,7 @@ class DcLine(BranchParent):
             temp_oper=self.temp_oper,
             alpha=self.alpha,
             template=self.template,
+            dc_conductor=self.dc_conductor,
         )
 
         copied_line.measurements = self.measurements

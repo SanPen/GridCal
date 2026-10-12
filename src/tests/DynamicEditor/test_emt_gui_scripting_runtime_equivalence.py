@@ -175,7 +175,7 @@ def _build_emt_options() -> EmtOptions:
         tolerance=1e-6,
         solver_type=EmtSolverTypes.StructuralCompiled,
         integration_method=DynamicIntegrationMethod.DaeTrapezoidal,
-        initialization_method=EmtInitializationMethod.PseudoTransient,
+        initialization_method=EmtInitializationMethod.Auto,
         verbose=0,
     )
 

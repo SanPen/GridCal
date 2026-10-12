@@ -21,7 +21,9 @@ class LoadData:
         "idtag",
         "active",
         "is_static_generator",
+        "q_droop", "q_droop_snom", "q_droop_vset", "q_droop_vmin", "q_droop_vmax",
         "S",
+        "is_positive_sequence",
         "I",
         "Y",
         "S3_delta",
@@ -58,7 +60,15 @@ class LoadData:
 
         self.active: BoolVec = np.zeros(nelm, dtype=bool)
         self.is_static_generator: BoolVec = np.zeros(nelm, dtype=bool)
+        # Zero droop marks ordinary fixed-power devices; only controlled static injections populate these arrays.
+        self.q_droop: Vec = np.zeros(nelm)
+        self.q_droop_snom: Vec = np.zeros(nelm)
+        self.q_droop_vset: Vec = np.ones(nelm)
+        self.q_droop_vmin: Vec = np.full(nelm, 0.9)
+        self.q_droop_vmax: Vec = np.full(nelm, 1.1)
         self.S: Vec = np.zeros(nelm, dtype=complex)
+        # Use S as a positive-sequence power source in ABC, retaining the load sign.
+        self.is_positive_sequence: BoolVec = np.zeros(nelm, dtype=bool)
         self.I: Vec = np.zeros(nelm, dtype=complex)
         self.Y: Vec = np.zeros(nelm, dtype=complex)
 
@@ -114,7 +124,13 @@ class LoadData:
 
         data.active = self.active[elm_idx]
         data.is_static_generator = self.is_static_generator[elm_idx]
+        data.q_droop = self.q_droop[elm_idx]
+        data.q_droop_snom = self.q_droop_snom[elm_idx]
+        data.q_droop_vset = self.q_droop_vset[elm_idx]
+        data.q_droop_vmin = self.q_droop_vmin[elm_idx]
+        data.q_droop_vmax = self.q_droop_vmax[elm_idx]
         data.S = self.S[elm_idx]
+        data.is_positive_sequence = self.is_positive_sequence[elm_idx]
         data.I = self.I[elm_idx]
         data.Y = self.Y[elm_idx]
 
@@ -179,7 +195,13 @@ class LoadData:
 
         data.active = self.active.copy()
         data.is_static_generator = self.is_static_generator.copy()
+        data.q_droop = self.q_droop.copy()
+        data.q_droop_snom = self.q_droop_snom.copy()
+        data.q_droop_vset = self.q_droop_vset.copy()
+        data.q_droop_vmin = self.q_droop_vmin.copy()
+        data.q_droop_vmax = self.q_droop_vmax.copy()
         data.S = self.S.copy()
+        data.is_positive_sequence = self.is_positive_sequence.copy()
         data.I = self.I.copy()
         data.Y = self.Y.copy()
 
@@ -315,3 +337,8 @@ class LoadData:
         compare_arr(self.S, other.S, tol, 'LoadData', 'S', logger)
         compare_arr(self.I, other.I, tol, 'LoadData', 'I', logger)
         compare_arr(self.Y, other.Y, tol, 'LoadData', 'Y', logger)
+        compare_arr(self.q_droop, other.q_droop, tol, 'LoadData', 'q_droop', logger)
+        compare_arr(self.q_droop_snom, other.q_droop_snom, tol, 'LoadData', 'q_droop_snom', logger)
+        compare_arr(self.q_droop_vset, other.q_droop_vset, tol, 'LoadData', 'q_droop_vset', logger)
+        compare_arr(self.q_droop_vmin, other.q_droop_vmin, tol, 'LoadData', 'q_droop_vmin', logger)
+        compare_arr(self.q_droop_vmax, other.q_droop_vmax, tol, 'LoadData', 'q_droop_vmax', logger)

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Rms.numerical package &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.Rms.numerical package &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -310,124 +310,6 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_fx_vectorized.BackEulerImplicitIntegrationVec.y">
 <span class="sig-name descname"><span class="pre">y</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_fx_vectorized.BackEulerImplicitIntegrationVec.y" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="module-VeraGridEngine.Simulations.Rms.numerical.back_euler_mti">
-<span id="veragridengine-simulations-rms-numerical-back-euler-mti-module"></span><h2>VeraGridEngine.Simulations.Rms.numerical.back_euler_mti module<a class="headerlink" href="#module-VeraGridEngine.Simulations.Rms.numerical.back_euler_mti" title="Link to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.</span></span><span class="sig-name descname"><span class="pre">BackEulerImplicitIntegrationMTI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_MTI.RmsProblemMTI" title="VeraGridEngine.Simulations.Rms.problems.rms_problem_MTI.RmsProblemMTI"><span class="pre">RmsProblemMTI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">t0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-07</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inequality_tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-09</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/Rms/numerical/back_euler_mti.html#BackEulerImplicitIntegrationMTI"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_fx.BackEulerImplicitIntegration" title="VeraGridEngine.Simulations.Rms.numerical.back_euler_fx.BackEulerImplicitIntegration"><code class="xref py py-class docutils literal notranslate"><span class="pre">BackEulerImplicitIntegration</span></code></a></p>
-<p>Backward Euler variant with MTI inequality/mode checks.</p>
-<p>This solver keeps the same Newton/Jacobian structure as
-<code class="docutils literal notranslate"><span class="pre">BackEulerImplicitIntegration</span></code> and adds a post-Newton MTI feasibility
-gate based on inequality residuals <code class="docutils literal notranslate"><span class="pre">G</span> <span class="pre">&lt;=</span> <span class="pre">tol</span></code>.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.compare">
-<span class="sig-name descname"><span class="pre">compare</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.compare" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.debug">
-<span class="sig-name descname"><span class="pre">debug</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.debug" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.debug_max_cands">
-<span class="sig-name descname"><span class="pre">debug_max_cands</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.debug_max_cands" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.debug_newton">
-<span class="sig-name descname"><span class="pre">debug_newton</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.debug_newton" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.debug_residuals">
-<span class="sig-name descname"><span class="pre">debug_residuals</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.debug_residuals" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.debug_solve">
-<span class="sig-name descname"><span class="pre">debug_solve</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.debug_solve" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.event_bisect_iter">
-<span class="sig-name descname"><span class="pre">event_bisect_iter</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.event_bisect_iter" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.inequality_tolerance">
-<span class="sig-name descname"><span class="pre">inequality_tolerance</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.inequality_tolerance" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.iteration_summary">
-<span class="sig-name descname"><span class="pre">iteration_summary</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.iteration_summary" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.mti_lsqr_iter_lim">
-<span class="sig-name descname"><span class="pre">mti_lsqr_iter_lim</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.mti_lsqr_iter_lim" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.mti_max_iter">
-<span class="sig-name descname"><span class="pre">mti_max_iter</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.mti_max_iter" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.mti_newton_tol">
-<span class="sig-name descname"><span class="pre">mti_newton_tol</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.mti_newton_tol" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.mti_solve_tol">
-<span class="sig-name descname"><span class="pre">mti_solve_tol</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.mti_solve_tol" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.polish_candidates">
-<span class="sig-name descname"><span class="pre">polish_candidates</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.polish_candidates" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.simulate">
-<span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/Rms/numerical/back_euler_mti.html#BackEulerImplicitIntegrationMTI.simulate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.simulate" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.use_direct_xp_subproblem">
-<span class="sig-name descname"><span class="pre">use_direct_xp_subproblem</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.use_direct_xp_subproblem" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.use_full_fixed_z_mti_rows">
-<span class="sig-name descname"><span class="pre">use_full_fixed_z_mti_rows</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.use_full_fixed_z_mti_rows" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.use_nonlinear_subproblem_lsq">
-<span class="sig-name descname"><span class="pre">use_nonlinear_subproblem_lsq</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.use_nonlinear_subproblem_lsq" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.use_subproblem_line_search">
-<span class="sig-name descname"><span class="pre">use_subproblem_line_search</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.use_subproblem_line_search" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.z">
-<span class="sig-name descname"><span class="pre">z</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#VeraGridEngine.Simulations.Rms.numerical.back_euler_mti.BackEulerImplicitIntegrationMTI.z" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>

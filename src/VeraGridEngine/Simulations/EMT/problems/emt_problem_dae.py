@@ -43,13 +43,14 @@ from VeraGridEngine.Templates.Emt.bergeron_line_emt_template import BergeronHist
 from VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime import JMartiHistoryRuntime
 from VeraGridEngine.Simulations.PowerFlow3ph.power_flow_results_3ph import PowerFlowResults3Ph
 from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from VeraGridEngine.Simulations.EMT.initialization_emt import EmtInitializationReport, run_emt_native_initialization, _compute_missing_dx0, _build_hierarchical_event_equation_list, _build_event_equation_lookup_from_problem_order
+from VeraGridEngine.Simulations.EMT.initialization_emt import EmtInitializationReport, run_emt_native_initialization, run_emt_device_pseudo_transient_initialization, validate_emt_periodic_initialization, _compute_missing_dx0, _build_hierarchical_event_equation_list, _build_event_equation_lookup_from_problem_order
 from VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic import init_explicit_common, build_symbolic_vector_single_equation_compiler
 from VeraGridEngine.Utils.Symbolic.compiled_functions import get_compiled_functions_cache_stats
 from VeraGridEngine.Utils.Symbolic.bus_emt_template import get_bus_emt_algebraic_vars
 from VeraGridEngine.Utils.Symbolic.bus_emt_template import BusEmtTemplate, get_bus_mask
 from VeraGridEngine.Utils.procedural_logic import build_boundary_updater_from_block
-from VeraGridEngine.IO.fmu.importer import (
+from VeraGridEngine.Utils.procedural_logic_contract import ManufacturerNativeRuntimeSessionProtocol
+from VeraGridEngine.IO.fmu import (
     finalize_emt_fmu_cs_devices,
     finalize_emt_fmu_me_devices,
     queue_emt_fmu_cs_device,
@@ -62,18 +63,14 @@ from VeraGridEngine.Simulations.EMT.problems.emt_problem_template import (
     _collect_hierarchical_init_equations,
 )
 from VeraGridEngine.Simulations.EMT.problems.emt_terminal_current_assembly import (
-    assemble_emt_terminal_current_contributions,
+    assemble_emt_mapped_current_references,
 )
-# Previous mapper:
-# from VeraGridEngine.Devices.Dynamic.static_parameter_mapping import (
-#     abc_to_nabc,
-#     assign_static_api_object_mapping_for_device,
-#     get_load_power_phase_values_pu_abc,
-#     get_shunt_phase_values_pu_abc,
-# )
 from VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified import (
     abc_to_nabc,
     assign_static_api_object_mapping_for_device,
+    converter_control_code,
+    get_api_parameter_initial_value_by_uid,
+    get_line_g_keys,
     get_load_power_phase_values_pu_abc,
     get_shunt_phase_values_pu_abc,
 )
@@ -108,38 +105,6 @@ def _get_static_mapping_keys_for_parameter(
     return mapping_keys
 
 
-def _get_static_parameter_value_by_uid(
-        parameter: Var,
-        static_parameter_values: Dict[Var, Const],
-) -> Const | None:
-    """Return a mapped EMT static value using symbolic UID identity.
-
-    Saved Dynamic Editor models may contain cloned ``Var`` objects that preserve
-    the canonical UID. UID matching avoids losing a valid mapping because the
-    dictionary contains a different Python object instance.
-
-    :param parameter: Symbolic parameter whose value is required.
-    :param static_parameter_values: Values resolved by the static API mapper.
-    :return: Mapped constant, or ``None`` when no mapping was resolved.
-    """
-    direct_value: Const | None = static_parameter_values.get(parameter, None)
-
-    if direct_value is not None:
-        return direct_value
-    else:
-        pass
-
-    mapped_parameter: Var
-    mapped_value: Const
-    for mapped_parameter, mapped_value in static_parameter_values.items():
-        if mapped_parameter.uid == parameter.uid:
-            return mapped_value
-        else:
-            pass
-
-    return None
-
-
 def _resolve_emt_constant_parameter_value(
         device: ALL_DEV_TYPES,
         root_block: Block,
@@ -164,9 +129,9 @@ def _resolve_emt_constant_parameter_value(
     :return: Concrete constant that the EMT problem can register.
     :raises ValueError: If no numerical source exists for the parameter.
     """
-    mapped_value: Const | None = _get_static_parameter_value_by_uid(
+    mapped_value: Const | None = get_api_parameter_initial_value_by_uid(
         parameter=parameter,
-        static_parameter_values=static_parameter_values,
+        problem_mapping=static_parameter_values,
     )
     resolved_value: Const
 
@@ -202,7 +167,7 @@ def _resolve_emt_constant_parameter_value(
             + f"'{parameter.name}' in block '{owner_block.name}' of "
             + f"{device.device_type.value} '{device.name}': {mapping_diagnostic}. "
             + "A parameter declared as Const(None) must be linked to a supported "
-            + "static device property through the EMT root api_obj_mapping."
+            + "static device property through api_obj_mapping on its owning block."
         )
     else:
         pass
@@ -666,30 +631,6 @@ def _has_vsc_positive_sequence_pf_contract(mdl: Block) -> bool:
         return False
 
 
-def _get_api_obj_mapping_local(problem: Any, mdl: Block) -> Dict[ParamPowerFlowReferenceType, Any]:
-    """
-    Return the problem-local flattened API-object mapping for one block.
-
-    The EMT refactor stores resolved API-object mappings on the problem object
-    instead of rewriting the persistent model kept in ``MultiCircuit``.
-
-    :param problem: EMT problem instance.
-    :param mdl: Root block to inspect.
-    :return: Effective API-object mapping.
-    """
-    local_registry: Any = problem._local_api_mapping_by_block_uid
-    local_mapping: Optional[Dict[ParamPowerFlowReferenceType, Any]]
-
-    if isinstance(local_registry, dict):
-        local_mapping = local_registry.get(mdl.uid, None)
-        if local_mapping is None:
-            return _collect_api_obj_mapping_from_block(mdl)
-        else:
-            return local_mapping
-    else:
-        return _collect_api_obj_mapping_from_block(mdl)
-
-
 def _collect_block_hierarchy(mdl: Block) -> List[Block]:
     """
     Collect every block reachable from one root block.
@@ -808,96 +749,6 @@ def _sanitize_external_mapping_for_explicit_dc_terminals(mapping: Dict[Any, Var]
     return sanitized_mapping
 
 
-def _collect_api_obj_mapping_from_block(mdl: Block) -> Dict[ParamPowerFlowReferenceType, Any]:
-    """
-    Collect the API-object mapping from one block hierarchy.
-
-    Wrapper models may keep the parameter mapping in nested child blocks. This
-    helper traverses the hierarchy and preserves the first mapping occurrence of
-    each key so PF-derived parameter assignment still sees the expected metadata.
-
-    :param mdl: Root block to inspect.
-    :return: Flattened API-object mapping.
-    """
-    mapping: Dict[ParamPowerFlowReferenceType, Any] = dict()
-    blocks: List[Block] = _collect_block_hierarchy(mdl)
-    block: Block
-
-    # The same hierarchy walk used for external mappings is reused here so the
-    # wrapper-recovery policy stays identical for all PF initialization data.
-    for block in blocks:
-        local_mapping: Dict[ParamPowerFlowReferenceType, Any] = block.api_obj_mapping
-        key: ParamPowerFlowReferenceType
-        value: Any
-        for key, value in local_mapping.items():
-            if key not in mapping:
-                mapping[key] = value
-            else:
-                pass
-
-    return mapping
-
-
-def _realign_static_parameter_mapping_with_unified_block(
-        sys_block: Block,
-        static_parameter_values_mapping: Dict[Var, Const],
-) -> None:
-    """
-    Rebind static parameter values to the vars present in the unified root block.
-
-    EMT compilation uses the final flattened ``sys_block`` equations. Static
-    parameters are collected earlier while device models may still live in wrapper
-    hierarchies. After unification and deduplication, the final equation graph can
-    reference var instances that share the same UID but are not the same Python
-    object as the ones used as keys in the pre-collected static mapping. This
-    helper rebuilds the dictionary on top of the vars that actually belong to the
-    unified block so compiler-name generation stays aligned with the final system.
-
-    :param sys_block: Unified EMT root block.
-    :param static_parameter_values_mapping: Static parameter mapping to realign.
-    :return: None.
-    """
-    uid_to_parameter_var: Dict[int, Var] = dict()
-    parameter_var: Var
-
-    # Some custom EMT templates keep parameter variables only in nested blocks.
-    # After block unification the final compiled equations may still reference
-    # those vars by UID even when the root ``sys_block.parameters`` dictionary is
-    # not the original object that first held them. Walk the full hierarchy to
-    # realign every constant parameter against the vars that survive in the
-    # unified graph.
-    all_blocks: List[Block] = sys_block.get_all_blocks()
-    block_obj: Block
-    parameter_value: Const
-
-    for block_obj in all_blocks:
-        for parameter_var, parameter_value in block_obj.parameters.items():
-            if parameter_var not in static_parameter_values_mapping:
-                static_parameter_values_mapping[parameter_var] = parameter_value
-            else:
-                pass
-            uid_to_parameter_var[parameter_var.uid] = parameter_var
-
-    if len(uid_to_parameter_var) == 0:
-        return
-    else:
-        pass
-
-    updated_mapping: Dict[Var, Const] = dict()
-    original_parameter_var: Var
-    parameter_value: Const
-
-    for original_parameter_var, parameter_value in static_parameter_values_mapping.items():
-        unified_parameter_var: Var | None = uid_to_parameter_var.get(original_parameter_var.uid, None)
-
-        if unified_parameter_var is None:
-            updated_mapping[original_parameter_var] = parameter_value
-        else:
-            updated_mapping[unified_parameter_var] = parameter_value
-
-    static_parameter_values_mapping.clear()
-    static_parameter_values_mapping.update(updated_mapping)
-
 def _build_device_idtag_lookup(devices: List[Any]) -> Dict[str, int]:
     """
     Build one idtag-to-index lookup table.
@@ -956,47 +807,6 @@ def _get_bus_balanced_injection_power(pf_results: PowerFlowResults, bus_index: i
         return complex(pf_results.Sbus[bus_index] / sbase)
     except (AttributeError, IndexError, TypeError, ValueError):
         return 0.0 + 0.0j
-
-
-def _promote_child_static_parameters_to_wrapper_root(mdl: Block) -> None:
-    """
-    Mirror child static parameters into one wrapper root block.
-
-    Some EMT templates are authored as one thin wrapper root plus one child block
-    that owns the actual equations and parameter vars. The reduced native-init
-    path may inspect the wrapper-local block before the full hierarchy has been
-    flattened, so every child constant parameter must also be visible from the
-    wrapper root to keep the compiler namespace complete.
-
-    :param mdl: Root EMT model block.
-    :return: None.
-    """
-    child_block: Block
-    parameter_var: Var
-    parameter_value: Const
-
-    for child_block in mdl.children:
-        for parameter_var, parameter_value in child_block.parameters.items():
-            if parameter_var in mdl.parameters:
-                pass
-            else:
-                mdl.parameters[parameter_var] = parameter_value
-
-
-def _restore_wrapper_root_parameter_snapshot(mdl: Block, original_parameters: Dict[Var, Const]) -> None:
-    """
-    Restore the wrapper-root parameter dictionary after EMT collection.
-
-    EMT needs one temporary root-level mirror of child parameters so wrapped
-    templates compile and initialize correctly. RMS recursively registers both
-    wrapper and child blocks, so the temporary mirror must not leak back into
-    shared model objects after EMT assembly finishes.
-
-    :param mdl: Root EMT model block.
-    :param original_parameters: Snapshot of the original root parameter mapping.
-    :return: None.
-    """
-    mdl.parameters = dict(original_parameters)
 
 
 def _get_source_seed_weight(injection: Any) -> float:
@@ -2068,9 +1878,10 @@ class EmtProblemDae(EmtProblemTemplate):
         "_pending_fmu_cs_devices",
         "_fmu_me_adapters",
         "_pending_fmu_me_devices",
+        "_manufacturer_native_runtime_session",
         "_device_models_with_init_eqs",
         "_device_models_with_init_eqs_seen",
-        "_local_api_mapping_by_block_uid",
+        "_device_models_for_ptc",
         "_local_external_mapping_by_block_uid",
         "_temp_init_guess",
         "_temp_diff_init_guess",
@@ -2078,12 +1889,12 @@ class EmtProblemDae(EmtProblemTemplate):
         "_temp_post_diff_init_guess",
         "_vars2device",
         "_vars_info",
+        "_manufacturer_native_runtime_session",
     )
 
     def __init__(self,
                  grid: MultiCircuit,
                  options: EmtOptions,
-                 pf_results_3Ph: PowerFlowResults3Ph | None = None,
                  pf_results_3ph: PowerFlowResults3Ph | None = None,
                  pf_results: PowerFlowResults | None = None,
                  progress_signal: DummySignal | None = None,
@@ -2094,8 +1905,8 @@ class EmtProblemDae(EmtProblemTemplate):
         resulting mathematical block to the BaseProblem constructor.
         :param grid: MultiCircuit
         :param options: EmtOptions
-        :param pf_results_3Ph: PowerFlowResults3Ph
-        :param pf_results: PowerFlowResults3Ph
+        :param pf_results_3ph: PowerFlowResults3Ph
+        :param pf_results: PowerFlowResults
         :param progress_signal: progress_signal
         :param progress_text: progress_text
         :param logger: Logger
@@ -2105,10 +1916,7 @@ class EmtProblemDae(EmtProblemTemplate):
         self.options = options
         self._device_type_disposition: Dict[DeviceType, str] = _build_emt_device_type_disposition_table()
         _validate_emt_device_type_disposition_table(self._device_type_disposition)
-        if pf_results_3ph is None:
-            self.power_flow_results_3ph = pf_results_3Ph
-        else:
-            self.power_flow_results_3ph = pf_results_3ph
+        self.power_flow_results_3ph = pf_results_3ph
         self.power_flow_results = pf_results
 
         self._vars_info: Dict[ALL_DEV_TYPES, List[Var]] = dict()
@@ -2139,7 +1947,6 @@ class EmtProblemDae(EmtProblemTemplate):
         self._active_events_group: EmtEventsGroup | None = None
         self._local_bus_kcl_blocks: List[Block] = list()
         self._local_external_mapping_by_block_uid: Dict[int, Dict[Any, Var]] = dict()
-        self._local_api_mapping_by_block_uid: Dict[int, Dict[ParamPowerFlowReferenceType, Any]] = dict()
         self._runtime_parameter_owner_blocks: Dict[int, Block] = dict()
         self._runtime_parameter_devices: Dict[int, ALL_DEV_TYPES] = dict()
 
@@ -2152,12 +1959,14 @@ class EmtProblemDae(EmtProblemTemplate):
         # flattened dependency graph.
         self._device_models_with_init_eqs: List[Block] = list()
         self._device_models_with_init_eqs_seen: Set[int] = set()
+        self._device_models_for_ptc: List[Block] = list()
 
         sys_block = Block(children=[], in_vars=[])
         glob_time = Var(self.TIME_NAME)
 
         self.history_models: List[BergeronHistoryRuntime | JMartiHistoryRuntime] = list()
         self._block_boundary_updater: Any | None = None
+        self._manufacturer_native_runtime_session: ManufacturerNativeRuntimeSessionProtocol | None = None
         self.step_counter: int = 0
         self._fmu_cs_adapters: List[Any] = list()
         self._pending_fmu_cs_devices: List[Tuple[Any, Block]] = list()
@@ -2188,16 +1997,6 @@ class EmtProblemDae(EmtProblemTemplate):
         sys_block.state_vars = _unique_keep_order(sys_block.state_vars)
         sys_block.algebraic_vars = _unique_keep_order(sys_block.algebraic_vars)
         sys_block.diff_vars = _unique_keep_order(sys_block.diff_vars)
-        # The EMT problem compiles the unified root block, so the static-parameter
-        # table must be realigned with the final flattened symbolic graph before
-        # compiler names are generated. Wrapper, GUI and cloned workflows can keep
-        # API-mapped parameter vars only in child blocks during collection, and the
-        # subsequent unification step can then leave the pre-collected parameter map
-        # out of sync with the actual vars referenced by the final equations.
-        _realign_static_parameter_mapping_with_unified_block(
-            sys_block=sys_block,
-            static_parameter_values_mapping=static_parameter_values_mapping,
-        )
         unify_blocks_s: float = _toc(t_phase_start)
         t_phase_start = _tic()
 
@@ -2308,29 +2107,32 @@ class EmtProblemDae(EmtProblemTemplate):
             self.progress_signal.emit(5)
 
         # 2) Initialization stage selection.
-        # Explicit initialization is the lightweight symbolic seed stage that
-        # resolves device-provided init equations directly. The broader EMT
-        # workflow may either stop here, use it as a seed for the reduced
-        # native consistency solve, or skip it entirely when the user
-        # requests a pure pseudo-transient initialization path driven only by
-        # the power-flow seeded variables.
-        if self.options.initialization_method == EmtInitializationMethod.PseudoTransient:
-            pass
-        else:
+        # PseudoTransient must work for models without initialization equations.
+        # Its only starting data is the PF operating point and runtime constants.
+        if self.options.initialization_method != EmtInitializationMethod.PseudoTransient:
             self._run_explicit_initialization()
         explicit_init_s: float = _toc(t_phase_start)
         t_phase_start = _tic()
 
         # 3) Native initialization stage selection.
-        # The native stage builds and solves the reduced consistency system only
-        # for workflows that require it. Pure Explicit stops after the symbolic
-        # seeding stage, while the other methods use the native initialization
-        # dispatcher to execute their requested algorithm from the current seed.
+        # The native stage builds the reduced consistency system for Newton and
+        # Auto. PseudoTransient solves complete devices and their references.
         if self.options.initialization_method == EmtInitializationMethod.Explicit:
             self.initialization_report = EmtInitializationReport(method_requested=EmtInitializationMethod.Explicit)
             self.initialization_report.status = EmtInitializationStatus.RESOLVED
             self.initialization_report.method_used = EmtInitializationMethod.Explicit
-            self.initialization_report.message = "Explicit initialization completed."
+            self.initialization_report.message = (
+                "Explicit device initialization completed; periodic steady state was not verified."
+            )
+        elif self.options.initialization_method == EmtInitializationMethod.PseudoTransient:
+            self.initialization_report = run_emt_device_pseudo_transient_initialization(
+                problem=self,
+                blocks=self._device_models_for_ptc,
+                options=self.options,
+                check_kcl=False,
+            )
+            if self.initialization_report.status == EmtInitializationStatus.FAILED:
+                raise ValueError(self.initialization_report.message)
         else:
             self.initialization_report = run_emt_native_initialization(problem=self, options=self.options)
         self._reapply_vsc_pf_seeds_after_native_initialization()
@@ -2366,14 +2168,41 @@ class EmtProblemDae(EmtProblemTemplate):
                     [float(const.value) for const in self.get_parameters_values()],
                     dtype=np.float64,
                 ),
-                include_existing=False,
+                include_existing=True,
             )
 
-        # Replay preserved post-initialization guesses one last time after every
-        # constructor-side initialization helper has finished. This keeps the
-        # stored EMT operating point seen through ``get_x0()`` aligned with the
-        # intended post-initialization state for algebraic and differential vars.
-        self.init_guess.update(self._temp_post_init_guess)
+        # Replay preserved PF guesses only for values the native solver did not
+        # resolve. Replaying algebraic guesses over a converged native solution
+        # would undo its network consistency correction.
+        native_solution_resolved = (
+            self.initialization_report is not None
+            and self.initialization_report.status == EmtInitializationStatus.RESOLVED
+            and self.initialization_report.method_used != EmtInitializationMethod.Explicit
+        )
+        # A DC line's two terminal current seeds form one branch-flow pair.
+        # Preserve that pair together; keeping only the native correction on
+        # one side can leave the stored initial point with unbalanced currents.
+        dc_line_current_seed_uids = {
+            mapped_var.uid
+            for dc_line in self.grid.dc_lines
+            for reference in (
+                VarPowerFlowReferenceType.If_dc,
+                VarPowerFlowReferenceType.It_dc,
+                VarPowerFlowReferenceType.Idc,
+            )
+            if (mapped_var := _get_external_mapping_var_if_present(
+                mdl=dc_line.emt_model, key=reference,
+            )) is not None
+        }
+        post_init_guesses = {
+            uid: value for uid, value in self._temp_post_init_guess.items()
+            if not (
+                native_solution_resolved
+                and uid in self.uid2idx_vars
+                and uid not in dc_line_current_seed_uids
+            )
+        }
+        self.init_guess.update(post_init_guesses)
         self.diff_init_guess.update(self._temp_post_diff_init_guess)
 
         # Runtime parameters follow the same rule: once native/explicit
@@ -2387,12 +2216,8 @@ class EmtProblemDae(EmtProblemTemplate):
             else:
                 pass
 
-        # The final post-init replay must also keep solver-side algebraic/state
-        # values aligned with the preserved snapshot for variables that the
-        # native initialization may have left untouched while the PF seeding
-        # logic explicitly pinned them. Reapply the preserved scalar values one
-        # last time to ``init_guess`` itself after every runtime replay step.
-        self.init_guess.update(self._temp_post_init_guess)
+        # Keep the remaining preserved values aligned after runtime replay.
+        self.init_guess.update(post_init_guesses)
         
         # Re-evaluate retained mode parameters from the final runtime equations
         # after every PF-derived runtime seed has been replayed. This keeps mode
@@ -2403,7 +2228,66 @@ class EmtProblemDae(EmtProblemTemplate):
             0.0,
             seed_values=self._event_params_values,
         )
+        # PF post-init replay may replace model state/algebraic guesses after
+        # explicit initialization (notably transformer winding currents). Any
+        # derivative computed before that replay then belongs to the old state
+        # and creates a non-zero DAE residual at t=0. Re-evaluate every model-
+        # supplied differential equation from the final state and parameter
+        # vectors so dx0 remains owned by, and consistent with, the model.
+        if self.initialization_report is not None:
+            _compute_missing_dx0(
+                problem=self,
+                report=self.initialization_report,
+                x_full=self.get_x0(),
+                dx_full=self.get_dx0(),
+                runtime_params=self.event_params_values.copy(),
+                constant_params=np.asarray(
+                    [float(const.value) for const in self.get_parameters_values()],
+                    dtype=np.float64,
+                ),
+                include_existing=True,
+            )
+            # The cached RHS compiler can retain an earlier alias value when
+            # a PF-seeded algebraic reference changes late in initialization.
+            # Evaluate the final equations against the final UID bindings so
+            # the derivatives used by the first integration step match x0.
+            final_bindings: Dict[int, float] = {
+                uid: float(self.get_x0()[idx]) for uid, idx in self.uid2idx_vars.items()
+            }
+            final_bindings.update({
+                uid: float(self.get_dx0()[idx]) for uid, idx in self.uid2idx_diff.items()
+            })
+            final_bindings.update({
+                uid: float(self.event_params_values[idx])
+                for uid, idx in self.uid2idx_event_params.items()
+            })
+            final_bindings.update({
+                uid: float(self.get_parameters_values()[idx].value)
+                for uid, idx in self.uid2idx_params.items()
+            })
+            final_bindings[self.glob_time.uid] = 0.0
+            state_rhs_by_uid = {
+                state_var.uid: equation
+                for state_var, equation in zip(self.get_state_vars(), self.get_state_eqs())
+            }
+            for differential in self.get_diff_vars():
+                base_var = differential.base_var
+                if base_var is not None and base_var.uid in state_rhs_by_uid:
+                    value = float(state_rhs_by_uid[base_var.uid].eval_uid(final_bindings))
+                    self.diff_init_guess[differential.uid] = value
+                    final_bindings[differential.uid] = value
+        else:
+            pass
         _drop_nonfinite_initialization_entries(self)
+        if self.options.initialization_method == EmtInitializationMethod.PseudoTransient:
+            self.initialization_report = validate_emt_periodic_initialization(
+                problem=self,
+                blocks=self._device_models_for_ptc,
+                options=self.options,
+                report=self.initialization_report,
+            )
+            if self.initialization_report.status == EmtInitializationStatus.FAILED:
+                raise ValueError(self.initialization_report.message)
         nonfinite_entries: List[str] = _collect_nonfinite_problem_entries(self)
         if len(nonfinite_entries) == 0:
             pass
@@ -4058,6 +3942,19 @@ class EmtProblemDae(EmtProblemTemplate):
                     )
                     if has_power_flow_seed:
                         pass
+                    elif (
+                        getattr(getattr(self, "options", None), "initialization_method", None)
+                        == EmtInitializationMethod.PseudoTransient
+                        and any(
+                            dependency.uid == parameter.uid
+                            for block in device.emt_model.get_all_blocks()
+                            for equation in block.state_eqs + block.algebraic_eqs
+                            for dependency in equation.get_vars()
+                        )
+                    ):
+                        # Null references are unknowns in the device-local
+                        # periodic solve, as in RMS pseudo-transient init.
+                        pass
                     elif has_owner_initialization_source:
                         pass
                     elif has_hierarchical_initialization_source:
@@ -4087,9 +3984,9 @@ class EmtProblemDae(EmtProblemTemplate):
         Register a device EMT model into the global system block.
 
         The device model is flattened before being attached to the system block.
-        Some wrapper-style models store PF-initialization metadata in nested child
-        blocks. For that reason, the relevant mappings are rebuilt first and then
-        restored on the device root before the block is added to the global system.
+        Static parameters and API mappings remain owned by their declaring blocks;
+        recursive processing discovers child-owned declarations without copying
+        them to the wrapper root.
 
         :param dev: Device object from the grid.
         :param mdl: Device block.
@@ -4100,17 +3997,19 @@ class EmtProblemDae(EmtProblemTemplate):
         """
         resolved_external_mapping: Dict[Any, Var]
 
-        # Validate static constants while this device still owns its complete
-        # hierarchy. Child-first traversal preserves the most specific block name
-        # when wrapper parameters have been temporarily mirrored at the root.
-        validated_parameter_uids: set[int] = set()
+        # Validate every static declaration before flattening. Repeated symbolic
+        # UIDs are an invalid ownership contract and must not be deduplicated.
+        declared_parameter_uids: set[int] = set()
         validation_block: Block
         constant_parameter: Var
         declared_constant: Const
-        for validation_block in reversed(mdl.get_all_blocks()):
+        for validation_block in mdl.get_all_blocks():
             for constant_parameter, declared_constant in validation_block.parameters.items():
-                if constant_parameter.uid in validated_parameter_uids:
-                    pass
+                if constant_parameter.uid in declared_parameter_uids:
+                    raise ValueError(
+                        f"EMT constant parameter '{constant_parameter.name}' (uid={constant_parameter.uid}) "
+                        + "is declared more than once in the device block hierarchy."
+                    )
                 else:
                     _resolve_emt_constant_parameter_value(
                         device=dev,
@@ -4120,19 +4019,10 @@ class EmtProblemDae(EmtProblemTemplate):
                         declared_value=declared_constant,
                         static_parameter_values=static_parameter_values_mapping,
                     )
-                    validated_parameter_uids.add(constant_parameter.uid)
+                    declared_parameter_uids.add(constant_parameter.uid)
 
-        # Wrapper roots may not own the PF-parameter mapping directly, so the
-        # hierarchy is flattened into one root-visible mapping before build use.
-        resolved_api_mapping: Dict[ParamPowerFlowReferenceType, Any] = _collect_api_obj_mapping_from_block(mdl)
-        if len(resolved_api_mapping) > 0:
-            self._local_api_mapping_by_block_uid[mdl.uid] = resolved_api_mapping
-        else:
-            pass
-
-        # Wrapper roots may also hide PF variable references in leaf blocks.
-        # Re-attaching the merged mapping on the root keeps all later lookups
-        # consistent with the already recovered API-object mapping.
+        # The external electrical interface is distinct from static parameter
+        # ownership and is flattened for the later network-connection stage.
         resolved_external_mapping = _collect_external_mapping_from_block(mdl)
         if len(resolved_external_mapping) > 0:
             self._local_external_mapping_by_block_uid[mdl.uid] = resolved_external_mapping
@@ -4251,53 +4141,11 @@ class EmtProblemDae(EmtProblemTemplate):
         sys_block.add(mdl)
 
         self._register_init_model(mdl)
+        if not isinstance(dev, Bus):
+            self._device_models_for_ptc.append(mdl)
         # self._register_diff_init_model(mdl)
 
         return mdl
-
-    def _assign_api_mapping_value_if_present(self,
-                                             mdl: Block,
-                                             key: ParamPowerFlowReferenceType,
-                                             value: Any,
-                                             static_parameter_values_mapping: Dict[Var, Const],
-                                             ) -> None:
-        """
-        Assign one static API-object parameter into ``mdl.parameters``.
-
-        This function intentionally never writes into ``mdl.event_dict``.
-        The ``api_obj_mapping`` contract is static-device to constant EMT
-        parameter mapping only. Runtime/event parameters belong to the
-        explicit initialization/runtime event path.
-
-        :param mdl: EMT model block.
-        :param key: Static parameter reference key.
-        :param value: Static value to assign.
-        :param static_parameter_values_mapping: Dictionary with static parameters and their values.
-        :return: Assignment status.
-        """
-        api_obj_mapping: Dict[ParamPowerFlowReferenceType, Any] = _get_api_obj_mapping_local(self, mdl)
-        event_owner: Optional[Block]
-
-        if len(api_obj_mapping) > 0:
-            target: Any | None = api_obj_mapping.get(key, None)
-
-            if target is not None:
-                if isinstance(target, Var):
-                    # Wrapper roots may expose API mappings for parameters whose
-                    # actual runtime storage belongs to a nested child block.
-                    # Static assignment must therefore skip every target that is
-                    # owned by any child ``event_dict`` in the hierarchy.
-                    event_owner = _find_event_var_owner(mdl, target)
-                    if event_owner is not None:
-                        pass
-                    else:
-                        static_parameter_values_mapping[target] = value if isinstance(value, Const) else Const(float(value))
-                else:
-                    pass
-            else:
-                pass
-        else:
-            pass
 
     def _assign_event_mapping_value_if_present(self,
                                                mdl: Block,
@@ -4318,13 +4166,14 @@ class EmtProblemDae(EmtProblemTemplate):
         :param value: Runtime value to assign.
         :return: None.
         """
-        api_obj_mapping: Dict[ParamPowerFlowReferenceType, Any] = _get_api_obj_mapping_local(self, mdl)
+        mapping_block: Block
         owner_block: Optional[Block]
         target: Any | None
 
-        if len(api_obj_mapping) > 0:
-            target = api_obj_mapping.get(key, None)
-
+        # Runtime initialization follows the same local-ownership traversal as
+        # static mapping. A parent block does not need to copy a child mapping.
+        for mapping_block in mdl.get_all_blocks():
+            target = mapping_block.api_obj_mapping.get(key, None)
             if target is None:
                 pass
             else:
@@ -4336,11 +4185,19 @@ class EmtProblemDae(EmtProblemTemplate):
                     if owner_block is None:
                         pass
                     else:
+                        # PF seeding runs before the flat runtime arrays exist.
+                        # Persist the value in the owning working block first so
+                        # explicit initialization cannot fall back to the
+                        # template default (for example 1.0 instead of 0.1 pu).
+                        owner_parameter: Var
+                        for owner_parameter in owner_block.event_dict:
+                            if owner_parameter.uid == target.uid:
+                                owner_block.event_dict[owner_parameter] = Const(float(value))
+                            else:
+                                pass
                         self._set_runtime_parameter_value_by_uid(uid=target.uid, value=float(value))
                 else:
                     pass
-        else:
-            pass
 
     def _build_emt_bus_working_models(self, grid: MultiCircuit) -> Dict[Any, Block]:
         """
@@ -4424,8 +4281,6 @@ class EmtProblemDae(EmtProblemTemplate):
         f: int = bus_dict[branch.bus_from]
         t: int = bus_dict[branch.bus_to]
         br_working_mdl: Block = branch.emt_model
-        original_root_parameters: Dict[Var, Const] = dict(br_working_mdl.parameters)
-
         assign_static_api_object_mapping_for_device(
             grid=grid,
             device=branch,
@@ -4434,15 +4289,25 @@ class EmtProblemDae(EmtProblemTemplate):
             logger=self.logger,
         )
 
-        _promote_child_static_parameters_to_wrapper_root(br_working_mdl)
+        if branch.device_type == DeviceType.VscDevice:
+            for key, value in (
+                    (ParamPowerFlowReferenceType.converter_control_mode_1, converter_control_code(branch.control1)),
+                    (ParamPowerFlowReferenceType.converter_control_mode_2, converter_control_code(branch.control2)),
+                    (ParamPowerFlowReferenceType.converter_control_target_1, float(branch.control1_val)),
+                    (ParamPowerFlowReferenceType.converter_control_target_2, float(branch.control2_val)),
+            ):
+                self._assign_event_mapping_value_if_present(
+                    mdl=br_working_mdl,
+                    key=key,
+                    value=value,
+                )
+
         mdl: Block = self._process_device_model(
             dev=branch,
             mdl=br_working_mdl,
             sys_block=sys_block,
             static_parameter_values_mapping=static_parameter_values_mapping,
         )
-        _restore_wrapper_root_parameter_snapshot(br_working_mdl, original_root_parameters)
-
         is_bergeron: bool
         is_jmarti: bool
         is_bergeron, is_jmarti = _is_history_runtime_line_block_name(mdl.name)
@@ -4479,6 +4344,7 @@ class EmtProblemDae(EmtProblemTemplate):
             fbase=fbase,
             is_bergeron=is_bergeron,
             is_jmarti=is_jmarti,
+            static_parameter_values_mapping=static_parameter_values_mapping,
         )
 
         if branch_index >= 0:
@@ -4510,7 +4376,8 @@ class EmtProblemDae(EmtProblemTemplate):
                                      sbase: float,
                                      fbase: float,
                                      is_bergeron: bool,
-                                     is_jmarti: bool) -> None:
+                                     is_jmarti: bool,
+                                     static_parameter_values_mapping: Dict[Var, Const]) -> None:
         """
         Dispatch one branch build to the explicit ``DeviceType`` implementation.
 
@@ -4536,6 +4403,7 @@ class EmtProblemDae(EmtProblemTemplate):
         :param fbase: System base frequency.
         :param is_bergeron: Whether the line model is Bergeron.
         :param is_jmarti: Whether the line model is JMarti.
+        :param static_parameter_values_mapping: Owner-resolved static constants for PF seeding.
         :return: None.
         """
         if branch.device_type == DeviceType.LineDevice:
@@ -4574,6 +4442,7 @@ class EmtProblemDae(EmtProblemTemplate):
                     is_vsc=False,
                     vsc_index=-1,
                     sbase=sbase,
+                    static_parameter_values_mapping=static_parameter_values_mapping,
                 )
         else:
             if branch.device_type == DeviceType.Transformer2WDevice:
@@ -4595,6 +4464,7 @@ class EmtProblemDae(EmtProblemTemplate):
                     is_vsc=False,
                     vsc_index=-1,
                     sbase=sbase,
+                    static_parameter_values_mapping=static_parameter_values_mapping,
                 )
             else:
                 if branch.device_type == DeviceType.SeriesReactanceDevice:
@@ -4616,6 +4486,7 @@ class EmtProblemDae(EmtProblemTemplate):
                         is_vsc=False,
                         vsc_index=-1,
                         sbase=sbase,
+                        static_parameter_values_mapping=static_parameter_values_mapping,
                     )
                 else:
                     if branch.device_type == DeviceType.SwitchDevice:
@@ -4637,6 +4508,7 @@ class EmtProblemDae(EmtProblemTemplate):
                             is_vsc=False,
                             vsc_index=-1,
                             sbase=sbase,
+                            static_parameter_values_mapping=static_parameter_values_mapping,
                         )
                     else:
                         if branch.device_type == DeviceType.DCLineDevice:
@@ -4658,6 +4530,7 @@ class EmtProblemDae(EmtProblemTemplate):
                                 is_vsc=False,
                                 vsc_index=-1,
                                 sbase=sbase,
+                                static_parameter_values_mapping=static_parameter_values_mapping,
                             )
                         else:
                             if branch.device_type == DeviceType.HVDCLineDevice:
@@ -4679,6 +4552,7 @@ class EmtProblemDae(EmtProblemTemplate):
                                     is_vsc=False,
                                     vsc_index=-1,
                                     sbase=sbase,
+                                    static_parameter_values_mapping=static_parameter_values_mapping,
                                 )
                             else:
                                 if branch.device_type == DeviceType.VscDevice:
@@ -4700,6 +4574,7 @@ class EmtProblemDae(EmtProblemTemplate):
                                         is_vsc=True,
                                         vsc_index=vsc_index,
                                         sbase=sbase,
+                                        static_parameter_values_mapping=static_parameter_values_mapping,
                                     )
                                 else:
                                     self._build_generic_branch_device(
@@ -4720,6 +4595,7 @@ class EmtProblemDae(EmtProblemTemplate):
                                         is_vsc=is_vsc,
                                         vsc_index=vsc_index,
                                         sbase=sbase,
+                                        static_parameter_values_mapping=static_parameter_values_mapping,
                                     )
 
     def _build_history_branch_device(self,
@@ -4827,7 +4703,8 @@ class EmtProblemDae(EmtProblemTemplate):
                                      br_vt_keys: List[VarPowerFlowReferenceType],
                                      is_vsc: bool,
                                      vsc_index: int,
-                                     sbase: float) -> None:
+                                     sbase: float,
+                                     static_parameter_values_mapping: Dict[Var, Const]) -> None:
         """
         Build one non-history branch device.
 
@@ -4848,64 +4725,17 @@ class EmtProblemDae(EmtProblemTemplate):
         :param is_vsc: Whether the branch is a VSC device.
         :param vsc_index: VSC PF index.
         :param sbase: System base power.
+        :param static_parameter_values_mapping: Owner-resolved static constants for PF seeding.
         :return: None.
         """
-        if len(mdl.dynamic_model_contract.emt_terminal_current_contributions) > 0:
-            assemble_emt_terminal_current_contributions(
-                model=mdl,
-                current_balance=i_kcl,
-                bus_from_index=f,
-                bus_to_index=t,
-                bus_from_is_dc=branch.bus_from.is_dc,
-                bus_to_is_dc=branch.bus_to.is_dc,
-            )
-        else:
-            side_bus_indices: List[int] = list([f, t])
-            side_buses: List[Bus] = list([branch.bus_from, branch.bus_to])
-            side_current_keys: List[List[VarPowerFlowReferenceType]] = list([br_if_keys, br_it_keys])
-            side_idx: int = 0
-
-            while side_idx < 2:
-                side_bus_idx: int = side_bus_indices[side_idx]
-                side_bus: Bus = side_buses[side_idx]
-                current_keys: List[VarPowerFlowReferenceType] = side_current_keys[side_idx]
-
-                if side_bus.is_dc:
-                    external_mapping_dc: Optional[Dict[VarPowerFlowReferenceType, Var | None]] = _get_external_mapping(mdl)
-                    dc_current_key: VarPowerFlowReferenceType = VarPowerFlowReferenceType.If_dc if side_idx == 0 else VarPowerFlowReferenceType.It_dc
-                    side_dc_expr: Var | None = None
-
-                    if external_mapping_dc is not None:
-                        side_dc_expr = external_mapping_dc.get(dc_current_key, None)
-                        if side_dc_expr is None:
-                            side_dc_expr = external_mapping_dc.get(VarPowerFlowReferenceType.Idc, None)
-                        else:
-                            pass
-                    else:
-                        pass
-
-                    if side_dc_expr is not None:
-                        i_kcl[side_bus_idx][0] = i_kcl[side_bus_idx][0] - side_dc_expr
-                    else:
-                        pass
-                else:
-                    ph: int = 0
-                    while ph < 4:
-                        side_expr: Var | None
-
-                        if is_vsc:
-                            side_expr = _get_external_mapping_var_if_present(mdl=mdl, key=inj_i_keys[ph])
-                        else:
-                            side_expr = _get_external_mapping_var_if_present(mdl=mdl, key=current_keys[ph])
-
-                        if side_expr is not None:
-                            i_kcl[side_bus_idx][ph] = i_kcl[side_bus_idx][ph] - side_expr
-                        else:
-                            pass
-
-                        ph += 1
-
-                side_idx += 1
+        assemble_emt_mapped_current_references(
+            model=mdl,
+            current_balance=i_kcl,
+            bus_from_index=f,
+            bus_to_index=t,
+            bus_from_is_dc=branch.bus_from.is_dc,
+            bus_to_is_dc=branch.bus_to.is_dc,
+        )
 
         self._connect_branch_terminal_voltages(
             branch=branch,
@@ -4931,7 +4761,7 @@ class EmtProblemDae(EmtProblemTemplate):
                 if is_vsc and vsc_index >= 0:
                     self._try_set_vsc_branch_pf_init_balanced(mdl=mdl, f_bus_idx=f, t_bus_idx=t, sbase=sbase, vsc_index=vsc_index)
                 else:
-                    self._try_set_branch_pf_init_balanced(mdl=mdl, branch_index=current_pf_branch_index, f_bus_idx=f, t_bus_idx=t, sbase=grid.Sbase, is_vsc=is_vsc, vsc_index=vsc_index)
+                    self._try_set_branch_pf_init_balanced(mdl=mdl, branch_index=current_pf_branch_index, f_bus_idx=f, t_bus_idx=t, sbase=grid.Sbase, static_parameter_values_mapping=static_parameter_values_mapping, is_vsc=is_vsc, vsc_index=vsc_index)
             else:
                 if self.options.verbose:
                     print("No Power Flow results given.")
@@ -5055,8 +4885,6 @@ class EmtProblemDae(EmtProblemTemplate):
             return
 
         inj_working_mdl: Block = injection.emt_model
-        original_root_parameters: Dict[Var, Const] = dict(inj_working_mdl.parameters)
-
         assign_static_api_object_mapping_for_device(
             grid=grid,
             device=injection,
@@ -5064,37 +4892,26 @@ class EmtProblemDae(EmtProblemTemplate):
             problem_mapping=static_parameter_values_mapping,
             logger=self.logger,
         )
+        self._assign_event_mapping_value_if_present(
+            mdl=inj_working_mdl,
+            key=ParamPowerFlowReferenceType.Sbase,
+            value=float(grid.Sbase),
+        )
 
-        _promote_child_static_parameters_to_wrapper_root(inj_working_mdl)
         mdl: Block = self._process_device_model(
             dev=injection,
             mdl=inj_working_mdl,
             sys_block=sys_block,
             static_parameter_values_mapping=static_parameter_values_mapping,
         )
-        _restore_wrapper_root_parameter_snapshot(inj_working_mdl, original_root_parameters)
-
         b: int = bus_dict[injection.bus]
 
-        # The explicit terminal contract owns KCL when present. Legacy models
-        # retain their established reference-based behavior for compatibility.
-        if len(mdl.dynamic_model_contract.emt_terminal_current_contributions) > 0:
-            assemble_emt_terminal_current_contributions(
-                model=mdl,
-                current_balance=i_kcl,
-                bus_index=b,
-                bus_is_dc=injection.bus.is_dc,
-            )
-        else:
-            if injection.bus.is_dc:
-                i_dc_expr: Var | None = _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.Idc)
-                _accumulate_kcl_current(i_kcl=i_kcl, bus_index=b, phase_index=0, current_expression=i_dc_expr, sign=1.0)
-            else:
-                ph: int = 0
-                while ph < 4:
-                    i_expr: Var | None = _get_external_mapping_var_if_present(mdl=mdl, key=inj_i_keys[ph])
-                    _accumulate_kcl_current(i_kcl=i_kcl, bus_index=b, phase_index=ph, current_expression=i_expr, sign=1.0)
-                    ph += 1
+        assemble_emt_mapped_current_references(
+            model=mdl,
+            current_balance=i_kcl,
+            bus_index=b,
+            bus_is_dc=injection.bus.is_dc,
+        )
 
         self._connect_injection_bus_voltages(
             injection=injection,
@@ -5111,7 +4928,6 @@ class EmtProblemDae(EmtProblemTemplate):
             seed_store=seed_store,
             injection_index=injection_index,
             generator_count_same_bus=generator_count_same_bus,
-            static_parameter_values_mapping=static_parameter_values_mapping,
         )
 
     def _seed_injection_device_by_type(self,
@@ -5120,8 +4936,7 @@ class EmtProblemDae(EmtProblemTemplate):
                                        bus_index: int,
                                        seed_store: Optional[EmtInjectionSeedStore],
                                        injection_index: int,
-                                       generator_count_same_bus: Dict[int, int],
-                                       static_parameter_values_mapping: Dict[Var, Const]) -> None:
+                                       generator_count_same_bus: Dict[int, int]) -> None:
         """
         Dispatch one injection seed application to the explicit ``DeviceType`` path.
 
@@ -5131,7 +4946,6 @@ class EmtProblemDae(EmtProblemTemplate):
         :param seed_store: Precomputed seed store.
         :param injection_index: Injection loop index.
         :param generator_count_same_bus: Number of generators per bus.
-        :param static_parameter_values_mapping: Static parameter mapping.
         :return: None.
         """
         if seed_store is None:
@@ -5161,7 +4975,6 @@ class EmtProblemDae(EmtProblemTemplate):
                     mdl=mdl,
                     phase_power=phase_power_seed,
                     generator_count_same_bus=generator_count_local,
-                    static_parameter_values_mapping=static_parameter_values_mapping,
                 )
             else:
                 pass
@@ -7004,7 +6817,7 @@ class EmtProblemDae(EmtProblemTemplate):
         V1: complex = (VA + a * VB + (a * a) * VC) / 3.0
         I1: complex = (IA + a * IB + (a * a) * IC) / 3.0
         if abs(I1) <= 1.0e-12 and S_ac_total is not None and abs(V1) > 1.0e-12:
-            I1 = np.conj((S_ac_total / 3.0) / V1)
+            I1 = np.conj(S_ac_total / V1)
         else:
             pass
 
@@ -7108,10 +6921,10 @@ class EmtProblemDae(EmtProblemTemplate):
         if abs(V1) <= 1.0e-12:
             I1 = 0.0 + 0.0j
         else:
-            I1 = np.conj((S_ac_total / 3.0) / V1)
+            I1 = np.conj(S_ac_total / V1)
 
         if abs(I1) <= 1.0e-12 and abs(S_ac_total) > 1.0e-12 and abs(V1) > 1.0e-12:
-            I1 = np.conj((S_ac_total / 3.0) / V1)
+            I1 = np.conj(S_ac_total / V1)
         else:
             pass
 
@@ -7264,9 +7077,10 @@ class EmtProblemDae(EmtProblemTemplate):
 
         S_ac_total = SA + SB + SC
 
-        IA = 0.0 + 0.0j if abs(VA) <= 1e-12 else np.conj(SA / VA)
-        IB = 0.0 + 0.0j if abs(VB) <= 1e-12 else np.conj(SB / VB)
-        IC = 0.0 + 0.0j if abs(VC) <= 1e-12 else np.conj(SC / VC)
+        current_scale = 3.0 if _has_vsc_positive_sequence_pf_contract(mdl) else 1.0
+        IA = 0.0 + 0.0j if abs(VA) <= 1e-12 else current_scale * np.conj(SA / VA)
+        IB = 0.0 + 0.0j if abs(VB) <= 1e-12 else current_scale * np.conj(SB / VB)
+        IC = 0.0 + 0.0j if abs(VC) <= 1e-12 else current_scale * np.conj(SC / VC)
 
         # Some balanced PF VSC cases report the AC terminal power correctly while
         # the reconstructed branch current collapses to zero in the averaged EMT
@@ -7274,7 +7088,7 @@ class EmtProblemDae(EmtProblemTemplate):
         # positive-sequence references such as ``Ipk_ref`` keep the PF operating
         # point instead of flattening ``Pe``/``Qe`` to zero.
         if abs(IA) + abs(IB) + abs(IC) <= 1.0e-12 and abs(VA) > 1.0e-12:
-            I1_balanced: complex = np.conj((S_ac_total / 3.0) / VA)
+            I1_balanced: complex = np.conj(S_ac_total / VA)
             IA = I1_balanced
             IB = I1_balanced * np.exp(-1j * alpha)
             IC = I1_balanced * np.exp(+1j * alpha)
@@ -7288,7 +7102,7 @@ class EmtProblemDae(EmtProblemTemplate):
             if abs(balanced_ac_power_fallback) > 1.0e-12:
                 S_ac_total = balanced_ac_power_fallback
                 if abs(VA) > 1.0e-12:
-                    I1_balanced: complex = np.conj((S_ac_total / 3.0) / VA)
+                    I1_balanced: complex = np.conj(S_ac_total / VA)
                     IA = I1_balanced
                     IB = I1_balanced * np.exp(-1j * alpha)
                     IC = I1_balanced * np.exp(+1j * alpha)
@@ -7471,19 +7285,23 @@ class EmtProblemDae(EmtProblemTemplate):
             )
             if abs(v_dc) > 1e-12:
                 self.set_if_exists(mdl=mdl,
-                                   key=VarPowerFlowReferenceType.Idc,
+                                   key=VarPowerFlowReferenceType.If_dc,
                                    value=float(np.real(S_dc_total) / v_dc),
                                    persist_after_native_init=True)
             else:
                 self.set_if_exists(
                     mdl=mdl,
-                    key=VarPowerFlowReferenceType.Idc,
+                    key=VarPowerFlowReferenceType.If_dc,
                     value=0.0,
                     persist_after_native_init=True,
                 )
 
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.P, value=float(np.real(S_ac_total)))
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Q, value=float(np.imag(S_ac_total)))
+        # The GFM positive-sequence template defines P/Q references as converter
+        # export, opposite to the PF AC-terminal branch-flow sign. Other VSC
+        # templates retain the branch-flow convention.
+        reference_power = -S_ac_total if _has_vsc_positive_sequence_pf_contract(mdl) else S_ac_total
+        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.P, value=float(np.real(reference_power)))
+        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Q, value=float(np.imag(reference_power)))
         # Voltage-controlled converters still need the solved active-power transfer
         # as their controller feedforward operating point.  The API object's P0 is
         # commonly zero in Vm_dc mode, which otherwise initializes i_d/P_f at zero
@@ -7561,9 +7379,10 @@ class EmtProblemDae(EmtProblemTemplate):
         SB = S_ac_total / 3.0
         SC = S_ac_total / 3.0
 
-        IA = 0.0 + 0.0j if abs(VA) <= 1e-12 else np.conj(SA / VA)
-        IB = 0.0 + 0.0j if abs(VB) <= 1e-12 else np.conj(SB / VB)
-        IC = 0.0 + 0.0j if abs(VC) <= 1e-12 else np.conj(SC / VC)
+        current_scale = 3.0 if _has_vsc_positive_sequence_pf_contract(mdl) else 1.0
+        IA = 0.0 + 0.0j if abs(VA) <= 1e-12 else current_scale * np.conj(SA / VA)
+        IB = 0.0 + 0.0j if abs(VB) <= 1e-12 else current_scale * np.conj(SB / VB)
+        IC = 0.0 + 0.0j if abs(VC) <= 1e-12 else current_scale * np.conj(SC / VC)
 
         phase_voltage_dict: Dict[str, complex] = {
             "N": VN,
@@ -7701,13 +7520,13 @@ class EmtProblemDae(EmtProblemTemplate):
         )
         if abs(v_dc) > 1e-12:
             self.set_if_exists(mdl=mdl,
-                               key=VarPowerFlowReferenceType.Idc,
+                               key=VarPowerFlowReferenceType.If_dc,
                                value=float(np.real(S_dc_total) / v_dc),
                                persist_after_native_init=True)
         else:
             self.set_if_exists(
                 mdl=mdl,
-                key=VarPowerFlowReferenceType.Idc,
+                key=VarPowerFlowReferenceType.If_dc,
                 value=0.0,
                 persist_after_native_init=True,
             )
@@ -7733,8 +7552,12 @@ class EmtProblemDae(EmtProblemTemplate):
         else:
             pass
 
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.P, value=float(np.real(S_ac_total)))
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Q, value=float(np.imag(S_ac_total)))
+        # The GFM positive-sequence template defines P/Q references as converter
+        # export, opposite to the PF AC-terminal branch-flow sign. Other VSC
+        # templates retain the branch-flow convention.
+        reference_power = -S_ac_total if _has_vsc_positive_sequence_pf_contract(mdl) else S_ac_total
+        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.P, value=float(np.real(reference_power)))
+        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Q, value=float(np.imag(reference_power)))
         if _find_internal_vars_by_name(mdl, "P_loss0"):
             self.set_internal_runtime_if_exists(
                 mdl=mdl,
@@ -8036,16 +7859,6 @@ class EmtProblemDae(EmtProblemTemplate):
         to_phase_currents: Dict[str, complex] = dict()
         series_phase_currents_inst: Dict[str, float] = dict()
         series_phase_current_derivatives_inst: Dict[str, float] = dict()
-        z_series: complex = 0.0 + 0.0j
-
-        if not is_vsc:
-            try:
-                line_device = self.grid.lines[branch_index]
-                z_series = complex(float(line_device.R), float(line_device.X))
-            except Exception:
-                z_series = 0.0 + 0.0j
-        else:
-            pass
         from_phase_currents_inst: Dict[str, float] = dict()
         to_phase_currents_inst: Dict[str, float] = dict()
 
@@ -8168,7 +7981,7 @@ class EmtProblemDae(EmtProblemTemplate):
             self.set_internal_init_if_exists(mdl, "i_t_B", to_phase_currents_inst.get("B", 0.0))
             self.set_internal_init_if_exists(mdl, "i_t_C", to_phase_currents_inst.get("C", 0.0))
         else:
-            if find_name_in_block("i_ser_A", mdl) is not None:
+            if find_name_in_block("i_ser_A", mdl) is not None and find_name_in_block("q_f_A", mdl) is None:
                 self.set_internal_init_if_exists(mdl, "i_ser_A", from_phase_currents_inst.get("A", 0.0))
                 self.set_internal_init_if_exists(mdl, "i_ser_B", from_phase_currents_inst.get("B", 0.0))
                 self.set_internal_init_if_exists(mdl, "i_ser_C", from_phase_currents_inst.get("C", 0.0))
@@ -8223,6 +8036,7 @@ class EmtProblemDae(EmtProblemTemplate):
             f_bus_idx: int,
             t_bus_idx: int,
             sbase: float,
+            static_parameter_values_mapping: Dict[Var, Const],
             is_vsc: bool = False,
             vsc_index: int = -1
     ) -> None:
@@ -8252,7 +8066,18 @@ class EmtProblemDae(EmtProblemTemplate):
           - per-phase voltage derivatives d_v_* using the same EMT convention as in
             the original three-phase initializer.
 
-        Neutral phase is initialized to zero.
+        Neutral voltage is zero. Exposed physical G couplings contribute to
+        terminal current guesses; native equations retain neutral-current authority.
+
+        :param mdl: Device-owned model with external current references.
+        :param branch_index: Balanced power-flow branch index.
+        :param f_bus_idx: From-bus index in the power-flow result.
+        :param t_bus_idx: To-bus index in the power-flow result.
+        :param sbase: System three-phase power base in MVA.
+        :param static_parameter_values_mapping: Owner-resolved constants keyed by Var identity.
+        :param is_vsc: Whether converter-specific initialization applies.
+        :param vsc_index: Converter power-flow index when available.
+        :return: None.
         """
         if is_vsc and vsc_index >= 0:
             self._try_set_vsc_branch_pf_init_balanced(
@@ -8364,6 +8189,48 @@ class EmtProblemDae(EmtProblemTemplate):
                 "C": v_t_bus * np.exp(+1j * alpha),
             }
 
+        # Consume the same owner-local constants as the compiled equations.
+        # Fixed NABC storage retains coupling without keeping a second model graph.
+        g_keys: List[List[ParamPowerFlowReferenceType]] = get_line_g_keys()
+        g_nabc: np.ndarray = np.zeros((4, 4), dtype=np.float64)
+        parameter_owner: Block
+        g_row: int
+        g_col: int
+        for parameter_owner in mdl.get_all_blocks():
+            for g_row in range(4):
+                for g_col in range(4):
+                    g_parameter: Var | None = parameter_owner.api_obj_mapping.get(g_keys[g_row][g_col], None)
+                    if g_parameter is None:
+                        pass
+                    else:
+                        g_value: Const | None = get_api_parameter_initial_value_by_uid(
+                            parameter=g_parameter,
+                            problem_mapping=static_parameter_values_mapping,
+                        )
+                        if g_value is None:
+                            g_value = parameter_owner.parameters[g_parameter]
+                        else:
+                            pass
+                        if g_value.value is None:
+                            self.logger.add_warning(
+                                msg="Missing optional physical line conductance; using template zero shunt.",
+                                device=mdl.name,
+                                value=g_parameter.name,
+                            )
+                        else:
+                            g_nabc[g_row, g_col] = float(g_value.value)
+
+        voltage_f_nabc: np.ndarray = np.zeros(4, dtype=np.complex128)
+        voltage_t_nabc: np.ndarray = np.zeros(4, dtype=np.complex128)
+        phase_index: int
+        phase_label: str
+        for phase_index, phase_label in enumerate(phases):
+            voltage_f_nabc[phase_index] = voltage_dict[phase_label]
+            voltage_t_nabc[phase_index] = voltage_to_dict[phase_label]
+        physical_current_f: np.ndarray = g_nabc @ voltage_f_nabc
+        physical_current_t: np.ndarray = g_nabc @ voltage_t_nabc
+        has_physical_g: bool = bool(np.any(g_nabc != 0.0))
+
         sf_phase_total = sf_total / 3.0
         st_phase_total = st_total / 3.0
 
@@ -8422,7 +8289,7 @@ class EmtProblemDae(EmtProblemTemplate):
             else:
                 pass
 
-        for ph in phases:
+        for phase_index, ph in enumerate(phases):
             if_key: VarPowerFlowReferenceType = if_key_dict[ph]
             it_key: VarPowerFlowReferenceType = it_key_dict[ph]
 
@@ -8436,8 +8303,8 @@ class EmtProblemDae(EmtProblemTemplate):
                 vt_ph = voltage_to_dict[ph]
 
                 if ph == "N":
-                    i_f = 0.0 + 0.0j
-                    i_t = 0.0 + 0.0j
+                    i_f = complex(physical_current_f[phase_index])
+                    i_t = complex(physical_current_t[phase_index])
                 elif is_vsc:
                     i_f = 0.0 + 0.0j
                     if abs(vt_ph) <= 1e-12:
@@ -8449,9 +8316,18 @@ class EmtProblemDae(EmtProblemTemplate):
                         i_ser = (vf_ph - vt_ph) / z_series
                         i_cap_f = 1j * (b_shunt / 2.0) * vf_ph
                         i_cap_t = 1j * (b_shunt / 2.0) * vt_ph
-                        g_damp = 1.0e-5
-                        i_f = i_ser + i_cap_f + g_damp * vf_ph
-                        i_t = -i_ser + i_cap_t + g_damp * vt_ph
+                        g_damp = 0.0
+                        parameter_owner_block: Block
+                        parameter_var: Var
+                        parameter_value: Const
+                        for parameter_owner_block in mdl.get_all_blocks():
+                            for parameter_var, parameter_value in parameter_owner_block.parameters.items():
+                                if parameter_var.name == "G_damp":
+                                    g_damp = float(parameter_value.value)
+                                else:
+                                    pass
+                        i_f = i_ser + i_cap_f + physical_current_f[phase_index] + g_damp * vf_ph
+                        i_t = -i_ser + i_cap_t + physical_current_t[phase_index] + g_damp * vt_ph
                     else:
                         if abs(vf_ph) <= 1e-12:
                             i_f = 0.0 + 0.0j
@@ -8485,7 +8361,8 @@ class EmtProblemDae(EmtProblemTemplate):
                 pass
 
         neutral_if_var = _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.if_N)
-        if neutral_if_var is not None:
+        # A grounded physical shunt need not satisfy the legacy sum-of-phase heuristic.
+        if neutral_if_var is not None and not has_physical_g:
             i_f_neutral = -(from_phase_currents.get("A", 0.0 + 0.0j) + from_phase_currents.get("B", 0.0 + 0.0j) + from_phase_currents.get("C", 0.0 + 0.0j))
             neutral_value = float(np.sqrt(2.0) * np.imag(i_f_neutral))
             self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.if_N, value=neutral_value, persist_after_native_init=False)
@@ -8493,7 +8370,7 @@ class EmtProblemDae(EmtProblemTemplate):
             pass
 
         neutral_it_var = _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.it_N)
-        if neutral_it_var is not None:
+        if neutral_it_var is not None and not has_physical_g:
             i_t_neutral = -(to_phase_currents.get("A", 0.0 + 0.0j) + to_phase_currents.get("B", 0.0 + 0.0j) + to_phase_currents.get("C", 0.0 + 0.0j))
             neutral_value = float(np.sqrt(2.0) * np.imag(i_t_neutral))
             self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.it_N, value=neutral_value, persist_after_native_init=False)
@@ -8629,13 +8506,13 @@ class EmtProblemDae(EmtProblemTemplate):
                 i_f = 0.0 + 0.0j
             else:
                 sf_ph = sf_array[branch_index] / sbase
-                i_f = np.conj(sf_ph / vf_ph)
+                i_f = 3.0 * np.conj(sf_ph / vf_ph)
 
             if st_array is None or abs(vt_ph) <= 1e-12:
                 i_t = 0.0 + 0.0j
             else:
                 st_ph = st_array[branch_index] / sbase
-                i_t = np.conj(st_ph / vt_ph)
+                i_t = 3.0 * np.conj(st_ph / vt_ph)
 
             # Instantaneous current at t = 0 with your EMT convention
             i_f0_red[k] = float(np.sqrt(2.0) * np.imag(i_f))
@@ -8645,8 +8522,15 @@ class EmtProblemDae(EmtProblemTemplate):
         Ih_t0_red = i_t0_red - rt.Gc_red @ v_t0_red
 
         for k in range(rt.m):
-            self._set_runtime_parameter_value_by_uid(uid=rt.Ih_f[k].uid, value=float(Ih_f0_red[k]))
-            self._set_runtime_parameter_value_by_uid(uid=rt.Ih_t[k].uid, value=float(Ih_t0_red[k]))
+            # PF projection runs before the runtime UID index exists. Preserve
+            # the history source in the temporary seed stores so it reaches the
+            # compiled runtime vector and survives the final init replay.
+            self._set_runtime_parameter_seed_by_uid(
+                uid=rt.Ih_f[k].uid, value=float(Ih_f0_red[k]), persist_after_native_init=True,
+            )
+            self._set_runtime_parameter_seed_by_uid(
+                uid=rt.Ih_t[k].uid, value=float(Ih_t0_red[k]), persist_after_native_init=True,
+            )
 
         rt.initialize_buffers_from_initial_point(
             v_f0_red=v_f0_red,
@@ -8679,8 +8563,8 @@ class EmtProblemDae(EmtProblemTemplate):
                 V_C = V1 * exp(+j*2*pi/3)
         - Per-phase power is:
                 S_phase = S_3ph / 3
-        - Per-phase current is:
-                I_phase = conj(S_phase / V_phase)
+        - Per-phase current on the system three-phase current base is:
+                I_phase = 3 * conj(S_phase / V_phase)
 
         EMT initialization convention kept identical to the existing 3-phase version:
                 x(0) = sqrt(2) * imag(X_phasor)
@@ -8720,12 +8604,12 @@ class EmtProblemDae(EmtProblemTemplate):
                 if abs(vf_ph) <= 1e-12:
                     i_f = 0.0 + 0.0j
                 else:
-                    i_f = np.conj(s_f_phase / vf_ph)
+                    i_f = 3.0 * np.conj(s_f_phase / vf_ph)
 
                 if abs(vt_ph) <= 1e-12:
                     i_t = 0.0 + 0.0j
                 else:
-                    i_t = np.conj(s_t_phase / vt_ph)
+                    i_t = 3.0 * np.conj(s_t_phase / vt_ph)
 
             elif ph == "B":
                 vf_ph = v_f_bus * np.exp(-1j * alpha)
@@ -8734,12 +8618,12 @@ class EmtProblemDae(EmtProblemTemplate):
                 if abs(vf_ph) <= 1e-12:
                     i_f = 0.0 + 0.0j
                 else:
-                    i_f = np.conj(s_f_phase / vf_ph)
+                    i_f = 3.0 * np.conj(s_f_phase / vf_ph)
 
                 if abs(vt_ph) <= 1e-12:
                     i_t = 0.0 + 0.0j
                 else:
-                    i_t = np.conj(s_t_phase / vt_ph)
+                    i_t = 3.0 * np.conj(s_t_phase / vt_ph)
 
             elif ph == "C":
                 vf_ph = v_f_bus * np.exp(+1j * alpha)
@@ -8748,12 +8632,12 @@ class EmtProblemDae(EmtProblemTemplate):
                 if abs(vf_ph) <= 1e-12:
                     i_f = 0.0 + 0.0j
                 else:
-                    i_f = np.conj(s_f_phase / vf_ph)
+                    i_f = 3.0 * np.conj(s_f_phase / vf_ph)
 
                 if abs(vt_ph) <= 1e-12:
                     i_t = 0.0 + 0.0j
                 else:
-                    i_t = np.conj(s_t_phase / vt_ph)
+                    i_t = 3.0 * np.conj(s_t_phase / vt_ph)
 
             else:
                 raise ValueError(f"Unsupported phase label in Bergeron runtime: {ph}")
@@ -8768,8 +8652,15 @@ class EmtProblemDae(EmtProblemTemplate):
         Ih_t0_red = i_t0_red - rt.Gc_red @ v_t0_red
 
         for k in range(rt.m):
-            self._set_runtime_parameter_value_by_uid(uid=rt.Ih_f[k].uid, value=float(Ih_f0_red[k]))
-            self._set_runtime_parameter_value_by_uid(uid=rt.Ih_t[k].uid, value=float(Ih_t0_red[k]))
+            # PF projection runs before the runtime UID index exists. Preserve
+            # the history source in the temporary seed stores so it reaches the
+            # compiled runtime vector and survives the final init replay.
+            self._set_runtime_parameter_seed_by_uid(
+                uid=rt.Ih_f[k].uid, value=float(Ih_f0_red[k]), persist_after_native_init=True,
+            )
+            self._set_runtime_parameter_seed_by_uid(
+                uid=rt.Ih_t[k].uid, value=float(Ih_t0_red[k]), persist_after_native_init=True,
+            )
 
         rt.initialize_buffers_from_initial_point(
             v_f0_red=v_f0_red,
@@ -9580,8 +9471,11 @@ class EmtProblemDae(EmtProblemTemplate):
         self.step_counter = 0
         self._mode_event_cursor = dict()
         self._initialize_mode_event_state()
-        from VeraGridEngine.Utils.procedural_logic import build_boundary_updater_from_block
-        self._block_boundary_updater = build_boundary_updater_from_block(self)
+        self._block_boundary_updater = build_boundary_updater_from_block(
+            problem=self,
+            runtime_session=self._manufacturer_native_runtime_session,
+            model_mode=1 if self._manufacturer_native_runtime_session is not None else None,
+        )
 
         if self._block_boundary_updater is None:
             pass
@@ -9593,6 +9487,17 @@ class EmtProblemDae(EmtProblemTemplate):
             # evaluating the procedural logic on the initialized operating
             # point, not only from the generic mode_dict seed.
             self._block_boundary_updater.initialize_modes(float(t0), x0, self._event_params_values)
+
+    def resolve_manufacturer_native_boundary(
+            self,
+            runtime_session: ManufacturerNativeRuntimeSessionProtocol | None,
+    ) -> None:
+        """Install the driver-owned EMT native session for subsequent resets.
+
+        :param runtime_session: Event-group session, or ``None`` to detach it.
+        :return: None.
+        """
+        self._manufacturer_native_runtime_session = runtime_session
 
     def emt_boundary_update(
             self,
@@ -9675,6 +9580,25 @@ class EmtProblemDae(EmtProblemTemplate):
         :return: None
         """
         self.emt_boundary_update(t, x, params)
+
+    def commit_boundary(self, t: float, x: np.ndarray, params: np.ndarray) -> None:
+        """Commit due manufacturer-native samples after an accepted EMT step.
+
+        The isolated runtime is irreversible, so it is advanced only after the
+        network solve has converged. Its held outputs are then persisted in the
+        problem-owned runtime vector for the next aligned sub-step.
+
+        :param t: Accepted solver boundary time.
+        :param x: Accepted EMT state vector.
+        :param params: Full mutable parameter vector receiving held outputs.
+        :return: None.
+        """
+        if self._block_boundary_updater is not None:
+            self._block_boundary_updater.commit_boundary(float(t), x, params)
+            runtime_parameter_count: int = self.get_variable_parameter_number()
+            self._event_params_values[:] = params[:runtime_parameter_count]
+        else:
+            pass
 
     def get_floquet_ak_stack(
             self,
@@ -9817,21 +9741,21 @@ class EmtProblemDae(EmtProblemTemplate):
 
     def _assign_generator_sharing_targets_from_seed(
             self,
-            inj: Any,
+            inj: InjectionParent,
             mdl: Block,
             phase_power: np.ndarray,
             generator_count_same_bus: int,
-            static_parameter_values_mapping: Dict[Var, Const],
     ) -> None:
         """
         Assign optional sharing references to one generator from its EMT seed.
 
-        The Thevenin generator template accepts total active and reactive power
-        references. These are derived from the already computed per-device EMT
-        seed so the dynamic controller starts from the same sharing target used
-        during the PF-to-EMT initialization.
+        Generator controllers may accept total active and reactive power
+        references. These runtime values are derived from the already computed
+        per-device EMT seed so the controller starts from the same sharing target
+        used during PF-to-EMT initialization.
 
         :param inj: Generator device.
+        :param mdl: Registered EMT model whose runtime references receive the seed.
         :param phase_power: Complex power seed in NABC order.
         :param generator_count_same_bus: Number of generators connected to the same bus.
         :return: None.
@@ -9848,28 +9772,15 @@ class EmtProblemDae(EmtProblemTemplate):
         else:
             share_enable_value = 0.0
 
-        self._assign_api_mapping_value_if_present(
+        self._assign_event_mapping_value_if_present(
             mdl=mdl,
             key=ParamPowerFlowReferenceType.generator_share_enable,
             value=share_enable_value,
-            static_parameter_values_mapping=static_parameter_values_mapping,
-        )
-        self._assign_api_mapping_value_if_present(
-            mdl=mdl,
-            key=ParamPowerFlowReferenceType.generator_share_p_ref,
-            value=p_ref_value,
-            static_parameter_values_mapping=static_parameter_values_mapping,
         )
         self._assign_event_mapping_value_if_present(
             mdl=mdl,
             key=ParamPowerFlowReferenceType.generator_share_p_ref,
             value=p_ref_value,
-        )
-        self._assign_api_mapping_value_if_present(
-            mdl=mdl,
-            key=ParamPowerFlowReferenceType.generator_share_q_ref,
-            value=q_ref_value,
-            static_parameter_values_mapping=static_parameter_values_mapping,
         )
         self._assign_event_mapping_value_if_present(
             mdl=mdl,

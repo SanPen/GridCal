@@ -45,6 +45,7 @@ class DummyProblem(EmtProblemTemplate):
 
         x: Var = vf.add_var("x")
         dx: Var = vf.add_diff_var("dx", base_var=x)
+        held_output: Var = Var("held_native_output")
 
         sys_block.state_vars = [x]
         sys_block.algebraic_vars = []
@@ -55,7 +56,7 @@ class DummyProblem(EmtProblemTemplate):
 
         sys_block.parameters = {}
         sys_block.event_dict = {}
-        sys_block.mode_dict = {}
+        sys_block.mode_dict = {held_output: Const(0.0)}
         static_parameter_values_mapping: Dict[Var, Const] = dict()
 
         super().__init__(sys_block=sys_block, static_parameter_values_mapping=static_parameter_values_mapping, glob_time=glob_time)
@@ -69,8 +70,13 @@ class DummyProblem(EmtProblemTemplate):
     def get_dx0(self) -> np.ndarray:
         return self._dx0.copy()
 
-    def def_event_params_fn(self, ev_params: np.ndarray, t: float) -> np.ndarray:
-        _unused: Tuple[np.ndarray, float] = (ev_params, t)
+    def def_event_params_fn(
+            self,
+            ev_params: np.ndarray,
+            t: float,
+            defer_unavailable_dependencies: bool = False,
+    ) -> np.ndarray:
+        _unused: Tuple[float, bool] = (t, defer_unavailable_dependencies)
         return ev_params
 
     def get_newton_trace_collector(self) -> Any:
@@ -97,7 +103,9 @@ class ForcedEventTracker(
         self._cursor: int = 0
         self.query_calls: List[Tuple[float, float]] = []
         self.update_calls: List[float] = []
+        self.update_parameter_values: List[float] = []
         self.resolve_calls: List[bool] = []
+        self.commit_calls: List[float] = []
 
     def get_next_forced_event_time(self, t_prev: float, t_target: float) -> float | None:
         self.query_calls.append((float(t_prev), float(t_target)))
@@ -112,11 +120,12 @@ class ForcedEventTracker(
         return None
 
     def update(self, t: float, x_prev: np.ndarray, full_params: np.ndarray) -> None:
-        _unused: Tuple[np.ndarray, np.ndarray] = (x_prev, full_params)
+        _unused: np.ndarray = x_prev
 
         t_float: float = float(t)
         self.update_calls.append(t_float)
 
+        self.update_parameter_values.append(float(full_params[0]))
         while self._cursor < len(self._forced_times):
             if self._forced_times[self._cursor] <= t_float + self._tol:
                 self._cursor += 1
@@ -133,6 +142,24 @@ class ForcedEventTracker(
 
         _unused: np.ndarray = params
         self.resolve_calls.append(bool(accepted))
+
+    def commit_boundary(
+        self,
+        t: float,
+        x: np.ndarray,
+        params: np.ndarray,
+    ) -> None:
+        """Record one post-convergence manufacturer sample boundary.
+
+        :param t: Accepted solver boundary time.
+        :param x: Accepted network state.
+        :param params: Runtime parameter vector receiving held outputs.
+        :return: None.
+        """
+        _unused: np.ndarray = x
+        commit_time: float = float(t)
+        self.commit_calls.append(commit_time)
+        params[0] = commit_time
 
 
 class DummyJacobian:
@@ -303,6 +330,23 @@ def test_force_step_alignment_is_used_by_all_three_solvers(
         np.array(expected_updates, dtype=np.float64),
     )
     assert updater.resolve_calls == [True, True, True, True]
+    expected_parameter_values: np.ndarray
+    if solver_kind == EmtSolverTypes.Automatic:
+        expected_parameter_values = np.array(
+            [0.00, 0.05, 0.10, 0.15], dtype=np.float64
+        )
+    else:
+        expected_parameter_values = np.array(
+            [0.00, 0.00, 0.05, 0.10, 0.15], dtype=np.float64
+        )
+    assert np.allclose(
+        np.array(updater.update_parameter_values, dtype=np.float64),
+        expected_parameter_values,
+    )
+    assert np.allclose(
+        np.array(updater.commit_calls, dtype=np.float64),
+        np.array([0.05, 0.10, 0.15, 0.20], dtype=np.float64),
+    )
 
     rounded_updates = [round(v, 8) for v in updater.update_calls]
     assert 0.05 in rounded_updates

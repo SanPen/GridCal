@@ -122,7 +122,7 @@ def _build_motor_api_mapping(
     q0_a: Var,
     q0_b: Var,
     q0_c: Var,
-) -> Dict[ParamPowerFlowReferenceType, Var | None]:
+) -> Dict[ParamPowerFlowReferenceType, Var]:
     """Build the API parameter mapping used by EMT initialization.
 
     :param omega_base: Electrical base speed in rad/s.
@@ -327,6 +327,7 @@ def _build_common_events(
 
 def _set_common_block_metadata(
     templ: EmtModelTemplate,
+    parameter_block: Block,
     name: str,
     v_a: Var,
     v_b: Var,
@@ -342,6 +343,7 @@ def _set_common_block_metadata(
     """Publish the common load metadata for one motor template.
 
     :param templ: EMT template to populate.
+    :param parameter_block: Child block that owns the mapped parameters.
     :param name: Template name.
     :param v_a: Phase-A voltage input.
     :param v_b: Phase-B voltage input.
@@ -371,7 +373,10 @@ def _set_common_block_metadata(
         d_v_b=d_v_b,
         d_v_c=d_v_c,
     )
-    templ.block.api_obj_mapping = _build_motor_api_mapping(
+    # Store the mapping on the same block that declares the target parameters.
+    # The recursive EMT mapper visits this child, so the root only needs to
+    # expose the device interface and does not duplicate child-owned metadata.
+    parameter_block.api_obj_mapping = _build_motor_api_mapping(
         omega_base=params["omega_base"],
         p0_a=params["p0_a"],
         p0_b=params["p0_b"],
@@ -666,12 +671,11 @@ def get_induction_motor_single_cage_emt_template(
     
     templ.block.children.append(block)
     templ.block.external_mapping = block.external_mapping
-    templ.block.api_obj_mapping = block.api_obj_mapping
-    templ.block.parameters = block.parameters
     templ.block.in_vars = block.in_vars
     templ.block.out_vars = block.out_vars
     _set_common_block_metadata(
         templ=templ,
+        parameter_block=block,
         name=name,
         v_a=v_a,
         v_b=v_b,
@@ -891,6 +895,7 @@ def get_induction_motor_double_cage_emt_template(
 
     _set_common_block_metadata(
         templ=templ,
+        parameter_block=block,
         name=name,
         v_a=v_a,
         v_b=v_b,
@@ -1049,8 +1054,6 @@ def get_induction_motor_double_cage_emt_template(
     
     templ.block.children.append(block)
     templ.block.external_mapping = block.external_mapping
-    templ.block.api_obj_mapping = block.api_obj_mapping
-    templ.block.parameters = block.parameters
     templ.block.in_vars = block.in_vars
     templ.block.out_vars = block.out_vars
     return templ

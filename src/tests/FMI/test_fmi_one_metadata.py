@@ -10,14 +10,13 @@ from pathlib import Path
 
 import pytest
 
-from VeraGridEngine.IO.fmu.importer.bindings import FmuImportConfig
-from VeraGridEngine.IO.fmu.importer.errors import FmuArchiveError
-from VeraGridEngine.IO.fmu.importer.model_description import (
+from VeraGridEngine.IO.fmu.Elements.bindings import FmuImportConfig
+from VeraGridEngine.IO.fmu.model_description import (
     FmuInterfaceMode,
     FmuModelDescription,
     read_fmu_model_description,
 )
-from VeraGridEngine.IO.fmu.importer.model_description_metadata import (
+from VeraGridEngine.IO.fmu.Elements.description import (
     FmiOneCoSimulationCapabilities,
 )
 from VeraGridEngine.enumerations import FmiVersion
@@ -210,7 +209,7 @@ def test_fmi_one_required_root_attributes_fail_closed(
         root_attributes,
     )
 
-    with pytest.raises(FmuArchiveError, match="missing required|missing required attribute"):
+    with pytest.raises(ValueError, match="missing required|missing required attribute"):
         read_fmu_model_description(source)
 
 
@@ -250,7 +249,7 @@ def test_fmi_one_counts_require_unsigned_32_bit_integers(
         ),
     )
 
-    with pytest.raises(FmuArchiveError, match="unsigned 32-bit"):
+    with pytest.raises(ValueError, match="unsigned 32-bit"):
         read_fmu_model_description(source)
 
 
@@ -299,7 +298,7 @@ def test_fmi_one_implementation_must_identify_one_interface(
         implementation_xml=implementation_xml,
     )
 
-    with pytest.raises(FmuArchiveError, match="Implementation|interface|CoSimulation"):
+    with pytest.raises(ValueError, match="Implementation|interface|CoSimulation"):
         read_fmu_model_description(source)
 
 
@@ -344,5 +343,5 @@ def test_fmi_one_rejects_fmi_two_derivative_metadata(tmp_path: Path) -> None:
             ),
             variables_xml=variables_xml,
         )
-        with pytest.raises(FmuArchiveError, match="outside FMI 2|invalid FMI 1"):
+        with pytest.raises(ValueError, match="outside FMI 2|invalid FMI 1"):
             read_fmu_model_description(source)

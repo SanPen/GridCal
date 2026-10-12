@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.DataStructures.load_data &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.DataStructures.load_data &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -69,7 +69,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -116,46 +116,48 @@
 <div class="viewcode-block" id="LoadData">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LoadData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Structure to host the load calculation information</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;nelm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nbus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idtag&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;active&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;is_static_generator&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;S&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;I&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Y&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;S3_delta&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;S3_star&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;S3_floatingstar&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;A_floatingstar&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;B_floatingstar&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;C_floatingstar&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;I3_delta&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;I3_star&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;I3_floatingstar&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Y3_delta&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Y3_star&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mttf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mttr&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;shift_key&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;scalable&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;original_idx&quot;</span><span class="p">,</span>
+        <span class="s2">"nelm"</span><span class="p">,</span>
+        <span class="s2">"nbus"</span><span class="p">,</span>
+        <span class="s2">"names"</span><span class="p">,</span>
+        <span class="s2">"idtag"</span><span class="p">,</span>
+        <span class="s2">"active"</span><span class="p">,</span>
+        <span class="s2">"is_static_generator"</span><span class="p">,</span>
+        <span class="s2">"q_droop"</span><span class="p">,</span> <span class="s2">"q_droop_snom"</span><span class="p">,</span> <span class="s2">"q_droop_vset"</span><span class="p">,</span> <span class="s2">"q_droop_vmin"</span><span class="p">,</span> <span class="s2">"q_droop_vmax"</span><span class="p">,</span>
+        <span class="s2">"S"</span><span class="p">,</span>
+        <span class="s2">"is_positive_sequence"</span><span class="p">,</span>
+        <span class="s2">"I"</span><span class="p">,</span>
+        <span class="s2">"Y"</span><span class="p">,</span>
+        <span class="s2">"S3_delta"</span><span class="p">,</span>
+        <span class="s2">"S3_star"</span><span class="p">,</span>
+        <span class="s2">"S3_floatingstar"</span><span class="p">,</span>
+        <span class="s2">"A_floatingstar"</span><span class="p">,</span>
+        <span class="s2">"B_floatingstar"</span><span class="p">,</span>
+        <span class="s2">"C_floatingstar"</span><span class="p">,</span>
+        <span class="s2">"I3_delta"</span><span class="p">,</span>
+        <span class="s2">"I3_star"</span><span class="p">,</span>
+        <span class="s2">"I3_floatingstar"</span><span class="p">,</span>
+        <span class="s2">"Y3_delta"</span><span class="p">,</span>
+        <span class="s2">"Y3_star"</span><span class="p">,</span>
+        <span class="s2">"mttf"</span><span class="p">,</span>
+        <span class="s2">"mttr"</span><span class="p">,</span>
+        <span class="s2">"bus_idx"</span><span class="p">,</span>
+        <span class="s2">"cost"</span><span class="p">,</span>
+        <span class="s2">"shift_key"</span><span class="p">,</span>
+        <span class="s2">"scalable"</span><span class="p">,</span>
+        <span class="s2">"original_idx"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Load data arrays</span>
 <span class="sd">        :param nelm: number of load</span>
 <span class="sd">        :param nbus: number of buses</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">nelm</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">nbus</span>
 
@@ -164,7 +166,15 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_static_generator</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="c1"># Zero droop marks ordinary fixed-power devices; only controlled static injections populate these arrays.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_droop</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nelm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_droop_snom</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nelm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_droop_vset</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nelm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_droop_vmin</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_droop_vmax</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="c1"># Use S as a positive-sequence power source in ABC, retaining the load sign.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_positive_sequence</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">I</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Y</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
 
@@ -199,24 +209,24 @@
 <div class="viewcode-block" id="LoadData.size">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get size of the structure</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span></div>
 
 
 <div class="viewcode-block" id="LoadData.slice">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.slice">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elm_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_map</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;LoadData&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elm_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_map</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"LoadData"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Slice load data by given indices</span>
 <span class="sd">        :param elm_idx: array of branch indices</span>
 <span class="sd">        :param bus_idx: array of bus indices</span>
 <span class="sd">        :param bus_map: map from bus index to island bus index {int(o): i for i, o in enumerate(bus_idx)}</span>
 <span class="sd">        :return: new LoadData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="n">LoadData</span><span class="p">(</span><span class="n">nelm</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">elm_idx</span><span class="p">),</span> <span class="n">nbus</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">bus_idx</span><span class="p">))</span>
 
@@ -225,7 +235,13 @@
 
         <span class="n">data</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
         <span class="n">data</span><span class="o">.</span><span class="n">is_static_generator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_static_generator</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">q_droop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_droop</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">q_droop_snom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_droop_snom</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">q_droop_vset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_droop_vset</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">q_droop_vmin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_droop_vmin</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">q_droop_vmax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_droop_vmax</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
         <span class="n">data</span><span class="o">.</span><span class="n">S</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">is_positive_sequence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_positive_sequence</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
         <span class="n">data</span><span class="o">.</span><span class="n">I</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">I</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
         <span class="n">data</span><span class="o">.</span><span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Y</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span>
 
@@ -271,10 +287,10 @@
 <div class="viewcode-block" id="LoadData.remap">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.remap">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">remap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_map_arr</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Remapping of the elm buses</span>
 <span class="sd">        :param bus_map_arr: array of old-to-new buses</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
             <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
             <span class="n">new_i</span> <span class="o">=</span> <span class="n">bus_map_arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -283,11 +299,11 @@
 
 <div class="viewcode-block" id="LoadData.copy">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;LoadData&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"LoadData"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a deep copy of this structure</span>
 <span class="sd">        :return: new LoadData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># TODO: review that we are copying everything</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">LoadData</span><span class="p">(</span><span class="n">nelm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">)</span>
 
@@ -296,7 +312,13 @@
 
         <span class="n">data</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">data</span><span class="o">.</span><span class="n">is_static_generator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_static_generator</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">q_droop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_droop</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">q_droop_snom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_droop_snom</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">q_droop_vset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_droop_vset</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">q_droop_vmin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_droop_vmin</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">q_droop_vmax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_droop_vmax</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">data</span><span class="o">.</span><span class="n">S</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">is_positive_sequence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_positive_sequence</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">data</span><span class="o">.</span><span class="n">I</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">I</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">data</span><span class="o">.</span><span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Y</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
@@ -332,41 +354,41 @@
 <div class="viewcode-block" id="LoadData.get_effective_load">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.get_effective_load">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_effective_load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get effective load</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LoadData.get_linear_effective_load">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.get_linear_effective_load">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_linear_effective_load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get effective load</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="o">.</span><span class="n">real</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span></div>
 
 
 <div class="viewcode-block" id="LoadData.get_injections_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.get_injections_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_injections_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get Injections per bus with sign</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus_cx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_effective_load</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="LoadData.get_static_generator_injections_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.get_static_generator_injections_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_static_generator_injections_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the static generator injections per bus with sign.</span>
 <span class="sd">        Static generators are stored in the load data structure with negative load values.</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus_cx</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span>
@@ -377,10 +399,10 @@
 <div class="viewcode-block" id="LoadData.get_non_static_generator_injections_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.get_non_static_generator_injections_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_non_static_generator_injections_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the non-static-generator injections per bus with sign.</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus_cx</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span>
@@ -391,21 +413,21 @@
 <div class="viewcode-block" id="LoadData.get_linear_injections_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.get_linear_injections_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_linear_injections_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get Injections per bus with sign</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_linear_effective_load</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="LoadData.get_array_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.get_array_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_array_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get generator array per bus</span>
 <span class="sd">        :param arr:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span>
         <span class="k">return</span> <span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span></div>
 
@@ -413,11 +435,11 @@
 <div class="viewcode-block" id="LoadData.get_array_per_bus_obj">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.get_array_per_bus_obj">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_array_per_bus_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Sum per bus in python mode (it can add objects)</span>
 <span class="sd">        :param arr: any array of size nelm</span>
 <span class="sd">        :return: array of size nbus</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
@@ -428,20 +450,20 @@
 <div class="viewcode-block" id="LoadData.get_current_injections_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.get_current_injections_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_current_injections_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get current Injections per bus with sign</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus_cx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">I</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="LoadData.get_admittance_injections_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.get_admittance_injections_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_admittance_injections_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get admittance Injections per bus with sign</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">tp</span><span class="o">.</span><span class="n">sum_per_bus_cx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Y</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span></div>
 
 
@@ -451,23 +473,28 @@
 <div class="viewcode-block" id="LoadData.get_bus_indices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.get_bus_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_bus_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the bus indices</span>
 <span class="sd">        :return: array with the bus indices</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_idx</span></div>
 
 
 <div class="viewcode-block" id="LoadData.compare">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.load_data.LoadData.compare">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;LoadData&quot;</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"LoadData"</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compare load fields used by NumericalCircuit.compare().</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;LoadData&#39;</span><span class="p">,</span> <span class="s1">&#39;active&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;LoadData&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">I</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">I</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;LoadData&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;LoadData&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'LoadData'</span><span class="p">,</span> <span class="s1">'active'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'LoadData'</span><span class="p">,</span> <span class="s1">'S'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">I</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">I</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'LoadData'</span><span class="p">,</span> <span class="s1">'I'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'LoadData'</span><span class="p">,</span> <span class="s1">'Y'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q_droop</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">q_droop</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'LoadData'</span><span class="p">,</span> <span class="s1">'q_droop'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q_droop_snom</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">q_droop_snom</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'LoadData'</span><span class="p">,</span> <span class="s1">'q_droop_snom'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q_droop_vset</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">q_droop_vset</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'LoadData'</span><span class="p">,</span> <span class="s1">'q_droop_vset'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q_droop_vmin</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">q_droop_vmin</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'LoadData'</span><span class="p">,</span> <span class="s1">'q_droop_vmin'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q_droop_vmax</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">q_droop_vmax</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'LoadData'</span><span class="p">,</span> <span class="s1">'q_droop_vmax'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

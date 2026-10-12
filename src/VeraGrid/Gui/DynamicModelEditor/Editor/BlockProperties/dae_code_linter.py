@@ -15,6 +15,12 @@ from VeraGridEngine.Utils.Symbolic.symbolic import (
     get_symbolic_parser_function_names,
 )
 from VeraGridEngine.enumerations import ProceduralLogicType
+from VeraGridEngine.Templates.ProceduralLogicCatalog import (
+    ProceduralBlockTemplateDescriptor,
+)
+from VeraGrid.Gui.DynamicModelEditor.Editor.DynamicLibrary.dynamic_editor_library import (
+    get_dynamic_library_procedural_descriptors,
+)
 
 
 class DaeCodeDiagnostic:
@@ -377,12 +383,9 @@ def build_dae_code_diagnostics(code: str,
 
     callable_names: set[str] = set(get_symbolic_parser_function_names())
     procedural_callable_names: set[str] = set()
-    procedural_tpe: ProceduralLogicType
-    for procedural_tpe in ProceduralLogicType:
-        if procedural_tpe != ProceduralLogicType.Base:
-            procedural_callable_names.add(procedural_tpe.value)
-        else:
-            pass
+    descriptor: ProceduralBlockTemplateDescriptor
+    for descriptor in get_dynamic_library_procedural_descriptors():
+        procedural_callable_names.add(descriptor.logic_tpe.value)
     allowed_names: set[str] = set(namespace.keys())
     allowed_names.update(callable_names)
     allowed_names.update(procedural_callable_names)

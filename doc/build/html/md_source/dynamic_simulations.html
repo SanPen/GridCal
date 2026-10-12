@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🧲 Dynamic simulations &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>🧲 Dynamic simulations &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,13 +15,13 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="⏱️ RMS simulations" href="rms_simulations.html" />
+    <link rel="next" title="Dynamic simulation theory" href="dynamic_theory.html" />
     <link rel="prev" title="🌀 State estimation" href="state_estimation.html" /> 
 </head>
 
@@ -73,94 +73,28 @@
 <li class="toctree-l1"><a class="reference internal" href="reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">🧲 Dynamic simulations</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html">⏱️ RMS simulations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html">🔬 EMT simulations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_model_library_index.html">📚 Dynamic model library</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#why-dynamic-simulations-are-different-from-static-simulations">Why dynamic simulations are different from static simulations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#rms-and-emt">RMS and EMT</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#rms">RMS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#emt">EMT</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#main-differences-between-rms-and-emt">Main differences between RMS and EMT</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#when-to-use-rms-and-when-to-use-emt">When to use RMS and when to use EMT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dynamic-simulation-theory">1. Dynamic simulation theory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dynamic_theory.html">Dynamic simulation theory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rms_simulations.html">⏱️ RMS simulations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="emt_simulations.html">🔬 EMT simulations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#small-signal-stability">Small-signal stability</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="small_signal_stability_rms.html">🔍 Small-Signal Stability Analysis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="small_signal_stability_emt.html">🧬 EMT Small-Signal stability: Floquet analysis</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#dae-formulation">DAE formulation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#linearized-dae-around-one-operating-point">Linearized DAE around one operating point</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dae-index-and-numerical-implications">DAE index and numerical implications</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#from-blocks-to-equations-in-veragrid">From blocks to equations in VeraGrid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#symbolic-numeric-approach">Symbolic-numeric approach</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#general-idea">General idea</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#why-this-matters-in-power-systems">Why this matters in power systems</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#symbolic-models-and-numerical-assembly">Symbolic models and numerical assembly</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dynamic-editor-and-model-construction">2. Dynamic editor and model construction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dynamic_modeling.html">Building dynamic models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dynamic_editor.html">Dynamic workspace and editors</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#dynamic-blocks-in-veragrid">Dynamic blocks in VeraGrid</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#what-a-block-contains">What a block contains</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#differential-and-algebraic-structure-inside-one-block">Differential and algebraic structure inside one block</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#state-vars-and-state-eqs"><code class="docutils literal notranslate"><span class="pre">state_vars</span></code> and <code class="docutils literal notranslate"><span class="pre">state_eqs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#algebraic-vars-and-algebraic-eqs"><code class="docutils literal notranslate"><span class="pre">algebraic_vars</span></code> and <code class="docutils literal notranslate"><span class="pre">algebraic_eqs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#differential-eqs-and-formulation-flexibility"><code class="docutils literal notranslate"><span class="pre">differential_eqs</span></code> and formulation flexibility</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#parameters"><code class="docutils literal notranslate"><span class="pre">parameters</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#init-values-init-eqs-and-diff-init-eqs"><code class="docutils literal notranslate"><span class="pre">init_values</span></code>, <code class="docutils literal notranslate"><span class="pre">init_eqs</span></code>, and <code class="docutils literal notranslate"><span class="pre">diff_init_eqs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#children-and-recursive-composition"><code class="docutils literal notranslate"><span class="pre">children</span></code> and recursive composition</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#inputs-and-outputs">Inputs and outputs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#rms-port-logic">RMS port logic</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#emt-port-logic">EMT port logic</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#event-dict"><code class="docutils literal notranslate"><span class="pre">event_dict</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#events-and-promoted-runtime-parameters">Events and promoted runtime parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#external-mapping"><code class="docutils literal notranslate"><span class="pre">external_mapping</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#api-obj-mapping"><code class="docutils literal notranslate"><span class="pre">api_obj_mapping</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#composite-templates">Composite templates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#templates-versus-manual-block-construction">Templates versus manual block construction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#how-blocks-become-one-global-simulation-problem">How blocks become one global simulation problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dynamic-model-library">3. Dynamic model library</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dynamic_model_library_index.html">📚 Dynamic model library</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#initialization">Initialization</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#power-flow-as-starting-point">Power flow as starting point</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#initialization-methods-available-in-veragrid">Initialization methods available in VeraGrid</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#explicit-initialization">Explicit initialization</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pseudo-transient-initialization">Pseudo-transient initialization</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#how-veragrid-uses-pseudo-transient-initialization">How VeraGrid uses pseudo-transient initialization</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#why-pseudo-transient-is-so-useful-in-dynamic-simulation">Why pseudo-transient is so useful in dynamic simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#practical-recommendation">Practical recommendation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#initialization-references">Initialization references</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#solvers-and-integration-methods">Solvers and integration methods</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#rms-solvers-and-integration-methods">RMS solvers and integration methods</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#emt-solvers-and-integration-methods">EMT solvers and integration methods</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#emt-solver-backends">EMT solver backends</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#choosing-time-step-method-and-backend">Choosing time step, method, and backend</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#choosing-time-step-and-domain">Choosing time step and domain</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#events-and-simulation-scenarios">Events and simulation scenarios</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#settings">Settings</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#rms-settings">RMS settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#emt-settings">EMT settings</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#results">Results</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#rms-results">RMS results</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#emt-results">EMT results</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#api-workflow-overview">API workflow overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#rms-example-from-scripting">RMS example from scripting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#emt-example-from-scripting">EMT example from scripting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#working-with-templates-and-model-editors">Working with templates and model editors</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#dynamic-model-documentation">Dynamic model documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#importing-dynamic-models-from-external-tools">Importing dynamic models from external tools</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#benchmarks-and-validation">Benchmarks and validation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#best-practices">Best practices</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#common-pitfalls">Common pitfalls</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#recommended-reading-paths">Recommended reading paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#end-to-end-workflow">End-to-end workflow</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
@@ -196,47 +130,103 @@
              
   <section class="tex2jax_ignore mathjax_ignore" id="dynamic-simulations">
 <h1>🧲 Dynamic simulations<a class="headerlink" href="#dynamic-simulations" title="Link to this heading"></a></h1>
-<p>Power systems do not live still. They swing, accelerate, saturate, switch, ring, recover, and sometimes misbehave spectacularly. That is why VeraGrid has dynamic simulations.</p>
-<p>Dynamic simulations are used to study the time evolution of electrical systems after disturbances, set-point changes, switching actions, or control responses. In VeraGrid, dynamic simulations are available in two main domains:</p>
+<p>VeraGrid provides two complementary time-domain simulation workflows:</p>
 <ul class="simple">
-<li><p><strong>Root Mean Square (RMS)</strong>: phasor-domain dynamic simulation for electromechanical and controller time scales.</p></li>
-<li><p><strong>Electromagnetic Transients (EMT)</strong>: electromagnetic-transient simulation for waveform-level and switching-level phenomena.</p></li>
+<li><p><strong>RMS simulation</strong> for phasor-domain electromechanical and controller dynamics.</p></li>
+<li><p><strong>EMT simulation</strong> for instantaneous, phase-domain electromagnetic transients.</p></li>
+<li><p><strong>Small-signal stability</strong> for RMS modal analysis and EMT Floquet analysis.</p></li>
 </ul>
-<p>Dynamic simulation is one of the main differences between a grid analysis platform that only solves steady-state operating points and one that can represent the actual temporal behavior of the system. For steady-state studies, the network is assumed to be already in equilibrium. For dynamic studies, the transient path between equilibria, or the possible loss of equilibrium, is the object of interest.</p>
-<p>If power flow tells you where the system is standing, dynamic simulation tells you what happens when you poke it.</p>
-<p>The classical theoretical foundations for power-system dynamic simulation can be found in Kundur’s treatment of electromechanical stability, in Milano’s differential-algebraic modelling framework, and in standard EMT references such as Dommel and Mahseredjian’s ATP/EMTP-oriented literature and the EMTP-RV theory texts [1]-[6]. VeraGrid follows the same general modelling philosophy: represent the network and devices as coupled differential-algebraic systems, initialize them consistently from a solved operating point, and integrate them in time with suitable numerical methods.</p>
-<p>This page provides the common theory, architecture, initialization, solver, event, and scripting concepts shared by VeraGrid’s dynamic studies. Continue with the domain-specific guides or the model reference according to the task:</p>
-<ul class="simple">
-<li><p><strong>RMS simulations</strong> cover phasor-domain time simulation and contain the RMS Small-Signal analysis guide.</p></li>
-<li><p><strong>EMT simulations</strong> cover waveform- and phase-domain time simulation and contain the EMT Floquet Small-Signal analysis guide.</p></li>
-<li><p><strong>Dynamic model library</strong> contains model authoring guidance, device templates, reusable DAE blocks, and procedural runtime logic.</p></li>
-</ul>
+<p>The dynamic documentation is organized by task. Start with the theory if you need to understand the mathematical model and initialization, continue with the RMS or EMT workflow for a simulation, and use the modelling section when creating or editing dynamic models.</p>
+<section id="dynamic-simulation-theory">
+<h2>1. Dynamic simulation theory<a class="headerlink" href="#dynamic-simulation-theory" title="Link to this heading"></a></h2>
+<p>The general theory page explains differential-algebraic equations (DAEs), model assembly, initialization, time integration, events, and how to choose between RMS and EMT. The RMS and EMT pages then describe the formulation-specific workflow, settings, results, GUI procedure, and API example.</p>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="dynamic_theory.html">Dynamic simulation theory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_theory.html#rms-and-emt-domains">RMS and EMT domains</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_theory.html#differential-algebraic-equations">Differential-algebraic equations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_theory.html#from-blocks-to-one-system">From blocks to one system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_theory.html#initialization">Initialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_theory.html#time-integration">Time integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_theory.html#events-and-scenarios">Events and scenarios</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_theory.html#results-and-interpretation">Results and interpretation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_theory.html#model-validation-checklist">Model validation checklist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_theory.html#further-reading">Further reading</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="rms_simulations.html">⏱️ RMS simulations</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="small_signal_stability_rms.html">🔍 Small-Signal Stability Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#when-to-use-rms-simulation">When to use RMS simulation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#rms-workflow-in-veragrid">RMS workflow in VeraGrid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#rms-settings">RMS settings</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#rms-events">RMS events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RMS_practical_session.html">RMS practical session: building and simulating a dynamic model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#when-to-use-rms">When to use RMS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#rms-workflow">RMS workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#settings-available-in-the-gui">Settings available in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#events">Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#gui-example">GUI example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#rms-results">RMS results</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#api">API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#practical-notes">Practical notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#results-in-the-gui">Results in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#results-from-the-api">Results from the API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#api-example">API example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rms_simulations.html#practical-checks">Practical checks</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="emt_simulations.html">🔬 EMT simulations</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="small_signal_stability_emt.html">🧬 EMT Small-Signal stability: Floquet analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#when-to-use-emt-simulation">When to use EMT simulation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#emt-workflow-in-veragrid">EMT workflow in VeraGrid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#emt-settings">EMT settings</a></li>
-<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#emt-events">EMT events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="EMT_practical_session.html">EMT practical session: building and simulating a phase-domain model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#when-to-use-emt">When to use EMT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#emt-workflow">EMT workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#settings-available-in-the-gui">Settings available in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#events">Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#gui-example">GUI example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#emt-results">EMT results</a></li>
-<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#api">API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#practical-notes">Practical notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#results-in-the-gui">Results in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#results-from-the-api">Results from the API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#api-example">API example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="emt_simulations.html#practical-checks">Practical checks</a></li>
 </ul>
 </li>
+</ul>
+</div>
+<section id="small-signal-stability">
+<h3>Small-signal stability<a class="headerlink" href="#small-signal-stability" title="Link to this heading"></a></h3>
+<p>Small-signal studies use an initialized dynamic model to assess how small perturbations evolve. RMS analysis linearizes around an equilibrium or a selected trajectory point. EMT analysis evaluates a periodic steady-state trajectory using Floquet multipliers.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="small_signal_stability_rms.html">🔍 Small-Signal Stability Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="small_signal_stability_emt.html">🧬 EMT Small-Signal stability: Floquet analysis</a></li>
+</ul>
+</div>
+</section>
+</section>
+<section id="dynamic-editor-and-model-construction">
+<h2>2. Dynamic editor and model construction<a class="headerlink" href="#dynamic-editor-and-model-construction" title="Link to this heading"></a></h2>
+<p>Dynamic models can be assigned from a template or assembled from blocks. The modelling guide describes the common block structure and API workflow. The editor guide covers the model editor, Events, Comparison, and Plots pages. The DAE authoring guide is the detailed reference for writing equations and initialization expressions.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dynamic_modeling.html">Building dynamic models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_modeling.html#general-block-structure">General block structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_modeling.html#model-ownership-and-connections">Model ownership and connections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_modeling.html#construction-workflow">Construction workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_modeling.html#building-and-assigning-models-from-the-api">Building and assigning models from the API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_modeling.html#parameters-and-events">Parameters and events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_modeling.html#templates-and-copied-models">Templates and copied models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_modeling.html#validation">Validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_modeling.html#next-steps">Next steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dynamic_editor.html">Dynamic workspace and editors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_editor.html#workspace-structure">Workspace structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_editor.html#rms-and-emt-model-editors">RMS and EMT model editors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_editor.html#events-page">Events page</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_editor.html#comparison-page">Comparison page</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_editor.html#plots-page">Plots page</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_editor.html#results-view">Results view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_editor.html#recommended-editor-workflow">Recommended editor workflow</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="dynamic-model-library">
+<h2>3. Dynamic model library<a class="headerlink" href="#dynamic-model-library" title="Link to this heading"></a></h2>
+<p>The library reference documents the models and reusable blocks currently shipped with VeraGrid. Its navigation follows the present library organization and is kept separate from the theory and authoring guides.</p>
+<div class="toctree-wrapper compound">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="dynamic_model_library_index.html">📚 Dynamic model library</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="dynamic_model_library_index.html#authoring-models">Authoring models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dynamic_model_library_index.html#device-templates">Device templates</a></li>
@@ -245,1223 +235,64 @@
 </li>
 </ul>
 </div>
-<section id="why-dynamic-simulations-are-different-from-static-simulations">
-<h2>Why dynamic simulations are different from static simulations<a class="headerlink" href="#why-dynamic-simulations-are-different-from-static-simulations" title="Link to this heading"></a></h2>
-<p>Static simulations such as power flow, short circuit, or linearized analyses answer questions about one operating point or one algebraic condition. Dynamic simulations answer questions about the trajectory that follows a disturbance.</p>
-<p>Typical dynamic questions are:</p>
-<ul class="simple">
-<li><p>Does the system remain synchronized after a load step or a fault?</p></li>
-<li><p>How does frequency evolve after a generation imbalance?</p></li>
-<li><p>How do converter controls react to a voltage sag?</p></li>
-<li><p>What is the bus-voltage waveform during a switching transient?</p></li>
-<li><p>How do currents, internal states, and control references evolve in time?</p></li>
-</ul>
-<p>For this reason, dynamic simulations require additional ingredients that static simulations do not:</p>
-<ul class="simple">
-<li><p>Dynamic device models.</p></li>
-<li><p>Initial values for states and algebraic variables.</p></li>
-<li><p>Time-domain events.</p></li>
-<li><p>Numerical integration methods.</p></li>
-<li><p>Post-processing of trajectories instead of single operating-point values.</p></li>
-</ul>
-<p>In VeraGrid, this means that a dynamic study is usually built on top of a static grid model, normally after a power-flow solution has been obtained.</p>
 </section>
-<section id="rms-and-emt">
-<h2>RMS and EMT<a class="headerlink" href="#rms-and-emt" title="Link to this heading"></a></h2>
-<p>VeraGrid supports two complementary dynamic simulation domains.</p>
-<p>In the literature, dynamic power-system simulations are commonly grouped according to how electrical quantities are represented and which time scales are retained [1]-[5]. Two broad families dominate practical engineering work:</p>
-<ul class="simple">
-<li><p><strong>phasor or RMS-domain simulations</strong>, which focus on the slower electromechanical and control dynamics,</p></li>
-<li><p><strong>electromagnetic transient (EMT) simulations</strong>, which focus on instantaneous waveform dynamics.</p></li>
-</ul>
-<p>The difference is not only numerical. It is also conceptual. Each domain is based on a different approximation of the same physical network.</p>
-<section id="rms">
-<h3>RMS<a class="headerlink" href="#rms" title="Link to this heading"></a></h3>
-<p>RMS means <strong>root-mean-square phasor-domain simulation</strong>. The network variables are represented by slowly varying fundamental-frequency quantities instead of instantaneous phase waveforms. RMS simulation is appropriate when the electromagnetic transients inside one cycle are not the main object of study, but electromechanical dynamics, converter outer-loop controls, or slower controller interactions are.</p>
-<p>In RMS simulation, voltages and currents are usually represented by phasor quantities or by state-space variables referred to one synchronous frame. The rapid oscillation at the fundamental frequency is not integrated explicitly in the same way as in EMT. Instead, the model tracks the evolution of slowly varying electrical and control quantities. This makes RMS simulation extremely valuable for system-wide transient stability studies [1]-[4].</p>
-<p>From a modelling viewpoint, RMS simulation relies on the idea that many fast network transients can be neglected when the objective is to study slower system phenomena. The network is then represented by algebraic constraints, while the slow device dynamics are retained explicitly. A large part of classical transient-stability theory is based on this approximation.</p>
-<p>Typical RMS applications are:</p>
-<ul class="simple">
-<li><p>Rotor-angle and frequency stability.</p></li>
-<li><p>AVR, governor, PSS, and plant-control studies.</p></li>
-<li><p>Converter control studies where switching is not explicitly modelled.</p></li>
-<li><p>Small disturbances, set-point changes, and medium-speed events.</p></li>
-<li><p>Large multi-machine systems where computational efficiency matters.</p></li>
-</ul>
-<p>The modelling philosophy is aligned with standard transient-stability formulations described by Kundur and Milano [1]-[3].</p>
-<p>Typical RMS formulations in practice include:</p>
-<ul class="simple">
-<li><p>balanced positive-sequence models,</p></li>
-<li><p>unbalanced phasor-domain extensions,</p></li>
-<li><p>dq-based averaged converter models,</p></li>
-<li><p>phasor-domain machine and controller models.</p></li>
-</ul>
-<p>In the context of VeraGrid, the currently consolidated RMS workflow is the balanced phasor-domain dynamic-simulation framework coupled to symbolic DAE assembly.</p>
-</section>
-<section id="emt">
-<h3>EMT<a class="headerlink" href="#emt" title="Link to this heading"></a></h3>
-<p>EMT means <strong>electromagnetic transient simulation</strong>. Voltages and currents are represented as instantaneous time-domain waveforms, often phase-by-phase, and switching actions can be represented explicitly. EMT simulation is required when sub-cycle phenomena, fast converter dynamics, unbalanced conditions, or waveform distortion are important.</p>
-<p>In EMT simulation, the solver advances the actual instantaneous electrical variables in time. There is no assumption that the phase waveforms remain sinusoidal inside the integration step. For this reason, the formulation can represent:</p>
-<ul class="simple">
-<li><p>travelling waves,</p></li>
-<li><p>high-frequency switching transients,</p></li>
-<li><p>magnetic inrush,</p></li>
-<li><p>protection-driven discontinuities,</p></li>
-<li><p>converter inner-loop interactions,</p></li>
-<li><p>unbalanced and phase-coupled behavior.</p></li>
-</ul>
-<p>EMT is therefore the natural framework when the classical RMS assumptions no longer hold. This is increasingly relevant in power systems with a high penetration of converter-interfaced resources, where the interaction between controls and the electrical network may happen at time scales much shorter than the electromechanical ones [4]-[7].</p>
-<p>Typical EMT applications are:</p>
-<ul class="simple">
-<li><p>Converter switching and PWM studies.</p></li>
-<li><p>Protection and fast transient studies.</p></li>
-<li><p>Phase-domain and unbalanced systems.</p></li>
-<li><p>Detailed line and transformer transient response.</p></li>
-<li><p>Interactions between fast controls and the electromagnetic network.</p></li>
-</ul>
-<p>This corresponds to the classical EMTP/ATP family of formulations described by Dommel, Mahseredjian and related EMT references [4]-[6].</p>
-<p>At the numerical level, most EMT programs follow the classical EMTP logic:</p>
-<ul class="simple">
-<li><p>discretize network elements in time,</p></li>
-<li><p>rewrite them as equivalent conductances and history sources,</p></li>
-<li><p>assemble one nodal system,</p></li>
-<li><p>solve it repeatedly at each time step.</p></li>
-</ul>
-<p>That philosophy also appears in VeraGrid’s EMT framework, although combined with the symbolic-numeric architecture used by the platform.</p>
-</section>
-<section id="main-differences-between-rms-and-emt">
-<h3>Main differences between RMS and EMT<a class="headerlink" href="#main-differences-between-rms-and-emt" title="Link to this heading"></a></h3>
+<section id="recommended-reading-paths">
+<h2>Recommended reading paths<a class="headerlink" href="#recommended-reading-paths" title="Link to this heading"></a></h2>
 <table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"><p>Aspect</p></th>
-<th class="head"><p>RMS</p></th>
-<th class="head"><p>EMT</p></th>
+<tr class="row-odd"><th class="head"><p>Goal</p></th>
+<th class="head"><p>Start here</p></th>
+<th class="head"><p>Continue with</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Main variables</p></td>
-<td><p>Fundamental-frequency phasors or phasor-like dynamic variables</p></td>
-<td><p>Instantaneous voltages and currents</p></td>
+<tr class="row-even"><td><p>Choose a simulation domain</p></td>
+<td><p><a class="reference internal" href="dynamic_theory.html"><span class="std std-doc">Dynamic simulation theory</span></a></p></td>
+<td><p><a class="reference internal" href="rms_simulations.html"><span class="std std-doc">RMS</span></a> or <a class="reference internal" href="emt_simulations.html"><span class="std std-doc">EMT</span></a></p></td>
 </tr>
-<tr class="row-odd"><td><p>Typical time step</p></td>
-<td><p>Milliseconds</p></td>
-<td><p>Microseconds or below</p></td>
+<tr class="row-odd"><td><p>Run an RMS study</p></td>
+<td><p><a class="reference internal" href="rms_simulations.html"><span class="std std-doc">RMS simulations</span></a></p></td>
+<td><p><a class="reference internal" href="RMS_practical_session.html"><span class="std std-doc">RMS practical session</span></a></p></td>
 </tr>
-<tr class="row-even"><td><p>Network detail</p></td>
-<td><p>Reduced electromagnetic detail</p></td>
-<td><p>High electromagnetic detail</p></td>
+<tr class="row-even"><td><p>Run an EMT study</p></td>
+<td><p><a class="reference internal" href="emt_simulations.html"><span class="std std-doc">EMT simulations</span></a></p></td>
+<td><p><a class="reference internal" href="EMT_practical_session.html"><span class="std std-doc">EMT practical session</span></a></p></td>
 </tr>
-<tr class="row-odd"><td><p>Switching detail</p></td>
-<td><p>Usually not explicit</p></td>
-<td><p>Can be explicit</p></td>
+<tr class="row-odd"><td><p>Assess RMS small-signal stability</p></td>
+<td><p><a class="reference internal" href="small_signal_stability_rms.html"><span class="std std-doc">RMS Small-Signal stability</span></a></p></td>
+<td><p>Modal results and participation factors</p></td>
 </tr>
-<tr class="row-even"><td><p>Computational cost</p></td>
-<td><p>Lower</p></td>
-<td><p>Higher</p></td>
+<tr class="row-even"><td><p>Assess EMT periodic-orbit stability</p></td>
+<td><p><a class="reference internal" href="small_signal_stability_emt.html"><span class="std std-doc">EMT Small-Signal stability</span></a></p></td>
+<td><p>Floquet multipliers and modes</p></td>
 </tr>
-<tr class="row-odd"><td><p>Typical use</p></td>
-<td><p>Stability and controls</p></td>
-<td><p>Fast transients and waveform studies</p></td>
+<tr class="row-odd"><td><p>Build or edit a model</p></td>
+<td><p><a class="reference internal" href="dynamic_modeling.html"><span class="std std-doc">Building dynamic models</span></a></p></td>
+<td><p><a class="reference internal" href="dynamic_editor.html"><span class="std std-doc">Dynamic workspace and editors</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>Write DAE equations</p></td>
+<td><p><a class="reference internal" href="dae_block_authoring.html"><span class="std std-doc">Writing DAE models in VeraGrid</span></a></p></td>
+<td><p><a class="reference internal" href="dynamic_physical_network_contracts.html"><span class="std std-doc">Physical network contracts</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Look up a supplied model</p></td>
+<td><p><a class="reference internal" href="dynamic_model_library_index.html"><span class="std std-doc">Dynamic model library</span></a></p></td>
+<td><p>The model’s reference page</p></td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="when-to-use-rms-and-when-to-use-emt">
-<h3>When to use RMS and when to use EMT<a class="headerlink" href="#when-to-use-rms-and-when-to-use-emt" title="Link to this heading"></a></h3>
-<p>Use <strong>RMS</strong> when:</p>
-<ul class="simple">
-<li><p>the main interest is electromechanical or control-level behavior,</p></li>
-<li><p>the network is large and computational efficiency matters,</p></li>
-<li><p>switching waveforms are not needed,</p></li>
-<li><p>you want the standard transient-stability workflow.</p></li>
-</ul>
-<p>Use <strong>EMT</strong> when:</p>
-<ul class="simple">
-<li><p>switching actions matter,</p></li>
-<li><p>the study is strongly unbalanced or phase-domain,</p></li>
-<li><p>waveform distortion or sub-cycle behavior is important,</p></li>
-<li><p>fast converter-network interaction must be represented explicitly.</p></li>
-</ul>
-<p>In practice, RMS is often the first study to perform, and EMT is then used when a phenomenon cannot be represented with sufficient fidelity in the RMS domain.</p>
-<p>This hierarchical use is common in engineering studies:</p>
-<ul class="simple">
-<li><p>RMS is used first to understand the global dynamic picture,</p></li>
-<li><p>EMT is used later to study the fast or local phenomena that RMS cannot resolve.</p></li>
-</ul>
-<p>This is also good modelling discipline. Using EMT for everything is usually unnecessary and computationally expensive; using RMS for everything is often physically insufficient.</p>
-</section>
-</section>
-<section id="dae-formulation">
-<h2>DAE formulation<a class="headerlink" href="#dae-formulation" title="Link to this heading"></a></h2>
-<p>Dynamic power-system models are naturally written as <strong>differential-algebraic equations</strong> (DAEs). A standard form is [2], [3]:</p>
-<div class="math">
-<p><img src="../_images/math/54ffb1beb610e94ca61bb8567fb3fda094da7238.svg" alt="\dot{x} = f(x, y, p, t)"/></p>
-</div><div class="math">
-<p><img src="../_images/math/0c3f5c333665ff0f915e7b4f724dac0a8ab82d33.svg" alt="0 = g(x, y, p, t)"/></p>
-</div><p>Where:</p>
-<ul class="simple">
-<li><p><img class="math" src="../_images/math/888f7c323ac0341871e867220ae2d76467d74d6e.svg" alt="x"/> are the differential or state variables,</p></li>
-<li><p><img class="math" src="../_images/math/1b5e577d6216dca3af7d87aa122a0b9b360d6cb3.svg" alt="y"/> are the algebraic variables,</p></li>
-<li><p><img class="math" src="../_images/math/141bbefb74014fc5e43499901bf78607ae335583.svg" alt="p"/> are parameters,</p></li>
-<li><p><img class="math" src="../_images/math/907a4add6d5db5b7f197f7924f1371b8ac404fe6.svg" alt="t"/> is time.</p></li>
-</ul>
-<p>The differential equations describe dynamic storage and control dynamics. The algebraic equations describe instantaneous constraints such as current balance, voltage relations, or constitutive network equations.</p>
-<p>This structure appears naturally in power systems because electrical networks impose instantaneous constraints, while machines, controllers, magnetic circuits, and energy-storage devices contribute state dynamics.</p>
-<p>More generally, one may write the DAE in implicit form as:</p>
-<div class="math">
-<p><img src="../_images/math/72589a5fd2cc1116c35fc098e52cd57be614b607.svg" alt="F(\dot{x},x,y,t)=0"/></p>
-</div><p>or, in the widely used semi-explicit form,</p>
-<div class="math">
-<p><img src="../_images/math/44d8fbe6f543beadc92c487d1a20ca25cb2ac494.svg" alt="\begin{cases}
-\dot{x} = f(x,y,t) \\
-0 = g(x,y,t)
-\end{cases}"/></p>
-</div><p>The semi-explicit form is especially useful in power systems because the distinction between dynamic and algebraic quantities is physically meaningful.</p>
-<ul class="simple">
-<li><p>The differential part models stored energy and control memory.</p></li>
-<li><p>The algebraic part models instantaneous network balance and constitutive constraints.</p></li>
-</ul>
-<p>For example, synchronous-machine mechanical dynamics, controller integrators, flux dynamics, and dc-link states belong naturally to the differential part. Bus voltage relations, current-balance equations, load constitutive equations, and static network coupling belong naturally to the algebraic part.</p>
-<p>This is why power systems are not, in general, pure ODE systems. The electrical network enforces constraints that must hold at every instant, and those constraints must be solved together with the dynamic equations.</p>
-<section id="linearized-dae-around-one-operating-point">
-<h3>Linearized DAE around one operating point<a class="headerlink" href="#linearized-dae-around-one-operating-point" title="Link to this heading"></a></h3>
-<p>Let <img class="math" src="../_images/math/263a6318bfa7d00e05ee6f26a1c4440af8e9c3c8.svg" alt="(x^*, y^*)"/> be one equilibrium point. Linearizing the semi-explicit DAE gives:</p>
-<div class="math">
-<p><img src="../_images/math/05e2a17e317da51f9038db89062d254aff626749.svg" alt="\Delta \dot{x} = f_x \Delta x + f_y \Delta y"/></p>
-</div><div class="math">
-<p><img src="../_images/math/fab91de344cf09d91b445fa18af729a95eee4400.svg" alt="0 = g_x \Delta x + g_y \Delta y"/></p>
-</div><p>where the Jacobian submatrices are evaluated at the equilibrium point.</p>
-<p>If <img class="math" src="../_images/math/c3cdb2838b78c40679f3c330892bd3f9d3d54dbe.svg" alt="g_y"/> is nonsingular, then:</p>
-<div class="math">
-<p><img src="../_images/math/6c1d62ee78b2a9d5834b7804e13f985835ebd1d7.svg" alt="\Delta y = -g_y^{-1} g_x \Delta x"/></p>
-</div><p>and substitution yields the reduced state matrix:</p>
-<div class="math">
-<p><img src="../_images/math/97515f5ab2c33dd017b8571b83ca13a137f1960d.svg" alt="\Delta \dot{x} = \left(f_x - f_y g_y^{-1} g_x\right) \Delta x"/></p>
-</div><p>This reduced matrix is one of the foundations of eigenvalue-based Small-Signal analysis. It is also a strong reason to keep the nonlinear model formulation coherent: if the original DAE is inconsistent, the linearized model will be inconsistent as well.</p>
-</section>
-<section id="dae-index-and-numerical-implications">
-<h3>DAE index and numerical implications<a class="headerlink" href="#dae-index-and-numerical-implications" title="Link to this heading"></a></h3>
-<p>Not all DAEs are equally easy to solve. In the practical context of power-system simulation, the most desirable formulations are those that behave like index-1 DAEs, meaning that the algebraic constraints can be enforced without repeated symbolic differentiation of the algebraic equations [2], [3], [12].</p>
-<p>This matters numerically because:</p>
-<ul class="simple">
-<li><p>higher-index systems are harder to initialize,</p></li>
-<li><p>Newton iterations become more fragile,</p></li>
-<li><p>consistency conditions become more restrictive,</p></li>
-<li><p>the solver may need additional reformulation or regularization.</p></li>
-</ul>
-<p>This is one of the reasons why initialization, symbolic structure, and solver design cannot be documented independently. They are all aspects of the same mathematical problem.</p>
-<p>Milano’s <em>Power System Modelling and Scripting</em> and <em>Power System Modelling and Stability Analysis</em> provide excellent references for this formulation in power-system dynamics [2], [3].</p>
-</section>
-</section>
-<section id="from-blocks-to-equations-in-veragrid">
-<h2>From blocks to equations in VeraGrid<a class="headerlink" href="#from-blocks-to-equations-in-veragrid" title="Link to this heading"></a></h2>
-<p>In VeraGrid, each dynamic component is represented as a <strong>block</strong>. A block contains variables, equations, parameters, initialization information, and connectivity information. A complete RMS or EMT simulation model is obtained by assembling the blocks of all devices and connecting them through bus and branch interfaces.</p>
-<p>At runtime, VeraGrid builds one global problem from those blocks:</p>
-<ul class="simple">
-<li><p>devices contribute local equations,</p></li>
-<li><p>buses and branches connect device ports,</p></li>
-<li><p>event-enabled parameters are promoted to runtime values when needed,</p></li>
-<li><p>the final problem is initialized and integrated in time.</p></li>
-</ul>
-<p>This is conceptually the same modelling workflow described in modern equation-based dynamic simulation tools, but adapted to the grid-modelling workflow of VeraGrid.</p>
-</section>
-<section id="symbolic-numeric-approach">
-<h2>Symbolic-numeric approach<a class="headerlink" href="#symbolic-numeric-approach" title="Link to this heading"></a></h2>
-<p>VeraGrid uses a <strong>symbolic-numeric approach</strong> for dynamic simulation.</p>
-<p>The idea is the following:</p>
-<ul class="simple">
-<li><p>Models are built symbolically as blocks, equations, and variable relationships.</p></li>
-<li><p>The symbolic structure is then assembled into one numerical problem.</p></li>
-<li><p>Numerical solvers use the assembled equations and Jacobians to initialize and integrate the system.</p></li>
-</ul>
-<p>This approach is used because it combines flexibility and performance:</p>
-<ul class="simple">
-<li><p>It is easier to build reusable templates for generators, converters, loads, lines, and controllers.</p></li>
-<li><p>It makes GUI model editing and scripting workflows consistent.</p></li>
-<li><p>It supports automatic construction of initialization equations.</p></li>
-<li><p>It enables structural analysis and different solver backends.</p></li>
-<li><p>It allows parameters to be promoted to runtime event variables when needed.</p></li>
-</ul>
-<p>In other words, VeraGrid does not hard-code one monolithic set of equations per study type. Instead, it composes the problem from modular symbolic blocks and then solves the assembled numerical system.</p>
-<section id="general-idea">
-<h3>General idea<a class="headerlink" href="#general-idea" title="Link to this heading"></a></h3>
-<p>The symbolic-numeric approach separates <strong>model definition</strong> from <strong>numerical evaluation</strong>.</p>
-<p>At the symbolic level, the user or template author defines:</p>
-<ul class="simple">
-<li><p>variables,</p></li>
-<li><p>constants,</p></li>
-<li><p>operators,</p></li>
-<li><p>equations,</p></li>
-<li><p>initialization expressions,</p></li>
-<li><p>interconnections between blocks.</p></li>
-</ul>
-<p>At the numerical level, VeraGrid assembles those symbolic objects into evaluators, residual vectors, Jacobians, initialization problems, and time-stepping routines.</p>
-<p>The same mathematical model can therefore be reused for:</p>
-<ul class="simple">
-<li><p>time-domain simulation,</p></li>
-<li><p>initialization,</p></li>
-<li><p>linearization,</p></li>
-<li><p>sensitivity analysis,</p></li>
-<li><p>GUI model editing,</p></li>
-<li><p>scripting-based workflows.</p></li>
-</ul>
-</section>
-<section id="why-this-matters-in-power-systems">
-<h3>Why this matters in power systems<a class="headerlink" href="#why-this-matters-in-power-systems" title="Link to this heading"></a></h3>
-<p>Power-system dynamic models are increasingly heterogeneous. Classical synchronous-machine models coexist with converter controls, custom load models, plant controllers, EMT companion models, and event-driven logic. A symbolic-numeric framework helps maintain consistency across this diversity.</p>
-<p>The main benefits are:</p>
-<ul class="simple">
-<li><p>explicit analytical traceability from model equations to numerical routines,</p></li>
-<li><p>easier extension with new device templates,</p></li>
-<li><p>exact or structurally consistent Jacobian assembly,</p></li>
-<li><p>reduced duplication between nonlinear and linearized models,</p></li>
-<li><p>better support for debugging and validation.</p></li>
-</ul>
-<p>This is particularly valuable for research and development platforms such as VeraGrid, where transparency and extensibility are as important as raw numerical performance.</p>
-</section>
-<section id="symbolic-models-and-numerical-assembly">
-<h3>Symbolic models and numerical assembly<a class="headerlink" href="#symbolic-models-and-numerical-assembly" title="Link to this heading"></a></h3>
-<p>Conceptually, VeraGrid follows this sequence:</p>
+<section id="end-to-end-workflow">
+<h2>End-to-end workflow<a class="headerlink" href="#end-to-end-workflow" title="Link to this heading"></a></h2>
 <ol class="arabic simple">
-<li><p>represent each device as a symbolic block,</p></li>
-<li><p>connect the blocks into one complete network model,</p></li>
-<li><p>identify differential variables, algebraic variables, and runtime parameters,</p></li>
-<li><p>compile residual and Jacobian evaluators,</p></li>
-<li><p>initialize the model,</p></li>
-<li><p>solve the dynamic problem in time.</p></li>
+<li><p>Build or import the static network and solve the required operating point.</p></li>
+<li><p>Assign an RMS or EMT model to every device that participates in the dynamic study.</p></li>
+<li><p>Validate the model connections, variables, equations, parameters, and initialization data.</p></li>
+<li><p>Create at least one RMS or EMT event group. A group can represent the undisturbed base case even when it contains no events.</p></li>
+<li><p>Define optional step or ramp events and prepare reusable plots.</p></li>
+<li><p>Configure the simulation horizon, time step, tolerance, initialization, and formulation-specific solver settings.</p></li>
+<li><p>Run the simulation and inspect convergence, initialization status, trajectories, and plot groups.</p></li>
 </ol>
-<p>This architecture is what allows one RMS model or one EMT model to be both editable and solvable within the same framework.</p>
-</section>
-</section>
-<section id="dynamic-blocks-in-veragrid">
-<h2>Dynamic blocks in VeraGrid<a class="headerlink" href="#dynamic-blocks-in-veragrid" title="Link to this heading"></a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">Block</span></code> object is the central building unit for RMS and EMT models.</p>
-<p>It can be understood as the symbolic container of one device model or one subsystem. In the same way that one mathematical model is usually written as a set of variables, equations, parameters, and constraints, a VeraGrid block stores exactly those ingredients in a structured way.</p>
-<p>From an engineering point of view, a block is the unit that allows VeraGrid to answer all of the following questions consistently:</p>
-<ul class="simple">
-<li><p>What are the unknown variables of this device?</p></li>
-<li><p>Which of them are dynamic states and which are algebraic quantities?</p></li>
-<li><p>Which equations define the model during simulation?</p></li>
-<li><p>Which equations define the model during initialization?</p></li>
-<li><p>Which quantities can be changed by events?</p></li>
-<li><p>Which ports connect this model to the grid or to other submodels?</p></li>
-</ul>
-<p>This is why the block abstraction is so important. It is not only a programming detail. It is the bridge between the physical device and the final numerical problem.</p>
-<section id="what-a-block-contains">
-<h3>What a block contains<a class="headerlink" href="#what-a-block-contains" title="Link to this heading"></a></h3>
-<p>A block may include:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">state_vars</span></code>: differential state variables.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">state_eqs</span></code>: equations associated with those states.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">algebraic_vars</span></code>: algebraic variables.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">algebraic_eqs</span></code>: algebraic equations.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">differential_eqs</span></code>: explicit differential-form equations when required by the formulation.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">parameters</span></code>: constant block parameters.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">init_values</span></code>: direct initialization values.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">init_eqs</span></code>: initialization equations.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">diff_init_eqs</span></code>: initialization equations for differential quantities.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">children</span></code>: nested or composite blocks.</p></li>
-</ul>
-<p>This structure allows simple components and composite templates to share the same representation.</p>
-</section>
-<section id="differential-and-algebraic-structure-inside-one-block">
-<h3>Differential and algebraic structure inside one block<a class="headerlink" href="#differential-and-algebraic-structure-inside-one-block" title="Link to this heading"></a></h3>
-<p>At the mathematical level, a block contributes one local set of equations of the form:</p>
-<div class="math">
-<p><img src="../_images/math/36f391686089783efb096dceb797bd3bc7cc65bb.svg" alt="\dot{x}_b = f_b(x_b, y_b, u_b, p_b, t)"/></p>
-</div><div class="math">
-<p><img src="../_images/math/8bc3a6438877aaf79ded95f877d6c4b03f480d93.svg" alt="0 = g_b(x_b, y_b, u_b, p_b, t)"/></p>
-</div><p>where the subscript <img class="math" src="../_images/math/68c7c8c65602677ab56cf7fd88002023f0edc575.svg" alt="b"/> indicates that the variables belong to one given block. When many blocks are assembled, the global system is obtained by stacking all local equations and adding the connectivity constraints imposed by the network.</p>
-<p>This is why a block stores both the variables and the equations. The solver does not see a visual diagram; it sees one local symbolic DAE contribution that will become part of the global system.</p>
-</section>
-<section id="state-vars-and-state-eqs">
-<h3><code class="docutils literal notranslate"><span class="pre">state_vars</span></code> and <code class="docutils literal notranslate"><span class="pre">state_eqs</span></code><a class="headerlink" href="#state-vars-and-state-eqs" title="Link to this heading"></a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">state_vars</span></code> contain the dynamic variables that represent stored energy, memory, or inertia. Examples include:</p>
-<ul class="simple">
-<li><p>rotor angle,</p></li>
-<li><p>rotor speed,</p></li>
-<li><p>controller integrator states,</p></li>
-<li><p>fluxes,</p></li>
-<li><p>dc-link quantities,</p></li>
-<li><p>internal dynamic references.</p></li>
-</ul>
-<p>Their associated equations in <code class="docutils literal notranslate"><span class="pre">state_eqs</span></code> or, depending on formulation, in <code class="docutils literal notranslate"><span class="pre">differential_eqs</span></code>, describe how those states evolve in time.</p>
-<p>In continuous time, they typically correspond to equations such as:</p>
-<div class="math">
-<p><img src="../_images/math/bc0e5ddc6a36ddd4d2c0a390f6d246aab963fc7d.svg" alt="\dot{x}_i = f_i(x,y,p,t)"/></p>
-</div><p>These are the equations that become discretized by the RMS or EMT integration method.</p>
-</section>
-<section id="algebraic-vars-and-algebraic-eqs">
-<h3><code class="docutils literal notranslate"><span class="pre">algebraic_vars</span></code> and <code class="docutils literal notranslate"><span class="pre">algebraic_eqs</span></code><a class="headerlink" href="#algebraic-vars-and-algebraic-eqs" title="Link to this heading"></a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">algebraic_vars</span></code> contain the unknowns that must satisfy instantaneous constraints. These may include:</p>
-<ul class="simple">
-<li><p>bus voltages,</p></li>
-<li><p>current components,</p></li>
-<li><p>torque balances written algebraically,</p></li>
-<li><p>power balance expressions,</p></li>
-<li><p>converter modulation variables,</p></li>
-<li><p>Norton-equivalent current quantities.</p></li>
-</ul>
-<p>Their associated equations in <code class="docutils literal notranslate"><span class="pre">algebraic_eqs</span></code> take the generic form:</p>
-<div class="math">
-<p><img src="../_images/math/1a430e27424e8d8e852289f2e011e86e5d471bce.svg" alt="0 = g_i(x,y,p,t)"/></p>
-</div><p>These equations are not integrated in time in the same way as states. Instead, they must be satisfied at every time step together with the discretized differential equations.</p>
-</section>
-<section id="differential-eqs-and-formulation-flexibility">
-<h3><code class="docutils literal notranslate"><span class="pre">differential_eqs</span></code> and formulation flexibility<a class="headerlink" href="#differential-eqs-and-formulation-flexibility" title="Link to this heading"></a></h3>
-<p>VeraGrid supports more than one internal way of representing dynamics. In some templates, the model is naturally expressed through state equations tied to declared state variables. In others, the dynamic contribution is stored using <code class="docutils literal notranslate"><span class="pre">differential_eqs</span></code> explicitly.</p>
-<p>This flexibility is useful because RMS and EMT models are not always written most naturally in the same equation form. For example:</p>
-<ul class="simple">
-<li><p>one RMS model may be easiest to express through classical state equations,</p></li>
-<li><p>one EMT device may be easier to express through explicitly declared derivative relations and additional algebraic couplings.</p></li>
-</ul>
-<p>The important point is that, regardless of internal representation, the final assembled problem still corresponds to one symbolic dynamic model consistent with the solver expectations.</p>
-</section>
-<section id="parameters">
-<h3><code class="docutils literal notranslate"><span class="pre">parameters</span></code><a class="headerlink" href="#parameters" title="Link to this heading"></a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">parameters</span></code> store fixed constants of the model. Typical examples are:</p>
-<ul class="simple">
-<li><p>resistances,</p></li>
-<li><p>reactances,</p></li>
-<li><p>inductances,</p></li>
-<li><p>capacitances,</p></li>
-<li><p>controller gains,</p></li>
-<li><p>time constants,</p></li>
-<li><p>base values,</p></li>
-<li><p>transformer ratios,</p></li>
-<li><p>damping and inertia constants.</p></li>
-</ul>
-<p>Mathematically, these are the entries of the parameter vector <img class="math" src="../_images/math/141bbefb74014fc5e43499901bf78607ae335583.svg" alt="p"/>. They define the model behavior but are not solved for during the simulation.</p>
-<p>It is useful to distinguish them from runtime event parameters: a constant parameter remains fixed during the simulation unless it has been promoted to the runtime event structure.</p>
-</section>
-<section id="init-values-init-eqs-and-diff-init-eqs">
-<h3><code class="docutils literal notranslate"><span class="pre">init_values</span></code>, <code class="docutils literal notranslate"><span class="pre">init_eqs</span></code>, and <code class="docutils literal notranslate"><span class="pre">diff_init_eqs</span></code><a class="headerlink" href="#init-values-init-eqs-and-diff-init-eqs" title="Link to this heading"></a></h3>
-<p>These fields are the block’s initialization language.</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">init_values</span></code> provide direct initial guesses or direct assigned values.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">init_eqs</span></code> provide symbolic equations used to reconstruct one consistent initialization point.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">diff_init_eqs</span></code> provide initialization expressions associated with differential quantities.</p></li>
-</ul>
-<p>This is especially important in power-system simulation because the dynamic model is rarely initialized by simply setting all states to zero. Instead, the initialization equations tell VeraGrid how the internal variables of the device relate to the known operating point.</p>
-<p>For example, in a synchronous-machine-type model, initialization equations may reconstruct dq currents, torque, fluxes, or references from:</p>
-<ul class="simple">
-<li><p>power-flow voltage,</p></li>
-<li><p>active and reactive power,</p></li>
-<li><p>known parameters,</p></li>
-<li><p>reference frequency.</p></li>
-</ul>
-</section>
-<section id="children-and-recursive-composition">
-<h3><code class="docutils literal notranslate"><span class="pre">children</span></code> and recursive composition<a class="headerlink" href="#children-and-recursive-composition" title="Link to this heading"></a></h3>
-<p>The field <code class="docutils literal notranslate"><span class="pre">children</span></code> allows hierarchical or composite modelling. One block may contain several sub-blocks, each with its own variables and equations.</p>
-<p>This is fundamental for composite devices. A complete generator, for instance, may be built from:</p>
-<ul class="simple">
-<li><p>one machine block,</p></li>
-<li><p>one exciter block,</p></li>
-<li><p>one governor block,</p></li>
-<li><p>one stabilizer block.</p></li>
-</ul>
-<p>Similarly, one EMT converter may be built from:</p>
-<ul class="simple">
-<li><p>bridge equations,</p></li>
-<li><p>filter equations,</p></li>
-<li><p>control logic,</p></li>
-<li><p>modulation subsystem,</p></li>
-<li><p>measurement or reference-conditioning blocks.</p></li>
-</ul>
-<p>Recursive composition lets VeraGrid flatten or assemble complex devices while preserving the analytical meaning of the model.</p>
-</section>
-<section id="inputs-and-outputs">
-<h3>Inputs and outputs<a class="headerlink" href="#inputs-and-outputs" title="Link to this heading"></a></h3>
-<p>Dynamic connectivity is described with:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">in_vars</span></code>: input variables expected from other blocks.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">out_vars</span></code>: output variables exposed to other blocks.</p></li>
-</ul>
-<p>During model assembly, these variables are connected by the grid variable factory, either explicitly or through helper functions such as <code class="docutils literal notranslate"><span class="pre">connect_models()</span></code>, <code class="docutils literal notranslate"><span class="pre">connect_models_power_flow()</span></code>, and the RMS/EMT bus-connection helpers.</p>
-<p>These ports are what turn isolated symbolic models into a network model.</p>
-<p>At the local level, one block may define equations involving some internal variables and some external quantities. Those external quantities are represented through <code class="docutils literal notranslate"><span class="pre">in_vars</span></code>. Once the block is connected, the inputs are matched to outputs of other blocks or to bus-shell variables.</p>
-<p>The output variables exposed through <code class="docutils literal notranslate"><span class="pre">out_vars</span></code> are the quantities that the rest of the system can consume. This is how one generator can inject active and reactive power into one bus model, or how one bus can expose voltages to one branch or injection model.</p>
-</section>
-<section id="rms-port-logic">
-<h3>RMS port logic<a class="headerlink" href="#rms-port-logic" title="Link to this heading"></a></h3>
-<p>In RMS models, the most common coupling is through electrical operating-point variables such as:</p>
-<ul class="simple">
-<li><p>voltage magnitude,</p></li>
-<li><p>voltage angle,</p></li>
-<li><p>active power,</p></li>
-<li><p>reactive power,</p></li>
-<li><p>branch-end quantities for <code class="docutils literal notranslate"><span class="pre">from</span></code> and <code class="docutils literal notranslate"><span class="pre">to</span></code> terminals.</p></li>
-</ul>
-<p>The port matching is therefore often tied to power-flow-style references. This is why helper functions such as <code class="docutils literal notranslate"><span class="pre">connect_models_power_flow()</span></code> and bus RMS initialization helpers play an important role in the assembly process.</p>
-</section>
-<section id="emt-port-logic">
-<h3>EMT port logic<a class="headerlink" href="#emt-port-logic" title="Link to this heading"></a></h3>
-<p>In EMT models, ports are usually phase-domain quantities. Instead of one phasor magnitude and angle, the model may expose and consume:</p>
-<ul class="simple">
-<li><p>phase A voltage,</p></li>
-<li><p>phase B voltage,</p></li>
-<li><p>phase C voltage,</p></li>
-<li><p>neutral voltage,</p></li>
-<li><p>phase currents,</p></li>
-<li><p>dq-transformed internal variables depending on the model.</p></li>
-</ul>
-<p>This makes EMT connectivity richer and also more delicate. The solver must preserve phase consistency, conductor ordering, and correct bus-shell creation for the connected devices.</p>
-</section>
-<section id="event-dict">
-<h3><code class="docutils literal notranslate"><span class="pre">event_dict</span></code><a class="headerlink" href="#event-dict" title="Link to this heading"></a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">event_dict</span></code> stores parameters or expressions that can be modified during simulation by events. This is the mechanism that allows step or ramp actions to change model parameters at runtime.</p>
-<p>Typical uses are:</p>
-<ul class="simple">
-<li><p>changing a load set-point,</p></li>
-<li><p>changing a converter reference,</p></li>
-<li><p>modifying a controller gain or source amplitude,</p></li>
-<li><p>applying test disturbances.</p></li>
-</ul>
-<p>This deserves emphasis because not every parameter in a dynamic model should be event-driven. A static parameter such as one inductance or one inertia constant is usually part of <code class="docutils literal notranslate"><span class="pre">parameters</span></code>. A runtime-adjustable set-point or disturbance-facing reference belongs conceptually to the event-enabled parameter layer.</p>
-<p>In other words:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">parameters</span></code> define the device,</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">event_dict</span></code> defines what the simulation may perturb.</p></li>
-</ul>
-<p>That distinction is important both numerically and conceptually. It avoids confusing the permanent identity of the model with the temporary actions applied during one test scenario.</p>
-</section>
-<section id="events-and-promoted-runtime-parameters">
-<h3>Events and promoted runtime parameters<a class="headerlink" href="#events-and-promoted-runtime-parameters" title="Link to this heading"></a></h3>
-<p>When one parameter is placed in <code class="docutils literal notranslate"><span class="pre">event_dict</span></code>, VeraGrid can promote it into the runtime event structure of the global simulation problem. This allows:</p>
-<ul class="simple">
-<li><p>step changes,</p></li>
-<li><p>ramps,</p></li>
-<li><p>scenario-specific parameter values,</p></li>
-<li><p>GUI event-group workflows,</p></li>
-<li><p>scripting-based disturbance injection.</p></li>
-</ul>
-<p>This mechanism is one of the reasons the symbolic block formulation works well for dynamic studies: the equations do not need to be rebuilt for every disturbance scenario. Only the runtime values of the promoted parameters change.</p>
-</section>
-<section id="external-mapping">
-<h3><code class="docutils literal notranslate"><span class="pre">external_mapping</span></code><a class="headerlink" href="#external-mapping" title="Link to this heading"></a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">external_mapping</span></code> relates dynamic block variables to static power-flow references. This is important for consistent initialization because the dynamic model must inherit active power, reactive power, voltage magnitude, voltage angle, or analogous quantities from the solved static network.</p>
-<p>In practical terms, <code class="docutils literal notranslate"><span class="pre">external_mapping</span></code> answers questions such as:</p>
-<ul class="simple">
-<li><p>Which block variable corresponds to the active power used in the static model?</p></li>
-<li><p>Which internal variable should receive the bus voltage magnitude from the power-flow result?</p></li>
-<li><p>Which reactive-power or voltage-control quantity is tied to the external operating point?</p></li>
-</ul>
-<p>This mapping is essential because the static grid objects and the dynamic block objects are not the same thing, even if they represent the same physical device. The mapping is what lets one steady-state solution initialize the correct symbolic variables inside the dynamic model.</p>
-<p>Without this bridge, RMS dynamic simulation and Small-Signal linearization would lose their physical operating-point consistency.</p>
-</section>
-<section id="api-obj-mapping">
-<h3><code class="docutils literal notranslate"><span class="pre">api_obj_mapping</span></code><a class="headerlink" href="#api-obj-mapping" title="Link to this heading"></a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">api_obj_mapping</span></code> relates block parameters to API object properties. This allows a static API object, such as a generator or load, to feed parameters into the associated dynamic block.</p>
-<p>This mapping is device-centric rather than operating-point-centric.</p>
-<p>While <code class="docutils literal notranslate"><span class="pre">external_mapping</span></code> answers “which dynamic quantities correspond to the solved network state?”, <code class="docutils literal notranslate"><span class="pre">api_obj_mapping</span></code> answers “which dynamic block parameters correspond to the properties of the API object that owns this model?”</p>
-<p>For example, if the static API object stores one reactance, nominal power, gain, or resistance, the dynamic block can receive that information through the API-object mapping layer. This reduces duplication and keeps the symbolic template attached to the device data model.</p>
-</section>
-<section id="composite-templates">
-<h3>Composite templates<a class="headerlink" href="#composite-templates" title="Link to this heading"></a></h3>
-<p>VeraGrid supports both simple and composite templates. For example:</p>
-<ul class="simple">
-<li><p>a simple load or line template may correspond to one block,</p></li>
-<li><p>a complete generator model may be composed of machine, exciter, governor, and stabilizer blocks,</p></li>
-<li><p>an EMT converter model may be composed of bridge, filter, control, and modulation blocks.</p></li>
-</ul>
-<p>This template-based workflow is one of the main advantages of the symbolic model representation.</p>
-</section>
-<section id="templates-versus-manual-block-construction">
-<h3>Templates versus manual block construction<a class="headerlink" href="#templates-versus-manual-block-construction" title="Link to this heading"></a></h3>
-<p>VeraGrid supports two complementary ways of building models:</p>
-<ul class="simple">
-<li><p>use one predefined template,</p></li>
-<li><p>build or edit the model block by block.</p></li>
-</ul>
-<p>Templates are convenient because they package one validated structure and its initialization logic. Manual block construction is powerful because it allows custom research or development workflows.</p>
-<p>The two approaches are not conceptually different. A template is just one preassembled symbolic block structure. The model editor exposes that same structure visually.</p>
-</section>
-<section id="how-blocks-become-one-global-simulation-problem">
-<h3>How blocks become one global simulation problem<a class="headerlink" href="#how-blocks-become-one-global-simulation-problem" title="Link to this heading"></a></h3>
-<p>Once the blocks of all devices have been assigned and connected, VeraGrid assembles the global system by:</p>
-<ol class="arabic simple">
-<li><p>collecting all differential variables,</p></li>
-<li><p>collecting all algebraic variables,</p></li>
-<li><p>collecting all parameters and event-enabled runtime parameters,</p></li>
-<li><p>flattening composite structures when needed,</p></li>
-<li><p>building the residual equations for the whole system,</p></li>
-<li><p>constructing the initialization and simulation evaluators.</p></li>
-</ol>
-<p>Symbolically, the final system looks like:</p>
-<div class="math">
-<p><img src="../_images/math/7135a8ddc657f9b2c52d2314f382808b48d847db.svg" alt="\dot{X} = F(X,Y,P,t)"/></p>
-</div><div class="math">
-<p><img src="../_images/math/fbdbed7cf85597738f15e1af9c4f54a7d5281c76.svg" alt="0 = G(X,Y,P,t)"/></p>
-</div><p>but internally this global pair <img class="math" src="../_images/math/b198c910b737cf7f735bb89b5e587274477d8461.svg" alt="(F,G)"/> is built from many local block contributions.</p>
-<p>This local-to-global assembly is the core idea behind VeraGrid’s dynamic framework.</p>
-</section>
-</section>
-<section id="initialization">
-<h2>Initialization<a class="headerlink" href="#initialization" title="Link to this heading"></a></h2>
-<p>Initialization is one of the most important parts of any dynamic simulation.</p>
-<p>The objective is to compute one consistent starting point such that:</p>
-<ul class="simple">
-<li><p>the algebraic equations are satisfied,</p></li>
-<li><p>the state variables are consistent with the operating point,</p></li>
-<li><p>event-enabled parameters are initialized correctly,</p></li>
-<li><p>the simulation starts from a valid equilibrium or near-equilibrium condition.</p></li>
-</ul>
-<p>Without this step, time integration may diverge immediately or produce physically meaningless transients.</p>
-<section id="power-flow-as-starting-point">
-<h3>Power flow as starting point<a class="headerlink" href="#power-flow-as-starting-point" title="Link to this heading"></a></h3>
-<p>For RMS simulations, the standard workflow is to solve a power flow first and then use that operating point to initialize the dynamic model. This is also the workflow used by VeraGrid’s RMS dynamic and RMS Small-Signal drivers.</p>
-<p>For EMT simulations, a static operating point is also needed, but the dynamic initialization problem is richer because phase-domain or waveform-domain quantities may have to be reconstructed consistently from the static network state and from model-specific initialization equations.</p>
-</section>
-<section id="initialization-methods-available-in-veragrid">
-<h3>Initialization methods available in VeraGrid<a class="headerlink" href="#initialization-methods-available-in-veragrid" title="Link to this heading"></a></h3>
-<section id="explicit-initialization">
-<h4>Explicit initialization<a class="headerlink" href="#explicit-initialization" title="Link to this heading"></a></h4>
-<p>In explicit initialization, the block templates provide enough initialization equations or direct initialization values to build the initial state from the known operating point. This is the simplest and fastest method when the model has been designed with a complete and well-conditioned initialization structure.</p>
-<p>The idea is classical in DAE-based power-system simulation [2], [3]. Assume the dynamic model is written as</p>
-<div class="math">
-<p><img src="../_images/math/72aad921773dc1196c78928379aa0b32680b1963.svg" alt="\begin{cases}
-\dot{x} = f(x,y,p,t) \\
-0 = g(x,y,p,t)
-\end{cases}"/></p>
-</div><p>At steady state, the differential variables must satisfy equilibrium conditions, so the initialization problem becomes:</p>
-<div class="math">
-<p><img src="../_images/math/940ce9d7bd99b2c14145f3bf76a38a7e87f0528c.svg" alt="\begin{cases}
-0 = f(x_0,y_0,p,0) \\
-0 = g(x_0,y_0,p,0)
-\end{cases}"/></p>
-</div><p>The role of explicit initialization is to solve this problem not by a generic equilibrium search from scratch, but by exploiting model structure.</p>
-<p>In practice, VeraGrid uses three sources of information:</p>
-<ul class="simple">
-<li><p>the static network operating point, usually from power flow,</p></li>
-<li><p>block initialization equations such as <code class="docutils literal notranslate"><span class="pre">init_eqs</span></code> and <code class="docutils literal notranslate"><span class="pre">diff_init_eqs</span></code>,</p></li>
-<li><p>direct parameter and initial-value assignments declared by the templates.</p></li>
-</ul>
-<p>For many RMS models, part of the variables can be filled directly from the power-flow results. Typical examples are:</p>
-<ul class="simple">
-<li><p>bus voltage magnitude and angle,</p></li>
-<li><p>active and reactive power injections,</p></li>
-<li><p>branch terminal voltage quantities,</p></li>
-<li><p>control references derived from the operating point.</p></li>
-</ul>
-<p>After that, the remaining variables are solved using the block initialization equations. In other words, the symbolic model defines an auxiliary initialization problem where known variables are seeded from the network solution and unknown variables are reconstructed from explicit formulas or dependency-ordered equations.</p>
-<p>At the algorithmic level, the RMS explicit initialization workflow in VeraGrid follows this philosophy:</p>
-<ol class="arabic simple">
-<li><p>Collect initialization equations from the system block and its children.</p></li>
-<li><p>Collect runtime event-enabled parameters that already have known values.</p></li>
-<li><p>Seed all variables that come directly from the solved operating point.</p></li>
-<li><p>Build a dependency graph between initialization expressions.</p></li>
-<li><p>Solve the initialization equations in topological order whenever possible.</p></li>
-<li><p>Use a local nonlinear solve only for the variables that cannot be assigned directly by substitution.</p></li>
-</ol>
-<p>This is why explicit initialization is usually the fastest option: it reuses as much analytical structure as possible instead of treating initialization as one black-box nonlinear problem.</p>
-<p>From a modelling perspective, explicit initialization works best when the template designer has written initialization equations that are:</p>
-<ul class="simple">
-<li><p>complete,</p></li>
-<li><p>non-circular or weakly circular,</p></li>
-<li><p>physically meaningful,</p></li>
-<li><p>consistent with the static operating point.</p></li>
-</ul>
-<p>This is especially natural for RMS phasor-domain models, where many electrical quantities already have clear steady-state interpretations.</p>
-<p>Use it when:</p>
-<ul class="simple">
-<li><p>the templates already provide a robust initialization path,</p></li>
-<li><p>the model is not heavily implicit at initialization,</p></li>
-<li><p>you want the most direct workflow.</p></li>
-</ul>
-</section>
-<section id="pseudo-transient-initialization">
-<h4>Pseudo-transient initialization<a class="headerlink" href="#pseudo-transient-initialization" title="Link to this heading"></a></h4>
-<p>Pseudo-transient continuation is a robust technique for finding equilibria of DAEs by integrating an artificial transient until the residual becomes small [2], [3]. VeraGrid uses pseudo-transient initialization as an alternative when explicit initialization is insufficient or too fragile.</p>
-<p>Suppose the equilibrium problem is written compactly as:</p>
-<div class="math">
-<p><img src="../_images/math/eebe03ac44f904954851aaf9e88266eea3b57969.svg" alt="F(z)=0"/></p>
-</div><p>where <img class="math" src="../_images/math/8d051150f8669295ecdbe92367941012175a824d.svg" alt="z"/> groups the unknown initialization quantities. A direct Newton solve may fail if:</p>
-<ul class="simple">
-<li><p>the initial guess is poor,</p></li>
-<li><p>the Jacobian is ill-conditioned,</p></li>
-<li><p>the system is strongly nonlinear,</p></li>
-<li><p>some controls interact too tightly,</p></li>
-<li><p>the model is only partially initialized by explicit formulas.</p></li>
-</ul>
-<p>Pseudo-transient continuation addresses this by embedding the equilibrium problem in an artificial dynamic process:</p>
-<div class="math">
-<p><img src="../_images/math/0ca028e3e34df110e814f91f481e46639164ef68.svg" alt="M \frac{dz}{d\tau} = -F(z)"/></p>
-</div><p>where:</p>
-<ul class="simple">
-<li><p><img class="math" src="../_images/math/914b2d4b6659b86d3153d5510839dfb254dfc8a3.svg" alt="\tau"/> is an artificial continuation time,</p></li>
-<li><p><img class="math" src="../_images/math/4abba779877abb276b98ccb2b4ba9bf2e41947ab.svg" alt="M"/> is a scaling or pseudo-mass matrix,</p></li>
-<li><p>the steady state of this artificial system satisfies the original equilibrium condition <img class="math" src="../_images/math/38e239bc1a8bc5453e4e76be19acd13bdfbbc80d.svg" alt="F(z)=0"/>.</p></li>
-</ul>
-<p>The intuition is simple: instead of asking Newton to jump directly to the equilibrium, the method lets the residual decay progressively. This greatly improves robustness for badly conditioned or weakly initialized systems.</p>
-<p>In one backward-Euler pseudo-transient step, the update has the generic form:</p>
-<div class="math">
-<p><img src="../_images/math/8264f84051d33e294ee543f69ca2bc96b4ffac2c.svg" alt="M\frac{z^{k+1}-z^k}{\Delta \tau_k} + F(z^{k+1}) = 0"/></p>
-</div><p>which can be interpreted as a sequence of regularized nonlinear solves. When <img class="math" src="../_images/math/41fa71cfca2fc5aafc4a30b9e6f2881c852fa4b9.svg" alt="\Delta \tau_k"/> is small, the method behaves conservatively and is robust. As the residual becomes better behaved, <img class="math" src="../_images/math/41fa71cfca2fc5aafc4a30b9e6f2881c852fa4b9.svg" alt="\Delta \tau_k"/> can be increased so the method approaches the final equilibrium more aggressively.</p>
-<p>This is one of the reasons pseudo-transient continuation is widely appreciated in power-system DAE solving: it acts as a bridge between time integration and nonlinear equilibrium solving [2], [3], [12].</p>
-</section>
-</section>
-<section id="how-veragrid-uses-pseudo-transient-initialization">
-<h3>How VeraGrid uses pseudo-transient initialization<a class="headerlink" href="#how-veragrid-uses-pseudo-transient-initialization" title="Link to this heading"></a></h3>
-<p>In VeraGrid, pseudo-transient initialization is not only a theoretical option. It is part of the live RMS and EMT initialization stack.</p>
-<p>For RMS, the pseudo-transient workflow is used when the equilibrium cannot be recovered robustly through explicit initialization alone. The solver builds one numerical problem from the symbolic dynamic model, seeds the unknown vector with available initialization values and operating-point information, and then runs one pseudo-transient relaxation process. After that, VeraGrid performs a Newton polishing stage to reduce the final residual further.</p>
-<p>This means the practical RMS initialization sequence is roughly:</p>
-<ol class="arabic simple">
-<li><p>build one initial guess from the available initialization map,</p></li>
-<li><p>enforce critical references or seeded quantities when needed,</p></li>
-<li><p>run pseudo-transient relaxation,</p></li>
-<li><p>refine the solution with Newton iterations,</p></li>
-<li><p>verify the final residual before accepting the initialization.</p></li>
-</ol>
-<p>For EMT, the same philosophy is used but adapted to the EMT problem structure. VeraGrid builds a reduced initialization system for the unresolved EMT variables and then applies a pseudo-transient solve to that reduced system. This is particularly useful because EMT initialization may involve:</p>
-<ul class="simple">
-<li><p>reconstructed phase-domain voltages and currents,</p></li>
-<li><p>internal device states such as dq fluxes or machine states,</p></li>
-<li><p>algebraic constraints from phase-domain network coupling,</p></li>
-<li><p>missing derivative initial values that must be completed consistently.</p></li>
-</ul>
-<p>The EMT initialization code therefore uses pseudo-transient continuation as one robust fallback or selected workflow to recover a consistent initial condition for the waveform-domain model.</p>
-</section>
-<section id="why-pseudo-transient-is-so-useful-in-dynamic-simulation">
-<h3>Why pseudo-transient is so useful in dynamic simulation<a class="headerlink" href="#why-pseudo-transient-is-so-useful-in-dynamic-simulation" title="Link to this heading"></a></h3>
-<p>Pseudo-transient continuation is especially effective when the initialization problem is stiff or poorly scaled. In power-system terms, this often happens when:</p>
-<ul class="simple">
-<li><p>the network constraints and control equations are tightly coupled,</p></li>
-<li><p>converter-rich systems create weakly damped algebraic interactions,</p></li>
-<li><p>device references are not perfectly matched to the power-flow operating point,</p></li>
-<li><p>some state variables are missing direct explicit formulas.</p></li>
-</ul>
-<p>Instead of failing immediately, the pseudo-transient process gives the model a numerically controlled way to settle into equilibrium.</p>
-<p>Use it when:</p>
-<ul class="simple">
-<li><p>explicit initialization fails,</p></li>
-<li><p>the system is strongly nonlinear,</p></li>
-<li><p>a better basin of attraction is needed for the equilibrium solution,</p></li>
-<li><p>the model contains tightly coupled controls or implicit algebraic relations.</p></li>
-</ul>
-<p>In VeraGrid, the pseudo-transient workflow is implemented both in RMS and in EMT initialization logic, with EMT using a reduced initialization system adapted to the EMT formulation.</p>
-</section>
-<section id="practical-recommendation">
-<h3>Practical recommendation<a class="headerlink" href="#practical-recommendation" title="Link to this heading"></a></h3>
-<ul class="simple">
-<li><p>Start with <strong>Explicit</strong> when the model is known to initialize well.</p></li>
-<li><p>Switch to <strong>PseudoTransient</strong> when the model is difficult to initialize or when explicit initialization becomes fragile.</p></li>
-</ul>
-<p>As a practical engineering rule:</p>
-<ul class="simple">
-<li><p>choose <strong>Explicit</strong> when the template has a clean and well-defined steady-state construction,</p></li>
-<li><p>choose <strong>PseudoTransient</strong> when the model is implicit, strongly coupled, or still under development,</p></li>
-<li><p>inspect initialization residuals whenever the first simulation samples look suspicious.</p></li>
-</ul>
-<p>Typical symptoms of bad initialization are:</p>
-<ul class="simple">
-<li><p>nonphysical spikes at the first steps,</p></li>
-<li><p>immediate divergence of Newton iterations,</p></li>
-<li><p>states starting far from their expected operating region,</p></li>
-<li><p>algebraic variables inconsistent with the power-flow operating point,</p></li>
-<li><p>large initial residual norms.</p></li>
-</ul>
-</section>
-</section>
-<section id="initialization-references">
-<h2>Initialization references<a class="headerlink" href="#initialization-references" title="Link to this heading"></a></h2>
-<p>The theoretical background for the DAE equilibrium problem and pseudo-transient continuation is discussed in [2], [3], [12]. For EMT initialization in converter-rich and power-electronics-dominated systems, additional practical considerations can be found in [6] and in recent EMT initialization literature [7].</p>
-</section>
-<section id="solvers-and-integration-methods">
-<h2>Solvers and integration methods<a class="headerlink" href="#solvers-and-integration-methods" title="Link to this heading"></a></h2>
-<section id="rms-solvers-and-integration-methods">
-<h3>RMS solvers and integration methods<a class="headerlink" href="#rms-solvers-and-integration-methods" title="Link to this heading"></a></h3>
-<p>The current RMS workflow is driven through <code class="docutils literal notranslate"><span class="pre">RmsOptions</span></code> and <code class="docutils literal notranslate"><span class="pre">RmsSimulationDriver</span></code>.</p>
-<p>RMS options include:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">integration_method</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">initialization_method</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">problem_type</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">time_step</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">simulation_time</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tolerance</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">use_init_values</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">max_iter</span></code></p></li>
-</ul>
-<p>The main user-facing RMS integration method currently exposed in the driver workflow is:</p>
-<ul class="simple">
-<li><p><strong>DAE Backward Euler</strong> (<code class="docutils literal notranslate"><span class="pre">DynamicIntegrationMethod.DaeBackEuler</span></code>)</p></li>
-</ul>
-<p>Backward Euler is a classical robust implicit method for stiff DAEs and is widely used in transient-stability and dynamic-simulation contexts [1]-[3].</p>
-<p>For one differential equation</p>
-<div class="math">
-<p><img src="../_images/math/5d102907bd31d3e15e6c852c2dbf2dd6364c64d5.svg" alt="\dot{x}=f(x,t)"/></p>
-</div><p>the backward Euler discretization is:</p>
-<div class="math">
-<p><img src="../_images/math/cf4bab66dbe917cd41f2a69db03ade6b459b76a5.svg" alt="x_{k+1}=x_k+h f(x_{k+1}, t_{k+1})"/></p>
-</div><p>This is implicit because the future state appears on the right-hand side. In a DAE system, the update is not solved variable by variable, but as one coupled nonlinear problem involving both the discretized differential equations and the algebraic constraints.</p>
-<p>For a semi-explicit DAE,</p>
-<div class="math">
-<p><img src="../_images/math/60a787a8426cc5fad6607c4430919771634d90e2.svg" alt="\begin{cases}
-\dot{x}=f(x,y) \\
-0=g(x,y)
-\end{cases}"/></p>
-</div><p>backward Euler leads to:</p>
-<div class="math">
-<p><img src="../_images/math/f07fc2bec032581a4f67e2f5edd19df8e003eb91.svg" alt="\begin{cases}
-\dfrac{x_{k+1}-x_k}{h} = f(x_{k+1}, y_{k+1}) \\
-0=g(x_{k+1}, y_{k+1})
-\end{cases}"/></p>
-</div><p>The solver must therefore compute <img class="math" src="../_images/math/f84f143cf07eeb9868afadf2d7d732e8d8913827.svg" alt="(x_{k+1}, y_{k+1})"/> simultaneously, usually through Newton iterations.</p>
-<p>The advantages of backward Euler in RMS simulation are:</p>
-<ul class="simple">
-<li><p>strong numerical robustness,</p></li>
-<li><p>good behavior for stiff electromechanical-control systems,</p></li>
-<li><p>compatibility with implicit DAE formulations,</p></li>
-<li><p>reasonable performance with relatively large time steps.</p></li>
-</ul>
-<p>Its drawbacks are also classical:</p>
-<ul class="simple">
-<li><p>first-order accuracy,</p></li>
-<li><p>numerical damping,</p></li>
-<li><p>the need for nonlinear solves at each step.</p></li>
-</ul>
-<p>In RMS transient-stability work, this trade-off is usually acceptable because the main interest is robust evolution of relatively slow variables rather than highly accurate waveform reconstruction.</p>
-</section>
-<section id="emt-solvers-and-integration-methods">
-<h3>EMT solvers and integration methods<a class="headerlink" href="#emt-solvers-and-integration-methods" title="Link to this heading"></a></h3>
-<p>The EMT workflow is driven through <code class="docutils literal notranslate"><span class="pre">EmtOptions</span></code> and <code class="docutils literal notranslate"><span class="pre">EmtSimulationDriver</span></code>.</p>
-<p>EMT options include:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">solver_type</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">integration_method</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">initialization_method</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">problem_type</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">time_step</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">simulation_time</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tolerance</span></code></p></li>
-<li><p>initialization Newton and pseudo-transient settings</p></li>
-<li><p>sparse-solver and Newton diagnostics options</p></li>
-</ul>
-<p>The default EMT integration method is:</p>
-<ul class="simple">
-<li><p><strong>DAE Trapezoidal</strong> (<code class="docutils literal notranslate"><span class="pre">DynamicIntegrationMethod.DaeTrapezoidal</span></code>)</p></li>
-</ul>
-<p>This is consistent with standard EMTP practice, where trapezoidal integration is a classical default because of its accuracy and energy behavior for network transients [4]-[6].</p>
-<p>For one generic state equation,</p>
-<div class="math">
-<p><img src="../_images/math/5d102907bd31d3e15e6c852c2dbf2dd6364c64d5.svg" alt="\dot{x}=f(x,t)"/></p>
-</div><p>the trapezoidal discretization is:</p>
-<div class="math">
-<p><img src="../_images/math/1f70eec4545c416bde09a25dbe3567125a085996.svg" alt="x_{k+1}=x_k+\frac{h}{2}\left(f(x_k,t_k)+f(x_{k+1},t_{k+1})\right)"/></p>
-</div><p>This is again an implicit method, but of second order. In EMT simulation, trapezoidal integration is especially powerful because passive elements can be rewritten as <strong>companion models</strong>.</p>
-<p>For example, an inductance described by</p>
-<div class="math">
-<p><img src="../_images/math/d3641b2d60ca3ba4dbba311c9eb70119fb275bc7.svg" alt="v=L\frac{di}{dt}"/></p>
-</div><p>can be discretized into one equivalent Norton or Thevenin form containing:</p>
-<ul class="simple">
-<li><p>one equivalent conductance or resistance,</p></li>
-<li><p>one history term that depends on the previous step.</p></li>
-</ul>
-<p>The same logic applies to capacitors, RLC loads, several transformer models, and line companion models. This is the numerical heart of the classical Dommel EMTP approach [4], [5].</p>
-</section>
-<section id="emt-solver-backends">
-<h3>EMT solver backends<a class="headerlink" href="#emt-solver-backends" title="Link to this heading"></a></h3>
-<p>Beyond the integration method itself, VeraGrid’s EMT workflow supports different solver backends through <code class="docutils literal notranslate"><span class="pre">EmtSolverTypes</span></code>. These backends correspond to different ways of assembling and solving the EMT equations while keeping the same general simulation objective.</p>
-<p>At a user level, the important point is:</p>
-<ul class="simple">
-<li><p>the physics is still EMT waveform-domain simulation,</p></li>
-<li><p>the backend changes how the equations are assembled and solved,</p></li>
-<li><p>different backends may offer different trade-offs between transparency, flexibility, and speed.</p></li>
-</ul>
-</section>
-<section id="choosing-time-step-method-and-backend">
-<h3>Choosing time step, method, and backend<a class="headerlink" href="#choosing-time-step-method-and-backend" title="Link to this heading"></a></h3>
-<p>The time step and solver configuration must be coherent with the phenomenon under study.</p>
-<p>In practice:</p>
-<ul class="simple">
-<li><p>RMS usually tolerates millisecond-order steps because the focus is on slower dynamics,</p></li>
-<li><p>EMT usually requires microsecond-order steps because the solver must resolve fast electrical transients,</p></li>
-<li><p>explicit switching models or travelling-wave models may force even smaller EMT steps,</p></li>
-<li><p>weakly initialized or very stiff systems may require more robust solver settings.</p></li>
-</ul>
-<p>The best choice is therefore not universal. It depends on the model bandwidth, the event speed, the line delays, and the degree of detail requested by the study.</p>
-<p>The EMT driver can use different solver backends depending on the configured <code class="docutils literal notranslate"><span class="pre">EmtSolverTypes</span></code>, which allows users to trade development flexibility, structural exploitation, and runtime performance.</p>
-</section>
-<section id="choosing-time-step-and-domain">
-<h3>Choosing time step and domain<a class="headerlink" href="#choosing-time-step-and-domain" title="Link to this heading"></a></h3>
-<p>As a practical rule:</p>
-<ul class="simple">
-<li><p>RMS time steps are usually in the order of milliseconds.</p></li>
-<li><p>EMT time steps are usually in the order of microseconds or smaller.</p></li>
-</ul>
-<p>If the chosen time step is too large, the simulation may miss important dynamics or fail to converge. If it is too small, the simulation may become unnecessarily expensive.</p>
-</section>
-</section>
-<section id="events-and-simulation-scenarios">
-<h2>Events and simulation scenarios<a class="headerlink" href="#events-and-simulation-scenarios" title="Link to this heading"></a></h2>
-<p>Dynamic studies are usually meaningful only when some disturbance or scheduled action is applied.</p>
-<p>In VeraGrid, events are organized in two layers:</p>
-<ul class="simple">
-<li><p><strong>Event groups</strong>: one scenario or simulation case.</p></li>
-<li><p><strong>Events</strong>: the actual runtime parameter changes applied during that scenario.</p></li>
-</ul>
-<p>Both RMS and EMT support event groups and runtime parameter modification.</p>
-<p>Typical event types are:</p>
-<ul class="simple">
-<li><p><strong>Step</strong> events.</p></li>
-<li><p><strong>Ramp</strong> events.</p></li>
-</ul>
-<p>Examples include:</p>
-<ul class="simple">
-<li><p>changing <code class="docutils literal notranslate"><span class="pre">Pl0</span></code> of a load,</p></li>
-<li><p>changing a reference voltage,</p></li>
-<li><p>changing a converter power command,</p></li>
-<li><p>changing source amplitude or frequency.</p></li>
-</ul>
-<p>Each active event group produces one trajectory set in the results object.</p>
-</section>
-<section id="settings">
-<h2>Settings<a class="headerlink" href="#settings" title="Link to this heading"></a></h2>
-<section id="rms-settings">
-<h3>RMS settings<a class="headerlink" href="#rms-settings" title="Link to this heading"></a></h3>
-<p>The RMS settings exposed through <code class="docutils literal notranslate"><span class="pre">RmsOptions</span></code> are:</p>
-<ul class="simple">
-<li><p><strong>Integration method</strong>: numerical integration method. In the current driver workflow the standard method is <code class="docutils literal notranslate"><span class="pre">DaeBackEuler</span></code>.</p></li>
-<li><p><strong>Initialization method</strong>: initialization workflow, mainly <code class="docutils literal notranslate"><span class="pre">Explicit</span></code> or <code class="docutils literal notranslate"><span class="pre">PseudoTransient</span></code>.</p></li>
-<li><p><strong>Problem type</strong>: internal RMS problem formulation.</p></li>
-<li><p><strong>Time step (s)</strong>: interval between numerical integration steps.</p></li>
-<li><p><strong>Simulation time (s)</strong>: final simulation time.</p></li>
-<li><p><strong>Tolerance</strong>: numerical tolerance used by the simulation workflow.</p></li>
-<li><p><strong>Use init values</strong>: whether stored initialization values should be reused when available.</p></li>
-<li><p><strong>Max. iterations</strong>: maximum number of nonlinear iterations inside the solver.</p></li>
-</ul>
-</section>
-<section id="emt-settings">
-<h3>EMT settings<a class="headerlink" href="#emt-settings" title="Link to this heading"></a></h3>
-<p>The EMT settings exposed through <code class="docutils literal notranslate"><span class="pre">EmtOptions</span></code> are:</p>
-<ul class="simple">
-<li><p><strong>Solver type</strong>: EMT backend to use.</p></li>
-<li><p><strong>Integration method</strong>: default <code class="docutils literal notranslate"><span class="pre">DaeTrapezoidal</span></code>.</p></li>
-<li><p><strong>Initialization method</strong>: EMT initialization workflow.</p></li>
-<li><p><strong>Problem type</strong>: internal EMT problem formulation.</p></li>
-<li><p><strong>Time step (s)</strong>: EMT integration step.</p></li>
-<li><p><strong>Simulation time (s)</strong>: total EMT simulation horizon.</p></li>
-<li><p><strong>Tolerance</strong>: numerical tolerance.</p></li>
-<li><p><strong>Initialization Newton controls</strong>: tolerances, iteration limits, and backtracking.</p></li>
-<li><p><strong>Pseudo-transient controls</strong>: <code class="docutils literal notranslate"><span class="pre">init_ptc_dtau0</span></code>, <code class="docutils literal notranslate"><span class="pre">init_ptc_dtau_min</span></code>, <code class="docutils literal notranslate"><span class="pre">init_ptc_dtau_max</span></code>, <code class="docutils literal notranslate"><span class="pre">init_ptc_max_iter</span></code>.</p></li>
-<li><p><strong>Sparse-solver controls</strong>: sparse solver selection and fallback behavior.</p></li>
-<li><p><strong>Newton diagnostics and stabilization controls</strong>: backtracking, fallback, index checks, conditioning diagnostics.</p></li>
-</ul>
-<p>For most users, only solver type, initialization method, integration method, time step, simulation time, and tolerance need to be changed regularly. The other parameters are advanced controls.</p>
-</section>
-</section>
-<section id="results">
-<h2>Results<a class="headerlink" href="#results" title="Link to this heading"></a></h2>
-<section id="rms-results">
-<h3>RMS results<a class="headerlink" href="#rms-results" title="Link to this heading"></a></h3>
-<p>The RMS dynamic results are stored in <code class="docutils literal notranslate"><span class="pre">RmsResults</span></code>.</p>
-<p>Main registered properties include:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">time_array</span></code>: simulation time stamps.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">values</span></code>: simulated variable values.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rms_events_group_names</span></code>: names of declared RMS event groups.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rms_events_group_idtags</span></code>: identifiers of declared RMS event groups.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">has_event_group_results</span></code>: mask of groups that actually produced results.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">well_initialized</span></code>: initialization status per event group.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">converged</span></code>: convergence status per event group.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">dynamic_metadata_json</span></code>: serialized metadata for variable recovery and plotting.</p></li>
-</ul>
-</section>
-<section id="emt-results">
-<h3>EMT results<a class="headerlink" href="#emt-results" title="Link to this heading"></a></h3>
-<p>The EMT dynamic results are stored in <code class="docutils literal notranslate"><span class="pre">EmtResults</span></code>.</p>
-<p>Main registered properties include:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">time_array</span></code>: simulation time stamps.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">values</span></code>: simulated state and algebraic variable values.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">diff_values</span></code>: differential-variable trajectories.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">emt_events_group_names</span></code>: names of declared EMT event groups.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">emt_events_group_idtags</span></code>: identifiers of declared EMT event groups.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">has_event_group_results</span></code>: mask of groups that actually produced results.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">well_initialized</span></code>: initialization status per event group.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">converged</span></code>: convergence status per event group.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">dynamic_metadata_json</span></code>: serialized metadata for variable recovery and plotting.</p></li>
-</ul>
-</section>
-</section>
-<section id="api-workflow-overview">
-<h2>API workflow overview<a class="headerlink" href="#api-workflow-overview" title="Link to this heading"></a></h2>
-<p>The general scripting workflow for dynamic simulations in VeraGrid is:</p>
-<ol class="arabic simple">
-<li><p>Build or load the static grid.</p></li>
-<li><p>Assign RMS or EMT dynamic models to the devices.</p></li>
-<li><p>Run the required power flow.</p></li>
-<li><p>Create event groups and events if needed.</p></li>
-<li><p>Define the simulation options.</p></li>
-<li><p>Run the corresponding driver.</p></li>
-<li><p>Read the results arrays and post-process the trajectories.</p></li>
-</ol>
-</section>
-<section id="rms-example-from-scripting">
-<h2>RMS example from scripting<a class="headerlink" href="#rms-example-from-scripting" title="Link to this heading"></a></h2>
-<p>The following example shows the current RMS scripting workflow using templates and the RMS driver.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Substation.bus</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bus</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Injections.generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generator</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Injections.load</span><span class="w"> </span><span class="kn">import</span> <span class="n">Load</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Branches.line</span><span class="w"> </span><span class="kn">import</span> <span class="n">Line</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynamicIntegrationMethod</span><span class="p">,</span> <span class="n">RmsInitializationMethod</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.Rms.genqec_exc_gov_sat_template_v2</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_complete_generator_template_rms</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.Rms.line_rms_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_line_rms_template</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.Rms.load_rms_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_load_rms_template</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.bus_rms_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">initialize_bus_rms</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.templates_common_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_rms_model</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.power_flow_driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">PowerFlowOptions</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.Rms.rms_options</span><span class="w"> </span><span class="kn">import</span> <span class="n">RmsOptions</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.Rms.rms_driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">RmsSimulationDriver</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine.api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
-
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">MultiCircuit</span><span class="p">(</span><span class="n">Sbase</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">fbase</span><span class="o">=</span><span class="mf">50.0</span><span class="p">)</span>
-
-<span class="n">bus0</span> <span class="o">=</span> <span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Bus0&quot;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">is_slack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">bus1</span> <span class="o">=</span> <span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Bus1&quot;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">bus0</span><span class="p">)</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">bus1</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">bus</span> <span class="ow">in</span> <span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">:</span>
-    <span class="n">initialize_bus_rms</span><span class="p">(</span><span class="n">bus</span><span class="p">,</span> <span class="n">vf</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">)</span>
-
-<span class="n">line</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;line 0-1&quot;</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus0</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.029585</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.071005</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mf">900.0</span><span class="p">)</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-
-<span class="n">load</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Load1&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">9.999999</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mf">0.999999</span><span class="p">)</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">load</span><span class="p">)</span>
-
-<span class="n">gen</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Gen0&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">vset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">Snom</span><span class="o">=</span><span class="mf">900.0</span><span class="p">,</span> <span class="n">x1</span><span class="o">=</span><span class="mf">0.86138701</span><span class="p">,</span> <span class="n">r1</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mf">50.0</span><span class="p">)</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus0</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">gen</span><span class="p">)</span>
-
-<span class="c1"># Build and assign RMS templates</span>
-<span class="n">gen_rms</span> <span class="o">=</span> <span class="n">get_complete_generator_template_rms</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">)</span><span class="o">.</span><span class="n">block</span>
-<span class="n">line_rms</span> <span class="o">=</span> <span class="n">get_line_rms_template</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">)</span><span class="o">.</span><span class="n">block</span>
-<span class="n">load_rms</span> <span class="o">=</span> <span class="n">get_load_rms_template</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">)</span><span class="o">.</span><span class="n">block</span>
-
-<span class="n">set_rms_model</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">gen</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">gen_rms</span><span class="p">,</span> <span class="n">var_factory</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">)</span>
-<span class="n">set_rms_model</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">line</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">line_rms</span><span class="p">,</span> <span class="n">var_factory</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">)</span>
-<span class="n">set_rms_model</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">load</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">load_rms</span><span class="p">,</span> <span class="n">var_factory</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">)</span>
-
-<span class="c1"># Change one runtime parameter from the API side</span>
-<span class="n">load</span><span class="o">.</span><span class="n">rms_model</span><span class="o">.</span><span class="n">set_parameter_in_model</span><span class="p">(</span><span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;Pl0&quot;</span><span class="p">,</span> <span class="n">new_value</span><span class="o">=-</span><span class="mf">0.10</span><span class="p">)</span>
-
-<span class="n">pf_options</span> <span class="o">=</span> <span class="n">PowerFlowOptions</span><span class="p">(</span><span class="n">solver_type</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">SolverType</span><span class="o">.</span><span class="n">NR</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">pf_results</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">power_flow</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">pf_options</span><span class="p">)</span>
-
-<span class="n">rms_options</span> <span class="o">=</span> <span class="n">RmsOptions</span><span class="p">(</span>
-    <span class="n">time_step</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
-    <span class="n">simulation_time</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-    <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
-    <span class="n">integration_method</span><span class="o">=</span><span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBackEuler</span><span class="p">,</span>
-    <span class="n">initialization_method</span><span class="o">=</span><span class="n">RmsInitializationMethod</span><span class="o">.</span><span class="n">Explicit</span><span class="p">,</span>
-    <span class="n">use_init_values</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="n">driver</span> <span class="o">=</span> <span class="n">RmsSimulationDriver</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">rms_options</span><span class="p">,</span> <span class="n">pf_results</span><span class="o">=</span><span class="n">pf_results</span><span class="p">)</span>
-<span class="n">driver</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-
-<span class="n">results</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">results</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">well_initialized</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>This example illustrates the main RMS workflow:</p>
-<ul class="simple">
-<li><p>initialize RMS bus shells,</p></li>
-<li><p>assign RMS templates,</p></li>
-<li><p>connect them through <code class="docutils literal notranslate"><span class="pre">set_rms_model()</span></code>,</p></li>
-<li><p>update parameters,</p></li>
-<li><p>run power flow,</p></li>
-<li><p>run <code class="docutils literal notranslate"><span class="pre">RmsSimulationDriver</span></code>,</p></li>
-<li><p>inspect <code class="docutils literal notranslate"><span class="pre">RmsResults</span></code>.</p></li>
-</ul>
-</section>
-<section id="emt-example-from-scripting">
-<h2>EMT example from scripting<a class="headerlink" href="#emt-example-from-scripting" title="Link to this heading"></a></h2>
-<p>The following example shows the current EMT workflow structure. EMT examples in VeraGrid are typically more detailed because they often use phase-domain devices, line templates, and solver backends.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Substation.bus</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bus</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Injections.generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generator</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Injections.load</span><span class="w"> </span><span class="kn">import</span> <span class="n">Load</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Branches.line</span><span class="w"> </span><span class="kn">import</span> <span class="n">Line</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynamicIntegrationMethod</span><span class="p">,</span> <span class="n">EmtInitializationMethod</span><span class="p">,</span> <span class="n">EmtSolverTypes</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.Emt.pi_line_emt_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_pi_line_emt_template</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.Emt.thevenin_equivalent_emt_generator_template</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">get_generator_thevenin_rl_emt_template_with_ref</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.Emt.load_RLC_emt_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_shunt_r_emt_template</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.templates_common_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_emt_model</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.power_flow_driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">PowerFlowOptions</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.EMT.emt_options</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmtOptions</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.EMT.emt_driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmtSimulationDriver</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine.api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
-
-<span class="n">grid</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">MultiCircuit</span><span class="p">(</span><span class="n">Sbase</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">fbase</span><span class="o">=</span><span class="mf">50.0</span><span class="p">)</span>
-
-<span class="n">bus0</span> <span class="o">=</span> <span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Bus0&quot;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">is_slack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">bus1</span> <span class="o">=</span> <span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Bus1&quot;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">bus0</span><span class="p">)</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">bus1</span><span class="p">)</span>
-
-<span class="n">line</span> <span class="o">=</span> <span class="n">Line</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;line 0-1&quot;</span><span class="p">,</span> <span class="n">bus_from</span><span class="o">=</span><span class="n">bus0</span><span class="p">,</span> <span class="n">bus_to</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.08</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-
-<span class="n">gen</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Gen1&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">vset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">Snom</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">r1</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">x1</span><span class="o">=</span><span class="mf">1.7</span><span class="p">)</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus0</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">gen</span><span class="p">)</span>
-
-<span class="n">load</span> <span class="o">=</span> <span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Load1&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-<span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">load</span><span class="p">)</span>
-
-<span class="c1"># Build and assign EMT templates</span>
-<span class="n">gen_emt</span> <span class="o">=</span> <span class="n">get_generator_thevenin_rl_emt_template_with_ref</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">)</span><span class="o">.</span><span class="n">block</span>
-<span class="n">line_emt</span> <span class="o">=</span> <span class="n">get_pi_line_emt_template</span><span class="p">(</span>
-    <span class="n">vf</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">,</span>
-    <span class="n">phN</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">phA</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">phB</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">phC</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span><span class="o">.</span><span class="n">block</span>
-<span class="n">load_emt</span> <span class="o">=</span> <span class="n">get_shunt_r_emt_template</span><span class="p">(</span>
-    <span class="n">vf</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">,</span>
-    <span class="n">phA</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">phB</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">phC</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span><span class="o">.</span><span class="n">block</span>
-
-<span class="n">set_emt_model</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">gen</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">gen_emt</span><span class="p">,</span> <span class="n">var_factory</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">)</span>
-<span class="n">set_emt_model</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">line</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">line_emt</span><span class="p">,</span> <span class="n">var_factory</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">)</span>
-<span class="n">set_emt_model</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">load</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">load_emt</span><span class="p">,</span> <span class="n">var_factory</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">)</span>
-
-<span class="c1"># Change one EMT parameter from the API side</span>
-<span class="n">load</span><span class="o">.</span><span class="n">emt_model</span><span class="o">.</span><span class="n">set_parameter_in_model</span><span class="p">(</span><span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;R_A&quot;</span><span class="p">,</span> <span class="n">new_value</span><span class="o">=</span><span class="mf">200.0</span><span class="p">)</span>
-
-<span class="n">pf_options</span> <span class="o">=</span> <span class="n">PowerFlowOptions</span><span class="p">(</span><span class="n">solver_type</span><span class="o">=</span><span class="n">gce</span><span class="o">.</span><span class="n">SolverType</span><span class="o">.</span><span class="n">NR</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">pf_results</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">power_flow</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">pf_options</span><span class="p">)</span>
-
-<span class="n">emt_options</span> <span class="o">=</span> <span class="n">EmtOptions</span><span class="p">(</span>
-    <span class="n">time_step</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
-    <span class="n">simulation_time</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span>
-    <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
-    <span class="n">solver_type</span><span class="o">=</span><span class="n">EmtSolverTypes</span><span class="o">.</span><span class="n">StructuralAD</span><span class="p">,</span>
-    <span class="n">integration_method</span><span class="o">=</span><span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeTrapezoidal</span><span class="p">,</span>
-    <span class="n">initialization_method</span><span class="o">=</span><span class="n">EmtInitializationMethod</span><span class="o">.</span><span class="n">Auto</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="n">driver</span> <span class="o">=</span> <span class="n">EmtSimulationDriver</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">emt_options</span><span class="p">,</span> <span class="n">pf_results</span><span class="o">=</span><span class="n">pf_results</span><span class="p">)</span>
-<span class="n">driver</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-
-<span class="n">results</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">results</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">well_initialized</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">diff_values</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>This example illustrates the same general workflow as RMS, but using EMT templates, EMT options, and the EMT driver.</p>
-</section>
-<section id="working-with-templates-and-model-editors">
-<h2>Working with templates and model editors<a class="headerlink" href="#working-with-templates-and-model-editors" title="Link to this heading"></a></h2>
-<p>In VeraGrid there are two main ways to assign dynamic models to a device:</p>
-<ol class="arabic simple">
-<li><p>Assign an RMS or EMT template from the catalogue or from the device properties.</p></li>
-<li><p>Open the RMS or EMT editor and build the model graphically from blocks.</p></li>
-</ol>
-<p>The editor-based workflow is especially useful when:</p>
-<ul class="simple">
-<li><p>controller parameters must be tuned,</p></li>
-<li><p>a composite model has to be inspected,</p></li>
-<li><p>the user wants to create or modify one template,</p></li>
-<li><p>the structure of the block itself must be validated.</p></li>
-</ul>
-<section id="dynamic-model-documentation">
-<h3>Dynamic model documentation<a class="headerlink" href="#dynamic-model-documentation" title="Link to this heading"></a></h3>
-<p>The <a class="reference internal" href="dynamic_model_library_index.html"><span class="std std-doc">Dynamic model library</span></a> provides a browsable index of all documented dynamic models and blocks:</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="dae_block_authoring.html"><span class="std std-doc">DAE Block authoring guide</span></a></p></li>
-<li><p><a class="reference internal" href="dyn_templates/RMS/index.html"><span class="std std-doc">RMS device templates</span></a></p></li>
-<li><p><a class="reference internal" href="dyn_templates/EMT/index.html"><span class="std std-doc">EMT device templates</span></a></p></li>
-<li><p><a class="reference internal" href="dyn_templates/library/index.html"><span class="std std-doc">Dynamic library blocks</span></a></p></li>
-<li><p><a class="reference internal" href="dyn_templates/procedural_logic/index.html"><span class="std std-doc">Runtime procedural logic</span></a></p></li>
-</ul>
-<p>The practical RMS and EMT session documents are good companions for the GUI workflow:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">RMS_practical_session.md</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">EMT_practical_session.md</span></code></p></li>
-</ul>
-</section>
-</section>
-<section id="importing-dynamic-models-from-external-tools">
-<h2>Importing dynamic models from external tools<a class="headerlink" href="#importing-dynamic-models-from-external-tools" title="Link to this heading"></a></h2>
-<p>Dynamic-model interoperability is an important topic, but it must be described carefully because not all external modelling ecosystems map directly to VeraGrid blocks.</p>
-<p>At the moment, the relevant VeraGrid mechanisms are:</p>
-<ul class="simple">
-<li><p>native RMS and EMT templates,</p></li>
-<li><p>FMU-related import and runtime support,</p></li>
-<li><p>parameter and template assignment through the VeraGrid device model.</p></li>
-</ul>
-<p>This means that some external dynamic models can be integrated through FMU-based workflows, while others may need to be recreated as VeraGrid templates or composite blocks.</p>
-<p>This section should be considered an evolving area of the documentation. The exact scope of supported import workflows is still under active consolidation.</p>
-</section>
-<section id="benchmarks-and-validation">
-<h2>Benchmarks and validation<a class="headerlink" href="#benchmarks-and-validation" title="Link to this heading"></a></h2>
-<p>VeraGrid already contains validation and benchmark work for dynamic simulation in <code class="docutils literal notranslate"><span class="pre">trunk</span></code>, including:</p>
-<ul class="simple">
-<li><p>RMS validation scripts in <code class="docutils literal notranslate"><span class="pre">trunk/dynamics/model_validation/</span></code></p></li>
-<li><p>pseudo-transient validation scripts in <code class="docutils literal notranslate"><span class="pre">trunk/dynamics/</span></code></p></li>
-<li><p>EMT multi-solver benchmark scripts in <code class="docutils literal notranslate"><span class="pre">trunk/dynamics_emt/</span></code></p></li>
-</ul>
-<p>However, this section is intentionally left only partially developed here because the benchmark narrative and the final comparative claims still need to be consolidated.</p>
-<p>For now, the main point is that VeraGrid includes internal validation assets for:</p>
-<ul class="simple">
-<li><p>RMS model behavior,</p></li>
-<li><p>EMT backend comparison,</p></li>
-<li><p>pseudo-transient initialization workflows,</p></li>
-<li><p>small-system and detailed-device consistency checks.</p></li>
-</ul>
-</section>
-<section id="best-practices">
-<h2>Best practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p>Solve and verify the static power flow before attempting RMS or EMT simulation.</p></li>
-<li><p>Start with the simplest model that can answer the engineering question.</p></li>
-<li><p>Use RMS first unless waveform or switching detail is truly required.</p></li>
-<li><p>Use explicit initialization when the templates are known to initialize robustly.</p></li>
-<li><p>Use pseudo-transient initialization when explicit initialization becomes fragile.</p></li>
-<li><p>Keep time steps physically justified; smaller is not always better if the domain choice is wrong.</p></li>
-<li><p>Validate one device model in a small test system before using it in a large case.</p></li>
-<li><p>Attach events only to parameters intended to be modified at runtime.</p></li>
-</ul>
-</section>
-<section id="common-pitfalls">
-<h2>Common pitfalls<a class="headerlink" href="#common-pitfalls" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p>Running a dynamic simulation without a valid operating point.</p></li>
-<li><p>Using an RMS model for a phenomenon that actually requires EMT detail.</p></li>
-<li><p>Choosing an EMT time step that is too large for switching dynamics.</p></li>
-<li><p>Missing bus/device dynamic connections when building custom templates.</p></li>
-<li><p>Inconsistent parameterization between static and dynamic models.</p></li>
-<li><p>Expecting one model to initialize if the initialization equations are incomplete.</p></li>
-</ul>
-</section>
-<section id="references">
-<h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
-<p>[1] P. Kundur, <em>Power System Stability and Control</em>. McGraw-Hill, 1994.</p>
-<p>[2] F. Milano, <em>Power System Modelling and Scripting</em>. Springer, 2010.</p>
-<p>[3] F. Milano, <em>Power System Modelling and Stability Analysis</em>. Springer, 2010.</p>
-<p>[4] H. W. Dommel, <em>EMTP Theory Book</em>. Bonneville Power Administration, 1986.</p>
-<p>[5] L. Gérin-Lajoie, J. Mahseredjian, and collaborators, <em>EMTP-RV Theory Book</em>. Powersys Solutions, various editions.</p>
-<p>[6] J. Mahseredjian, V. Dinavahi, and J. A. Martinez, “Simulation Tools for Electromagnetic Transients in Power Systems: Overview and Challenges,” <em>IEEE Transactions on Power Delivery</em>, vol. 24, no. 3, pp. 1657-1669, 2009.</p>
+<p>The GUI and API operate on the same grid, model, event, and result objects. A model saved in the dynamic editor is therefore available to the simulation drivers and to API scripts.</p>
 </section>
 </section>
 
@@ -1470,7 +301,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="state_estimation.html" class="btn btn-neutral float-left" title="🌀 State estimation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="rms_simulations.html" class="btn btn-neutral float-right" title="⏱️ RMS simulations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="dynamic_theory.html" class="btn btn-neutral float-right" title="Dynamic simulation theory" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

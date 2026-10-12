@@ -332,9 +332,6 @@ class RmsProblemTemplate(ABC):
         """
         return None
     
-    def get_dt(self):
-        return NotImplementedError("get_dt")
-
     def get_dt_value(self):
         return NotImplementedError("get_dt_value")
 
@@ -443,26 +440,47 @@ class RmsProblemTemplate(ABC):
 
         return injection_init_data
 
-    def report_progress(self, val: float):
+    def report_progress(self, val: float) -> None:
         """
-        Report progress
-        :param val: float value
-        """
-        self.progress_signal.emit(val)
+        Emit one absolute RMS progress update.
 
-    def report_progress2(self, current: int, total: int):
-        """
-        Report progress
-        :param current: current value (zero based)
-        :param total: total value
+        :param val: Progress value in percent.
+        :type val: float
+        :return: None
+        :rtype: None
         """
         if self.progress_signal is not None:
-            val = ((current + 1) / total) * 100
             self.progress_signal.emit(val)
+        else:
+            pass
 
-    def report_text(self, val: str):
+    def report_progress2(self, current: int, total: int) -> None:
         """
-        Report text
-        :param val: text value
+        Emit one RMS progress update from a zero-based iteration index.
+
+        :param current: Zero-based iteration index.
+        :type current: int
+        :param total: Total number of iterations.
+        :type total: int
+        :return: None
+        :rtype: None
         """
-        self.progress_text.emit(val)
+        if self.progress_signal is not None:
+            val: float = ((current + 1) / total) * 100
+            self.progress_signal.emit(val)
+        else:
+            pass
+
+    def report_text(self, text: str) -> None:
+        """
+        Emit a textual update describing the current RMS simulation stage.
+
+        :param text: Human-readable progress message.
+        :type text: str
+        :return: None
+        :rtype: None
+        """
+        if self.progress_text is not None:
+            self.progress_text.emit(text)
+        else:
+            pass

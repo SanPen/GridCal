@@ -7,7 +7,8 @@ import numpy as np
 
 from VeraGridEngine.Devices.Dynamic.fmu_template import FmuTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
-from VeraGridEngine.IO.fmu.exporter.compat import Block, Const, Var
+from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
 from VeraGridEngine.enumerations import (
     DeviceType,
     FmuTemplateDomain,
@@ -15,22 +16,22 @@ from VeraGridEngine.enumerations import (
     ParamPowerFlowReferenceType,
     VarPowerFlowReferenceType,
 )
-from VeraGridEngine.IO.fmu.importer.co_simulation import (
+from VeraGridEngine.IO.fmu.co_simulation import (
     FmuCsDeviceAdapter,
     FmuCsDeviceSpec,
 )
-from VeraGridEngine.IO.fmu.importer.device_config import (
+from VeraGridEngine.IO.fmu.fmu_device_integration import (
     FmuCsDeviceConfigRecord,
     load_fmu_cs_device_config,
     restore_fmu_cs_spec_from_record,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_profile import (
+from VeraGridEngine.IO.fmu.profile import (
     FmiThreeWorkerFloat64Profile,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_worker_host import (
+from VeraGridEngine.IO.fmu.worker_host import (
     FmiThreeWorkerHostLimits,
 )
-from VeraGridEngine.IO.fmu.importer.template_api import configure_fmu_template
+from VeraGridEngine.IO.fmu.fmu_device_integration import configure_fmu_template
 
 
 def _artifact_path() -> Path:

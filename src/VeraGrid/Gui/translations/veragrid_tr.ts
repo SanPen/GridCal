@@ -16,7 +16,7 @@
     <message>
         <location filename="../AboutDialogue/about_gui.ui" line="89"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;VeraGrid&lt;/span&gt; has been carefully crafted since 2015 to serve as a platform for research and consultancy. Visit &lt;a href=&quot;https://www.eroots.tech/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#26a269;&quot;&gt;eRoots&lt;/span&gt;&lt;/a&gt; for more details. The source of VeraGrid can be found &lt;a href=&quot;https://github.com/SanPen/VeraGrid&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#26a269;&quot;&gt;here.&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align="justify"&gt;&lt;span style=" font-weight:600;"&gt;VeraGrid&lt;/span&gt; 2015 yılından bu yana araştırma ve danışmanlık için bir platform olarak özenle hazırlanmaktadır. Daha fazla bilgi için &lt;a href="https://www.eroots.tech/"&gt;&lt;span style=" text-decoration: underline; color:#26a269;"&gt;eRoots&lt;/span&gt;&lt;/a&gt; adresini ziyaret edin. VeraGrid kaynak kodu &lt;a href="https://github.com/SanPen/VeraGrid"&gt;&lt;span style=" text-decoration: underline; color:#26a269;"&gt;burada&lt;/span&gt;&lt;/a&gt; bulunabilir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;VeraGrid&lt;/span&gt; 2015 yılından bu yana araştırma ve danışmanlık için bir platform olarak özenle hazırlanmaktadır. Daha fazla bilgi için &lt;a href=&quot;https://www.eroots.tech/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#26a269;&quot;&gt;eRoots&lt;/span&gt;&lt;/a&gt; adresini ziyaret edin. VeraGrid kaynak kodu &lt;a href=&quot;https://github.com/SanPen/VeraGrid&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#26a269;&quot;&gt;burada&lt;/span&gt;&lt;/a&gt; bulunabilir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../AboutDialogue/about_gui.ui" line="133"/>
@@ -46,7 +46,7 @@
     <message>
         <location filename="../AboutDialogue/about_gui.ui" line="203"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;This program comes with absolutelly no warranty. This is free software, and you are welcome to redistribute it under the conditions set by the license. VeraGrid is licensed under the &lt;a href=&quot;https://www.mozilla.org/en-US/MPL/2.0/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#26a269;&quot;&gt;Mozilla Public License V2&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align="justify"&gt;Bu program hiçbir garanti sağlamamaktadır. Bu program özgür bir yazılımdır ve lisans ile belirlenen koşullar altında yeniden dağıtılabilir. VeraGrid, &lt;a href="https://www.mozilla.org/en-US/MPL/2.0/"&gt;&lt;span style=" text-decoration: underline; color:#26a269;"&gt;Mozilla Public License V2&lt;/span&gt;&lt;/a&gt; lisansı ile sunulmaktadır.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;Bu program hiçbir garanti sağlamamaktadır. Bu program özgür bir yazılımdır ve lisans ile belirlenen koşullar altında yeniden dağıtılabilir. VeraGrid, &lt;a href=&quot;https://www.mozilla.org/en-US/MPL/2.0/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#26a269;&quot;&gt;Mozilla Public License V2&lt;/span&gt;&lt;/a&gt; lisansı ile sunulmaktadır.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../AboutDialogue/about_gui.ui" line="224"/>
@@ -72,28 +72,28 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;+--------------+------------------------------------------+&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;| networkx     | BSD                                      |&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;+--------------+------------------------------------------+&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd"&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name="qrichtext" content="1" /&gt;&lt;meta charset="utf-8" /&gt;&lt;style type="text/css"&gt;
+        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
-li.unchecked::marker { content: "\2610"; }
-li.checked::marker { content: "\2612"; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=" font-family:'Cousine'; font-size:10pt; font-weight:400; font-style:normal;"&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;+==============+==========================================+&lt;/span&gt;&lt;/p&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;| Paket       | Lisans                                   |&lt;/span&gt;&lt;/p&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;+==============+==========================================+&lt;/span&gt;&lt;/p&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;| setuptools   | MIT                                      |&lt;/span&gt;&lt;/p&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;+--------------+------------------------------------------+&lt;/span&gt;&lt;/p&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;| wheel        | MIT                                      |&lt;/span&gt;&lt;/p&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;+--------------+------------------------------------------+&lt;/span&gt;&lt;/p&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;| PySide6      | LGPL                                     |&lt;/span&gt;&lt;/p&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;+--------------+------------------------------------------+&lt;/span&gt;&lt;/p&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;| numpy        | BSD                                      |&lt;/span&gt;&lt;/p&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;+--------------+------------------------------------------+&lt;/span&gt;&lt;/p&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;| scipy        | BSD                                      |&lt;/span&gt;&lt;/p&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;+--------------+------------------------------------------+&lt;/span&gt;&lt;/p&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;| networkx     | BSD                                      |&lt;/span&gt;&lt;/p&gt;
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:11pt;"&gt;+--------------+------------------------------------------+&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+li.unchecked::marker { content: &quot;\2610&quot;; }
+li.checked::marker { content: &quot;\2612&quot;; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Cousine&apos;; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;+==============+==========================================+&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;| Paket       | Lisans                                   |&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;+==============+==========================================+&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;| setuptools   | MIT                                      |&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;+--------------+------------------------------------------+&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;| wheel        | MIT                                      |&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;+--------------+------------------------------------------+&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;| PySide6      | LGPL                                     |&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;+--------------+------------------------------------------+&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;| numpy        | BSD                                      |&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;+--------------+------------------------------------------+&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;| scipy        | BSD                                      |&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;+--------------+------------------------------------------+&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;| networkx     | BSD                                      |&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;+--------------+------------------------------------------+&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Action</source>
@@ -384,11 +384,11 @@ li.checked::marker { content: "\2612"; }
     </message>
     <message>
         <source>Query Ollama for models.</source>
-        <translation>Modelleri Ollama'dan sorgula.</translation>
+        <translation>Modelleri Ollama&apos;dan sorgula.</translation>
     </message>
     <message>
         <source>Refreshing models from Ollama...</source>
-        <translation>Ollama'dan modeller yenileniyor...</translation>
+        <translation>Ollama&apos;dan modeller yenileniyor...</translation>
     </message>
     <message>
         <source>Refreshing models from the configured backend...</source>
@@ -396,7 +396,7 @@ li.checked::marker { content: "\2612"; }
     </message>
     <message>
         <source>Reply with one short greeting sentence. Say that VeraGrid AI is ready and Ollama is working with model {model_name}. Do not ask a question.</source>
-        <translation>Tek cümlelik kısa bir selamla yanıt ver. VeraGrid YZ'nin hazır olduğunu ve Ollama'nın {model_name} modeliyle çalıştığını söyle. Soru sorma.</translation>
+        <translation>Tek cümlelik kısa bir selamla yanıt ver. VeraGrid YZ&apos;nin hazır olduğunu ve Ollama&apos;nın {model_name} modeliyle çalıştığını söyle. Soru sorma.</translation>
     </message>
     <message>
         <source>Resolve the pending tool approval or clear the chat first.</source>
@@ -480,7 +480,7 @@ li.checked::marker { content: "\2612"; }
     </message>
     <message>
         <source>VeraGrid checks Ollama automatically and uses the model reported by the local server.</source>
-        <translation>VeraGrid Ollama'yı otomatik kontrol eder ve yerel sunucunun bildirdiği modeli kullanır.</translation>
+        <translation>VeraGrid Ollama&apos;yı otomatik kontrol eder ve yerel sunucunun bildirdiği modeli kullanır.</translation>
     </message>
     <message>
         <source>Wait for the current AI turn to finish.</source>
@@ -633,11 +633,11 @@ li.checked::marker { content: "\2612"; }
     </message>
     <message>
         <source>Numeric value. Changes are staged until Apply changes is pressed.</source>
-        <translation>Sayısal değer. Değişiklikler 'Değişiklikleri uygula' basılana kadar bekletilir.</translation>
+        <translation>Sayısal değer. Değişiklikler &apos;Değişiklikleri uygula&apos; basılana kadar bekletilir.</translation>
     </message>
     <message>
         <source>Real value or symbolic initialization expression. Changes are staged until Apply changes is pressed.</source>
-        <translation>Gerçel değer ya da sembolik başlangıç ifadesi. Değişiklikler 'Değişiklikleri uygula' basılana kadar bekletilir.</translation>
+        <translation>Gerçel değer ya da sembolik başlangıç ifadesi. Değişiklikler &apos;Değişiklikleri uygula&apos; basılana kadar bekletilir.</translation>
     </message>
     <message>
         <source>Type</source>
@@ -816,7 +816,7 @@ li.checked::marker { content: "\2612"; }
     <message>
         <location filename="../FileDialogues/CGMESDialogue/cgmes_export_gui.ui" line="235"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Converters and DC lines in CGMES are attempted to be converted to the simplified HvdcLine objects in VeraGrid&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;CGMES içindeki dönüştürücüler ve DC hatları, VeraGrid'deki basitleştirilmiş HVDCLine nesnelerine dönüştürülmeye çalışılır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;CGMES içindeki dönüştürücüler ve DC hatları, VeraGrid&apos;deki basitleştirilmiş HVDCLine nesnelerine dönüştürülmeye çalışılır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../FileDialogues/CGMESDialogue/cgmes_export_gui.ui" line="238"/>
@@ -847,7 +847,7 @@ li.checked::marker { content: "\2612"; }
     </message>
     <message>
         <source>Export to CGMES</source>
-        <translation>CGMES'e Dışa Aktar</translation>
+        <translation>CGMES&apos;e Dışa Aktar</translation>
     </message>
 </context>
 <context>
@@ -1051,7 +1051,7 @@ li.checked::marker { content: "\2612"; }
     </message>
     <message>
         <source>The file type {file_extension} is not accepted :(</source>
-        <translation>'{file_extension}' dosya türü kabul edilmiyor :(</translation>
+        <translation>&apos;{file_extension}&apos; dosya türü kabul edilmiyor :(</translation>
     </message>
 </context>
 <context>
@@ -1093,7 +1093,7 @@ li.checked::marker { content: "\2612"; }
     </message>
     <message>
         <source>Are you sure that you want to delete_with_dialogue the selected elements?</source>
-        <translation>Seçili elemanları silmek istediğinize emin misiniz?</translation>
+        <translation type="vanished">Seçili elemanları silmek istediğinize emin misiniz?</translation>
     </message>
     <message>
         <source>Are you sure that you want to duplicate the selected elements?</source>
@@ -1299,7 +1299,7 @@ Değerler tablodan ya da grafik arayüzdeki bağlam menüsülerden değiştirile
     </message>
     <message>
         <source>The proprty {property_name} cannot be found :(</source>
-        <translation>'{property_name}' özelliği bulunamıyor :(</translation>
+        <translation>&apos;{property_name}&apos; özelliği bulunamıyor :(</translation>
     </message>
     <message>
         <source>The selected property must be of a numeric type</source>
@@ -1371,6 +1371,18 @@ Emin misiniz?</translation>
         <source>{device_type} {property_name} distribution</source>
         <translation>{device_type} {property_name} dağılımı</translation>
     </message>
+    <message>
+        <source>Are you sure that you want to delete the selected elements?</source>
+        <translation>Seçilen öğeleri silmek istediğinizden emin misiniz?</translation>
+    </message>
+    <message>
+        <source>Element in use</source>
+        <translation>Kullanımda olan öğe</translation>
+    </message>
+    <message>
+        <source>The element is still referenced by: {names}</source>
+        <translation>Öğeye hala şu öğeler referans veriyor: {names}</translation>
+    </message>
 </context>
 <context>
     <name>DcLineDeviceEditor</name>
@@ -1387,15 +1399,43 @@ Emin misiniz?</translation>
     <name>DcLineEditor</name>
     <message>
         <source>Line editor</source>
-        <translation>Hat Editörü</translation>
+        <translation type="vanished">Hat Editörü</translation>
     </message>
     <message>
         <source>Load template</source>
-        <translation>Şablonu Yükle</translation>
+        <translation type="vanished">Şablonu Yükle</translation>
     </message>
     <message>
         <source>The template {template_name} contains errors</source>
-        <translation>'{template_name}' şablonu hatalar içeriyor</translation>
+        <translation type="vanished">&apos;{template_name}&apos; şablonu hatalar içeriyor</translation>
+    </message>
+    <message>
+        <source>Apply Cable System</source>
+        <translation>Kablo Sistemi Uygula</translation>
+    </message>
+    <message>
+        <source>Available Cable Systems</source>
+        <translation>Mevcut Kablo Sistemleri</translation>
+    </message>
+    <message>
+        <source>Branch current rating [kA] @ {voltage:g} kV</source>
+        <translation>Dal şebeke akım değeri [kA] @ {voltage:g} kV</translation>
+    </message>
+    <message>
+        <source>Cable System conductor</source>
+        <translation>Kablo Sistemi iletkeni</translation>
+    </message>
+    <message>
+        <source>DC line editor</source>
+        <translation>DC Hat Editörü</translation>
+    </message>
+    <message>
+        <source>Positive length, voltage and power base are required</source>
+        <translation>Pozitif uzunluk, gerilim ve güç tabanı gereklidir</translation>
+    </message>
+    <message>
+        <source>Use Cable System</source>
+        <translation>Kablo Sistemi Kullan</translation>
     </message>
 </context>
 <context>
@@ -1490,7 +1530,7 @@ Emin misiniz?</translation>
     </message>
     <message>
         <source>Export to Power Factory</source>
-        <translation>PowerFactory'ye Dışa Aktar</translation>
+        <translation>PowerFactory&apos;ye Dışa Aktar</translation>
     </message>
 </context>
 <context>
@@ -2091,7 +2131,7 @@ Emin misiniz?</translation>
     <message>
         <location filename="../GridMerge/grid_merge_gui.ui" line="50"/>
         <source>The elements of the grid will be added with new idtags. This is useful in the case you want to compose a new grid from grids that are the same.</source>
-        <translation>Şebeke elemanları yeni idtag'ler ile eklenecek. Bu, aynı olan şebekelerden yeni bir şebeke oluşturmak istediğinizde kullanışlıdır.</translation>
+        <translation>Şebeke elemanları yeni idtag&apos;ler ile eklenecek. Bu, aynı olan şebekelerden yeni bir şebeke oluşturmak istediğinizde kullanışlıdır.</translation>
     </message>
     <message>
         <location filename="../GridMerge/grid_merge_gui.ui" line="73"/>
@@ -2373,6 +2413,38 @@ Emin misiniz?</translation>
         <source>Variable name is invalid</source>
         <translation>Değişken Adı Geçersiz</translation>
     </message>
+    <message>
+        <source>Invalid — ModelInfo digest mismatch</source>
+        <translation>Geçersiz — ModelInfo özeti uyuşmazlığı</translation>
+    </message>
+    <message>
+        <source>Invalid — provider not found</source>
+        <translation>Geçersiz — sağlayıcı bulunamadı</translation>
+    </message>
+    <message>
+        <source>Manufacturer native controller
+Provider: {provider}
+Interface: {interface}    Domain: {domain}
+Inputs: {input_count}    Outputs: {output_count}
+Reference: {status}</source>
+        <translation>Üretici yerel kontrolcüsü
+Sağlayıcı: {provider}
+Arayüz: {interface}    Alan: {domain}
+Girişler: {input_count}    Çıkışlar: {output_count}
+Referans: {status}</translation>
+    </message>
+    <message>
+        <source>Missing provider</source>
+        <translation>Eksik sağlayıcı</translation>
+    </message>
+    <message>
+        <source>Unavailable</source>
+        <translation>Kullanılamaz</translation>
+    </message>
+    <message>
+        <source>Valid</source>
+        <translation>Geçerli</translation>
+    </message>
 </context>
 <context>
     <name>DynamicBlockPropertiesDialog</name>
@@ -2439,7 +2511,7 @@ Emin misiniz?</translation>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="360"/>
         <source>Save redered PDF</source>
-        <translation>İşlenmiş PDF'yi kaydet</translation>
+        <translation>İşlenmiş PDF&apos;yi kaydet</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="389"/>
@@ -2553,7 +2625,7 @@ Emin misiniz?</translation>
     </message>
     <message>
         <source>Equation PDF created: {path}</source>
-        <translation>Denklem PDF'i oluşturuldu: {path}</translation>
+        <translation>Denklem PDF&apos;i oluşturuldu: {path}</translation>
     </message>
     <message>
         <source>Invalid DAE code.</source>
@@ -2601,7 +2673,7 @@ Emin misiniz?</translation>
     </message>
     <message>
         <source>Save dynamic equations PDF</source>
-        <translation>Dinamik Denklemler PDF'ini Kaydet</translation>
+        <translation>Dinamik Denklemler PDF&apos;ini Kaydet</translation>
     </message>
     <message>
         <source>Select a valid owner block.</source>
@@ -2646,6 +2718,18 @@ Emin misiniz?</translation>
     <message>
         <source>{active} / {count}</source>
         <translation>{active} / {count}</translation>
+    </message>
+    <message>
+        <source>Block properties - {name} (read-only manufacturer model)</source>
+        <translation>Blok özellikleri - {name} (salt okunur üretici modeli)</translation>
+    </message>
+    <message>
+        <source>Manufacturer model bindings are managed by their provider and are read-only here.</source>
+        <translation>Üretici model bağlamaları sağlayıcıları tarafından yönetilir ve burada salt okunurdur.</translation>
+    </message>
+    <message>
+        <source>Manufacturer model bindings are read-only in Block Properties.</source>
+        <translation>Üretici model bağlamaları Blok Özelliklerinde salt okunurdur.</translation>
     </message>
 </context>
 <context>
@@ -2951,7 +3035,7 @@ Emin misiniz?</translation>
     </message>
     <message>
         <source>Remove &apos;{name}&apos; and all events in this group?</source>
-        <translation>'{name}' ve bu gruptaki tüm olaylar kaldırılsın mı?</translation>
+        <translation>&apos;{name}&apos; ve bu gruptaki tüm olaylar kaldırılsın mı?</translation>
     </message>
     <message>
         <source>Remove event</source>
@@ -3229,7 +3313,7 @@ Emin misiniz?</translation>
     </message>
     <message>
         <source>This X-Y plot already has X and Y signals. Replace X, replace Y, or cancel?</source>
-        <translation>Bu X-Y grafiğinde zaten X ve Y sinyalleri var. X'i değiştir, Y'yi değiştir ya da iptal et?</translation>
+        <translation>Bu X-Y grafiğinde zaten X ve Y sinyalleri var. X&apos;i değiştir, Y&apos;yi değiştir ya da iptal et?</translation>
     </message>
     <message>
         <source>X axis</source>
@@ -3561,7 +3645,7 @@ beklenen işlem biçimini seçin</translation>
     </message>
     <message>
         <source>Enter a finite axis limit and press Enter</source>
-        <translation>Sonlu bir eksen limiti girip Enter'a basın</translation>
+        <translation>Sonlu bir eksen limiti girip Enter&apos;a basın</translation>
     </message>
     <message>
         <source>Mouse wheel: zoom
@@ -3634,7 +3718,7 @@ Karşılaştırma için bir temel şebeke yüklediniz mi?</translation>
     </message>
     <message>
         <source>The circuit has duplicated idtags and cannot be differentiated :(</source>
-        <translation>Devrenin yinelenen idtag'leri var ve farklılaştırılamıyor :(</translation>
+        <translation>Devrenin yinelenen idtag&apos;leri var ve farklılaştırılamıyor :(</translation>
     </message>
     <message>
         <source>VeraGrid diff (*.dveragrid)</source>
@@ -3646,7 +3730,7 @@ Karşılaştırma için bir temel şebeke yüklediniz mi?</translation>
     </message>
     <message>
         <source>{file_name} not found :(</source>
-        <translation>'{file_name}' bulunamadı :(</translation>
+        <translation>&apos;{file_name}&apos; bulunamadı :(</translation>
     </message>
 </context>
 <context>
@@ -3706,7 +3790,7 @@ Karşılaştırma için bir temel şebeke yüklediniz mi?</translation>
         <source>Do you want to update lengths of lines? 
 IMPORTANT: This will take into account every movement of substation and line locations. If you are unsure of the effects of this updating, click no and perform the individual length update in a new map or in the specific line.</source>
         <translation>Hat uzunlukları güncellensin mi? 
-ÖNEMLİ: Bu işlem trafo merkezi ve hat konumlarındaki tüm hareketleri dikkate alır. Bu güncellemenin etkilerinden emin değilseniz hayır'a tıklayın ve bireysel uzunluk güncellemesini yeni bir haritada ya da ilgili hatta yapın.</translation>
+ÖNEMLİ: Bu işlem trafo merkezi ve hat konumlarındaki tüm hareketleri dikkate alır. Bu güncellemenin etkilerinden emin değilseniz hayır&apos;a tıklayın ve bireysel uzunluk güncellemesini yeni bir haritada ya da ilgili hatta yapın.</translation>
     </message>
     <message>
         <source>Injection power</source>
@@ -3722,7 +3806,7 @@ IMPORTANT: This will take into account every movement of substation and line loc
     </message>
     <message>
         <source>No suitable voltage level ({voltage:.2f} kV) found in substation &quot;{substation_name}&quot;.</source>
-        <translation>"{substation_name}" trafo merkezinde uygun gerilim seviyesi ({voltage:.2f} kV) bulunamadı.</translation>
+        <translation>&quot;{substation_name}&quot; trafo merkezinde uygun gerilim seviyesi ({voltage:.2f} kV) bulunamadı.</translation>
     </message>
     <message>
         <source>Operation Successful</source>
@@ -3806,7 +3890,7 @@ Original line split into two segments:
 - {line1_name}: {length1:.2f} km
 - {line2_name}: {length2:.2f} km
 New connection line: {distance:.2f} km</source>
-        <translation>Ara nokta yeni trafo merkezi ile değiştirildi: '{substation_name}'.
+        <translation>Ara nokta yeni trafo merkezi ile değiştirildi: &apos;{substation_name}&apos;.
 Orijinal hat iki segmente bölündü:
 - {line1_name}: {length1:.2f} km
 - {line2_name}: {length2:.2f} km
@@ -3829,11 +3913,11 @@ Yeni bağlantı hattı: {distance:.2f} km</translation>
     </message>
     <message>
         <source>The base circuit has duplicated idtags and cannot be merged :(</source>
-        <translation>Temel devrenin yinelenen idtag'leri var ve birleştirilemiyor :(</translation>
+        <translation>Temel devrenin yinelenen idtag&apos;leri var ve birleştirilemiyor :(</translation>
     </message>
     <message>
         <source>The diff circuit has duplicated idtags and cannot be merged :(</source>
-        <translation>Fark devresinin yinelenen idtag'leri var ve birleştirilemiyor :(</translation>
+        <translation>Fark devresinin yinelenen idtag&apos;leri var ve birleştirilemiyor :(</translation>
     </message>
 </context>
 <context>
@@ -3995,11 +4079,11 @@ Yeni bağlantı hattı: {distance:.2f} km</translation>
     </message>
     <message>
         <source>Export to Power Grid Models</source>
-        <translation>Power Grid Models'a Dışa Aktar</translation>
+        <translation>Power Grid Models&apos;a Dışa Aktar</translation>
     </message>
     <message>
         <source>Export to Sqlite</source>
-        <translation>SQLite'a Dışa Aktar</translation>
+        <translation>SQLite&apos;a Dışa Aktar</translation>
     </message>
     <message>
         <source>Export to VeraGrid HDF5</source>
@@ -4043,7 +4127,7 @@ Yeni bağlantı hattı: {distance:.2f} km</translation>
     </message>
     <message>
         <source>Loaded &apos;{study_name}&apos; results from disk</source>
-        <translation>'{study_name}' sonuçları diskten yüklendi</translation>
+        <translation>&apos;{study_name}&apos; sonuçları diskten yüklendi</translation>
     </message>
     <message>
         <source>Message</source>
@@ -4165,7 +4249,7 @@ Yeni bağlantı hattı: {distance:.2f} km</translation>
     </message>
     <message>
         <source>The file type {file_extension} is not accepted :(</source>
-        <translation>'{file_extension}' dosya türü kabul edilmiyor :(</translation>
+        <translation>&apos;{file_extension}&apos; dosya türü kabul edilmiyor :(</translation>
     </message>
     <message>
         <source>The file was loaded but the current project was kept because closing a dynamic editor was cancelled.</source>
@@ -4271,7 +4355,7 @@ Yeni bağlantı hattı: {distance:.2f} km</translation>
     </message>
     <message>
         <source>The template {template_name} contains errors</source>
-        <translation>'{template_name}' şablonu hatalar içeriyor</translation>
+        <translation>&apos;{template_name}&apos; şablonu hatalar içeriyor</translation>
     </message>
     <message>
         <source>Vnom in bus {bus_name} is {voltage_from}
@@ -4411,7 +4495,7 @@ Do you want to continue without a template?</source>
     </message>
     <message>
         <source>Unable to convert to VSC. One of the buses must be DC and the other AC.</source>
-        <translation>VSC'ye dönüştürülemiyor. Baralardan biri DC, diğeri AC olmalıdır.</translation>
+        <translation>VSC&apos;ye dönüştürülemiyor. Baralardan biri DC, diğeri AC olmalıdır.</translation>
     </message>
 </context>
 <context>
@@ -6470,7 +6554,7 @@ Geçerli bir veri kaynağı yüklemeyi düşünün.</translation>
     <name>PsseExportDialogue</name>
     <message>
         <source>Export to PSS/e</source>
-        <translation>PSS/e'ye dışa aktar</translation>
+        <translation>PSS/e&apos;ye dışa aktar</translation>
     </message>
     <message>
         <source>PSS/e export</source>
@@ -6809,7 +6893,7 @@ Uzun süre beklemeyi kabul ediyor musunuz?</translation>
     </message>
     <message>
         <source>{file_name} is not valid :(</source>
-        <translation>'{file_name}' geçerli değil :(</translation>
+        <translation>&apos;{file_name}&apos; geçerli değil :(</translation>
     </message>
 </context>
 <context>
@@ -6945,7 +7029,7 @@ Uzun süre beklemeyi kabul ediyor musunuz?</translation>
     </message>
     <message>
         <source>{file_name} is not valid :(</source>
-        <translation>'{file_name}' geçerli değil :(</translation>
+        <translation>&apos;{file_name}&apos; geçerli değil :(</translation>
     </message>
 </context>
 <context>
@@ -6998,7 +7082,7 @@ Uzun süre beklemeyi kabul ediyor musunuz?</translation>
         <source>Merge {child_count} child scenario(s) into &apos;{scenario_name}&apos;?
 
 This will remove the direct child scenarios after their changes are applied.</source>
-        <translation>{child_count} alt senaryo '{scenario_name}' içine birleştirilsin mi?
+        <translation>{child_count} alt senaryo &apos;{scenario_name}&apos; içine birleştirilsin mi?
 
 Bu işlem, değişiklikleri uygulandıktan sonra doğrudan alt senaryoları kaldıracaktır.</translation>
     </message>
@@ -7174,7 +7258,7 @@ Teçhizat sayısını değiştirdiniz mi? Öyleyse simülasyonu yeniden çalış
     </message>
     <message>
         <source>Set VSC control device 1</source>
-        <translation>VSC Kontrol Teçhizatı 1'i Ayarla</translation>
+        <translation>VSC Kontrol Teçhizatı 1&apos;i Ayarla</translation>
     </message>
     <message>
         <source>Set regulation bus</source>
@@ -7186,7 +7270,7 @@ Teçhizat sayısını değiştirdiniz mi? Öyleyse simülasyonu yeniden çalış
     </message>
     <message>
         <source>The &apos;from&apos; or &apos;to&apos; bus to change has not been selected!</source>
-        <translation>Değiştirilecek 'başlangıç' ya da 'bitiş' barası seçilmedi!</translation>
+        <translation>Değiştirilecek &apos;başlangıç&apos; ya da &apos;bitiş&apos; barası seçilmedi!</translation>
     </message>
     <message>
         <source>The bus to change has not been selected!</source>
@@ -7267,7 +7351,7 @@ Teçhizat sayısını değiştirdiniz mi? Öyleyse simülasyonu yeniden çalış
     </message>
     <message>
         <source>{path} does not exist :/</source>
-        <translation>'{path}' mevcut değil :/</translation>
+        <translation>&apos;{path}&apos; mevcut değil :/</translation>
     </message>
 </context>
 <context>
@@ -7325,7 +7409,7 @@ Teçhizat sayısını değiştirdiniz mi? Öyleyse simülasyonu yeniden çalış
     </message>
     <message>
         <source>Non-numeric value in column 0 at row {row_number}.</source>
-        <translation>Satır {row_number}, sütun 0'da sayısal olmayan değer.</translation>
+        <translation>Satır {row_number}, sütun 0&apos;da sayısal olmayan değer.</translation>
     </message>
     <message>
         <source>Sequence</source>
@@ -7802,7 +7886,7 @@ Teçhizat sayısını değiştirdiniz mi? Öyleyse simülasyonu yeniden çalış
     </message>
     <message>
         <source>Fluid nodes are ignored for nonlinear OPF</source>
-        <translation>Doğrusal olmayan OPF'de akışkan düğümleri yok sayılır</translation>
+        <translation>Doğrusal olmayan OPF&apos;de akışkan düğümleri yok sayılır</translation>
     </message>
     <message>
         <source>Fluid nodes are ignored for this simulation</source>
@@ -8092,15 +8176,15 @@ Bu simülasyonu başlatmak için sonuçlar gerekiyor.</translation>
     </message>
     <message>
         <source>The &quot;from&quot; aggregation has no buses!</source>
-        <translation>"Başlangıç" toplulaştırmasında bara yok!</translation>
+        <translation>&quot;Başlangıç&quot; toplulaştırmasında bara yok!</translation>
     </message>
     <message>
         <source>The area &quot;from&quot; has no buses!</source>
-        <translation>"Başlangıç" alanında bara yok!</translation>
+        <translation>&quot;Başlangıç&quot; alanında bara yok!</translation>
     </message>
     <message>
         <source>The area &quot;to&quot; has no buses!</source>
-        <translation>"Bitiş" alanında bara yok!</translation>
+        <translation>&quot;Bitiş&quot; alanında bara yok!</translation>
     </message>
     <message>
         <source>The grid doesn&apos;t have time series :/</source>
@@ -8174,7 +8258,7 @@ Bu durum zaten çökme sınırında mı?</translation>
     </message>
     <message>
         <source>There are no investment groups, you need to create some so that VeraGrid can evaluate them ;)</source>
-        <translation>Yatırım grubu yok, VeraGrid'in değerlendirebilmesi için birkaç tane oluşturmanız gerekiyor ;)</translation>
+        <translation>Yatırım grubu yok, VeraGrid&apos;in değerlendirebilmesi için birkaç tane oluşturmanız gerekiyor ;)</translation>
     </message>
     <message>
         <source>There are no power flow results.
@@ -9027,7 +9111,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <name>UcteExportDialogue</name>
     <message>
         <source>Export to UCTE</source>
-        <translation>UCTE'ye Dışa Aktar</translation>
+        <translation>UCTE&apos;ye Dışa Aktar</translation>
     </message>
     <message>
         <source>UCTE export</source>
@@ -9186,7 +9270,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <name>VeraGridMainGUI</name>
     <message>
         <source>Are you sure that you want to exit VeraGrid?</source>
-        <translation>VeraGrid'den çıkmak istediğinize emin misiniz?</translation>
+        <translation>VeraGrid&apos;den çıkmak istediğinize emin misiniz?</translation>
     </message>
     <message>
         <source>Close</source>
@@ -9341,15 +9425,15 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <source>Branch active current &quot;from&quot; (0)</source>
-        <translation>Hat aktif akımı "başlangıç" (0)</translation>
+        <translation>Hat aktif akımı &quot;başlangıç&quot; (0)</translation>
     </message>
     <message>
         <source>Branch active current &quot;from&quot; (1)</source>
-        <translation>Hat aktif akımı "başlangıç" (1)</translation>
+        <translation>Hat aktif akımı &quot;başlangıç&quot; (1)</translation>
     </message>
     <message>
         <source>Branch active current &quot;from&quot; (2)</source>
-        <translation>Hat aktif akımı "başlangıç" (2)</translation>
+        <translation>Hat aktif akımı &quot;başlangıç&quot; (2)</translation>
     </message>
     <message>
         <source>Branch active losses (0)</source>
@@ -9365,15 +9449,15 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <source>Branch active power &quot;from&quot; (0)</source>
-        <translation>Hat aktif gücü "başlangıç" (0)</translation>
+        <translation>Hat aktif gücü &quot;başlangıç&quot; (0)</translation>
     </message>
     <message>
         <source>Branch active power &quot;from&quot; (1)</source>
-        <translation>Hat aktif gücü "başlangıç" (1)</translation>
+        <translation>Hat aktif gücü &quot;başlangıç&quot; (1)</translation>
     </message>
     <message>
         <source>Branch active power &quot;from&quot; (2)</source>
-        <translation>Hat aktif gücü "başlangıç" (2)</translation>
+        <translation>Hat aktif gücü &quot;başlangıç&quot; (2)</translation>
     </message>
     <message>
         <source>Branch group</source>
@@ -9421,15 +9505,15 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <source>Branch reactive current &quot;from&quot; (0)</source>
-        <translation>Hat reaktif akımı "başlangıç" (0)</translation>
+        <translation>Hat reaktif akımı &quot;başlangıç&quot; (0)</translation>
     </message>
     <message>
         <source>Branch reactive current &quot;from&quot; (1)</source>
-        <translation>Hat reaktif akımı "başlangıç" (1)</translation>
+        <translation>Hat reaktif akımı &quot;başlangıç&quot; (1)</translation>
     </message>
     <message>
         <source>Branch reactive current &quot;from&quot; (2)</source>
-        <translation>Hat reaktif akımı "başlangıç" (2)</translation>
+        <translation>Hat reaktif akımı &quot;başlangıç&quot; (2)</translation>
     </message>
     <message>
         <source>Branch reactive losses (0)</source>
@@ -9445,15 +9529,15 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <source>Branch reactive power &quot;from&quot; (0)</source>
-        <translation>Hat reaktif gücü "başlangıç" (0)</translation>
+        <translation>Hat reaktif gücü &quot;başlangıç&quot; (0)</translation>
     </message>
     <message>
         <source>Branch reactive power &quot;from&quot; (1)</source>
-        <translation>Hat reaktif gücü "başlangıç" (1)</translation>
+        <translation>Hat reaktif gücü &quot;başlangıç&quot; (1)</translation>
     </message>
     <message>
         <source>Branch reactive power &quot;from&quot; (2)</source>
-        <translation>Hat reaktif gücü "başlangıç" (2)</translation>
+        <translation>Hat reaktif gücü &quot;başlangıç&quot; (2)</translation>
     </message>
     <message>
         <source>Branch template</source>
@@ -9769,7 +9853,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <source>Flow from the P2X</source>
-        <translation>P2X'den Gelen Akış</translation>
+        <translation>P2X&apos;den Gelen Akış</translation>
     </message>
     <message>
         <source>Flow in the river</source>
@@ -9789,7 +9873,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <source>Fluid P2Xs</source>
-        <translation>Akışkan P2X'leri</translation>
+        <translation>Akışkan P2X&apos;leri</translation>
     </message>
     <message>
         <source>Fluid Pump</source>
@@ -9961,35 +10045,35 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <source>HVDC power &quot;from&quot;</source>
-        <translation>HVDC Gücü "başlangıç"</translation>
+        <translation>HVDC Gücü &quot;başlangıç&quot;</translation>
     </message>
     <message>
         <source>HVDC power &quot;from&quot; A</source>
-        <translation>HVDC Gücü "başlangıç" A</translation>
+        <translation>HVDC Gücü &quot;başlangıç&quot; A</translation>
     </message>
     <message>
         <source>HVDC power &quot;from&quot; B</source>
-        <translation>HVDC Gücü "başlangıç" B</translation>
+        <translation>HVDC Gücü &quot;başlangıç&quot; B</translation>
     </message>
     <message>
         <source>HVDC power &quot;from&quot; C</source>
-        <translation>HVDC Gücü "başlangıç" C</translation>
+        <translation>HVDC Gücü &quot;başlangıç&quot; C</translation>
     </message>
     <message>
         <source>HVDC power &quot;to&quot;</source>
-        <translation>HVDC Gücü "bitiş"</translation>
+        <translation>HVDC Gücü &quot;bitiş&quot;</translation>
     </message>
     <message>
         <source>HVDC power &quot;to&quot; A</source>
-        <translation>HVDC Gücü "bitiş" A</translation>
+        <translation>HVDC Gücü &quot;bitiş&quot; A</translation>
     </message>
     <message>
         <source>HVDC power &quot;to&quot; B</source>
-        <translation>HVDC Gücü "bitiş" B</translation>
+        <translation>HVDC Gücü &quot;bitiş&quot; B</translation>
     </message>
     <message>
         <source>HVDC power &quot;to&quot; C</source>
-        <translation>HVDC Gücü "bitiş" C</translation>
+        <translation>HVDC Gücü &quot;bitiş&quot; C</translation>
     </message>
     <message>
         <source>Hvdc</source>
@@ -10001,35 +10085,35 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <source>Iif: Reactive current &quot;from&quot;</source>
-        <translation>Iif: Reaktif akım "başlangıç"</translation>
+        <translation>Iif: Reaktif akım &quot;başlangıç&quot;</translation>
     </message>
     <message>
         <source>Iif: Reactive current &quot;from&quot; A</source>
-        <translation>Iif: Reaktif akım "başlangıç" A</translation>
+        <translation>Iif: Reaktif akım &quot;başlangıç&quot; A</translation>
     </message>
     <message>
         <source>Iif: Reactive current &quot;from&quot; B</source>
-        <translation>Iif: Reaktif akım "başlangıç" B</translation>
+        <translation>Iif: Reaktif akım &quot;başlangıç&quot; B</translation>
     </message>
     <message>
         <source>Iif: Reactive current &quot;from&quot; C</source>
-        <translation>Iif: Reaktif akım "başlangıç" C</translation>
+        <translation>Iif: Reaktif akım &quot;başlangıç&quot; C</translation>
     </message>
     <message>
         <source>Iit: Reactive current &quot;to&quot;</source>
-        <translation>Iit: Reaktif akım "bitiş"</translation>
+        <translation>Iit: Reaktif akım &quot;bitiş&quot;</translation>
     </message>
     <message>
         <source>Iit: Reactive current &quot;to&quot; A</source>
-        <translation>Iit: Reaktif akım "bitiş" A</translation>
+        <translation>Iit: Reaktif akım &quot;bitiş&quot; A</translation>
     </message>
     <message>
         <source>Iit: Reactive current &quot;to&quot; B</source>
-        <translation>Iit: Reaktif akım "bitiş" B</translation>
+        <translation>Iit: Reaktif akım &quot;bitiş&quot; B</translation>
     </message>
     <message>
         <source>Iit: Reactive current &quot;to&quot; C</source>
-        <translation>Iit: Reaktif akım "bitiş" C</translation>
+        <translation>Iit: Reaktif akım &quot;bitiş&quot; C</translation>
     </message>
     <message>
         <source>Information</source>
@@ -10085,35 +10169,35 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <source>Irf: Active current &quot;from&quot;</source>
-        <translation>Irf: Aktif akım "başlangıç"</translation>
+        <translation>Irf: Aktif akım &quot;başlangıç&quot;</translation>
     </message>
     <message>
         <source>Irf: Active current &quot;from&quot; A</source>
-        <translation>Irf: Aktif akım "başlangıç" A</translation>
+        <translation>Irf: Aktif akım &quot;başlangıç&quot; A</translation>
     </message>
     <message>
         <source>Irf: Active current &quot;from&quot; B</source>
-        <translation>Irf: Aktif akım "başlangıç" B</translation>
+        <translation>Irf: Aktif akım &quot;başlangıç&quot; B</translation>
     </message>
     <message>
         <source>Irf: Active current &quot;from&quot; C</source>
-        <translation>Irf: Aktif akım "başlangıç" C</translation>
+        <translation>Irf: Aktif akım &quot;başlangıç&quot; C</translation>
     </message>
     <message>
         <source>Irt: Active current &quot;to&quot;</source>
-        <translation>Irt: Aktif akım "bitiş"</translation>
+        <translation>Irt: Aktif akım &quot;bitiş&quot;</translation>
     </message>
     <message>
         <source>Irt: Active current &quot;to&quot; A</source>
-        <translation>Irt: Aktif akım "bitiş" A</translation>
+        <translation>Irt: Aktif akım &quot;bitiş&quot; A</translation>
     </message>
     <message>
         <source>Irt: Active current &quot;to&quot; B</source>
-        <translation>Irt: Aktif akım "bitiş" B</translation>
+        <translation>Irt: Aktif akım &quot;bitiş&quot; B</translation>
     </message>
     <message>
         <source>Irt: Active current &quot;to&quot; C</source>
-        <translation>Irt: Aktif akım "bitiş" C</translation>
+        <translation>Irt: Aktif akım &quot;bitiş&quot; C</translation>
     </message>
     <message>
         <source>It Measurement</source>
@@ -10481,23 +10565,23 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <source>Pf: Active power &quot;from&quot;</source>
-        <translation>Pf: Aktif güç "başlangıç"</translation>
+        <translation>Pf: Aktif güç &quot;başlangıç&quot;</translation>
     </message>
     <message>
         <source>Pf: Active power &quot;from&quot; base case</source>
-        <translation>Pf: Aktif güç "başlangıç" (baz durum)</translation>
+        <translation>Pf: Aktif güç &quot;başlangıç&quot; (baz durum)</translation>
     </message>
     <message>
         <source>PfA: Active power &quot;from&quot; A</source>
-        <translation>PfA: Aktif güç "başlangıç" A</translation>
+        <translation>PfA: Aktif güç &quot;başlangıç&quot; A</translation>
     </message>
     <message>
         <source>PfB: Active power &quot;from&quot; B</source>
-        <translation>PfB: Aktif güç "başlangıç" B</translation>
+        <translation>PfB: Aktif güç &quot;başlangıç&quot; B</translation>
     </message>
     <message>
         <source>PfC: Active power &quot;from&quot; C</source>
-        <translation>PfC: Aktif güç "başlangıç" C</translation>
+        <translation>PfC: Aktif güç &quot;başlangıç&quot; C</translation>
     </message>
     <message>
         <source>Pg Measurement</source>
@@ -10585,19 +10669,19 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <source>Pt: Active power &quot;to&quot;</source>
-        <translation>Pt: Aktif güç "bitiş"</translation>
+        <translation>Pt: Aktif güç &quot;bitiş&quot;</translation>
     </message>
     <message>
         <source>Pt: Active power &quot;to&quot; A</source>
-        <translation>Pt: Aktif güç "bitiş" A</translation>
+        <translation>Pt: Aktif güç &quot;bitiş&quot; A</translation>
     </message>
     <message>
         <source>Pt: Active power &quot;to&quot; B</source>
-        <translation>Pt: Aktif güç "bitiş" B</translation>
+        <translation>Pt: Aktif güç &quot;bitiş&quot; B</translation>
     </message>
     <message>
         <source>Pt: Active power &quot;to&quot; C</source>
-        <translation>Pt: Aktif güç "bitiş" C</translation>
+        <translation>Pt: Aktif güç &quot;bitiş&quot; C</translation>
     </message>
     <message>
         <source>Q: Reactive power</source>
@@ -10621,19 +10705,19 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <source>Qf: Reactive power &quot;from&quot;</source>
-        <translation>Qf: Reaktif güç "başlangıç"</translation>
+        <translation>Qf: Reaktif güç &quot;başlangıç&quot;</translation>
     </message>
     <message>
         <source>QfA: Reactive power &quot;from&quot; A</source>
-        <translation>QfA: Reaktif güç "başlangıç" A</translation>
+        <translation>QfA: Reaktif güç &quot;başlangıç&quot; A</translation>
     </message>
     <message>
         <source>QfB: Reactive power &quot;from&quot; B</source>
-        <translation>QfB: Reaktif güç "başlangıç" B</translation>
+        <translation>QfB: Reaktif güç &quot;başlangıç&quot; B</translation>
     </message>
     <message>
         <source>QfC: Reactive power &quot;from&quot; C</source>
-        <translation>QfC: Reaktif güç "başlangıç" C</translation>
+        <translation>QfC: Reaktif güç &quot;başlangıç&quot; C</translation>
     </message>
     <message>
         <source>Qg Measurement</source>
@@ -10665,19 +10749,19 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <source>Qt: Reactive power &quot;to&quot;</source>
-        <translation>Qt: Reaktif güç "bitiş"</translation>
+        <translation>Qt: Reaktif güç &quot;bitiş&quot;</translation>
     </message>
     <message>
         <source>Qt: Reactive power &quot;to&quot; A</source>
-        <translation>Qt: Reaktif güç "bitiş" A</translation>
+        <translation>Qt: Reaktif güç &quot;bitiş&quot; A</translation>
     </message>
     <message>
         <source>Qt: Reactive power &quot;to&quot; B</source>
-        <translation>Qt: Reaktif güç "bitiş" B</translation>
+        <translation>Qt: Reaktif güç &quot;bitiş&quot; B</translation>
     </message>
     <message>
         <source>Qt: Reactive power &quot;to&quot; C</source>
-        <translation>Qt: Reaktif güç "bitiş" C</translation>
+        <translation>Qt: Reaktif güç &quot;bitiş&quot; C</translation>
     </message>
     <message>
         <source>RMS Dynamic</source>
@@ -11317,27 +11401,27 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <source>Vsc power &quot;from&quot; negative pole</source>
-        <translation>VSC Gücü "başlangıç" Negatif Kutup</translation>
+        <translation>VSC Gücü &quot;başlangıç&quot; Negatif Kutup</translation>
     </message>
     <message>
         <source>Vsc power &quot;from&quot; positive pole</source>
-        <translation>VSC Gücü "başlangıç" Pozitif Kutup</translation>
+        <translation>VSC Gücü &quot;başlangıç&quot; Pozitif Kutup</translation>
     </message>
     <message>
         <source>Vsc power &quot;to&quot;</source>
-        <translation>VSC Gücü "bitiş"</translation>
+        <translation>VSC Gücü &quot;bitiş&quot;</translation>
     </message>
     <message>
         <source>Vsc power &quot;to&quot; A</source>
-        <translation>VSC Gücü "bitiş" A</translation>
+        <translation>VSC Gücü &quot;bitiş&quot; A</translation>
     </message>
     <message>
         <source>Vsc power &quot;to&quot; B</source>
-        <translation>VSC Gücü "bitiş" B</translation>
+        <translation>VSC Gücü &quot;bitiş&quot; B</translation>
     </message>
     <message>
         <source>Vsc power &quot;to&quot; C</source>
-        <translation>VSC Gücü "bitiş" C</translation>
+        <translation>VSC Gücü &quot;bitiş&quot; C</translation>
     </message>
     <message>
         <source>When to make them plot</source>
@@ -11446,6 +11530,10 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <source>𝜏: Tap angle</source>
         <translation>𝜏: Kademe açısı</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model</source>
+        <translation>Üretici yerel modeli</translation>
     </message>
 </context>
 <context>
@@ -11655,7 +11743,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="86"/>
-        <location filename="../Main/MainWindow.ui" line="11256"/>
+        <location filename="../Main/MainWindow.ui" line="11258"/>
         <source>Model</source>
         <translation>Model</translation>
     </message>
@@ -11798,7 +11886,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="818"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Bus default voltage&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the voltage that drag&amp;amp;drop buses have when they are created from the schematic.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Bara Varsayılan Gerilimi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bu, şemada sürükle &amp;amp; bırak yöntemiyle oluşturulan baraların sahip olduğu varsayılan gerilimdir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Bara Varsayılan Gerilimi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bu, şemada sürükle &amp;amp; bırak yöntemiyle oluşturulan baraların sahip olduğu varsayılan gerilimdir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="821"/>
@@ -11900,7 +11988,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
         <location filename="../Main/MainWindow.ui" line="1588"/>
         <location filename="../Main/MainWindow.ui" line="2278"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time slider&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Move this time slider to select the appropriate time slot to view.&lt;/p&gt;&lt;p&gt;The first position sets the snapshot values, the rest attend to the time series values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Zaman kaydırıcısı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Görüntülenecek uygun zaman dilimini seçmek için bu zaman kaydırıcısını hareket ettirin.&lt;/p&gt;&lt;p&gt;İlk konum kesit değerlerini ayarlar, kalanları zaman serisi değerlerine karşılık gelir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Zaman kaydırıcısı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Görüntülenecek uygun zaman dilimini seçmek için bu zaman kaydırıcısını hareket ettirin.&lt;/p&gt;&lt;p&gt;İlk konum kesit değerlerini ayarlar, kalanları zaman serisi değerlerine karşılık gelir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="1150"/>
@@ -11964,7 +12052,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="1466"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type anything to search on the name property. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;For more advanced searches you can compose a filter expression:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Subjects:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;col, idx, val, colobj, idxobj&lt;/p&gt;&lt;p&gt;colobj and idxobj allow accessing the objects that may be represented at the index or the columns. With these you can access their internal properties for filtering.&lt;/p&gt;&lt;p&gt;If none is specified idxobj is taken&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Operators:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&amp;gt;, &amp;lt;, &amp;gt;=, &amp;lt;=, !=, =, like, notlike, starts, ends&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Examples:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Filter all object names that are similar to &apos;alba&apos; and their Vnom property &amp;gt; 200&lt;/p&gt;&lt;p&gt;-&amp;gt; idx&lt;span style=&quot; font-style:italic;&quot;&gt;obj.name like alba and idxobj.Vnom &amp;gt; 200&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Equivalently:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;-&amp;gt; name like alba and Vnom &amp;gt; 200&lt;/span&gt;&lt;/p&gt;&lt;p&gt;[Enter] to search &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ad özelliğinde aramak için istediğinizi yazın.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Daha gelişmiş aramalar için bir filtre ifadesi oluşturabilirsiniz:&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Özneler:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;col, idx, val, colobj, idxobj&lt;/p&gt;&lt;p&gt;colobj ve idxobj, indiste ya da sütunlarda temsil edilen nesnelere erişmenizi sağlar. Bunlarla filtreleme için iç özelliklerine erişebilirsiniz.&lt;/p&gt;&lt;p&gt;Hiçbiri belirtilmezse idxobj alınır&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Operatörler:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&amp;gt;, &amp;lt;, &amp;gt;=, &amp;lt;=, !=, =, like, notlike, starts, ends&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Örnekler:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;'alba'ya benzeyen tüm nesne adlarını ve Vnom özelliklerini filtrele &amp;gt; 200&lt;/p&gt;&lt;p&gt;-&amp;gt; idx&lt;span style=" font-style:italic;"&gt;obj.name like alba and idxobj.Vnom &amp;gt; 200&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-style:italic;"&gt;Eşdeğer olarak:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-style:italic;"&gt;-&amp;gt; name like alba and Vnom &amp;gt; 200&lt;/span&gt;&lt;/p&gt;&lt;p&gt;[Enter] ile ara&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ad özelliğinde aramak için istediğinizi yazın.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Daha gelişmiş aramalar için bir filtre ifadesi oluşturabilirsiniz:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Özneler:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;col, idx, val, colobj, idxobj&lt;/p&gt;&lt;p&gt;colobj ve idxobj, indiste ya da sütunlarda temsil edilen nesnelere erişmenizi sağlar. Bunlarla filtreleme için iç özelliklerine erişebilirsiniz.&lt;/p&gt;&lt;p&gt;Hiçbiri belirtilmezse idxobj alınır&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Operatörler:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&amp;gt;, &amp;lt;, &amp;gt;=, &amp;lt;=, !=, =, like, notlike, starts, ends&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Örnekler:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&apos;alba&apos;ya benzeyen tüm nesne adlarını ve Vnom özelliklerini filtrele &amp;gt; 200&lt;/p&gt;&lt;p&gt;-&amp;gt; idx&lt;span style=&quot; font-style:italic;&quot;&gt;obj.name like alba and idxobj.Vnom &amp;gt; 200&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Eşdeğer olarak:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;-&amp;gt; name like alba and Vnom &amp;gt; 200&lt;/span&gt;&lt;/p&gt;&lt;p&gt;[Enter] ile ara&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="1469"/>
@@ -11979,7 +12067,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="1506"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Histogram&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the histogram analysis of the selected data structure&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Histogram&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Seçilen veri yapısının histogram analizini çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Histogram&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Seçilen veri yapısının histogram analizini çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="1553"/>
@@ -11994,7 +12082,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="1574"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Snapshot&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Assign the values of the selected time step into the snapshot&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Kesit (Snapshot)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Seçilen zaman adımının değerlerini kesite ata&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Kesit (Snapshot)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Seçilen zaman adımının değerlerini kesite ata&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="1627"/>
@@ -12024,22 +12112,22 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="1825"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Create profiles&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This will create all the object&apos;s profiles&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Profilleri oluştur&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bu, tüm nesnenin profillerini oluşturur&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Profilleri oluştur&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bu, tüm nesnenin profillerini oluşturur&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="1839"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Delete profiles&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This will delete all the profiles and leave the snapshot.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Profilleri sil&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bu, tüm profilleri siler ve kesiti bırakır.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Profilleri sil&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bu, tüm profilleri siler ve kesiti bırakır.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="1853"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Import profiles&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Import from data in CSV or Excel files&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Profilleri içe aktar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;CSV ya da Excel dosyalarındaki verilerden içe aktar&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Profilleri içe aktar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;CSV ya da Excel dosyalarındaki verilerden içe aktar&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="1870"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Import profiles from grid models. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is, load many individual grids in any of the supported VeraGrid formats and take the operational data from them, aplying them to all the profiles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Profilleri şebeke modellerinden içe aktar.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Yani, desteklenen VeraGrid biçimlerinden çok sayıda bireysel şebeke yükleyin, işletme verilerini alıp tüm profillere uygulayın.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Profilleri şebeke modellerinden içe aktar.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Yani, desteklenen VeraGrid biçimlerinden çok sayıda bireysel şebeke yükleyin, işletme verilerini alıp tüm profillere uygulayın.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="1887"/>
@@ -12059,17 +12147,17 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="1985"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Copy data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Copy displayed profile&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Veriyi kopyala&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Görüntülenen profili kopyala&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Veriyi kopyala&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Görüntülenen profili kopyala&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="2002"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Paste data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Paste clipboard into the displayed profile&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Veriyi yapıştır&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Panoyu görüntülenen profile yapıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Veriyi yapıştır&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Panoyu görüntülenen profile yapıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="2016"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Copy profile&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Copy the current profile into the profile selected by the drop-down selector&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Profili kopyala&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Geçerli profili açılır listeden seçilen profile kopyala&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Profili kopyala&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Geçerli profili açılır listeden seçilen profile kopyala&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="2036"/>
@@ -12149,7 +12237,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="2391"/>
         <location filename="../Main/MainWindow.ui" line="2456"/>
-        <location filename="../Main/MainWindow.ui" line="13028"/>
+        <location filename="../Main/MainWindow.ui" line="13054"/>
         <source>Results</source>
         <translation>Sonuçlar</translation>
     </message>
@@ -12166,7 +12254,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="2664"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Subjects:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;col, idx, val, colobj, idxobj&lt;/p&gt;&lt;p&gt;colobj and idxobj allow accessing the objects that may be represented at the index or the columns. With these you can access their internal properties for filtering.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Operators:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&amp;gt;, &amp;lt;, &amp;gt;=, &amp;lt;=, !=, =, like, notlike, starts, ends&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Examples:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;The columns should not be column1 or column2, the values should be &amp;gt; 5 and the index be like ab of mn&lt;/span&gt;&lt;/p&gt;&lt;p&gt;-&amp;gt; &lt;span style=&quot; font-style:italic;&quot;&gt;col != [column1, column2] and val &amp;gt; 5 or idx like [ab, mn]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Filter the table values that are between 0.5 and 20&lt;/span&gt;&lt;/p&gt;&lt;p&gt;-&amp;gt; &lt;span style=&quot; font-style:italic;&quot;&gt;val &amp;gt; 0.5 and val &amp;lt; 20.0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Özneler:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;col, idx, val, colobj, idxobj&lt;/p&gt;&lt;p&gt;colobj ve idxobj, indiste ya da sütunlarda temsil edilen nesnelere erişmenizi sağlar. Bunlarla filtreleme için iç özelliklerine erişebilirsiniz.&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Operatörler:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&amp;gt;, &amp;lt;, &amp;gt;=, &amp;lt;=, !=, =, like, notlike, starts, ends&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Örnekler:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-style:italic;"&gt;Sütunlar column1 ya da column2 olmamalı, değerler ise &amp;gt; 5'ten büyük ve indis ab ya da mn gibi olmalı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;-&amp;gt; &lt;span style=" font-style:italic;"&gt;col != [column1, column2] and val &amp;gt; 5 or idx like [ab, mn]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-style:italic;"&gt;0.5 ile 20 arasında olan tablo değerlerini filtrele&lt;/span&gt;&lt;/p&gt;&lt;p&gt;-&amp;gt; &lt;span style=" font-style:italic;"&gt;val &amp;gt; 0.5 and val &amp;lt; 20.0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Özneler:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;col, idx, val, colobj, idxobj&lt;/p&gt;&lt;p&gt;colobj ve idxobj, indiste ya da sütunlarda temsil edilen nesnelere erişmenizi sağlar. Bunlarla filtreleme için iç özelliklerine erişebilirsiniz.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Operatörler:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&amp;gt;, &amp;lt;, &amp;gt;=, &amp;lt;=, !=, =, like, notlike, starts, ends&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Örnekler:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Sütunlar column1 ya da column2 olmamalı, değerler ise &amp;gt; 5&apos;ten büyük ve indis ab ya da mn gibi olmalı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;-&amp;gt; &lt;span style=&quot; font-style:italic;&quot;&gt;col != [column1, column2] and val &amp;gt; 5 or idx like [ab, mn]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;0.5 ile 20 arasında olan tablo değerlerini filtrele&lt;/span&gt;&lt;/p&gt;&lt;p&gt;-&amp;gt; &lt;span style=&quot; font-style:italic;&quot;&gt;val &amp;gt; 0.5 and val &amp;lt; 20.0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="2667"/>
@@ -12328,7 +12416,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="3819"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Base power&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Despite all the bibliography, changing this number to anything other than 100 MVA, might change the meaning of what sensible per-unit voltage are.&lt;/p&gt;&lt;p&gt;So, don&apos;t touch it. To have power in kW, use the option at the loads, geneerators, etc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Baz güç&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Tüm kaynaklara rağmen bu sayıyı 100 MVA dışında bir değere değiştirmek, mantıklı per-unit gerilimlerin anlamını değiştirebilir.&lt;/p&gt;&lt;p&gt;Bu nedenle dokunmayın. Gücü kW cinsinden almak için yükler, jeneratörler vb. seçeneğini kullanın.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Baz güç&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Tüm kaynaklara rağmen bu sayıyı 100 MVA dışında bir değere değiştirmek, mantıklı per-unit gerilimlerin anlamını değiştirebilir.&lt;/p&gt;&lt;p&gt;Bu nedenle dokunmayın. Gücü kW cinsinden almak için yükler, jeneratörler vb. seçeneğini kullanın.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="3822"/>
@@ -12338,7 +12426,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="3841"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;System frequency&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This only has an effect in the program when computing lines&apos; per-unit impedance from ohm values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Sistem frekansı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bu, programda yalnızca hatların per-unit empedansını ohm değerlerinden hesaplarken etkilidir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Sistem frekansı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bu, programda yalnızca hatların per-unit empedansını ohm değerlerinden hesaplarken etkilidir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="3844"/>
@@ -12674,7 +12762,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="4742"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;VeraGrid does not have an &amp;quot;outer loop&amp;quot;&lt;br/&gt;Instead, in iterative numerical methods (Newton-Raphson, Levenberg-Marquardt, Powell Dog Leg) the controls apply after a certain error threshold has been reached.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;VeraGrid'in bir &amp;quot;dış döngüsü yoktur&amp;quot;&lt;br/&gt;Bunun yerine, yinelemeli sayısal yöntemlerde (Newton-Raphson, Levenberg-Marquardt, Powell Dog Leg) kontroller belirli bir hata eşiğine ulaşıldıktan sonra uygulanır.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;VeraGrid&apos;in bir &amp;quot;dış döngüsü yoktur&amp;quot;&lt;br/&gt;Bunun yerine, yinelemeli sayısal yöntemlerde (Newton-Raphson, Levenberg-Marquardt, Powell Dog Leg) kontroller belirli bir hata eşiğine ulaşıldıktan sonra uygulanır.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="4768"/>
@@ -12734,7 +12822,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="5043"/>
-        <location filename="../Main/MainWindow.ui" line="11570"/>
+        <location filename="../Main/MainWindow.ui" line="11572"/>
         <source>Continuation power flow</source>
         <translation>Sürekli Yük Akışı (CPF)</translation>
     </message>
@@ -12765,7 +12853,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="5312"/>
-        <location filename="../Main/MainWindow.ui" line="12884"/>
+        <location filename="../Main/MainWindow.ui" line="12910"/>
         <source>State estimation</source>
         <translation>Durum Kestirimi</translation>
     </message>
@@ -12963,7 +13051,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="5820"/>
         <source>Initialize the interior point OPF with the power flow solution</source>
-        <translation>İç nokta OPF'sini yük akışı çözümüyle başlat</translation>
+        <translation>İç nokta OPF&apos;sini yük akışı çözümüyle başlat</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="5823"/>
@@ -13058,7 +13146,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="6272"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This criteria springs from the ACER (Agency for the Cooperation for Energy Regulators).&lt;/p&gt;&lt;p&gt;It determines that a branch is only relevant to be considered in a NTC calculation if the flow due to the exchange is over a percentage (70%) &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;A branch is monitored only if:&lt;/p&gt;&lt;p&gt;(branch_rate * 70%) / branch_alpha &amp;lt;= total exchange rating&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bu kriter ACER'den (Enerji Düzenleyicileri İşbirliği Ajansı) kaynaklanmaktadır.&lt;/p&gt;&lt;p&gt;Bir hatın NTC hesabında dikkate alınması için ancak değişimden kaynaklanan akışın bir yüzdeyi (70%) aşması durumunda anlamlı olduğunu belirler&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Bir hat yalnızca şu durumda izlenir:&lt;/p&gt;&lt;p&gt;(branch_rate * 70%) / branch_alpha &amp;lt;= toplam değişim değeri&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bu kriter ACER&apos;den (Enerji Düzenleyicileri İşbirliği Ajansı) kaynaklanmaktadır.&lt;/p&gt;&lt;p&gt;Bir hatın NTC hesabında dikkate alınması için ancak değişimden kaynaklanan akışın bir yüzdeyi (70%) aşması durumunda anlamlı olduğunu belirler&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Bir hat yalnızca şu durumda izlenir:&lt;/p&gt;&lt;p&gt;(branch_rate * 70%) / branch_alpha &amp;lt;= toplam değişim değeri&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="6275"/>
@@ -13116,8 +13204,8 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="6497"/>
         <location filename="../Main/MainWindow.ui" line="7569"/>
-        <location filename="../Main/MainWindow.ui" line="13019"/>
-        <location filename="../Main/MainWindow.ui" line="13046"/>
+        <location filename="../Main/MainWindow.ui" line="13045"/>
+        <location filename="../Main/MainWindow.ui" line="13072"/>
         <source>Contingencies</source>
         <translation>Kısıtlar</translation>
     </message>
@@ -13293,7 +13381,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="7408"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Filter contingencies&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This option allows you to only consider the contingencies that fall in ceratain groupings such as Area, Zone or Country. The filtering is performed based on the information stored in the Buses.&lt;/p&gt;&lt;p&gt;This is highly discouraged. We trully advise you to not to filter the contingencies and select All Contingencies. Use this feature at your own risk.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Kısıtları Filtrele&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bu seçenek, yalnızca Alan, Bölge ya da Ülke gibi belirli gruplamalara düşen kısıtları dikkate almanıza izin verir. Filtreleme, Baralarda saklanan bilgilere göre yapılır.&lt;/p&gt;&lt;p&gt;Bu kesinlikle önerilmez. Kısıt senaryolarını filtrelememenizi ve Tüm Kısıtlar seçmenizi öneririz. Bu özelliği kendi riskinizle kullanın.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Kısıtları Filtrele&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bu seçenek, yalnızca Alan, Bölge ya da Ülke gibi belirli gruplamalara düşen kısıtları dikkate almanıza izin verir. Filtreleme, Baralarda saklanan bilgilere göre yapılır.&lt;/p&gt;&lt;p&gt;Bu kesinlikle önerilmez. Kısıt senaryolarını filtrelememenizi ve Tüm Kısıtlar seçmenizi öneririz. Bu özelliği kendi riskinizle kullanın.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="7591"/>
@@ -13323,7 +13411,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="7625"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Activate SRAP (Sistema de reducción automática de potencia)&lt;/p&gt;&lt;p&gt;It is a mechanism that helps avoiding considering a contingency if it would be eventually resolved by nearby generation shifting.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SRAP'yi (Sistema de reducción automática de potencia) etkinleştir&lt;/p&gt;&lt;p&gt;Yakındaki üretim kaymasıyla nihayetinde çözülecek bir kısıtlılık durumunun değerlendirilmesini önlemeye yardımcı olan bir mekanizmadır.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SRAP&apos;yi (Sistema de reducción automática de potencia) etkinleştir&lt;/p&gt;&lt;p&gt;Yakındaki üretim kaymasıyla nihayetinde çözülecek bir kısıtlılık durumunun değerlendirilmesini önlemeye yardımcı olan bir mekanizmadır.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="7628"/>
@@ -13365,7 +13453,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="7700"/>
         <source>Maximum number of generation nodes to participate in the SRAP</source>
-        <translation>SRAP'a katılacak maksimum üretim düğümü sayısı</translation>
+        <translation>SRAP&apos;a katılacak maksimum üretim düğümü sayısı</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="7703"/>
@@ -13594,7 +13682,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="9335"/>
-        <location filename="../Main/MainWindow.ui" line="12374"/>
+        <location filename="../Main/MainWindow.ui" line="12400"/>
         <source>Clustering</source>
         <translation>Kümeleme</translation>
     </message>
@@ -13691,7 +13779,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="9983"/>
-        <location filename="../Main/MainWindow.ui" line="11555"/>
+        <location filename="../Main/MainWindow.ui" line="11557"/>
         <source>Stochastic power flow</source>
         <translation>Stokastik Yük Akışı</translation>
     </message>
@@ -13737,7 +13825,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="10298"/>
-        <location filename="../Main/MainWindow.ui" line="12791"/>
+        <location filename="../Main/MainWindow.ui" line="12817"/>
         <source>Grid reduction</source>
         <translation>Şebeke İndirgeme (Eşdeğer Model Çıkarma)</translation>
     </message>
@@ -13749,7 +13837,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="10371"/>
         <source>Filter by r+x under threshold</source>
-        <translation>Eşik Altındaki R+x'e göre Filtrele</translation>
+        <translation>Eşik Altındaki R+x&apos;e göre Filtrele</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="10381"/>
@@ -13830,7 +13918,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="10923"/>
         <source>Type here the VeraGrid server URL (ask your IT team)</source>
-        <translation>VeraGrid sunucu URL'sini buraya yazın (BT ekibinize sorun)</translation>
+        <translation>VeraGrid sunucu URL&apos;sini buraya yazın (BT ekibinize sorun)</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="10930"/>
@@ -13873,1124 +13961,1144 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
         <translation>Veriyi İçe Aktar</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11187"/>
+        <location filename="../Main/MainWindow.ui" line="11189"/>
         <source>Help</source>
         <translation>Yardım</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11196"/>
+        <location filename="../Main/MainWindow.ui" line="11198"/>
         <source>Actions</source>
         <translation>İşlemler</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11209"/>
+        <location filename="../Main/MainWindow.ui" line="11211"/>
         <source>Simulations</source>
         <translation>Simülasyonlar</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11286"/>
+        <location filename="../Main/MainWindow.ui" line="11288"/>
         <source>Diagram</source>
         <translation>Gösterim</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11290"/>
+        <location filename="../Main/MainWindow.ui" line="11292"/>
         <source>Branches drawing style</source>
         <translation>Branşman Çizim Stili</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11330"/>
+        <location filename="../Main/MainWindow.ui" line="11332"/>
         <source>plugins</source>
         <translation>Eklentiler</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11335"/>
+        <location filename="../Main/MainWindow.ui" line="11337"/>
         <source>Events</source>
         <translation>Olaylar</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11356"/>
+        <location filename="../Main/MainWindow.ui" line="11358"/>
         <source>toolBar</source>
         <translation>Araç Çubuğu</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11423"/>
+        <location filename="../Main/MainWindow.ui" line="11425"/>
         <source>Open file</source>
         <translation>Dosya Aç</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11429"/>
+        <location filename="../Main/MainWindow.ui" line="11431"/>
         <source>Ctrl+O</source>
         <translation>Ctrl+O</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11438"/>
+        <location filename="../Main/MainWindow.ui" line="11440"/>
         <source>Save</source>
         <translation>Kaydet</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11444"/>
-        <location filename="../Main/MainWindow.ui" line="13242"/>
+        <location filename="../Main/MainWindow.ui" line="11446"/>
+        <location filename="../Main/MainWindow.ui" line="13268"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11453"/>
+        <location filename="../Main/MainWindow.ui" line="11455"/>
         <source>Take picture</source>
         <translation>Ekran Görüntüsü Al</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11465"/>
+        <location filename="../Main/MainWindow.ui" line="11467"/>
         <source>New project</source>
         <translation>Yeni proje</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11471"/>
+        <location filename="../Main/MainWindow.ui" line="11473"/>
         <source>Ctrl+N</source>
         <translation>Ctrl+N</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11480"/>
+        <location filename="../Main/MainWindow.ui" line="11482"/>
         <source>Power Flow</source>
         <translation>Yük Akışı</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11483"/>
+        <location filename="../Main/MainWindow.ui" line="11485"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power Flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a power flow analysis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Yük Akışı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bir yük akışı analizi çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Yük Akışı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bir yük akışı analizi çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11489"/>
+        <location filename="../Main/MainWindow.ui" line="11491"/>
         <source>F5</source>
         <translation>F5</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11501"/>
+        <location filename="../Main/MainWindow.ui" line="11503"/>
         <source>Power flow time series</source>
         <translation>Yük Akışı Zaman Serisi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11504"/>
+        <location filename="../Main/MainWindow.ui" line="11506"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the power flow study with time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Yük akışı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Yük akışı çalışmasını zaman serisi verisiyle çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Yük akışı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Yük akışı çalışmasını zaman serisi verisiyle çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11510"/>
+        <location filename="../Main/MainWindow.ui" line="11512"/>
         <source>Ctrl+F5</source>
         <translation>Ctrl+F5</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11519"/>
+        <location filename="../Main/MainWindow.ui" line="11521"/>
         <source>Expand</source>
         <translation>Genişlet</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11522"/>
+        <location filename="../Main/MainWindow.ui" line="11524"/>
         <source>Expand distances</source>
         <translation>Mesafeleri genişlet</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11528"/>
+        <location filename="../Main/MainWindow.ui" line="11530"/>
         <source>Ctrl+Shift++</source>
         <translation>Ctrl+Shift++</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11537"/>
+        <location filename="../Main/MainWindow.ui" line="11539"/>
         <source>Shrink</source>
         <translation>Daralt</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11540"/>
+        <location filename="../Main/MainWindow.ui" line="11542"/>
         <source>Shrink distances</source>
         <translation>Mesafeleri daralt</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11546"/>
+        <location filename="../Main/MainWindow.ui" line="11548"/>
         <source>Ctrl+Shift+-</source>
         <translation>Ctrl+Shift+-</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11558"/>
+        <location filename="../Main/MainWindow.ui" line="11560"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Stochastic power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a stochastic power flow over the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Stokastik yük akışı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Zaman serisi verisi üzerinde stokastik yük akışı gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Stokastik yük akışı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Zaman serisi verisi üzerinde stokastik yük akışı gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11573"/>
+        <location filename="../Main/MainWindow.ui" line="11575"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Continuation power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a continuation power flow over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Sürekli Yük Akışı (CPF)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Kesit veri üzerinde sürekli yük akışı (CPF) çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Sürekli Yük Akışı (CPF)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Kesit veri üzerinde sürekli yük akışı (CPF) çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11585"/>
+        <location filename="../Main/MainWindow.ui" line="11587"/>
         <source>About</source>
         <translation>Hakkında</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11597"/>
+        <location filename="../Main/MainWindow.ui" line="11599"/>
         <source>center view</source>
         <translation>Görünümü Ortala</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11600"/>
+        <location filename="../Main/MainWindow.ui" line="11602"/>
         <source>Center view</source>
         <translation>Görünümü Ortala</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11606"/>
+        <location filename="../Main/MainWindow.ui" line="11608"/>
         <source>Ctrl+E</source>
         <translation>Ctrl+E</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11615"/>
+        <location filename="../Main/MainWindow.ui" line="11617"/>
         <source>Short Circuit</source>
         <translation>Kısa Devre</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11618"/>
+        <location filename="../Main/MainWindow.ui" line="11620"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Short Circuit&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a short circuit study over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Kısa Devre&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Kesit veri üzerinde bir kısa devre çalışması çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Kısa Devre&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Kesit veri üzerinde bir kısa devre çalışması çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11630"/>
+        <location filename="../Main/MainWindow.ui" line="11632"/>
         <source>Automatic grid layout</source>
         <translation>Otomatik Şebeke Yerleşimi (Topoloji Dizilimi)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11633"/>
+        <location filename="../Main/MainWindow.ui" line="11635"/>
         <source>Automatic layout the of the grid</source>
         <translation>Şebekenin otomatik yerleşimi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11648"/>
+        <location filename="../Main/MainWindow.ui" line="11650"/>
         <source>Blackout cascade</source>
         <translation>Kaskad Çökme (Kademeli Kesinti)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11651"/>
+        <location filename="../Main/MainWindow.ui" line="11653"/>
         <source>Run a simulation or step by step blackout cascade</source>
         <translation>Bir simülasyon çalıştır ya da kesinti yayılımını adım adım ilerlet</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11663"/>
+        <location filename="../Main/MainWindow.ui" line="11665"/>
         <source>Optimal power flow</source>
         <translation>Optimum Yük Akışı (OPF)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11666"/>
+        <location filename="../Main/MainWindow.ui" line="11668"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an optimal power flow&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Optimum Yük Akışı (OPF)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bu, bir optimal yük akışı çalıştırır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimum Yük Akışı (OPF)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bu, bir optimal yük akışı çalıştırır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11672"/>
+        <location filename="../Main/MainWindow.ui" line="11674"/>
         <source>F6</source>
         <translation>F6</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11681"/>
+        <location filename="../Main/MainWindow.ui" line="11683"/>
         <source>Optimal power flow time series</source>
         <translation>Optimum Yük Akışı (OPF) Zaman Serisi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11684"/>
+        <location filename="../Main/MainWindow.ui" line="11686"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an optimal power flow for the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Optimum Yük Akışı (OPF)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bu, zaman serisi verisi için bir optimal yük akışı çalıştırır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimum Yük Akışı (OPF)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bu, zaman serisi verisi için bir optimal yük akışı çalıştırır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11690"/>
+        <location filename="../Main/MainWindow.ui" line="11692"/>
         <source>Ctrl+F6</source>
         <translation>Ctrl+F6</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11699"/>
+        <location filename="../Main/MainWindow.ui" line="11701"/>
         <source>Detect transformers</source>
         <translation>Transformatörleri Algıla</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11702"/>
+        <location filename="../Main/MainWindow.ui" line="11704"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Detect transformers.&lt;/p&gt;&lt;p&gt;Use the nodes nominal voltage to determine which branches should be a transformer.&lt;/p&gt;&lt;p&gt;If a branch joins two nodes with different voltage levels, the branch should be a transformer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Transformatörleri tespit et.&lt;/p&gt;&lt;p&gt;Hangi hatların transformatör olması gerektiğini belirlemek için düğümlerin anma gerilimini kullan.&lt;/p&gt;&lt;p&gt;Bir hat farklı gerilim seviyelerine sahip iki düğümü bağlıyorsa, o hat transformatör olmalıdır.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11714"/>
+        <location filename="../Main/MainWindow.ui" line="11716"/>
         <source>Auto rate branches</source>
         <translation>Branşman (Hat/Trafo) Kapasitelerini Otomatik Ata</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11717"/>
+        <location filename="../Main/MainWindow.ui" line="11719"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatic rating of the branches.&lt;/p&gt;&lt;p&gt;Use the branches calculated power to establish a rate, if the branch rate is unknown. A factor is available in the settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hatların otomatik anma değerlemesi.&lt;/p&gt;&lt;p&gt;Hat anma değeri bilinmiyorsa hatın hesaplanan gücünü kullanarak bir oran belirle. Ayarlarda bir katsayı bulunur.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11732"/>
+        <location filename="../Main/MainWindow.ui" line="11734"/>
         <source>Storage location suggestion</source>
         <translation>Depolama (BESS) Konum Önerisi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11735"/>
+        <location filename="../Main/MainWindow.ui" line="11737"/>
         <source>Suggest places where storage devices are useful</source>
         <translation>Depolama teçhizatlarının faydalı olacağı yerleri öner</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11747"/>
+        <location filename="../Main/MainWindow.ui" line="11749"/>
         <source>Launch data analysis tool</source>
         <translation>Veri Analiz Aracını Başlat</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11750"/>
+        <location filename="../Main/MainWindow.ui" line="11752"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Data analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Launch the data analysis tool that finds and tries to repair common grid modelling issues&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Veri analizi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Yaygın şebeke modelleme sorunlarını bulan ve onarmaya çalışan veri analizi aracını başlat&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Veri analizi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Yaygın şebeke modelleme sorunlarını bulan ve onarmaya çalışan veri analizi aracını başlat&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11756"/>
+        <location filename="../Main/MainWindow.ui" line="11758"/>
         <source>F12</source>
         <translation>F12</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11765"/>
+        <location filename="../Main/MainWindow.ui" line="11767"/>
         <source>Online documentation</source>
         <translation>Çevrimiçi belgeler</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11771"/>
+        <location filename="../Main/MainWindow.ui" line="11773"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11780"/>
+        <location filename="../Main/MainWindow.ui" line="11782"/>
         <source>Save as</source>
         <translation>Farklı kaydet</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11792"/>
+        <location filename="../Main/MainWindow.ui" line="11794"/>
         <source>Delete selected</source>
         <translation>Seçilenleri Sil</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11795"/>
+        <location filename="../Main/MainWindow.ui" line="11797"/>
         <source>Delete selected objects from the diagrams and optionally from the database</source>
         <translation>Seçili nesneleri diyagramlardan ve isteğe bağlı olarak veritabanından sil</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11801"/>
+        <location filename="../Main/MainWindow.ui" line="11803"/>
         <source>Del</source>
         <translation>Del</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11810"/>
+        <location filename="../Main/MainWindow.ui" line="11812"/>
         <source>Linear analysis</source>
         <translation>Doğrusal Analiz</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11813"/>
+        <location filename="../Main/MainWindow.ui" line="11815"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Linear analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform linear analysis with distribution factors (PTDF, LODF)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Doğrusal analiz&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Dağılım faktörleriyle (PTDF, LODF) doğrusal analiz gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Doğrusal analiz&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Dağılım faktörleriyle (PTDF, LODF) doğrusal analiz gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11819"/>
+        <location filename="../Main/MainWindow.ui" line="11821"/>
         <source>F7</source>
         <translation>F7</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11828"/>
+        <location filename="../Main/MainWindow.ui" line="11830"/>
         <source>Reset console</source>
         <translation>Konsolu sıfırla</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11843"/>
+        <location filename="../Main/MainWindow.ui" line="11845"/>
         <source>Set OPF results to power flow (non destructive)</source>
         <translation>OPF Sonuçlarını Yük Akışına Aktar (Geçici)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11846"/>
+        <location filename="../Main/MainWindow.ui" line="11848"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Copy OPF data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Set the OPF results into the power flow or time series simulations (non destructive)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;OPF verisini kopyala&lt;/span&gt;&lt;/p&gt;&lt;p&gt;OPF sonuçlarını yük akışı ya da zaman serisi simülasyonlarına ata (yıkıcı değil)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;OPF verisini kopyala&lt;/span&gt;&lt;/p&gt;&lt;p&gt;OPF sonuçlarını yük akışı ya da zaman serisi simülasyonlarına ata (yıkıcı değil)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11858"/>
+        <location filename="../Main/MainWindow.ui" line="11860"/>
         <source>Correct buses location</source>
         <translation>Bara Konumlarını Düzelt</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11861"/>
+        <location filename="../Main/MainWindow.ui" line="11863"/>
         <source>Set selected buses location closer to their neighbours</source>
         <translation>Seçili baraları komşularına yaklaştır</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11873"/>
+        <location filename="../Main/MainWindow.ui" line="11875"/>
         <source>Copy OPF generation to database (destructive)</source>
         <translation>OPF Üretim Değerlerini Veritabanına Kopyala (Üzerine Yazarak)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11876"/>
+        <location filename="../Main/MainWindow.ui" line="11878"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Copy OPF data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Destructive copy of the OPF generation results to the input profiles&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;OPF verisini kopyala&lt;/span&gt;&lt;/p&gt;&lt;p&gt;OPF üretim sonuçlarını girdi profillerine yıkıcı olarak kopyala&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;OPF verisini kopyala&lt;/span&gt;&lt;/p&gt;&lt;p&gt;OPF üretim sonuçlarını girdi profillerine yıkıcı olarak kopyala&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11888"/>
+        <location filename="../Main/MainWindow.ui" line="11890"/>
         <source>Linear analysis time series power flow</source>
         <translation>Doğrusal analiz zaman serisi yük akışı</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11891"/>
+        <location filename="../Main/MainWindow.ui" line="11893"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Linear analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;PTDF based time series power flow&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Doğrusal analiz&lt;/span&gt;&lt;/p&gt;&lt;p&gt;PTDF tabanlı zaman serisi yük akışı&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Doğrusal analiz&lt;/span&gt;&lt;/p&gt;&lt;p&gt;PTDF tabanlı zaman serisi yük akışı&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11897"/>
+        <location filename="../Main/MainWindow.ui" line="11899"/>
         <source>Ctrl+F7</source>
         <translation>Ctrl+F7</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11906"/>
+        <location filename="../Main/MainWindow.ui" line="11908"/>
         <source>Import circuit</source>
         <translation>Devreyi içe aktar</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11909"/>
+        <location filename="../Main/MainWindow.ui" line="11911"/>
         <source>Add circuit to the current circuit</source>
         <translation>Devreyi geçerli devreye ekle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11915"/>
+        <location filename="../Main/MainWindow.ui" line="11917"/>
         <source>Ctrl+N, Ctrl+O</source>
         <translation>Ctrl+N, Ctrl+O</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11927"/>
+        <location filename="../Main/MainWindow.ui" line="11926"/>
+        <source>FMU</source>
+        <translation>FMU</translation>
+    </message>
+    <message>
+        <location filename="../Main/MainWindow.ui" line="11929"/>
+        <source>Import a manufacturer FMU as a reusable dynamic model</source>
+        <translation>Yeniden kullanılabilir dinamik model olarak bir üretici FMU'su içe aktarın</translation>
+    </message>
+    <message>
+        <location filename="../Main/MainWindow.ui" line="11938"/>
+        <source>Native library (IEEE/CIGRE or IEC ESE)...</source>
+        <translation>Yerel kütüphane (IEEE/CIGRE veya IEC ESE)...</translation>
+    </message>
+    <message>
+        <location filename="../Main/MainWindow.ui" line="11941"/>
+        <source>Import a manufacturer supplied native model library</source>
+        <translation>Üretici tarafından sağlanan yerel model kütüphanesi içe aktarın</translation>
+    </message>
+    <message>
+        <location filename="../Main/MainWindow.ui" line="11953"/>
         <source>Sync</source>
         <translation>Senkronize et</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11930"/>
+        <location filename="../Main/MainWindow.ui" line="11956"/>
         <source>Sync with the file for colaborative editing of the grid</source>
         <translation>Şebekenin ortak düzenlenmesi için dosyayla senkronize et</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11939"/>
+        <location filename="../Main/MainWindow.ui" line="11965"/>
         <source>Draw schematic</source>
         <translation>Şema çiz</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11948"/>
+        <location filename="../Main/MainWindow.ui" line="11974"/>
         <source>Sigma analysis</source>
         <translation>Sigma Analizi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11951"/>
+        <location filename="../Main/MainWindow.ui" line="11977"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Sigma analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform HELM-Sigma analysis over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Sigma analizi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Kesit veri üzerinde HELM-Sigma analizi gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Sigma analizi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Kesit veri üzerinde HELM-Sigma analizi gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11963"/>
-        <location filename="../Main/MainWindow.ui" line="11966"/>
+        <location filename="../Main/MainWindow.ui" line="11989"/>
+        <location filename="../Main/MainWindow.ui" line="11992"/>
         <source>Stop &quot;stuff running right now&quot;</source>
         <translation>Şu anda çalışanları durdur</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11978"/>
+        <location filename="../Main/MainWindow.ui" line="12004"/>
         <source>Add default catalogue</source>
         <translation>Varsayılan Kataloğu Ekle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11993"/>
+        <location filename="../Main/MainWindow.ui" line="12019"/>
         <source>Find node groups</source>
         <translation>Bara (Düğüm) Gruplarını Bul</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="11996"/>
+        <location filename="../Main/MainWindow.ui" line="12022"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Finds the electrically related nodes by using their electrical distance and the DBSCAN clustering method&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Elektriksel mesafelerini ve DBSCAN kümeleme yöntemini kullanarak elektriksel olarak ilişkili düğümleri bulur&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12008"/>
+        <location filename="../Main/MainWindow.ui" line="12034"/>
         <source>Grid Generator</source>
         <translation>Şebeke Oluşturucu</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12014"/>
+        <location filename="../Main/MainWindow.ui" line="12040"/>
         <source>Ctrl+G</source>
         <translation>Ctrl+G</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12023"/>
+        <location filename="../Main/MainWindow.ui" line="12049"/>
         <source>Node load</source>
         <translation>Düğüm yükü</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12032"/>
+        <location filename="../Main/MainWindow.ui" line="12058"/>
         <source>Generator generation</source>
         <translation>Jeneratör üretimi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12041"/>
+        <location filename="../Main/MainWindow.ui" line="12067"/>
         <source>Contingency analysis time series</source>
         <translation>Kısıt Analizi Zaman Serisi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12044"/>
+        <location filename="../Main/MainWindow.ui" line="12070"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Per form a contingency analysis with the selected method over the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Kısıt analizi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Zaman serisi verisi üzerinde seçilen yöntemle bir kısıt analizi gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Kısıt analizi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Zaman serisi verisi üzerinde seçilen yöntemle bir kısıt analizi gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12050"/>
+        <location filename="../Main/MainWindow.ui" line="12076"/>
         <source>Ctrl+F8</source>
         <translation>Ctrl+F8</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12059"/>
+        <location filename="../Main/MainWindow.ui" line="12085"/>
         <source>Branch rates</source>
         <translation>Hat Anma Değerleri</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12068"/>
+        <location filename="../Main/MainWindow.ui" line="12094"/>
         <source>Set selected buses&apos; Area</source>
         <translation>Seçilen Baraların Bölgesini Belirle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12080"/>
+        <location filename="../Main/MainWindow.ui" line="12106"/>
         <source>Set selected buses&apos; Zone</source>
         <translation>Seçilen Baraların Alt Bölgesini (Zone) Belirle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12092"/>
+        <location filename="../Main/MainWindow.ui" line="12118"/>
         <source>Set seleted buses&apos; Country</source>
         <translation>Seçilen Baraların Ülkesini Belirle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12104"/>
+        <location filename="../Main/MainWindow.ui" line="12130"/>
         <source>Coordinates</source>
         <translation>Koordinatlar</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12116"/>
+        <location filename="../Main/MainWindow.ui" line="12142"/>
         <source>Available Transfer Capacity</source>
         <translation>Kullanılabilir Transfer Kapasitesi (ATC)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12119"/>
+        <location filename="../Main/MainWindow.ui" line="12145"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a linear net transfer capacity assesment for the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Net Transfer Kapasitesi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Kesit veri için doğrusal bir net transfer kapasitesi değerlendirmesi gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Kapasitesi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Kesit veri için doğrusal bir net transfer kapasitesi değerlendirmesi gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12131"/>
+        <location filename="../Main/MainWindow.ui" line="12157"/>
         <source>Available Transfer Capacity Time Series</source>
         <translation>Kullanılabilir Transfer Kapasitesi Zaman Serisi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12134"/>
+        <location filename="../Main/MainWindow.ui" line="12160"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a linear net transfer capacity assesment for the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Net Transfer Kapasitesi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Zaman serisi verisi için doğrusal bir net transfer kapasitesi değerlendirmesi gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Kapasitesi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Zaman serisi verisi için doğrusal bir net transfer kapasitesi değerlendirmesi gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12146"/>
+        <location filename="../Main/MainWindow.ui" line="12172"/>
         <source>Contingency analysis</source>
         <translation>Kısıt Analizi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12149"/>
+        <location filename="../Main/MainWindow.ui" line="12175"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a contingency analysis with the selected method&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Kısıt analizi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Seçilen yöntemle bir kısıt analizi gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Kısıt analizi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Seçilen yöntemle bir kısıt analizi gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12155"/>
+        <location filename="../Main/MainWindow.ui" line="12181"/>
         <source>F8</source>
         <translation>F8</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12164"/>
+        <location filename="../Main/MainWindow.ui" line="12190"/>
         <source>Optimal net transfer capacity</source>
         <translation>Optimum Net Transfer Kapasitesi (NTC)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12167"/>
+        <location filename="../Main/MainWindow.ui" line="12193"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform an optimal net transfer capacity optimization&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Optimum Net Transfer Kapasitesi (NTC)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Optimum Net Transfer Kapasitesi (NTC) optimizasyonu gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimum Net Transfer Kapasitesi (NTC)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Optimum Net Transfer Kapasitesi (NTC) optimizasyonu gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12179"/>
+        <location filename="../Main/MainWindow.ui" line="12205"/>
         <source>Set schematic (x,y) from (lat,lon)</source>
         <translation>(Enlem, Boylam) Değerlerinden (x,y) Şematik Koordinatı Ayarla</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12191"/>
+        <location filename="../Main/MainWindow.ui" line="12217"/>
         <source>Inputs analysis</source>
         <translation>Girdi (Şebeke Veri) Analizi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12194"/>
+        <location filename="../Main/MainWindow.ui" line="12220"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Inputs analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform an analysis of the inputs for both the snapshot and time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Girdi (Şebeke Veri) Analizi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Hem kesit hem de zaman serisi verisi için girdilerin analizini gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Girdi (Şebeke Veri) Analizi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Hem kesit hem de zaman serisi verisi için girdilerin analizini gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12200"/>
+        <location filename="../Main/MainWindow.ui" line="12226"/>
         <source>F11</source>
         <translation>F11</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12209"/>
+        <location filename="../Main/MainWindow.ui" line="12235"/>
         <source>Fuse devices</source>
         <translation>Teçhizatları Birleştir</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12212"/>
+        <location filename="../Main/MainWindow.ui" line="12238"/>
         <source>Fuse devices into a single device of each category per node</source>
         <translation>Teçhizatları düğüm başına ve kategori başına tek teçhizatta birleştir</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12224"/>
-        <location filename="../Main/MainWindow.ui" line="12227"/>
+        <location filename="../Main/MainWindow.ui" line="12250"/>
+        <location filename="../Main/MainWindow.ui" line="12253"/>
         <source>Delete inconsistencies</source>
         <translation>Tutarsızlıkları Sil (Veritabanı Hatalarını Temizle)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12239"/>
+        <location filename="../Main/MainWindow.ui" line="12265"/>
         <source>Optimal NTC time series</source>
         <translation>Optimum NTC zaman serisi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12242"/>
+        <location filename="../Main/MainWindow.ui" line="12268"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a net transfer capacity optimization over the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Net Transfer Kapasitesi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Zaman serisi verisi üzerinde net transfer kapasitesi optimizasyonu gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Kapasitesi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Zaman serisi verisi üzerinde net transfer kapasitesi optimizasyonu gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12254"/>
+        <location filename="../Main/MainWindow.ui" line="12280"/>
         <source>re-index time</source>
         <translation>Zamanı Yeniden İndeksle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12266"/>
+        <location filename="../Main/MainWindow.ui" line="12292"/>
         <source>Fix generators active based on the power</source>
         <translation>Jeneratör Aktif Güç Çıkışlarını Sabitle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12278"/>
-        <location filename="../Main/MainWindow.ui" line="12281"/>
+        <location filename="../Main/MainWindow.ui" line="12304"/>
+        <location filename="../Main/MainWindow.ui" line="12307"/>
         <source>Fix loads active based on the power</source>
         <translation>Yük Aktif Güç Çekişlerini Sabitle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12293"/>
+        <location filename="../Main/MainWindow.ui" line="12319"/>
         <source>Initialize contingencies</source>
         <translation>Kısıtları başlat</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12296"/>
+        <location filename="../Main/MainWindow.ui" line="12322"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingencies wizard&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Launch the contingencies wizard to automatically set up the contingency objects&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Kısıt sihirbazı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Kısıt nesnelerini otomatik olarak kurmak için kısıt sihirbazını başlat&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Kısıt sihirbazı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Kısıt nesnelerini otomatik olarak kurmak için kısıt sihirbazını başlat&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12308"/>
+        <location filename="../Main/MainWindow.ui" line="12334"/>
         <source>Add selected as new contingency</source>
         <translation>Seçileni yeni kısıt olarak ekle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12311"/>
+        <location filename="../Main/MainWindow.ui" line="12337"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add contingency&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create a new contingency from the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Kısıt ekle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Şema seçiminden yeni bir kısıt durumu oluştur&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Kısıt ekle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Şema seçiminden yeni bir kısıt durumu oluştur&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12317"/>
+        <location filename="../Main/MainWindow.ui" line="12343"/>
         <source>Ctrl+A, Ctrl+C</source>
         <translation>Ctrl+A, Ctrl+C</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12326"/>
+        <location filename="../Main/MainWindow.ui" line="12352"/>
         <source>Add selected as new investment</source>
         <translation>Seçileni Yeni Yatırım Olarak Ekle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12329"/>
+        <location filename="../Main/MainWindow.ui" line="12355"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Investments&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create new investment with the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Yatırımlar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Şema seçimiyle yeni yatırım oluştur&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Yatırımlar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Şema seçimiyle yeni yatırım oluştur&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12335"/>
+        <location filename="../Main/MainWindow.ui" line="12361"/>
         <source>Ctrl+A, Ctrl+I</source>
         <translation>Ctrl+A, Ctrl+I</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12344"/>
+        <location filename="../Main/MainWindow.ui" line="12370"/>
         <source>Zoom in</source>
         <translation>Yakınlaştır</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12350"/>
+        <location filename="../Main/MainWindow.ui" line="12376"/>
         <source>Ctrl++</source>
         <translation>Ctrl++</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12359"/>
+        <location filename="../Main/MainWindow.ui" line="12385"/>
         <source>Zoom out</source>
         <translation>Uzaklaştır</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12365"/>
+        <location filename="../Main/MainWindow.ui" line="12391"/>
         <source>Ctrl+-</source>
         <translation>Ctrl+-</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12377"/>
+        <location filename="../Main/MainWindow.ui" line="12403"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clustering&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a clustering study of the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Kümeleme&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Zaman serisi verisi üzerinde bir kümeleme çalışması gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Kümeleme&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Zaman serisi verisi üzerinde bir kümeleme çalışması gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12395"/>
+        <location filename="../Main/MainWindow.ui" line="12421"/>
         <source>Use clustering</source>
         <translation>Kümeleme kullan</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12398"/>
+        <location filename="../Main/MainWindow.ui" line="12424"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clustering&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If active, the available clustering results are used in all the simulations that handle time series data non-destructivelly&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Kümeleme&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Etkinse, mevcut kümeleme sonuçları zaman serisi verisini yıkıcı olmadan işleyen tüm simülasyonlarda kullanılır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Kümeleme&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Etkinse, mevcut kümeleme sonuçları zaman serisi verisini yıkıcı olmadan işleyen tüm simülasyonlarda kullanılır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12410"/>
+        <location filename="../Main/MainWindow.ui" line="12436"/>
         <source>Investments evaluation</source>
         <translation>Yatırım Planlama Analizi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12413"/>
+        <location filename="../Main/MainWindow.ui" line="12439"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Investments&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform the investments evaluation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Yatırımlar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Yatırım değerlendirmesini gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Yatırımlar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Yatırım değerlendirmesini gerçekleştir&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12419"/>
+        <location filename="../Main/MainWindow.ui" line="12445"/>
         <source>Ctrl+I, Ctrl+E</source>
         <translation>Ctrl+I, Ctrl+E</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12428"/>
+        <location filename="../Main/MainWindow.ui" line="12454"/>
         <source>New schematic from selection</source>
         <translation>Seçimden Yeni Şematik Oluştur</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12440"/>
+        <location filename="../Main/MainWindow.ui" line="12466"/>
         <source>New schematic</source>
         <translation>Yeni Tek Hat Şeması (Şematik)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12452"/>
+        <location filename="../Main/MainWindow.ui" line="12478"/>
         <source>New map</source>
         <translation>Yeni Harita (CBS Tabanlı Altyapı)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12464"/>
+        <location filename="../Main/MainWindow.ui" line="12490"/>
         <source>Remove selected diagram</source>
         <translation>Seçili diyagramı kaldır</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12473"/>
+        <location filename="../Main/MainWindow.ui" line="12499"/>
         <source>Report a bug or feature</source>
         <translation>Bir hata ya da özellik bildir</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12485"/>
+        <location filename="../Main/MainWindow.ui" line="12511"/>
         <source>Search</source>
         <translation>Ara</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12497"/>
+        <location filename="../Main/MainWindow.ui" line="12523"/>
         <source>Process topology</source>
         <translation>Topolojiyi işle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12509"/>
+        <location filename="../Main/MainWindow.ui" line="12535"/>
         <source>Edit simulation time limits</source>
         <translation>Simülasyon zaman sınırlarını düzenle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12512"/>
+        <location filename="../Main/MainWindow.ui" line="12538"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time series&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Edit simulation time limits&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Zaman serisi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Simülasyon zaman sınırlarını düzenle&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Zaman serisi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Simülasyon zaman sınırlarını düzenle&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12527"/>
+        <location filename="../Main/MainWindow.ui" line="12553"/>
         <source>activate time series</source>
         <translation>zaman serisini etkinleştir</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12530"/>
+        <location filename="../Main/MainWindow.ui" line="12556"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time series mode&lt;/span&gt;&lt;/p&gt;&lt;p&gt;When activated, the simulations run their time series version&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Zaman serisi modu&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Etkinleştirildiğinde simülasyonlar zaman serisi sürümünü çalıştırır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Zaman serisi modu&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Etkinleştirildiğinde simülasyonlar zaman serisi sürümünü çalıştırır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12536"/>
+        <location filename="../Main/MainWindow.ui" line="12562"/>
         <source>Ctrl+T</source>
         <translation>Ctrl+T</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12545"/>
+        <location filename="../Main/MainWindow.ui" line="12571"/>
         <source>Clean database</source>
         <translation>Veritabanını Temizle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12551"/>
+        <location filename="../Main/MainWindow.ui" line="12577"/>
         <source>Ctrl+C, Ctrl+D</source>
         <translation>Ctrl+C, Ctrl+D</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12560"/>
+        <location filename="../Main/MainWindow.ui" line="12586"/>
         <source>Scale</source>
         <translation>Ölçeklendir</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12563"/>
+        <location filename="../Main/MainWindow.ui" line="12589"/>
         <source>Scale the system load and or generation</source>
         <translation>Sistem yükünü ve/veya üretimini ölçekle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12575"/>
+        <location filename="../Main/MainWindow.ui" line="12601"/>
         <source>Disable all results tags</source>
         <translation>Tüm Sonuç Etiketlerini Gizle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12587"/>
+        <location filename="../Main/MainWindow.ui" line="12613"/>
         <source>Enable all results tags</source>
         <translation>Tüm Sonuç Etiketlerini Göster</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12599"/>
+        <location filename="../Main/MainWindow.ui" line="12625"/>
         <source>Detect substations</source>
         <translation>Trafo Merkezlerini (TM) Algıla</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12611"/>
+        <location filename="../Main/MainWindow.ui" line="12637"/>
         <source>Optimal hosting capacity</source>
         <translation>Optimum Bağlantı Kapasitesi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12614"/>
+        <location filename="../Main/MainWindow.ui" line="12640"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Nodal hosting capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the nodal hosting capacity calculation using the selected optimization method&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Düğümsel Bağlantı Kapasitesi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Seçilen optimizasyon yöntemini kullanarak düğümsel bağlantı kapasitesi hesabını çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Düğümsel Bağlantı Kapasitesi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Seçilen optimizasyon yöntemini kullanarak düğümsel bağlantı kapasitesi hesabını çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12629"/>
+        <location filename="../Main/MainWindow.ui" line="12655"/>
         <source>Enable server mode</source>
         <translation>Sunucu modunu etkinleştir</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12641"/>
+        <location filename="../Main/MainWindow.ui" line="12667"/>
         <source>Record video</source>
         <translation>Video Kaydet</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12644"/>
+        <location filename="../Main/MainWindow.ui" line="12670"/>
         <source>Record video of the schematic</source>
         <translation>Şemanın Videosunu Kaydet</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12656"/>
+        <location filename="../Main/MainWindow.ui" line="12682"/>
         <source>Save  differential</source>
         <translation>Farkı kaydet</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12668"/>
+        <location filename="../Main/MainWindow.ui" line="12694"/>
         <source>Consolidate coordinates</source>
         <translation>Koordinatları Birleştir ve Sabitle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12680"/>
+        <location filename="../Main/MainWindow.ui" line="12706"/>
         <source>Add selected as new remedial action</source>
         <translation>Seçileni Yeni Düzeltici İşlem Olarak Ekle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12683"/>
+        <location filename="../Main/MainWindow.ui" line="12709"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add remedial action&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create a new remedial action from the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Düzeltici işlem ekle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Şema seçiminden yeni bir düzeltici işlem oluştur&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Düzeltici işlem ekle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Şema seçiminden yeni bir düzeltici işlem oluştur&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12689"/>
+        <location filename="../Main/MainWindow.ui" line="12715"/>
         <source>Ctrl+A, Ctrl+R</source>
         <translation>Ctrl+A, Ctrl+R</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12698"/>
+        <location filename="../Main/MainWindow.ui" line="12724"/>
         <source>Detect facilities</source>
         <translation>Tesisleri Algıla</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12707"/>
+        <location filename="../Main/MainWindow.ui" line="12733"/>
         <source>Rotate</source>
         <translation>Döndür</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12719"/>
+        <location filename="../Main/MainWindow.ui" line="12745"/>
         <source>Reset diagram coordinates to database values</source>
         <translation>Diyagram Koordinatlarını Veritabanı Değerlerine Sıfırla</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12731"/>
+        <location filename="../Main/MainWindow.ui" line="12757"/>
         <source>Reliability analysis</source>
         <translation>Güvenilirlik Analizi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12734"/>
+        <location filename="../Main/MainWindow.ui" line="12760"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Reliability study&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the reliability calculation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Güvenilirlik etüdü&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Güvenilirlik hesabını çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Güvenilirlik etüdü&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Güvenilirlik hesabını çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12749"/>
+        <location filename="../Main/MainWindow.ui" line="12775"/>
         <source>Color buses by...</source>
         <translation>Baraları Şuna Göre Renklendir...</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12761"/>
+        <location filename="../Main/MainWindow.ui" line="12787"/>
         <source>Color substations by...</source>
         <translation>Trafo Merkezlerini Şuna Göre Renklendir...</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12776"/>
+        <location filename="../Main/MainWindow.ui" line="12802"/>
         <source>Select buses by...</source>
         <translation>Baraları Şuna Göre Seç...</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12803"/>
+        <location filename="../Main/MainWindow.ui" line="12829"/>
         <source>Substation wizard</source>
         <translation>Trafo Merkezi (TM) Sihirbazı</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12806"/>
+        <location filename="../Main/MainWindow.ui" line="12832"/>
         <source>Add substation with a wizard form</source>
         <translation>Sihirbaz formuyla trafo merkezi ekle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12809"/>
+        <location filename="../Main/MainWindow.ui" line="12835"/>
         <source>Ctrl+A, Ctrl+S</source>
         <translation>Ctrl+A, Ctrl+S</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12821"/>
+        <location filename="../Main/MainWindow.ui" line="12847"/>
         <source>Dynamic RMS Simulation</source>
         <translation>Dinamik RMS Simülasyonu</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12824"/>
+        <location filename="../Main/MainWindow.ui" line="12850"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;RMS Simulation&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a dynamic RMS simulation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;RMS Simülasyonu&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Dinamik bir RMS simülasyonu çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;RMS Simülasyonu&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Dinamik bir RMS simülasyonu çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12836"/>
-        <location filename="../Main/MainWindow.ui" line="12839"/>
+        <location filename="../Main/MainWindow.ui" line="12862"/>
+        <location filename="../Main/MainWindow.ui" line="12865"/>
         <source>Small-Signal RMS Simulation</source>
         <translation>Küçük Sinyal RMS Simülasyonu</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12842"/>
+        <location filename="../Main/MainWindow.ui" line="12868"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Small Signal Simulation (RMS)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run an RMS Small Signal stability analysis simulation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Küçük Sinyal Simülasyonu (RMS)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bir RMS Küçük Sinyal kararlılığı analizi simülasyonu çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Küçük Sinyal Simülasyonu (RMS)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bir RMS Küçük Sinyal kararlılığı analizi simülasyonu çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12854"/>
+        <location filename="../Main/MainWindow.ui" line="12880"/>
         <source>Add RMS event</source>
         <translation>RMS olayı ekle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12857"/>
+        <location filename="../Main/MainWindow.ui" line="12883"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add RMS event&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Open the Dynamic events editor preferring RMS events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;RMS olayı ekle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;RMS olaylarını tercih ederek Dinamik olaylar editörünü aç&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;RMS olayı ekle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;RMS olaylarını tercih ederek Dinamik olaylar editörünü aç&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12872"/>
+        <location filename="../Main/MainWindow.ui" line="12898"/>
         <source>Clear highlights</source>
         <translation>Vurguları Temizle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12887"/>
+        <location filename="../Main/MainWindow.ui" line="12913"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;State estimation&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a state estimation analysis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Durum kestirimi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bir durum kestirimi analizi çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Durum kestirimi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bir durum kestirimi analizi çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12899"/>
+        <location filename="../Main/MainWindow.ui" line="12925"/>
         <source>Add short circuit events</source>
         <translation>Kısa devre olayları ekle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12911"/>
+        <location filename="../Main/MainWindow.ui" line="12937"/>
         <source>PSS/e Raw / Rawx</source>
         <translation>PSS/e Raw / Rawx</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12920"/>
+        <location filename="../Main/MainWindow.ui" line="12946"/>
         <source>Power Factory DGS</source>
         <translation>PowerFactory DGS</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12929"/>
+        <location filename="../Main/MainWindow.ui" line="12955"/>
         <source>Matpower</source>
         <translation>Matpower</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12938"/>
+        <location filename="../Main/MainWindow.ui" line="12964"/>
         <source>UCTE</source>
         <translation>UCTE</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12947"/>
+        <location filename="../Main/MainWindow.ui" line="12973"/>
         <source>CGMES</source>
         <translation>CGMES</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12956"/>
+        <location filename="../Main/MainWindow.ui" line="12982"/>
         <source>Power Grid Models</source>
         <translation>Güç Şebekesi Modelleri</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12965"/>
+        <location filename="../Main/MainWindow.ui" line="12991"/>
         <source>CIM</source>
         <translation>CIM</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12974"/>
+        <location filename="../Main/MainWindow.ui" line="13000"/>
         <source>H5</source>
         <translation>H5</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12983"/>
+        <location filename="../Main/MainWindow.ui" line="13009"/>
         <source>JSON</source>
         <translation>JSON</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="12992"/>
+        <location filename="../Main/MainWindow.ui" line="13018"/>
         <source>Microsoft Excel</source>
         <translation>Microsoft Excel</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13001"/>
+        <location filename="../Main/MainWindow.ui" line="13027"/>
         <source>SQLite</source>
         <translation>SQLite</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13010"/>
+        <location filename="../Main/MainWindow.ui" line="13036"/>
         <source>Profiles</source>
         <translation>Profiller</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13037"/>
-        <location filename="../Main/MainWindow.ui" line="13055"/>
+        <location filename="../Main/MainWindow.ui" line="13063"/>
+        <location filename="../Main/MainWindow.ui" line="13081"/>
         <source>Catalogue</source>
         <translation>Katalog (Teçhizat Kütüphanesi)</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13064"/>
+        <location filename="../Main/MainWindow.ui" line="13090"/>
         <source>Clean Room</source>
         <translation>Temiz Oda</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13067"/>
+        <location filename="../Main/MainWindow.ui" line="13093"/>
         <source>Cleam room utility to produce an machine learning statistical representation of the static time series</source>
         <translation>Statik zaman serisinin makine öğrenmesi istatistiksel temsilini üretmek için temiz oda aracı</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13079"/>
+        <location filename="../Main/MainWindow.ui" line="13105"/>
         <source>Candidate investment generator</source>
         <translation>Aday Yatırım Senaryosu Üretici</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13082"/>
+        <location filename="../Main/MainWindow.ui" line="13108"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Candidate investment generator&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Generate candidate reinforcements (new lines and upgrades) for N-1 violations via LODF/PTDF screening&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Aday Yatırım Senaryosu Üretici&lt;/span&gt;&lt;/p&gt;&lt;p&gt;LODF/PTDF elemesiyle N-1 ihlalleri için aday takviyeler (yeni hatlar ve yükseltmeler) üret&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Aday Yatırım Senaryosu Üretici&lt;/span&gt;&lt;/p&gt;&lt;p&gt;LODF/PTDF elemesiyle N-1 ihlalleri için aday takviyeler (yeni hatlar ve yükseltmeler) üret&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13091"/>
+        <location filename="../Main/MainWindow.ui" line="13117"/>
         <source>Procedural grid expansion</source>
         <translation>Prosedürel Şebeke Genişlemesi</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13100"/>
+        <location filename="../Main/MainWindow.ui" line="13126"/>
         <source>Catalogue element optimization</source>
         <translation>Katalog elemanı optimizasyonu</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13109"/>
+        <location filename="../Main/MainWindow.ui" line="13135"/>
         <source>Dynamic EMT Simulation</source>
         <translation>Dinamik EMT Simülasyonu</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13112"/>
+        <location filename="../Main/MainWindow.ui" line="13138"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;EMT Simulation&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a dynamic EMT simulation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;EMT Simülasyonu&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Dinamik bir EMT simülasyonu çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;EMT Simülasyonu&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Dinamik bir EMT simülasyonu çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13124"/>
-        <location filename="../Main/MainWindow.ui" line="13127"/>
+        <location filename="../Main/MainWindow.ui" line="13150"/>
+        <location filename="../Main/MainWindow.ui" line="13153"/>
         <source>Small-Signal EMT Simulation</source>
         <translation>Küçük Sinyal EMT Simülasyonu</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13130"/>
+        <location filename="../Main/MainWindow.ui" line="13156"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Small Signal Simulation (EMT)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run an EMT Small Signal stability analysis simulation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Küçük Sinyal Simülasyonu (EMT)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bir EMT Küçük Sinyal kararlılığı analizi simülasyonu çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Küçük Sinyal Simülasyonu (EMT)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bir EMT Küçük Sinyal kararlılığı analizi simülasyonu çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13138"/>
+        <location filename="../Main/MainWindow.ui" line="13164"/>
         <source>Reticular</source>
         <translation>Izgara</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13143"/>
+        <location filename="../Main/MainWindow.ui" line="13169"/>
         <source>Straight</source>
         <translation>Düz</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13152"/>
+        <location filename="../Main/MainWindow.ui" line="13178"/>
         <source>ai_chat</source>
         <translation>Yapay Zekâ Sohbeti</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13155"/>
+        <location filename="../Main/MainWindow.ui" line="13181"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;VeraGrid AI &lt;/span&gt;&lt;/p&gt;&lt;p&gt;Show the VeraGrid AI chat&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;VeraGrid YZ&lt;/span&gt;&lt;/p&gt;&lt;p&gt;VeraGrid YZ sohbetini göster&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;VeraGrid YZ&lt;/span&gt;&lt;/p&gt;&lt;p&gt;VeraGrid YZ sohbetini göster&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13167"/>
+        <location filename="../Main/MainWindow.ui" line="13193"/>
         <source>Power Flow 3-phase</source>
         <translation>3 Fazlı Yük Akışı</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13170"/>
+        <location filename="../Main/MainWindow.ui" line="13196"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power Flow 3-phase&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run an unbalanced 3-phase power flow analysis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;3 Fazlı Yük Akışı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Dengesiz bir 3 fazlı yük akışı analizi çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;3 Fazlı Yük Akışı&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Dengesiz bir 3 fazlı yük akışı analizi çalıştır&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13185"/>
+        <location filename="../Main/MainWindow.ui" line="13211"/>
         <source>Add EMT event</source>
         <translation>EMT olayı ekle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13188"/>
+        <location filename="../Main/MainWindow.ui" line="13214"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add EMT event&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Open the Dynamic events editor preferring EMT events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;EMT olayı ekle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;EMT olaylarını tercih ederek Dinamik olaylar editörünü aç&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;EMT olayı ekle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;EMT olaylarını tercih ederek Dinamik olaylar editörünü aç&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13197"/>
+        <location filename="../Main/MainWindow.ui" line="13223"/>
         <source>Set model (x,y) based on (lat, lon)</source>
         <translation>(Enlem, Boylam) Bilgisiyle (x,y) Koordinatlarını Ata</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13206"/>
+        <location filename="../Main/MainWindow.ui" line="13232"/>
         <source>Restore investments</source>
         <translation>Yatırımları Geri Yükle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13218"/>
+        <location filename="../Main/MainWindow.ui" line="13244"/>
         <source>Veragrid Scenario</source>
         <translation>VeraGrid Senaryosu</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13227"/>
+        <location filename="../Main/MainWindow.ui" line="13253"/>
         <source>Show dynamic models editor</source>
         <translation>Dinamik modeller editörünü göster</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13239"/>
+        <location filename="../Main/MainWindow.ui" line="13265"/>
         <source>Repair diagram</source>
         <translation>Diyagramı Onar</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13251"/>
+        <location filename="../Main/MainWindow.ui" line="13277"/>
         <source>Clear cache</source>
         <translation>Önbelleği temizle</translation>
     </message>
     <message>
-        <location filename="../Main/MainWindow.ui" line="13260"/>
+        <location filename="../Main/MainWindow.ui" line="13286"/>
         <source>Community chat</source>
         <translation>Topluluk sohbeti</translation>
     </message>
@@ -15012,6 +15120,183 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <source>Warning</source>
         <translation>Uyarı</translation>
+    </message>
+</context>
+<context>
+    <name>ManufacturerNativeImporterDialog</name>
+    <message>
+        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
+        <translation>Her iki beyan da üretici teslimat sözleşmesinin bir parçasıdır ve nitelendirmeden önce gereklidir.</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Gözat...</translation>
+    </message>
+    <message>
+        <source>Choose an existing manufacturer binary.</source>
+        <translation>Mevcut bir üretici ikilisi seçin.</translation>
+    </message>
+    <message>
+        <source>Complete the manufacturer declarations required by the selected interface.</source>
+        <translation>Seçilen arayüz tarafından istenen üretici beyanlarını tamamlayın.</translation>
+    </message>
+    <message>
+        <source>Destination provider</source>
+        <translation>Hedef sağlayıcı</translation>
+    </message>
+    <message>
+        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
+        <translation>Her virgülle ayrılmış değer, o konumdaki kaynak sırasının hedef sırasıdır. Örnek: 1,0, kaynak 0'ı hedef 1'e ve kaynak 1'i hedef 0'a eşler.</translation>
+    </message>
+    <message>
+        <source>Example: 0,1</source>
+        <translation>Örnek: 0,1</translation>
+    </message>
+    <message>
+        <source>Example: 1,0</source>
+        <translation>Örnek: 1,0</translation>
+    </message>
+    <message>
+        <source>Example: 2,0,1</source>
+        <translation>Örnek: 2,0,1</translation>
+    </message>
+    <message>
+        <source>Import manufacturer native model</source>
+        <translation>Üretici yerel modelini içe aktar</translation>
+    </message>
+    <message>
+        <source>Input destination ordinals</source>
+        <translation>Giriş hedef sırasları</translation>
+    </message>
+    <message>
+        <source>Inspect and attach variant</source>
+        <translation>Varyantı incele ve ata</translation>
+    </message>
+    <message>
+        <source>Inspect and import</source>
+        <translation>İncele ve içe aktar</translation>
+    </message>
+    <message>
+        <source>Inspecting the binary in an isolated worker...</source>
+        <translation>İkilinin izole bir işçi içinde incelenmesi...</translation>
+    </message>
+    <message>
+        <source>Linux libraries (*.so)</source>
+        <translation>Linux kütüphaneleri (*.so)</translation>
+    </message>
+    <message>
+        <source>Manufacturer binary</source>
+        <translation>Üretici ikilisi</translation>
+    </message>
+    <message>
+        <source>Manufacturer interface</source>
+        <translation>Üretici arayüzü</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model ready</source>
+        <translation>Üretici yerel modeli hazır</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model variants</source>
+        <translation>Üretici yerel model varyantları</translation>
+    </message>
+    <message>
+        <source>No provider has been imported yet.</source>
+        <translation>Henüz sağlayıcı içe aktarılmadı.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Yok</translation>
+    </message>
+    <message>
+        <source>Output destination ordinals</source>
+        <translation>Çıkış hedef sırasları</translation>
+    </message>
+    <message>
+        <source>Parameter destination ordinals</source>
+        <translation>Parametre hedef sırasları</translation>
+    </message>
+    <message>
+        <source>Platform variant</source>
+        <translation>Platform varyantı</translation>
+    </message>
+    <message>
+        <source>Provider: {name}</source>
+        <translation>Sağlayıcı: {name}</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform attached: {platform}
+Templates created: None (existing templates retained).</source>
+        <translation>Sağlayıcı: {provider}
+Eklendi platform: {platform}
+Oluşturulan şablonlar: Yok (mevcut şablonlar korundu).</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform: {platform}
+RMS templates created: {rms}
+EMT templates created: {emt}</source>
+        <translation>Sağlayıcı: {provider}
+Platform: {platform}
+Oluşturulan RMS şablonları: {rms}
+Oluşturulan EMT şablonları: {emt}</translation>
+    </message>
+    <message>
+        <source>Qualified and attached {platform}: {digest}</source>
+        <translation>Nitelendirilmiş ve eklendi {platform}: {digest}</translation>
+    </message>
+    <message>
+        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
+        <translation>Nitelendirilmiş ve içe aktarıldı {name}. {rms} RMS ve {emt} EMT şablon(ları) oluşturuldu.</translation>
+    </message>
+    <message>
+        <source>Rebind an existing template</source>
+        <translation>Mevcut bir şablonu yeniden bağla</translation>
+    </message>
+    <message>
+        <source>Rebind selected template</source>
+        <translation>Seçili şablonu yeniden bağla</translation>
+    </message>
+    <message>
+        <source>Rebound {consumer} to {provider}.</source>
+        <translation>{consumer} yeniden {provider}'a bağlandı.</translation>
+    </message>
+    <message>
+        <source>Select a source, destination and template.</source>
+        <translation>Bir kaynak, hedef ve şablon seçin.</translation>
+    </message>
+    <message>
+        <source>Select manufacturer library</source>
+        <translation>Üretici kütüphanesi seçin</translation>
+    </message>
+    <message>
+        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
+        <translation>Üretici sözleşmesini ve önceden derlenmiş platform kütüphanesini seçin. VeraGrid, ikili dosyayı izole bir işçi içinde doğrular ve çalıştırır.</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>Şablon</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
+        <translation>Üretici, tüm değiştirilebilir model durumunun her Örnek tarafından sahiplenildiğini beyan eder.</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that the library performs no late native loading.</source>
+        <translation>Üretici, kütüphanenin geç yerel yükleme yapmadığını beyan eder.</translation>
+    </message>
+    <message>
+        <source>Windows libraries (*.dll)</source>
+        <translation>Windows kütüphaneleri (*.dll)</translation>
+    </message>
+    <message>
+        <source>{platform}: missing</source>
+        <translation>{platform}: eksik</translation>
+    </message>
+    <message>
+        <source>{platform}: {status}, SHA-256 {digest}</source>
+        <translation>{platform}: {status}, SHA-256 {digest}</translation>
     </message>
 </context>
 </TS>

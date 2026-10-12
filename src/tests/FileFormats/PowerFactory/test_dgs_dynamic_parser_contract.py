@@ -94,6 +94,9 @@ from VeraGridEngine.IO.dgs.dynamic_models.dynamic_model_import import (
 )
 from VeraGridEngine.IO.file_open import FileOpen, FileOpenOptions
 from VeraGridEngine.Topology.simulation_indices import SimulationIndices
+from VeraGridEngine.Simulations.Rms.problems.rms_terminal_power_assembly import (
+    assemble_rms_mapped_power_references,
+)
 from VeraGridEngine.IO.dynamic_model_import_types import (
     DynamicModelImportBundle,
     DynamicModelImportEntry,
@@ -106,7 +109,6 @@ from VeraGridEngine.Utils.Symbolic.block import (
     DynamicModelContract,
     RmsPhysicalMeasurementPoint,
     RmsPhysicalMeterKind,
-    RmsTerminalPowerContribution,
     RmsTerminalSide,
     collect_rms_physical_measurement_points,
 )
@@ -124,6 +126,7 @@ from VeraGridEngine.Utils.Symbolic.symbolic import (
     Const,
     Expr,
     Var,
+    get_expression_vars,
 )
 from VeraGridEngine.Utils.procedural_logic import (
     ConditionalDiagnosticLogic,
@@ -911,34 +914,54 @@ def test_complete_hvdc_vsc_exports_apply_direct_dynamic_templates_by_fid(
                 ]
                 assert len(matching_hosts) == 1
                 assert matching_hosts[0].rms_template is root_template
-                terminal_contributions: list[RmsTerminalPowerContribution] = (
-                    root_template.block.dynamic_model_contract.rms_terminal_power_contributions
-                )
-                assert len(terminal_contributions) == 2
+                assert "rms_terminal_power_contributions" not in type(
+                    root_template.block.dynamic_model_contract
+                ).__slots__
                 assert (
-                    terminal_contributions[0].get_terminal_side()
-                    is RmsTerminalSide.FROM
-                )
-                assert (
-                    terminal_contributions[0].get_active_power_reference()
-                    is VarPowerFlowReferenceType.Pf
+                    VarPowerFlowReferenceType.Pf
+                    in root_template.block.external_mapping
                 )
                 assert (
-                    terminal_contributions[0].get_reactive_power_reference()
-                    is None
+                    VarPowerFlowReferenceType.Pt
+                    in root_template.block.external_mapping
                 )
                 assert (
-                    terminal_contributions[1].get_terminal_side()
-                    is RmsTerminalSide.TO
+                    VarPowerFlowReferenceType.Qt
+                    in root_template.block.external_mapping
                 )
                 assert (
-                    terminal_contributions[1].get_active_power_reference()
+                    root_template.block.external_mapping[
+                        VarPowerFlowReferenceType.Pt
+                    ].ref
                     is VarPowerFlowReferenceType.Pt
                 )
-                assert (
-                    terminal_contributions[1].get_reactive_power_reference()
-                    is VarPowerFlowReferenceType.Qt
+                host: VSC = matching_hosts[0]
+                active_balance = np.zeros(2, dtype=object)
+                reactive_balance = np.zeros(2, dtype=object)
+                active_used = np.zeros(2, dtype=bool)
+                reactive_used = np.zeros(2, dtype=bool)
+                assert assemble_rms_mapped_power_references(
+                    model=root_template.block,
+                    bus_from_index=0,
+                    bus_to_index=1,
+                    bus_from_is_dc=host.bus_from.is_dc,
+                    bus_to_is_dc=host.bus_to.is_dc,
+                    active_power_balance=active_balance,
+                    active_power_balance_used=active_used,
+                    reactive_power_balance=reactive_balance,
+                    reactive_power_balance_used=reactive_used,
                 )
+                assert active_used.tolist() == [True, True]
+                assert reactive_used.tolist() == [False, True]
+                assert root_template.block.E(
+                    VarPowerFlowReferenceType.Pf
+                ) in get_expression_vars(active_balance[0])
+                assert root_template.block.E(
+                    VarPowerFlowReferenceType.Pt
+                ) in get_expression_vars(active_balance[1])
+                assert root_template.block.E(
+                    VarPowerFlowReferenceType.Qt
+                ) in get_expression_vars(reactive_balance[1])
                 assigned_converter_count += 1
             else:
                 pass

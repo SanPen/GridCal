@@ -160,6 +160,7 @@ class BackEulerImplicitIntegration:
         :return:
         """
         converged: bool = False
+        completed_samples: int = 1
 
         x0: Vec = self.problem.get_x0()
 
@@ -260,11 +261,17 @@ class BackEulerImplicitIntegration:
 
                     h_eff: float = t_curr - t_local_prev
                     if h_eff <= 0.0:
-                        # TODO: Is this the right thing?
-                        # Better to handle the situation and log it
-                        raise RuntimeError(
-                            f"Invalid local step size h_eff={h_eff} while integrating RMS macro step {step_idx}."
+                        self.problem.logger.add_error(
+                            msg=(f"Invalid RMS local step size {h_eff:g} s at "
+                                 f"time {t_local_prev:g} s (macro step {step_idx + 1}). "
+                                 f"Completed results through "
+                                 f"{self.t[completed_samples - 1]:g} s are retained; "
+                                 f"the failed step is omitted."),
+                            device="BackEulerImplicitIntegration",
                         )
+                        substep_converged = False
+                        converged = False
+                        break
 
                     # Continuous controls use the local target so a step at an
                     # accepted boundary drives the immediately following
@@ -362,23 +369,22 @@ class BackEulerImplicitIntegration:
                                             print(f"  {var_name:20s} {v[j]:+.3e}")
                                 print("Using LSQR")
                                 print(f"residual is {residual} for timestep {step_idx}")
+                            else:
+                                pass
 
                             if not solved:
-                                nan_indices = np.where(np.isnan(rhs))[0]
-                                nan_eqs = [self.problem._algebraic_eqs[i] for i in nan_indices]
-                                print(f"Jf is {Jf}")
-                                # TODO: Is this the right thing?
-                                # Better to handle the situation and log it
-                                raise ValueError(
-                                    f"spsolve returned non-finite values (NaN or Inf).\n"
-                                    f"delta = {delta}\n"
-                                    f"rhs = {rhs}\n"
-                                    f"Jacobian shape = {Jf.shape}\n"
-                                    f"NaNs found at indices {nan_indices.tolist()} in equations:\n{nan_eqs}",
+                                nonfinite_rhs = np.flatnonzero(~np.isfinite(rhs)).tolist()
+                                self.problem.logger.add_error(
+                                    msg=(f"RMS linear solve returned non-finite values at "
+                                         f"time {t_curr:g} s (macro step {step_idx + 1}); "
+                                         f"Jacobian shape={Jf.shape}, "
+                                         f"non-finite RHS indices={nonfinite_rhs}. "
+                                         f"Completed results through "
+                                         f"{self.t[completed_samples - 1]:g} s are retained; "
+                                         f"the failed step is omitted."),
+                                    device="BackEulerImplicitIntegration",
                                 )
-
-                            if not solved:
-                                print("Failed to solve linear system even with regularization.")
+                                substep_converged = False
                                 break
 
                             # Damped Newton
@@ -400,11 +406,17 @@ class BackEulerImplicitIntegration:
                                 )
                                 if state_event_retry_time is not None:
                                     if co_simulation_advanced:
-                                        # TODO: Is this the right thing?
-                                        # Better to handle the situation and log it
-                                        raise RuntimeError(
-                                            "RMS FMI ME state event cannot retry after Co-Simulation devices advanced"
+                                        self.problem.logger.add_error(
+                                            msg=(f"RMS FMI ME state event at {t_curr:g} s "
+                                                 f"cannot retry after Co-Simulation devices advanced. "
+                                                 f"Completed results through "
+                                                 f"{self.t[completed_samples - 1]:g} s are retained; "
+                                                 f"the failed step is omitted."),
+                                            device="BackEulerImplicitIntegration",
                                         )
+                                        substep_converged = False
+                                        converged = False
+                                        break
                                     else:
                                         substep_converged = True
                                 else:
@@ -419,6 +431,10 @@ class BackEulerImplicitIntegration:
                                 self.problem.resolve_fmu_me_devices(accepted=True)
                             else:
                                 pass
+                            self.problem.resolve_manufacturer_native_boundary(
+                                t=float(t_curr),
+                                x=x_new,
+                            )
                             dx_last = dx.copy()
                             x_prev = x_new.copy()
                             t_local_prev = t_curr
@@ -449,15 +465,13 @@ class BackEulerImplicitIntegration:
                 lag_update_end = time.time()
                 timings["lag_update_time"] += lag_update_end - lag_update_start
                 converged = True
+                completed_samples = step_idx + 2
         finally:
             if has_fmu_cs:
                 self.problem.close_fmu_cs_devices()
             if has_fmu_me:
                 self.problem.close_fmu_me_devices()
 
-        # total = sum(timings.values())
-        # print("\n--- Solver timing breakdown (no-Vec) ---")
-        # for k, v in timings.items():
-        #     print(f"  {k:25s}: {v:8.4f} s  ({v/total*100:5.1f}%)")
-        # print(f"  {'TOTAL':25s}: {total:8.4f} s")
-        return self.t, self.y, well_initialized, converged
+        return (self.t[:completed_samples],
+                self.y[:completed_samples, :],
+                well_initialized, converged)

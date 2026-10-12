@@ -28,7 +28,9 @@ from VeraGridEngine.Utils.Symbolic.diagnostic import (
     with_newton_diagnostics,
 )
 from VeraGridEngine.Utils.Symbolic.symbolic import BinOp, Const, Expr, Func, UnOp, Var
-from VeraGridEngine.Utils.Symbolic.jit_compiler import EagerEquationCompiler, _compile_to_file
+from VeraGridEngine.Utils.Symbolic.jit_compiler import (
+    EagerEquationCompiler, _compile_to_file, _fingerprint_codegen_expr, _StructuralExpressionContext,
+)
 from VeraGridEngine.Utils.NumericalMethods.emt_sparse_superlu_backend import SuperLUSparseBackendProvider
 from VeraGridEngine.Utils.NumericalMethods.external_sparse_solver_interface import (
     SparseLinearFactorizationHandle,
@@ -376,143 +378,25 @@ def _get_runtime_uid(var_obj: Var) -> int:
     return runtime_uid
 
 
-def _canonicalize_symbolic_node(
-        node: Expr,
-        runtime_uids: Set[int],
-        parameter_uids: Set[int],
-        runtime_slots: Dict[int, str],
-        parameter_slots: Dict[int, str],
-        ordered_runtime_vars: List[Var],
-        visited_runtime_uids: Set[int],
-) -> str:
-    """
-    Convert a symbolic expression into a structural canonical string.
-
-    :param node: Symbolic node to canonicalize.
-    :type node: Expr
-    :param runtime_uids: UIDs that belong to the state or algebraic runtime vector.
-    :type runtime_uids: Set[int]
-    :param parameter_uids: UIDs that belong to the parameter vector.
-    :type parameter_uids: Set[int]
-    :param runtime_slots: Runtime placeholder mapping.
-    :type runtime_slots: Dict[int, str]
-    :param parameter_slots: Parameter placeholder mapping.
-    :type parameter_slots: Dict[int, str]
-    :param ordered_runtime_vars: Ordered runtime variables found in the expression.
-    :type ordered_runtime_vars: List[Var]
-    :param visited_runtime_nodes: Visited node identifiers for stable collection.
-    :type visited_runtime_nodes: Set[int]
-    :return: Canonical structural representation.
-    :rtype: str
-    """
-    if isinstance(node, Var):
-        runtime_uid: int = _get_runtime_uid(node)
-        if runtime_uid in runtime_uids:
-            if runtime_uid in runtime_slots:
-                pass
-            else:
-                runtime_slots[runtime_uid] = f"__RVAR_{len(runtime_slots)}__"
-
-            if runtime_uid in visited_runtime_uids:
-                pass
-            else:
-                visited_runtime_uids.add(runtime_uid)
-                ordered_runtime_vars.append(node)
-
-            return runtime_slots[runtime_uid]
-        elif runtime_uid in parameter_uids:
-            if runtime_uid in parameter_slots:
-                pass
-            else:
-                parameter_name: str = node.name
-                parameter_slots[runtime_uid] = f"__PARAM_{parameter_name}_{runtime_uid}__"
-
-            return parameter_slots[runtime_uid]
-        else:
-            raise RuntimeError(f"Unclassified symbolic variable uid={runtime_uid}")
-    elif isinstance(node, Const):
-        return f"{float(node.value):.16g}"
-    elif isinstance(node, BinOp):
-        left_str: str = _canonicalize_symbolic_node(
-            node.left,
-            runtime_uids,
-            parameter_uids,
-            runtime_slots,
-            parameter_slots,
-            ordered_runtime_vars,
-            visited_runtime_uids,
-        )
-        right_str: str = _canonicalize_symbolic_node(
-            node.right,
-            runtime_uids,
-            parameter_uids,
-            runtime_slots,
-            parameter_slots,
-            ordered_runtime_vars,
-            visited_runtime_uids,
-        )
-
-        if node.op in ['+', '*'] and left_str > right_str:
-            left_str, right_str = right_str, left_str
-
-        return f"({left_str}{node.op}{right_str})"
-    elif isinstance(node, UnOp):
-        operand_str: str = _canonicalize_symbolic_node(
-            node.operand,
-            runtime_uids,
-            parameter_uids,
-            runtime_slots,
-            parameter_slots,
-            ordered_runtime_vars,
-            visited_runtime_uids,
-        )
-        return f"{node.op}({operand_str})"
-    elif isinstance(node, Func):
-        argument_str: str = _canonicalize_symbolic_node(
-            node.arg,
-            runtime_uids,
-            parameter_uids,
-            runtime_slots,
-            parameter_slots,
-            ordered_runtime_vars,
-            visited_runtime_uids,
-        )
-        return f"{node.op}({argument_str})"
-    else:
-        return str(node)
-
-
 def canonicalize_expression(
         expr: Expr,
         runtime_uids: Set[int],
         parameter_uids: Set[int],
 ) -> Tuple[str, List[Var]]:
     """
-    Return the canonical signature and ordered runtime variables of an expression.
+    Return the shared structural signature and first-occurrence runtime gathers.
 
-    :param expr: Symbolic expression to analyze.
-    :type expr: Expr
-    :param runtime_uids: UIDs that belong to the runtime vector.
-    :type runtime_uids: Set[int]
-    :param parameter_uids: UIDs that belong to the parameter vector.
-    :type parameter_uids: Set[int]
-    :return: Canonical structural string and ordered runtime variables.
-    :rtype: Tuple[str, List[Var]]
+    :param expr: Symbolic expression whose literal values must remain exact.
+    :param runtime_uids: UIDs belonging to the runtime state/algebraic vector.
+    :param parameter_uids: UIDs belonging to the shared parameter vector.
+    :return: Structural fingerprint and one gathered variable per runtime UID.
+    :raises RuntimeError: If a supported variable has no runtime/parameter classification.
     """
-    runtime_slots: Dict[int, str] = dict()
-    parameter_slots: Dict[int, str] = dict()
-    ordered_runtime_vars: List[Var] = list()
-    visited_runtime_uids: Set[int] = set()
-    signature_str: str = _canonicalize_symbolic_node(
-        expr,
-        runtime_uids,
-        parameter_uids,
-        runtime_slots,
-        parameter_slots,
-        ordered_runtime_vars,
-        visited_runtime_uids,
-    )
-    return signature_str, ordered_runtime_vars
+    # Bind structural roles only for this expression. The existing compiler walk
+    # preserves exact constants; its code-generation maps are unused in this context.
+    context: _StructuralExpressionContext = _StructuralExpressionContext(runtime_uids, parameter_uids)
+    signature: str = _fingerprint_codegen_expr(expr, dict(), dict(), "", None, None, context)
+    return signature, context.runtime_variables
 
 
 def _build_full_residual_equations(
@@ -2384,6 +2268,7 @@ class StructuralCompiledSolver:
         "_predictor",
         "_backend_build_stats",
         "_newton_max_iter",
+        "_newton_tolerance",
         "_newton_diag_config",
         "_sparse_factorization_manager",
         "_sparse_solver_backend_provider",
@@ -2408,6 +2293,7 @@ class StructuralCompiledSolver:
             newton_diag_config: NewtonDiagnosticsConfig | None = None,
             progress_signal: DummySignal | None = None,
             cancel_checker: Callable[[], bool] | None = None,
+            newton_tolerance: float = 1.0e-6,
     ) -> None:
         """
         Create the structural compiled EMT solver.
@@ -2430,6 +2316,8 @@ class StructuralCompiledSolver:
         :type verbose: bool
         :param newton_max_iter: Maximum Newton iterations per local EMT substep.
         :type newton_max_iter: int
+        :param newton_tolerance: Absolute infinity-norm tolerance for Newton residual convergence.
+        :type newton_tolerance: float
         :param auto_build: Whether to build the vectorized backend during construction.
         :type auto_build: bool
         :param warmup_policy: Warmup policy used during backend build.
@@ -2450,6 +2338,9 @@ class StructuralCompiledSolver:
         self._dense_threshold = dense_threshold
         self._verbose = verbose
         self._newton_max_iter: int = int(newton_max_iter)
+        self._newton_tolerance: float = float(newton_tolerance)
+        if not np.isfinite(self._newton_tolerance) or self._newton_tolerance <= 0.0:
+            raise ValueError("newton_tolerance must be finite and greater than zero.")
         self._warmup_policy = warmup_policy
         self._sparse_solver_backend_provider = sparse_solver_backend_provider
         self._newton_diag_config = newton_diag_config or NewtonDiagnosticsConfig(
@@ -3150,7 +3041,7 @@ class StructuralCompiledSolver:
                     )
                     res_norm: float = _max_abs_value(self._residual_buffer)
 
-                    if res_norm < 1e-6:
+                    if res_norm < self._newton_tolerance:
                         substep_converged = True
                         break
                     else:
@@ -3280,7 +3171,16 @@ class StructuralCompiledSolver:
                         boundary_updater=active_boundary_updater,
                         accepted=substep_converged,
                         params=full_params,
+                        committed_time=float(t_curr),
+                        committed_state=x_iter,
                     )
+                else:
+                    pass
+
+                if substep_converged and state_event_retry_time is None:
+                    # A post-acceptance native sample may publish new held
+                    # outputs. Retain them for the next aligned sub-step.
+                    runtime_params[:] = full_params[:self._n_event_parameters]
                 else:
                     pass
 

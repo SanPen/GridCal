@@ -12,13 +12,12 @@ import zipfile
 
 import pytest
 
-from VeraGridEngine.IO.fmu.importer.errors import FmuArchiveError
-from VeraGridEngine.IO.fmu.importer.inspection import (
+from VeraGridEngine.IO.fmu.Elements.inspection import (
     FmuArchiveInspectionPolicy,
     FmuInspectionResult,
     inspect_fmu,
 )
-from VeraGridEngine.IO.fmu.importer.staging import (
+from VeraGridEngine.IO.fmu.staging import (
     FmuStagingArea,
     revalidate_fmu_staging_area,
     stage_fmu_source,
@@ -176,7 +175,7 @@ def test_archive_changed_after_inspection_is_rejected_and_cleaned(tmp_path: Path
     staging_parent: Path = tmp_path / "staging"
 
     assert replacement_size == original_size
-    with pytest.raises(FmuArchiveError, match="content changed"):
+    with pytest.raises(ValueError, match="content changed"):
         stage_fmu_source(source, inspection.receipt, staging_parent=staging_parent)
     assert _staging_children(staging_parent) == tuple()
 
@@ -193,7 +192,7 @@ def test_directory_changed_after_inspection_is_rejected_and_cleaned(tmp_path: Pa
     (source / "resources" / "data.bin").write_bytes(b"resource-b")
     staging_parent: Path = tmp_path / "staging"
 
-    with pytest.raises(FmuArchiveError, match="content changed"):
+    with pytest.raises(ValueError, match="content changed"):
         stage_fmu_source(source, inspection.receipt, staging_parent=staging_parent)
     assert _staging_children(staging_parent) == tuple()
 
@@ -210,7 +209,7 @@ def test_receipt_from_another_source_is_rejected_before_staging(tmp_path: Path) 
     first_inspection: FmuInspectionResult = inspect_fmu(first_source)
     staging_parent: Path = tmp_path / "staging"
 
-    with pytest.raises(FmuArchiveError, match="different source path"):
+    with pytest.raises(ValueError, match="different source path"):
         stage_fmu_source(second_source, first_inspection.receipt, staging_parent=staging_parent)
     assert not staging_parent.exists()
 
@@ -232,7 +231,7 @@ def test_copy_limit_failure_removes_only_private_child(tmp_path: Path) -> None:
         max_archive_bytes=source.stat().st_size - 1
     )
 
-    with pytest.raises(FmuArchiveError, match="byte limit"):
+    with pytest.raises(ValueError, match="byte limit"):
         stage_fmu_source(
             source,
             inspection.receipt,
@@ -304,7 +303,7 @@ def test_file_staging_parent_is_rejected_without_modification(tmp_path: Path) ->
     invalid_parent: Path = tmp_path / "parent.txt"
     invalid_parent.write_text("keep", encoding="utf-8")
 
-    with pytest.raises(FmuArchiveError, match="prepare FMU staging parent"):
+    with pytest.raises(ValueError, match="prepare FMU staging parent"):
         stage_fmu_source(source, inspection.receipt, staging_parent=invalid_parent)
     assert invalid_parent.read_text(encoding="utf-8") == "keep"
 
@@ -327,7 +326,7 @@ def test_source_link_is_rejected_before_private_allocation(tmp_path: Path) -> No
         link_created = False
 
     if link_created:
-        with pytest.raises(FmuArchiveError, match="source path links"):
+        with pytest.raises(ValueError, match="source path links"):
             stage_fmu_source(source_link, inspection.receipt, staging_parent=staging_parent)
         assert not staging_parent.exists()
     else:
@@ -373,7 +372,7 @@ def test_revalidation_rejects_same_size_resource_mutation(tmp_path: Path) -> Non
     try:
         staged_resource.write_bytes(b"resource-b")
         assert staged_resource.stat().st_size == len(b"resource-a")
-        with pytest.raises(FmuArchiveError, match="differs from its archive"):
+        with pytest.raises(ValueError, match="differs from its archive"):
             revalidate_fmu_staging_area(staging)
     finally:
         staging.close()
@@ -392,12 +391,12 @@ def test_revalidation_rejects_missing_and_unexpected_files(tmp_path: Path) -> No
     extra_staging: FmuStagingArea = stage_fmu_source(source, inspection.receipt)
     try:
         (missing_staging.get_fmu_directory() / "resources" / "data.bin").unlink()
-        with pytest.raises(FmuArchiveError, match="unavailable"):
+        with pytest.raises(ValueError, match="unavailable"):
             revalidate_fmu_staging_area(missing_staging)
 
         unexpected_file: Path = extra_staging.get_fmu_directory() / "resources" / "extra.bin"
         unexpected_file.write_bytes(b"extra")
-        with pytest.raises(FmuArchiveError, match="missing or unexpected paths"):
+        with pytest.raises(ValueError, match="missing or unexpected paths"):
             revalidate_fmu_staging_area(extra_staging)
     finally:
         missing_staging.close()
@@ -416,7 +415,7 @@ def test_revalidation_rejects_unexpected_empty_directory(tmp_path: Path) -> None
     staging: FmuStagingArea = stage_fmu_source(source, inspection.receipt)
     try:
         (staging.get_fmu_directory() / "unexpected-empty").mkdir()
-        with pytest.raises(FmuArchiveError, match="missing or unexpected paths"):
+        with pytest.raises(ValueError, match="missing or unexpected paths"):
             revalidate_fmu_staging_area(staging)
     finally:
         staging.close()
@@ -441,9 +440,9 @@ def test_linked_ancestor_is_rejected_for_source_and_parent(tmp_path: Path) -> No
         link_created = False
 
     if link_created:
-        with pytest.raises(FmuArchiveError, match="source path links"):
+        with pytest.raises(ValueError, match="source path links"):
             stage_fmu_source(linked_root / "source.fmu", inspection.receipt)
-        with pytest.raises(FmuArchiveError, match="staging parent path links"):
+        with pytest.raises(ValueError, match="staging parent path links"):
             stage_fmu_source(source, inspection.receipt, staging_parent=linked_root / "stage")
         assert not (real_root / "stage").exists()
     else:
@@ -471,7 +470,7 @@ def test_directory_link_introduced_after_inspection_is_rejected(tmp_path: Path) 
 
     if link_created:
         staging_parent: Path = tmp_path / "staging"
-        with pytest.raises(FmuArchiveError, match="not a regular file"):
+        with pytest.raises(ValueError, match="not a regular file"):
             stage_fmu_source(source, inspection.receipt, staging_parent=staging_parent)
         assert _staging_children(staging_parent) == tuple()
         assert external_resource.read_bytes() == b"resource-a"
@@ -497,7 +496,7 @@ def test_directory_source_rejects_nested_staging_parents_before_writing(tmp_path
 
     nested_parent: Path
     for nested_parent in nested_parents:
-        with pytest.raises(FmuArchiveError, match="cannot be inside"):
+        with pytest.raises(ValueError, match="cannot be inside"):
             stage_fmu_source(source, inspection.receipt, staging_parent=nested_parent)
         assert inspect_fmu(source).receipt.sha256 == original_digest
     assert not (source / "runtime").exists()

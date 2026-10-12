@@ -16,7 +16,6 @@ from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Templates.BasicBlockCatalog.Functions import BasicBlockCatalogTemplateBuilder
 from VeraGridEngine.Templates.BasicBlockCatalog.Functions import get_basic_block_catalog_template_builder_by_module_name
 from VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry import BasicBlockCatalogStaticRecord
-from VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry import build_basic_block_catalog_branch_skeleton as build_static_basic_block_catalog_branch_skeleton
 from VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry import build_basic_block_catalog_pending_template_reason
 from VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry import get_basic_block_catalog_static_records
 from VeraGridEngine.Utils.Symbolic.block import Block
@@ -263,15 +262,6 @@ def get_basic_block_catalog_templates_dir() -> Path:
     return get_basic_block_catalog_root() / "Functions"
 
 
-def build_basic_block_catalog_branch_skeleton() -> dict[str, dict[str, list[object]]]:
-    """
-    Build the static category tree used by the editor branch.
-
-    :returns: Fresh category tree.
-    """
-    return build_static_basic_block_catalog_branch_skeleton()
-
-
 def get_basic_block_catalog_pending_template_reason() -> str:
     """
     Return the canonical pending reason for non-executable catalog templates.
@@ -404,22 +394,6 @@ def get_basic_block_catalog_descriptor_by_key() -> dict[str, BasicBlockTemplateD
 
     for descriptor in get_basic_block_catalog_descriptors():
         descriptor_lookup[descriptor.template_key] = descriptor
-
-    return descriptor_lookup
-
-
-@lru_cache(maxsize=1)
-def get_basic_block_catalog_descriptor_by_typ_id() -> dict[str, BasicBlockTemplateDescriptor]:
-    """
-    Return the descriptor lookup indexed by imported type identifier.
-
-    :returns: Descriptor lookup by imported type identifier.
-    """
-    descriptor_lookup: dict[str, BasicBlockTemplateDescriptor] = dict()
-    descriptor: BasicBlockTemplateDescriptor
-
-    for descriptor in get_basic_block_catalog_descriptors():
-        descriptor_lookup[descriptor.typ_id] = descriptor
 
     return descriptor_lookup
 

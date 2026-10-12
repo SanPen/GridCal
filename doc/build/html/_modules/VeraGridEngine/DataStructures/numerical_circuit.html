@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.DataStructures.numerical_circuit &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.DataStructures.numerical_circuit &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -69,7 +69,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -165,7 +165,7 @@
                    <span class="n">sh_idx</span><span class="p">,</span> <span class="n">q_min_sh</span><span class="p">,</span> <span class="n">q_max_sh</span><span class="p">,</span> <span class="n">active_sh</span><span class="p">,</span> <span class="n">control_mode_int_sh</span><span class="p">,</span>
                    <span class="n">hvdc_f</span><span class="p">,</span> <span class="n">hvdc_t</span><span class="p">,</span> <span class="n">q_min_hvdc_f</span><span class="p">,</span> <span class="n">q_max_hvdc_f</span><span class="p">,</span> <span class="n">q_min_hvdc_t</span><span class="p">,</span> <span class="n">q_max_hvdc_t</span><span class="p">,</span> <span class="n">active_hvdc</span><span class="p">,</span>
                    <span class="n">v_ctrl_val_gen</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">v_ctrl_val_sh</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param nbus:</span>
 <span class="sd">    :param Sbase:</span>
@@ -194,7 +194,7 @@
 <span class="sd">    :param v_ctrl_val_gen:</span>
 <span class="sd">    :param v_ctrl_val_sh</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">max_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">Qmax_bus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="mf">1e-20</span><span class="p">)</span>
 
@@ -289,7 +289,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">check_arr</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">IntVec</span> <span class="o">|</span> <span class="n">BoolVec</span> <span class="o">|</span> <span class="n">CxVec</span><span class="p">,</span>
               <span class="n">arr_expected</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">IntVec</span> <span class="o">|</span> <span class="n">BoolVec</span> <span class="o">|</span> <span class="n">CxVec</span><span class="p">,</span>
               <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">test</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param arr:</span>
 <span class="sd">    :param arr_expected:</span>
@@ -298,9 +298,9 @@
 <span class="sd">    :param test:</span>
 <span class="sd">    :param logger:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">arr_expected</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Different shape&quot;</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Different shape"</span><span class="p">,</span>
                          <span class="n">device</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                          <span class="n">device_property</span><span class="o">=</span><span class="n">test</span><span class="p">,</span>
                          <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
@@ -312,17 +312,17 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">in</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="n">diff</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">-</span> <span class="n">arr_expected</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Numeric differences&quot;</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Numeric differences"</span><span class="p">,</span>
                              <span class="n">device</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                              <span class="n">device_property</span><span class="o">=</span><span class="n">test</span><span class="p">,</span>
-                             <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;min diff: </span><span class="si">{</span><span class="n">diff</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">}</span><span class="s2">, max diff: </span><span class="si">{</span><span class="n">diff</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                             <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"min diff: </span><span class="si">{</span><span class="n">diff</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">}</span><span class="s2">, max diff: </span><span class="si">{</span><span class="n">diff</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                              <span class="n">expected_value</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">diff</span> <span class="o">=</span> <span class="n">arr</span> <span class="o">-</span> <span class="n">arr_expected</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Numeric differences&quot;</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Numeric differences"</span><span class="p">,</span>
                              <span class="n">device</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                              <span class="n">device_property</span><span class="o">=</span><span class="n">test</span><span class="p">,</span>
-                             <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;min diff: </span><span class="si">{</span><span class="n">diff</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">}</span><span class="s2">, max diff: </span><span class="si">{</span><span class="n">diff</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                             <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"min diff: </span><span class="si">{</span><span class="n">diff</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">}</span><span class="s2">, max diff: </span><span class="si">{</span><span class="n">diff</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                              <span class="n">expected_value</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">1</span></div>
 
@@ -336,7 +336,7 @@
                       <span class="n">gen_controllable_bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                       <span class="n">bus_types</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                       <span class="n">v_ctrl_val</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Correct remote voltage-controlled bus types after topology processing.</span>
 
 <span class="sd">    :param gen_idx:</span>
@@ -345,7 +345,7 @@
 <span class="sd">    :param bus_types:</span>
 <span class="sd">    :param v_ctrl_val: value for GeneratorControlMode.V</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gen_idx</span><span class="p">)):</span>
         <span class="c1"># A negative index means that the device controls its local bus, whose</span>
         <span class="c1"># type was already assigned during compilation and must not be remapped.</span>
@@ -374,7 +374,7 @@
         <span class="n">branch_to</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
         <span class="n">branch_active</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select missing angular references in independent AC phase regions.</span>
+<span class="w">    </span><span class="sd">"""Select missing angular references in independent AC phase regions.</span>
 
 <span class="sd">    Passive AC branches couple voltage angles. VSC and DC connections transfer</span>
 <span class="sd">    power without coupling the absolute AC phase, so they must not merge the</span>
@@ -388,7 +388,7 @@
 <span class="sd">    :param branch_to: To-bus indices of passive branches.</span>
 <span class="sd">    :param branch_active: Active state of passive branches.</span>
 <span class="sd">    :return: PV bus indices that must become angular references.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">bus_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bus_types</span><span class="p">)</span>
     <span class="n">branch_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">branch_from</span><span class="p">)</span>
     <span class="n">maximum_entry_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">bus_count</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">branch_count</span>
@@ -490,44 +490,44 @@
 <div class="viewcode-block" id="NumericalCircuit">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NumericalCircuit</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class storing the calculation information of the devices</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;nbus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nbr&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;t_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nload&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ngen&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nbatt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nshunt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nhvdc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nvsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nfluidnode&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nfluidturbine&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nfluidpump&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nfluidp2x&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nfluidpath&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Sbase&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;passive_branch_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;active_branch_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hvdc_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vsc_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;load_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;battery_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;generator_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;shunt_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fluid_node_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fluid_turbine_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fluid_pump_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fluid_p2x_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fluid_path_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__bus_map_arr&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__topology_performed&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;structs_idtag_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_dict&quot;</span><span class="p">,</span>
+        <span class="s2">"nbus"</span><span class="p">,</span>
+        <span class="s2">"nbr"</span><span class="p">,</span>
+        <span class="s2">"t_idx"</span><span class="p">,</span>
+        <span class="s2">"nload"</span><span class="p">,</span>
+        <span class="s2">"ngen"</span><span class="p">,</span>
+        <span class="s2">"nbatt"</span><span class="p">,</span>
+        <span class="s2">"nshunt"</span><span class="p">,</span>
+        <span class="s2">"nhvdc"</span><span class="p">,</span>
+        <span class="s2">"nvsc"</span><span class="p">,</span>
+        <span class="s2">"nfluidnode"</span><span class="p">,</span>
+        <span class="s2">"nfluidturbine"</span><span class="p">,</span>
+        <span class="s2">"nfluidpump"</span><span class="p">,</span>
+        <span class="s2">"nfluidp2x"</span><span class="p">,</span>
+        <span class="s2">"nfluidpath"</span><span class="p">,</span>
+        <span class="s2">"Sbase"</span><span class="p">,</span>
+        <span class="s2">"bus_data"</span><span class="p">,</span>
+        <span class="s2">"passive_branch_data"</span><span class="p">,</span>
+        <span class="s2">"active_branch_data"</span><span class="p">,</span>
+        <span class="s2">"hvdc_data"</span><span class="p">,</span>
+        <span class="s2">"vsc_data"</span><span class="p">,</span>
+        <span class="s2">"load_data"</span><span class="p">,</span>
+        <span class="s2">"battery_data"</span><span class="p">,</span>
+        <span class="s2">"generator_data"</span><span class="p">,</span>
+        <span class="s2">"shunt_data"</span><span class="p">,</span>
+        <span class="s2">"fluid_node_data"</span><span class="p">,</span>
+        <span class="s2">"fluid_turbine_data"</span><span class="p">,</span>
+        <span class="s2">"fluid_pump_data"</span><span class="p">,</span>
+        <span class="s2">"fluid_p2x_data"</span><span class="p">,</span>
+        <span class="s2">"fluid_path_data"</span><span class="p">,</span>
+        <span class="s2">"__bus_map_arr"</span><span class="p">,</span>
+        <span class="s2">"__topology_performed"</span><span class="p">,</span>
+        <span class="s2">"structs_idtag_dict"</span><span class="p">,</span>
+        <span class="s2">"bus_dict"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -546,7 +546,7 @@
                  <span class="n">nfluidpath</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">t_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Numerical circuit</span>
 <span class="sd">        :param nbus: Number of calculation buses</span>
 <span class="sd">        :param nbr: Number of calculation Branches</span>
@@ -558,7 +558,7 @@
 <span class="sd">        :param nshunt:  Number of calculation shunt devices</span>
 <span class="sd">        :param sbase:  Base power (MVA)</span>
 <span class="sd">        :param t_idx:  Time index (None for the snapshot or the time series index [0..N-1])</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">nbus</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nbr</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">nbr</span>
@@ -613,52 +613,52 @@
 <div class="viewcode-block" id="NumericalCircuit.propagate_bus_result">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.propagate_bus_result">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">propagate_bus_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_magnitude</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">CxVec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        This function applies the __bus_map_arr to a calculated magnitude to</span>
 <span class="sd">        propagate the calculated nodal result</span>
 <span class="sd">        :param bus_magnitude: some array of the size of buses (all)</span>
 <span class="sd">        :return: propagated results</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">bus_magnitude</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__bus_map_arr</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="NumericalCircuit.propagate_bus_result_mat">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.propagate_bus_result_mat">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">propagate_bus_result_mat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_magnitude</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">|</span> <span class="n">CxMat</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        This function applies the __bus_map_arr to a calculated magnitude to</span>
 <span class="sd">        propagate the calculated nodal result</span>
 <span class="sd">        :param bus_magnitude: some array of the size of buses (all)</span>
 <span class="sd">        :return: propagated results</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">bus_magnitude</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__bus_map_arr</span><span class="p">]</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">topology_performed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Flag indicating if topology processing happened here</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__topology_performed</span>
 
 <div class="viewcode-block" id="NumericalCircuit.get_reduction_bus_mapping">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_reduction_bus_mapping">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_reduction_bus_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get array is used to keep track of the bus topological reduction</span>
 <span class="sd">        :return: IntVec</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__bus_map_arr</span></div>
 
 
 <div class="viewcode-block" id="NumericalCircuit.get_power_injections">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_power_injections">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_power_injections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the power</span>
 <span class="sd">        :return: return the array of power Injections in MW if normalized is false, in p.u. otherwise</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># load</span>
         <span class="n">Sbus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_data</span><span class="o">.</span><span class="n">get_injections_per_bus</span><span class="p">()</span>  <span class="c1"># MW (negative already)</span>
@@ -675,23 +675,23 @@
 <div class="viewcode-block" id="NumericalCircuit.get_power_injections_pu">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_power_injections_pu">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_power_injections_pu</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the power</span>
 <span class="sd">        :return: return the array of power Injections in MW if normalized is false, in p.u. otherwise</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_power_injections</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span></div>
 
 
 <div class="viewcode-block" id="NumericalCircuit.get_linear_power_injections">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_linear_power_injections">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_linear_power_injections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the bus power injections seen by the linear studies (DC PF, PTDF).</span>
 
 <span class="sd">        Those models assume a flat voltage of 1 p.u.</span>
 
 <span class="sd">        :return: array of power injections in MW</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_power_injections</span><span class="p">()</span>
                 <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load_data</span><span class="o">.</span><span class="n">get_current_injections_per_bus</span><span class="p">()</span>
                           <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_data</span><span class="o">.</span><span class="n">get_admittance_injections_per_bus</span><span class="p">()))</span></div>
@@ -700,39 +700,39 @@
 <div class="viewcode-block" id="NumericalCircuit.get_current_injections_pu">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_current_injections_pu">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_current_injections_pu</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_data</span><span class="o">.</span><span class="n">get_current_injections_per_bus</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span></div>
 
 
 <div class="viewcode-block" id="NumericalCircuit.get_admittance_injections_pu">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_admittance_injections_pu">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_admittance_injections_pu</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_data</span><span class="o">.</span><span class="n">get_admittance_injections_per_bus</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span></div>
 
 
 <div class="viewcode-block" id="NumericalCircuit.get_Yshunt_bus_pu">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_Yshunt_bus_pu">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Yshunt_bus_pu</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">shunt_data</span><span class="o">.</span><span class="n">get_injections_per_bus</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span></div>
 
 
 <div class="viewcode-block" id="NumericalCircuit.consolidate_information">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.consolidate_information">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">consolidate_information</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Consolidates the information of this object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nbr</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="p">)</span>
@@ -746,11 +746,11 @@
 
 <div class="viewcode-block" id="NumericalCircuit.copy">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"NumericalCircuit"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Deep copy of ths object</span>
 <span class="sd">        :return: NumericalCircuit instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">nc</span> <span class="o">=</span> <span class="n">NumericalCircuit</span><span class="p">(</span><span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span>
                               <span class="n">nbr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbr</span><span class="p">,</span>
                               <span class="n">nhvdc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nhvdc</span><span class="p">,</span>
@@ -792,10 +792,10 @@
 <div class="viewcode-block" id="NumericalCircuit.init_idtags_dict">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.init_idtags_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">init_idtags_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the internal structure for idtags querying</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">structs_idtag_dict</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">idtag</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">idtag</span><span class="p">):</span>
@@ -826,11 +826,11 @@
 <div class="viewcode-block" id="NumericalCircuit.query_idtag">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.query_idtag">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">query_idtag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idtag</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">DataStructType</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Query the structure and index where an idtag exists</span>
 <span class="sd">        :param idtag: idtag</span>
 <span class="sd">        :return: DataStructType, integer position</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># lazy initialization in case we forgot...</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">structs_idtag_dict</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">nbus</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">nelm</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -842,18 +842,18 @@
 <div class="viewcode-block" id="NumericalCircuit.set_investments_status">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.set_investments_status">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_investments_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">investments_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Investment</span><span class="p">],</span> <span class="n">status</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the status of a list of investments</span>
 <span class="sd">        :param investments_list: list of investments</span>
 <span class="sd">        :param status: status to set in the internal structures</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">for</span> <span class="n">inv</span> <span class="ow">in</span> <span class="n">investments_list</span><span class="p">:</span>
 
             <span class="n">structure</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_idtag</span><span class="p">(</span><span class="n">inv</span><span class="o">.</span><span class="n">device_idtag</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="n">DataStructType</span><span class="o">.</span><span class="n">NOSTRUCT</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Could not find the idtag, is this a programming bug?&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Could not find the idtag, is this a programming bug?'</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">structure</span> <span class="o">==</span> <span class="n">DataStructType</span><span class="o">.</span><span class="n">BRANCHDATA</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span>
@@ -885,12 +885,12 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">set_con_or_ra_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                              <span class="n">event_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Contingency</span> <span class="o">|</span> <span class="n">RemedialAction</span><span class="p">],</span>
                              <span class="n">revert</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the status of a list of contingencies or remedial actions</span>
 <span class="sd">        :param event_list: list of contingencies and or remedial actions</span>
 <span class="sd">        :param revert: if false, the contingencies are applied, else they are reversed</span>
 <span class="sd">        :return: vector of power injection increments</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># vector of power injection increments</span>
         <span class="n">inj_increment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">)</span>
@@ -901,7 +901,7 @@
             <span class="n">structure</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_idtag</span><span class="p">(</span><span class="n">cnt</span><span class="o">.</span><span class="n">device_idtag</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="n">DataStructType</span><span class="o">.</span><span class="n">NOSTRUCT</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Could not find the idtag, is this a programming bug?&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Could not find the idtag, is this a programming bug?'</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">structure</span> <span class="o">==</span> <span class="n">DataStructType</span><span class="o">.</span><span class="n">BRANCHDATA</span><span class="p">:</span>
 
@@ -911,7 +911,7 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cnt</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">structure</span> <span class="o">==</span> <span class="n">DataStructType</span><span class="o">.</span><span class="n">GENERATORDATA</span><span class="p">:</span>
 
@@ -932,7 +932,7 @@
 
                     <span class="n">inj_increment</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">[</span><span class="n">idx</span><span class="p">]]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">structure</span> <span class="o">==</span> <span class="n">DataStructType</span><span class="o">.</span><span class="n">HVDCDATA</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">cnt</span><span class="o">.</span><span class="n">prop</span> <span class="o">==</span> <span class="n">ContingencyOperationTypes</span><span class="o">.</span><span class="n">Active</span><span class="p">:</span>
@@ -954,7 +954,7 @@
                     <span class="n">inj_increment</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">hvdc_data</span><span class="o">.</span><span class="n">F</span><span class="p">[</span><span class="n">idx</span><span class="p">]]</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hvdc_data</span><span class="o">.</span><span class="n">Pset</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
                     <span class="n">inj_increment</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">hvdc_data</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">idx</span><span class="p">]]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hvdc_data</span><span class="o">.</span><span class="n">Pset</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">structure</span> <span class="o">==</span> <span class="n">DataStructType</span><span class="o">.</span><span class="n">BUSDATA</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">cnt</span><span class="o">.</span><span class="n">prop</span> <span class="o">==</span> <span class="n">ContingencyOperationTypes</span><span class="o">.</span><span class="n">Active</span><span class="p">:</span>
@@ -963,7 +963,7 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cnt</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">structure</span> <span class="o">==</span> <span class="n">DataStructType</span><span class="o">.</span><span class="n">BATTERYDATA</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">cnt</span><span class="o">.</span><span class="n">prop</span> <span class="o">==</span> <span class="n">ContingencyOperationTypes</span><span class="o">.</span><span class="n">Active</span><span class="p">:</span>
@@ -983,7 +983,7 @@
 
                     <span class="n">inj_increment</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">battery_data</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">[</span><span class="n">idx</span><span class="p">]]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">battery_data</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">structure</span> <span class="o">==</span> <span class="n">DataStructType</span><span class="o">.</span><span class="n">LOADDATA</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">cnt</span><span class="o">.</span><span class="n">prop</span> <span class="o">==</span> <span class="n">ContingencyOperationTypes</span><span class="o">.</span><span class="n">Active</span><span class="p">:</span>
@@ -1003,7 +1003,7 @@
 
                     <span class="n">inj_increment</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">load_data</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">[</span><span class="n">idx</span><span class="p">]]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_data</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">real</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">structure</span> <span class="o">==</span> <span class="n">DataStructType</span><span class="o">.</span><span class="n">SHUNTDATA</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">cnt</span><span class="o">.</span><span class="n">prop</span> <span class="o">==</span> <span class="n">ContingencyOperationTypes</span><span class="o">.</span><span class="n">Active</span><span class="p">:</span>
@@ -1023,7 +1023,7 @@
 
                     <span class="n">inj_increment</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">shunt_data</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">[</span><span class="n">idx</span><span class="p">]]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shunt_data</span><span class="o">.</span><span class="n">Y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">real</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">structure</span> <span class="o">==</span> <span class="n">DataStructType</span><span class="o">.</span><span class="n">VSCDATA</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">cnt</span><span class="o">.</span><span class="n">prop</span> <span class="o">==</span> <span class="n">ContingencyOperationTypes</span><span class="o">.</span><span class="n">Active</span><span class="p">:</span>
@@ -1032,7 +1032,7 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cnt</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Unknown contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">inj_increment</span></div>
 
@@ -1042,14 +1042,14 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">get_simulation_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbus</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                <span class="n">bus_types</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                <span class="n">force_only_pq_pv_vd_types</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">si</span><span class="o">.</span><span class="n">SimulationIndices</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the simulation indices</span>
 <span class="sd">        :param Sbus: Array of bus powers (optional)</span>
 <span class="sd">        :param bus_types: different array of bus_types (optional)</span>
 <span class="sd">        :param force_only_pq_pv_vd_types: if true, all bus types are forced into PQ PV or VD,</span>
 <span class="sd">                                          for certain types of simulations that cannot handle other bus types</span>
 <span class="sd">        :return: SimulationIndices</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">Sbus</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">Sbus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_power_injections_pu</span><span class="p">()</span>
 
@@ -1116,10 +1116,10 @@
 <div class="viewcode-block" id="NumericalCircuit.get_connectivity_matrices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_connectivity_matrices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_connectivity_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tp</span><span class="o">.</span><span class="n">ConnectivityMatrices</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get connectivity matrices</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">tp</span><span class="o">.</span><span class="n">compute_connectivity</span><span class="p">(</span>
             <span class="n">branch_active</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span>
             <span class="n">Cf_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">Cf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">(),</span>
@@ -1130,10 +1130,10 @@
 <div class="viewcode-block" id="NumericalCircuit.get_admittance_matrices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_admittance_matrices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_admittance_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ycalc</span><span class="o">.</span><span class="n">AdmittanceMatrices</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get Admittance structures</span>
 <span class="sd">        :return: Admittance object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># compute admittances on demand</span>
         <span class="k">return</span> <span class="n">ycalc</span><span class="o">.</span><span class="n">compute_admittances</span><span class="p">(</span>
@@ -1156,10 +1156,10 @@
 <div class="viewcode-block" id="NumericalCircuit.get_series_admittance_matrices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_series_admittance_matrices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_series_admittance_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ycalc</span><span class="o">.</span><span class="n">SeriesAdmittanceMatrices</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">ycalc</span><span class="o">.</span><span class="n">compute_split_admittances</span><span class="p">(</span>
             <span class="n">R</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">R</span><span class="p">,</span>
             <span class="n">X</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">X</span><span class="p">,</span>
@@ -1179,10 +1179,10 @@
 <div class="viewcode-block" id="NumericalCircuit.get_fast_decoupled_amittances">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_fast_decoupled_amittances">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_fast_decoupled_amittances</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ycalc</span><span class="o">.</span><span class="n">FastDecoupledAdmittanceMatrices</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">ycalc</span><span class="o">.</span><span class="n">compute_fast_decoupled_admittances</span><span class="p">(</span>
             <span class="n">X</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">X</span><span class="p">,</span>
             <span class="n">B</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">B</span><span class="p">,</span>
@@ -1199,10 +1199,10 @@
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_linear_admittance_matrices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_linear_admittance_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                        <span class="n">indices</span><span class="p">:</span> <span class="n">SimulationIndices</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ycalc</span><span class="o">.</span><span class="n">LinearAdmittanceMatrices</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the linear admittances</span>
 <span class="sd">        :return:LinearAdmittanceMatrices</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_simulation_indices</span><span class="p">()</span>
 
@@ -1222,10 +1222,10 @@
 <div class="viewcode-block" id="NumericalCircuit.get_reactive_power_limits">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_reactive_power_limits">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_reactive_power_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        compute the reactive power limits in place</span>
 <span class="sd">        :return: Qmax_bus, Qmin_bus in per unit</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># # generators</span>
         <span class="c1"># Qmax_bus = self.generator_data.get_qmax_per_bus()</span>
         <span class="c1"># Qmin_bus = self.generator_data.get_qmin_per_bus()</span>
@@ -1292,11 +1292,11 @@
 <div class="viewcode-block" id="NumericalCircuit.compute_adjacency_matrix">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.compute_adjacency_matrix">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_adjacency_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">consider_hvdc_as_island_links</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the adjacency matrix</span>
 <span class="sd">        :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?</span>
 <span class="sd">        :return: csc_matrix</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">consider_hvdc_as_island_links</span><span class="p">:</span>
 
@@ -1318,16 +1318,31 @@
 
         <span class="n">C</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">coo_matrix</span><span class="p">((</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n_elm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">nbus</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">C</span><span class="p">)</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span></div>
+        <span class="n">adjacency</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">C</span><span class="p">)</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
+        <span class="n">mutual</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">coo_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">Ycoupling3</span><span class="o">.</span><span class="n">tocoo</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mutual</span><span class="o">.</span><span class="n">nnz</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Coupled circuits must be solved together even without a galvanic path.</span>
+            <span class="n">nbranch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">nelm</span>
+            <span class="n">rows</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="p">(</span><span class="n">mutual</span><span class="o">.</span><span class="n">row</span> <span class="o">%</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">nbranch</span><span class="p">))</span> <span class="o">//</span> <span class="mi">4</span>
+            <span class="n">columns</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="p">(</span><span class="n">mutual</span><span class="o">.</span><span class="n">col</span> <span class="o">%</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">nbranch</span><span class="p">))</span> <span class="o">//</span> <span class="mi">4</span>
+            <span class="n">active</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">rows</span><span class="p">]</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">columns</span><span class="p">]</span>
+            <span class="n">links</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">active</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+                 <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">F</span><span class="p">[</span><span class="n">rows</span><span class="p">[</span><span class="n">active</span><span class="p">]],</span> <span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">F</span><span class="p">[</span><span class="n">columns</span><span class="p">[</span><span class="n">active</span><span class="p">]])),</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">adjacency</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="n">adjacency</span> <span class="o">+=</span> <span class="n">links</span> <span class="o">+</span> <span class="n">links</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">adjacency</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="NumericalCircuit.process_reducible_branches">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.process_reducible_branches">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">process_reducible_branches</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Process the reducible branches (i.e. reduce branches like the switches) in-place</span>
 <span class="sd">        :return: Number of reduced branches</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">n_red</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="n">build_reducible_branches_C_coo</span><span class="p">(</span>
             <span class="n">F</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">F</span><span class="p">,</span>
             <span class="n">T</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
@@ -1384,13 +1399,13 @@
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_island">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_island</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                    <span class="n">bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
-                   <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+                   <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"NumericalCircuit"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the island corresponding to the given buses</span>
 <span class="sd">        :param bus_idx: array of bus indices</span>
 <span class="sd">        :param logger: Logger</span>
 <span class="sd">        :return: NumericalCircuit</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
@@ -1482,10 +1497,10 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_common_indices_by_idtag</span><span class="p">(</span><span class="n">idtags_a</span><span class="p">:</span> <span class="n">StrVec</span><span class="p">,</span> <span class="n">idtags_b</span><span class="p">:</span> <span class="n">StrVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get matching indices for the common idtags of two arrays, preserving the</span>
 <span class="sd">        order from the first array.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">idx_by_idtag_b</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">idtag</span><span class="p">):</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">idtag</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idtags_b</span><span class="p">)}</span>
         <span class="n">idx_a</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">idx_b</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -1507,10 +1522,10 @@
                         <span class="n">gen_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                         <span class="n">batt_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                         <span class="n">shunt_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
-                        <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+                        <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"NumericalCircuit"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Slice the numerical circuit using explicit index vectors for each data structure.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
@@ -1562,10 +1577,10 @@
         <span class="n">nc</span><span class="o">.</span><span class="n">consolidate_information</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">nc</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_align_to_common_idtags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nc_2</span><span class="p">:</span> <span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">,</span> <span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_align_to_common_idtags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nc_2</span><span class="p">:</span> <span class="s2">"NumericalCircuit"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">"NumericalCircuit"</span><span class="p">,</span> <span class="s2">"NumericalCircuit"</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Align two numerical circuits to their common element idtags.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">bus_idx_1</span><span class="p">,</span> <span class="n">bus_idx_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_common_indices_by_idtag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span> <span class="n">nc_2</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">idtag</span><span class="p">)</span>
         <span class="n">bus_set_1</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">bus_idx_1</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
         <span class="n">bus_set_2</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">bus_idx_2</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
@@ -1648,14 +1663,14 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">split_into_islands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                            <span class="n">ignore_single_node_islands</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                            <span class="n">consider_hvdc_as_island_links</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                           <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+                           <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">"NumericalCircuit"</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Split circuit into islands</span>
 <span class="sd">        :param ignore_single_node_islands: ignore islands composed of only one bus</span>
 <span class="sd">        :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?</span>
 <span class="sd">        :param logger: Logger</span>
 <span class="sd">        :return: List[NumericCircuit]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
@@ -1681,13 +1696,13 @@
         <span class="k">return</span> <span class="n">circuit_islands</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_compare_strict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nc_2</span><span class="p">:</span> <span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Logger</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compare_strict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nc_2</span><span class="p">:</span> <span class="s2">"NumericalCircuit"</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Logger</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Strict position-based numerical circuit comparison.</span>
 <span class="sd">        :param nc_2: other NumericalCircuit</span>
 <span class="sd">        :param tol: tolerance for numerical values</span>
 <span class="sd">        :return: all ok?, Logger with the errors and warning events</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
@@ -1713,44 +1728,44 @@
         <span class="n">sim_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_simulation_indices</span><span class="p">(</span><span class="n">Sbus</span><span class="o">=</span><span class="n">Sbus</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">bus_types</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
         <span class="n">sim_idx2</span> <span class="o">=</span> <span class="n">nc_2</span><span class="o">.</span><span class="n">get_simulation_indices</span><span class="p">(</span><span class="n">Sbus</span><span class="o">=</span><span class="n">Sbus2</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">bus_types</span><span class="o">=</span><span class="n">nc_2</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
 
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">Sbus</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">Sbus2</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Pbus&#39;</span><span class="p">,</span> <span class="s1">&#39;P&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">Sbus</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">Sbus2</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Qbus&#39;</span><span class="p">,</span> <span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">Sbus</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">Sbus2</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Pbus'</span><span class="p">,</span> <span class="s1">'P'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">Sbus</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">Sbus2</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Qbus'</span><span class="p">,</span> <span class="s1">'Q'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
 
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">sim_idx</span><span class="o">.</span><span class="n">pq</span><span class="p">,</span> <span class="n">sim_idx2</span><span class="o">.</span><span class="n">pq</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Types&#39;</span><span class="p">,</span> <span class="s1">&#39;pq&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">sim_idx</span><span class="o">.</span><span class="n">pv</span><span class="p">,</span> <span class="n">sim_idx2</span><span class="o">.</span><span class="n">pv</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Types&#39;</span><span class="p">,</span> <span class="s1">&#39;pv&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">sim_idx</span><span class="o">.</span><span class="n">vd</span><span class="p">,</span> <span class="n">sim_idx2</span><span class="o">.</span><span class="n">vd</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Types&#39;</span><span class="p">,</span> <span class="s1">&#39;vd&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">sim_idx</span><span class="o">.</span><span class="n">pq</span><span class="p">,</span> <span class="n">sim_idx2</span><span class="o">.</span><span class="n">pq</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Types'</span><span class="p">,</span> <span class="s1">'pq'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">sim_idx</span><span class="o">.</span><span class="n">pv</span><span class="p">,</span> <span class="n">sim_idx2</span><span class="o">.</span><span class="n">pv</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Types'</span><span class="p">,</span> <span class="s1">'pv'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">sim_idx</span><span class="o">.</span><span class="n">vd</span><span class="p">,</span> <span class="n">sim_idx2</span><span class="o">.</span><span class="n">vd</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Types'</span><span class="p">,</span> <span class="s1">'vd'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
 
         <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_connectivity_matrices</span><span class="p">()</span>
         <span class="n">conn2</span> <span class="o">=</span> <span class="n">nc_2</span><span class="o">.</span><span class="n">get_connectivity_matrices</span><span class="p">()</span>
 
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">Cf</span><span class="o">.</span><span class="n">toarray</span><span class="p">(),</span> <span class="n">conn2</span><span class="o">.</span><span class="n">Cf</span><span class="o">.</span><span class="n">toarray</span><span class="p">(),</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Connectivity&#39;</span><span class="p">,</span> <span class="s1">&#39;Cf (dense)&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">Ct</span><span class="o">.</span><span class="n">toarray</span><span class="p">(),</span> <span class="n">conn2</span><span class="o">.</span><span class="n">Ct</span><span class="o">.</span><span class="n">toarray</span><span class="p">(),</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Connectivity&#39;</span><span class="p">,</span> <span class="s1">&#39;Ct (dense)&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">Cf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">conn2</span><span class="o">.</span><span class="n">Cf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Connectivity&#39;</span><span class="p">,</span> <span class="s1">&#39;Cf&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">Ct</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">conn2</span><span class="o">.</span><span class="n">Ct</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Connectivity&#39;</span><span class="p">,</span> <span class="s1">&#39;Ct&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">Cf</span><span class="o">.</span><span class="n">toarray</span><span class="p">(),</span> <span class="n">conn2</span><span class="o">.</span><span class="n">Cf</span><span class="o">.</span><span class="n">toarray</span><span class="p">(),</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Connectivity'</span><span class="p">,</span> <span class="s1">'Cf (dense)'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">Ct</span><span class="o">.</span><span class="n">toarray</span><span class="p">(),</span> <span class="n">conn2</span><span class="o">.</span><span class="n">Ct</span><span class="o">.</span><span class="n">toarray</span><span class="p">(),</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Connectivity'</span><span class="p">,</span> <span class="s1">'Ct (dense)'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">Cf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">conn2</span><span class="o">.</span><span class="n">Cf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Connectivity'</span><span class="p">,</span> <span class="s1">'Cf'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">Ct</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">conn2</span><span class="o">.</span><span class="n">Ct</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Connectivity'</span><span class="p">,</span> <span class="s1">'Ct'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
 
         <span class="n">adm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_admittance_matrices</span><span class="p">()</span>
         <span class="n">adm2</span> <span class="o">=</span> <span class="n">nc_2</span><span class="o">.</span><span class="n">get_admittance_matrices</span><span class="p">()</span>
 
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">adm</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">toarray</span><span class="p">(),</span> <span class="n">adm2</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">toarray</span><span class="p">(),</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Adm.&#39;</span><span class="p">,</span> <span class="s1">&#39;Ybus (dense)&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">adm</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">adm2</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Adm.&#39;</span><span class="p">,</span> <span class="s1">&#39;Ybus (real)&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">adm</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">adm2</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Adm.&#39;</span><span class="p">,</span> <span class="s1">&#39;Ybus (imag)&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">adm</span><span class="o">.</span><span class="n">Yf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">adm2</span><span class="o">.</span><span class="n">Yf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Adm.&#39;</span><span class="p">,</span> <span class="s1">&#39;Yf (real)&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">adm</span><span class="o">.</span><span class="n">Yf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">adm2</span><span class="o">.</span><span class="n">Yf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Adm.&#39;</span><span class="p">,</span> <span class="s1">&#39;Yf (imag)&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">adm</span><span class="o">.</span><span class="n">Yt</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">adm2</span><span class="o">.</span><span class="n">Yt</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Adm.&#39;</span><span class="p">,</span> <span class="s1">&#39;Yt (real)&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">check_arr</span><span class="p">(</span><span class="n">adm</span><span class="o">.</span><span class="n">Yt</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">adm2</span><span class="o">.</span><span class="n">Yt</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;Adm.&#39;</span><span class="p">,</span> <span class="s1">&#39;Yt (imag)&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">adm</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">toarray</span><span class="p">(),</span> <span class="n">adm2</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">toarray</span><span class="p">(),</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Adm.'</span><span class="p">,</span> <span class="s1">'Ybus (dense)'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">adm</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">adm2</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Adm.'</span><span class="p">,</span> <span class="s1">'Ybus (real)'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">adm</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">adm2</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Adm.'</span><span class="p">,</span> <span class="s1">'Ybus (imag)'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">adm</span><span class="o">.</span><span class="n">Yf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">adm2</span><span class="o">.</span><span class="n">Yf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Adm.'</span><span class="p">,</span> <span class="s1">'Yf (real)'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">adm</span><span class="o">.</span><span class="n">Yf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">adm2</span><span class="o">.</span><span class="n">Yf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Adm.'</span><span class="p">,</span> <span class="s1">'Yf (imag)'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">adm</span><span class="o">.</span><span class="n">Yt</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">adm2</span><span class="o">.</span><span class="n">Yt</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Adm.'</span><span class="p">,</span> <span class="s1">'Yt (real)'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">check_arr</span><span class="p">(</span><span class="n">adm</span><span class="o">.</span><span class="n">Yt</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">adm2</span><span class="o">.</span><span class="n">Yt</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'Adm.'</span><span class="p">,</span> <span class="s1">'Yt (imag)'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">logger</span><span class="o">.</span><span class="n">error_count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">logger</span>
 
 <div class="viewcode-block" id="NumericalCircuit.compare">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.compare">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nc_2</span><span class="p">:</span> <span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">by_idtag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Logger</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nc_2</span><span class="p">:</span> <span class="s2">"NumericalCircuit"</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">by_idtag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Logger</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compare this numerical circuit with another numerical circuit.</span>
 <span class="sd">        :param nc_2: other NumericalCircuit</span>
 <span class="sd">        :param tol: tolerance for numerical values</span>
 <span class="sd">        :param by_idtag: comparison mode (if true the comparison is made by idtag instead of by raw shape)</span>
 <span class="sd">        :return: all ok?, Logger with the errors and warning events</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">by_idtag</span><span class="p">:</span>
             <span class="n">nc_1_cmp</span><span class="p">,</span> <span class="n">nc_2_cmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_align_to_common_idtags</span><span class="p">(</span><span class="n">nc_2</span><span class="o">=</span><span class="n">nc_2</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">nc_1_cmp</span><span class="o">.</span><span class="n">_compare_strict</span><span class="p">(</span><span class="n">nc_2</span><span class="o">=</span><span class="n">nc_2_cmp</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
@@ -1759,46 +1774,46 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compare_injection_sums_against</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                                        <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">,</span>
+                                        <span class="n">other</span><span class="p">:</span> <span class="s2">"NumericalCircuit"</span><span class="p">,</span>
                                         <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                         <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span>
                                         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compare electrically relevant total injection sums against another circuit.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">compare_arr</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_power_injections_pu</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
                     <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">get_power_injections_pu</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
-                    <span class="n">tol</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="s1">&#39;sum(Sbus)&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+                    <span class="n">tol</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="s1">'sum(Sbus)'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
         <span class="n">compare_arr</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_current_injections_pu</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
                     <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">get_current_injections_pu</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
-                    <span class="n">tol</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="s1">&#39;sum(Ibus)&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+                    <span class="n">tol</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="s1">'sum(Ibus)'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
         <span class="n">compare_arr</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_admittance_injections_pu</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
                     <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">get_admittance_injections_pu</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
-                    <span class="n">tol</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="s1">&#39;sum(Ybus_load)&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+                    <span class="n">tol</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="s1">'sum(Ybus_load)'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
         <span class="n">compare_arr</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_Yshunt_bus_pu</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
                     <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">get_Yshunt_bus_pu</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
-                    <span class="n">tol</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="s1">&#39;sum(Ybus_shunt)&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+                    <span class="n">tol</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="s1">'sum(Ybus_shunt)'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
 
 <div class="viewcode-block" id="NumericalCircuit.compare_sums">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.compare_sums">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compare_sums</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nc_2</span><span class="p">:</span> <span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Logger</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare_sums</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nc_2</span><span class="p">:</span> <span class="s2">"NumericalCircuit"</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Logger</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compare raw injection sums.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_compare_injection_sums_against</span><span class="p">(</span><span class="n">other</span><span class="o">=</span><span class="n">nc_2</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Injection sums&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compare_injection_sums_against</span><span class="p">(</span><span class="n">other</span><span class="o">=</span><span class="n">nc_2</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'Injection sums'</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">logger</span><span class="o">.</span><span class="n">error_count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">logger</span></div>
 
 
 <div class="viewcode-block" id="NumericalCircuit.get_structural_ntc">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.get_structural_ntc">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_structural_ntc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_a1_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_a2_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the structural NTC</span>
 <span class="sd">        :param bus_a1_idx: array of bus indices of the area from</span>
 <span class="sd">        :param bus_a2_idx: array of bus indices of the area to</span>
 <span class="sd">        :return: structural NTC in MVA</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">sum_ratings</span> <span class="o">=</span> <span class="mf">0.0</span>
 
         <span class="k">for</span> <span class="n">struct</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hvdc_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vsc_data</span><span class="p">]:</span>
@@ -1813,18 +1828,18 @@
 <div class="viewcode-block" id="NumericalCircuit.is_dc">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit.is_dc">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_dc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check if this island is DC</span>
 <span class="sd">        :return: int, str -&gt; 1: all DC, 0: all AC, 2: AC and DC</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">is_dc</span><span class="p">)</span>
         <span class="n">ndc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">is_dc</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="n">ndc</span><span class="p">:</span>
-            <span class="k">return</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;DC&quot;</span>
+            <span class="k">return</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"DC"</span>
         <span class="k">elif</span> <span class="n">ndc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;AC&quot;</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"AC"</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;AC/DC&quot;</span></div>
+            <span class="k">return</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"AC/DC"</span></div>
 </div>
 
 </pre></div>

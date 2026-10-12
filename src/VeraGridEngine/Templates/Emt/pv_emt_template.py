@@ -7,7 +7,12 @@ from __future__ import annotations
 
 from enum import IntEnum
 
-from VeraGridEngine.enumerations import DeviceType, VarPowerFlowReferenceType
+from VeraGridEngine.enumerations import (
+    ConverterControlType,
+    DeviceType,
+    ParamPowerFlowReferenceType,
+    VarPowerFlowReferenceType,
+)
 from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Utils.Symbolic.block import Block, Var, Expr, find_name_in_block
@@ -19,6 +24,7 @@ from VeraGridEngine.Templates.Emt.converter_emt_template import (
     _build_pseudo_emt_converter_outer_loop_block,
     _build_pseudo_emt_converter_inner_loop_block,
     _build_pseudo_emt_converter_transformer_block,
+    _converter_control_type_code,
 )
 
 
@@ -53,6 +59,14 @@ def _find_block_var(block: Block, var_name: str) -> Var:
     if result is None:
         raise ValueError(f"Variable {var_name} not found in block {block.name}")
     return result
+
+
+def _find_event_parameter(block: Block, var_name: str) -> Var:
+    """Return one runtime parameter declared directly by ``block``."""
+    for parameter in block.event_dict:
+        if parameter.name == var_name:
+            return parameter
+    raise ValueError(f"Event parameter {var_name} not found in block {block.name}")
 
 
 class PvEmtModelLevel(IntEnum):
@@ -94,6 +108,16 @@ def _build_converter_blocks(vf: VarFactory, name: str) -> tuple[Block, Block, Bl
     outer_loop_block: Block = _build_pseudo_emt_converter_outer_loop_block(vf=vf, name=name)
     inner_loop_block: Block = _build_pseudo_emt_converter_inner_loop_block(vf=vf, name=name)
     transformer_block: Block = _build_pseudo_emt_converter_transformer_block(vf=vf, name=name)
+
+    # A PV generator is a Pac/Qac-controlled converter by construction.  Keep
+    # this configuration in the reusable model instead of requiring every
+    # runner to rewrite the imported converter's generic Vdc/Qac defaults.
+    vsc_block.event_dict[vsc_block.api_obj_mapping[ParamPowerFlowReferenceType.converter_control_mode_1]] = vf.add_const(
+        float(_converter_control_type_code(ConverterControlType.Pac))
+    )
+    vsc_block.event_dict[vsc_block.api_obj_mapping[ParamPowerFlowReferenceType.converter_control_mode_2]] = vf.add_const(
+        float(_converter_control_type_code(ConverterControlType.Qac))
+    )
 
     return vsc_block, pll_block, outer_loop_block, inner_loop_block, transformer_block
 
@@ -224,13 +248,13 @@ def _connect_imported_converter_blocks(
         outer_loop_block.in_vars[9:25],
         [
             vsc_sbase, vsc_P_ref, vsc_Q_ref, vsc_Vdc_ref, vsc_Vpk,
-            vsc_i_max, vsc_vdc_kp, vsc_vdc_ki, vsc_q_kp, vsc_q_ki,
-            vsc_P_loss, vsc_tau_meas, vsc_aw_gain, vsc_regulate_vdc, vsc_regulate_q, vsc_regulate_active,
+            vsc_P_loss, vsc_vdc_kp, vsc_vdc_ki, vsc_q_kp, vsc_q_ki,
+            vsc_i_max, vsc_tau_meas, vsc_aw_gain, vsc_regulate_vdc, vsc_regulate_q, vsc_regulate_active,
         ],
     )
     for offset, out_var in enumerate([vsc_sbase, vsc_P_ref, vsc_Q_ref, vsc_Vdc_ref, vsc_Vpk,
-                                      vsc_i_max, vsc_vdc_kp, vsc_vdc_ki, vsc_q_kp, vsc_q_ki,
-                                      vsc_P_loss, vsc_tau_meas, vsc_aw_gain, vsc_regulate_vdc, vsc_regulate_q, vsc_regulate_active]):
+                                      vsc_P_loss, vsc_vdc_kp, vsc_vdc_ki, vsc_q_kp, vsc_q_ki,
+                                      vsc_i_max, vsc_tau_meas, vsc_aw_gain, vsc_regulate_vdc, vsc_regulate_q, vsc_regulate_active]):
         _tag_connected_pair(vf, out_var, outer_loop_block.in_vars[9 + offset], f"{name}_outer_aux_{offset}")
     vf.add_connections(
         [inner_loop_block.in_vars[6], inner_loop_block.in_vars[7], inner_loop_block.in_vars[8], inner_loop_block.in_vars[9]],
@@ -321,7 +345,7 @@ def _build_level1_pv_availability_block(vf: VarFactory, name: str) -> Block:
     t_ref = vf.add_var(name=f"t_ref_l1")
     temp_coeff_p = vf.add_var(name=f"temp_coeff_p_l1")
     t_mppt = vf.add_var(name=f"t_mppt_l1")
-    v_dc_ref = vf.add_var(name=f"v_dc_ref_l1")
+    v_dc_ref = vf.add_var(name=f"v_dc_ref_l1", shared_reference="Vdc_nom_reference")
     r_pv = vf.add_var(name=f"r_pv_l1")
     k_pv_power = vf.add_var(name=f"k_pv_power_l1")
     k_vdc_ctrl = vf.add_var(name=f"k_vdc_ctrl_l1")
@@ -355,11 +379,10 @@ def _build_level1_pv_availability_block(vf: VarFactory, name: str) -> Block:
             # PV-side DC sign convention:
             # * positive ``p_pv`` means PV power delivered to the converter,
             # * positive ``i_pv`` would mean source current delivered to the
-            #   converter, but the imported pseudo-EMT converter reports the
-            #   same terminal current with the opposite sign during export.
-            # Therefore exported PV operation uses ``i_pv < 0`` and ``i_dc > 0``
-            # or equivalently ``i_pv + i_dc = 0`` at the shared internal port.
-            i_pv + i_dc,
+            #   converter. The imported pseudo-EMT converter uses the same
+            #   terminal-current orientation, so both currents are negative
+            #   during export and must be equal at the shared internal port.
+            i_pv - i_dc,
             p_pv + v_dc_bus * i_pv,
             # The Level-1 source is a Thevenin-like PV equivalent around one
             # MPPT operating voltage. A power droop term drives the delivered
@@ -375,18 +398,18 @@ def _build_level1_pv_availability_block(vf: VarFactory, name: str) -> Block:
             p_curt - sym.max(p_avail - mppt_limited_power, c0),
         ],
         algebraic_vars=[v_dc_bus, p_avail, p_pv, i_pv, v_oc, p_curt],
+        parameters={p_rated: vf.add_const(None)},
         event_dict={
-            p_rated: vf.add_const(1.0),
             irradiance: vf.add_const(1000.0),
             irradiance_ref: vf.add_const(1000.0),
             t_cell: vf.add_const(25.0),
             t_ref: vf.add_const(25.0),
-            temp_coeff_p: vf.add_const(-0.004),
-            t_mppt: vf.add_const(0.20),
+            temp_coeff_p: vf.add_const(0.0),
+            t_mppt: vf.add_const(0.05),
             v_dc_ref: vf.add_const(1.0),
-            r_pv: vf.add_const(0.02),
-            k_pv_power: vf.add_const(10.0),
-            k_vdc_ctrl: vf.add_const(1.0),
+            r_pv: vf.add_const(0.0),
+            k_pv_power: vf.add_const(2.0),
+            k_vdc_ctrl: vf.add_const(0.0),
         },
         init_eqs={
             p_avail: p_avail_expr,
@@ -401,6 +424,7 @@ def _build_level1_pv_availability_block(vf: VarFactory, name: str) -> Block:
         in_vars=[i_dc, v_dc_ctrl],
         out_vars=[v_dc_bus, p_mppt],
         name=f"{name}_pv_level1",
+        api_obj_mapping={ParamPowerFlowReferenceType.pv_rated_power_pu: p_rated},
     )
 
 
@@ -459,13 +483,18 @@ def get_pv_avm_grid_following_emt_template(
     v_B: Var = vf.add_var(name=f"v_B", reference=VarPowerFlowReferenceType.v_B)
     v_C: Var = vf.add_var(name=f"v_C", reference=VarPowerFlowReferenceType.v_C)
 
-    vsc_block: Block = _build_pseudo_emt_converter_vsc_block(vf=vf, name=name)
-    pll_block: Block = _build_pseudo_emt_converter_pll_block(vf=vf, name=name)
-    outer_loop_block: Block = _build_pseudo_emt_converter_outer_loop_block(vf=vf, name=name)
-    inner_loop_block: Block = _build_pseudo_emt_converter_inner_loop_block(vf=vf, name=name)
-    transformer_block: Block = _build_pseudo_emt_converter_transformer_block(vf=vf, name=name)
-
+    vsc_block, pll_block, outer_loop_block, inner_loop_block, transformer_block = _build_converter_blocks(
+        vf=vf,
+        name=name,
+    )
     pv_block: Block = _build_level1_pv_availability_block(vf=vf, name=name)
+
+    # AC power flow contains no DC voltage. Use the PV reference as the one
+    # model-owned DC nominal value and connect the imported VSC to it.
+    vf.add_connections(
+        [_find_event_parameter(vsc_block, "Vdc_nom")],
+        [_find_event_parameter(pv_block, "v_dc_ref_l1")],
+    )
 
     _connect_imported_converter_blocks(
         vf=vf,
@@ -505,7 +534,14 @@ def get_pv_avm_grid_following_emt_template(
         VarPowerFlowReferenceType.Vpk: vsc_block.out_vars[10],
     }
 
-    templ.block.api_obj_mapping = dict(vsc_block.api_obj_mapping)
+    # The controller targets are owned by the VSC child. Publish the generator
+    # sharing aliases there so recursive mapping does not require root copies.
+    vsc_block.api_obj_mapping[ParamPowerFlowReferenceType.generator_share_p_ref] = (
+        vsc_block.api_obj_mapping[ParamPowerFlowReferenceType.converter_control_target_1]
+    )
+    vsc_block.api_obj_mapping[ParamPowerFlowReferenceType.generator_share_q_ref] = (
+        vsc_block.api_obj_mapping[ParamPowerFlowReferenceType.converter_control_target_2]
+    )
 
     return templ
 
@@ -772,8 +808,6 @@ def get_pv_avm_boost_grid_following_emt_template(
         VarPowerFlowReferenceType.phi_v: vsc_block.out_vars[9],
         VarPowerFlowReferenceType.Vpk: vsc_block.out_vars[10],
     }
-
-    templ.block.api_obj_mapping = dict(vsc_block.api_obj_mapping)
 
     return templ
 

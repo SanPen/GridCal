@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎢 Cascading &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>🎢 Cascading &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -231,7 +231,7 @@ critical but not necessarily dominated by one obvious branch overload.</p></li>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.power_flow_options</span><span class="w"> </span><span class="kn">import</span> <span class="n">PowerFlowOptions</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.Reliability.blackout_driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">CascadingDriver</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;my_grid.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"my_grid.veragrid"</span><span class="p">)</span>
 
 <span class="n">drv</span> <span class="o">=</span> <span class="n">CascadingDriver</span><span class="p">(</span>
     <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
@@ -245,8 +245,8 @@ critical but not necessarily dominated by one obvious branch overload.</p></li>
 <span class="n">results</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">results</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">get_table</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed branch indices:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">get_failed_idx</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of cascade steps:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">events</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Failed branch indices:"</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">get_failed_idx</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Number of cascade steps:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">events</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Using the Latin Hypercube mode:</p>
@@ -255,7 +255,7 @@ critical but not necessarily dominated by one obvious branch overload.</p></li>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.power_flow_options</span><span class="w"> </span><span class="kn">import</span> <span class="n">PowerFlowOptions</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.Reliability.blackout_driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">CascadingDriver</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;my_grid.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"my_grid.veragrid"</span><span class="p">)</span>
 
 <span class="n">drv</span> <span class="o">=</span> <span class="n">CascadingDriver</span><span class="p">(</span>
     <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
@@ -274,7 +274,7 @@ critical but not necessarily dominated by one obvious branch overload.</p></li>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.power_flow_options</span><span class="w"> </span><span class="kn">import</span> <span class="n">PowerFlowOptions</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.Reliability.blackout_driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">CascadingDriver</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;my_grid.veragrid&quot;</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"my_grid.veragrid"</span><span class="p">)</span>
 
 <span class="n">drv</span> <span class="o">=</span> <span class="n">CascadingDriver</span><span class="p">(</span>
     <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>

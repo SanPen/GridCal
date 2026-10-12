@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ValidationSectionDialog</class>
+ <widget class="QDialog" name="ValidationSectionDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>920</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>700</width>
+    <height>420</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Model Consistency Validation</string>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="spacing"><number>6</number></property>
+   <property name="leftMargin"><number>6</number></property>
+   <property name="topMargin"><number>6</number></property>
+   <property name="rightMargin"><number>6</number></property>
+   <property name="bottomMargin"><number>6</number></property>
+   <item>
+    <widget class="QLabel" name="introLabel">
+     <property name="text">
+      <string>Check the edited model's equation counts, variable names, parameter mappings, and variable initialization. This report is informational and does not block saving the model.</string>
+     </property>
+     <property name="wordWrap"><bool>true</bool></property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="summaryFilterLayout">
+     <property name="spacing"><number>6</number></property>
+     <item>
+      <widget class="QLabel" name="summaryLabel">
+       <property name="font"><font><bold>true</bold></font></property>
+       <property name="text"><string/></property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="summaryHorizontalSpacer">
+       <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+       <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="filterLabel">
+       <property name="text"><string>Show:</string></property>
+       <property name="buddy"><cstring>resultsFilterComboBox</cstring></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="resultsFilterComboBox">
+       <property name="minimumSize"><size><width>220</width><height>0</height></size></property>
+       <property name="toolTip"><string>Filter validation results by check</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QTableView" name="resultsTableView">
+     <property name="minimumSize"><size><width>0</width><height>220</height></size></property>
+     <property name="alternatingRowColors"><bool>true</bool></property>
+     <property name="selectionMode"><enum>QAbstractItemView::SelectionMode::SingleSelection</enum></property>
+     <property name="selectionBehavior"><enum>QAbstractItemView::SelectionBehavior::SelectRows</enum></property>
+     <property name="editTriggers"><set>QAbstractItemView::EditTrigger::NoEditTriggers</set></property>
+     <property name="wordWrap"><bool>true</bool></property>
+     <attribute name="horizontalHeaderStretchLastSection"><bool>true</bool></attribute>
+     <attribute name="verticalHeaderVisible"><bool>false</bool></attribute>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="emptyStateLabel">
+     <property name="visible"><bool>false</bool></property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch><verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text"><string>No validation results match this filter.</string></property>
+     <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+     <property name="wordWrap"><bool>true</bool></property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <property name="spacing"><number>6</number></property>
+     <item>
+      <widget class="QPushButton" name="showIssuesButton">
+       <property name="toolTip"><string>Show issues in the model</string></property>
+       <property name="text"><string>Show Issues</string></property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="buttonHorizontalSpacer">
+       <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+       <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+       <property name="standardButtons"><set>QDialogButtonBox::StandardButton::Ok</set></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>ValidationSectionDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel"><x>838</x><y>575</y></hint>
+    <hint type="destinationlabel"><x>459</x><y>299</y></hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

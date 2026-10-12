@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gc
 import sys
 
 import pytest
@@ -18,6 +19,7 @@ from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties import (
     BlockSymbolDraftRow,
     DynamicBlockPropertiesDialog,
 )
+from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.add_symbol_dialog import AddSymbolSelection
 import VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor as dynamic_block_editor
 import VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_graphics as graph
 import VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_models as dialog_models
@@ -362,8 +364,24 @@ def _dispose_editor(editor: DynamicBlockEditorGUI) -> None:
     :param editor: Editor instance to release.
     :return: None.
     """
+    app: QtWidgets.QApplication = _get_app()
+
+    # Release the editor-owned models and graphics objects before detaching the
+    # top-level widget, matching the ordering used by production editor tabs.
     editor.prepare_to_delete()
     editor.close()
+    editor.setParent(None)
+    editor.deleteLater()
+
+    # Complete every deferred Qt deletion while the application and the test's
+    # Python wrappers are still alive. This prevents a later test allocation
+    # from triggering garbage collection over a half-destroyed QObject tree.
+    QtCore.QCoreApplication.sendPostedEvents(
+        None,
+        QtCore.QEvent.Type.DeferredDelete,
+    )
+    app.processEvents()
+    gc.collect()
 
 
 def _build_phase_bus_block(name: str,
@@ -1105,9 +1123,17 @@ def test_adding_input_from_properties_rebuilds_the_visible_block_port() -> None:
             var_factory=editor.var_factory,
         )
         dialogue.blockApplied.connect(editor.on_block_properties_applied)
-        dialogue._add_symbol_ui.new_symbol_name.setText("additional_input")
-        dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.INPUT.value)
-        dialogue.add_staged_symbol()
+        add_selection: AddSymbolSelection = AddSymbolSelection(
+            owner=generic_block,
+            name="additional_input",
+            kind=BlockSymbolKind.INPUT,
+            exported=False,
+            value=0.0,
+            create_derivative=False,
+            external_reference=None,
+            static_reference=None,
+        )
+        dialogue._stage_add_symbol_selection(selection=add_selection)
 
         dialogue.apply_changes()
         dialogue = None

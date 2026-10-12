@@ -13,10 +13,9 @@ import zipfile
 
 import pytest
 
-from VeraGridEngine.IO.fmu.importer.bindings import FmuImportConfig
-from VeraGridEngine.IO.fmu.importer.errors import FmuModeError
-from VeraGridEngine.IO.fmu.importer.inspection import FmuInspectionReceipt, inspect_fmu
-from VeraGridEngine.IO.fmu.importer.native_binary import (
+from VeraGridEngine.IO.fmu.Elements.bindings import FmuImportConfig
+from VeraGridEngine.IO.fmu.Elements.inspection import FmuInspectionReceipt, inspect_fmu
+from VeraGridEngine.IO.fmu.native_binary import (
     _resolve_legacy_host_binary,
     _resolve_fmi_three_binary_platform,
     resolve_fmi_three_host_binary,
@@ -24,8 +23,8 @@ from VeraGridEngine.IO.fmu.importer.native_binary import (
     validate_fmi_two_native_binary,
     validate_native_binary,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_host import open_fmu_runtime_host
-from VeraGridEngine.IO.fmu.importer.staging import FmuStagingArea, stage_fmu_source
+from VeraGridEngine.IO.fmu.host import open_fmu_runtime_host
+from VeraGridEngine.IO.fmu.staging import FmuStagingArea, stage_fmu_source
 from VeraGridEngine.enumerations import FmiVersion
 
 
@@ -255,13 +254,13 @@ def test_fmi_three_platform_matrix_rejects_unknown_identity() -> None:
     :return: None.
     """
 
-    with pytest.raises(FmuModeError, match="host architecture 'riscv64'"):
+    with pytest.raises(RuntimeError, match="host architecture 'riscv64'"):
         _resolve_fmi_three_binary_platform(
             machine_name="riscv64",
             is_32_bit_process=False,
             python_platform_name="linux",
         )
-    with pytest.raises(FmuModeError, match="host platform 'freebsd14'"):
+    with pytest.raises(RuntimeError, match="host platform 'freebsd14'"):
         _resolve_fmi_three_binary_platform(
             machine_name="x86_64",
             is_32_bit_process=False,
@@ -328,7 +327,7 @@ def test_fmi_three_noncanonical_main_binary_locations_fail_closed(
             tmp_path / f"fmi3-invalid-{invalid_index}.fmu",
             (invalid_entry,),
         )
-        with pytest.raises(FmuModeError, match="required current-host binary"):
+        with pytest.raises(RuntimeError, match="required current-host binary"):
             validate_fmi_three_native_binary(_inspect_receipt(source), "NativeModel")
 
 
@@ -347,7 +346,7 @@ def test_fmi_three_source_only_archive_reports_unconnected_compilation(
         include_sources=True,
     )
 
-    with pytest.raises(FmuModeError, match="source compilation is not connected"):
+    with pytest.raises(RuntimeError, match="source compilation is not connected"):
         validate_fmi_three_native_binary(_inspect_receipt(source), "NativeModel")
 
 
@@ -367,7 +366,7 @@ def test_fmi_three_nested_model_identifier_fails_closed(tmp_path: Path) -> None:
         model_identifier="nested/NativeModel",
     )
 
-    with pytest.raises(FmuModeError, match="required current-host binary"):
+    with pytest.raises(RuntimeError, match="required current-host binary"):
         validate_fmi_three_native_binary(
             _inspect_receipt(source),
             "nested/NativeModel",
@@ -397,7 +396,7 @@ def test_fmi_three_execution_gate_blocks_before_native_preflight_and_staging(
         extraction_root=staging_parent,
     )
 
-    with pytest.raises(FmuModeError, match="supports FMI 1/2 execution only"):
+    with pytest.raises(RuntimeError, match="supports FMI 1/2 execution only"):
         open_fmu_runtime_host(config)
     assert tuple(staging_parent.glob("veragrid_fmu_stage_*")) == tuple()
 
@@ -473,7 +472,7 @@ def test_noncanonical_main_binary_locations_fail_closed(tmp_path: Path) -> None:
             tmp_path / f"invalid-{invalid_index}.fmu",
             (invalid_entry,),
         )
-        with pytest.raises(FmuModeError, match="required current-host binary"):
+        with pytest.raises(RuntimeError, match="required current-host binary"):
             validate_fmi_two_native_binary(_inspect_receipt(source), "NativeModel")
 
 
@@ -490,7 +489,7 @@ def test_source_only_archive_reports_unconnected_compilation(tmp_path: Path) -> 
         include_sources=True,
     )
 
-    with pytest.raises(FmuModeError, match="source compilation is not connected"):
+    with pytest.raises(RuntimeError, match="source compilation is not connected"):
         validate_fmi_two_native_binary(_inspect_receipt(source), "NativeModel")
 
 
@@ -503,7 +502,7 @@ def test_archive_without_binary_or_sources_reports_missing_runtime(tmp_path: Pat
 
     source: Path = _write_fmi_two_archive(tmp_path / "metadata-only.fmu", tuple())
 
-    with pytest.raises(FmuModeError, match="required current-host binary"):
+    with pytest.raises(RuntimeError, match="required current-host binary"):
         validate_fmi_two_native_binary(_inspect_receipt(source), "NativeModel")
 
 
@@ -572,7 +571,7 @@ def test_nested_model_identifier_fails_before_creating_staging(tmp_path: Path) -
         extraction_root=staging_parent,
     )
 
-    with pytest.raises(FmuModeError, match="required current-host binary"):
+    with pytest.raises(RuntimeError, match="required current-host binary"):
         open_fmu_runtime_host(config)
     assert tuple(staging_parent.glob("veragrid_fmu_stage_*")) == tuple()
     assert sentinel.read_text(encoding="utf-8") == "caller-owned"

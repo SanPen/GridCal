@@ -17,9 +17,11 @@ Architectural rules applied:
 - No dynamic reflection (no hasattr, no getattr).
 - Deterministic memory footprint via __slots__.
 """
+from __future__ import annotations
+
 import re
 import xml.etree.ElementTree as Element_tree
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from pathlib import Path
 
 # VeraGrid Engine Imports
@@ -439,16 +441,15 @@ class ModelicaXMLParser:
                         pass
 
                 # 2. Fallback for 'when initial()' without a condition tag
-                if cond_expr is None:
-                    cond_expr = Var("INITIALIZATION_EVENT")
+                cond_expr2: Expr = Var("INITIALIZATION_EVENT") if cond_expr is None else cond_expr
 
                 # 3. Store it in the event dictionary
                 if statements:
-                    if self.when_equations.get(cond_expr, None) is None:
-                        self.when_equations[cond_expr] = list()
+                    if self.when_equations.get(cond_expr2, None) is None:
+                        self.when_equations[cond_expr2] = list()
                     else:
                         pass
-                    self.when_equations[cond_expr].extend(statements)
+                    self.when_equations[cond_expr2].extend(statements)
                 else:
                     pass
 
@@ -503,7 +504,7 @@ class ModelicaXMLParser:
         else:
             pass
 
-        match tag:
+        match tag:  # TODO: probably too new
             # ---------------------------------------------------------
             # Terminals (Variables, Constants, Arrays)
             # ---------------------------------------------------------
@@ -578,7 +579,7 @@ class ModelicaXMLParser:
                     left: Expr = self._parse_ast_node(children[0])
                     right: Expr = self._parse_ast_node(children[1])
 
-                    match tag:
+                    match tag:  # TODO: probably too new
                         case "add":
                             return left + right
                         case "sub":

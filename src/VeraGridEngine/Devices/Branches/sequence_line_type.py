@@ -296,91 +296,81 @@ class SequenceLineType(DynamicDevice):
         self.capex = float(capex)
         self.opex = float(opex)
 
-    def get_values(self, Sbase: float, freq: float, length: float, line_Vnom: float,
-                   logger: Logger = Logger(), decimals_rounding: int = 6):
-        """
-        Get the per-unit values
-        :param Sbase: Base power (MVA, always use 100MVA)
-        :param freq: Frequency (Hz)
-        :param length: length in km
-        :param line_Vnom: Line nominal voltage
-        :param logger: Logger instance
-        :param decimals_rounding: Number of decimal digits to display
-        :return: R (p.u.), x(p.u.), B(p.u.), Rate (MVA)
-        """
-
-        if self.use_conductance:
-            R, X, B, rate = get_line_impedances_with_c(r_ohm=self.R,
-                                                       x_ohm=self.X,
-                                                       c_nf=self.Cnf,
-                                                       length=length,
-                                                       Imax=self.Imax,
-                                                       freq=freq,
-                                                       Sbase=Sbase,
-                                                       Vnom=line_Vnom,
-                                                       logger=logger,
-                                                       decimals_rounding=decimals_rounding)
-
-            R0, X0, B0, _ = get_line_impedances_with_c(r_ohm=self.R0,
-                                                       x_ohm=self.X0,
-                                                       c_nf=self.Cnf0,
-                                                       length=length,
-                                                       Imax=self.Imax,
-                                                       freq=freq,
-                                                       Sbase=Sbase,
-                                                       Vnom=line_Vnom,
-                                                       logger=logger,
-                                                       decimals_rounding=decimals_rounding)
-        else:
-            R, X, B, rate = get_line_impedances_with_b(r_ohm=self.R,
-                                                       x_ohm=self.X,
-                                                       b_us=self.B,
-                                                       length=length,
-                                                       Imax=self.Imax,
-                                                       Sbase=Sbase,
-                                                       Vnom=line_Vnom,
-                                                       decimals_rounding=decimals_rounding)
-
-            R0, X0, B0, _ = get_line_impedances_with_b(r_ohm=self.R0,
-                                                       x_ohm=self.X0,
-                                                       b_us=self.B0,
-                                                       length=length,
-                                                       Imax=self.Imax,
-                                                       Sbase=Sbase,
-                                                       Vnom=line_Vnom,
-                                                       decimals_rounding=decimals_rounding)
-
-        return R, X, B, R0, X0, B0, rate
-
-    def get_conductance_values(
-            self,
+    def get_values(
+            self: "SequenceLineType",
             Sbase: float,
+            freq: float,
             length: float,
             line_Vnom: float,
+            logger: Logger = Logger(),
             decimals_rounding: int = 6,
-    ) -> Tuple[float, float]:
-        """Convert sequence conductance per length to total per-unit values.
-
-        :param Sbase: System base power in MVA.
-        :param length: Physical line length in km.
-        :param line_Vnom: Line-to-line nominal voltage in kV.
-        :param decimals_rounding: Number of decimal digits retained.
-        :return: Positive- and zero-sequence total conductance in p.u.
+    ) -> Tuple[float, float, float, float, float, float, float, float, float]:
         """
+        Get the total per-unit sequence line values.
+
+        :param Sbase: Base power (MVA).
+        :param freq: Frequency (Hz).
+        :param length: Line length (km).
+        :param line_Vnom: Line-to-line nominal voltage (kV).
+        :param logger: Logger instance.
+        :param decimals_rounding: Number of decimal digits to retain.
+        :return: R, X, B, G, R0, X0, B0, G0 (p.u.) and rate (MVA).
+        """
+        r_pu: float
+        x_pu: float
+        b_pu: float
+        r0_pu: float
+        x0_pu: float
+        b0_pu: float
+        rate_mva: float
+        _zero_rate_mva: float
+
+        # Preserve the established series and charging conversion for each input mode.
+        if self.use_conductance:
+            r_pu, x_pu, b_pu, rate_mva = get_line_impedances_with_c(
+                r_ohm=self.R, x_ohm=self.X, c_nf=self.Cnf, length=length,
+                Imax=self.Imax, freq=freq, Sbase=Sbase, Vnom=line_Vnom,
+                logger=logger, decimals_rounding=decimals_rounding,
+            )
+            r0_pu, x0_pu, b0_pu, _zero_rate_mva = get_line_impedances_with_c(
+                r_ohm=self.R0, x_ohm=self.X0, c_nf=self.Cnf0, length=length,
+                Imax=self.Imax, freq=freq, Sbase=Sbase, Vnom=line_Vnom,
+                logger=logger, decimals_rounding=decimals_rounding,
+            )
+        else:
+            r_pu, x_pu, b_pu, rate_mva = get_line_impedances_with_b(
+                r_ohm=self.R, x_ohm=self.X, b_us=self.B, length=length,
+                Imax=self.Imax, Sbase=Sbase, Vnom=line_Vnom,
+                decimals_rounding=decimals_rounding,
+            )
+            r0_pu, x0_pu, b0_pu, _zero_rate_mva = get_line_impedances_with_b(
+                r_ohm=self.R0, x_ohm=self.X0, b_us=self.B0, length=length,
+                Imax=self.Imax, Sbase=Sbase, Vnom=line_Vnom,
+                decimals_rounding=decimals_rounding,
+            )
+
+        # Conductance is independent of the charging input mode. Keep its existing
+        # length/base scaling, rounding and guard in this single conversion owner.
+        g_pu: float
+        g0_pu: float
         if line_Vnom > 0.0 and Sbase > 0.0:
             impedance_base_ohm: float = line_Vnom * line_Vnom / Sbase
-            positive_conductance: float = float(np.round(
+            g_pu = float(np.round(
                 self.G * 1.0e-6 * length * impedance_base_ohm,
                 decimals_rounding,
             ))
-            zero_conductance: float = float(np.round(
+            g0_pu = float(np.round(
                 self.G0 * 1.0e-6 * length * impedance_base_ohm,
                 decimals_rounding,
             ))
         else:
-            positive_conductance = 0.0
-            zero_conductance = 0.0
-        return positive_conductance, zero_conductance
+            g_pu = 0.0
+            g0_pu = 0.0
+
+        return (
+            float(r_pu), float(x_pu), float(b_pu), g_pu,
+            float(r0_pu), float(x0_pu), float(b0_pu), g0_pu, float(rate_mva),
+        )
 
     @property
     def z_nabc(self) -> np.ndarray:
@@ -435,23 +425,29 @@ class SequenceLineType(DynamicDevice):
 
     def get_ysh_nabc(self) -> AdmittanceMatrix:
         """
-        get the 3x3 shunt admittance matrix from the sequence values
-        :return AdmittanceMatrix
+        Embed the sequence shunt admittances in the stored NABC matrix.
+
+        The susceptance-input path retains conductance in the same stored units.
+
+        :return: Four-terminal admittance matrix with the ABC shunt block.
         """
+        y1: complex
+        y0: complex
         if self.use_conductance:
             y1 = 1 / (1j * 2 * np.pi * 50 * self.Cnf / 10 ** 9 + 1e-20)
             y0 = 1 / (1j * 2 * np.pi * 50 * self.Cnf0 / 10 ** 9 + 1e-20)
         else:
-            y1 = 1j * self.B
-            y0 = 1j * self.B0
+            # Retain physical losses when translating sequence shunts to phases.
+            y1 = complex(self.G, self.B)
+            y0 = complex(self.G0, self.B0)
 
-        diag = (2.0 * y1 + y0) / 3.0
-        off_diag = (y0 - y1) / 3.0
+        diag: complex = (2.0 * y1 + y0) / 3.0
+        off_diag: complex = (y0 - y1) / 3.0
 
-        y_abc = np.full((3, 3), off_diag)
+        y_abc: np.ndarray = np.full((3, 3), off_diag)
         np.fill_diagonal(y_abc, diag)
 
-        adm = AdmittanceMatrix(size=4)
+        adm: AdmittanceMatrix = AdmittanceMatrix(size=4)
         adm.values[1:4, 1:4] = y_abc
 
         adm.phN = False

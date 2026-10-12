@@ -599,7 +599,8 @@ class PulpLpModel(AbstractLpModel):
             return 0.0
 
         if isinstance(x, LpCst):
-            return x.pi
+            # Unsolved models and integer solves may have no row dual.
+            return float(x.pi) if x.pi is not None else 0.0
         elif isinstance(x, float):
             return x
         else:

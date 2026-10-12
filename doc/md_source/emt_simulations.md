@@ -1,296 +1,200 @@
 # 🔬 EMT simulations
 
-Electromagnetic transient (EMT) simulation is VeraGrid's waveform-domain dynamic-simulation workflow for fast electrical phenomena. It is used when the study requires instantaneous voltages and currents, explicit switching behaviour, or phase-domain detail that cannot be represented accurately in RMS simulation.
-
-Compared with RMS, EMT provides much higher electromagnetic fidelity at a significantly higher computational cost.
-
-The settled periodic trajectories produced by the EMT model can also be assessed with VeraGrid's Floquet Small-Signal analysis.
+Electromagnetic transient (EMT) simulation is VeraGrid's instantaneous phase-domain workflow. It resolves voltages and currents through time and is intended for phenomena that cannot be represented adequately by fundamental-frequency phasors.
 
 ```{toctree}
 :maxdepth: 1
 
-small_signal_stability_emt
+EMT_practical_session
 ```
 
-## When to use EMT simulation
+## When to use EMT
 
-Use EMT simulation when the study objective is mainly related to:
+EMT is appropriate for:
 
-- switching transients,
-- waveform distortion,
-- converter inner-loop interactions,
-- protection-driven discontinuities,
-- detailed line or transformer transients,
-- phase-domain and unbalanced systems,
-- fast control interactions that RMS cannot represent reliably.
+- switching and protection-driven transients;
+- converter inner-loop and modulation interactions;
+- detailed line or transformer transients;
+- phase-domain and unbalanced behaviour;
+- fast control interactions and waveform distortion.
 
-If the main interest is electromechanical or controller-level behaviour, use [RMS simulations](rms_simulations.md) instead.
+Use [RMS simulation](rms_simulations.md) when the main interest is electromechanical or outer-control behaviour. The shared DAE and initialization concepts are described in [Dynamic simulation theory](dynamic_theory.md).
 
-## EMT workflow in VeraGrid
+## EMT workflow
 
-In VeraGrid, an EMT simulation is built from:
+1. Build or import the static network.
+2. Run and inspect the required power-flow operating point.
+3. Assign saved EMT models to the participating devices.
+4. Create at least one EMT event group; an empty group represents the base case.
+5. Add optional step or ramp events.
+6. Prepare persistent plot groups if required.
+7. Configure the EMT settings and run the simulation.
+8. Check initialization, convergence, and phase-domain trajectories for every scenario.
 
-- a static network model,
-- a consistent operating point used for initialization,
-- EMT dynamic models assigned to the relevant devices,
-- optional EMT events,
-- one initialization workflow, one integration method, and one solver backend.
+## Settings available in the GUI
 
-The practical EMT workflow is:
+The EMT settings panel exposes the following controls:
 
-1. Build or import the grid model.
-2. Run a static study to obtain a consistent operating point.
-3. Assign EMT models to the devices that need waveform-level representation.
-4. Configure EMT events such as switching or parameter changes.
-5. Select EMT options such as total simulation time, time step, tolerance, solver type, and initialization method.
-6. Run the simulation and inspect voltages, currents, state variables, and event responses.
+| GUI control | Available values or meaning |
+|---|---|
+| Time step | Interval between integration samples |
+| Simulation time | End time of the study |
+| Tolerance | Numerical convergence tolerance, entered as an exponent in the GUI |
+| Integration method | `DAE_Trapezoidal`, `DAE_BackEuler`, or `DAE_bdf2` |
+| Initialization method | `Explicit`, `ConsistentNewton`, `PseudoTransient`, or `Auto` |
+| Solver type | `symbolic`, `structuralAD`, `structuralCompiled`, or `automatic` |
+| Problem type | `CurrentBalance` |
 
-## EMT settings
+`CurrentBalance` is the single EMT formulation currently presented to the user. The API uses the same core choices through `EmtOptions`.
 
-The EMT workflow is driven through `EmtOptions` and `EmtSimulationDriver`.
+EMT time steps are often in the microsecond range, but the correct value depends on the fastest electrical or control phenomenon. Confirm sensitive results with a smaller time step.
 
-The main user-facing `EmtOptions` fields are:
+## Events
 
-- `solver_type`: EMT backend to use.
-- `integration_method`: the standard workflow uses `DynamicIntegrationMethod.DaeTrapezoidal`.
-- `initialization_method`: EMT initialization workflow.
-- `problem_type`: internal EMT formulation.
-- `time_step`: EMT integration step.
-- `simulation_time`: total EMT simulation horizon.
-- `tolerance`: numerical tolerance.
+An `EmtEventsGroup` is one complete scenario. An `EmtEvent` changes one eligible model parameter using either a step or a ramp. Typical targets include load impedances, source references, gates, switching controls, and fault parameters.
 
-Advanced `EmtOptions` fields also expose:
-
-- initialization Newton controls,
-- pseudo-transient initialization controls,
-- sparse-solver settings,
-- Newton diagnostics and stabilization settings,
-- compiled solver warmup policy.
-
-As a practical rule, EMT time steps are typically in the microsecond range.
-
-## EMT events
-
-EMT events are used to modify the system during the simulation. Typical examples are:
-
-- load-impedance changes,
-- source or converter reference changes,
-- switching actions,
-- faults,
-- time-varying parameter changes.
-
-In VeraGrid, EMT events are organized through:
-
-- `EmtEventsGroup`: one simulation scenario,
-- `EmtEvent`: one runtime parameter change inside that scenario.
+Create and edit scenarios in the **EMT Events** page of the [dynamic workspace](dynamic_editor.md). The parameter tree is derived from the saved EMT models, so apply model-editor changes before configuring events.
 
 ## GUI example
 
-The following compact example is adapted from [EMT_practical_session.md](EMT_practical_session.md), omitting the generic platform introduction.
+The complete guided example is available in the [EMT practical session](EMT_practical_session.md). It builds a two-bus, three-phase case with a generator, a line, an R load, and resistance-change events.
 
-### Example objective
+![Two-bus EMT model](figures/dynamics/system_model.png)
 
-Build a 2-bus EMT model with:
+The EMT editor supplies the device's phase-domain grid connection blocks. Add the required source, network, load, and controller blocks; connect their ports; validate the graph; and apply it to the device.
 
-- one generator,
-- one load,
-- one line,
-- one EMT event group that changes load resistance over time.
+![EMT editor with initial connection blocks](figures/dynamics/emt_editor_initial_blocks.png)
 
-System sketch:
+![Example EMT Thevenin generator](figures/dynamics/generator_thevenin_model.png)
 
-![Two-bus EMT example](figures/dynamics/system_model.png)
+## Results in the GUI
 
-### Static network data
+Open **Results → EMT Dynamic** after the driver finishes. The view provides:
 
-| Object | Parameter | Value |
-|---|---|---:|
-| Grid | `Sbase` | 100 MVA |
-| Grid | `freq` | 50 Hz |
-| Bus 0 | `is_slack` | `True` |
-| Bus 0 | `Vnom` | 10 kV |
-| Bus 1 | `is_slack` | `False` |
-| Bus 1 | `Vnom` | 10 kV |
-| Generator 1 | `Vset` | 1.0 p.u. |
-| Generator 1 | `Snom` | 100 MVA |
-| Generator 1 | `r1` | 0.001 |
-| Generator 1 | `x1` | 1.7 |
-| Load | `P` | 1 MVA |
-| Load | `Pa` | 0.33333 MVA |
-| Load | `Pb` | 0.33333 MVA |
-| Load | `Pc` | 0.33333 MVA |
-| Load | `Q` | 0.0 MVA |
-| Load | `Qa` | 0.0 MVA |
-| Load | `Qb` | 0.0 MVA |
-| Load | `Qc` | 0.0 MVA |
-| Load | `conn` | `Y` |
+- a tree grouped by device and exported model variable;
+- the persistent EMT plot groups defined in the EMT Plots page;
+- a numerical table for the selected trajectory;
+- the available event-group scenarios.
 
-The practical session uses a tower-based line definition:
+Double-click one variable to plot it directly. For a multi-signal plot, create or open a plot group and add the required variables. Time-series groups are appropriate for phase voltages, currents, and control states. X-Y groups are useful for phase planes and characteristic curves.
 
-| Tower parameter | Value |
-|---|---|
-| Voltage | 10 kV |
-| Wire | `-_ACSR_0.902` |
+Before interpreting a curve, select the intended event group and verify its initialization and convergence status.
 
-Wire placement:
+![EMT dynamic results](figures/dynamics/emt_dynamic_results.png)
 
-| X (m) | Y (m) | Phase |
-|---:|---:|---:|
-| -12 | 27 | 1 |
-| 0 | 27 | 2 |
-| 12 | 27 | 3 |
+## Results from the API
 
-### EMT simulation settings
+`EmtResults` separates the ordinary variables and their derivative trajectories:
 
-| Parameter | Value |
-|---|---|
-| Integration | `DAE_Trapezoidal` |
-| Initialisation | `Explicit` |
-| Solver | `Structural Compiled` |
-| Tolerance | `1e-4` |
-| Simulation time | `0.06` |
-| Time step | `1e-6` |
+```text
+values.shape      = (time samples, exported variables, event groups)
+diff_values.shape = (time samples, differential variables, event groups)
+```
 
-### EMT dynamic-model assignment
+The result object also provides:
 
-For this example:
+- `time_array`: common time samples;
+- `variables` and `diff_variables`: exported symbolic variables;
+- `uid2idx_vars` and `uid2idx_diff`: UID-to-column mappings;
+- `devices_vars_info`: variables grouped by owning device;
+- `emt_events_group_names`: scenario labels;
+- `has_event_group_results`: availability mask per scenario;
+- `well_initialized` and `converged`: status per scenario;
+- `get_vars_data(var_list, group_idx)`: selected trajectories for one scenario.
 
-- the generator can use a complete generator EMT template or a manually assembled generator/exciter/governor/stabiliser chain,
-- the line typically uses an EMT Pi line or, for wave-transmission detail, a Bergeron line model,
-- the load uses an R load model.
+Use `has_event_group_results[group_idx]` before reading a scenario slice. For example, `results.values[:, :, group_idx]` returns the state and algebraic trajectories for one EMT scenario.
 
-In the GUI there are two main ways to assign dynamic models:
+## API example
 
-1. Assign an `emt_template` from the device properties or from the default catalogue.
-2. Open the EMT editor and build the model graphically from blocks.
-
-The editor workflow is preferred when the parameters, equations, or controller structure must be inspected and tuned.
-
-When opening the EMT editor, the grid connection blocks are already present. For AC devices, the phase terminals appear explicitly.
-
-![EMT editor initial blocks](figures/dynamics/emt_editor_initial_blocks.png)
-
-Example generator model using a Thevenin-equivalent representation:
-
-![Generator Thevenin model](figures/dynamics/generator_thevenin_model.png)
-
-The practical session also shows a more detailed generator build:
-
-![Full converter example](figures/dynamics/full_generator_example.png)
-
-### EMT event example
-
-The practical-session event set is:
-
-| Event | Device | Time interval (s) | Parameter | New value | Transition |
-|---|---|---:|---|---:|---|
-| Decrease load | Load | 0.02 | `R_A` | 200 | Step |
-| Decrease load | Load | 0.02 | `R_B` | 200 | Step |
-| Decrease load | Load | 0.02 | `R_C` | 200 | Step |
-| Increase load | Load | 0.04-0.05 | `R_A` | 300 | Ramp |
-| Increase load | Load | 0.04-0.05 | `R_B` | 300 | Ramp |
-| Increase load | Load | 0.04-0.05 | `R_C` | 300 | Ramp |
-
-From the GUI, event scenarios are created by adding an `EmtEventsGroup` and then attaching `EmtEvent` objects to the selected device.
-
-## EMT results
-
-The EMT dynamic results are stored in `EmtResults`.
-
-### Registered Result Properties
-
-| Property | Type | Description |
-|---|---|---|
-| `time_array` | `DateVec` | Ordered simulation time samples. |
-| `values` | `Vec` | Simulated EMT state and algebraic variable values. |
-| `diff_values` | `Vec` | Simulated EMT differential-variable trajectories. |
-| `emt_events_group_names` | `StrVec` | Ordered declared EMT event-group names. |
-| `emt_events_group_idtags` | `StrVec` | Ordered declared EMT event-group identifiers. |
-| `has_event_group_results` | `BoolVec` | Mask indicating which declared event groups actually produced simulation data. |
-| `well_initialized` | `BoolVec` | Initialization status per event group. |
-| `converged` | `BoolVec` | Convergence status per event group. |
-| `dynamic_metadata_json` | `StrVec` | Serialized metadata used to reconstruct variable and device bindings. |
-
-In practice, users normally inspect:
-
-- `results.time_array`,
-- `results.values`,
-- `results.diff_values`,
-- `results.converged`,
-- `results.well_initialized`.
-
-## API
-
-The EMT scripting workflow is:
-
-1. Build or load the grid.
-2. Assign EMT templates to the dynamic devices.
-3. Run a power flow or other consistent static initialization step.
-4. Configure `EmtOptions`.
-5. Run `EmtSimulationDriver`.
-6. Read `EmtResults`.
+This example constructs a compact two-bus EMT case. The empty `EmtEventsGroup` is intentional: it defines the base-case scenario that the driver integrates.
 
 ```python
-from VeraGridEngine.Devices.Substation.bus import Bus
+import numpy as np
+
+import VeraGridEngine.api as vg
+from VeraGridEngine.Devices.Branches.line import Line
 from VeraGridEngine.Devices.Injections.generator import Generator
 from VeraGridEngine.Devices.Injections.load import Load
-from VeraGridEngine.Devices.Branches.line import Line
-
-from VeraGridEngine.enumerations import DynamicIntegrationMethod, EmtInitializationMethod, EmtSolverTypes
+from VeraGridEngine.Devices.Substation.bus import Bus
+from VeraGridEngine.Simulations.EMT.emt_driver import EmtSimulationDriver
+from VeraGridEngine.Simulations.EMT.emt_options import EmtOptions
+from VeraGridEngine.Simulations.EMT.emt_results import EmtResults
+from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
+from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from VeraGridEngine.Templates.Emt.load_RLC_emt_template import get_shunt_r_emt_template
 from VeraGridEngine.Templates.Emt.pi_line_emt_template import get_pi_line_emt_template
 from VeraGridEngine.Templates.Emt.thevenin_equivalent_emt_generator_template import (
     get_generator_thevenin_rl_emt_template_with_ref,
 )
-from VeraGridEngine.Templates.Emt.load_RLC_emt_template import get_shunt_r_emt_template
+from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.templates_common_functions import set_emt_model
+from VeraGridEngine.enumerations import DynamicIntegrationMethod, EmtInitializationMethod, EmtSolverTypes
 
-from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
-from VeraGridEngine.Simulations.EMT.emt_options import EmtOptions
-from VeraGridEngine.Simulations.EMT.emt_driver import EmtSimulationDriver
+grid: vg.MultiCircuit = vg.MultiCircuit(Sbase=100.0, fbase=50.0)
 
-import VeraGridEngine.api as vg
-
-grid = vg.MultiCircuit(Sbase=100.0, fbase=50.0)
-
-bus0 = Bus(name="Bus0", Vnom=10.0, is_slack=True)
-bus1 = Bus(name="Bus1", Vnom=10.0)
+bus0: Bus = Bus(name="Bus0", Vnom=10.0, is_slack=True)
+bus1: Bus = Bus(name="Bus1", Vnom=10.0)
 grid.add_bus(bus0)
 grid.add_bus(bus1)
 
-line = Line(name="line 0-1", bus_from=bus0, bus_to=bus1, r=0.02, x=0.08, b=0.0, rate=100.0)
+line: Line = Line(
+    name="Line 0-1",
+    bus_from=bus0,
+    bus_to=bus1,
+    r=0.02,
+    x=0.08,
+    b=0.0,
+    rate=100.0,
+)
 grid.add_line(line)
 
-gen = Generator(name="Gen1", P=1.0, vset=1.0, Snom=100.0, r1=0.001, x1=1.7)
-grid.add_generator(bus=bus0, api_obj=gen)
+generator: Generator = Generator(
+    name="Gen1",
+    P=1.0,
+    vset=1.0,
+    Snom=100.0,
+    r1=0.001,
+    x1=1.7,
+)
+grid.add_generator(bus=bus0, api_obj=generator)
 
-load = Load(name="Load1", P=1.0, Q=0.0)
+load: Load = Load(name="Load1", P=1.0, Q=0.0)
 grid.add_load(bus=bus1, api_obj=load)
 
-gen_emt = get_generator_thevenin_rl_emt_template_with_ref(grid.var_factory).block
-line_emt = get_pi_line_emt_template(
+generator_model: Block = get_generator_thevenin_rl_emt_template_with_ref(grid.var_factory).block
+line_model: Block = get_pi_line_emt_template(
     vf=grid.var_factory,
     phN=False,
     phA=True,
     phB=True,
     phC=True,
 ).block
-load_emt = get_shunt_r_emt_template(
+load_model: Block = get_shunt_r_emt_template(
     vf=grid.var_factory,
     phA=True,
     phB=True,
     phC=True,
 ).block
 
-set_emt_model(device=gen, model=gen_emt, var_factory=grid.var_factory)
-set_emt_model(device=line, model=line_emt, var_factory=grid.var_factory)
-set_emt_model(device=load, model=load_emt, var_factory=grid.var_factory)
+set_emt_model(device=generator, model=generator_model, var_factory=grid.var_factory)
+set_emt_model(device=line, model=line_model, var_factory=grid.var_factory)
+set_emt_model(device=load, model=load_model, var_factory=grid.var_factory)
 
-load.emt_model.set_parameter_in_model(var_name="R_A", new_value=200.0)
+load.emt_model.set_parameter_in_model(
+    var_name="R_A_Shunt_R_3ph",
+    new_value=200.0,
+)
 
-pf_options = PowerFlowOptions(solver_type=vg.SolverType.NR, verbose=0)
-pf_results = vg.power_flow(grid, options=pf_options)
+base_case: vg.EmtEventsGroup = vg.EmtEventsGroup(name="Base case")
+grid.add_emt_events_group(base_case)
 
-emt_options = EmtOptions(
+power_flow_options: PowerFlowOptions = PowerFlowOptions(
+    solver_type=vg.SolverType.NR,
+    verbose=0,
+)
+power_flow_results: PowerFlowResults = vg.power_flow(grid, options=power_flow_options)
+
+emt_options: EmtOptions = EmtOptions(
     time_step=1e-6,
     simulation_time=0.02,
     tolerance=1e-6,
@@ -300,21 +204,36 @@ emt_options = EmtOptions(
     verbose=0,
 )
 
-driver = EmtSimulationDriver(grid=grid, options=emt_options, pf_results=pf_results)
+driver: EmtSimulationDriver = EmtSimulationDriver(
+    grid=grid,
+    options=emt_options,
+    pf_results=power_flow_results,
+)
 driver.run()
 
-results = driver.results
-print(results.converged)
-print(results.well_initialized)
-print(results.values.shape)
-print(results.diff_values.shape)
+results: EmtResults | None = driver.results
+if results is not None:
+    group_index: int = 0
+    if results.has_event_group_results[group_index]:
+        scenario_values: np.ndarray = results.values[:, :, group_index]
+        scenario_derivatives: np.ndarray = results.diff_values[:, :, group_index]
+        print(results.converged[group_index])
+        print(results.well_initialized[group_index])
+        print(scenario_values.shape)
+        print(scenario_derivatives.shape)
+    else:
+        print("The base-case scenario did not produce results.")
+else:
+    print("The EMT driver did not create a result object.")
 ```
 
-## Practical notes
+The example shows the complete driver contract but is not a substitute for model-specific parameterization and validation. To add disturbances, create `EmtEvent` objects or use the EMT Events page instead of changing the model's stored base parameters.
 
-- Start from a validated static model before attempting EMT.
-- Keep the model scope tight, because EMT cost grows quickly.
-- Use the simplest solver/backend setup that resolves the phenomenon of interest.
-- Prefer EMT only when waveform-level or phase-domain fidelity is required.
-- For the broad mathematical and architectural background of the dynamic engine, see [Dynamic simulations](dynamic_simulations.md).
-- For local stability around a settled periodic EMT trajectory, see [EMT Small-Signal stability: Floquet analysis](small_signal_stability_emt.md).
+## Practical checks
+
+- Validate the static operating point before initializing EMT.
+- Save model-editor changes before opening Events or Plots.
+- Create at least one event group, including for an undisturbed case.
+- Check `well_initialized`, `converged`, and `has_event_group_results` per group.
+- Reduce the time step when assessing numerical sensitivity.
+- For periodic-orbit stability, see [EMT Small-Signal stability: Floquet analysis](small_signal_stability_emt.md).

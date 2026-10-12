@@ -37,19 +37,81 @@ All quantities in this expression are in mm. The default dimensions give 4 mm of
 
 ### Conducting materials and correction factors
 
+Choose **resistance input** in either the **Cable** database table or the cable-system builder:
+
+- **Resistivity and filling factor** (default): enter `core_resistivity`, `core_filling_factor`,
+  `sheath_resistivity` and `sheath_filling_factor`. Both `core_dc_resistance` and `sheath_dc_resistance`
+  are calculated, read-only results that update with the material inputs and geometry.
+- **DC resistance**: enter positive `core_dc_resistance` and `sheath_dc_resistance` values in Ω/km at **20 °C**.
+  All four resistivity/filling-factor fields are greyed out and cannot be edited. Their retained values are
+  inactive; they are not additional constraints on the resistances or inputs to the calculation in this mode.
+
+There is **one selector shared by the core and sheath**. Switching modes in either GUI table converts the
+active inputs to preserve both resistances before further edits. Only the selected representation governs
+the impedances of both conducting layers.
+
 | Python property | Description | Unit | Default | Meaning and role |
 | --- | --- | --- | --- | --- |
-| `core_resistivity` | Core material resistivity | μΩ·cm | 1.7241 | Resistivity at 20 °C used to calculate the core impedance. |
-| `sheath_resistivity` | Sheath material resistivity | μΩ·cm | 1.7241 | Resistivity at 20 °C used to calculate the sheath impedance. |
-| `core_filling_factor` | Core conducting filling factor | % | 100.0 | Percentage of the modelled core section occupied by conducting material. Effective resistivity is divided by this fraction; this is not a capacitance. |
-| `sheath_filling_factor` | Sheath conducting filling factor | % | 100.0 | Corresponding conducting fraction of the sheath section; applied to sheath resistivity. |
+| `resistance_input` | Shared resistance input method | — | `Resistivity and filling factor` | `CableResistanceInput.Resistivity` or `CableResistanceInput.DcResistance`; selects the inputs for both core and sheath. |
+| `core_resistivity` | Core material resistivity | μΩ·cm | 1.7241 | Resistivity at 20 °C; editable and used only in resistivity mode. |
+| `sheath_resistivity` | Sheath material resistivity | μΩ·cm | 1.7241 | Resistivity at 20 °C; editable and used only in resistivity mode. |
+| `core_filling_factor` | Core conducting filling factor | % | 100.0 | Editable and used only in resistivity mode. Percentage of the modelled core section occupied by conducting material; this is not a capacitance. |
+| `sheath_filling_factor` | Sheath conducting filling factor | % | 100.0 | Editable and used only in resistivity mode. Conducting fraction of the annular sheath section. |
 | `core_relative_permeability` | Core relative magnetic permeability | — | 1.0 | Dimensionless permeability relative to vacuum, used in the core internal impedance. |
 | `sheath_relative_permeability` | Sheath relative magnetic permeability | — | 1.0 | Dimensionless permeability used in the sheath internal impedance. |
 | `skin_effect_factor` | Core skin-effect factor | — | 1.0 | Factor used in the frequency-dependent core internal impedance calculation. |
-| `core_dc_resistance` | Reference core DC resistance | Ω/km | 0.0 | Informational value at 20 °C, read-only in the catalogue tables. The geometric calculation uses dimensions, resistivity and filling factor instead. |
+| `core_dc_resistance` | Core DC resistance at 20 °C | Ω/km | ≈0.219519, derived | Calculated and read-only in resistivity mode; editable and used by the impedance calculation in DC resistance mode. |
+| `sheath_dc_resistance` | Sheath DC resistance at 20 °C | Ω/km | Derived from material and geometry | Calculated and read-only in resistivity mode; editable and used by the tubular sheath impedance calculation in DC resistance mode. |
 | `proximity_effect_factor` | Reference proximity-effect factor | — | 1.0 | Informational, read-only in the catalogue tables; not used by the current calculation. |
 
 Use positive material resistivities and relative permeabilities. Filling factors are percentages, with physically meaningful values greater than zero and no greater than 100. There is no construction-temperature input: these material values are not automatically converted to another operating temperature by the geometric cable calculation.
+
+For either conducting layer, using its geometric section $A$ in m², the two parameterisations are:
+
+$$
+R_{\mathrm{dc}}=\frac{1000\,\rho_{\mathrm{material}}}{A(C_f/100)}\quad[\Omega/\mathrm{km}],
+\qquad
+\rho_{\mathrm{effective}}=\frac{R_{\mathrm{dc}} A}{1000}\quad[\Omega\,\mathrm m].
+$$
+
+The core uses $A_c=\pi r_c^2$. The sheath uses its **annular** area $A_s=\pi(r_{so}^2-r_{si}^2)$,
+where $r_{si}=d_c/2+t_i$ and $r_{so}=r_{si}+t_s$ (dimensions converted to metres).
+The insulation and core are not part of the sheath's conducting section.
+
+DC resistance mode supplies each layer's effective resistivity and a 100% effective filling factor to the
+existing Bessel-function calculations. It therefore affects both the core and tubular sheath impedances,
+including the resulting reduced system matrix. This does not infer a manufacturer's material or actual
+packing fraction. The same geometry and electromagnetic model apply in both modes.
+
+For direct resistance input through Python, select the mode explicitly:
+
+```python
+from VeraGridEngine.Devices.Branches.underground_cable_type import UndergroundCableType
+from VeraGridEngine.enumerations import CableResistanceInput
+
+cable = UndergroundCableType(
+    name="Cable specified by resistance",
+    core_diameter=10.0,
+    resistance_input=CableResistanceInput.DcResistance,
+    core_dc_resistance=0.25,  # Ohm/km at 20 degrees Celsius
+    sheath_dc_resistance=0.8,
+)
+```
+
+Setting either DC resistance alone does not select its mode. Supply both positive values when constructing
+a cable with `resistance_input=CableResistanceInput.DcResistance`. The constructor and snapshot setters restore
+the explicitly supplied inputs; GUI edits through `set_value()` additionally convert values when changing mode.
+Native files store the single selector and both active resistances. Files without a selector, and current PowerFactory DGS
+`TypCab` imports, use **Resistivity and filling factor**, preserving their previous impedance calculation.
+An old imported `rpha` value is not a competing input in that mode: the displayed/saved resistance is derived
+from the active material data. The PowerFactory input-method option shown in its UI is not part of the currently
+mapped DGS cable fields.
+
+The earlier `core_resistance_input` name is accepted as a compatibility alias, not a second selector.
+Native JSON files saved with that core-only selector and no sheath resistance retain their core input and
+derive the sheath resistance from the saved sheath materials and annular geometry during loading. They then
+use the common selector. The old constructor keyword also derives an omitted sheath resistance from its
+material inputs. New files and examples use `resistance_input` and explicit DC values for both layers.
 
 ### Insulation materials
 
@@ -71,32 +133,34 @@ The GUI and Python API use the same construction objects. Editing a catalogue co
 ### Registered properties
 Profile-enabled properties: none.
 
-|            name             |   class_type   | unit  |mandatory|max_chars|                                                descriptions                                                |has_profile|comment|
-|-----------------------------|----------------|-------|---------|---------|------------------------------------------------------------------------------------------------------------|-----------|-------|
-|idtag                        |str             |       |False    |         |Unique ID                                                                                                   |False      |       |
-|name                         |str             |       |False    |         |Name of the device.                                                                                         |False      |       |
-|code                         |str             |       |False    |         |Secondary ID                                                                                                |False      |       |
-|rdfid                        |str             |       |False    |         |RDF ID for further compatibility                                                                            |False      |       |
-|action                       |enum ActionType |       |False    |         |Object action to perform. Only used for model merging.                                                      |False      |       |
-|selected_to_merge            |bool            |       |False    |         |Whether this object should be applied during diff merge.                                                    |False      |       |
-|comment                      |str             |       |False    |         |User comment                                                                                                |False      |       |
-|diff_changes                 |MergeInformation|       |False    |         |                                                                                                            |False      |       |
-|nominal_voltage              |float           |kV     |False    |         |Rated cable voltage                                                                    |False      |       |
-|core_dc_resistance           |float           |Ohm/km |False    |         |Imported core DC resistance at 20 degrees Celsius; informational, not used by the geometric calculation     |False      |       |
-|core_diameter                |float           |mm     |False    |         |Core outer diameter                                                                                         |False      |       |
-|core_internal_diameter       |float           |mm     |False    |         |Core inner diameter                                                                                         |False      |       |
-|cable_diameter               |float           |mm     |False    |         |Overall cable diameter, including outer insulation                                                          |False      |       |
-|sheath_thickness             |float           |mm     |False    |         |Metallic sheath thickness                                                                                   |False      |       |
-|main_insulation_thickness    |float           |mm     |False    |         |Core-to-sheath insulation thickness; outer insulation is derived from cable_diameter|False      |       |
-|core_resistivity             |float           |uOhm*cm|False    |         |Core resistivity at 20 degrees Celsius                                               |False      |       |
-|sheath_resistivity           |float           |uOhm*cm|False    |         |Sheath resistivity at 20 degrees Celsius                                             |False      |       |
-|core_filling_factor          |float           |%      |False    |         |Core conducting filling factor                                                         |False      |       |
-|sheath_filling_factor        |float           |%      |False    |         |Sheath conducting filling factor                                                       |False      |       |
-|main_insulation_permittivity |float           |       |False    |         |Core-to-sheath insulation relative permittivity                                     |False      |       |
-|outer_insulation_permittivity|float           |       |False    |         |Outer insulation relative permittivity                                              |False      |       |
-|main_insulation_loss_tangent |float           |       |False    |         |Core-to-sheath insulation dielectric loss factor                                    |False      |       |
-|outer_insulation_loss_tangent|float           |       |False    |         |Outer insulation dielectric loss factor                                             |False      |       |
-|core_relative_permeability   |float           |       |False    |         |Core relative magnetic permeability                                                    |False      |       |
-|sheath_relative_permeability |float           |       |False    |         |Sheath relative magnetic permeability                                                  |False      |       |
-|skin_effect_factor           |float           |       |False    |         |Core skin-effect factor                                                                                     |False      |       |
-|proximity_effect_factor      |float           |       |False    |         |Imported core proximity-effect factor; informational, not used by this calculation                          |False      |       |
+|            name             |       class_type        | unit  |mandatory|max_chars|                                                                 descriptions                                                                  |has_profile|comment|
+|-----------------------------|-------------------------|-------|---------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------|-----------|-------|
+|idtag                        |str                      |       |False    |         |Unique ID                                                                                                                                      |False      |       |
+|name                         |str                      |       |False    |         |Name of the device.                                                                                                                            |False      |       |
+|code                         |str                      |       |False    |         |Secondary ID                                                                                                                                   |False      |       |
+|rdfid                        |str                      |       |False    |         |RDF ID for further compatibility                                                                                                               |False      |       |
+|action                       |enum ActionType          |       |False    |         |Object action to perform. Only used for model merging.                                                                                         |False      |       |
+|selected_to_merge            |bool                     |       |False    |         |Whether this object should be applied during diff merge.                                                                                       |False      |       |
+|comment                      |str                      |       |False    |         |User comment                                                                                                                                   |False      |       |
+|diff_changes                 |MergeInformation         |       |False    |         |                                                                                                                                               |False      |       |
+|nominal_voltage              |float                    |kV     |False    |         |Rated cable voltage                                                                                                       |False      |       |
+|resistance_input             |enum CableResistanceInput|       |False    |         |Choose the resistance inputs for both core and sheath at 20 degrees Celsius: DC resistances, or resistivities and filling factors              |False      |       |
+|core_dc_resistance           |float                    |Ohm/km |False    |         |Core DC resistance at 20 degrees Celsius: input in DC resistance mode, otherwise calculated from resistivity, filling factor and diameter      |False      |       |
+|sheath_dc_resistance         |float                    |Ohm/km |False    |         |Sheath DC resistance at 20 degrees Celsius: input in DC resistance mode, otherwise calculated from resistivity, filling factor and annular area|False      |       |
+|core_diameter                |float                    |mm     |False    |         |Core outer diameter                                                                                                                            |False      |       |
+|core_internal_diameter       |float                    |mm     |False    |         |Core inner diameter                                                                                                                            |False      |       |
+|cable_diameter               |float                    |mm     |False    |         |Overall cable diameter, including outer insulation                                                                                             |False      |       |
+|sheath_thickness             |float                    |mm     |False    |         |Metallic sheath thickness                                                                                                                      |False      |       |
+|main_insulation_thickness    |float                    |mm     |False    |         |Core-to-sheath insulation thickness; outer insulation is derived from cable_diameter                                   |False      |       |
+|core_resistivity             |float                    |uOhm*cm|False    |         |Core resistivity at 20 degrees Celsius; inactive in DC resistance mode                                                  |False      |       |
+|sheath_resistivity           |float                    |uOhm*cm|False    |         |Sheath resistivity at 20 degrees Celsius; inactive in DC resistance mode                                                |False      |       |
+|core_filling_factor          |float                    |%      |False    |         |Core conducting filling factor; inactive in DC resistance mode                                                            |False      |       |
+|sheath_filling_factor        |float                    |%      |False    |         |Sheath conducting filling factor; inactive in DC resistance mode                                                          |False      |       |
+|main_insulation_permittivity |float                    |       |False    |         |Core-to-sheath insulation relative permittivity                                                                        |False      |       |
+|outer_insulation_permittivity|float                    |       |False    |         |Outer insulation relative permittivity                                                                                 |False      |       |
+|main_insulation_loss_tangent |float                    |       |False    |         |Core-to-sheath insulation dielectric loss factor                                                                       |False      |       |
+|outer_insulation_loss_tangent|float                    |       |False    |         |Outer insulation dielectric loss factor                                                                                |False      |       |
+|core_relative_permeability   |float                    |       |False    |         |Core relative magnetic permeability                                                                                       |False      |       |
+|sheath_relative_permeability |float                    |       |False    |         |Sheath relative magnetic permeability                                                                                     |False      |       |
+|skin_effect_factor           |float                    |       |False    |         |Core skin-effect factor                                                                                                                        |False      |       |
+|proximity_effect_factor      |float                    |       |False    |         |Imported core proximity-effect factor; informational, not used by this calculation                                                             |False      |       |

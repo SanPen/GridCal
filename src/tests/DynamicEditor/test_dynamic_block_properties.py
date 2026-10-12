@@ -1,11 +1,15 @@
-﻿"""Regression tests for the modal Dynamic Editor block properties workflow."""
+"""Regression tests for the modal Dynamic Editor block properties workflow."""
 
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Iterator
 
+import numpy as np
+import shiboken6
+
 from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtTest import QTest
 import pytest
 
 import VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_graphics as graph
@@ -13,7 +17,6 @@ from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor import DynamicB
 from VeraGridEngine.enumerations import BlockSymbolKind
 from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties import (
     BlockParameterDraftModel,
-    BlockSymbolDraftModel,
     BlockSymbolDraftRow,
     BlockCodeBuffer,
     BlockEquationDraft,
@@ -30,6 +33,10 @@ from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties import (
     synchronize_dae_variable_declarations,
 )
 from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties import RuntimeModeDraft
+from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.add_symbol_dialog import (
+    AddSymbolDialog,
+    AddSymbolSelection,
+)
 from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties import (
     EquationExportEntry,
     build_equation_pdf_suggested_name,
@@ -56,20 +63,39 @@ from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.dynamic_latex_render
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
+from VeraGridEngine.Devices.Dynamic.manufacturer_native_model import ManufacturerNativeModel
+from VeraGridEngine.IO.manufacturer_native.model_info import (
+    ManufacturerNativeModelInfo,
+    ManufacturerNativeSignalInfo,
+)
+from VeraGridEngine.IO.manufacturer_native.runtime_session import (
+    ManufacturerNativeRuntimeSession,
+    _RuntimeBinding,
+)
+from VeraGridEngine.Simulations.EMT.problems.emt_problem_dae import EmtProblemDae
 from VeraGridEngine.Devices.Diagrams.block_diagram import BlockDiagramNode
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.enumerations import (
     BlockType,
+    BlockSymbolCategory,
     DeviceType,
     DynamicSimulationMode,
+    EmtFaultPlacementSide,
+    IeeeCigreDllDataType,
     EquationExportSection,
+    FaultType,
     ParamPowerFlowReferenceType,
     ProceduralLogicType,
     VarPowerFlowReferenceType,
 )
 from VeraGridEngine.Utils.Symbolic.block import Block, normalize_event_parameter_initialization
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var, get_expression_vars, symbolic_to_string
-from VeraGridEngine.Utils.procedural_logic import HardSaturationLogic
+from VeraGridEngine.Utils.procedural_logic import (
+    HardSaturationLogic,
+    IeeeCigreDllSignalBinding,
+    ManufacturerNativeControllerLogic,
+    ProceduralLogicCodec,
+)
 from VeraGridEngine.Templates.Emt.generator_emt_type_template import get_governor_emt
 from VeraGridEngine.Templates.Rms.genqec_exc_gov_sat_template_v2 import get_genqec_rms
 from VeraGridEngine.Templates.Rms.genrow_rms_template import get_genrow_rms_template
@@ -86,6 +112,9 @@ from VeraGridEngine.Templates.ProceduralLogicCatalog import (
     build_procedural_block_catalog_template,
 )
 from VeraGrid.Gui.DynamicModelEditor.Editor.DynamicLibrary.dynamic_editor_library import (
+    LibraryDeviceTemplateSpec,
+    build_dynamic_library_device_template,
+    get_dynamic_library_device_specs,
     get_dynamic_library_procedural_descriptors,
 )
 
@@ -97,6 +126,43 @@ def get_qt_application() -> QtWidgets.QApplication:
         return QtWidgets.QApplication(list())
     else:
         return application
+
+
+def stage_test_symbol(
+        dialogue: DynamicBlockPropertiesDialog,
+        owner: Block,
+        name: str,
+        kind: BlockSymbolKind,
+        exported: bool = False,
+        value: float | None = 0.0,
+        create_derivative: bool = False,
+        external_reference: VarPowerFlowReferenceType | None = None,
+        static_reference: ParamPowerFlowReferenceType | None = None,
+) -> None:
+    """Stage one typed add-property selection without opening a modal dialog.
+
+    :param dialogue: Block-properties dialog receiving the detached draft.
+    :param owner: Block that owns the new symbol.
+    :param name: Valid symbolic identifier.
+    :param kind: Primary symbol role.
+    :param exported: Whether the symbol is also exposed as output.
+    :param value: Local initial value, or ``None`` for device initialization.
+    :param create_derivative: Whether a state receives a derivative variable.
+    :param external_reference: Optional power-flow initialization source.
+    :param static_reference: Optional static-parameter device mapping.
+    :return: None.
+    """
+    selection: AddSymbolSelection = AddSymbolSelection(
+        owner=owner,
+        name=name,
+        kind=kind,
+        exported=exported,
+        value=value,
+        create_derivative=create_derivative,
+        external_reference=external_reference,
+        static_reference=static_reference,
+    )
+    dialogue._stage_add_symbol_selection(selection=selection)
 
 
 def close_dirty_block_property_dialogue(dialogue: DynamicBlockPropertiesDialog) -> None:
@@ -594,6 +660,7 @@ def build_test_block() -> tuple[Block, Var, Var, Const]:
         state_vars=[state_variable],
         state_eqs=[parameter_variable],
         parameters={parameter_variable: parameter_constant},
+        api_obj_mapping={ParamPowerFlowReferenceType.Pl0: parameter_variable},
         init_eqs={state_variable: Const(1.0)},
     )
     return block, state_variable, parameter_variable, parameter_constant
@@ -881,6 +948,7 @@ def test_equation_code_removes_only_redundant_root_parentheses() -> None:
         state_eqs=[expression],
         in_vars=[input_variable],
         parameters={divisor_variable: Const(2.0, name="divisor")},
+        api_obj_mapping={ParamPowerFlowReferenceType.Pl0: divisor_variable},
     )
 
     code: str = build_equation_code(block)
@@ -1053,10 +1121,7 @@ def test_recursive_dialog_selects_child_with_equations_and_labels_output_role() 
         QtCore.Qt.ItemDataRole.CheckStateRole
     ) == QtCore.Qt.CheckState.Checked
 
-    dialogue._add_symbol_ui.new_symbol_owner.setCurrentIndex(1)
-    dialogue._add_symbol_ui.new_symbol_name.setText("child_probe")
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.ALGEBRAIC.value)
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, child, "child_probe", BlockSymbolKind.ALGEBRAIC)
 
     # A newly staged algebraic variable is not a complete model until its
     # equation is added. Apply must reject that intermediate state without
@@ -1084,6 +1149,37 @@ def test_recursive_dialog_selects_child_with_equations_and_labels_output_role() 
     dialogue.close()
 
 
+def test_governor_runtime_share_mapping_survives_noop_apply() -> None:
+    """A valid event-backed generator sharing reference must survive Apply.
+
+    :return: None.
+    """
+    application: QtWidgets.QApplication = get_qt_application()
+    var_factory: VarFactory = VarFactory()
+    governor: Block = get_governor_emt(var_factory).block
+    mapping_key: ParamPowerFlowReferenceType = ParamPowerFlowReferenceType.generator_share_p_ref
+    runtime_parameter: Var | None = governor.api_obj_mapping.get(mapping_key, None)
+    assert runtime_parameter is not None
+    assert mapping_key.is_runtime_parameter_reference()
+    assert runtime_parameter in governor.event_dict
+    assert runtime_parameter not in governor.parameters
+    emitted_uids: list[int] = list()
+
+    dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(
+        governor,
+        "CUSTOM",
+        var_factory,
+    )
+    dialogue.blockApplied.connect(emitted_uids.append)
+    dialogue.apply_changes()
+
+    assert emitted_uids == [governor.uid]
+    assert governor.api_obj_mapping[mapping_key] is runtime_parameter
+    assert runtime_parameter in governor.event_dict
+    assert runtime_parameter not in governor.parameters
+    application.processEvents()
+
+
 def test_staged_symbol_is_created_only_when_apply_is_pressed() -> None:
     """Staged variables validate in code before Apply and can independently be outputs."""
     application: QtWidgets.QApplication = get_qt_application()
@@ -1091,11 +1187,7 @@ def test_staged_symbol_is_created_only_when_apply_is_pressed() -> None:
     var_factory: VarFactory = VarFactory()
     block: Block = Block(name="editable")
     dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(block, "GENERIC", var_factory)
-    dialogue._add_symbol_ui.new_symbol_name.setText("new_output")
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.ALGEBRAIC.value)
-    dialogue._add_symbol_ui.new_symbol_exported.setChecked(True)
-
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, block, "new_output", BlockSymbolKind.ALGEBRAIC, exported=True)
     assert len(block.algebraic_vars) == 0
     assert len(block.out_vars) == 0
 
@@ -1148,11 +1240,13 @@ def test_new_state_derivative_is_visible_and_preserves_its_base_variable() -> No
         "GENERIC",
         var_factory,
     )
-    dialogue._add_symbol_ui.new_symbol_name.setText("d111")
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.STATE.value)
-    dialogue._add_symbol_ui.new_state_derivative.setChecked(True)
-
-    dialogue.add_staged_symbol()
+    stage_test_symbol(
+        dialogue,
+        block,
+        "d111",
+        BlockSymbolKind.STATE,
+        create_derivative=True,
+    )
 
     state_index: QtCore.QModelIndex = find_property_index(dialogue, "d111")
     derivative_index: QtCore.QModelIndex = find_property_index(dialogue, "d_d111")
@@ -1192,10 +1286,13 @@ def test_new_variables_immediately_update_dae_variable_declarations() -> None:
         var_factory,
     )
 
-    dialogue._add_symbol_ui.new_symbol_name.setText("speed")
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.STATE.value)
-    dialogue._add_symbol_ui.new_state_derivative.setChecked(True)
-    dialogue.add_staged_symbol()
+    stage_test_symbol(
+        dialogue,
+        block,
+        "speed",
+        BlockSymbolKind.STATE,
+        create_derivative=True,
+    )
 
     state_code: str = dialogue._dae_editor.toPlainText()
     assert "state_vars = [speed]" in state_code
@@ -1203,9 +1300,7 @@ def test_new_variables_immediately_update_dae_variable_declarations() -> None:
     assert "diff_vars = [d_speed]" in state_code
     assert "# Map every state variable to the right-hand side" in state_code
 
-    dialogue._add_symbol_ui.new_symbol_name.setText("torque")
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.ALGEBRAIC.value)
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, block, "torque", BlockSymbolKind.ALGEBRAIC)
 
     algebraic_code: str = dialogue._dae_editor.toPlainText()
     assert "state_vars = [speed]" in algebraic_code
@@ -1300,12 +1395,15 @@ def test_new_input_is_applied_without_offering_external_mapping() -> None:
         BlockType.PI_CURRENT_CONTROLLER.name,
         var_factory,
     )
-    dialogue._add_symbol_ui.new_symbol_name.setText("additional_input")
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.INPUT.value)
-
-    assert dialogue._add_symbol_ui.new_external_reference_label.isHidden()
-    assert dialogue._add_symbol_ui.new_external_reference.isHidden()
-    dialogue.add_staged_symbol()
+    add_dialog: AddSymbolDialog = AddSymbolDialog(
+        BlockSymbolCategory.VARIABLES,
+        list((block,)),
+        block,
+    )
+    assert add_dialog._ui.new_external_reference_label.isHidden()
+    assert add_dialog._ui.new_external_reference.isHidden()
+    add_dialog.close()
+    stage_test_symbol(dialogue, block, "additional_input", BlockSymbolKind.INPUT)
     assert "additional_input" in dialogue._dae_editor.get_language_context().get_namespace()
     dialogue.apply_changes()
 
@@ -1333,9 +1431,7 @@ def test_legacy_equation_backed_output_does_not_block_new_input() -> None:
         "GENERIC",
         var_factory,
     )
-    dialogue._add_symbol_ui.new_symbol_name.setText("additional_input")
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.INPUT.value)
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, block, "additional_input", BlockSymbolKind.INPUT)
     dialogue.apply_changes()
 
     assert block.in_vars[-1].name == "additional_input"
@@ -1403,6 +1499,7 @@ def test_input_and_parameter_cannot_be_exported() -> None:
         name="output_roles",
         in_vars=list([input_variable]),
         parameters=dict({parameter_variable: Const(1.0)}),
+        api_obj_mapping=dict({ParamPowerFlowReferenceType.Pl0: parameter_variable}),
     )
     dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(block, "CUSTOM", VarFactory())
     input_output_index: QtCore.QModelIndex = dialogue._symbol_model.index(0, 3)
@@ -1413,8 +1510,8 @@ def test_input_and_parameter_cannot_be_exported() -> None:
     dialogue.close()
 
 
-def test_load_rms_operating_point_event_parameters_are_editable() -> None:
-    """Expose event expressions and allow replacing them with numeric overrides."""
+def test_load_rms_device_initialized_event_parameters_are_editable() -> None:
+    """Editing a mapped event parameter must select its local value source."""
     application: QtWidgets.QApplication = get_qt_application()
     _unused_application: QtWidgets.QApplication = application
     var_factory: VarFactory = VarFactory()
@@ -1427,10 +1524,15 @@ def test_load_rms_operating_point_event_parameters_are_editable() -> None:
     assert isinstance(block, Block)
     child: Block = block.children[0]
     event_variables: dict[str, Var] = dict((variable.name, variable) for variable in child.event_dict.keys())
-    assert symbolic_to_string(child.event_dict[event_variables["Pl0"]]) == "Pl"
-    assert symbolic_to_string(child.event_dict[event_variables["Ql0"]]) == "Ql"
+    assert child.event_dict[event_variables["Pl0"]].value is None
+    assert child.event_dict[event_variables["Ql0"]].value is None
     assert event_variables["Pl0"] not in child.init_eqs
     assert event_variables["Ql0"] not in child.init_eqs
+    assert block.api_obj_mapping == dict()
+    assert child.api_obj_mapping == {
+        ParamPowerFlowReferenceType.Pl0: event_variables["Pl0"],
+        ParamPowerFlowReferenceType.Ql0: event_variables["Ql0"],
+    }
 
     dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(
         block,
@@ -1447,8 +1549,8 @@ def test_load_rms_operating_point_event_parameters_are_editable() -> None:
             pass
 
     assert set(row_by_name.keys()) == set(["Pl0", "Ql0"])
-    assert dialogue._parameter_model.index(row_by_name["Pl0"], 2).data() == "Pl"
-    assert dialogue._parameter_model.index(row_by_name["Ql0"], 2).data() == "Ql"
+    assert dialogue._parameter_model.index(row_by_name["Pl0"], 2).data() == "None"
+    assert dialogue._parameter_model.index(row_by_name["Ql0"], 2).data() == "None"
     assert dialogue._parameter_model.setData(
         dialogue._parameter_model.index(row_by_name["Pl0"], 2),
         "Pl + 0.1",
@@ -1464,6 +1566,9 @@ def test_load_rms_operating_point_event_parameters_are_editable() -> None:
     assert set(variable.name for variable in get_expression_vars(pl0_expression)) == set(["Pl"])
     assert child.event_dict[event_variables["Ql0"]].value == -0.2
     assert event_variables["Pl0"] not in child.init_eqs
+    # Explicit GUI values replace the former device source without changing
+    # event_dict ownership, so each parameter retains exactly one initializer.
+    assert child.api_obj_mapping == dict()
     assert event_variables["Ql0"] not in child.init_eqs
     dialogue.close()
 
@@ -1484,14 +1589,15 @@ def test_general_parameters_show_only_event_dict_values() -> None:
             mapped_parameter: Const(None),
             local_parameter: Const(2.0),
         }),
+        api_obj_mapping=dict({
+            ParamPowerFlowReferenceType.dc_line_r_pu: mapped_parameter,
+            ParamPowerFlowReferenceType.dc_line_l_pu_seconds: local_parameter,
+        }),
         event_dict=dict({dynamic_parameter: Const(0.05)}),
     )
     root: Block = Block(
         name="mapped_root",
         children=list((child,)),
-        api_obj_mapping=dict({
-            ParamPowerFlowReferenceType.dc_line_r_pu: mapped_parameter,
-        }),
     )
 
     parameter_model: BlockParameterDraftModel = BlockParameterDraftModel(root)
@@ -1508,38 +1614,13 @@ def test_general_parameters_show_only_event_dict_values() -> None:
     assert mapped_parameter in child.parameters
     assert local_parameter in child.parameters
     assert (
-        root.api_obj_mapping[ParamPowerFlowReferenceType.dc_line_r_pu]
+        child.api_obj_mapping[ParamPowerFlowReferenceType.dc_line_r_pu]
         is mapped_parameter
     )
-
-
-def test_symbol_apply_preserves_root_mapping_to_child_parameter() -> None:
-    """Do not delete a composite root's mapping-only parameter on Apply.
-
-    :return: None.
-    """
-    var_factory: VarFactory = VarFactory()
-    mapped_parameter: Var = var_factory.add_var("mapped_parameter")
-    child: Block = Block(
-        name="parameter_owner",
-        parameters=dict({mapped_parameter: Const(None)}),
-    )
-    root: Block = Block(
-        name="mapped_root",
-        children=list((child,)),
-        api_obj_mapping=dict({
-            ParamPowerFlowReferenceType.dc_line_r_pu: mapped_parameter,
-        }),
-    )
-    symbol_model: BlockSymbolDraftModel = BlockSymbolDraftModel(root)
-
-    symbol_model.apply_to_blocks(var_factory=var_factory)
-
     assert (
-        root.api_obj_mapping[ParamPowerFlowReferenceType.dc_line_r_pu]
-        is mapped_parameter
+        child.api_obj_mapping[ParamPowerFlowReferenceType.dc_line_l_pu_seconds]
+        is local_parameter
     )
-    assert child.parameters[mapped_parameter].value is None
 
 
 def test_legacy_event_parameter_initialization_is_normalized_once() -> None:
@@ -1791,7 +1872,6 @@ def test_apply_refreshes_owner_lists_tree_aliases_and_latex_after_scene_callback
     receiver: AppliedSceneRefreshReceiver = AppliedSceneRefreshReceiver(root, extra, state)
     dialogue.blockApplied.connect(receiver.refresh_scene)
     dialogue.ui.equation_owner_combo.setCurrentIndex(1)
-    dialogue._add_symbol_ui.new_symbol_owner.setCurrentIndex(1)
     dialogue._dae_editor.insertPlainText("# Child comment\n")
     dialogue.ui.latex_selection_tree.topLevelItem(1).child(0).setCheckState(0, QtCore.Qt.CheckState.Checked)
     dialogue.apply_changes()
@@ -2212,8 +2292,8 @@ def test_custom_block_disables_online_catalogue_documentation() -> None:
     assert resolve_block_documentation_url("CUSTOM", custom_block.name) is None
 
 
-def test_property_tree_groups_symbols_without_migrating_unmapped_static_parameters() -> None:
-    """Property groups share drafts and flag inconsistent static templates."""
+def test_property_tree_accepts_unmapped_static_parameter_literal() -> None:
+    """An immutable local literal must not require a device mapping."""
     application: QtWidgets.QApplication = get_qt_application()
     _unused_application: QtWidgets.QApplication = application
     block: Block
@@ -2224,6 +2304,7 @@ def test_property_tree_groups_symbols_without_migrating_unmapped_static_paramete
     _unused_state_variable: Var = state_variable
     _unused_parameter_variable: Var = parameter_variable
     _unused_parameter_constant: Const = parameter_constant
+    block.api_obj_mapping.clear()
     dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(block, "GENERIC", VarFactory())
 
     assert dialogue.ui.property_tree.model() is dialogue._property_tree_model
@@ -2234,8 +2315,18 @@ def test_property_tree_groups_symbols_without_migrating_unmapped_static_paramete
     first_owner_index: QtCore.QModelIndex = dialogue._property_tree_model.index(0, 0, first_group_index)
     assert first_owner_index.siblingAtColumn(3).isValid()
     assert find_property_index(dialogue, "x").isValid()
-    assert find_property_index(dialogue, "gain").siblingAtColumn(2).data() == "Missing PF mapping"
+    gain_value_index: QtCore.QModelIndex = find_property_index(
+        dialogue,
+        "gain",
+    ).siblingAtColumn(2)
+    assert gain_value_index.data() == "2.0"
     assert parameter_variable not in block.event_dict
+    dialogue._symbol_model.build_validation_namespace(build_block_symbol_namespace(block))
+    assert dialogue._property_tree_model.setData(gain_value_index, "3.0")
+    dialogue.apply_changes()
+    assert block.api_obj_mapping == dict()
+    assert block.parameters[parameter_variable] is parameter_constant
+    assert parameter_constant.value == 3.0
     dialogue.close()
 
 
@@ -2355,8 +2446,6 @@ def test_block_properties_prepare_to_delete_detaches_live_view_editors() -> None
     assert dialogue.ui.property_tree.model() is None
     assert dialogue.ui.special_settings_table.model() is None
     assert dialogue.ui.equation_owner_combo.count() == 0
-    assert dialogue._add_symbol_ui.new_symbol_owner.count() == 0
-
     QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
     application.processEvents()
 
@@ -2373,10 +2462,7 @@ def test_new_dynamic_parameter_value_binds_applied_identity() -> None:
     base: Var = Var("base")
     block: Block = Block(name="new_expression", event_dict=dict(((base, Const(2.0)),)))
     dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(block, "GENERIC", VarFactory())
-    dialogue._add_symbol_ui.new_symbol_category.setCurrentText("Parameters")
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.EVENT_PARAMETER.value)
-    dialogue._add_symbol_ui.new_symbol_name.setText("scaled")
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, block, "scaled", BlockSymbolKind.EVENT_PARAMETER)
     value_index: QtCore.QModelIndex = find_property_index(dialogue, "scaled").siblingAtColumn(2)
     assert value_index.isValid()
     assert not dialogue._property_tree_model.setData(value_index, "base * 3")
@@ -2391,6 +2477,220 @@ def test_new_dynamic_parameter_value_binds_applied_identity() -> None:
     application.processEvents()
 
 
+def test_new_static_parameter_accepts_optional_local_mapping() -> None:
+    """A new static parameter may use a literal or an owner-local mapping.
+
+    :return: None.
+    """
+    application: QtWidgets.QApplication = get_qt_application()
+    block: Block = Block(name="new_static_parameter")
+    dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(
+        block,
+        "GENERIC",
+        VarFactory(),
+    )
+
+    # A local literal is a complete immutable parameter declaration even when
+    # the optional device-backed initial-value selector stays empty.
+    add_dialog: AddSymbolDialog = AddSymbolDialog(
+        BlockSymbolCategory.PARAMETERS,
+        list((block,)),
+        block,
+    )
+    static_parameter_index: int = add_dialog._ui.new_symbol_kind.findData(
+        BlockSymbolKind.PARAMETER
+    )
+    add_dialog._ui.new_symbol_kind.setCurrentIndex(static_parameter_index)
+    add_dialog._ui.new_symbol_name.setText("rated_power")
+    add_dialog._ui.new_parameter_value.setValue(4.0)
+    assert add_dialog._ui.new_parameter_value.isEnabled()
+    assert add_dialog._ui.new_static_reference.currentData() is None
+    assert add_dialog._ui.new_static_reference.findData(
+        ParamPowerFlowReferenceType.generator_share_p_ref
+    ) >= 0
+    add_dialog._accept_selection()
+    local_selection: AddSymbolSelection | None = add_dialog.get_selection()
+    assert local_selection is not None
+    assert local_selection.get_static_reference() is None
+    assert local_selection.get_value() == 4.0
+    assert not find_property_index(dialogue, "rated_power").isValid()
+    add_dialog.close()
+
+    mapped_dialog: AddSymbolDialog = AddSymbolDialog(
+        BlockSymbolCategory.PARAMETERS,
+        list((block,)),
+        block,
+    )
+    mapped_static_index: int = mapped_dialog._ui.new_symbol_kind.findData(
+        BlockSymbolKind.PARAMETER
+    )
+    mapped_dialog._ui.new_symbol_kind.setCurrentIndex(mapped_static_index)
+    mapped_dialog._ui.new_symbol_name.setText("device_rated_power")
+    mapped_reference_index: int = mapped_dialog._ui.new_static_reference.findData(
+        ParamPowerFlowReferenceType.Pl0
+    )
+    mapped_dialog._ui.new_static_reference.setCurrentIndex(mapped_reference_index)
+    assert not mapped_dialog._ui.new_parameter_value.isEnabled()
+    mapped_dialog._accept_selection()
+    mapped_selection: AddSymbolSelection | None = mapped_dialog.get_selection()
+    assert mapped_selection is not None
+    assert mapped_selection.get_static_reference() == ParamPowerFlowReferenceType.Pl0
+    assert mapped_selection.get_value() is None
+    mapped_dialog.close()
+
+    # Feed the actual dialog results into the staged model. The local selection
+    # must create only a numeric parameter, while the mapped selection must
+    # create an owner-local Const(None) and its device initialization entry.
+    dialogue._stage_add_symbol_selection(selection=local_selection)
+    dialogue._stage_add_symbol_selection(selection=mapped_selection)
+    dialogue.apply_changes()
+
+    local_parameters: list[Var] = [
+        variable for variable in block.parameters.keys() if variable.name == "rated_power"
+    ]
+    mapped_parameters: list[Var] = [
+        variable for variable in block.parameters.keys() if variable.name == "device_rated_power"
+    ]
+    assert len(local_parameters) == 1
+    assert len(mapped_parameters) == 1
+    assert block.parameters[local_parameters[0]].value == 4.0
+    assert all(mapped_variable is not local_parameters[0] for mapped_variable in block.api_obj_mapping.values())
+    assert block.api_obj_mapping[ParamPowerFlowReferenceType.Pl0] is mapped_parameters[0]
+    assert block.parameters[mapped_parameters[0]].value is None
+    dialogue.close()
+    application.processEvents()
+
+
+def test_new_event_parameter_accepts_local_device_initial_mapping() -> None:
+    """A mapped dynamic parameter must remain owned by event_dict.
+
+    :return: None.
+    """
+    application: QtWidgets.QApplication = get_qt_application()
+    block: Block = Block(name="new_mapped_event_parameter")
+    dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(
+        block,
+        "GENERIC",
+        VarFactory(),
+    )
+
+    add_dialog: AddSymbolDialog = AddSymbolDialog(
+        BlockSymbolCategory.PARAMETERS,
+        list((block,)),
+        block,
+    )
+    add_dialog._ui.new_symbol_name.setText("active_power_reference")
+    assert add_dialog._ui.new_symbol_kind.currentData() == BlockSymbolKind.EVENT_PARAMETER
+    assert add_dialog._ui.new_parameter_value.isEnabled()
+    mapped_reference_index: int = add_dialog._ui.new_static_reference.findData(
+        ParamPowerFlowReferenceType.Pl0
+    )
+    add_dialog._ui.new_static_reference.setCurrentIndex(mapped_reference_index)
+    assert not add_dialog._ui.new_parameter_value.isEnabled()
+    add_dialog._accept_selection()
+    selection: AddSymbolSelection | None = add_dialog.get_selection()
+    assert selection is not None
+    assert selection.get_value() is None
+    assert selection.get_static_reference() == ParamPowerFlowReferenceType.Pl0
+    dialogue._stage_add_symbol_selection(selection=selection)
+    add_dialog.close()
+    dialogue.apply_changes()
+
+    applied_event_parameters: list[Var] = [
+        variable
+        for variable in block.event_dict
+        if variable.name == "active_power_reference"
+    ]
+    assert len(applied_event_parameters) == 1
+    applied_parameter: Var = applied_event_parameters[0]
+    assert applied_parameter not in block.parameters
+    assert block.api_obj_mapping[ParamPowerFlowReferenceType.Pl0] is applied_parameter
+    assert block.event_dict[applied_parameter].value is None
+    dialogue.close()
+    application.processEvents()
+
+
+def test_emt_library_templates_declare_each_static_parameter_once() -> None:
+    """Require unique hierarchical ownership in every registered EMT template.
+
+    This catalogue-wide contract prevents a wrapper and one of its descendants
+    from exposing the same symbolic constant twice, which would make recursive
+    EMT problem assembly count one physical parameter more than once.
+
+    :return: None.
+    """
+    template_specs: list[LibraryDeviceTemplateSpec] = get_dynamic_library_device_specs(
+        mode=DynamicSimulationMode.EMT,
+    )
+    template_spec: LibraryDeviceTemplateSpec
+    for template_spec in template_specs:
+        built_template: RmsModelTemplate | EmtModelTemplate | None = build_dynamic_library_device_template(
+            spec=template_spec,
+            var_factory=VarFactory(),
+        )
+        assert isinstance(built_template, EmtModelTemplate)
+
+        parameter_owner_by_uid: dict[int, Block] = dict()
+        owner_block: Block
+        for owner_block in built_template.block.get_all_blocks():
+            parameter_variable: Var
+            for parameter_variable in owner_block.parameters:
+                stable_uid: int | None = parameter_variable.non_mutable_uid
+                assert stable_uid is not None
+                previous_owner: Block | None = parameter_owner_by_uid.get(stable_uid, None)
+                assert previous_owner is None, (
+                    f"{template_spec.unique_key}: parameter '{parameter_variable.name}' "
+                    + f"is declared by both '{previous_owner.name}' and '{owner_block.name}'"
+                )
+                parameter_owner_by_uid[stable_uid] = owner_block
+
+
+@pytest.mark.parametrize(
+    "mode",
+    (DynamicSimulationMode.RMS, DynamicSimulationMode.EMT),
+)
+def test_library_template_api_mappings_are_owned_locally(
+        mode: DynamicSimulationMode,
+) -> None:
+    """Require every registered template mapping to use one local storage role.
+
+    API references initialize both immutable ``Block.parameters`` and mutable
+    ``Block.event_dict`` targets. Checking the entire registered device catalogue
+    prevents wrapper blocks from silently exposing mappings owned by descendants
+    after recursive block discovery changes.
+
+    :param mode: Dynamic simulation domain whose registered templates are checked.
+    :return: None.
+    """
+    template_specs: list[LibraryDeviceTemplateSpec] = get_dynamic_library_device_specs(
+        mode=mode,
+    )
+    template_spec: LibraryDeviceTemplateSpec
+
+    # Build each public device template exactly through the Library path used by
+    # the editor, then validate every recursively discoverable block owner.
+    for template_spec in template_specs:
+        built_template: RmsModelTemplate | EmtModelTemplate | None = build_dynamic_library_device_template(
+            spec=template_spec,
+            var_factory=VarFactory(),
+        )
+        assert built_template is not None
+
+        owner_block: Block
+        for owner_block in built_template.block.get_all_blocks():
+            mapping_key: ParamPowerFlowReferenceType
+            mapping_target: Var | None
+            for mapping_key, mapping_target in owner_block.api_obj_mapping.items():
+                mapping_context: str = (
+                    f"{template_spec.unique_key}: block '{owner_block.name}', "
+                    + f"mapping '{mapping_key.name}'"
+                )
+                assert mapping_target is not None, mapping_context
+                target_is_constant: bool = mapping_target in owner_block.parameters
+                target_is_runtime: bool = mapping_target in owner_block.event_dict
+                assert target_is_constant != target_is_runtime, mapping_context
+
+
 def test_retained_mode_category_hides_redundant_type_selector() -> None:
     """The sole retained-mode type must remain selected without a visible choice.
 
@@ -2398,24 +2698,87 @@ def test_retained_mode_category_hides_redundant_type_selector() -> None:
     """
     application: QtWidgets.QApplication = get_qt_application()
     block: Block = Block(name="retained_mode_form")
+    add_dialog: AddSymbolDialog = AddSymbolDialog(
+        BlockSymbolCategory.RETAINED_MODES,
+        list((block,)),
+        block,
+    )
+
+    assert add_dialog._ui.new_symbol_kind.currentData() == BlockSymbolKind.MODE_PARAMETER
+    assert add_dialog._ui.new_symbol_kind_label.isHidden()
+    assert add_dialog._ui.new_symbol_kind.isHidden()
+    add_dialog.close()
+    application.processEvents()
+
+
+def test_add_symbol_dialog_uses_focused_category_pages() -> None:
+    """Each context category must expose only its relevant controls.
+
+    :return: None.
+    """
+    application: QtWidgets.QApplication = get_qt_application()
+    block: Block = Block(name="focused_add_symbol_form")
+    parameter_dialog: AddSymbolDialog = AddSymbolDialog(
+        BlockSymbolCategory.PARAMETERS,
+        list((block,)),
+        block,
+    )
+
+    assert parameter_dialog._ui.symbol_options_stack.currentWidget() is (
+        parameter_dialog._ui.parameter_page
+    )
+    assert parameter_dialog._ui.new_symbol_kind.itemData(0) == BlockSymbolKind.EVENT_PARAMETER
+    assert parameter_dialog._ui.new_symbol_kind.itemData(1) == BlockSymbolKind.PARAMETER
+    variable_dialog: AddSymbolDialog = AddSymbolDialog(
+        BlockSymbolCategory.VARIABLES,
+        list((block,)),
+        block,
+    )
+    assert variable_dialog._ui.symbol_options_stack.currentWidget() is (
+        variable_dialog._ui.variable_page
+    )
+    assert variable_dialog._ui.new_symbol_kind.itemData(0) == BlockSymbolKind.INPUT
+    assert variable_dialog._ui.new_symbol_kind.itemData(1) == BlockSymbolKind.STATE
+    assert variable_dialog._ui.new_symbol_kind.itemData(2) == BlockSymbolKind.ALGEBRAIC
+
+    parameter_dialog.close()
+    variable_dialog.close()
+    application.processEvents()
+
+
+def test_add_symbol_dialog_is_released_after_each_invocation() -> None:
+    """Independent add-symbol dialogs must release their complete Qt trees.
+
+    :return: None.
+    """
+    application: QtWidgets.QApplication = get_qt_application()
+    block: Block = Block(name="repeatable_add_symbol_form")
     dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(
         block,
         "GENERIC",
         VarFactory(),
     )
+    dialog_index: int
+    for dialog_index in range(3):
+        _unused_dialog_index: int = dialog_index
+        add_dialog: AddSymbolDialog = AddSymbolDialog(
+            BlockSymbolCategory.VARIABLES,
+            list((block,)),
+            block,
+            dialogue,
+        )
+        add_dialog.close()
+        add_dialog.deleteLater()
+        QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+        application.processEvents()
+        assert not shiboken6.isValid(add_dialog)
+        assert dialogue.findChildren(AddSymbolDialog) == list()
 
-    dialogue._add_symbol_ui.new_symbol_category.setCurrentText("Retained modes")
-
-    assert dialogue._add_symbol_ui.new_symbol_kind.currentData() == BlockSymbolKind.MODE_PARAMETER
-    assert dialogue._add_symbol_ui.new_symbol_kind_label.isHidden()
-    assert dialogue._add_symbol_ui.new_symbol_kind.isHidden()
-
-    dialogue._add_symbol_ui.new_symbol_category.setCurrentText("Variables")
-
-    assert not dialogue._add_symbol_ui.new_symbol_kind_label.isHidden()
-    assert not dialogue._add_symbol_ui.new_symbol_kind.isHidden()
     dialogue.close()
+    QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
     application.processEvents()
+
+    assert not shiboken6.isValid(dialogue)
 
 
 def test_property_tree_reveals_categories_after_their_first_staged_row() -> None:
@@ -2433,21 +2796,13 @@ def test_property_tree_reveals_categories_after_their_first_staged_row() -> None
 
     assert get_property_group_names(dialogue) == list()
 
-    dialogue._add_symbol_ui.new_symbol_category.setCurrentText("Parameters")
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.EVENT_PARAMETER.value)
-    dialogue._add_symbol_ui.new_symbol_name.setText("runtime_gain")
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, block, "runtime_gain", BlockSymbolKind.EVENT_PARAMETER)
     assert get_property_group_names(dialogue) == list(("Parameters",))
 
-    dialogue._add_symbol_ui.new_symbol_category.setCurrentText("Variables")
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.INPUT.value)
-    dialogue._add_symbol_ui.new_symbol_name.setText("input_signal")
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, block, "input_signal", BlockSymbolKind.INPUT)
     assert get_property_group_names(dialogue) == list(("Parameters", "Variables"))
 
-    dialogue._add_symbol_ui.new_symbol_category.setCurrentText("Retained modes")
-    dialogue._add_symbol_ui.new_symbol_name.setText("held_signal")
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, block, "held_signal", BlockSymbolKind.MODE_PARAMETER)
     assert get_property_group_names(dialogue) == list((
         "Parameters",
         "Variables",
@@ -2475,19 +2830,17 @@ def test_new_variables_receive_default_initialization_source_entries() -> None:
         VarFactory(),
     )
 
-    dialogue._add_symbol_ui.new_symbol_category.setCurrentText("Variables")
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.STATE.value)
-    dialogue._add_symbol_ui.new_state_derivative.setChecked(True)
-    dialogue._add_symbol_ui.new_symbol_name.setText("state_signal")
-    dialogue.add_staged_symbol()
+    stage_test_symbol(
+        dialogue,
+        block,
+        "state_signal",
+        BlockSymbolKind.STATE,
+        create_derivative=True,
+    )
 
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.ALGEBRAIC.value)
-    dialogue._add_symbol_ui.new_symbol_name.setText("algebraic_signal")
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, block, "algebraic_signal", BlockSymbolKind.ALGEBRAIC)
 
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.INPUT.value)
-    dialogue._add_symbol_ui.new_symbol_name.setText("input_signal")
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, block, "input_signal", BlockSymbolKind.INPUT)
 
     source: str = dialogue._dae_editor.toPlainText()
     assert "state_signal: 0.0" in source
@@ -2533,9 +2886,7 @@ def test_retained_mode_tree_leaves_initialization_to_python_code() -> None:
         "GENERIC",
         VarFactory(),
     )
-    dialogue._add_symbol_ui.new_symbol_category.setCurrentText("Retained modes")
-    dialogue._add_symbol_ui.new_symbol_name.setText("held_signal")
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, block, "held_signal", BlockSymbolKind.MODE_PARAMETER)
 
     mode_index: QtCore.QModelIndex = find_retained_mode_index(
         dialogue,
@@ -2592,10 +2943,7 @@ def test_adding_parent_retained_mode_displays_parent_and_preserves_child_equatio
     active_code_before: str = dialogue._dae_editor.toPlainText()
     assert dialogue._equation_buffers[active_index_before].get_block() is child
 
-    dialogue._add_symbol_ui.new_symbol_owner.setCurrentIndex(0)
-    dialogue._add_symbol_ui.new_symbol_category.setCurrentText("Retained modes")
-    dialogue._add_symbol_ui.new_symbol_name.setText("held_mode")
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, root, "held_mode", BlockSymbolKind.MODE_PARAMETER)
 
     assert dialogue._active_equation_buffer_index == 0
     assert dialogue._equation_buffers[dialogue._active_equation_buffer_index].get_block() is root
@@ -2645,7 +2993,7 @@ def test_procedural_menu_inserts_selected_logic_into_active_owner() -> None:
         else:
             pass
 
-    assert set(concrete_types) == set(ProceduralLogicType) - set((ProceduralLogicType.Base,))
+    assert set(concrete_types) == set(ProceduralLogicType) - set((ProceduralLogicType.Base, ProceduralLogicType.ManufacturerNativeController))
     assert time_delay_action is not None
     time_delay_action.trigger()
 
@@ -2687,26 +3035,17 @@ def test_adding_symbol_does_not_validate_incomplete_procedural_logic() -> None:
     assert "fixed_sample(" in dialogue._dae_editor.toPlainText()
     assert "output=None" in dialogue._dae_editor.toPlainText()
 
-    dialogue._add_symbol_ui.new_symbol_category.setCurrentText("Variables")
-    dialogue._add_symbol_ui.new_symbol_name.setText("input_signal")
-    dialogue.add_staged_symbol()
-    assert dialogue._add_symbol_ui.new_symbol_name.text() == ""
+    stage_test_symbol(dialogue, block, "input_signal", BlockSymbolKind.INPUT)
     assert "input_signal" in dialogue._namespace
 
-    dialogue._add_symbol_ui.new_symbol_category.setCurrentText("Parameters")
-    dialogue._add_symbol_ui.new_symbol_name.setText("runtime_gain")
-    dialogue.add_staged_symbol()
-    assert dialogue._add_symbol_ui.new_symbol_name.text() == ""
+    stage_test_symbol(dialogue, block, "runtime_gain", BlockSymbolKind.EVENT_PARAMETER)
     assert "runtime_gain" in dialogue._namespace
 
-    dialogue._add_symbol_ui.new_symbol_category.setCurrentText("Retained modes")
-    dialogue._add_symbol_ui.new_symbol_name.setText("sample_mode")
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, block, "sample_mode", BlockSymbolKind.MODE_PARAMETER)
 
     staged_source: str = dialogue._dae_editor.toPlainText()
     assert "sample_mode: 0.0" in staged_source
     assert "output=None" in staged_source
-    assert dialogue._add_symbol_ui.new_symbol_name.text() == ""
     assert "sample_mode" in dialogue._dae_editor.get_language_context().get_mode_names()
     assert len(block.in_vars) == 0
     assert len(block.event_dict) == 0
@@ -2731,9 +3070,7 @@ def test_pending_symbol_rename_updates_code_and_numeric_parameters() -> None:
     gain: Var = Var("gain")
     block: Block = Block(name="pending_rename", event_dict=dict(((gain, Const(2.0)),)))
     dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(block, "GENERIC", VarFactory())
-    dialogue._add_symbol_ui.new_symbol_name.setText("speed")
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.STATE.value)
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, block, "speed", BlockSymbolKind.STATE)
     dialogue._dae_editor.setPlainText(
         "state_vars = [speed]\nstate_eqs = {speed: gain}\nalgebraic_eqs = []\ninit_eqs = {}\ndiff_init_eqs = {}"
     )
@@ -2751,8 +3088,8 @@ def test_pending_symbol_rename_updates_code_and_numeric_parameters() -> None:
     application.processEvents()
 
 
-def test_composite_static_mapping_is_grouped_as_a_parameter() -> None:
-    """A root exposing a child parameter through api_obj_mapping is not a variable.
+def test_parent_mapping_to_child_static_parameter_is_rejected() -> None:
+    """A static mapping must be owned by the block declaring its parameter.
 
     :return: None.
     """
@@ -2764,12 +3101,13 @@ def test_composite_static_mapping_is_grouped_as_a_parameter() -> None:
     )
     dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(root, "GENERIC", VarFactory())
     root_index: QtCore.QModelIndex = find_property_index(dialogue, "rating", root)
-    assert root_index.parent().parent().data() == "Parameters"
+    assert root_index.parent().parent().data() == "Variables"
     assert root_index.siblingAtColumn(2).data() == "Pl0"
-    dialogue.apply_changes()
-    assert root.api_obj_mapping[ParamPowerFlowReferenceType.Pl0] is rating
-    assert rating not in root.parameters
-    assert rating in child.parameters
+    child_index: QtCore.QModelIndex = find_property_index(dialogue, "rating", child)
+    assert child_index.parent().parent().data() == "Parameters"
+    assert child_index.siblingAtColumn(2).data() == "10.0"
+    with pytest.raises(ValueError, match="same block's parameters or event_dict"):
+        dialogue._symbol_model.build_validation_namespace(build_block_symbol_namespace(root))
     dialogue.close()
     application.processEvents()
 
@@ -2782,12 +3120,9 @@ def test_new_dynamic_parameter_expression_text_is_rejected_before_apply() -> Non
     application: QtWidgets.QApplication = get_qt_application()
     block: Block = Block(name="pending_cycle")
     dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(block, "GENERIC", VarFactory())
-    dialogue._add_symbol_ui.new_symbol_category.setCurrentText("Parameters")
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.EVENT_PARAMETER.value)
     name: str
     for name in ("first_gain", "second_gain"):
-        dialogue._add_symbol_ui.new_symbol_name.setText(name)
-        dialogue.add_staged_symbol()
+        stage_test_symbol(dialogue, block, name, BlockSymbolKind.EVENT_PARAMETER)
     assert not dialogue._property_tree_model.setData(
         find_property_index(dialogue, "first_gain").siblingAtColumn(2), "second_gain + 1",
     )
@@ -2841,12 +3176,7 @@ def test_property_owner_selection_guides_symbol_addition() -> None:
         child,
     ).parent()
     assert child_index.isValid()
-    dialogue.on_property_selected(child_index)
-    assert dialogue._add_symbol_ui.new_symbol_owner.currentData() is child
-    assert dialogue._add_symbol_ui.new_symbol_category.currentText() == "Parameters"
-    dialogue._add_symbol_ui.new_symbol_name.setText("child_gain")
-    dialogue._add_symbol_ui.new_symbol_kind.setCurrentText(BlockSymbolKind.EVENT_PARAMETER.value)
-    dialogue.add_staged_symbol()
+    stage_test_symbol(dialogue, child, "child_gain", BlockSymbolKind.EVENT_PARAMETER)
     assert find_property_index(dialogue, "child_gain", child).isValid()
     close_dirty_block_property_dialogue(dialogue)
     application.processEvents()
@@ -2887,7 +3217,7 @@ def test_symbol_mapping_column_applies_power_flow_and_device_references() -> Non
 
 
 def test_mapping_editability_matches_variable_and_parameter_semantics() -> None:
-    """Only block-owned variables and static parameters may edit mappings."""
+    """Both immutable and event parameters may edit device mappings."""
     application: QtWidgets.QApplication = get_qt_application()
     _unused_application: QtWidgets.QApplication = application
     input_variable: Var = Var("command")
@@ -2922,7 +3252,7 @@ def test_mapping_editability_matches_variable_and_parameter_semantics() -> None:
     assert not dialogue._symbol_model.flags(input_index) & editable_flag
     assert dialogue._symbol_model.flags(variable_index) & editable_flag
     assert dialogue._symbol_model.flags(static_index) & editable_flag
-    assert not dialogue._symbol_model.flags(event_index) & editable_flag
+    assert dialogue._symbol_model.flags(event_index) & editable_flag
     input_tree_value_index: QtCore.QModelIndex = find_property_index(
         dialogue,
         "command",
@@ -2945,6 +3275,10 @@ def test_mapping_editability_matches_variable_and_parameter_semantics() -> None:
         static_index,
         "ParamPowerFlowReferenceType.Pl0",
     )
+    assert dialogue._symbol_model.setData(
+        static_index,
+        "None",
+    )
     assert not dialogue._symbol_model.setData(
         static_index,
         "VarPowerFlowReferenceType.P",
@@ -2953,11 +3287,15 @@ def test_mapping_editability_matches_variable_and_parameter_semantics() -> None:
         event_index,
         "VarPowerFlowReferenceType.P",
     )
+    assert dialogue._symbol_model.setData(
+        event_index,
+        "ParamPowerFlowReferenceType.Ql0",
+    )
 
     dialogue.apply_changes()
 
     assert block.external_mapping == {VarPowerFlowReferenceType.P: algebraic_variable}
-    assert block.api_obj_mapping == {ParamPowerFlowReferenceType.Pl0: static_parameter}
+    assert block.api_obj_mapping == {ParamPowerFlowReferenceType.Ql0: event_parameter}
     dialogue.close()
 
 
@@ -3289,6 +3627,63 @@ def test_lookup_and_jmarti_builders_expose_conditional_special_settings() -> Non
         dialogue.close()
 
 
+def test_fault_builder_recovers_all_settings_after_block_roundtrip() -> None:
+    """Restore fault topology, orientation, control, and values after reopening.
+
+    :return: None.
+    """
+    source_builder: TemplateDefinition | None = create_default_template_builder(
+        var_factory=VarFactory(),
+        block_type=BlockType.FAULT_EMT,
+        item_name="persisted_fault",
+    )
+    assert source_builder is not None
+    source_builder.params_dict["fault_type"].value = FaultType.LLG
+    source_builder.params_dict["placement_side"].value = EmtFaultPlacementSide.ToSide
+    source_builder.params_dict["phA"].value = False
+    source_builder.params_dict["phB"].value = True
+    source_builder.params_dict["phC"].value = True
+    source_builder.params_dict["signal_controlled"].value = True
+    source_builder.params_dict["initial_closed"].value = True
+    source_builder.params_dict["fault_resistance"].value = 0.021
+    source_builder.params_dict["ground_resistance"].value = 0.034
+    source_builder.params_dict["open_conductance"].value = 2.0e-7
+    source_builder.params_dict["fault_time_constant"].value = 2.5e-4
+    source_builder.params_dict["command_threshold"].value = 0.61
+    source_builder.params_dict["name"].value = "persisted_fault"
+    generated_template: EmtModelTemplate = source_builder.eval()
+    restored_block: Block = Block.parse(
+        data=generated_template.block.to_dict(),
+        procedural_logic_codec=ProceduralLogicCodec(),
+    )
+
+    restored_builder: TemplateDefinition | None = create_default_template_builder(
+        var_factory=VarFactory(),
+        block_type=BlockType.FAULT_EMT,
+        item_name=restored_block.name,
+    )
+    assert restored_builder is not None
+    initialize_template_builder_from_block(
+        builder=restored_builder,
+        block=restored_block,
+        block_type=BlockType.FAULT_EMT,
+    )
+
+    assert restored_builder.get_value("fault_type") is FaultType.LLG
+    assert restored_builder.get_value("placement_side") is EmtFaultPlacementSide.ToSide
+    assert not restored_builder.get_value("phA")
+    assert restored_builder.get_value("phB")
+    assert restored_builder.get_value("phC")
+    assert restored_builder.get_value("signal_controlled")
+    assert restored_builder.get_value("initial_closed")
+    assert restored_builder.get_value("fault_resistance") == pytest.approx(0.021)
+    assert restored_builder.get_value("ground_resistance") == pytest.approx(0.034)
+    assert restored_builder.get_value("open_conductance") == pytest.approx(2.0e-7)
+    assert restored_builder.get_value("fault_time_constant") == pytest.approx(2.5e-4)
+    assert restored_builder.get_value("command_threshold") == pytest.approx(0.61)
+    assert restored_builder.get_value("name") == "persisted_fault"
+
+
 def test_genraw_properties_dialogue_opens_with_absolute_value_latex() -> None:
     """GENRAW equations containing adjacent absolute delimiters must render safely."""
     application: QtWidgets.QApplication = get_qt_application()
@@ -3369,3 +3764,440 @@ def test_latex_renderer_keeps_unsupported_and_oversized_text_readable() -> None:
     assert not oversized_rendering.get_pixmap().isNull()
     assert oversized_rendering.get_size().width() < 1000
     assert not oversized_rendering.get_uses_mathtext()
+
+
+def test_manufacturer_native_controller_opens_as_read_only_block() -> None:
+    """Inspect an importer-owned controller without reconstructing or mutating it.
+
+    :return: None.
+    """
+    application: QtWidgets.QApplication = get_qt_application()
+    _unused_application: QtWidgets.QApplication = application
+    controller: ManufacturerNativeControllerLogic = ManufacturerNativeControllerLogic(
+        provider_idtag="provider-id",
+        model_info_sha256="1" * 64,
+        signal_bindings=tuple(),
+        parameter_overrides=tuple(),
+        name="Manufacturer controller",
+    )
+    block: Block = Block(
+        name="manufacturer block",
+        procedural_logic=(controller,),
+        is_decomposable=False,
+    )
+    original_data: dict[str, object] = controller.to_data()
+    original_entries: tuple[object, ...] = tuple(block.procedural_logic)
+
+    dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(
+        block,
+        "GENERIC",
+        VarFactory(),
+    )
+
+    assert "read-only manufacturer model" in dialogue.windowTitle()
+    assert not dialogue.ui.apply_button.isEnabled()
+    assert not dialogue.ui.procedural_add_button.isEnabled()
+    assert dialogue._dae_editor.isReadOnly()
+    assert "manufacturer_native_controller(" not in dialogue._dae_editor.toPlainText()
+    assert "Internal manufacturer_native_controller entry" in dialogue._dae_editor.toPlainText()
+
+    dialogue.validate_complete_dae_code()
+    dialogue.apply_changes()
+
+    assert tuple(block.procedural_logic) == original_entries
+    assert block.procedural_logic[0] is controller
+    assert controller.to_data() == original_data
+    dialogue.prepare_to_delete()
+
+
+def test_manufacturer_native_controller_has_transient_scene_presentation() -> None:
+    """Expose the canonical OEM block with real ports and no root self-alias.
+
+    :return: None.
+    """
+    application: QtWidgets.QApplication = get_qt_application()
+    circuit: MultiCircuit = MultiCircuit()
+    provider: ManufacturerNativeModel = ManufacturerNativeModel(
+        name="Qualified OEM provider"
+    )
+    provider.model_info = b"veragrid-manufacturer-native-model-info-v2\n{}"
+    circuit.add_manufacturer_native_model(provider)
+    input_variable: Var = Var(name="u")
+    input_vector_variable: Var = Var(name="u_q")
+    output_variable: Var = Var(name="y")
+    controller: ManufacturerNativeControllerLogic = ManufacturerNativeControllerLogic(
+        provider_idtag=provider.idtag,
+        model_info_sha256=provider.model_info_sha256,
+        signal_bindings=(
+            IeeeCigreDllSignalBinding(True, 0, 0, input_variable),
+            IeeeCigreDllSignalBinding(True, 0, 1, input_vector_variable),
+            IeeeCigreDllSignalBinding(False, 0, 0, output_variable),
+        ),
+        parameter_overrides=tuple(),
+        name="Manufacturer controller",
+    )
+    root_block: Block = Block(
+        in_vars=(input_variable, input_vector_variable),
+        out_vars=(output_variable,),
+        mode_dict={output_variable: Const(0.0)},
+        name="OEM root",
+        procedural_logic=(controller,),
+        is_decomposable=False,
+    )
+    editor: DynamicBlockEditorGUI = DynamicBlockEditorGUI(
+        var_factory=VarFactory(),
+        current_block=root_block,
+        root_block=root_block,
+        api_object=BlockPropertiesApiStub(),
+        current_theme="Light",
+        mode=DynamicSimulationMode.RMS,
+        templates_list=list(),
+        circuit=circuit,
+        is_root_editor=False,
+        modal=False,
+    )
+    editor.show()
+    application.processEvents()
+
+    oem_items: list[graph.GenericBlockItem] = [
+        scene_item
+        for scene_item in editor.scene.items()
+        if isinstance(scene_item, graph.GenericBlockItem)
+        and scene_item.subsys is root_block
+    ]
+    assert len(oem_items) == 1
+    oem_item: graph.GenericBlockItem = oem_items[0]
+    assert [port.base_var for port in oem_item.inputs] == [
+        input_variable,
+        input_vector_variable,
+    ]
+    assert [port.base_var for port in oem_item.outputs] == [output_variable]
+    assert all(port.isVisible() for port in oem_item.inputs)
+    assert all(port.isVisible() for port in oem_item.outputs)
+    assert "Provider: Qualified OEM provider" in oem_item.toolTip()
+    assert "Interface: ieee_cigre_v1_1" in oem_item.toolTip()
+    assert "Domain: RMS" in oem_item.toolTip()
+    assert "Inputs: 1" in oem_item.toolTip()
+    assert "Outputs: 1" in oem_item.toolTip()
+    assert "Reference: Valid" in oem_item.toolTip()
+
+    wrapper_items: list[graph.MeasurementsItem] = [
+        scene_item
+        for scene_item in editor.scene.items()
+        if isinstance(scene_item, graph.MeasurementsItem)
+    ]
+    assert len(wrapper_items) == 3
+    assert all(
+        not wrapper_item.sceneBoundingRect().intersects(oem_item.sceneBoundingRect())
+        for wrapper_item in wrapper_items
+    )
+
+    # Exercise ordinary GUI wires. Root wrappers intentionally expose the
+    # same canonical Vars as the atomic block, so these branches persist while
+    # the symbolic registry remains empty.
+    input_port: graph.PortItem
+    for input_port in oem_item.inputs:
+        matching_sources: list[graph.PortItem] = [
+            wrapper_item.outputs[0]
+            for wrapper_item in wrapper_items
+            if len(wrapper_item.outputs) == 1
+            and wrapper_item.outputs[0].base_var is input_port.base_var
+        ]
+        assert len(matching_sources) == 1
+        editor.attach_new_connection_item(item=graph.ConnectionItem(
+            source_port=matching_sources[0],
+            target_port=input_port,
+            diagram=editor.diagram,
+            editor=editor,
+        ))
+
+    output_port: graph.PortItem
+    for output_port in oem_item.outputs:
+        matching_targets: list[graph.PortItem] = [
+            wrapper_item.inputs[0]
+            for wrapper_item in wrapper_items
+            if len(wrapper_item.inputs) == 1
+            and wrapper_item.inputs[0].base_var is output_port.base_var
+        ]
+        assert len(matching_targets) == 1
+        editor.attach_new_connection_item(item=graph.ConnectionItem(
+            source_port=output_port,
+            target_port=matching_targets[0],
+            diagram=editor.diagram,
+            editor=editor,
+        ))
+
+    assert len(root_block.diagram.con_data) == 3
+    connection_records: list[object] = [
+        connection
+        for connections in editor.var_factory.get_connections_dict().values()
+        for connection in connections
+    ]
+    assert connection_records == list()
+
+    # The real block retains the established read-only properties gesture.
+    scene_center: QtCore.QPointF = oem_item.mapToScene(oem_item.rect().center())
+    view_position: QtCore.QPoint = editor.view.mapFromScene(scene_center)
+    QTest.mouseDClick(
+        editor.view.viewport(),
+        QtCore.Qt.MouseButton.LeftButton,
+        pos=view_position,
+    )
+    application.processEvents()
+    properties_dialogue: DynamicBlockPropertiesDialog | None = (
+        editor._block_properties_dialogue
+    )
+    assert properties_dialogue is not None
+    assert "read-only manufacturer model" in properties_dialogue.windowTitle()
+    assert not properties_dialogue.ui.apply_button.isEnabled()
+    properties_dialogue.prepare_to_delete()
+    properties_dialogue.close()
+    application.processEvents()
+
+    # Reference diagnostics decorate the real item instead of adding another
+    # graphics object or runtime validator.
+    controller.model_info_sha256 = "2" * 64
+    editor._add_manufacturer_native_controller_presentations()
+    assert "ModelInfo digest mismatch" in oem_item.toolTip()
+    assert oem_item._validation_highlighted
+
+    controller.model_info_sha256 = provider.model_info_sha256
+    editor._add_manufacturer_native_controller_presentations()
+    assert "Reference: Valid" in oem_item.toolTip()
+    assert not oem_item._validation_highlighted
+
+    original_connection_count: int = len(root_block.diagram.con_data)
+    editor.rebuild_scene_from_diagram()
+    application.processEvents()
+    reopened_items: list[graph.GenericBlockItem] = [
+        scene_item
+        for scene_item in editor.scene.items()
+        if isinstance(scene_item, graph.GenericBlockItem)
+        and scene_item.subsys is root_block
+    ]
+    assert len(reopened_items) == 1
+    assert len(reopened_items[0].inputs) == 2
+    assert len(reopened_items[0].outputs) == 1
+    assert len(root_block.diagram.con_data) == original_connection_count
+    assert editor.var_factory.get_connections_dict() == dict()
+
+    editor.has_unapplied_changes = False
+    editor.close()
+    application.processEvents()
+
+
+def test_manufacturer_native_controller_follows_emt_interface_wrappers() -> None:
+    """Compose an OEM child with aliases and consume its remapped runtime map.
+
+    :return: None.
+    """
+    application: QtWidgets.QApplication = get_qt_application()
+    circuit: MultiCircuit = MultiCircuit()
+    provider: ManufacturerNativeModel = ManufacturerNativeModel(
+        name="Qualified PPC provider"
+    )
+    provider.model_info = b"veragrid-manufacturer-native-model-info-v2\n{}"
+    circuit.add_manufacturer_native_model(provider)
+
+    # Every variable participating in template duplication or editor aliases
+    # belongs to the same factory that owns the connection graph.
+    var_factory: VarFactory = VarFactory()
+    source_input: Var = var_factory.add_var(name="ppc_input")
+    source_output: Var = var_factory.add_var(name="ppc_output")
+    source_controller: ManufacturerNativeControllerLogic = ManufacturerNativeControllerLogic(
+        provider_idtag=provider.idtag,
+        model_info_sha256=provider.model_info_sha256,
+        signal_bindings=(
+            IeeeCigreDllSignalBinding(True, 0, 0, source_input),
+            IeeeCigreDllSignalBinding(False, 0, 0, source_output),
+        ),
+        parameter_overrides=tuple(),
+        name="PPC controller",
+    )
+    source_block: Block = Block(
+        in_vars=(source_input,),
+        out_vars=(source_output,),
+        mode_dict={source_output: Const(0.0)},
+        name="OEM PPC",
+        procedural_logic=(source_controller,),
+        is_decomposable=False,
+    )
+    template: RmsModelTemplate = RmsModelTemplate(name="OEM PPC")
+    template.block = source_block
+
+    parent_input: Var = var_factory.add_var(name="plant_measurement")
+    parent_output: Var = var_factory.add_var(name="plant_command")
+    parent_block: Block = Block(
+        in_vars=(parent_input,),
+        out_vars=(parent_output,),
+        mode_dict={parent_output: Const(0.0)},
+        name="Plant controller",
+        is_decomposable=True,
+    )
+    editor: DynamicBlockEditorGUI = DynamicBlockEditorGUI(
+        var_factory=var_factory,
+        current_block=parent_block,
+        root_block=parent_block,
+        api_object=BlockPropertiesApiStub(),
+        current_theme="Light",
+        mode=DynamicSimulationMode.RMS,
+        templates_list=(template,),
+        circuit=circuit,
+        is_root_editor=False,
+        modal=False,
+    )
+    editor.show()
+    application.processEvents()
+
+    child_item_result: graph.BlockItem | graph.GenericBlockItem | None = (
+        editor.create_template_block_item(template=template, x_pos=320.0, y_pos=180.0)
+    )
+    assert isinstance(child_item_result, graph.GenericBlockItem)
+    child_item: graph.GenericBlockItem = child_item_result
+    child_block: Block = child_item.subsys
+    assert child_block is not source_block
+    assert child_block.in_vars[0].uid != source_input.uid
+    assert child_block.out_vars[0].uid != source_output.uid
+    assert child_block.in_vars[0].non_mutable_uid != parent_input.non_mutable_uid
+    assert child_block.out_vars[0].non_mutable_uid != parent_output.non_mutable_uid
+    original_child_input_uid: int = child_block.in_vars[0].uid
+    original_child_output_uid: int = child_block.out_vars[0].uid
+    original_child_controller: ManufacturerNativeControllerLogic = child_block.procedural_logic[0]
+    assert original_child_controller.signal_bindings[0].get_variable() is child_block.in_vars[0]
+    assert original_child_controller.signal_bindings[1].get_variable() is child_block.out_vars[0]
+    assert original_child_controller.signal_bindings[0].get_variable().uid == original_child_input_uid
+    assert original_child_controller.signal_bindings[1].get_variable().uid == original_child_output_uid
+
+    wrapper_items: list[graph.MeasurementsItem] = [
+        scene_item
+        for scene_item in editor.scene.items()
+        if isinstance(scene_item, graph.MeasurementsItem)
+    ]
+    input_wrappers: list[graph.MeasurementsItem] = [
+        wrapper_item
+        for wrapper_item in wrapper_items
+        if len(wrapper_item.outputs) == 1
+        and wrapper_item.outputs[0].base_var is parent_input
+    ]
+    output_wrappers: list[graph.MeasurementsItem] = [
+        wrapper_item
+        for wrapper_item in wrapper_items
+        if len(wrapper_item.inputs) == 1
+        and wrapper_item.inputs[0].base_var is parent_output
+    ]
+    assert len(input_wrappers) == 1
+    assert len(output_wrappers) == 1
+
+    input_connection: graph.ConnectionItem = graph.ConnectionItem(
+        source_port=input_wrappers[0].outputs[0],
+        target_port=child_item.inputs[0],
+        diagram=editor.diagram,
+        editor=editor,
+    )
+    editor.attach_new_connection_item(item=input_connection)
+    controller_after_input: ManufacturerNativeControllerLogic = child_block.procedural_logic[0]
+    assert controller_after_input.signal_bindings[0].get_variable() is child_block.in_vars[0]
+    assert controller_after_input.signal_bindings[0].get_variable().uid == child_block.in_vars[0].uid
+    output_connection: graph.ConnectionItem = graph.ConnectionItem(
+        source_port=child_item.outputs[0],
+        target_port=output_wrappers[0].inputs[0],
+        diagram=editor.diagram,
+        editor=editor,
+    )
+    editor.attach_new_connection_item(item=output_connection)
+    editor._add_manufacturer_native_controller_presentations()
+
+    assert len(parent_block.diagram.con_data) == 2
+    alias_count: int = sum(
+        len(connections)
+        for connections in editor.var_factory.get_connections_dict().values()
+    )
+    assert alias_count == 2
+    child_controller: ManufacturerNativeControllerLogic = child_block.procedural_logic[0]
+    input_binding: IeeeCigreDllSignalBinding = child_controller.signal_bindings[0]
+    output_binding: IeeeCigreDllSignalBinding = child_controller.signal_bindings[1]
+    assert input_binding.get_variable() is child_block.in_vars[0]
+    assert output_binding.get_variable() is child_block.out_vars[0]
+    assert input_binding.get_variable().uid == parent_input.uid
+    assert output_binding.get_variable().uid == parent_output.uid
+    assert "Provider: Qualified PPC provider" in child_item.toolTip()
+    assert "Reference: Valid" in child_item.toolTip()
+
+    # Exercise the existing runtime mapping and publication owners with the
+    # exact remapped child binding UIDs produced by the GUI connection path.
+    input_signal: ManufacturerNativeSignalInfo = ManufacturerNativeSignalInfo(
+        name="ppc_input",
+        description="PPC measurement",
+        unit="pu",
+        data_type=IeeeCigreDllDataType.REAL64,
+        width=1,
+    )
+    output_signal: ManufacturerNativeSignalInfo = ManufacturerNativeSignalInfo(
+        name="ppc_output",
+        description="PPC command",
+        unit="pu",
+        data_type=IeeeCigreDllDataType.REAL64,
+        width=1,
+    )
+    model_info: ManufacturerNativeModelInfo = object.__new__(
+        ManufacturerNativeModelInfo
+    )
+    model_info.input_ports = (input_signal,)
+    model_info.output_ports = (output_signal,)
+
+    problem: EmtProblemDae = object.__new__(EmtProblemDae)
+    problem._uid2idx_vars = {input_binding.get_variable().uid: 0}
+    problem._uid2idx_event_params = {output_binding.get_variable().uid: 0}
+    problem._uid2idx_params = dict()
+    problem._parameters_values = list()
+    runtime_session: ManufacturerNativeRuntimeSession = object.__new__(
+        ManufacturerNativeRuntimeSession
+    )
+    runtime_session._problem = problem
+    input_sources: tuple[tuple[int, int], ...]
+    output_indices: tuple[int, ...]
+    input_sources, output_indices = runtime_session._resolve_mapping(
+        problem=problem,
+        logic=child_controller,
+        model_info=model_info,
+    )
+    runtime_binding: _RuntimeBinding = object.__new__(_RuntimeBinding)
+    runtime_binding.input_sources = input_sources
+    runtime_binding.output_indices = output_indices
+    runtime_input: tuple[int | float, ...] = runtime_session._inputs(
+        binding=runtime_binding,
+        x=np.asarray((0.75,), dtype=float),
+        params=np.asarray((0.0,), dtype=float),
+    )
+    runtime_parameters: np.ndarray = np.asarray((0.0,), dtype=float)
+    runtime_session._publish(
+        binding=runtime_binding,
+        outputs=(0.42,),
+        params=runtime_parameters,
+    )
+    assert runtime_input == (0.75,)
+    assert runtime_parameters.tolist() == [0.42]
+
+    # Exercise the ordinary GUI removal path and require the controller bindings
+    # to return to the independent child identities saved before composition.
+    editor.remove_connection_item(item=input_connection)
+    editor.remove_connection_item(item=output_connection)
+    restored_controller: ManufacturerNativeControllerLogic = child_block.procedural_logic[0]
+    restored_input_binding: IeeeCigreDllSignalBinding = restored_controller.signal_bindings[0]
+    restored_output_binding: IeeeCigreDllSignalBinding = restored_controller.signal_bindings[1]
+    assert restored_input_binding.get_variable() is child_block.in_vars[0]
+    assert restored_output_binding.get_variable() is child_block.out_vars[0]
+    assert restored_input_binding.get_variable().uid == original_child_input_uid
+    assert restored_output_binding.get_variable().uid == original_child_output_uid
+    assert child_block.in_vars[0].uid == original_child_input_uid
+    assert child_block.out_vars[0].uid == original_child_output_uid
+    assert len(parent_block.diagram.con_data) == 0
+    restored_alias_count: int = sum(
+        len(connections)
+        for connections in editor.var_factory.get_connections_dict().values()
+    )
+    assert restored_alias_count == 0
+
+    editor.has_unapplied_changes = False
+    editor.close()
+    application.processEvents()

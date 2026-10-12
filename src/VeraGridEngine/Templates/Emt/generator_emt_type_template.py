@@ -405,7 +405,6 @@ def get_simple_generator_emt_template(vf: VarFactory, name: str = "simple_emt_ty
         Lmq:        vf.add_const(1.55),
         Lf:         vf.add_const(0.10),
         Rf:         vf.add_const(0.017),
-        R0:         vf.add_const(0.001),
         omega_ref:  vf.add_const(1.0),
         Lmd: Ld - La,
         d_v_A: vf.add_const(None),
@@ -422,7 +421,15 @@ def get_simple_generator_emt_template(vf: VarFactory, name: str = "simple_emt_ty
             (vpk_init + Ra * ipk_init * sym.cos(phi_init) + omega * (Lmq + La) * ipk_init * sym.sin(phi_init))
         ),
     }
+    templ.block.parameters.update({
+        R0: vf.add_const(0.001),
+        omega_base: vf.add_const(None),
+        Ra: vf.add_const(None),
+        Ld: vf.add_const(None),
+        L0: vf.add_const(None),
+    })
     templ.block.api_obj_mapping = {
+        ParamPowerFlowReferenceType.generator_r0_pu: R0,
         ParamPowerFlowReferenceType.omega_base : omega_base,
         ParamPowerFlowReferenceType.R1: Ra,
         ParamPowerFlowReferenceType.X1: Ld,
@@ -795,7 +802,6 @@ def get_generator_emt_type_template(vf: VarFactory, name: str = "emt_type_genera
         Rq1: vf.add_const(0.020),
         Rq2: vf.add_const(0.030),
         Rq3: vf.add_const(0.040),
-        R0: vf.add_const(0.001),
 
         # --------------------------------------------------------------------------
         # Magnetic coefficients
@@ -870,7 +876,15 @@ def get_generator_emt_type_template(vf: VarFactory, name: str = "emt_type_genera
         q_C: vf.add_const(None),
     }
 
+    templ.block.parameters.update({
+        R0: vf.add_const(0.001),
+        omega_base: vf.add_const(None),
+        Ra: vf.add_const(None),
+        Ld: vf.add_const(None),
+        L0: vf.add_const(None),
+    })
     templ.block.api_obj_mapping = {
+        ParamPowerFlowReferenceType.generator_r0_pu: R0,
         ParamPowerFlowReferenceType.omega_base: omega_base,
         ParamPowerFlowReferenceType.R1: Ra,
         ParamPowerFlowReferenceType.X1: Ld,
@@ -1333,6 +1347,12 @@ def get_generator_sauer_pai_type_emt_template(vf: VarFactory, name: str = "sauer
         q_C: vf.add_const(None),
     }
 
+    templ.block.parameters.update({
+        omega_b: vf.add_const(None),
+        ra: vf.add_const(None),
+        xd: vf.add_const(None),
+        x0: vf.add_const(None),
+    })
     templ.block.api_obj_mapping = {
         ParamPowerFlowReferenceType.omega_base: omega_b,
         ParamPowerFlowReferenceType.R1: ra,
@@ -1485,10 +1505,10 @@ def get_governor_emt(vf: VarFactory, name: str = "Governor") -> EmtModelTemplate
 
     events_dict = {
         # control parameters
-        # The complete generator wrapper may replace this placeholder with a
-        # model-level shared-power reference. The standalone governor keeps a
-        # neutral default until the wrapper or initialization layer provides it.
-        # Pm_ref: vf.add_const(None),
+        # Mechanical-power reference is derived from the solved operating point.
+        # Keeping it in runtime storage lets the EMT seed assignment provide the
+        # value after the static device parameters have been assembled.
+        Pm_ref: vf.add_const(None),
         Kp: vf.add_const(-0.01),
         Ki: vf.add_const(-0.01),
         p0: vf.add_const(1.0),
@@ -1496,8 +1516,6 @@ def get_governor_emt(vf: VarFactory, name: str = "Governor") -> EmtModelTemplate
         omega_ref: vf.add_const(1),
         # Governor parameters
         K: vf.add_const(10.0),  # governor gain (inverse droop)
-        Pmax: vf.add_const(12.0),  # max mechanical power (pu)
-        Pmin: vf.add_const(-1.0),  # min mechanical power (pu)
         Uc: vf.add_const(-0.5),  # max valve closing rate (pu/s)
         Uo: vf.add_const(0.5),  # max valve opening rate (pu/s)
         T_aux: vf.add_const(0.0),
@@ -1525,6 +1543,10 @@ def get_governor_emt(vf: VarFactory, name: str = "Governor") -> EmtModelTemplate
         out_vars=[Tm],
         in_vars=inputs,
         event_dict=events_dict,
+        parameters={
+            Pmax: vf.add_const(12.0),
+            Pmin: vf.add_const(-1.0),
+        },
         name=name,
 
         init_eqs={
@@ -1533,20 +1555,9 @@ def get_governor_emt(vf: VarFactory, name: str = "Governor") -> EmtModelTemplate
             Tm: ramped_torque_order
         },
         api_obj_mapping={
-            # Gains and limits
-            ParamPowerFlowReferenceType.K: K,  # governor gain (inverse droop)
+            # Generator power limits use the grid power base.
             ParamPowerFlowReferenceType.Pmax: Pmax,  # max mechanical power (pu)
             ParamPowerFlowReferenceType.Pmin: Pmin,  # min mechanical power (pu)
-            ParamPowerFlowReferenceType.Uc: Uc,  # max valve closing rate (pu/s)
-            ParamPowerFlowReferenceType.Uo: Uo,  # max valve opening rate (pu/s)
-            ParamPowerFlowReferenceType.T_aux: T_aux,
-
-            # Control
-            ParamPowerFlowReferenceType.Kp: Kp,
-            ParamPowerFlowReferenceType.Ki: Ki,
-            ParamPowerFlowReferenceType.omega_ref: omega_ref,
-            ParamPowerFlowReferenceType.p0: p0,
-            ParamPowerFlowReferenceType.P0: P0,
 
             # shared ref
             ParamPowerFlowReferenceType.generator_share_p_ref: Pm_ref
@@ -1902,18 +1913,6 @@ def get_complete_generator_template_emt(vf: VarFactory, name="complete_generator
         VarPowerFlowReferenceType.Q_B: gen_mdl.external_mapping[VarPowerFlowReferenceType.Q_B],
         VarPowerFlowReferenceType.P_C: gen_mdl.external_mapping[VarPowerFlowReferenceType.P_C],
         VarPowerFlowReferenceType.Q_C: gen_mdl.external_mapping[VarPowerFlowReferenceType.Q_C],
-    }
-
-    templ.block.api_obj_mapping = {
-        ParamPowerFlowReferenceType.omega_base:
-            gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.omega_base],
-        ParamPowerFlowReferenceType.R1:
-            gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.R1],
-        ParamPowerFlowReferenceType.X1:
-            gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.X1],
-        ParamPowerFlowReferenceType.X0:
-            gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.X0],
-        ParamPowerFlowReferenceType.generator_share_p_ref: governor_mdl.api_obj_mapping[ParamPowerFlowReferenceType.generator_share_p_ref],
     }
 
     templ.block.in_vars = [v_a_in, v_b_in, v_c_in] # v_abc

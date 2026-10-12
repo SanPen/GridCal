@@ -1017,6 +1017,35 @@ def build_graphics_by_diagram_id(dgs_grid: DgsCircuit) -> Dict[str, List[IntGrf]
     return graphics_by_diagram_id
 
 
+def resolve_dgs_container_owner_id(
+        initial_owner_id: str,
+        parent_by_id: Dict[str, str],
+) -> str:
+    """Resolve the first non-container owner above one DGS object.
+
+    PowerFactory can nest a static diagram below any number of ``IntFolder``
+    or ``IntGrfgroup`` rows.  Following those parent links is therefore
+    required before deciding whether the diagram belongs to a static network
+    object.  A malformed cycle is rejected instead of being classified from a
+    partial ancestry chain.
+
+    :param initial_owner_id: Direct ``pDataFolder`` reference of the diagram.
+    :param parent_by_id: Container identifier to parent identifier mapping.
+    :return: First owner outside the container map, or an empty string for a cycle.
+    """
+    owner_id: str = normalize_dgs_ref_id(initial_owner_id)
+    visited_ids: set[str] = set()
+
+    while owner_id != "" and owner_id in parent_by_id and owner_id not in visited_ids:
+        visited_ids.add(owner_id)
+        owner_id = parent_by_id.get(owner_id, "")
+
+    if owner_id in visited_ids:
+        return ""
+    else:
+        return owner_id
+
+
 def build_static_diagram_ids(dgs_grid: DgsCircuit) -> set[str]:
     """Return the strict whitelist of static electrical diagram identifiers.
 
@@ -1057,17 +1086,92 @@ def build_static_diagram_ids(dgs_grid: DgsCircuit) -> set[str]:
             if dynamic_id != "":
                 dynamic_owner_ids.add(dynamic_id)
 
+    # A static diagram can be nested below several generic folders or graphic
+    # groups.  Resolve those containers before comparing the final owner with
+    # the network/site/substation whitelist.
+    parent_by_id: Dict[str, str] = dict()
+    for folder in dgs_grid.intfolders:
+        folder_id: str = normalize_dgs_ref_id(folder.ID)
+        if folder_id != "":
+            parent_by_id[folder_id] = normalize_dgs_ref_id(folder.fold_id)
+        else:
+            pass
+    for group in dgs_grid.intgrfgroups:
+        group_id: str = normalize_dgs_ref_id(group.ID)
+        if group_id != "":
+            parent_by_id[group_id] = normalize_dgs_ref_id(group.fold_id)
+        else:
+            pass
+
+    # Some exports omit a usable diagram-owner chain.  In that case the
+    # presence of a known electrical object is sufficient static evidence,
+    # while dynamic roots remain excluded explicitly below.
+    static_object_ids: set[str] = set(static_owner_ids)
+    static_collections: List[list] = [
+        dgs_grid.elmterms,
+        dgs_grid.elmasms,
+        dgs_grid.elmcoups,
+        dgs_grid.elmgenstats,
+        dgs_grid.elmvscs,
+        dgs_grid.elmvscmonos,
+        dgs_grid.elmlnes,
+        dgs_grid.elmzpus,
+        dgs_grid.elmscaps,
+        dgs_grid.elmsinds,
+        dgs_grid.elmlods,
+        dgs_grid.elmlodlvs,
+        dgs_grid.elmlodlvps,
+        dgs_grid.elmshnts,
+        dgs_grid.elmsvss,
+        dgs_grid.elmsyms,
+        dgs_grid.elmtr2s,
+        dgs_grid.elmtr3s,
+        dgs_grid.elmtr4s,
+        dgs_grid.elmxnets,
+    ]
+    for collection in static_collections:
+        for static_object in collection:
+            static_object_id: str = normalize_dgs_ref_id(static_object.ID)
+            if static_object_id != "":
+                static_object_ids.add(static_object_id)
+            else:
+                pass
+
+    graphics_by_diagram_id: Dict[str, List[IntGrf]] = build_graphics_by_diagram_id(
+        dgs_grid=dgs_grid,
+    )
+
     static_diagram_ids: set[str] = set()
     for diagram in dgs_grid.intgrfnets:
-        diagram_id = normalize_dgs_ref_id(diagram.ID)
-        owner_id: str = normalize_dgs_ref_id(diagram.pDataFolder)
+        diagram_id: str = normalize_dgs_ref_id(diagram.ID)
+        direct_owner_id: str = normalize_dgs_ref_id(diagram.pDataFolder)
+        owner_id: str = resolve_dgs_container_owner_id(
+            initial_owner_id=direct_owner_id,
+            parent_by_id=parent_by_id,
+        )
         # Type 1 is PowerFactory's graphic/block-diagram domain in the supplied
         # exports. It is excluded even if a future export happens to store that
         # diagram below a static project object.
         if int(diagram.iType) == 1 or owner_id in dynamic_owner_ids:
-            continue
-        if owner_id in static_owner_ids or diagram_id in referenced_diagram_ids:
-            static_diagram_ids.add(diagram_id)
+            pass
+        else:
+            has_static_graphic: bool = False
+            graphic: IntGrf
+            for graphic in graphics_by_diagram_id.get(diagram_id, list()):
+                graphic_object_id: str = normalize_dgs_ref_id(graphic.pDataObj)
+                if graphic_object_id in static_object_ids:
+                    has_static_graphic = True
+                else:
+                    pass
+
+            if (
+                    owner_id in static_owner_ids
+                    or diagram_id in referenced_diagram_ids
+                    or has_static_graphic
+            ):
+                static_diagram_ids.add(diagram_id)
+            else:
+                pass
 
     return static_diagram_ids
 

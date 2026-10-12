@@ -7,9 +7,9 @@ from PySide6 import QtWidgets
 from VeraGridEngine.Devices.Dynamic.fmu_template import FmuTemplate
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.enumerations import DeviceType, FmuTemplateDomain, FmuTemplateMode
-from VeraGridEngine.IO.fmu.importer.model_description import FmuModelDescription
-from VeraGridEngine.IO.fmu.importer.model_description import read_fmu_model_description
-from VeraGridEngine.IO.fmu.importer.template_api import configure_fmu_template, summarize_fmu_template_metadata
+from VeraGridEngine.IO.fmu.model_description import FmuModelDescription
+from VeraGridEngine.IO.fmu.model_description import read_fmu_model_description
+from VeraGridEngine.IO.fmu.fmu_device_integration import configure_fmu_template, summarize_fmu_template_metadata
 
 
 class FmuTemplateEditorDialog(QtWidgets.QDialog):

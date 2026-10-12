@@ -120,6 +120,7 @@ ALL_DEV_TYPES = Union[
     UndergroundLineType,
     DcCableType,
     SequenceLineType,
+    ManufacturerNativeModel,
     RmsModelTemplate,
     EmtModelTemplate,
     FmuTemplate,

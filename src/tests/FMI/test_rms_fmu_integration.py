@@ -6,10 +6,10 @@ import numpy as np
 import pytest
 
 from VeraGridEngine.Devices.Injections.load import Load
-from VeraGridEngine.IO.fmu.exporter.build import host_build_capable
-from VeraGridEngine.IO.fmu.exporter.compat import Var
-from VeraGridEngine.IO.fmu.importer.model_description import FmuInterfaceMode
-from VeraGridEngine.IO.fmu.importer.runtime_worker_host import (
+from VeraGridEngine.IO.fmu.CosimulationInterface.build import host_build_capable
+from VeraGridEngine.Utils.Symbolic.symbolic import Var
+from VeraGridEngine.IO.fmu.model_description import FmuInterfaceMode
+from VeraGridEngine.IO.fmu.worker_host import (
     FmiThreeWorkerHostLimits,
 )
 from VeraGridEngine.Simulations.Rms.rms_driver import RmsSimulationDriver

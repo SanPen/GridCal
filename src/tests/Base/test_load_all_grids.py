@@ -3,44 +3,34 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import os
+
+import pytest
+
 from VeraGridEngine.IO.file_open import FileOpen
 from VeraGridEngine.IO.file_save import FileSave
 
 
-def test_all_grids():
-    # get the directory of this file
+@pytest.mark.parametrize(
+    "file_name",
+    sorted(os.listdir(os.path.join("data", "grids"))),
+)
+def test_all_grids(file_name: str) -> None:
+    """
+    Verify that one direct entry from the shared grid catalogue can be loaded.
 
-    # navigate to the grids folder
-    grids_path = os.path.join('data', 'grids')
+    Parametrizing the catalogue lets pytest report progress and attribute a slow
+    or failing load to its exact fixture instead of hiding every load behind one
+    long-running test item.
 
-    files = os.listdir(grids_path)
-    failed = list()
-    for file_name in files:
+    :param file_name: Direct file or directory entry from ``data/grids``.
+    :return: None.
+    """
+    # Rebuild the established relative fixture path for the current catalogue entry.
+    path: str = os.path.join("data", "grids", file_name)
 
-        path = os.path.join(grids_path, file_name)
-
-        print('-' * 160)
-        print('Loading', file_name, '...', end='')
-        try:
-            file_handler = FileOpen(path)
-            circuit = file_handler.open()
-
-            print('ok')
-        except:
-            print('Failed')
-            failed.append(file_name)
-
-    print('Failed:')
-    for f in failed:
-        print('\t', f)
-
-    for f in failed:
-        print('Attempting', f)
-        path = os.path.join(grids_path, f)
-        file_handler = FileOpen(path)
-        circuit = file_handler.open()
-
-    assert len(failed) == 0
+    # Exercise the production loader directly so pytest preserves the original traceback.
+    file_handler: FileOpen = FileOpen(path)
+    file_handler.open()
 
 
 def test_line_templates_finding(tmp_path):

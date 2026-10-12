@@ -4,6 +4,13 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from typing import Dict, Tuple
+from pathlib import Path
+from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
+from VeraGridEngine.IO.file_open import FileOpen
+from VeraGridEngine.IO.file_save import FileSave
+from VeraGridEngine.Simulations.EMT.emt_solver_factory import build_emt_solver
+from VeraGridEngine.Simulations.EMT.solvers.structural_compiled_solver import StructuralCompiledSolver
+from VeraGridEngine.Devices.Events.emt_events_group import EmtEventsGroup
 
 import numpy as np
 
@@ -16,7 +23,9 @@ from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriv
 from VeraGridEngine.Simulations.PowerFlow3ph.power_flow_driver_3ph import PowerFlowDriver3Ph
 from VeraGridEngine.Utils.Symbolic.bus_emt_template import get_bus_emt_template
 from VeraGridEngine.Templates.Emt.line_matrix_conversion import build_physical_line_matrices_from_stored_admittances
-from VeraGridEngine.Devices.Dynamic.static_parameter_mapping import build_line_static_matrices
+from VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified import build_line_static_matrices, assign_static_api_object_mapping_for_device, get_line_g_keys
+from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
 from VeraGridEngine.Templates.Emt.load_RLC_emt_template import get_shunt_r_emt_template
 from VeraGridEngine.Templates.Emt.load_zip_emt_template import get_load_ZIP_emt_template
 from VeraGridEngine.Templates.Emt.pi_line_emt_template import get_pi_line_emt_template
@@ -25,7 +34,15 @@ from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.compiled_functions import SymbolicVector
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
 from VeraGridEngine.Utils.Symbolic.templates_common_functions import set_emt_model
-from VeraGridEngine.enumerations import DynamicIntegrationMethod, EmtSolverTypes, ShuntConnectionType, EmtInitializationMethod, EmtInitializationStatus
+from VeraGridEngine.enumerations import (
+    DynamicIntegrationMethod,
+    EmtSolverTypes,
+    ShuntConnectionType,
+    EmtInitializationMethod,
+    EmtInitializationStatus,
+    ParamPowerFlowReferenceType,
+    VarPowerFlowReferenceType,
+)
 
 from VeraGridEngine.Simulations.EMT.emt_options import EmtOptions
 from VeraGridEngine.Simulations.EMT.initialization_emt import (
@@ -338,6 +355,7 @@ def build_two_bus_real_emt_case(
         zip_load: bool = True,
         initialization_method: EmtInitializationMethod = EmtInitializationMethod.Auto,
         balanced_pf: bool = False,
+        physical_conductance: float | None = None,
 ) -> Tuple[EmtProblemDae, TwoBusRealEmtContext]:
     """
     Build the standard real EMT two-bus benchmark case used by snapshot and
@@ -349,6 +367,8 @@ def build_two_bus_real_emt_case(
 
     :param zip_load: If True, use ZIP load model; otherwise use RLC shunt.
     :param initialization_method: EMT initialization method to use.
+    :param balanced_pf: Use balanced rather than three-phase power flow.
+    :param physical_conductance: Optional total shunt G for a diagonal physical pi fixture.
     :returns: Tuple of (problem, context) with EMT problem and grid context.
     """
     grid = gce.MultiCircuit(Sbase=2.0, fbase=50.0)
@@ -375,11 +395,25 @@ def build_two_bus_real_emt_case(
     tower.add_wire_relationship(wire=wire, xpos=12.65, ypos=27.5, phase=3)
     tower.compute()
     line0.apply_template(tower, grid.Sbase, grid.fBase)
+    if physical_conductance is None:
+        pass
+    else:
+        # A diagonal balanced primitive allows the same physical circuit in both PF lanes.
+        line0.R = 0.02
+        line0.X = 0.15
+        line0.B = 0.006
+        line0.G = physical_conductance
+        line0.disable_auto_updates()
+        line0.ys.values[:] = 0.0
+        line0.ys.values[1:4, 1:4] = np.eye(3) / complex(line0.R, line0.X)
+        line0.ysh.values[:] = 0.0
+        line0.ysh.values[1:4, 1:4] = np.eye(3) * complex(line0.G, line0.B) * 1.0e6
 
     r_ph: float = 100.0
     v_ph: float = vnom / (3.0 ** 0.5)
     p_ph: float = (v_ph ** 2) / r_ph
-    load = gce.Load(name="load", P1=p_ph, P2=p_ph, P3=p_ph, Q1=0.0, Q2=0.0, Q3=0.0)
+    load = gce.Load(name="load", P=3.0 * p_ph, Q=0.0,
+                    P1=p_ph, P2=p_ph, P3=p_ph, Q1=0.0, Q2=0.0, Q3=0.0)
     load.conn = ShuntConnectionType.GroundedStar
 
     gen0 = gce.Generator(name="Gen0", vset=1.0, Snom=grid.Sbase, freq=50, r1=0.001, x1=1.7)
@@ -393,6 +427,10 @@ def build_two_bus_real_emt_case(
 
     gen_mdl = get_generator_thevenin_rl_emt_template_with_ref(vf = grid.var_factory).block
     line_mdl = get_pi_line_emt_template(vf = grid.var_factory, phN = False, phA = True, phB = True, phC = True).block
+    if physical_conductance is None:
+        pass
+    else:
+        line_mdl.set_parameter_in_model(var_name="G_damp", new_value=0.0)
     if zip_load:
         load_mdl = get_load_ZIP_emt_template(vf=grid.var_factory, phA=True, phB=True, phC=True).block
     else:
@@ -597,6 +635,23 @@ def test_explicit_mode_runs_only_explicit_in_problem_build() -> None:
     assert explicit_problem.initialization_report.pseudo_transient_steps == 0
 
 
+def test_three_phase_line_current_seed_uses_pf_branch_flow() -> None:
+    """The coupled three-phase line must not use a scalar impedance shortcut."""
+    problem, context = build_two_bus_real_emt_case(
+        zip_load=True,
+        initialization_method=EmtInitializationMethod.Explicit,
+        balanced_pf=False,
+    )
+    pf = problem.power_flow_results_3ph
+    line = context.get_grid().lines[0]
+    for phase in ("A", "B", "C"):
+        current_var = line.emt_model.E(getattr(VarPowerFlowReferenceType, f"if_{phase}"))
+        voltage = getattr(pf, f"voltage_{phase}")[0]
+        power = getattr(pf, f"Sf_{phase}")[0] / context.get_grid().Sbase
+        expected = np.sqrt(2.0) * np.imag(3.0 * np.conj(power / voltage))
+        assert np.isclose(problem.get_x0()[problem.get_var_idx(current_var)], expected, atol=1e-8)
+
+
 def test_pseudotransient_mode_skips_explicit_seed_on_direct_native_path() -> None:
     """
     Verify that pure PseudoTransient keeps the power-flow seed and skips explicit init.
@@ -722,6 +777,21 @@ def test_auto_initialization_is_not_worse_than_explicit_on_real_case() -> None:
     assert auto_problem.initialization_report.status in {EmtInitializationStatus.RESOLVED, EmtInitializationStatus.FAILED}
 
 
+def test_consistent_newton_solution_survives_pf_post_init_replay() -> None:
+    """A solved network operating point must survive constructor PF-seed replay."""
+    for balanced_pf in (False, True):
+        problem, _ = build_two_bus_real_emt_case(
+            zip_load=True,
+            initialization_method=EmtInitializationMethod.ConsistentNewton,
+            balanced_pf=balanced_pf,
+        )
+
+        assert problem.initialization_report is not None
+        assert problem.initialization_report.status == EmtInitializationStatus.RESOLVED
+        assert problem.initialization_report.final_residual_inf < 1.0e-8
+        assert evaluate_algebraic_residual_inf(problem) < 1.0e-8
+
+
 def test_pi_line_matrix_parameters_receive_compiler_names() -> None:
     """
     Ensure pi-line static matrix parameters are visible to EMT compilation.
@@ -738,17 +808,26 @@ def test_pi_line_matrix_parameters_receive_compiler_names() -> None:
     )
     compiler_names_dict = problem.get_compiler_names_dict()
     line_block = context.get_grid().lines[0].emt_model
-    parameter_name: str = "Linv_aa"
-    found_uid: int | None = None
+    mapping_key: ParamPowerFlowReferenceType = ParamPowerFlowReferenceType.Linv_aa
+    owner_block: Block | None = None
+    mapped_parameter: Var | None = None
 
-    for parameter in line_block.parameters.keys():
-        if parameter.name == parameter_name:
-            found_uid = parameter.uid
-        else:
+    # Static parameters belong to the block that publishes their API mapping.
+    # Search recursively because the line root is only an interface wrapper.
+    for candidate_block in line_block.get_all_blocks():
+        candidate_parameter: Var | None = candidate_block.api_obj_mapping.get(mapping_key, None)
+        if candidate_parameter is None:
             pass
+        else:
+            assert mapped_parameter is None, "Linv_aa must have exactly one owner in the line hierarchy"
+            owner_block = candidate_block
+            mapped_parameter = candidate_parameter
 
-    assert found_uid is not None
-    assert found_uid in compiler_names_dict
+    assert owner_block is not None
+    assert mapped_parameter is not None
+    assert mapped_parameter.name == "Linv_aa"
+    assert mapped_parameter in owner_block.parameters
+    assert mapped_parameter.uid in compiler_names_dict
 
 
 def test_real_pi_line_problem_uses_template_equivalent_static_matrix_values() -> None:
@@ -774,7 +853,9 @@ def test_real_pi_line_problem_uses_template_equivalent_static_matrix_values() ->
     assert line.ys.values.shape == (4, 4)
     assert line.ysh.values.shape == (4, 4)
     compiler_names_dict = problem.get_compiler_names_dict()
-    r_full_actual, l_full_actual, c_full_actual = build_line_static_matrices(context.get_grid(), line)
+    g_full_actual: np.ndarray
+    r_full_actual, l_full_actual, c_full_actual, g_full_actual = build_line_static_matrices(context.get_grid(), line)
+    np.testing.assert_allclose(g_full_actual, 0.0, atol=1.0e-12)
     constant_parameters = problem.get_constant_parameters()
     constant_parameter_values = problem.get_parameters_values()
     constant_by_name: Dict[str, float] = dict()
@@ -833,11 +914,6 @@ def test_balanced_zip_load_is_initialized_by_its_model_equations() -> None:
         for block in model.get_all_blocks()
         for var in block.state_vars + block.algebraic_vars + list(block.event_dict)
     }
-    constants = {
-        var.name: float(value.value)
-        for var, value in zip(problem.get_constant_parameters(), problem.get_parameters_values())
-    }
-
     def value(name: str) -> float:
         var = variables[name]
         if var.uid in problem.uid2idx_event_params:
@@ -862,12 +938,336 @@ def test_balanced_zip_load_is_initialized_by_its_model_equations() -> None:
         np.testing.assert_allclose(voltage_squared, u * u + q * q, rtol=1e-10, atol=1e-12)
         np.testing.assert_allclose(voltage_magnitude, np.sqrt(voltage_squared + eps), rtol=1e-10, atol=1e-12)
         np.testing.assert_allclose(ratio, (voltage_magnitude + eps) / value("V0"), rtol=1e-10, atol=1e-12)
-        np.testing.assert_allclose(active_power, -constants[f"P0_{phase}"] * ratio * ratio, rtol=1e-10, atol=1e-12)
-        np.testing.assert_allclose(reactive_power, -constants[f"Q0_{phase}"] * ratio * ratio, rtol=1e-10, atol=1e-12)
-        expected_current = -2.0 * (u * (-active_power) + q * (-reactive_power)) / (u * u + q * q + eps)
+        active_zip = value("a1") * ratio * ratio + value("a2") * ratio + value("a3")
+        reactive_zip = value("a4") * ratio * ratio + value("a5") * ratio + value("a6")
+        # P0 and Q0 are device-seeded runtime parameters so events can modify
+        # them after initialization without changing the ZIP model equations.
+        np.testing.assert_allclose(
+            active_power,
+            -value(f"P0_{phase}") * active_zip,
+            rtol=1e-10,
+            atol=1e-12,
+        )
+        np.testing.assert_allclose(
+            reactive_power,
+            -value(f"Q0_{phase}") * reactive_zip,
+            rtol=1e-10,
+            atol=1e-12,
+        )
+        expected_current = -3.0 * 2.0 * (u * (-active_power) + q * (-reactive_power)) / (u * u + q * q + eps)
         np.testing.assert_allclose(current, expected_current, rtol=1e-10, atol=1e-12)
 
 
 if __name__ == "__main__":
     import pytest
     pytest.main([__file__, "-v"])
+
+
+def test_pi_line_physical_shunt_equivalence() -> None:
+    """Check coupled NABC currents, losses and periodic initial derivatives.
+
+    :return: None.
+    """
+    resistance: np.ndarray = 0.02 * np.eye(4) + 0.001 * np.ones((4, 4))
+    reactance: np.ndarray = 0.15 * np.eye(4) + 0.01 * np.ones((4, 4))
+    conductance: np.ndarray = 0.003 * np.eye(4) + 0.0002 * np.ones((4, 4))
+    susceptance: np.ndarray = 0.006 * np.eye(4) + 0.0003 * np.ones((4, 4))
+    from_phasors: np.ndarray = np.array((0.05 + 0.02j, 1.0 + 0.1j, -0.45 - 0.86j, -0.53 + 0.88j))
+    to_phasors: np.ndarray = np.array((0.03 + 0.01j, 0.95 + 0.06j, -0.44 - 0.80j, -0.50 + 0.83j))
+    voltage_derivative_f_keys: tuple[VarPowerFlowReferenceType, ...] = (
+        VarPowerFlowReferenceType.d_v_N_f, VarPowerFlowReferenceType.d_v_A_f,
+        VarPowerFlowReferenceType.d_v_B_f, VarPowerFlowReferenceType.d_v_C_f,
+    )
+    voltage_derivative_t_keys: tuple[VarPowerFlowReferenceType, ...] = (
+        VarPowerFlowReferenceType.d_v_N_t, VarPowerFlowReferenceType.d_v_A_t,
+        VarPowerFlowReferenceType.d_v_B_t, VarPowerFlowReferenceType.d_v_C_t,
+    )
+    frequency: float
+    for frequency in (50.0, 60.0):
+        phase_mask: tuple[bool, bool, bool, bool]
+        for phase_mask in ((True, True, True, True), (False, True, True, True), (False, True, False, True)):
+            grid: gce.MultiCircuit = gce.MultiCircuit(Sbase=100.0, fbase=frequency)
+            source: gce.Bus = grid.add_bus(gce.Bus(Vnom=132.0))
+            target: gce.Bus = grid.add_bus(gce.Bus(Vnom=132.0))
+            line: gce.Line = gce.Line(bus_from=source, bus_to=target, r=0.02, x=0.15)
+            grid.add_line(line)
+            # Preserve explicitly supplied phase data rather than regenerating sequence defaults.
+            line.fill_3_phase_from_sequence()
+            line.disable_auto_updates()
+            line.ys.phN, line.ys.phA, line.ys.phB, line.ys.phC = phase_mask
+            line.ysh.phN, line.ysh.phA, line.ysh.phB, line.ysh.phC = phase_mask
+            active: np.ndarray = np.flatnonzero(np.array(phase_mask, dtype=bool))
+            selector: tuple[np.ndarray, np.ndarray] = np.ix_(active, active)
+            active_count: int = len(active)
+            line.ys.values[:] = 0.0
+            line.ys.values[selector] = np.linalg.inv((resistance + 1j * reactance)[selector])
+            line.ysh.values[:] = 0.0
+            line.ysh.values[selector] = (conductance + 1j * susceptance)[selector] * 1.0e6
+            numerical: NumericalCircuit = compile_numerical_circuit_at(circuit=grid, fill_three_phase=True)
+            series_phasors: np.ndarray = (
+                -numerical.passive_branch_data.Yft3 @ (from_phasors - to_phasors)
+            )[active]
+            capacitance: np.ndarray = susceptance[selector] / (4.0 * np.pi * frequency)
+            damping: float
+            for damping in (0.0, 1.0e-5):
+                model: Block = get_pi_line_emt_template(
+                    vf=grid.var_factory, phN=phase_mask[0], phA=phase_mask[1],
+                    phB=phase_mask[2], phC=phase_mask[3], numerical_damping_conductance=damping,
+                ).block
+                child: Block = model.children[0]
+                mapped: dict[Var, Const] = dict()
+                assign_static_api_object_mapping_for_device(
+                    grid=grid, device=line, mdl=model, problem_mapping=mapped, logger=None,
+                )
+                bindings: dict[int, float] = dict()
+                parameter: Var
+                value: Const
+                for parameter, value in child.parameters.items():
+                    assert value.value is not None
+                    bindings[parameter.uid] = float(value.value)
+                for parameter, value in mapped.items():
+                    assert value.value is not None
+                    bindings[parameter.uid] = float(value.value)
+                from_current_phasors: np.ndarray = (
+                    numerical.passive_branch_data.Yff3 @ from_phasors
+                    + numerical.passive_branch_data.Yft3 @ to_phasors
+                )[active] + damping * from_phasors[active]
+                to_current_phasors: np.ndarray = (
+                    numerical.passive_branch_data.Ytf3 @ from_phasors
+                    + numerical.passive_branch_data.Ytt3 @ to_phasors
+                )[active] + damping * to_phasors[active]
+                samples: np.ndarray = np.arange(8) * (2.0 * np.pi / 8.0)
+                terminal_power: np.ndarray = np.zeros(len(samples))
+                sample_index: int
+                angle: float
+                for sample_index, angle in enumerate(samples):
+                    rotation: complex = np.exp(1j * angle)
+                    omega: float = 2.0 * np.pi * frequency
+                    vf: np.ndarray = np.sqrt(2.0) * np.imag(from_phasors[active] * rotation)
+                    vt: np.ndarray = np.sqrt(2.0) * np.imag(to_phasors[active] * rotation)
+                    dvf: np.ndarray = omega * np.sqrt(2.0) * np.real(from_phasors[active] * rotation)
+                    dvt: np.ndarray = omega * np.sqrt(2.0) * np.real(to_phasors[active] * rotation)
+                    iser: np.ndarray = np.sqrt(2.0) * np.imag(series_phasors * rotation)
+                    diser: np.ndarray = omega * np.sqrt(2.0) * np.real(series_phasors * rotation)
+                    icap_f: np.ndarray = capacitance @ dvf
+                    icap_t: np.ndarray = capacitance @ dvt
+                    current_f: np.ndarray = np.sqrt(2.0) * np.imag(from_current_phasors * rotation)
+                    current_t: np.ndarray = np.sqrt(2.0) * np.imag(to_current_phasors * rotation)
+                    expected_states: np.ndarray = np.concatenate((iser, capacitance @ vf, capacitance @ vt))
+                    expected_algebraic: np.ndarray = np.concatenate((icap_f, icap_t, current_f, current_t))
+                    variable_index: int
+                    for variable_index in range(active_count):
+                        bindings[child.in_vars[variable_index].uid] = float(vf[variable_index])
+                        bindings[child.in_vars[active_count + variable_index].uid] = float(vt[variable_index])
+                        f_derivative: Var | None = child.external_mapping.get(voltage_derivative_f_keys[active[variable_index]], None)
+                        t_derivative: Var | None = child.external_mapping.get(voltage_derivative_t_keys[active[variable_index]], None)
+                        assert f_derivative is not None and t_derivative is not None
+                        bindings[f_derivative.uid] = float(dvf[variable_index])
+                        bindings[t_derivative.uid] = float(dvt[variable_index])
+                    variable: Var
+                    for variable_index, variable in enumerate(child.state_vars):
+                        bindings[variable.uid] = float(expected_states[variable_index])
+                    for variable_index, variable in enumerate(child.algebraic_vars):
+                        bindings[variable.uid] = float(expected_algebraic[variable_index])
+                    # The independent static primitive provides currents; the template must satisfy them.
+                    equation: Expr
+                    for equation in child.algebraic_eqs:
+                        assert abs(float(equation.eval_uid(bindings))) < 1.0e-12
+                    expected_derivatives: np.ndarray = np.concatenate((diser, icap_f, icap_t))
+                    for variable_index, equation in enumerate(child.state_eqs):
+                        np.testing.assert_allclose(
+                            float(equation.eval_uid(bindings)), expected_derivatives[variable_index],
+                            rtol=1.0e-10, atol=1.0e-12,
+                        )
+                    for variable, equation in child.init_eqs.items():
+                        np.testing.assert_allclose(float(equation.eval_uid(bindings)), bindings[variable.uid], rtol=1.0e-10, atol=1.0e-12)
+                    terminal_power[sample_index] = float((vf @ current_f + vt @ current_t) / 3.0)
+                series_loss: float = float(np.real(np.vdot(series_phasors, resistance[selector] @ series_phasors)) / 3.0)
+                physical_loss: float = float((
+                    np.real(np.vdot(from_phasors[active], conductance[selector] @ from_phasors[active]))
+                    + np.real(np.vdot(to_phasors[active], conductance[selector] @ to_phasors[active]))
+                ) / 6.0)
+                damping_loss: float = float(damping * (
+                    np.vdot(from_phasors[active], from_phasors[active]).real
+                    + np.vdot(to_phasors[active], to_phasors[active]).real
+                ) / 3.0)
+                np.testing.assert_allclose(np.mean(terminal_power), series_loss + physical_loss + damping_loss, rtol=1.0e-10, atol=1.0e-12)
+
+
+def test_pi_line_conductance_pf_initialization() -> None:
+    """Verify physical PF currents survive native initialization and step refinement.
+
+    :return: None.
+    """
+    balanced_pf: bool
+    for balanced_pf in (True, False):
+        errors: np.ndarray = np.empty(2)
+        step_index: int
+        step: float
+        for step_index, step in enumerate((5.0e-6, 2.5e-6)):
+            problem: EmtProblemDae
+            context: TwoBusRealEmtContext
+            problem, context = build_two_bus_real_emt_case(
+                initialization_method=EmtInitializationMethod.ConsistentNewton,
+                balanced_pf=balanced_pf, physical_conductance=0.003,
+            )
+            assert problem.initialization_report is not None
+            assert problem.initialization_report.status == EmtInitializationStatus.RESOLVED
+            assert evaluate_algebraic_residual_inf(problem) < problem.options.tolerance
+            grid: gce.MultiCircuit = context.get_grid()
+            line: gce.Line = grid.lines[0]
+            child: Block = line.emt_model.children[0]
+            problem.set_events_group(emt_events_group=EmtEventsGroup())
+            solver: StructuralCompiledSolver = build_emt_solver(
+                options=problem.options, problem=problem, t0=0.0, t_end=2.0e-4,
+                h=step, method=DynamicIntegrationMethod.DaeTrapezoidal,
+            )
+            times: np.ndarray
+            values: np.ndarray
+            derivatives: np.ndarray
+            initialized: bool
+            converged: bool
+            times, values, derivatives, initialized, converged = solver.simulate(boundary_updater=problem)
+            assert initialized and converged
+            assert np.all(np.isfinite(values))
+            # Reconstruct sinusoidal terminal phasors from the initialized v and dv.
+            from_phasors: np.ndarray = np.empty(3, dtype=complex)
+            to_phasors: np.ndarray = np.empty(3, dtype=complex)
+            omega: float = 2.0 * np.pi * grid.fBase
+            phase_index: int
+            for phase_index in range(3):
+                from_voltage: Var = child.in_vars[phase_index]
+                to_voltage: Var = child.in_vars[3 + phase_index]
+                derivative_f: Var = child.external_mapping[(
+                    VarPowerFlowReferenceType.d_v_A_f, VarPowerFlowReferenceType.d_v_B_f,
+                    VarPowerFlowReferenceType.d_v_C_f,
+                )[phase_index]]
+                derivative_t: Var = child.external_mapping[(
+                    VarPowerFlowReferenceType.d_v_A_t, VarPowerFlowReferenceType.d_v_B_t,
+                    VarPowerFlowReferenceType.d_v_C_t,
+                )[phase_index]]
+                from_phasors[phase_index] = complex(
+                    problem.init_guess[derivative_f.uid] / omega, values[0, problem.get_var_idx(from_voltage)],
+                ) / np.sqrt(2.0)
+                to_phasors[phase_index] = complex(
+                    problem.init_guess[derivative_t.uid] / omega, values[0, problem.get_var_idx(to_voltage)],
+                ) / np.sqrt(2.0)
+            series: np.ndarray = (from_phasors - to_phasors) / complex(line.R, line.X)
+            current_f: np.ndarray = series + complex(line.G, line.B) * from_phasors / 2.0
+            current_t: np.ndarray = -series + complex(line.G, line.B) * to_phasors / 2.0
+            rotation: np.ndarray = np.exp(1j * omega * times)
+            expected: np.ndarray = np.sqrt(2.0) * np.imag(
+                rotation[:, None] * np.concatenate((series, current_f, current_t))[None, :],
+            )
+            indices: np.ndarray = np.array(tuple(
+                problem.get_var_idx(variable)
+                for collection in (child.state_vars[:3], child.algebraic_vars[6:12])
+                for variable in collection
+            ), dtype=int)
+            errors[step_index] = np.max(np.abs(values[:, indices] - expected))
+            print("Physical G transient:", balanced_pf, step, errors[step_index], "residual", evaluate_algebraic_residual_inf(problem))
+            assert errors[step_index] < 1.0e-4, (balanced_pf, step, errors[step_index])
+            assert abs(np.real(np.vdot(from_phasors, current_f) + np.vdot(to_phasors, current_t))
+                       - line.R * np.vdot(series, series).real
+                       - line.G * (np.vdot(from_phasors, from_phasors).real
+                                   + np.vdot(to_phasors, to_phasors).real) / 2.0) < 1.0e-12
+        assert errors[1] <= errors[0] + 1.0e-10
+
+
+def test_line_conductance_native_roundtrip(tmp_path: Path) -> None:
+    """Persist copied G contracts while keeping a legacy saved Block unchanged.
+
+    :param tmp_path: Isolated native archive directory.
+    :return: None.
+    """
+    grid: gce.MultiCircuit = gce.MultiCircuit(Sbase=2.0)
+    source: gce.Bus = grid.add_bus(gce.Bus(name="source", Vnom=10.0))
+    target: gce.Bus = grid.add_bus(gce.Bus(name="target", Vnom=10.0))
+    modern: EmtModelTemplate = get_pi_line_emt_template(
+        vf=grid.var_factory, phN=True, phA=True, phB=True, phC=True,
+    )
+    grid.add_emt_model(modern)
+    legacy: EmtModelTemplate = EmtModelTemplate(name="recorded series-only line")
+    legacy_voltage: Var = grid.var_factory.add_var("legacy_voltage")
+    legacy_current: Var = grid.var_factory.add_var("legacy_current")
+    legacy.block = Block(
+        in_vars=list((legacy_voltage,)), algebraic_vars=list((legacy_current,)),
+        algebraic_eqs=list((legacy_current - legacy_voltage,)),
+    )
+    grid.add_emt_model(legacy)
+    line: gce.Line = gce.Line(name="modern", bus_from=source, bus_to=target, r=0.02, x=0.15, g=0.003)
+    old_line: gce.Line = gce.Line(name="legacy", bus_from=source, bus_to=target, r=0.02, x=0.15, g=0.004)
+    line.G0 = line.G
+    line.G2 = line.G
+    grid.add_line(line)
+    grid.add_line(old_line)
+    line.emt_template = modern
+    # Persist independent phase data, including a nonzero neutral coupling.
+    line.fill_3_phase_from_sequence()
+    line.disable_auto_updates()
+    line.ys.phN = True
+    line.ysh.phN = True
+    line.ys.values[0, 0] = 1.0 / complex(line.R, line.X)
+    line.ysh.values[0, 0] = 0.001 * 1.0e6
+    line.ysh.values[0, 1] = -0.0001 * 1.0e6
+    line.ysh.values[1, 0] = -0.0001 * 1.0e6
+    old_line.emt_template = legacy
+    equations: tuple[str, ...] = tuple(str(equation) for equation in line.emt_model.children[0].algebraic_eqs)
+    old_equations: tuple[str, ...] = tuple(str(equation) for equation in old_line.emt_model.algebraic_eqs)
+    path: Path = tmp_path / "physical-line-g.veragrid"
+    FileSave(circuit=grid, file_name=str(path)).save()
+    loaded: gce.MultiCircuit = FileOpen(file_name=str(path)).open()
+    assert len(loaded.lines) == 2
+    assert len(loaded.emt_models) == 2
+    assert tuple(str(equation) for equation in loaded.lines[0].emt_model.children[0].algebraic_eqs) == equations
+    assert tuple(str(equation) for equation in loaded.lines[1].emt_model.algebraic_eqs) == old_equations
+    assert loaded.lines[0].emt_template.idtag == modern.idtag
+    assert loaded.lines[1].emt_template.idtag == legacy.idtag
+    # Copy and persistence must keep mapping targets in their declaring Block.
+    candidate: gce.Line
+    for candidate in (line, loaded.lines[0]):
+        mapped: dict[Var, Const] = dict()
+        assign_static_api_object_mapping_for_device(
+            grid=grid if candidate is line else loaded, device=candidate,
+            mdl=candidate.emt_model, problem_mapping=mapped, logger=None,
+        )
+        owner: Block = candidate.emt_model.children[0]
+        key: ParamPowerFlowReferenceType
+        variable: Var
+        count: int = 0
+        for key, variable in owner.api_obj_mapping.items():
+            if key in (
+                ParamPowerFlowReferenceType.Gnn, ParamPowerFlowReferenceType.Gna, ParamPowerFlowReferenceType.Gnb, ParamPowerFlowReferenceType.Gnc,
+                ParamPowerFlowReferenceType.Gan, ParamPowerFlowReferenceType.Gaa, ParamPowerFlowReferenceType.Gab, ParamPowerFlowReferenceType.Gac,
+                ParamPowerFlowReferenceType.Gbn, ParamPowerFlowReferenceType.Gba, ParamPowerFlowReferenceType.Gbb, ParamPowerFlowReferenceType.Gbc,
+                ParamPowerFlowReferenceType.Gcn, ParamPowerFlowReferenceType.Gca, ParamPowerFlowReferenceType.Gcb, ParamPowerFlowReferenceType.Gcc,
+            ):
+                count += 1
+                assert any(variable is parameter for parameter in owner.parameters)
+                assert mapped[variable].value is not None
+                row: int
+                row_keys: list[ParamPowerFlowReferenceType]
+                for row, row_keys in enumerate(get_line_g_keys()):
+                    if key in row_keys:
+                        column: int = row_keys.index(key)
+                        np.testing.assert_allclose(
+                            mapped[variable].value, candidate.ysh.values[row, column].real * 1.0e-6 / 2.0,
+                            rtol=1.0e-10, atol=1.0e-12,
+                        )
+                    else:
+                        pass
+            else:
+                pass
+        assert count == 16
+        np.testing.assert_allclose(
+            mapped[owner.api_obj_mapping[ParamPowerFlowReferenceType.Gaa]].value,
+            candidate.G / 2.0, rtol=1.0e-10, atol=1.0e-12,
+        )
+    # Loading keeps the old equations; only explicit template reassignment upgrades them.
+    replacement: EmtModelTemplate = loaded.lines[0].emt_template
+    iteration: int
+    for iteration in range(2):
+        loaded.lines[1].enable_auto_updates()
+        loaded.lines[1].emt_template = replacement
+        assert len(loaded.lines[1].emt_model.children) == 1
+        assert len(loaded.lines[1].emt_model.children[0].api_obj_mapping) == len(line.emt_model.children[0].api_obj_mapping)

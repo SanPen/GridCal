@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Rms.load_rms_template &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Templates.Rms.load_rms_template &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -118,38 +118,38 @@
 <div class="viewcode-block" id="LoadRmsTemplate">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.load_rms_template.LoadRmsTemplate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LoadRmsTemplate</span><span class="p">(</span><span class="n">TemplateDefinition</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Definition of the editable RMS constant-power load.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Definition of the editable RMS constant-power load."""</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vf</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the editable RMS load template definition.</span>
+<span class="w">        </span><span class="sd">"""Create the editable RMS load template definition.</span>
 
 <span class="sd">        :param vf: Variable factory used to build the model.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">properties</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TemplateProp</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span>
-            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;pl0_init&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;pu&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Initial active power at nominal voltage.&quot;</span><span class="p">,</span>
+            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"pl0_init"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"pu"</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Initial active power at nominal voltage."</span><span class="p">,</span>
                          <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>
-            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ql0_init&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;pu&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Initial reactive power at nominal voltage.&quot;</span><span class="p">,</span>
+            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"ql0_init"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"pu"</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Initial reactive power at nominal voltage."</span><span class="p">,</span>
                          <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>
-            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Name of the rms model.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-                         <span class="n">value</span><span class="o">=</span><span class="s2">&quot;Load rms template&quot;</span><span class="p">),</span>
+            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Name of the rms model."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                         <span class="n">value</span><span class="o">=</span><span class="s2">"Load rms template"</span><span class="p">),</span>
         <span class="p">])</span>
         <span class="n">TemplateDefinition</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vf</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LoadRmsTemplate.eval">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.load_rms_template.LoadRmsTemplate.eval">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the RMS load with optional user-provided initial powers.</span>
+<span class="w">        </span><span class="sd">"""Build the RMS load with optional user-provided initial powers.</span>
 
 <span class="sd">        :return: Constructed RMS load template.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_load_rms_template</span><span class="p">(</span>
             <span class="n">vfactory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vf</span><span class="p">,</span>
-            <span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)),</span>
-            <span class="n">pl0_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;pl0_init&quot;</span><span class="p">),</span>
-            <span class="n">ql0_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;ql0_init&quot;</span><span class="p">),</span>
+            <span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)),</span>
+            <span class="n">pl0_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"pl0_init"</span><span class="p">),</span>
+            <span class="n">ql0_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"ql0_init"</span><span class="p">),</span>
         <span class="p">)</span></div>
 </div>
 
@@ -159,49 +159,51 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.load_rms_template.get_load_rms_template">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_load_rms_template</span><span class="p">(</span>
         <span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Load rms template&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"Load rms template"</span><span class="p">,</span>
         <span class="n">pl0_init</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ql0_init</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the RMS constant-power load model.</span>
+<span class="w">    </span><span class="sd">"""Build the RMS constant-power load model.</span>
 
-<span class="sd">    ``Pl0`` and ``Ql0`` remain runtime event parameters. When their optional</span>
-<span class="sd">    values are unset, their event expressions copy the solved operating point</span>
-<span class="sd">    from ``Pl`` and ``Ql``. A numeric value supplied by General options replaces</span>
-<span class="sd">    that automatic starting value while preserving event support.</span>
+<span class="sd">    ``Pl0`` and ``Ql0`` remain runtime event parameters. When an optional value</span>
+<span class="sd">    is unset, the associated Load device supplies its P/Q value through</span>
+<span class="sd">    ``api_obj_mapping`` and the stored expression is ``Const(None)``. A numeric</span>
+<span class="sd">    General option omits that mapping and becomes the authoritative baseline</span>
+<span class="sd">    while preserving event support.</span>
 
 <span class="sd">    :param vfactory: Variable factory used by the symbolic model.</span>
 <span class="sd">    :param name: Model name.</span>
 <span class="sd">    :param pl0_init: Optional active-power override in p.u.</span>
 <span class="sd">    :param ql0_init: Optional reactive-power override in p.u.</span>
 <span class="sd">    :return: RMS load template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span><span class="p">:</span> <span class="n">RmsModelTemplate</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">()</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">LoadDevice</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
     <span class="n">inputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span>
-        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vm&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">),</span>
-        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Va&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">)</span>
+        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vm"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">),</span>
+        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Va"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">)</span>
     <span class="p">])</span>
 
-    <span class="n">Pl0</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Pl0&quot;</span><span class="p">)</span>
-    <span class="n">Ql0</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Ql0&quot;</span><span class="p">)</span>
-    <span class="n">Pl</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Pl&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">P</span><span class="p">)</span>
-    <span class="n">Ql</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Ql&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Q</span><span class="p">)</span>
+    <span class="n">Pl0</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Pl0"</span><span class="p">)</span>
+    <span class="n">Ql0</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Ql0"</span><span class="p">)</span>
+    <span class="n">Pl</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Pl"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">Ql</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Ql"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Q</span><span class="p">)</span>
 
     <span class="n">block</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">()</span>
 
-    <span class="c1"># Each event parameter owns its initialization expression. A numeric value</span>
-    <span class="c1"># selected in General options overrides the power-flow-derived default.</span>
+    <span class="c1"># Each event parameter has exactly one initial source. Without an explicit</span>
+    <span class="c1"># option the Load device supplies it through api_obj_mapping; otherwise the</span>
+    <span class="c1"># selected numeric literal is stored directly.</span>
     <span class="n">pl0_expression</span><span class="p">:</span> <span class="n">Expr</span>
     <span class="n">ql0_expression</span><span class="p">:</span> <span class="n">Expr</span>
     <span class="k">if</span> <span class="n">pl0_init</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">pl0_expression</span> <span class="o">=</span> <span class="n">Pl</span>
+        <span class="n">pl0_expression</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">pl0_expression</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="n">pl0_init</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ql0_init</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">ql0_expression</span> <span class="o">=</span> <span class="n">Ql</span>
+        <span class="n">ql0_expression</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">ql0_expression</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="n">ql0_init</span><span class="p">)</span>
     <span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">Pl0</span><span class="p">]</span> <span class="o">=</span> <span class="n">pl0_expression</span>
@@ -224,11 +226,19 @@
         <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Q</span><span class="p">:</span> <span class="n">Ql</span>
     <span class="p">})</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">api_obj_mapping</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span>
-        <span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">Pl0</span><span class="p">:</span> <span class="n">Pl0</span><span class="p">,</span>
-        <span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">Ql0</span><span class="p">:</span> <span class="n">Ql0</span><span class="p">,</span>
-    <span class="p">})</span>
-
+    <span class="c1"># The static Load.P/Q values establish the default baseline, while the</span>
+    <span class="c1"># event_dict ownership above keeps both references mutable. An explicit</span>
+    <span class="c1"># template option remains authoritative and therefore omits only that</span>
+    <span class="c1"># variable's device mapping.</span>
+    <span class="n">block</span><span class="o">.</span><span class="n">api_obj_mapping</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">pl0_init</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">block</span><span class="o">.</span><span class="n">api_obj_mapping</span><span class="p">[</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">Pl0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Pl0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">if</span> <span class="n">ql0_init</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">block</span><span class="o">.</span><span class="n">api_obj_mapping</span><span class="p">[</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">Ql0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Ql0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span> <span class="o">=</span> <span class="n">inputs</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">out_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">Pl</span><span class="p">,</span> <span class="n">Ql</span><span class="p">])</span>
 
@@ -241,9 +251,9 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_voltage_dependent_power_rms_template</span><span class="p">(</span>
         <span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
         <span class="n">voltage_model</span><span class="p">:</span> <span class="n">VoltageDependentPowerModel</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Voltage-dependent power RMS template&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"Voltage-dependent power RMS template"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a static injection initialized from its load-flow power.</span>
+<span class="w">    </span><span class="sd">"""Build a static injection initialized from its load-flow power.</span>
 
 <span class="sd">    Retaining ``P0``, ``Q0`` and ``V0`` reproduces either a voltage-aligned</span>
 <span class="sd">    constant-current source, where terminal power scales with ``Vm/V0``, or a</span>
@@ -255,32 +265,32 @@
 <span class="sd">    :param voltage_model: Physical voltage dependency to reproduce.</span>
 <span class="sd">    :param name: Human-readable model name shown in the dynamic editor.</span>
 <span class="sd">    :return: RMS template implementing the selected initialized power law.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">template</span><span class="p">:</span> <span class="n">RmsModelTemplate</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">()</span>
     <span class="n">template</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">LoadDevice</span>
     <span class="n">template</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
     <span class="c1"># The bus voltage is supplied by the normal RMS network connection path.</span>
     <span class="n">voltage_magnitude</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="s2">&quot;Vm&quot;</span><span class="p">,</span>
+        <span class="s2">"Vm"</span><span class="p">,</span>
         <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">voltage_angle</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="s2">&quot;Va&quot;</span><span class="p">,</span>
+        <span class="s2">"Va"</span><span class="p">,</span>
         <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># These retained references are sampled after the load-flow operating</span>
-    <span class="c1"># point is closed, matching PowerFactory&#39;s Yload = I(ldf) / U(ldf).</span>
-    <span class="n">initial_active_power</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;P0&quot;</span><span class="p">)</span>
-    <span class="n">initial_reactive_power</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Q0&quot;</span><span class="p">)</span>
-    <span class="n">initial_voltage_magnitude</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;V0&quot;</span><span class="p">)</span>
+    <span class="c1"># point is closed, matching PowerFactory's Yload = I(ldf) / U(ldf).</span>
+    <span class="n">initial_active_power</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"P0"</span><span class="p">)</span>
+    <span class="n">initial_reactive_power</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Q0"</span><span class="p">)</span>
+    <span class="n">initial_voltage_magnitude</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"V0"</span><span class="p">)</span>
     <span class="n">active_power</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="s2">&quot;P&quot;</span><span class="p">,</span>
+        <span class="s2">"P"</span><span class="p">,</span>
         <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">P</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">reactive_power</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="s2">&quot;Q&quot;</span><span class="p">,</span>
+        <span class="s2">"Q"</span><span class="p">,</span>
         <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Q</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">normalized_voltage</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">voltage_magnitude</span> <span class="o">/</span> <span class="n">initial_voltage_magnitude</span>

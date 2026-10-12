@@ -126,8 +126,6 @@ def get_genqec_rms(vfactory: VarFactory, name: str = "Genqec_rms_template") -> R
     Xqaux3 = vfactory.add_var('Xqaux3')
 
     event_dict = {
-        fn: vfactory.add_const(50.0),
-        ws: vfactory.add_const(2 * pi * 50),
         M: vfactory.add_const(3.5),
         D: vfactory.add_const(10.0),
         Rs: vfactory.add_const(0.003),
@@ -279,17 +277,17 @@ def get_genqec_rms(vfactory: VarFactory, name: str = "Genqec_rms_template") -> R
             VarPowerFlowReferenceType.Va: inputs[1],
         },
 
-        api_obj_mapping={  },
+        api_obj_mapping={ParamPowerFlowReferenceType.freq: fn, ParamPowerFlowReferenceType.omega_base: ws},
 
         out_vars=[Pg, Qg, omega, IRPu, Te],
         in_vars=inputs,
         event_dict=event_dict,
-        name="genqec"
+        name="genqec",
+        parameters={fn: vfactory.add_const(50.0), ws: vfactory.add_const(2 * pi * 50)},
     )
 
     templ.block.children.append(block)
     templ.block.external_mapping = block.external_mapping
-    templ.block.api_obj_mapping = block.api_obj_mapping
     templ.block.in_vars = inputs
     templ.block.out_vars = block.out_vars
 
@@ -368,8 +366,6 @@ def get_governor_rms(vfactory: VarFactory, name: str = "Governor") -> RmsModelTe
     events_dict[P0] = vfactory.add_const(0.01)
     events_dict[omega_ref] = vfactory.add_const(1.0)
     events_dict[K] = vfactory.add_const(10.0)
-    events_dict[Pmax] = vfactory.add_const(12.0)
-    events_dict[Pmin] = vfactory.add_const(-1.0)
     events_dict[Uc] = vfactory.add_const(-0.5)
     events_dict[Uo] = vfactory.add_const(0.5)
     events_dict[T_aux] = vfactory.add_const(0.0)
@@ -407,6 +403,7 @@ def get_governor_rms(vfactory: VarFactory, name: str = "Governor") -> RmsModelTe
         out_vars=[Tm],
         in_vars=inputs,
         event_dict=events_dict,
+        parameters={Pmax: vfactory.add_const(12.0), Pmin: vfactory.add_const(-1.0)},
         name="governor_v2",
     )
 
@@ -425,17 +422,8 @@ def get_governor_rms(vfactory: VarFactory, name: str = "Governor") -> RmsModelTe
     templ.block.init_eqs = init_eqs
 
     api_obj_mapping: dict[ParamPowerFlowReferenceType, Var] = dict()
-    api_obj_mapping[ParamPowerFlowReferenceType.K] = K
     api_obj_mapping[ParamPowerFlowReferenceType.Pmax] = Pmax
     api_obj_mapping[ParamPowerFlowReferenceType.Pmin] = Pmin
-    api_obj_mapping[ParamPowerFlowReferenceType.Uc] = Uc
-    api_obj_mapping[ParamPowerFlowReferenceType.Uo] = Uo
-    api_obj_mapping[ParamPowerFlowReferenceType.T_aux] = T_aux
-    api_obj_mapping[ParamPowerFlowReferenceType.Kp] = Kp
-    api_obj_mapping[ParamPowerFlowReferenceType.Ki] = Ki
-    api_obj_mapping[ParamPowerFlowReferenceType.omega_ref] = omega_ref
-    api_obj_mapping[ParamPowerFlowReferenceType.p0] = p0
-    api_obj_mapping[ParamPowerFlowReferenceType.P0] = P0
     templ.block.api_obj_mapping = api_obj_mapping
 
     templ.comment = 'Reusable generator governor RMS control block'

@@ -143,6 +143,11 @@ if __name__ == "__main__":
     update_gui_to_make_sure()
 
     if check_versions():
+        veragridengine_extra_files: list[str] = collect_extra_package_files(
+            pkg_name='VeraGridEngine',
+            relative_folder=os.path.join('data', 'fmu'),
+            suffixes=['.c', '.h'],
+        )
         veragrid_extra_files: list[str] = list()
         veragrid_translation_files: list[str] = collect_extra_package_files(
             pkg_name='VeraGrid',
@@ -213,7 +218,8 @@ if __name__ == "__main__":
             provides_extra=_provides_extra,
             long_description=_long_description,
             ext_filter=['.py', '.csv', '.txt'],
-            exeption_paths=('__pycache__')
+            exeption_paths=('__pycache__', os.path.join('data', 'fmu')),
+            extra_files=veragridengine_extra_files,
         )
 
         publish(
@@ -252,7 +258,7 @@ if __name__ == "__main__":
             provides_extra=_provides_extra,
             long_description=_long_description,
             ext_filter=['.py', '.csv', '.txt', '.ico'],
-            exeption_paths=('__pycache__')
+            exeption_paths=('__pycache__',),
         )
 
         publish(
@@ -271,7 +277,7 @@ if __name__ == "__main__":
             provides_extra=_provides_extra,
             long_description=_long_description,
             ext_filter=['.py', '.txt', '.md'],
-            exeption_paths=('__pycache__')
+            exeption_paths=('__pycache__',),
         )
 
     else:

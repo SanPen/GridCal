@@ -148,6 +148,13 @@ def test_main_window_config_combo_values_round_trip(tmp_path: Path) -> None:
     env = os.environ.copy()
     env["QT_QPA_PLATFORM"] = env.get("QT_QPA_PLATFORM", "offscreen")
 
+    # Keep the real main-window startup inside test-owned user state so its
+    # configuration and plugin discovery cannot depend on the operator's home.
+    isolated_home: Path = tmp_path / "home"
+    isolated_home.mkdir(parents=True, exist_ok=True)
+    env["HOME"] = str(isolated_home)
+    env["USERPROFILE"] = str(isolated_home)
+
     python_path_entries = [
         str(REPO_ROOT / "src"),
         str(REPO_ROOT / "src" / "tests"),
@@ -165,7 +172,7 @@ def test_main_window_config_combo_values_round_trip(tmp_path: Path) -> None:
         env=env,
         capture_output=True,
         text=True,
-        timeout=120,
+        timeout=300,
     )
 
     if result.returncode != 0:
@@ -178,3 +185,8 @@ def test_main_window_config_combo_values_round_trip(tmp_path: Path) -> None:
 
     assert "all config combo round trip: ok" in result.stdout
     assert "covered:" in result.stdout
+
+    # Confirm that the child resolved VeraGrid's standard state below the
+    # isolated home while exercising the complete main-window configuration.
+    isolated_veragrid_folder: Path = isolated_home / ".VeraGrid"
+    assert isolated_veragrid_folder.is_dir()

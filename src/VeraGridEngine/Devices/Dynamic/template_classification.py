@@ -14,18 +14,13 @@ def block_declares_physical_device_contract(block: Block) -> bool:
     """Return whether a template root declares a physical network boundary.
 
     A physical template must be bindable to one network object. Native and
-    GUI-authored templates express that through power-flow references, while
-    imported RMS equipment may use typed terminal-power contributions. Both
-    representations belong to the canonical block and are source-independent.
+    GUI-authored and imported templates express that through canonical
+    power-flow references. Persisted legacy terminal metadata does not define
+    runtime device identity.
 
     :param block: Reusable template root block.
     :return: Whether the block can represent one complete physical device.
     """
-    if len(block.dynamic_model_contract.rms_terminal_power_contributions) > 0:
-        return True
-    else:
-        pass
-
     if len(block.external_mapping) > 0:
         return True
     else:

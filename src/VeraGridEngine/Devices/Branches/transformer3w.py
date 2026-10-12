@@ -652,6 +652,26 @@ class Transformer3W(DynamicDevice):
         self.winding3.rate = self.rate3
         self.winding3.Sn = self.rate3
 
+    def fill_zero_sequence(self, z12: complex, z23: complex, z31: complex) -> None:
+        """Store the zero-sequence star equivalent on the existing windings.
+
+        :param z12: Pairwise HV-MV impedance on the system base, p.u.
+        :param z23: Pairwise MV-LV impedance on the system base, p.u.
+        :param z31: Pairwise LV-HV impedance on the system base, p.u.
+        :return: None.
+        """
+        resistances: tuple[float, float, float] = delta_to_star(z12.real, z23.real, z31.real)
+        reactances: tuple[float, float, float] = delta_to_star(z12.imag, z23.imag, z31.imag)
+        winding: Winding
+        resistance: float
+        reactance: float
+        for winding, resistance, reactance in zip((self.winding1, self.winding2, self.winding3),
+                                                  resistances, reactances):
+            # Individual equivalent legs may be negative; the pairwise tests
+            # determine their values, not a positivity constraint on each leg.
+            winding.R0 = resistance
+            winding.X0 = reactance
+
     def fill_from_star(self, r1: float, r2: float, r3: float, x1: float, x2: float, x3: float) -> None:
         """
         Fill from Star values

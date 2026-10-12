@@ -54,9 +54,9 @@ def get_genrow_rms_template(vfactory: VarFactory, name="Genrow rms template") ->
     block = Block()
     block.name = name
 
-    block.event_dict[R1] = vfactory.add_const(0.3)
-    block.event_dict[X1] = vfactory.add_const(0.86138701)
-    block.event_dict[freq] = vfactory.add_const(50.0)
+    block.parameters[R1] = vfactory.add_const(0.3)
+    block.parameters[X1] = vfactory.add_const(0.86138701)
+    block.parameters[freq] = vfactory.add_const(50.0)
     block.event_dict[M] = vfactory.add_const(4.0)
     block.event_dict[D] = vfactory.add_const(1.0)
     block.event_dict[omega_ref] = vfactory.add_const(1.0)
@@ -119,7 +119,10 @@ def get_genrow_rms_template(vfactory: VarFactory, name="Genrow rms template") ->
         VarPowerFlowReferenceType.Q: Q_g
     }
 
-    templ.block.api_obj_mapping = {
+    # Static generator mappings stay on the physical model block which declares
+    # their parameter targets. Recursive initialization reaches this child
+    # directly, so the editor-owned root only needs the external interface.
+    block.api_obj_mapping = {
         # Electrical parameters
         ParamPowerFlowReferenceType.R1: R1,
         ParamPowerFlowReferenceType.X1: X1,

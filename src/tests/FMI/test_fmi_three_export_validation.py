@@ -9,8 +9,11 @@ import ast
 import hashlib
 from pathlib import Path
 
+import pytest
+
+from veragrid_packaging import check_all_folders_contain_init_py
 from VeraGridEngine.enumerations import FmiVersion
-from VeraGridEngine.IO.fmu.export_platform import (
+from VeraGridEngine.IO.fmu.config import (
     TargetPlatform,
     binary_directory,
     select_target_platform,
@@ -38,7 +41,7 @@ def test_fmi_three_headers_match_official_release() -> None:
     :return: None.
     """
     fmi_three_root: Path = (
-        Path(__file__).resolve().parents[2] / "VeraGridEngine" / "IO" / "fmu" / "c_api" / "fmi3"
+        Path(__file__).resolve().parents[2] / "VeraGridEngine" / "data" / "fmu" / "c_api" / "fmi3"
     )
     expected_headers: tuple[tuple[str, str], ...] = (
         ("fmi3Functions.h", "038358fb0209c3547fe8c6f03b80582960c93ce0a7d342b0d9348c8ce6137784"),
@@ -57,8 +60,13 @@ def test_legacy_fmi_two_template_and_me_renderers_are_absent() -> None:
     :return: None.
     """
     fmu_root: Path = Path(__file__).resolve().parents[2] / "VeraGridEngine" / "IO" / "fmu"
-    assert not (fmu_root / "exporter" / "c_runtime" / "fmi2_template").exists()
-    me_build_source: str = (fmu_root / "exporter_me" / "build.py").read_text(encoding="utf-8")
+    data_root: Path = Path(__file__).resolve().parents[2] / "VeraGridEngine" / "data" / "fmu"
+    static_resources: list[Path] = list(data_root.rglob("*.c")) + list(data_root.rglob("*.h"))
+    assert len(static_resources) == 30
+    assert len(list(fmu_root.rglob("*.c"))) == 0
+    assert len(list(fmu_root.rglob("*.h"))) == 0
+    assert not (fmu_root / "interface_core" / "c_runtime" / "fmi2_template").exists()
+    me_build_source: str = (fmu_root / "ExportInterface" / "build.py").read_text(encoding="utf-8")
     deleted_renderers: tuple[str, ...] = (
         "def render_model_instance_h(",
         "def render_model_instance_c(",
@@ -113,3 +121,43 @@ def test_fmi_package_initializers_retain_mpl_license() -> None:
             "# SPDX-License-Identifier: MPL-2.0\n"
         )
 
+
+def test_packaging_validator_prunes_only_exact_resource_subtree(tmp_path: Path) -> None:
+    """Prune only the declared FMI data subtree during package validation.
+
+    :param tmp_path: Isolated package tree supplied by pytest.
+    :return: None.
+    """
+    package_root: Path = tmp_path / "VeraGridEngine"
+    data_root: Path = package_root / "data"
+    resource_root: Path = data_root / "fmu"
+    cache_root: Path = package_root / "__pycache__"
+    resource_root.mkdir(parents=True)
+    cache_root.mkdir()
+    (package_root / "__init__.py").write_text("", encoding="utf-8")
+    (data_root / "__init__.py").write_text("", encoding="utf-8")
+
+    # The exact resource subtree and established cache-name exclusion are pruned.
+    assert check_all_folders_contain_init_py(
+        directory=str(package_root),
+        exceptions=('__pycache__', str(Path('data') / 'fmu')),
+    )
+
+    # A sibling under data remains subject to the package initializer contract.
+    unexpected_sibling: Path = data_root / "unexpected"
+    unexpected_sibling.mkdir()
+    with pytest.raises(Exception, match="unexpected"):
+        check_all_folders_contain_init_py(
+            directory=str(package_root),
+            exceptions=('__pycache__', str(Path('data') / 'fmu')),
+        )
+    (unexpected_sibling / "__init__.py").write_text("", encoding="utf-8")
+
+    # Exact-name matching must not treat "py" as a substring of "__pycache__".
+    substring_directory: Path = package_root / "py"
+    substring_directory.mkdir()
+    with pytest.raises(Exception, match=r"[\\/]py$"):
+        check_all_folders_contain_init_py(
+            directory=str(package_root),
+            exceptions=('__pycache__', str(Path('data') / 'fmu')),
+        )

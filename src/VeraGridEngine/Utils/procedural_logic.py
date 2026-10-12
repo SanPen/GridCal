@@ -11,11 +11,13 @@ from typing import Dict, Iterable, List, Optional, Protocol, Tuple
 
 import numpy as np
 
+from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory, find_var_by_persisted_identity
 from VeraGridEngine.Utils.emt_boundary_update_wrapper import BoundaryUpdateWrapper
 from VeraGridEngine.Utils.procedural_logic_contract import (
     ProceduralLogicCodecContract,
     ProceduralLogicData,
     ProceduralLogicEntryContract,
+    ManufacturerNativeRuntimeSessionProtocol,
 )
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import CmpOp, Comparison, Const, Expr, Var
@@ -737,6 +739,24 @@ class ProceduralLogicBase(ProceduralLogicEntryContract[Expr]):
         """
         _unused = var_mapping
         return build_procedural_logic_entry(procedural_logic_entry_to_dict(self))
+
+    def remap_with_structural_vars(
+            self,
+            var_mapping: VarRemap,
+            structural_var_mapping: Dict[int, Var],
+    ) -> "ProceduralLogicBase":
+        """Clone one entry with symbolic and stable structural mappings.
+
+        Ordinary procedural entries contain expressions or names and therefore
+        use their established symbolic remapping. Entries holding live variable
+        references override this method to consume the stable structural map.
+
+        :param var_mapping: Variable and name substitution map.
+        :param structural_var_mapping: Stable source identities mapped to cloned variables.
+        :return: Remapped procedural logic entry.
+        """
+        _unused: Dict[int, Var] = structural_var_mapping
+        return self.remap(var_mapping)
 
     def to_data(self) -> ProceduralLogicData:
         """Return the version-independent declarative logic representation.
@@ -1815,7 +1835,8 @@ class PickupDropoffLogic(ProceduralLogicBase):
             candidates.append(float(self.pending_drop_time))
         if len(candidates) == 0:
             return None
-        return min(candidates)
+        else:
+            return min(candidates)
 
     def _eval_delay(self, expr: Expr | Comparison, t: float, x: Vec, params: Vec) -> float:
         """
@@ -2573,7 +2594,8 @@ class DelayedThresholdLatchLogic(ProceduralLogicBase):
             candidates.append(float(self.pending_reset_time))
         if len(candidates) == 0:
             return None
-        return min(candidates)
+        else:
+            return min(candidates)
 
     def update(self, t: float, x: Vec, params: Vec) -> None:
         """
@@ -3830,23 +3852,336 @@ class ThreePhaseCarrierSampledModulationLogic(ProceduralLogicBase):
         )
 
 
+class IeeeCigreDllSignalBinding:
+    """Stable connection between one ABI signal element and one symbolic variable."""
+
+    __slots__ = ("is_input", "port_ordinal", "element_ordinal", "_variable")
+
+    def __init__(self,
+                 is_input: bool,
+                 port_ordinal: int,
+                 element_ordinal: int,
+                 variable: Var) -> None:
+        """Create one signal-element connection.
+
+        :param is_input: ``True`` for an input port and ``False`` for an output port.
+        :param port_ordinal: Zero-based stable port ordinal from ModelInfo.
+        :param element_ordinal: Zero-based element ordinal inside the signal width.
+        :param variable: Live symbolic variable connected to the ABI signal element.
+        :return: None.
+        """
+        if not isinstance(variable, Var):
+            raise TypeError("IEEE/CIGRE signal binding variable must be a Var")
+        else:
+            pass
+        if port_ordinal < 0 or element_ordinal < 0:
+            raise ValueError("IEEE/CIGRE signal binding ordinals must be nonnegative")
+        else:
+            pass
+        self.is_input: bool = is_input
+        self.port_ordinal: int = port_ordinal
+        self.element_ordinal: int = element_ordinal
+        self._variable: Var = variable
+
+    def get_variable(self) -> Var:
+        """Return the live variable connected to this ABI signal element.
+
+        :return: Canonical symbolic variable owned by the controller block.
+        """
+        return self._variable
+
+
+class IeeeCigreDllParameterOverride:
+    """Typed per-instance override for one manufacturer parameter ordinal."""
+
+    __slots__ = ("parameter_ordinal", "data_type", "fixed_value", "value")
+
+    def __init__(self,
+                 parameter_ordinal: int,
+                 data_type: int,
+                 fixed_value: bool,
+                 value: int | float | str) -> None:
+        """Create one typed parameter override.
+
+        :param parameter_ordinal: Zero-based stable parameter ordinal.
+        :param data_type: Exact official IEEE/CIGRE primitive type number.
+        :param fixed_value: Exact manufacturer FixedValue declaration.
+        :param value: Typed override value.
+        :return: None.
+        """
+        if parameter_ordinal < 0 or data_type < 1 or data_type > 10:
+            raise ValueError("IEEE/CIGRE parameter override ordinal or data type is invalid")
+        else:
+            pass
+        if isinstance(value, str):
+            encoded: bytes = value.encode("utf-8", errors="strict")
+            if "\x00" in value or len(encoded) > 16 * 1024:
+                raise ValueError("IEEE/CIGRE string override must be NUL-free and at most 16 KiB")
+            else:
+                pass
+        else:
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                if isinstance(value, float) and not math.isfinite(value):
+                    raise ValueError("IEEE/CIGRE numeric override must be finite")
+                else:
+                    pass
+            else:
+                raise TypeError("IEEE/CIGRE parameter override must be int, float or str")
+        self.parameter_ordinal: int = parameter_ordinal
+        self.data_type: int = data_type
+        self.fixed_value: bool = fixed_value
+        self.value: int | float | str = value
+
+
+class ManufacturerNativeRebindPlan:
+    """Transient, complete replacement plan for one consumer Block hierarchy."""
+
+    __slots__ = (
+        "consumer_idtag", "source_provider_idtag", "destination_provider_idtag",
+        "source_model_info_sha256", "destination_model_info_sha256",
+        "source_occurrence_fingerprints", "replacement_signal_records",
+        "replacement_override_records",
+    )
+
+    def __init__(
+            self,
+            consumer_idtag: str,
+            source_provider_idtag: str,
+            destination_provider_idtag: str,
+            source_model_info_sha256: str,
+            destination_model_info_sha256: str,
+            source_occurrence_fingerprints: Tuple[str, ...],
+            replacement_signal_records: Tuple[
+                Tuple[Tuple[bool, int, int, str, int], ...], ...
+            ],
+            replacement_override_records: Tuple[
+                Tuple[Tuple[int, int, bool, int | float | str], ...], ...
+            ],
+    ) -> None:
+        """Store an IO-validated plan without retaining decoded ModelInfo.
+
+        :param consumer_idtag: Stable template identity to be rebound.
+        :param source_provider_idtag: Current provider identity.
+        :param destination_provider_idtag: Replacement provider identity.
+        :param source_model_info_sha256: Current canonical metadata digest.
+        :param destination_model_info_sha256: Replacement metadata digest.
+        :param source_occurrence_fingerprints: Canonical precondition per occurrence.
+        :param replacement_signal_records: Complete primitive signal replacements.
+        :param replacement_override_records: Complete primitive override replacements.
+        :return: None.
+        """
+        occurrence_count: int = len(source_occurrence_fingerprints)
+        if (
+                len(consumer_idtag) == 0
+                or len(source_provider_idtag) == 0
+                or len(destination_provider_idtag) == 0
+                or occurrence_count == 0
+        ):
+            raise ValueError("Manufacturer native rebind plan identities are incomplete")
+        else:
+            pass
+        if (
+                len(source_model_info_sha256) != 64
+                or len(destination_model_info_sha256) != 64
+        ):
+            raise ValueError("Manufacturer native rebind plan digests are invalid")
+        else:
+            pass
+        if (
+                len(replacement_signal_records) != occurrence_count
+                or len(replacement_override_records) != occurrence_count
+        ):
+            raise ValueError("Manufacturer native rebind plan occurrence counts differ")
+        else:
+            pass
+        self.consumer_idtag: str = consumer_idtag
+        self.source_provider_idtag: str = source_provider_idtag
+        self.destination_provider_idtag: str = destination_provider_idtag
+        self.source_model_info_sha256: str = source_model_info_sha256.lower()
+        self.destination_model_info_sha256: str = destination_model_info_sha256.lower()
+        self.source_occurrence_fingerprints: Tuple[str, ...] = (
+            source_occurrence_fingerprints
+        )
+        self.replacement_signal_records: Tuple[
+            Tuple[Tuple[bool, int, int, str, int], ...], ...
+        ] = replacement_signal_records
+        self.replacement_override_records: Tuple[
+            Tuple[Tuple[int, int, bool, int | float | str], ...], ...
+        ] = replacement_override_records
+
+
+class ManufacturerNativeControllerLogic(ProceduralLogicBase):
+    """Declarative Block reference to one manufacturer native model provider."""
+
+    __slots__ = ("provider_idtag", "model_info_sha256", "signal_bindings", "parameter_overrides")
+    logic_tpe = ProceduralLogicType.ManufacturerNativeController
+
+    def __init__(self,
+                 provider_idtag: str,
+                 model_info_sha256: str,
+                 signal_bindings: Tuple[IeeeCigreDllSignalBinding, ...],
+                 parameter_overrides: Tuple[IeeeCigreDllParameterOverride, ...],
+                 name: str = "") -> None:
+        """Create one provider binding without duplicating ModelInfo.
+
+        :param provider_idtag: Stable provider identity owned by Assets.
+        :param model_info_sha256: Expected canonical metadata digest.
+        :param signal_bindings: Ordered signal-element graph connections.
+        :param parameter_overrides: Ordered typed instance overrides.
+        :param name: Optional display name.
+        :return: None.
+        """
+        super().__init__(name=name)
+        normalized_digest: str = model_info_sha256.lower()
+        if len(provider_idtag) == 0:
+            raise ValueError("Manufacturer native provider idtag cannot be empty")
+        else:
+            pass
+        if len(normalized_digest) != 64 or any(char not in "0123456789abcdef" for char in normalized_digest):
+            raise ValueError("Manufacturer native ModelInfo digest is invalid")
+        else:
+            pass
+        self.provider_idtag: str = provider_idtag
+        self.model_info_sha256: str = normalized_digest
+        self.signal_bindings: Tuple[IeeeCigreDllSignalBinding, ...] = signal_bindings
+        self.parameter_overrides: Tuple[IeeeCigreDllParameterOverride, ...] = parameter_overrides
+
+    def to_data(self) -> ProceduralLogicData:
+        """Serialize the provider binding as versioned declarative data.
+
+        :return: Serialized provider binding without ModelInfo duplication.
+        """
+        signal_data: List[object] = list()
+        signal_binding: IeeeCigreDllSignalBinding
+        for signal_binding in self.signal_bindings:
+            variable: Var = signal_binding.get_variable()
+            signal_data.append([
+                signal_binding.is_input,
+                signal_binding.port_ordinal,
+                signal_binding.element_ordinal,
+                variable.name,
+                variable.non_mutable_uid,
+            ])
+        override_data: List[object] = list()
+        parameter_override: IeeeCigreDllParameterOverride
+        for parameter_override in self.parameter_overrides:
+            override_data.append([
+                parameter_override.parameter_ordinal,
+                parameter_override.data_type,
+                parameter_override.fixed_value,
+                parameter_override.value,
+            ])
+        return {
+            "logic_type": self.logic_tpe.value,
+            "name": self.name,
+            "provider_idtag": self.provider_idtag,
+            "model_info_sha256": self.model_info_sha256,
+            "signal_bindings": signal_data,
+            "parameter_overrides": override_data,
+        }
+
+    def remap(self, var_mapping: VarRemap) -> "ManufacturerNativeControllerLogic":
+        """Clone the binding under the Block variable substitution map.
+
+        :param var_mapping: Symbolic variable replacement map.
+        :return: Remapped provider binding preserving provider identity and ordinals.
+        """
+        remapped_bindings: List[IeeeCigreDllSignalBinding] = list()
+        binding: IeeeCigreDllSignalBinding
+        for binding in self.signal_bindings:
+            source_variable: Var = binding.get_variable()
+            replacement_expr: Expr | None = var_mapping.get(source_variable, None)
+            if isinstance(replacement_expr, Var):
+                remapped_variable: Var = replacement_expr
+            else:
+                # A live binding already observes UID and name changes on the
+                # same object. Only an explicit object replacement needs the
+                # symbolic mapping; otherwise retain the canonical reference.
+                remapped_variable = source_variable
+            remapped_bindings.append(IeeeCigreDllSignalBinding(
+                is_input=binding.is_input,
+                port_ordinal=binding.port_ordinal,
+                element_ordinal=binding.element_ordinal,
+                variable=remapped_variable,
+            ))
+        return ManufacturerNativeControllerLogic(
+            provider_idtag=self.provider_idtag,
+            model_info_sha256=self.model_info_sha256,
+            signal_bindings=tuple(remapped_bindings),
+            parameter_overrides=self.parameter_overrides,
+            name=self.name,
+        )
+
+    def remap_with_structural_vars(
+            self,
+            var_mapping: VarRemap,
+            structural_var_mapping: Dict[int, Var],
+    ) -> "ManufacturerNativeControllerLogic":
+        """Clone native bindings through stable variable identities.
+
+        :param var_mapping: Symbolic mapping retained for the common procedural contract.
+        :param structural_var_mapping: Stable source identities mapped to cloned variables.
+        :return: Remapped provider binding pointing to the cloned block variables.
+        """
+        _unused: VarRemap = var_mapping
+        remapped_bindings: List[IeeeCigreDllSignalBinding] = list()
+        binding: IeeeCigreDllSignalBinding
+        for binding in self.signal_bindings:
+            source_variable: Var = binding.get_variable()
+            remapped_variable: Var | None = structural_var_mapping.get(
+                source_variable.non_mutable_uid,
+                None,
+            )
+            if remapped_variable is None:
+                raise ValueError("IEEE/CIGRE signal binding lost its structural variable during remap")
+            else:
+                remapped_bindings.append(IeeeCigreDllSignalBinding(
+                    is_input=binding.is_input,
+                    port_ordinal=binding.port_ordinal,
+                    element_ordinal=binding.element_ordinal,
+                    variable=remapped_variable,
+                ))
+        return ManufacturerNativeControllerLogic(
+            provider_idtag=self.provider_idtag,
+            model_info_sha256=self.model_info_sha256,
+            signal_bindings=tuple(remapped_bindings),
+            parameter_overrides=self.parameter_overrides,
+            name=self.name,
+        )
+
 class BlockProceduralLogicUpdater(BoundaryUpdateWrapper):
     """
     Boundary updater that delegates runtime decisions to block-attached procedural logic entries.
     """
 
-    __slots__ = ["problem", "logic_entries"]
+    __slots__ = ["problem", "logic_entries", "runtime_session", "model_mode", "runtime_initialized"]
 
-    def __init__(self, problem: ProceduralProblem, logic_entries: List[ProceduralLogicBase]) -> None:
+    def __init__(self,
+                 problem: ProceduralProblem,
+                 logic_entries: List[ProceduralLogicBase],
+                 runtime_session: ManufacturerNativeRuntimeSessionProtocol | None = None,
+                 model_mode: int | None = None) -> None:
         """
         Bind all procedural logic entries to one EMT problem.
 
         :param problem: Bound EMT problem.
         :param logic_entries: Procedural logic entries attached to the root block.
+        :param runtime_session: Optional driver-owned manufacturer-native session.
+        :param model_mode: Exact IEEE/CIGRE RMS or EMT mode number.
         :return: None
         """
-        self.problem = problem
-        self.logic_entries = logic_entries
+        self.problem: ProceduralProblem = problem
+        self.logic_entries: List[ProceduralLogicBase] = logic_entries
+        self.runtime_session: ManufacturerNativeRuntimeSessionProtocol | None = runtime_session
+        self.model_mode: int | None = model_mode
+        self.runtime_initialized: bool = False
+        if self.runtime_session is not None:
+            if self.model_mode is None:
+                raise ValueError("Native runtime session requires an exact model mode")
+            else:
+                self.runtime_session.preflight(problem, self.logic_entries, self.model_mode)
+        else:
+            pass
         for logic in self.logic_entries:
             logic.bind(problem)
 
@@ -3860,7 +4195,18 @@ class BlockProceduralLogicUpdater(BoundaryUpdateWrapper):
         :return: None
         """
         for logic in self.logic_entries:
-            logic.update(t, x, params)
+            if isinstance(logic, ManufacturerNativeControllerLogic):
+                pass
+            else:
+                logic.update(t, x, params)
+        if self.runtime_session is not None and not self.runtime_initialized:
+            if abs(float(t)) <= 1e-12:
+                self.runtime_session.initialize(float(t), x, params)
+                self.runtime_initialized = True
+            else:
+                raise RuntimeError("Native runtime must initialize from the t=0 operating-point guess")
+        else:
+            pass
 
     def initialize_modes(self, t: float, x: Vec, params: Vec) -> None:
         """
@@ -3900,9 +4246,42 @@ class BlockProceduralLogicUpdater(BoundaryUpdateWrapper):
             candidate = logic.get_next_forced_event_time(t_prev, t_target)
             if candidate is not None:
                 candidates.append(candidate)
+        if self.runtime_session is not None:
+            native_candidate: float | None = self.runtime_session.get_next_sample_time(t_prev, t_target)
+            if native_candidate is not None:
+                candidates.append(native_candidate)
+            else:
+                pass
+        else:
+            pass
         if len(candidates) == 0:
             return None
-        return min(candidates)
+        else:
+            return min(candidates)
+
+    def commit_boundary(self, t: float, x: Vec, params: Vec) -> None:
+        """Commit due manufacturer controllers after an accepted network step.
+
+        :param t: Accepted solver boundary.
+        :param x: Accepted network state.
+        :param params: Mutable runtime parameter vector.
+        :return: None.
+        """
+        if self.runtime_session is not None:
+            self.runtime_session.commit_boundary(t, x, params)
+        else:
+            pass
+
+    def close(self) -> None:
+        """Release the driver-owned native session through its single owner.
+
+        :return: None.
+        """
+        if self.runtime_session is not None:
+            self.runtime_session.close()
+            self.runtime_session = None
+        else:
+            pass
 
 
 def _base_logic_data(entry: ProceduralLogicBase) -> ProceduralLogicData:
@@ -3927,7 +4306,9 @@ def procedural_logic_entry_to_dict(entry: ProceduralLogicBase) -> ProceduralLogi
     """
     data: ProceduralLogicData = _base_logic_data(entry)
 
-    if isinstance(entry, ConditionalDiagnosticLogic):
+    if isinstance(entry, ManufacturerNativeControllerLogic):
+        return entry.to_data()
+    elif isinstance(entry, ConditionalDiagnosticLogic):
         data.update({
             "condition_expr": _expr_like_to_dict(entry.condition_expr),
             "message": entry.message,
@@ -4379,17 +4760,113 @@ def _three_phase_carrier_sampled_modulation_logic_from_dict(data: ProceduralLogi
     )
 
 
-def build_procedural_logic_entry(data: ProceduralLogicData) -> ProceduralLogicBase:
+def build_procedural_logic_entry(
+        data: ProceduralLogicData,
+        var_factory: VarFactory | None = None,
+) -> ProceduralLogicBase:
     """
     Deserialize one procedural logic entry.
 
     :param data: Serialized logic config.
+    :param var_factory: Optional factory required by entries holding live variables.
     :return: Procedural logic object.
     """
     logic_tpe_text: str = str(data.get("logic_type", data.get("logic_tpe", "")))
     logic_tpe: ProceduralLogicType = ProceduralLogicType(logic_tpe_text)
 
-    if logic_tpe == ProceduralLogicType.ConditionalDiagnostic:
+    if logic_tpe == ProceduralLogicType.ManufacturerNativeController:
+        if var_factory is None:
+            raise ValueError("Manufacturer native procedural logic requires a VarFactory")
+        else:
+            pass
+        raw_bindings: object = data.get("signal_bindings", None)
+        raw_overrides: object = data.get("parameter_overrides", None)
+        if not isinstance(raw_bindings, list) or not isinstance(raw_overrides, list):
+            raise TypeError("Manufacturer native bindings and overrides must be lists")
+        else:
+            pass
+        signal_bindings: List[IeeeCigreDllSignalBinding] = list()
+        raw_binding: object
+        for raw_binding in raw_bindings:
+            if not isinstance(raw_binding, list) or len(raw_binding) != 5:
+                raise TypeError("Manufacturer native signal binding must contain five fields")
+            else:
+                pass
+            is_input_raw: object = raw_binding[0]
+            port_ordinal_raw: object = raw_binding[1]
+            element_ordinal_raw: object = raw_binding[2]
+            var_name_raw: object = raw_binding[3]
+            var_uid_raw: object = raw_binding[4]
+            if (
+                    not isinstance(is_input_raw, bool)
+                    or not isinstance(port_ordinal_raw, int)
+                    or isinstance(port_ordinal_raw, bool)
+                    or not isinstance(element_ordinal_raw, int)
+                    or isinstance(element_ordinal_raw, bool)
+                    or not isinstance(var_name_raw, str)
+                    or not isinstance(var_uid_raw, int)
+                    or isinstance(var_uid_raw, bool)
+            ):
+                raise TypeError("Manufacturer native signal binding has invalid field types")
+            else:
+                variable: Var | None = find_var_by_persisted_identity(
+                    var_dict=var_factory.get_vars_dict(),
+                    persisted_uid=var_uid_raw,
+                )
+                if variable is None:
+                    variable = find_var_by_persisted_identity(
+                        var_dict=var_factory.get_diff_var_dict(),
+                        persisted_uid=var_uid_raw,
+                    )
+                else:
+                    pass
+                if variable is None:
+                    raise ValueError(
+                        f"Manufacturer native signal variable '{var_name_raw}' was not found in VarFactory"
+                    )
+                else:
+                    signal_bindings.append(IeeeCigreDllSignalBinding(
+                        is_input=is_input_raw,
+                        port_ordinal=port_ordinal_raw,
+                        element_ordinal=element_ordinal_raw,
+                        variable=variable,
+                    ))
+        parameter_overrides: List[IeeeCigreDllParameterOverride] = list()
+        raw_override: object
+        for raw_override in raw_overrides:
+            if not isinstance(raw_override, list) or len(raw_override) != 4:
+                raise TypeError("Manufacturer native parameter override must contain four fields")
+            else:
+                pass
+            parameter_ordinal_raw: object = raw_override[0]
+            data_type_raw: object = raw_override[1]
+            fixed_value_raw: object = raw_override[2]
+            override_value_raw: object = raw_override[3]
+            if (
+                    not isinstance(parameter_ordinal_raw, int)
+                    or isinstance(parameter_ordinal_raw, bool)
+                    or not isinstance(data_type_raw, int)
+                    or isinstance(data_type_raw, bool)
+                    or not isinstance(fixed_value_raw, bool)
+                    or not isinstance(override_value_raw, (int, float, str))
+                    or isinstance(override_value_raw, bool)
+            ):
+                raise TypeError("Manufacturer native parameter override has invalid field types")
+            else:
+                parameter_overrides.append(IeeeCigreDllParameterOverride(
+                    parameter_ordinal=parameter_ordinal_raw,
+                    data_type=data_type_raw,
+                    fixed_value=fixed_value_raw,
+                    value=override_value_raw,
+                ))
+        return ManufacturerNativeControllerLogic(
+            provider_idtag=str(data["provider_idtag"]),
+            model_info_sha256=str(data["model_info_sha256"]),
+            signal_bindings=tuple(signal_bindings),
+            parameter_overrides=tuple(parameter_overrides),
+            name=str(data.get("name", "")),
+        )
+    elif logic_tpe == ProceduralLogicType.ConditionalDiagnostic:
         return _conditional_diagnostic_logic_from_dict(data)
     elif logic_tpe == ProceduralLogicType.DelayedSwitchEvent:
         return _delayed_switch_event_logic_from_dict(data)
@@ -4439,11 +4916,13 @@ def procedural_logic_to_dict(entries: List[ProceduralLogicBase]) -> List[Procedu
 
 def procedural_logic_from_dict(
         entries: List[ProceduralLogicData | ProceduralLogicBase],
+        var_factory: VarFactory | None = None,
 ) -> List[ProceduralLogicBase]:
     """
     Deserialize a list of procedural logic entries.
 
     :param entries: Serialized entries.
+    :param var_factory: Optional factory required by entries holding live variables.
     :return: Procedural logic objects.
     """
     normalized_entries: List[ProceduralLogicBase] = list()
@@ -4467,7 +4946,10 @@ def procedural_logic_from_dict(
                 else:
                     pass
                 normalized_entries.append(
-                    build_procedural_logic_entry(normalized_data)
+                    build_procedural_logic_entry(
+                        data=normalized_data,
+                        var_factory=var_factory,
+                    )
                 )
             else:
                 raise TypeError(
@@ -4504,17 +4986,26 @@ class ProceduralLogicCodec(ProceduralLogicCodecContract[Expr]):
     def parse_entries(
             self,
             entries: Iterable[ProceduralLogicData],
+            var_factory: VarFactory | None = None,
     ) -> Iterable[ProceduralLogicEntryContract[Expr]]:
         """Build typed state machines from declarative entry data.
 
         :param entries: Declarative procedural entries.
+        :param var_factory: Optional factory required by entries holding live variables.
         :return: Reconstructed procedural state machines.
         """
         entry_list: List[ProceduralLogicData] = list(entries)
-        return procedural_logic_from_dict(entry_list)
+        return procedural_logic_from_dict(
+            entries=entry_list,
+            var_factory=var_factory,
+        )
 
 
-def build_boundary_updater_from_block(problem: ProceduralProblem) -> Optional[BlockProceduralLogicUpdater]:
+def build_boundary_updater_from_block(
+        problem: ProceduralProblem,
+        runtime_session: ManufacturerNativeRuntimeSessionProtocol | None = None,
+        model_mode: int | None = None,
+) -> Optional[BlockProceduralLogicUpdater]:
     """
     Build an isolated runtime updater from the logic attached to ``problem.sys_block``.
 
@@ -4522,7 +5013,9 @@ def build_boundary_updater_from_block(problem: ProceduralProblem) -> Optional[Bl
     must therefore target reconstructed entries so solver-owned objects, such
     as progress signals, cannot become reachable from the persistent model.
 
-    :param problem: EMT problem containing the root block.
+    :param problem: Numerical problem containing the root block.
+    :param runtime_session: Optional driver-owned manufacturer-native session.
+    :param model_mode: Exact IEEE/CIGRE RMS or EMT mode number.
     :return: Boundary updater or None.
     """
     entries: List[ProceduralLogicBase] = list()
@@ -4540,10 +5033,28 @@ def build_boundary_updater_from_block(problem: ProceduralProblem) -> Optional[Bl
     if len(entries) == 0:
         return None
 
-    # Cross the declarative codec boundary to obtain solver-owned state
-    # machines without copying the problem or any GUI signal it may contain.
-    serialized_entries: List[ProceduralLogicData] = procedural_logic_to_dict(entries)
-    runtime_entries: List[ProceduralLogicBase] = procedural_logic_from_dict(
-        serialized_entries,
+    # Cross the declarative codec boundary for ordinary entries. Native bindings
+    # retain live references to canonical model variables, so clone those entries
+    # explicitly through an identity structural map instead of serializing them.
+    runtime_entries: List[ProceduralLogicBase] = list()
+    entry: ProceduralLogicBase
+    for entry in entries:
+        if isinstance(entry, ManufacturerNativeControllerLogic):
+            structural_var_mapping: Dict[int, Var] = dict()
+            signal_binding: IeeeCigreDllSignalBinding
+            for signal_binding in entry.signal_bindings:
+                binding_var: Var = signal_binding.get_variable()
+                structural_var_mapping[binding_var.non_mutable_uid] = binding_var
+            runtime_entries.append(entry.remap_with_structural_vars(
+                var_mapping=dict(),
+                structural_var_mapping=structural_var_mapping,
+            ))
+        else:
+            serialized_entry: ProceduralLogicData = procedural_logic_entry_to_dict(entry)
+            runtime_entries.append(build_procedural_logic_entry(data=serialized_entry))
+    return BlockProceduralLogicUpdater(
+        problem=problem,
+        logic_entries=runtime_entries,
+        runtime_session=runtime_session,
+        model_mode=model_mode,
     )
-    return BlockProceduralLogicUpdater(problem, runtime_entries)

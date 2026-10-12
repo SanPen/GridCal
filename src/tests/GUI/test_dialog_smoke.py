@@ -51,8 +51,13 @@ from VeraGrid.Gui.DynamicModelEditor.Editor.ElementDialogues.lookup_table_dialog
 from VeraGrid.Gui.DynamicModelEditor.Editor.ElementDialogues.MeasurementsDialog import MeasurementsDialog
 from VeraGrid.Gui.DynamicModelEditor.Workspace.detachable_editor_tabs_widget import DynamicEditorPickerDialog
 from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor import DynamicBlockEditorGUI
+from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties import AddSymbolDialog
 from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties import DynamicBlockPropertiesDialog
-from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_validation import ValidationSectionDialog
+from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_validation import (
+    ValidationSection,
+    ValidationSectionDialog,
+    add_validation_detail,
+)
 from VeraGrid.Gui.DynamicModelEditor.Workspace.dynamic_editor_workspace_window import DynamicEditorWorkspaceWindow
 from VeraGrid.Gui.FileDialogues.CGMESDialogue.cgmes_export import CgmesExportDialogue
 from VeraGrid.Gui.FileDialogues.CGMESDialogue.cgmes_import import CgmesImportDialogue
@@ -92,6 +97,7 @@ from VeraGrid.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from VeraGrid.Gui.SystemScaler.system_scaler import SystemScaler
 from VeraGrid.Gui.PlotDialogue.qt_chart_widget import GraphsWidget
 from VeraGrid.Gui.dialog_lifecycle import delete_dialog_safely
+from VeraGrid.Gui.dialog_lifecycle import exec_dialog_safely
 from VeraGrid.Gui.dialog_lifecycle import is_dialog_available
 from VeraGrid.Gui.general_dialogues import ArrayEditor
 from VeraGrid.Gui.general_dialogues import CgmesOptionsSelector
@@ -124,6 +130,7 @@ from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import Var
 from VeraGridEngine.basic_structures import Logger
+from VeraGridEngine.enumerations import BlockSymbolCategory
 from VeraGridEngine.enumerations import BlockType
 from VeraGridEngine.enumerations import DeviceType
 from VeraGridEngine.enumerations import DynamicSimulationMode
@@ -168,6 +175,7 @@ class DialogSmokeTarget(Enum):
     MEASUREMENTS = "MeasurementsDialog"
     DYNAMIC_BLOCK_EDITOR = "DynamicBlockEditorGUI"
     DYNAMIC_BLOCK_PROPERTIES = "DynamicBlockPropertiesDialog"
+    ADD_SYMBOL = "AddSymbolDialog"
     DYNAMIC_EDITOR_PICKER = "DynamicEditorPickerDialog"
     DYNAMIC_EDITOR_WORKSPACE = "DynamicEditorWorkspaceWindow"
     VALIDATION_SECTION = "ValidationSectionDialog"
@@ -1046,6 +1054,15 @@ def build_dialog_for_smoke(target: DialogSmokeTarget, context: DialogSmokeContex
             block_type_name=BlockType.GAIN.name,
             var_factory=VarFactory(),
         )
+    elif target == DialogSmokeTarget.ADD_SYMBOL:
+        owner_block: Block = Block(name="Owner")
+        owners: list[Block] = list()
+        owners.append(owner_block)
+        dialog = AddSymbolDialog(
+            category=BlockSymbolCategory.VARIABLES,
+            owners=owners,
+            preferred_owner=owner_block,
+        )
     elif target == DialogSmokeTarget.DYNAMIC_EDITOR_PICKER:
         dialog = DynamicEditorPickerDialog(entries=list())
     elif target == DialogSmokeTarget.DYNAMIC_EDITOR_WORKSPACE:
@@ -1571,7 +1588,7 @@ def get_smoked_dialog_class_names() -> Set[str]:
 
 def get_deferred_dialog_class_names() -> Set[str]:
     """
-    Return dialog classes that need dedicated runtime-result fixtures.
+    Return base classes and dialogs covered by dedicated GUI fixtures.
 
     :return: Deferred class names.
     """
@@ -1579,6 +1596,7 @@ def get_deferred_dialog_class_names() -> Set[str]:
     names.add("BaseMainGui")
     names.add("CenteredDialog")
     names.add("CandidateInvestmentsWindow")
+    names.add("ManufacturerNativeImporterDialog")
     return names
 
 
@@ -1838,6 +1856,74 @@ def test_delete_dialog_safely_deletes_child_widgets(qt_app: QtWidgets.QApplicati
     assert not shiboken6.isValid(nested_widget)
     assert not shiboken6.isValid(child_widget)
     assert not shiboken6.isValid(dialog)
+
+
+def test_validation_dialogue_releases_each_modal_instance(
+        qt_app: QtWidgets.QApplication) -> None:
+    """Validation modals must not retain Qt objects across repeated runs.
+
+    :param qt_app: Shared Qt application fixture.
+    :return: None.
+    """
+    app: QtWidgets.QApplication = qt_app
+    owner_dialog: QtWidgets.QDialog = QtWidgets.QDialog()
+    dialog_index: int
+    for dialog_index in range(3):
+        _unused_dialog_index: int = dialog_index
+        dialog: ValidationSectionDialog = ValidationSectionDialog(
+            section_results=list(),
+            parent=owner_dialog,
+        )
+        table_model: QtGui.QStandardItemModel = dialog._table_model
+        results_table: QtWidgets.QTableView = dialog._ui.resultsTableView
+
+        # Close the modal from its own event loop, then deliver the deferred
+        # deletion posted by the shared dialogue lifecycle helper.
+        QtCore.QTimer.singleShot(0, dialog.accept)
+        dialog_result: int = exec_dialog_safely(dialog=dialog)
+        QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+        app.processEvents()
+
+        assert dialog_result == QtWidgets.QDialog.DialogCode.Accepted
+        assert not shiboken6.isValid(results_table)
+        assert not shiboken6.isValid(table_model)
+        assert not shiboken6.isValid(dialog)
+        assert owner_dialog.findChildren(ValidationSectionDialog) == list()
+
+    delete_dialog_safely(dialog=owner_dialog)
+    QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+    app.processEvents()
+    assert not shiboken6.isValid(owner_dialog)
+
+
+def test_validation_dialogue_preserves_uuid_block_identity(
+        qt_app: QtWidgets.QApplication) -> None:
+    """Store and emit a 128-bit block UID without QVariant integer overflow.
+
+    :param qt_app: Shared Qt application fixture.
+    :return: None.
+    """
+    _unused_application: QtWidgets.QApplication = qt_app
+    block_uid: int = (1 << 127) + 12345
+    block: Block = Block(name="UUID block", uid=block_uid)
+    section: ValidationSection = ValidationSection(title="Identity check")
+    add_validation_detail(section=section, block=block, detail="Example issue")
+    dialog: ValidationSectionDialog = ValidationSectionDialog(
+        section_results=list((section,)),
+    )
+
+    # Qt item data receives a decimal string because QVariant cannot represent
+    # the complete UUID-v4 integer range used by symbolic blocks.
+    result_index: QtCore.QModelIndex = dialog._table_model.index(0, 0)
+    stored_uid: object = result_index.data(QtCore.Qt.ItemDataRole.UserRole)
+    assert stored_uid == str(block_uid)
+
+    signal_spy: QtTest.QSignalSpy = QtTest.QSignalSpy(dialog.issueSelected)
+    dialog._show_selected_issue_in_model(index=result_index)
+    assert signal_spy.count() == 1
+    emitted_arguments: list[object] = signal_spy.at(0)
+    assert emitted_arguments[0] == block_uid
+    dialog.close()
 
 
 def test_grid_reduce_accepts_before_log_display(qt_app: QtWidgets.QApplication, monkeypatch: Any) -> None:

@@ -15,6 +15,26 @@ from VeraGridEngine.Templates.Rms.hvdc_vsc_gfl_rms_template_v2 import (
     build_hvdc_vsc_gfl_rms,
     build_vsc_dc_link_rms,
 )
+from VeraGridEngine.Templates.Rms.genrow_rms_template import get_genrow_rms_template
+from VeraGridEngine.Templates.Rms.line_rms_template import (
+    get_dc_line_rms_template,
+    get_line_rms_template,
+)
+from VeraGridEngine.Templates.Rms.load_phasor_current_rms_template import (
+    get_load_phasor_current_rms_template,
+)
+from VeraGridEngine.Templates.Rms.load_phasor_rms_template import (
+    get_load_phasor_rms_template,
+)
+from VeraGridEngine.Templates.Rms.load_rms_template import get_load_rms_template
+from VeraGridEngine.Templates.Rms.vsc_gfl import (
+    TrafoGflBuild as build_vsc_gfl_transformer_rms,
+    VscGflBuild as build_vsc_gfl_rms,
+)
+from VeraGridEngine.Templates.Rms.vsc_gfl_new import (
+    TrafoGflBuild as build_vsc_gfl_transformer_rms_new,
+    VscGflBuild as build_vsc_gfl_rms_new,
+)
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
 from VeraGridEngine.Utils.Symbolic.templates_common_functions import (
@@ -26,6 +46,40 @@ from VeraGridEngine.enumerations import (
     ParamPowerFlowReferenceType,
     VarPowerFlowReferenceType,
 )
+
+
+def test_rms_templates_keep_api_mappings_on_local_storage_owners() -> None:
+    """Require representative RMS wrappers to keep mappings on their owners.
+
+    :return: None.
+    """
+    templates: list[Block] = list([
+        get_line_rms_template(vfactory=VarFactory()).block,
+        get_dc_line_rms_template(vfactory=VarFactory()).block,
+        get_genrow_rms_template(vfactory=VarFactory()).block,
+        build_hvdc_vsc_gfl_rms(vfactory=VarFactory()).block,
+        get_load_rms_template(vfactory=VarFactory()).block,
+        get_load_phasor_rms_template(vfactory=VarFactory()).block,
+        get_load_phasor_current_rms_template(vfactory=VarFactory()).block,
+        build_vsc_gfl_rms(vfactory=VarFactory()).block,
+        build_vsc_gfl_transformer_rms(vfactory=VarFactory()).block,
+        build_vsc_gfl_rms_new(vfactory=VarFactory()).block,
+        build_vsc_gfl_transformer_rms_new(vfactory=VarFactory()).block,
+    ])
+    root_block: Block
+    current_block: Block
+    mapping_key: ParamPowerFlowReferenceType
+    mapping_target: Var | None
+
+    # Recursive mapping can only initialize a target when the mapping and its
+    # storage declaration are both owned by the currently visited block.
+    for root_block in templates:
+        for current_block in root_block.get_all_blocks():
+            for mapping_key, mapping_target in current_block.api_obj_mapping.items():
+                assert mapping_target is not None
+                target_is_constant: bool = mapping_target in current_block.parameters
+                target_is_runtime: bool = mapping_target in current_block.event_dict
+                assert target_is_constant != target_is_runtime
 
 
 @pytest.mark.parametrize("control1", (
@@ -93,8 +147,8 @@ def test_vsc_capacitor_resolves_static_loss_coefficients(
     original_events: dict[Var, Expr | Const] = dict(capacitor.event_dict)
     problem_mapping: dict[Var, Const] = dict()
 
-    # Exercise the same root synchronization and dispatcher used by RMS,
-    # rather than seeding the capacitor constants directly in the test.
+    # Exercise the same interface synchronization and recursive dispatcher used
+    # by RMS, rather than seeding the capacitor constants directly in the test.
     synchronize_saved_rms_root_mappings_from_children(device=device)
     assign_static_api_object_mapping_for_device(
         grid=grid, device=device, mdl=root, problem_mapping=problem_mapping,
@@ -109,7 +163,7 @@ def test_vsc_capacitor_resolves_static_loss_coefficients(
             ParamPowerFlowReferenceType.alpha3,
     ), loss_coefficients):
         parameter: Var = capacitor.api_obj_mapping[key]
-        assert root.api_obj_mapping[key] is parameter
+        assert key not in root.api_obj_mapping
         assert problem_mapping[parameter].value == expected_value
         # No fallback is written into the template; only the problem receives
         # the resolved static value, without duplicating constant owners.
@@ -120,8 +174,8 @@ def test_vsc_capacitor_resolves_static_loss_coefficients(
 
 
 @pytest.mark.parametrize("roundtrip", (False, True))
-def test_rms_save_replaces_deleted_vsc_component_mappings(roundtrip: bool) -> None:
-    """Repair stale root metadata after replacing a complete VSC with children.
+def test_rms_save_keeps_child_static_mappings_owner_local(roundtrip: bool) -> None:
+    """Keep recursively discovered VSC static mappings on their owning children.
 
     :param roundtrip: Whether to serialize and restore the stale tree first.
     :return: None.
@@ -129,17 +183,20 @@ def test_rms_save_replaces_deleted_vsc_component_mappings(roundtrip: bool) -> No
     factory: VarFactory = VarFactory()
     old_model: Block = build_hvdc_vsc_gfl_rms(vfactory=factory).block
     new_model: Block = build_hvdc_vsc_gfl_rms(vfactory=factory).block
-    # The old complete model is no longer a child. Its root mappings survive,
-    # reproducing a library rebuild with identical names but different UIDs.
+    # The editor root owns ports, while each inserted model child keeps its own
+    # static mapping contract.
     root: Block = Block(
         children=list((Block(children=list(new_model.children)),)),
         in_vars=list(new_model.in_vars),
         out_vars=list(new_model.out_vars),
         external_mapping=dict(old_model.external_mapping),
-        api_obj_mapping=dict(old_model.api_obj_mapping),
+        api_obj_mapping=dict((
+            (
+                ParamPowerFlowReferenceType.alpha1,
+                new_model.children[1].api_obj_mapping[ParamPowerFlowReferenceType.alpha1],
+            ),
+        )),
     )
-    root.api_obj_mapping[ParamPowerFlowReferenceType.R1] = factory.add_var("R")
-    root.api_obj_mapping[ParamPowerFlowReferenceType.X1] = factory.add_var("L")
     expected_external_uids: dict[VarPowerFlowReferenceType, int] = dict(
         (key, variable.uid) for key, variable in new_model.external_mapping.items()
         if variable is not None
@@ -147,6 +204,11 @@ def test_rms_save_replaces_deleted_vsc_component_mappings(roundtrip: bool) -> No
     expected_api_uids: dict[ParamPowerFlowReferenceType, int] = dict(
         (key, variable.uid) for key, variable in new_model.api_obj_mapping.items()
     )
+    for child in new_model.get_all_blocks()[1:]:
+        expected_api_uids.update(
+            (key, variable.uid) for key, variable in child.api_obj_mapping.items()
+            if key not in expected_api_uids
+        )
     if roundtrip:
         root = Block.parse(root.to_dict())
     else:
@@ -156,8 +218,8 @@ def test_rms_save_replaces_deleted_vsc_component_mappings(roundtrip: bool) -> No
     original_inputs: tuple[Var, ...] = tuple(root.in_vars)
     original_outputs: tuple[Var, ...] = tuple(root.out_vars)
 
-    # A second save must preserve the repaired mappings, including references
-    # to nested current-controller and electrical-model symbols.
+    # Repeated saves must preserve the repaired external interface without
+    # promoting nested static mappings to the editor root.
     iteration: int
     for iteration in range(2):
         synchronize_saved_rms_root_mappings_from_children(device=device)
@@ -165,14 +227,11 @@ def test_rms_save_replaces_deleted_vsc_component_mappings(roundtrip: bool) -> No
             (key, variable.uid) for key, variable in root.external_mapping.items()
             if variable is not None
         ) == expected_external_uids
-        assert dict(
-            (key, variable.uid) for key, variable in root.api_obj_mapping.items()
-        ) == expected_api_uids
+        assert root.api_obj_mapping == dict()
         assert tuple(root.in_vars) == original_inputs
         assert tuple(root.out_vars) == original_outputs
 
-    # After repairing metadata, the dispatcher must resolve the surviving
-    # capacitor's constants, not just identically named deleted variables.
+    # Recursive dispatch must still resolve all surviving child constants.
     problem_mapping: dict[Var, Const] = dict()
     assign_static_api_object_mapping_for_device(
         grid=MultiCircuit(), device=device, mdl=root,
@@ -221,8 +280,8 @@ def test_rms_save_preserves_live_root_choices_and_terminal_sides() -> None:
     assert tuple(root.in_vars) == (from_voltage, to_voltage)
 
 
-def test_vsc_static_loss_mapping_does_not_write_event_parameters() -> None:
-    """Keep dynamic event values unchanged if a model incorrectly maps them.
+def test_vsc_device_mapping_initializes_event_parameter_without_mutating_block() -> None:
+    """Seed a mapped event parameter without changing its declared storage.
 
     :return: None.
     """
@@ -233,13 +292,14 @@ def test_vsc_static_loss_mapping_does_not_write_event_parameters() -> None:
     )
     problem_mapping: dict[Var, Const] = dict()
     logger: Logger = Logger()
-    # Restoring VSC coefficient support must retain the static/event contract
-    # already enforced by the unified assignment helper.
+    # The device supplies only the initial value. The block remains authoritative
+    # about whether the parameter is immutable or event-capable.
     assign_static_api_object_mapping_for_device(
         grid=MultiCircuit(), device=VSC(alpha1=0.001), mdl=root,
         problem_mapping=problem_mapping, logger=logger,
     )
-    assert len(problem_mapping) == 0
+    assert len(problem_mapping) == 1
+    assert problem_mapping[parameter].value == 0.001
     assert root.event_dict[parameter].value == 0.25
     assert len(root.parameters) == 0
-    assert len(logger.entries) == 1
+    assert len(logger.entries) == 0

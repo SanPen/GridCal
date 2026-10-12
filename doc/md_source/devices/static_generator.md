@@ -2,65 +2,166 @@
 
 ## StaticGenerator
 
-A `StaticGenerator` represents a fixed injection without the full control surface of a synchronous generator.
+A `StaticGenerator` is a bus-connected injection. The default `control_mode = PQ`
+preserves fixed P/Q behaviour, including existing phase inputs and profiles.
+`control_mode = Q-V droop` enables the same steady-state reactive droop curve as a VSC,
+without introducing a DC bus or a converter branch.
 
-This device connects to a bus and contributes power, current, or admittance to the solved network model.
+### Q-V droop inputs and convention
+
+Select **Q-V droop** in the Static Generator properties and provide:
+
+| Property | Meaning |
+| --- | --- |
+| `P`, `Q` | Total active injection and reactive reference, MW and MVAr. Positive values inject into the network. |
+| `Snom` | Positive nominal apparent power in MVA; base of the droop percentage. |
+| `droop` | Positive voltage droop in percent on `Snom`. For example, 3 means 3%, not 0.03. |
+| `Vset` | Voltage reference in pu. |
+| `Vset_min`, `Vset_max` | Clamps on the measured voltage used by the curve; defaults 0.9 and 1.1 pu. These do not enforce network voltage limits. |
+
+If `use_kw` is enabled, enter `P`, `Q` and `Snom` in kW, kVAr and kVA;
+compilation converts them to MW, MVAr and MVA, following the generator convention.
+
+With `u = clip(abs(U1), Vset_min, Vset_max)`, the injected reactive power is
+`Qinj = Q + (100 * Snom / droop) * (Vset - u)` in MVAr.
+The implementation calls the existing VSC `voltage_q_droop()` function and converts
+between absorbed and injected power signs and system pu units.
+It retains that function's present behaviour: voltage clamping, with no additional
+reactive-power clipping. The curve is not an SVC capability-limit or dynamic model.
+
+### Q-V droop in positive-sequence and ABC power flow
+
+In positive-sequence power flow, `U1` is the local bus voltage. The controller is
+evaluated in the residual of the existing full nonlinear formulation, using the
+same curve as the VSC. For NR, LM or Powell, select the existing
+`use_autodiff_jacobian = True` option, as in the VSC droop study: it evaluates the
+Jacobian numerically from the residual. No analytic droop derivatives are added,
+and neither the Jacobian implementation nor its selection is changed.
+
+In ABC power flow, `U1 = (Ua + a*Ub + a^2*Uc)/3`, with `a = exp(j*2*pi/3)`.
+The existing positive-sequence controller projects this voltage and injects balanced
+positive-sequence current corresponding to the total `P + j*Qinj`.
+It does not impose equal phase voltages or equal phase powers under imbalance.
+There are no passive zero- or negative-sequence branches for this static equivalent.
+All three AC phases are required. In this mode, total `P` and `Q` (and their profiles)
+are used; separate per-phase power inputs do not define the controlled injection.
+The ABC formulation retains its existing numerical Jacobian by default.
+
+### Fixed PQ with sequence responses in ABC power flow
+
+For a three-phase PQ device without explicit phase powers, a floating-star `conn = Y`
+or nonzero sequence-impedance data selects the sequence model automatically.
+There is no separate selector. The source maintains `P + j*Q` in positive sequence:
+`I1 = conj((P + j*Q) / (Sbase * U1))` in system pu.
+Passive negative-sequence current is `I2 = -U2 / (R2 + j*X2)`.
+Terminal total power includes the absorption in the passive sequence branches;
+the source does not compensate those losses. Balanced power flow is unchanged.
+
+The existing `conn` property determines the return path. **Y** and **D** block
+terminal zero-sequence current. **Yg** uses `I0 = -U0 / (R0 + j*X0)` and requires
+a finite, nonzero effective zero-sequence impedance. An explicit neutral (**Yn**)
+is not supported by this sequence model. `R0`, `X0`, `R2` and `X2` are in pu on the
+network's `Sbase`, irrespective of `use_kw`. All three AC phases must be connected.
+An unset `R2 = X2 = 0` means no passive negative-sequence response, not a short circuit;
+provide the physical impedance when that response is required.
+
+The implementation reuses the existing Fortescue transform, shunt-admittance storage
+and positive-sequence current projection. It adds no earth connections or voltage
+reference constraints. In a component with no homopolar return path, absolute
+phase-to-earth voltages can remain indeterminate; compare phase-to-phase voltages
+and the determined sequence components without interpreting a common displacement
+as a physical voltage drop.
+
+Explicit phase powers and their profiles take precedence and retain the phase-power
+model, without passive sequence branches. Existing Yg/D PQ devices with no sequence
+data also retain that model. Q-V droop keeps its separate behaviour described above.
+These are steady-state power-flow models, not converter fault-current-limit controls.
+
+### PowerFactory import and persistence
+
+`ElmGenstat` devices imported as fixed-PQ static generators retain `phtech`,
+`nneutral` and `r0/x0/r2/x2` through the same connection and impedance conversion
+as PV generators. Machine-base impedances are converted to system base, including
+parallel units. In particular, **3PH** blocks terminal I0 rather than creating an
+earth connection. The PQ sequence source reproduces the P1/Q1 behaviour validated
+against native PowerFactory constq cases; it does not copy the PV controller's
+terminal-power compensation. Connection and sequence data survive native save/load.
+
+Without the explicit VSC import option, `ElmSvs` with voltage droop
+(`i_ctrl = 1`, `i_droop != 0`) becomes a `StaticGenerator` in Q-V droop mode.
+`Srated`, `ddroop` and `usetp` map to `Snom`, `droop` and `Vset`;
+the P/Q references are zero, as in the existing SVC-to-VSC route.
+Other SVC modes keep their previous shunt mapping. Selecting VSC import retains
+the converter mapping. This is a local terminal-voltage equivalent.
+
+The control settings survive native `.veragrid` save/load. Older native static
+generators default to PQ. This addition extends power flow and DGS import;
+it does not add the droop equations to OPF, dynamic simulation or the DGS exporter.
 
 ### Registered properties
 Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pa`, `Pb`, `Pc`, `Q`, `Qa`, `Qb`, `Qc`.
 
-|          name          |       class_type       |unit |mandatory|max_chars|                                  descriptions                                  |has_profile|comment|
-|------------------------|------------------------|-----|---------|---------|--------------------------------------------------------------------------------|-----------|-------|
-|idtag                   |str                     |     |False    |         |Unique ID                                                                       |False      |       |
-|name                    |str                     |     |False    |         |Name of the device.                                                             |False      |       |
-|code                    |str                     |     |False    |         |Secondary ID                                                                    |False      |       |
-|rdfid                   |str                     |     |False    |         |RDF ID for further compatibility                                                |False      |       |
-|action                  |enum ActionType         |     |False    |         |Object action to perform. Only used for model merging.                          |False      |       |
-|selected_to_merge       |bool                    |     |False    |         |Whether this object should be applied during diff merge.                        |False      |       |
-|comment                 |str                     |     |False    |         |User comment                                                                    |False      |       |
-|diff_changes            |MergeInformation        |     |False    |         |                                                                                |False      |       |
-|modelling_authority     |Modelling Authority     |     |False    |         |Modelling authority of this asset                                               |False      |       |
-|commissioned_date       |int                     |     |False    |         |Commissioned date of the asset                                                  |False      |       |
-|decommissioned_date     |int                     |     |False    |         |Decommissioned date of the asset                                                |False      |       |
-|build_status            |enum BuildStatus        |     |False    |         |Device build status. Used in expansion planning.                                |False      |       |
-|owners                  |AssociationsList        |p.u. |False    |         |Owners associations to injections                                               |False      |       |
-|rms_model               |DaeBlock                |     |False    |         |RMS dynamic model                                                               |False      |       |
-|emt_model               |DaeBlock                |     |False    |         |EMT dynamic model                                                               |False      |       |
-|rms_template            |RMS template            |     |False    |         |Native RMS template used. Assigning it clears rms_fmu_template.                 |False      |       |
-|emt_template            |EMT template            |     |False    |         |Native EMT template used. Assigning it clears emt_fmu_template.                 |False      |       |
-|rms_fmu_template        |FMU template            |     |False    |         |RMS FMU template used only by RMS simulations. Assigning it clears rms_template.|False      |       |
-|emt_fmu_template        |FMU template            |     |False    |         |EMT FMU template used only by EMT simulations. Assigning it clears emt_template.|False      |       |
-|rms_fmu_import_config   |str                     |     |False    |         |Serialized FMU Co-Simulation RMS configuration                                  |False      |       |
-|emt_fmu_import_config   |str                     |     |False    |         |Serialized FMU Co-Simulation EMT configuration                                  |False      |       |
-|rms_fmu_me_import_config|str                     |     |False    |         |Serialized FMU Model Exchange RMS configuration                                 |False      |       |
-|emt_fmu_me_import_config|str                     |     |False    |         |Serialized FMU Model Exchange EMT configuration                                 |False      |       |
-|bus                     |Bus                     |     |False    |         |Connection bus                                                                  |False      |       |
-|active                  |bool                    |     |False    |         |Is the load active?                                                             |True       |       |
-|color                   |str                     |     |False    |         |Color to paint the element in the map diagram                                   |False      |       |
-|mttf                    |float                   |h    |False    |         |Mean time to failure                                                            |False      |       |
-|mttr                    |float                   |h    |False    |         |Mean time to recovery                                                           |False      |       |
-|capex                   |float                   |e/MW |False    |         |Cost of investment. Used in expansion planning.                                 |False      |       |
-|opex                    |float                   |e/MWh|False    |         |Cost of operation. Used in expansion planning.                                  |False      |       |
-|Cost                    |float                   |e/MWh|False    |         |Cost of not served energy. Used in OPF.                                         |True       |       |
-|facility                |Facility                |     |False    |         |Facility where this is located                                                  |False      |       |
-|technologies            |AssociationsList        |p.u. |False    |         |Technologies associations to injections                                         |False      |       |
-|scalable                |bool                    |     |False    |         |Is the injection scalable?                                                      |False      |       |
-|shift_key               |float                   |     |False    |         |Shift key for net transfer capacity                                             |True       |       |
-|longitude               |float                   |deg  |False    |         |longitude of the injection.                                                     |False      |       |
-|latitude                |float                   |deg  |False    |         |latitude of the injection.                                                      |False      |       |
-|use_kw                  |bool                    |     |False    |         |Consider the injections in kW and kVAr?                                         |False      |       |
-|conn                    |enum ShuntConnectionType|     |False    |         |Connection type for 3-phase studies                                             |False      |       |
-|phN                     |bool                    |     |False    |         |Is the neutral connected?                                                       |False      |       |
-|phA                     |bool                    |     |False    |         |Is phase A connected?                                                           |False      |       |
-|phB                     |bool                    |     |False    |         |Is phase B connected?                                                           |False      |       |
-|phC                     |bool                    |     |False    |         |Is phase C connected?                                                           |False      |       |
-|bus_pos                 |int                     |     |False    |         |Aid to locate devices on a busbar                                               |False      |       |
-|P                       |float                   |MW   |False    |         |Active power                                                                    |True       |       |
-|Pa                      |float                   |MW   |False    |         |Phase A active power                                                            |True       |       |
-|Pb                      |float                   |MW   |False    |         |Phase B active power                                                            |True       |       |
-|Pc                      |float                   |MW   |False    |         |Phase C active power                                                            |True       |       |
-|Q                       |float                   |MVAr |False    |         |Reactive power                                                                  |True       |       |
-|Qa                      |float                   |MVAr |False    |         |Phase A reactive power                                                          |True       |       |
-|Qb                      |float                   |MVAr |False    |         |Phase B reactive power                                                          |True       |       |
-|Qc                      |float                   |MVAr |False    |         |Phase C reactive power                                                          |True       |       |
-|Snom                    |float                   |MVA  |False    |         |Nominal power.                                                                  |False      |       |
+|          name          |          class_type           |unit |mandatory|max_chars|                                    descriptions                                    |has_profile|comment|
+|------------------------|-------------------------------|-----|---------|---------|------------------------------------------------------------------------------------|-----------|-------|
+|idtag                   |str                            |     |False    |         |Unique ID                                                                           |False      |       |
+|name                    |str                            |     |False    |         |Name of the device.                                                                 |False      |       |
+|code                    |str                            |     |False    |         |Secondary ID                                                                        |False      |       |
+|rdfid                   |str                            |     |False    |         |RDF ID for further compatibility                                                    |False      |       |
+|action                  |enum ActionType                |     |False    |         |Object action to perform. Only used for model merging.                              |False      |       |
+|selected_to_merge       |bool                           |     |False    |         |Whether this object should be applied during diff merge.                            |False      |       |
+|comment                 |str                            |     |False    |         |User comment                                                                        |False      |       |
+|diff_changes            |MergeInformation               |     |False    |         |                                                                                    |False      |       |
+|modelling_authority     |Modelling Authority            |     |False    |         |Modelling authority of this asset                                                   |False      |       |
+|commissioned_date       |int                            |     |False    |         |Commissioned date of the asset                                                      |False      |       |
+|decommissioned_date     |int                            |     |False    |         |Decommissioned date of the asset                                                    |False      |       |
+|build_status            |enum BuildStatus               |     |False    |         |Device build status. Used in expansion planning.                                    |False      |       |
+|owners                  |AssociationsList               |p.u. |False    |         |Owners associations to injections                                                   |False      |       |
+|rms_model               |DaeBlock                       |     |False    |         |RMS dynamic model                                                                   |False      |       |
+|emt_model               |DaeBlock                       |     |False    |         |EMT dynamic model                                                                   |False      |       |
+|rms_template            |RMS template                   |     |False    |         |Native RMS template used. Assigning it clears rms_fmu_template.                     |False      |       |
+|emt_template            |EMT template                   |     |False    |         |Native EMT template used. Assigning it clears emt_fmu_template.                     |False      |       |
+|rms_fmu_template        |FMU template                   |     |False    |         |RMS FMU template used only by RMS simulations. Assigning it clears rms_template.    |False      |       |
+|emt_fmu_template        |FMU template                   |     |False    |         |EMT FMU template used only by EMT simulations. Assigning it clears emt_template.    |False      |       |
+|rms_fmu_import_config   |str                            |     |False    |         |Serialized FMU Co-Simulation RMS configuration                                      |False      |       |
+|emt_fmu_import_config   |str                            |     |False    |         |Serialized FMU Co-Simulation EMT configuration                                      |False      |       |
+|rms_fmu_me_import_config|str                            |     |False    |         |Serialized FMU Model Exchange RMS configuration                                     |False      |       |
+|emt_fmu_me_import_config|str                            |     |False    |         |Serialized FMU Model Exchange EMT configuration                                     |False      |       |
+|bus                     |Bus                            |     |False    |         |Connection bus                                                                      |False      |       |
+|active                  |bool                           |     |False    |         |Is the load active?                                                                 |True       |       |
+|color                   |str                            |     |False    |         |Color to paint the element in the map diagram                                       |False      |       |
+|mttf                    |float                          |h    |False    |         |Mean time to failure                                                                |False      |       |
+|mttr                    |float                          |h    |False    |         |Mean time to recovery                                                               |False      |       |
+|capex                   |float                          |e/MW |False    |         |Cost of investment. Used in expansion planning.                                     |False      |       |
+|opex                    |float                          |e/MWh|False    |         |Cost of operation. Used in expansion planning.                                      |False      |       |
+|Cost                    |float                          |e/MWh|False    |         |Cost of not served energy. Used in OPF.                                             |True       |       |
+|facility                |Facility                       |     |False    |         |Facility where this is located                                                      |False      |       |
+|technologies            |AssociationsList               |p.u. |False    |         |Technologies associations to injections                                             |False      |       |
+|scalable                |bool                           |     |False    |         |Is the injection scalable?                                                          |False      |       |
+|shift_key               |float                          |     |False    |         |Shift key for net transfer capacity                                                 |True       |       |
+|longitude               |float                          |deg  |False    |         |longitude of the injection.                                                         |False      |       |
+|latitude                |float                          |deg  |False    |         |latitude of the injection.                                                          |False      |       |
+|use_kw                  |bool                           |     |False    |         |Consider the injections in kW and kVAr?                                             |False      |       |
+|conn                    |enum ShuntConnectionType       |     |False    |         |Connection type for 3-phase studies                                                 |False      |       |
+|phN                     |bool                           |     |False    |         |Is the neutral connected?                                                           |False      |       |
+|phA                     |bool                           |     |False    |         |Is phase A connected?                                                               |False      |       |
+|phB                     |bool                           |     |False    |         |Is phase B connected?                                                               |False      |       |
+|phC                     |bool                           |     |False    |         |Is phase C connected?                                                               |False      |       |
+|bus_pos                 |int                            |     |False    |         |Aid to locate devices on a busbar                                                   |False      |       |
+|P                       |float                          |MW   |False    |         |Active power                                                                        |True       |       |
+|Pa                      |float                          |MW   |False    |         |Phase A active power                                                                |True       |       |
+|Pb                      |float                          |MW   |False    |         |Phase B active power                                                                |True       |       |
+|Pc                      |float                          |MW   |False    |         |Phase C active power                                                                |True       |       |
+|Q                       |float                          |MVAr |False    |         |Reactive power                                                                      |True       |       |
+|Qa                      |float                          |MVAr |False    |         |Phase A reactive power                                                              |True       |       |
+|Qb                      |float                          |MVAr |False    |         |Phase B reactive power                                                              |True       |       |
+|Qc                      |float                          |MVAr |False    |         |Phase C reactive power                                                              |True       |       |
+|R0                      |float                          |p.u. |False    |         |Zero-sequence resistance on the system base; used by grounded sequence injections.  |False      |       |
+|X0                      |float                          |p.u. |False    |         |Zero-sequence reactance on the system base; used by grounded sequence injections.   |False      |       |
+|R2                      |float                          |p.u. |False    |         |Negative-sequence resistance on the system base. R2=X2=0 omits the passive response.|False      |       |
+|X2                      |float                          |p.u. |False    |         |Negative-sequence reactance on the system base. R2=X2=0 omits the passive response. |False      |       |
+|Snom                    |float                          |MVA  |False    |         |Nominal power.                                                                      |False      |       |
+|control_mode            |enum StaticGeneratorControlMode|     |False    |         |Fixed P/Q or the VSC Q-V droop law; ABC control uses positive-sequence voltage.     |False      |       |
+|Vset                    |float                          |p.u. |False    |         |Droop voltage reference.                                                            |False      |       |
+|droop                   |float                          |%    |False    |         |Voltage droop on Snom; must be positive in Q-V droop mode.                          |False      |       |
+|Vset_min                |float                          |p.u. |False    |         |Lower clamp on the voltage used by the droop curve.                                 |False      |       |
+|Vset_max                |float                          |p.u. |False    |         |Upper clamp on the voltage used by the droop curve.                                 |False      |       |

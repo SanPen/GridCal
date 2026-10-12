@@ -146,18 +146,36 @@ def get_templates_for_entry(
     :param mode: Dynamic simulation mode being opened.
     :return: Template list for the editor library.
     """
-    api_object = entry.api_object
-    device_type = api_object.device_type
+    api_object: ALL_DEV_TYPES = entry.api_object
+    device_type: DeviceType = api_object.device_type
+    templates: list[ALL_DEV_TYPES]
 
     if device_type == DeviceType.RmsModelTemplateDevice:
-        return list(entry.circuit.get_dynamic_templates_by_domain(FmuTemplateDomain.RMS))
-    if device_type == DeviceType.EmtModelTemplateDevice:
-        return list(entry.circuit.get_dynamic_templates_by_domain(FmuTemplateDomain.EMT))
-
-    if mode == DynamicSimulationMode.RMS:
-        return list(entry.circuit.get_rms_templates_for_editor(api_object.device_type))
+        templates = list(
+            entry.circuit.get_dynamic_templates_by_domain(FmuTemplateDomain.RMS)
+        )
     else:
-        return list(entry.circuit.get_emt_templates_for_editor(api_object.device_type))
+        if device_type == DeviceType.EmtModelTemplateDevice:
+            templates = list(
+                entry.circuit.get_dynamic_templates_by_domain(FmuTemplateDomain.EMT)
+            )
+        else:
+            if mode == DynamicSimulationMode.RMS:
+                domain: FmuTemplateDomain = FmuTemplateDomain.RMS
+            else:
+                domain = FmuTemplateDomain.EMT
+
+            # Assets owns the native-plus-FMU compatibility rule. Both initial
+            # page construction and later session refresh therefore consume the
+            # same ordered catalogue without duplicating filters in the GUI.
+            templates = list(
+                entry.circuit.get_dynamic_templates_by_device_type_and_domain(
+                    tpe=device_type,
+                    domain=domain,
+                )
+            )
+
+    return templates
 
 
 def get_block_for_entry(entry: DynamicEditorEntry, mode: DynamicSimulationMode) -> Block:

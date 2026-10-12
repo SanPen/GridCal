@@ -475,6 +475,70 @@ class UndergroundLineType(DynamicDevice):
             and self._y_nabc is not None
         )
 
+    def get_dc_parameters(self, conductor: int = 1) -> tuple[float, float, float]:
+        """Return Rdc [ohm/km], L [H/km] and C [F/km] for one DC conductor.
+
+        For a physical system, ``conductor`` is its global phase number. The
+        existing sheath-reduced matrices supply the diagonal L/C at ``freq``;
+        Rdc comes from the physical core, without AC skin/earth-return losses.
+        A scalar DcLine does not represent mutual coupling between conductors.
+        Parameter-only systems use R, X and C (or B), including imported DGS
+        equivalents whose construction is unknown.
+        """
+        if not np.isfinite(self.freq) or self.freq <= 0.0:
+            raise ValueError('Cable System reference frequency must be positive')
+        omega = 2.0 * np.pi * self.freq
+        if self.has_physical_data():
+            if not np.isfinite(self.earth_resistivity) or self.earth_resistivity <= 0.0:
+                raise ValueError('Cable System earth resistivity must be positive')
+            # Recompute so edits to a referenced Cable cannot leave stale L/C.
+            logger = Logger()
+            if not self.compute(logger=logger):
+                raise ValueError('Cable System geometry or materials are invalid')
+            indices = np.flatnonzero(self.z_phases_nabc == conductor)
+            if len(indices) != 1:
+                raise ValueError('Select an existing Cable System conductor number')
+            idx = int(indices[0])
+            cable = next(item.cable for item in self.cables_in_system.data
+                         if item.phase == conductor)
+            values = (float(cable.core_dc_resistance),
+                      float(self.z_nabc[idx, idx].imag / omega),
+                      float(self.y_nabc[idx, idx].imag / omega))
+        else:
+            if conductor != 1:
+                raise ValueError('A parameter-only Cable System has one DC equivalent')
+            values = (self.R, self.X / omega,
+                      (self.C if self.C != 0.0 else self.B / omega) * 1.0e-6)
+        if not all(np.isfinite(value) and value >= 0.0 for value in values):
+            raise ValueError('Cable System DC parameters must be finite and non-negative')
+        return values
+
+    def get_dc_values(self, Sbase: float, length: float, line_Vnom: float,
+                      conductor: int = 1) -> tuple[float, float, float]:
+        """Return total DC R in p.u. and L/C in p.u. seconds.
+
+        Keep the historical DC conversion: Zbase = Vnom**2/Sbase,
+        Rpu = R*length/Zbase, Lpu = L*length/Zbase, Cpu = C*length*Zbase.
+        """
+        if not all(np.isfinite(value) and value > 0.0
+                   for value in (Sbase, length, line_Vnom)):
+            raise ValueError('DC bases and cable length must be positive and finite')
+        resistance, inductance, capacitance = self.get_dc_parameters(conductor)
+        zbase = line_Vnom * line_Vnom / Sbase
+        return resistance * length / zbase, inductance * length / zbase, capacitance * length * zbase
+
+    def get_branch_dynamic_templates(self, device_type: DeviceType, logger: Logger) -> tuple:
+        """Share electrical data without assigning AC dynamic models to DC or vice versa."""
+        templates = []
+        for model in (self.rms_template, self.emt_template):
+            if model is None or model.tpe in (device_type, DeviceType.NoDevice):
+                templates.append(model)
+            else:
+                logger.add_warning('Cable System dynamic template does not match the branch type; not applied',
+                                   device=self.name, value=model.name, expected_value=str(device_type))
+                templates.append(None)
+        return tuple(templates)
+
     def get_values(self,
                    Sbase: float,
                    length: float,
@@ -682,13 +746,16 @@ class UndergroundLineType(DynamicDevice):
                     and cable.cable_diameter > cable.core_diameter
                     and cable.sheath_thickness > 0.0
                     and relationship.ypos > 0.0
-                    and cable.core_filling_factor > 0.0
-                    and cable.sheath_filling_factor > 0.0
                 ):
                     pass
                 else:
                     validation_logger.add_error('Invalid cable dimensions, depth or filling factor',
                                                 device=relationship.name)
+                    valid = False
+                try:
+                    cable.validate_resistance_inputs()
+                except ValueError as error:
+                    validation_logger.add_error(str(error), device=cable.name)
                     valid = False
             else:
                 validation_logger.add_error('Cable relationship has no catalogue type', device=relationship.name)
@@ -752,8 +819,10 @@ class UndergroundLineType(DynamicDevice):
                     th_sht[cable_index] = cable.sheath_thickness
                     # Numerical routines receive only the core and sheath (or their two insulations).
                     th_ins[cable_index] = cable.main_insulation_thickness
-                    resistivity[cable_index, :] = (cable.core_resistivity, cable.sheath_resistivity)
-                    filling_factor[cable_index, :] = (cable.core_filling_factor, cable.sheath_filling_factor)
+                    core_resistivity, core_filling_factor = cable.get_core_material_properties()
+                    sheath_resistivity, sheath_filling_factor = cable.get_sheath_material_properties()
+                    resistivity[cable_index, :] = (core_resistivity, sheath_resistivity)
+                    filling_factor[cable_index, :] = (core_filling_factor, sheath_filling_factor)
                     relative_permittivity[cable_index, :] = (cable.main_insulation_permittivity, cable.outer_insulation_permittivity)
                     loss_factor[cable_index, :] = (cable.main_insulation_loss_tangent, cable.outer_insulation_loss_tangent)
                     relative_permeability[cable_index, :] = (cable.core_relative_permeability, cable.sheath_relative_permeability)

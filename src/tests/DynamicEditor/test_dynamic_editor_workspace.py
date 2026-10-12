@@ -12,7 +12,8 @@ from VeraGrid.Gui.DynamicModelEditor.Workspace.dynamic_editor_workspace_window i
 from VeraGrid.Gui.DynamicModelEditor.Workspace.dynamic_editor_entries import DynamicEditorEntry
 from VeraGrid.Gui.DynamicModelEditor.Workspace.dynamic_editor_entries import build_dynamic_editor_entry
 from VeraGrid.Gui.DynamicModelEditor.Workspace.dynamic_editor_workspace_session import DynamicEditorWorkspaceSession
-from VeraGridEngine.enumerations import DynamicSimulationMode
+from VeraGridEngine.Devices.Dynamic.fmu_template import FmuTemplate
+from VeraGridEngine.enumerations import DeviceType, DynamicSimulationMode, FmuTemplateDomain
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
 
 import VeraGridEngine.api as gce
@@ -446,5 +447,113 @@ def test_workspace_hosts_one_global_plots_tab_per_simulation_family() -> None:
     assert workspace.ui.actionRMS_Plots.isEnabled()
     assert workspace.ui.actionEMT_Plots.isEnabled()
     assert load is entry.api_object
+
+
+def test_workspace_refreshes_unified_fmu_catalogue_and_preserves_navigation() -> None:
+    """
+    Verify initial and live FMU catalogue updates use one shared editor list.
+
+    :return: None.
+    """
+    _get_app()
+    _reset_dynamic_editor_workspaces()
+    circuit: gce.MultiCircuit
+    load: gce.Load
+    _entry: DynamicEditorEntry
+    circuit, load, _entry = _build_load_entry()
+
+    first_template: FmuTemplate = FmuTemplate(name="FMU before editor open")
+    first_template.tpe = DeviceType.LoadDevice
+    first_template.domain = FmuTemplateDomain.RMS
+    circuit.add_fmu_template(first_template)
+
+    wrong_device_template: FmuTemplate = FmuTemplate(name="Generator-only RMS FMU")
+    wrong_device_template.tpe = DeviceType.GeneratorDevice
+    wrong_device_template.domain = FmuTemplateDomain.RMS
+    circuit.add_fmu_template(wrong_device_template)
+    wrong_domain_template: FmuTemplate = FmuTemplate(name="Load EMT FMU")
+    wrong_domain_template.tpe = DeviceType.LoadDevice
+    wrong_domain_template.domain = FmuTemplateDomain.EMT
+    circuit.add_fmu_template(wrong_domain_template)
+
+    workspace: DynamicEditorWorkspaceWindow = _build_workspace()
+    page: DynamicEditorTab | None = workspace.open_dynamic_editor_for(
+        load,
+        circuit,
+        preferred_mode=DynamicSimulationMode.RMS,
+    )
+    assert page is not None
+    editor = page.editor
+    assert editor is not None
+
+    match_flags: QtCore.Qt.MatchFlag = (
+        QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive
+    )
+    first_start_index: QtCore.QModelIndex = editor.library.library_model.index(0, 0)
+    first_matches: list[QtCore.QModelIndex] = editor.library.library_model.match(
+        first_start_index,
+        QtCore.Qt.ItemDataRole.DisplayRole,
+        first_template.name,
+        -1,
+        match_flags,
+    )
+    assert len(first_matches) == 1
+    assert editor.templates_list == [first_template]
+
+    second_template: FmuTemplate = FmuTemplate(name="FMU after editor open")
+    second_template.tpe = DeviceType.LoadDevice
+    second_template.domain = FmuTemplateDomain.RMS
+    circuit.add_fmu_template(second_template)
+    editor.ui.librarySearchLineEdit.setText("FMU")
+
+    workspace.session.refresh_dynamic_library_templates(circuit=circuit)
+
+    refreshed_editor = page.editor
+    assert refreshed_editor is editor
+    assert refreshed_editor.ui.librarySearchLineEdit.text() == "FMU"
+    assert refreshed_editor.templates_list == [first_template, second_template]
+    second_start_index: QtCore.QModelIndex = refreshed_editor.library.library_model.index(0, 0)
+    first_refreshed_matches: list[QtCore.QModelIndex] = refreshed_editor.library.library_model.match(
+        second_start_index,
+        QtCore.Qt.ItemDataRole.DisplayRole,
+        first_template.name,
+        -1,
+        match_flags,
+    )
+    second_refreshed_matches: list[QtCore.QModelIndex] = refreshed_editor.library.library_model.match(
+        second_start_index,
+        QtCore.Qt.ItemDataRole.DisplayRole,
+        second_template.name,
+        -1,
+        match_flags,
+    )
+    assert len(first_refreshed_matches) == 1
+    assert len(second_refreshed_matches) == 1
+
+    # Navigation rebuilds the hosted editor. The tab-owned list must retain the
+    # refreshed catalogue so the replacement Library contains both FMUs once.
+    page._replace_editor()
+    rebuilt_editor = page.editor
+    assert rebuilt_editor is not None
+    assert rebuilt_editor is not refreshed_editor
+    assert rebuilt_editor.templates_list == [first_template, second_template]
+    rebuilt_start_index: QtCore.QModelIndex = rebuilt_editor.library.library_model.index(0, 0)
+    rebuilt_first_matches: list[QtCore.QModelIndex] = rebuilt_editor.library.library_model.match(
+        rebuilt_start_index,
+        QtCore.Qt.ItemDataRole.DisplayRole,
+        first_template.name,
+        -1,
+        match_flags,
+    )
+    rebuilt_second_matches: list[QtCore.QModelIndex] = rebuilt_editor.library.library_model.match(
+        rebuilt_start_index,
+        QtCore.Qt.ItemDataRole.DisplayRole,
+        second_template.name,
+        -1,
+        match_flags,
+    )
+    assert len(rebuilt_first_matches) == 1
+    assert len(rebuilt_second_matches) == 1
+
 
     _reset_dynamic_editor_workspaces()

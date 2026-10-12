@@ -19,23 +19,18 @@ from VeraGridEngine.enumerations import (
     ConverterFaultControlType,
     GeneratorType,
     GeneratorControlMode,
+    StaticGeneratorControlMode,
     BusGraphicType,
     ShuntConnectionType,
     DynamicSimulationMode,
 )
 import VeraGridEngine.Devices as dev
-from VeraGridEngine.Devices.Parents.branch_parent import BranchParent
-from VeraGridEngine.Devices.types import ALL_DEV_TYPES
 from VeraGridEngine.Devices.Branches.wire import Wire
 from VeraGridEngine.Devices.Branches.overhead_line_type import OverheadLineType, WireInTower
 from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.IO.dgs.dgs_circuit import DgsCircuit
-from VeraGridEngine.IO.dgs.dgs_schematic_import import (
-    build_preferred_position_by_object_id,
-    import_dgs_substations_and_schematic_diagrams,
-)
 from VeraGridEngine.IO.dgs.dgs_logical_actuator_binding import (
     bind_dgs_logical_actuator_runtime,
     prepare_dgs_logical_actuator_topology,
@@ -845,7 +840,7 @@ def _get_dgs_line_installation_type(
 
 
 def convert_dgs_to_dc_cable_type(typlne: TypLne,
-                                 logger: Logger) -> dev.DcCableType | None:
+                                 logger: Logger) -> dev.UndergroundLineType | None:
     """
     Convert one physically complete PowerFactory DC cable declaration.
 
@@ -869,7 +864,7 @@ def convert_dgs_to_dc_cable_type(typlne: TypLne,
     # reusable asset that will later be assigned to DcLine.
     if not is_dc_system_type:
         logger.add_warning(
-            msg='Line type is not declared as DC; not creating DcCableType',
+            msg='Line type is not declared as DC; not creating Cable System',
             device=typlne.loc_name,
             device_class='TypLne',
             device_property='systp',
@@ -891,14 +886,14 @@ def convert_dgs_to_dc_cable_type(typlne: TypLne,
         else:
             if installation_type == PowerFactoryLineInstallationType.Conflict:
                 logger.add_warning(
-                    msg='DGS line installation fields disagree; not creating DcCableType',
+                    msg='DGS line installation fields disagree; not creating Cable System',
                     device=typlne.loc_name,
                     device_class='TypLne',
                     device_property='aohl_/cohl_',
                 )
             else:
                 logger.add_warning(
-                    msg='DGS line type does not explicitly identify a cable; not creating DcCableType',
+                    msg='DGS line type does not explicitly identify a cable; not creating Cable System',
                     device=typlne.loc_name,
                     device_class='TypLne',
                     device_property='aohl_/cohl_',
@@ -915,12 +910,12 @@ def convert_dgs_to_dc_cable_type(typlne: TypLne,
             rated_current_source = None
 
     has_required_fields: bool = (
-        typlne.uline is not None
-        and rated_current_source is not None
-        and typlne.rline is not None
-        and typlne.xline is not None
-        and (typlne.cline is not None or typlne.bline is not None)
-        and typlne.frnom is not None
+            typlne.uline is not None
+            and rated_current_source is not None
+            and typlne.rline is not None
+            and typlne.xline is not None
+            and (typlne.cline is not None or typlne.bline is not None)
+            and typlne.frnom is not None
     )
     if has_required_fields:
         nominal_voltage: float = float(typlne.uline)
@@ -940,12 +935,12 @@ def convert_dgs_to_dc_cable_type(typlne: TypLne,
             if typlne.bline is not None:
                 susceptance_us_per_km: float = float(typlne.bline)
                 expected_susceptance_us_per_km: float = (
-                    angular_frequency * capacitance_uf_per_km
+                        angular_frequency * capacitance_uf_per_km
                 )
                 has_comparable_capacitance_fields: bool = (
-                    math.isfinite(capacitance_uf_per_km)
-                    and math.isfinite(susceptance_us_per_km)
-                    and math.isfinite(expected_susceptance_us_per_km)
+                        math.isfinite(capacitance_uf_per_km)
+                        and math.isfinite(susceptance_us_per_km)
+                        and math.isfinite(expected_susceptance_us_per_km)
                 )
                 if has_comparable_capacitance_fields:
                     capacitance_fields_match: bool = math.isclose(
@@ -975,24 +970,24 @@ def convert_dgs_to_dc_cable_type(typlne: TypLne,
             susceptance_us_per_km = float(typlne.bline)
             if math.isfinite(angular_frequency) and angular_frequency > 0.0:
                 capacitance_uf_per_km = (
-                    susceptance_us_per_km / angular_frequency
+                        susceptance_us_per_km / angular_frequency
                 )
             else:
                 capacitance_uf_per_km = 0.0
 
         has_valid_values: bool = (
-            math.isfinite(nominal_voltage)
-            and nominal_voltage > 0.0
-            and math.isfinite(rated_current)
-            and rated_current >= 0.0
-            and math.isfinite(resistance_ohm_per_km)
-            and resistance_ohm_per_km >= 0.0
-            and math.isfinite(reactance_ohm_per_km)
-            and reactance_ohm_per_km > 0.0
-            and math.isfinite(capacitance_uf_per_km)
-            and capacitance_uf_per_km > 0.0
-            and math.isfinite(frequency_hz)
-            and frequency_hz > 0.0
+                math.isfinite(nominal_voltage)
+                and nominal_voltage > 0.0
+                and math.isfinite(rated_current)
+                and rated_current >= 0.0
+                and math.isfinite(resistance_ohm_per_km)
+                and resistance_ohm_per_km >= 0.0
+                and math.isfinite(reactance_ohm_per_km)
+                and reactance_ohm_per_km > 0.0
+                and math.isfinite(capacitance_uf_per_km)
+                and capacitance_uf_per_km > 0.0
+                and math.isfinite(frequency_hz)
+                and frequency_hz > 0.0
         )
     else:
         nominal_voltage = 0.0
@@ -1008,13 +1003,15 @@ def convert_dgs_to_dc_cable_type(typlne: TypLne,
     if has_required_fields and has_valid_values:
         inductance_h_per_km: float = reactance_ohm_per_km / angular_frequency
         capacitance_f_per_km: float = capacitance_uf_per_km * 1.0e-6
-        return dev.DcCableType(
+        return dev.UndergroundLineType(
             name=typlne.loc_name,
             Vnom=nominal_voltage,
             Imax=rated_current,
             R=resistance_ohm_per_km,
-            L=inductance_h_per_km,
-            C=capacitance_f_per_km,
+            X=angular_frequency * inductance_h_per_km,
+            C=capacitance_f_per_km * 1.0e6,
+            B=angular_frequency * capacitance_f_per_km * 1.0e6,
+            freq=frequency_hz,
         )
     else:
         logger.add_warning(
@@ -1044,15 +1041,15 @@ def _get_dc_resistance_pu(source_type: TypLne,
     :return: Total resistance in p.u., or ``None`` when it cannot be derived.
     """
     has_required_values: bool = (
-        source_type.rline is not None
-        and math.isfinite(float(source_type.rline))
-        and float(source_type.rline) >= 0.0
-        and math.isfinite(length)
-        and length > 0.0
-        and math.isfinite(line_voltage)
-        and line_voltage > 0.0
-        and math.isfinite(base_mva)
-        and base_mva > 0.0
+            source_type.rline is not None
+            and math.isfinite(float(source_type.rline))
+            and float(source_type.rline) >= 0.0
+            and math.isfinite(length)
+            and length > 0.0
+            and math.isfinite(line_voltage)
+            and line_voltage > 0.0
+            and math.isfinite(base_mva)
+            and base_mva > 0.0
     )
     if has_required_values:
         impedance_base: float = line_voltage * line_voltage / base_mva
@@ -1572,6 +1569,7 @@ def _order_hv_mv_lv(bus_a: dev.Bus, bus_b: dev.Bus, bus_c: dev.Bus, logger: Logg
 
     return buses_sorted[0], buses_sorted[1], buses_sorted[2]
 
+
 def _order_tr4(bus_a: dev.Bus,
                bus_b: dev.Bus,
                bus_c: dev.Bus,
@@ -1654,7 +1652,6 @@ def _order_tr4(bus_a: dev.Bus,
     )
 
 
-
 def _apply_tr3_winding_connection_data(
         winding: dev.Winding,
         pf_connection_code: str,
@@ -1670,8 +1667,10 @@ def _apply_tr3_winding_connection_data(
     """
     external_connection = _convert_pf_tr2_connection(code=pf_connection_code)
     if external_connection is not None:
-        winding.conn_f = WindingType.GroundedStar
-        winding.conn_t = external_connection
+        # These branches run from the physical terminal to the internal star.
+        winding.conn_f = (WindingType.FloatingStar if pf_connection_code.strip().upper() == 'Y'
+                          else external_connection)
+        winding.conn_t = WindingType.GroundedStar
     else:
         pass
 
@@ -1780,14 +1779,15 @@ def _apply_tr3_winding_tap_data(
             tap_phase_max=winding.tap_changer.get_tap_phase_max(),
         )
 
+
 def _fill_tr4w_simple_values(trafo4w: dev.TransformerNW,
-                            nominal_voltages: Tuple[float, float, float, float],
-                            nominal_powers: Tuple[float, float, float, float],
-                            short_circuit_voltages: Tuple[float, float, float, float],
-                            copper_losses: Tuple[float, float, float, float],
-                            Pfe: float,
-                            I0: float,
-                            Sbase: float) -> None:
+                             nominal_voltages: Tuple[float, float, float, float],
+                             nominal_powers: Tuple[float, float, float, float],
+                             short_circuit_voltages: Tuple[float, float, float, float],
+                             copper_losses: Tuple[float, float, float, float],
+                             Pfe: float,
+                             I0: float,
+                             Sbase: float) -> None:
     """
     Fill four-winding transformer values from simplified per-winding input data.
 
@@ -1821,193 +1821,192 @@ def _fill_tr4w_simple_values(trafo4w: dev.TransformerNW,
 
     trafo4w.recalculate_windings_from_definition(Sbase=Sbase)
 
+
 def _fill_tr4w_complete_values(
-    trafo4w: dev.TransformerNW, V_h0: float,V_l1: float, V_l2: float, V_l3: float,
-Sn_h0: float, Sn_l1: float, Sn_l2: float, Sn_l3: float, Vsc_h0l1: float,
-Vsc_h0l2: float, Vsc_h0l3: float, Vsc_l1l2: float, Vsc_l1l3: float,
-Vsc_l2l3: float, Pcu_h0l1: float, Pcu_h0l2: float, Pcu_h0l3: float,
-Pcu_l1l2: float, Pcu_l1l3: float, Pcu_l2l3: float, Pfe: float,
-I0: float = 0.5, Sbase: float = 100,
+        trafo4w: dev.TransformerNW, V_h0: float, V_l1: float, V_l2: float, V_l3: float,
+        Sn_h0: float, Sn_l1: float, Sn_l2: float, Sn_l3: float, Vsc_h0l1: float,
+        Vsc_h0l2: float, Vsc_h0l3: float, Vsc_l1l2: float, Vsc_l1l3: float,
+        Vsc_l2l3: float, Pcu_h0l1: float, Pcu_h0l2: float, Pcu_h0l3: float,
+        Pcu_l1l2: float, Pcu_l1l3: float, Pcu_l2l3: float, Pfe: float,
+        I0: float = 0.5, Sbase: float = 100,
 ) -> None:
+    """
+    Fill four-winding transformer values from simplified per-winding input data.
+
+    :param trafo4w: Four-winding transformer.
+    :param nominal_voltages: DGS-side voltages in h0, l1, l2, l3 order.
+    :param nominal_powers: DGS-side powers in h0, l1, l2, l3 order.
+    :param short_circuit_voltages: DGS-side short-circuit voltages in h0, l1, l2, l3 order.
+    :param copper_losses: DGS-side copper losses in h0, l1, l2, l3 order.
+    :param ordered_original_indices: Mapping from transformer winding order to original DGS-side order.
+    :param Pfe: Shared iron-core losses in kW.
+    :param I0: Shared no-load current in percent.
+    :param Sbase: System base power in MVA.
+    :return: None.
+    """
+    Sr_hv = Sn_h0
+
+    def get_pairwise_impedance(
+            uk: float,
+            pcu: float,
+            Sr_a: float,
+            Sr_b: float,
+    ) -> complex:
         """
-        Fill four-winding transformer values from simplified per-winding input data.
+        Returns the pairwise short-circuit impedance in p.u.
 
-        :param trafo4w: Four-winding transformer.
-        :param nominal_voltages: DGS-side voltages in h0, l1, l2, l3 order.
-        :param nominal_powers: DGS-side powers in h0, l1, l2, l3 order.
-        :param short_circuit_voltages: DGS-side short-circuit voltages in h0, l1, l2, l3 order.
-        :param copper_losses: DGS-side copper losses in h0, l1, l2, l3 order.
-        :param ordered_original_indices: Mapping from transformer winding order to original DGS-side order.
-        :param Pfe: Shared iron-core losses in kW.
-        :param I0: Shared no-load current in percent.
-        :param Sbase: System base power in MVA.
-        :return: None.
+        uk: short-circuit voltage in %
+        pcu: copper losses in kW
+        Sr_a, Sr_b: rated powers in MVA
         """
-        Sr_hv = Sn_h0
 
-        def get_pairwise_impedance(
-                uk: float,
-                pcu: float,
-                Sr_a: float,
-                Sr_b: float,
-        ) -> complex:
-            """
-            Returns the pairwise short-circuit impedance in p.u.
+        Sr_pair = min(Sr_a, Sr_b)
 
-            uk: short-circuit voltage in %
-            pcu: copper losses in kW
-            Sr_a, Sr_b: rated powers in MVA
-            """
+        # Total impedance magnitude
+        z_abs = (uk / 100.0) * (Sr_hv / Sr_pair)
 
-            Sr_pair = min(Sr_a, Sr_b)
+        # Resistive part
+        zr = (pcu / 1000.0) * (Sr_hv / (Sr_pair ** 2))
 
-            # Total impedance magnitude
-            z_abs = (uk / 100.0) * (Sr_hv / Sr_pair)
+        # Reactive part
+        zi_squared = z_abs ** 2 - zr ** 2
 
-            # Resistive part
-            zr = (pcu / 1000.0) * (Sr_hv / (Sr_pair ** 2))
+        if zi_squared < 0.0:
+            zi = 0.0
+        else:
+            zi = math.sqrt(zi_squared)
 
-            # Reactive part
-            zi_squared = z_abs ** 2 - zr ** 2
+        return complex(zr, zi)
 
-            if zi_squared < 0.0:
-                zi = 0.0
-            else:
-                zi = math.sqrt(zi_squared)
+    def parallel(z_a: complex, z_b: complex) -> complex:
+        if abs(z_a + z_b) < 1e-12:
+            return complex(0.0, 0.0)
+        return (z_a * z_b) / (z_a + z_b)
 
-            return complex(zr, zi)
+    # Pairwise impedances
+    z_h0l1 = get_pairwise_impedance(
+        uk=Vsc_h0l1,
+        pcu=Pcu_h0l1,
+        Sr_a=Sn_h0,
+        Sr_b=Sn_l1,
+    )
 
-        def parallel(z_a: complex, z_b: complex) -> complex:
-            if abs(z_a + z_b) < 1e-12:
-                return complex(0.0, 0.0)
-            return (z_a * z_b) / (z_a + z_b)
+    z_h0l2 = get_pairwise_impedance(
+        uk=Vsc_h0l2,
+        pcu=Pcu_h0l2,
+        Sr_a=Sn_h0,
+        Sr_b=Sn_l2,
+    )
 
-        # Pairwise impedances
-        z_h0l1 = get_pairwise_impedance(
-            uk=Vsc_h0l1,
-            pcu=Pcu_h0l1,
-            Sr_a=Sn_h0,
-            Sr_b=Sn_l1,
-        )
+    z_h0l3 = get_pairwise_impedance(
+        uk=Vsc_h0l3,
+        pcu=Pcu_h0l3,
+        Sr_a=Sn_h0,
+        Sr_b=Sn_l3,
+    )
 
-        z_h0l2 = get_pairwise_impedance(
-            uk=Vsc_h0l2,
-            pcu=Pcu_h0l2,
-            Sr_a=Sn_h0,
-            Sr_b=Sn_l2,
-        )
+    z_l1l2 = get_pairwise_impedance(
+        uk=Vsc_l1l2,
+        pcu=Pcu_l1l2,
+        Sr_a=Sn_l1,
+        Sr_b=Sn_l2,
+    )
 
-        z_h0l3 = get_pairwise_impedance(
-            uk=Vsc_h0l3,
-            pcu=Pcu_h0l3,
-            Sr_a=Sn_h0,
-            Sr_b=Sn_l3,
-        )
+    z_l1l3 = get_pairwise_impedance(
+        uk=Vsc_l1l3,
+        pcu=Pcu_l1l3,
+        Sr_a=Sn_l1,
+        Sr_b=Sn_l3,
+    )
 
-        z_l1l2 = get_pairwise_impedance(
-            uk=Vsc_l1l2,
-            pcu=Pcu_l1l2,
-            Sr_a=Sn_l1,
-            Sr_b=Sn_l2,
-        )
+    z_l2l3 = get_pairwise_impedance(
+        uk=Vsc_l2l3,
+        pcu=Pcu_l2l3,
+        Sr_a=Sn_l2,
+        Sr_b=Sn_l3,
+    )
 
-        z_l1l3 = get_pairwise_impedance(
-            uk=Vsc_l1l3,
-            pcu=Pcu_l1l3,
-            Sr_a=Sn_l1,
-            Sr_b=Sn_l3,
-        )
+    # Equivalent circuit impedances
+    k1 = z_h0l2 + z_l1l3 - z_h0l1 - z_l2l3
+    k2 = z_h0l2 + z_l1l3 - z_h0l3 - z_l1l2
+    k_2 = np.abs(k1 * k2)
+    k = math.sqrt(k_2)
 
-        z_l2l3 = get_pairwise_impedance(
-            uk=Vsc_l2l3,
-            pcu=Pcu_l2l3,
-            Sr_a=Sn_l2,
-            Sr_b=Sn_l3,
-        )
+    z_internal_i = k1 + k
+    z_internal_j = k2 + k
 
-        # Equivalent circuit impedances
-        k1 = z_h0l2 + z_l1l3 - z_h0l1 - z_l2l3
-        k2 = z_h0l2 + z_l1l3 - z_h0l3 - z_l1l2
-        k_2 = np.abs(k1 * k2)
-        k = math.sqrt(k_2)
+    z_h0 = (z_h0l1 + z_h0l3 - z_l1l3 - k) / 2.0
+    z_l1 = (z_h0l1 + z_l1l2 - z_h0l2 - k) / 2.0
+    z_l2 = (z_l1l2 + z_l2l3 - z_l1l3 - k) / 2.0
+    z_l3 = (z_l2l3 + z_h0l3 - z_h0l2 - k) / 2.0
 
-        z_internal_i = k1 + k
-        z_internal_j = k2 + k
+    # Equivalent internal path impedances
+    z_path_l1 = parallel(
+        z_internal_i,
+        2.0 * z_internal_j + z_internal_i,
+    )
 
-        z_h0 = (z_h0l1 + z_h0l3 - z_l1l3 - k) / 2.0
-        z_l1 = (z_h0l1 + z_l1l2 - z_h0l2 - k) / 2.0
-        z_l2 = (z_l1l2 + z_l2l3 - z_l1l3 - k) / 2.0
-        z_l3 = (z_l2l3 + z_h0l3 - z_h0l2 - k) / 2.0
+    z_path_l2 = parallel(
+        z_internal_i + z_internal_j,
+        z_internal_j + z_internal_i,
+    )
 
-        # Equivalent internal path impedances
-        z_path_l1 = parallel(
-            z_internal_i,
-            2.0 * z_internal_j + z_internal_i,
-        )
+    z_path_l3 = parallel(
+        z_internal_j,
+        2.0 * z_internal_i + z_internal_j,
+    )
 
-        z_path_l2 = parallel(
-            z_internal_i + z_internal_j,
-            z_internal_j + z_internal_i,
-        )
+    # Add path impedance to each branch impedance
+    z_l1 += z_path_l1
+    z_l2 += z_path_l2
+    z_l3 += z_path_l3
 
-        z_path_l3 = parallel(
-            z_internal_j,
-            2.0 * z_internal_i + z_internal_j,
-        )
+    # Winding-side data in h0, l1, l2, l3 order
+    nominal_voltages = [V_h0, V_l1, V_l2, V_l3]
+    nominal_powers = [Sn_h0, Sn_l1, Sn_l2, Sn_l3]
 
-        # Add path impedance to each branch impedance
-        z_l1 += z_path_l1
-        z_l2 += z_path_l2
-        z_l3 += z_path_l3
+    # Use equivalent branch impedances obtained from the complete-input model
+    branch_impedances_hv_base = [z_h0, z_l1, z_l2, z_l3]
 
-        # Winding-side data in h0, l1, l2, l3 order
-        nominal_voltages = [V_h0, V_l1, V_l2, V_l3]
-        nominal_powers = [Sn_h0, Sn_l1, Sn_l2, Sn_l3]
+    # Optional reporting fields, expressed approximately on each winding base
+    short_circuit_voltages = []
+    copper_losses = []
 
-        # Use equivalent branch impedances obtained from the complete-input model
-        branch_impedances_hv_base = [z_h0, z_l1, z_l2, z_l3]
+    for z_branch, Sn_w in zip(branch_impedances_hv_base, nominal_powers):
+        # Convert from HV-winding base to each winding rated-power base
+        z_winding_base = z_branch * (Sn_w / Sr_hv)
 
-        # Optional reporting fields, expressed approximately on each winding base
-        short_circuit_voltages = []
-        copper_losses = []
+        short_circuit_voltages.append(abs(z_winding_base) * 100.0)
+        copper_losses.append(z_winding_base.real * (Sn_w ** 2 / Sn_w) * 1000.0)
 
-        for z_branch, Sn_w in zip(branch_impedances_hv_base, nominal_powers):
-            # Convert from HV-winding base to each winding rated-power base
-            z_winding_base = z_branch * (Sn_w / Sr_hv)
+    # Assign winding data
+    for winding_index in range(4):
+        winding: dev.Winding = trafo4w.windings[winding_index]
 
-            short_circuit_voltages.append(abs(z_winding_base) * 100.0)
-            copper_losses.append(z_winding_base.real * (Sn_w ** 2 / Sn_w) * 1000.0)
+        z_branch = branch_impedances_hv_base[winding_index]
 
-        # Assign winding data
-        for winding_index in range(4):
-            winding: dev.Winding = trafo4w.windings[winding_index]
+        # Convert impedance from transformer HV-rated-power base to VeraGrid system base
+        z_system_base = z_branch * (Sbase / Sr_hv)
 
-            z_branch = branch_impedances_hv_base[winding_index]
+        winding.HV = nominal_voltages[winding_index]
+        winding.LV = 1.0
 
-            # Convert impedance from transformer HV-rated-power base to VeraGrid system base
-            z_system_base = z_branch * (Sbase / Sr_hv)
+        winding.Sn = nominal_powers[winding_index]
+        winding.rate = nominal_powers[winding_index]
+        winding.design_rate = nominal_powers[winding_index]
 
-            winding.HV = nominal_voltages[winding_index]
-            winding.LV = 1.0
+        winding.R = z_system_base.real
+        winding.X = z_system_base.imag
 
-            winding.Sn = nominal_powers[winding_index]
-            winding.rate = nominal_powers[winding_index]
-            winding.design_rate = nominal_powers[winding_index]
+        # Negative sequence is normally equal to positive sequence for passive transformer impedances
+        winding.R2 = z_system_base.real
+        winding.X2 = z_system_base.imag
 
-            winding.R = z_system_base.real
-            winding.X = z_system_base.imag
+        winding.Pcu = copper_losses[winding_index]
+        winding.Vsc = short_circuit_voltages[winding_index]
 
-            # Negative sequence is normally equal to positive sequence for passive transformer impedances
-            winding.R2 = z_system_base.real
-            winding.X2 = z_system_base.imag
-
-            winding.Pcu = copper_losses[winding_index]
-            winding.Vsc = short_circuit_voltages[winding_index]
-
-        trafo4w.Pfe = Pfe
-        trafo4w.I0 = I0
-
-
+    trafo4w.Pfe = Pfe
+    trafo4w.I0 = I0
 
 
 def _apply_tr4_winding_tap_data(
@@ -2427,6 +2426,22 @@ def convert_dgs_to_transformer(tr2: ElmTr2,
     return trafo
 
 
+def _tr3_zero_sequence_impedance(uk0: float, ur0: float, rated_power: float,
+                                  base_mva: float) -> complex:
+    """Convert a PF pairwise zero-sequence test to the system base.
+
+    :param uk0: Impedance magnitude in percent on the smaller winding rating.
+    :param ur0: Resistance in percent on the same base.
+    :param rated_power: Smaller winding rating, MVA.
+    :param base_mva: Network power base, MVA.
+    :return: Pairwise impedance in system p.u.
+    """
+    if rated_power <= 0.0 or not np.isfinite(uk0) or not np.isfinite(ur0) or uk0 < abs(ur0):
+        raise ValueError('Invalid TypTr3 zero-sequence test: check uk0, ur0 and winding ratings')
+    else:
+        return complex(ur0, np.sqrt(uk0 * uk0 - ur0 * ur0)) * base_mva / (100.0 * rated_power)
+
+
 def convert_dgs_to_transformer3w(tr3: ElmTr3,
                                  buses: List[dev.Bus],
                                  stacubic_dict: Dict[str, List[int]],
@@ -2513,6 +2528,15 @@ def convert_dgs_to_transformer3w(tr3: ElmTr3,
         Sbase=float(baseMVA),
     )
 
+    # Reuse the validated pairwise-to-star conversion, retaining independent Z0.
+    trafo3w.fill_zero_sequence(
+        z12=_tr3_zero_sequence_impedance(template.uk0hm, template.ur0hm,
+                                         min(template.strn3_h, template.strn3_m), baseMVA),
+        z23=_tr3_zero_sequence_impedance(template.uk0ml, template.ur0ml,
+                                         min(template.strn3_m, template.strn3_l), baseMVA),
+        z31=_tr3_zero_sequence_impedance(template.uk0hl, template.ur0hl,
+                                         min(template.strn3_l, template.strn3_h), baseMVA))
+
     _apply_tr3_winding_tap_data(
         winding=trafo3w.winding1,
         current_position=int(tr3.n3tap_h),
@@ -2571,6 +2595,7 @@ def convert_dgs_to_transformer3w(tr3: ElmTr3,
     trafo3w.winding3.active = lv_closed
 
     return trafo3w
+
 
 def convert_dgs_to_transformer4w(tr4: ElmTr4,
                                  buses: List[dev.Bus],
@@ -2681,7 +2706,6 @@ def convert_dgs_to_transformer4w(tr4: ElmTr4,
         y=y,
     )
 
-
     if template.inputData == 0:
         _fill_tr4w_complete_values(
             trafo4w=trafo4w,
@@ -2786,7 +2810,6 @@ def convert_dgs_to_transformer4w(tr4: ElmTr4,
             template.phitr_l3,
         ),
     )
-
 
     return trafo4w
 
@@ -3099,7 +3122,7 @@ def convert_dgs_to_line(
         buses: List[dev.Bus],
         stacubic_dict: Dict[str, List[int]],
         sequence_templates_dict: Dict[str, dev.SequenceLineType],
-        dc_cable_type_dict: Dict[str, dev.DcCableType],
+        dc_cable_type_dict: Dict[str, dev.UndergroundLineType],
         source_line_type_dict: Dict[str, TypLne],
         overhead_line_type_dict: Dict[str, dev.OverheadLineType],
         underground_line_type_dict: Dict[str, dev.UndergroundLineType],
@@ -3213,17 +3236,17 @@ def convert_dgs_to_line(
             active=not lne.outserv,
             length=line_length,
         )
-        cable_type: dev.DcCableType | None = None
+        cable_type: dev.UndergroundLineType | None = None
         if len(owned_sections) > 0:
             first_section: ElmLnesec = owned_sections[0]
-            first_type: dev.DcCableType | None = _resolve_pointer_dict_value(
+            first_type: dev.UndergroundLineType | None = _resolve_pointer_dict_value(
                 key=first_section.typ_id,
                 mapping=dc_cable_type_dict,
             )
             same_type: bool = first_type is not None
             section: ElmLnesec
             for section in owned_sections:
-                section_type: dev.DcCableType | None = _resolve_pointer_dict_value(
+                section_type: dev.UndergroundLineType | None = _resolve_pointer_dict_value(
                     key=section.typ_id,
                     mapping=dc_cable_type_dict,
                 )
@@ -3360,20 +3383,22 @@ def convert_dgs_to_line(
 
             if seq_section_template is not None:
                 section_template_found = True
-                values = seq_section_template.get_values(
+                # Sequence conversion includes G/G0; preserve the existing section
+                # aggregation of series, charging and rating at their new positions.
+                sequence_values: Tuple[float, float, float, float, float, float, float, float, float] = seq_section_template.get_values(
                     Sbase=baseMVA,
                     freq=freq,
                     length=float(section.dline),
                     line_Vnom=bus_vnom,
                     decimals_rounding=16  # basically not rounding
                 )
-                section_r += float(values[0])
-                section_x += float(values[1])
-                section_b += float(values[2])
-                section_r0 += float(values[3])
-                section_x0 += float(values[4])
-                section_b0 += float(values[5])
-                current_rate = float(values[6])
+                section_r += sequence_values[0]
+                section_x += sequence_values[1]
+                section_b += sequence_values[2]
+                section_r0 += sequence_values[4]
+                section_x0 += sequence_values[5]
+                section_b0 += sequence_values[6]
+                current_rate = sequence_values[8]
             elif ohl_section_template is not None:
                 if not ohl_section_template.is_computed():
                     ohl_section_template.compute()
@@ -3471,12 +3496,18 @@ def convert_dgs_to_line(
             admittance.phB = 2 in active_phases
             admittance.phC = 3 in active_phases
 
-    # Alex review required: retain precise AC link data while preserving its historical topology reduction.
+    # Physical line templates own phase matrices that remain authoritative even
+    # when a single- or two-phase system has no sequence-scalar representation.
+    is_physical_line: bool = isinstance(
+        line.template,
+        (dev.OverheadLineType, dev.UndergroundLineType),
+    )
+
+    # Preserve historical reduction only for scalar-defined ideal AC links.
     is_ac_topological_link: bool = (
-        np.round(float(line.R), decimals=6) == 0.0
-        and np.round(float(line.X), decimals=6) == 0.0
-        and ohl_template is None
-        and underground_template is None
+            not is_physical_line
+            and np.round(float(line.R), decimals=6) == 0.0
+            and np.round(float(line.X), decimals=6) == 0.0
     )
     if is_ac_topological_link:
         line.reducible = True
@@ -3537,6 +3568,25 @@ def convert_dgs_common_impedance_to_series_reactance(
         x=x1,
         rate=element.Sn
     )
+
+    # Reuse SeriesReactance's ABC sequence stamp; old exports retain its Z1 fallback.
+    if element.iequalz == 0:
+        logger.add_warning('Common impedance has unequal i-j/j-i data; SeriesReactance uses i-j values.',
+                           device=name)
+    else:
+        pass
+    if element.r0_pu is not None and element.x0_pu is not None:
+        sr.R0 = element.r0_pu * Sbase_vg / element.Sn
+        sr.X0 = element.x0_pu * Sbase_vg / element.Sn
+    else:
+        logger.add_warning('Common impedance Z0 missing: export r0_pu and x0_pu. ABC uses Z1.', device=name)
+    if element.iz2eqz1 == 1:
+        sr.R2, sr.X2 = r1, x1
+    elif element.r2_pu is not None and element.x2_pu is not None:
+        sr.R2 = element.r2_pu * Sbase_vg / element.Sn
+        sr.X2 = element.x2_pu * Sbase_vg / element.Sn
+    else:
+        logger.add_warning('Common impedance Z2 missing: export r2_pu and x2_pu. ABC uses Z1.', device=name)
 
     return sr
 
@@ -3987,18 +4037,18 @@ def convert_dgs_to_load(elmlod: ElmLod,
 
     use_voltage_dependency = comldf is not None and int(comldf.iopt_pq) == 1
     is_constant_current = (
-        typlod is not None
-        and typlod.aP == 0.0
-        and typlod.bP == 1.0
-        and typlod.aQ == 0.0
-        and typlod.bQ == 1.0
+            typlod is not None
+            and typlod.aP == 0.0
+            and typlod.bP == 1.0
+            and typlod.aQ == 0.0
+            and typlod.bQ == 1.0
     )
     is_constant_impedance = (
-        typlod is not None
-        and typlod.aP == 0.0
-        and typlod.bP == 0.0
-        and typlod.aQ == 0.0
-        and typlod.bQ == 0.0
+            typlod is not None
+            and typlod.aP == 0.0
+            and typlod.bP == 0.0
+            and typlod.aQ == 0.0
+            and typlod.bQ == 0.0
     )
 
     # Use the voltage-dependent model only when PowerFactory enables it.
@@ -4071,6 +4121,62 @@ def convert_dgs_to_load(elmlod: ElmLod,
     return bus, load
 
 
+def _set_generator_load_flow_sequences(gen: dev.Generator | dev.StaticGenerator, source: ElmGenstat,
+                                       Sbase: float, logger: Logger) -> None:
+    """Import the physical connection and available load-flow sequence impedances.
+
+    :param gen: Voltage-controlled or fixed-power sequence injection to populate.
+    :param source: ElmGenstat with optional advanced load-flow fields.
+    :param Sbase: Circuit power base in MVA.
+    :param logger: Import diagnostics; missing values must not become short circuits.
+    """
+    if source.phtech not in (PowerFactoryGeneratorTechnology.ThreePhase,
+                             PowerFactoryGeneratorTechnology.ThreePhaseEarth):
+        logger.add_warning('Generator sequence response not imported: missing or unsupported phase technology.',
+                           device=gen.name)
+        return
+    else:
+        technology: PowerFactoryGeneratorTechnology = PowerFactoryGeneratorTechnology(source.phtech)
+    # Reuse the injection connection, which also governs manually created generators.
+    if technology == PowerFactoryGeneratorTechnology.ThreePhase:
+        gen.conn = ShuntConnectionType.FloatingStar
+    elif source.nneutral == 0:
+        gen.conn = ShuntConnectionType.GroundedStar
+    elif source.nneutral in (1, 2):
+        gen.conn = ShuntConnectionType.NeutralStar
+        logger.add_warning('Generator has an explicit neutral connection unsupported by U1 power flow.',
+                           device=gen.name)
+    else:
+        logger.add_warning('Generator sequence response not imported: export a valid nneutral connection.',
+                           device=gen.name)
+        return
+    if not np.isfinite(source.sgn) or source.sgn <= 0.0 or not np.isfinite(Sbase) or Sbase <= 0.0:
+        logger.add_warning('Generator sequence response not imported: invalid power base.', device=gen.name)
+        return
+    else:
+        factor: float = Sbase / source.sgn
+
+    # Preserve provided Z0 even when blocked; the connection determines whether it acts.
+    if source.r0 is not None and source.x0 is not None:
+        z0: complex = complex(source.r0, source.x0) * factor
+        if np.isfinite(z0) and abs(z0) >= 1e-12:
+            gen.R0, gen.X0 = z0.real, z0.imag
+        else:
+            logger.add_warning('Generator Z0 not imported: impedance must be finite and nonzero.', device=gen.name)
+    elif technology == PowerFactoryGeneratorTechnology.ThreePhaseEarth:
+        logger.add_warning('Generator Z0 response omitted: export both r0 and x0.', device=gen.name)
+    else:
+        pass
+    if source.r2 is not None and source.x2 is not None:
+        z2: complex = complex(source.r2, source.x2) * factor
+        if np.isfinite(z2) and abs(z2) >= 1e-12:
+            gen.R2, gen.X2 = z2.real, z2.imag
+        else:
+            logger.add_warning('Generator Z2 response omitted: impedance must be finite and nonzero.', device=gen.name)
+    else:
+        logger.add_warning('Generator Z2 response omitted: export both r2 and x2.', device=gen.name)
+
+
 def convert_dgs_staticgen_to_gen(elmgenstat: ElmGenstat,
                                  stacubic_dict: Dict[str, List[int]],
                                  buses: List[dev.Bus],
@@ -4078,7 +4184,8 @@ def convert_dgs_staticgen_to_gen(elmgenstat: ElmGenstat,
                                  cubics_by_objid: Dict[str, List[StaCubic]],
                                  bus_by_term_id: Dict[str, dev.Bus],
                                  parallel_index: int = 0,
-                                 parallel_count: int = 1) -> Tuple[dev.Bus, dev.Generator]:
+                                 parallel_count: int = 1,
+                                 Sbase: float = 100.0) -> Tuple[dev.Bus, dev.Generator]:
     """
     Convert dgs staticgen to gen.
 
@@ -4090,6 +4197,7 @@ def convert_dgs_staticgen_to_gen(elmgenstat: ElmGenstat,
     :param bus_by_term_id: bus_by_term_id parameter.
     :param parallel_index: parallel_index parameter.
     :param parallel_count: parallel_count parameter.
+    :param Sbase: Circuit base for imported sequence impedances.
     :return: Function result.
     """
     bus = get_injection_bus(elm_id=elmgenstat.ID,
@@ -4112,8 +4220,10 @@ def convert_dgs_staticgen_to_gen(elmgenstat: ElmGenstat,
         P=float(elmgenstat.pgini),
         vset=float(elmgenstat.usetp),
         Snom=float(elmgenstat.sgn),
-        active=not bool(elmgenstat.outserv)
+        active=not bool(elmgenstat.outserv),
     )
+
+    _set_generator_load_flow_sequences(gen=gen, source=elmgenstat, Sbase=Sbase, logger=logger)
 
     return bus, gen
 
@@ -4125,7 +4235,8 @@ def convert_dgs_staticgen_to_battery(elmgenstat: ElmGenstat,
                                      cubics_by_objid: Dict[str, List[StaCubic]],
                                      bus_by_term_id: Dict[str, dev.Bus],
                                      parallel_index: int = 0,
-                                     parallel_count: int = 1) -> Tuple[dev.Bus, dev.Battery]:
+                                     parallel_count: int = 1,
+                                     Sbase: float = 100.0) -> Tuple[dev.Bus, dev.Battery]:
     """
     Convert dgs staticgen to battery.
 
@@ -4137,6 +4248,7 @@ def convert_dgs_staticgen_to_battery(elmgenstat: ElmGenstat,
     :param bus_by_term_id: bus_by_term_id parameter.
     :param parallel_index: parallel_index parameter.
     :param parallel_count: parallel_count parameter.
+    :param Sbase: Circuit power base in MVA.
     :return: Function result.
     """
     bus = get_injection_bus(elm_id=elmgenstat.ID,
@@ -4164,6 +4276,8 @@ def convert_dgs_staticgen_to_battery(elmgenstat: ElmGenstat,
         active=not bool(elmgenstat.outserv)
     )
 
+    _set_generator_load_flow_sequences(gen=battery, source=elmgenstat, Sbase=Sbase, logger=logger)
+
     return bus, battery
 
 
@@ -4174,7 +4288,8 @@ def convert_dgs_to_static_gen(elmgenstat: ElmGenstat,
                               cubics_by_objid: Dict[str, List[StaCubic]],
                               bus_by_term_id: Dict[str, dev.Bus],
                               parallel_index: int = 0,
-                              parallel_count: int = 1) -> Tuple[dev.Bus, dev.StaticGenerator]:
+                              parallel_count: int = 1,
+                              Sbase: float = 100.0) -> Tuple[dev.Bus, dev.StaticGenerator]:
     """
     Convert dgs to static gen.
 
@@ -4186,6 +4301,7 @@ def convert_dgs_to_static_gen(elmgenstat: ElmGenstat,
     :param bus_by_term_id: bus_by_term_id parameter.
     :param parallel_index: parallel_index parameter.
     :param parallel_count: parallel_count parameter.
+    :param Sbase: Circuit base for imported sequence impedances.
     :return: Function result.
     """
     bus = get_injection_bus(elm_id=elmgenstat.ID,
@@ -4210,6 +4326,18 @@ def convert_dgs_to_static_gen(elmgenstat: ElmGenstat,
         Snom=float(elmgenstat.sgn),
         active=not bool(elmgenstat.outserv)
     )
+
+    # Storage droop uses the existing AC control unless VSC import was explicitly requested.
+    if elmgenstat.cCategory == 'Storage' and elmgenstat.av_mode == 'vdroop':
+        stagen.control_mode = StaticGeneratorControlMode.QVDroop
+        stagen.Vset = float(elmgenstat.usetp)
+        stagen.droop = float(elmgenstat.ddroop)
+        stagen.Vset_min = float(elmgenstat.usp_min)
+        stagen.Vset_max = float(elmgenstat.usp_max)
+    else:
+        pass
+
+    _set_generator_load_flow_sequences(gen=stagen, source=elmgenstat, Sbase=Sbase, logger=logger)
 
     return bus, stagen
 
@@ -4608,11 +4736,11 @@ def convert_dgs_to_shunt(elmshnt: ElmShnt,
     phases = [phase for phase in _get_element_phases(elmshnt.ID, cubics_by_objid, phase_map) if phase != 0]
 
     # Unbalanced
-    if elmshnt.ctech == 0: # 3PH-'D'
+    if elmshnt.ctech == 0:  # 3PH-'D'
         g_abc = [g_mw / 3] * 3
         b_abc = [b_mvar / 3] * 3
         connection = ShuntConnectionType.Delta
-    elif elmshnt.ctech in (3, 5): # 2PH-'Y' or 1PH PH-PH
+    elif elmshnt.ctech in (3, 5):  # 2PH-'Y' or 1PH PH-PH
         phase_pair = tuple(sorted(phases[:2])) if len(phases) >= 2 else (1, 2)
         branch_idx = {(1, 2): 0, (2, 3): 1, (1, 3): 2}[phase_pair]
         g_abc = [0.0] * 3
@@ -4629,14 +4757,14 @@ def convert_dgs_to_shunt(elmshnt: ElmShnt,
             g_abc[phase - 1] = g_mw / phase_count
             b_abc[phase - 1] = b_mvar / phase_count
 
-        if elmshnt.ctech == 1: # 3PH-'Y'
+        if elmshnt.ctech == 1:  # 3PH-'Y'
             connection = ShuntConnectionType.FloatingStar
-        elif elmshnt.ctech in (2, 4): # 3PH-'YN' or 2PH-'YN'
+        elif elmshnt.ctech in (2, 4):  # 3PH-'YN' or 2PH-'YN'
             connection = (ShuntConnectionType.GroundedStar if elmshnt.cgnd == 0
                           else ShuntConnectionType.NeutralStar)
-        elif elmshnt.ctech == 6: # 1PH PH-N
+        elif elmshnt.ctech == 6:  # 1PH PH-N
             connection = ShuntConnectionType.NeutralStar
-        else: # 1PH PH-E and backwards-compatible fallback
+        else:  # 1PH PH-E and backwards-compatible fallback
             connection = ShuntConnectionType.GroundedStar
 
     shunt = dev.Shunt(name=name,
@@ -4946,6 +5074,14 @@ def convert_dgs_to_controllable_shunt_from_svs(elmsvs: ElmSvs,
     bmin: float = float(elmsvs.qmin)
     bmax: float = float(elmsvs.qmax)
     vset: float = float(elmsvs.usetp)
+    if elmsvs.i_ctrl == 1 and elmsvs.i_droop == 0 and (
+            elmsvs.nxcap != 0 or elmsvs.nfixcap != 0 or elmsvs.tcrmax != 0.0):
+        # Reuse the SVS range already calculated by the VSC import route.
+        # qmin is one capacitor step, not the whole bank's capacitive capability.
+        bmin = elmsvs.qmin * elmsvs.nxcap + elmsvs.Qfixcap * elmsvs.nfixcap
+        bmax = elmsvs.tcrmax + elmsvs.Qfixcap * elmsvs.nfixcap
+    else:
+        pass
 
     if bmin < 0.0 and bmax > 0.0:
         b_steps: np.ndarray = np.array([bmin, -bmin, bmax], dtype=float)
@@ -4978,6 +5114,8 @@ def convert_dgs_to_controllable_shunt_from_svs(elmsvs: ElmSvs,
     cshunt.g_steps = np.zeros(len(b_steps), dtype=float)
     cshunt.active_steps = np.ones(len(b_steps), dtype=int)
     cshunt.step = int(initial_step)
+    # ElmSvs susceptances connect AB, BC and CA, including with balanced control.
+    cshunt.conn = ShuntConnectionType.Delta
 
     return bus, cshunt
 
@@ -5247,7 +5385,16 @@ def convert_dgs_to_asm_generator(elmasm: ElmAsm,
                                         Xr=Xr,
                                         tpe=GeneratorType.Asynchronous)
 
-
+                    # TypAsmo nslty is D:Y:YN. Do not give a delta machine the
+                    # default grounded-star homopolar path of a generic generator.
+                    if typasmo.nslty == 0:
+                        gen.conn = ShuntConnectionType.Delta
+                    elif typasmo.nslty == 1:
+                        gen.conn = ShuntConnectionType.FloatingStar
+                    else:
+                        gen.conn = ShuntConnectionType.NeutralStar
+                        logger.add_warning('Asynchronous YN import requires explicit neutral/grounding data for ABC',
+                                           device=name, device_class='ElmAsm')
 
                 else:
                     logger.add_warning(
@@ -5494,12 +5641,12 @@ def _get_powerfactory_vsc_loss_coefficients(
     )
     if nominal_voltage_kv > 0.0:
         alpha2: float = switching_loss_factor / (
-            math.sqrt(3.0) * nominal_voltage_kv
+                math.sqrt(3.0) * nominal_voltage_kv
         )
         alpha3: float = (
-            resistive_loss_factor
-            * system_base_mva
-            / (3.0 * nominal_voltage_kv * nominal_voltage_kv)
+                resistive_loss_factor
+                * system_base_mva
+                / (3.0 * nominal_voltage_kv * nominal_voltage_kv)
         )
     else:
         alpha2 = 0.0
@@ -5511,9 +5658,9 @@ def _get_powerfactory_vsc_loss_coefficients(
     copper_loss_kw: float = 0.0 if source.Pcu is None else float(source.Pcu)
     if rated_power_mva > 0.0 and system_base_mva > 0.0:
         alpha3 += (
-            copper_loss_kw
-            * system_base_mva
-            / (1000.0 * rated_power_mva * rated_power_mva)
+                copper_loss_kw
+                * system_base_mva
+                / (1000.0 * rated_power_mva * rated_power_mva)
         )
     else:
         pass
@@ -5528,9 +5675,9 @@ def _get_powerfactory_vsc_loss_coefficients(
             and arm_resistance_ohm > 0.0
     ):
         alpha3 += (
-            arm_resistance_ohm
-            * system_base_mva
-            / (2.0 * nominal_voltage_kv * nominal_voltage_kv)
+                arm_resistance_ohm
+                * system_base_mva
+                / (2.0 * nominal_voltage_kv * nominal_voltage_kv)
         )
     else:
         pass
@@ -5583,16 +5730,16 @@ def _get_powerfactory_vsc_series_impedance(
             and (arm_resistance_ohm > 0.0 or arm_inductance_mh > 0.0)
     ):
         impedance_base_ohm: float = (
-            nominal_voltage_kv * nominal_voltage_kv / rated_power_mva
+                nominal_voltage_kv * nominal_voltage_kv / rated_power_mva
         )
         resistance_pu += arm_resistance_ohm / (2.0 * impedance_base_ohm)
         reactance_pu += (
-            2.0
-            * math.pi
-            * frequency_hz
-            * arm_inductance_mh
-            * 1.0e-3
-            / (2.0 * impedance_base_ohm)
+                2.0
+                * math.pi
+                * frequency_hz
+                * arm_inductance_mh
+                * 1.0e-3
+                / (2.0 * impedance_base_ohm)
         )
     else:
         pass
@@ -5628,7 +5775,7 @@ def _get_powerfactory_mmc_arm_capacitance_uf(
     # Reduce the pair only when both native values establish a physical capacitance.
     if submodule_capacitance_uf > 0.0 and submodules_per_arm > 0:
         arm_capacitance_uf: float = (
-            submodule_capacitance_uf / float(submodules_per_arm)
+                submodule_capacitance_uf / float(submodules_per_arm)
         )
     else:
         arm_capacitance_uf = 0.0
@@ -6139,7 +6286,9 @@ def _add_elmgenstat_devices(dgs_grid: DgsCircuit,
     for elmgenstat in dgs_grid.elmgenstats:
         parallel_count = _get_parallel_device_count(count=int(elmgenstat.ngnum))
         for parallel_index in range(parallel_count):
-            if elmgenstat.cCategory == 'Wind' and not bool(elmgenstat.outserv):
+            # Without explicit VSC import, voltage-controlled wind units use the PV path below.
+            if (elmgenstat.cCategory == 'Wind' and not bool(elmgenstat.outserv)
+                    and (use_vsc_for_injections or elmgenstat.av_mode != 'constv')):
                 if use_vsc_for_injections:
                     dc_bus, vsc = convert_dgs_staticgen_to_vsc(
                         elmgenstat=elmgenstat,
@@ -6162,7 +6311,8 @@ def _add_elmgenstat_devices(dgs_grid: DgsCircuit,
                         cubics_by_objid=cubics_by_objid,
                         bus_by_term_id=bus_by_term_id,
                         parallel_index=parallel_index,
-                        parallel_count=parallel_count
+                        parallel_count=parallel_count,
+                        Sbase=grid.Sbase
                     )
                     grid.add_static_generator(bus=bus, api_obj=stagen)
             elif elmgenstat.cCategory == 'HVDC Terminal':
@@ -6174,7 +6324,8 @@ def _add_elmgenstat_devices(dgs_grid: DgsCircuit,
                     cubics_by_objid=cubics_by_objid,
                     bus_by_term_id=bus_by_term_id,
                     parallel_index=parallel_index,
-                    parallel_count=parallel_count
+                    parallel_count=parallel_count,
+                    Sbase=grid.Sbase
                 )
                 grid.add_generator(bus=bus, api_obj=gen)
 
@@ -6187,11 +6338,13 @@ def _add_elmgenstat_devices(dgs_grid: DgsCircuit,
                     cubics_by_objid=cubics_by_objid,
                     bus_by_term_id=bus_by_term_id,
                     parallel_index=parallel_index,
-                    parallel_count=parallel_count
+                    parallel_count=parallel_count,
+                    Sbase=grid.Sbase
                 )
                 grid.add_battery(bus=bus, api_obj=battery)
 
-            elif elmgenstat.cCategory == 'Storage' and elmgenstat.av_mode == 'vdroop':
+            elif (elmgenstat.cCategory == 'Storage' and elmgenstat.av_mode == 'vdroop'
+                  and use_vsc_for_injections):
                 dc_bus, vsc = convert_dgs_staticgen_to_vsc(
                     elmgenstat=elmgenstat,
                     stacubic_dict=stacubic_dict,
@@ -6214,7 +6367,8 @@ def _add_elmgenstat_devices(dgs_grid: DgsCircuit,
                     cubics_by_objid=cubics_by_objid,
                     bus_by_term_id=bus_by_term_id,
                     parallel_index=parallel_index,
-                    parallel_count=parallel_count
+                    parallel_count=parallel_count,
+                    Sbase=grid.Sbase
                 )
                 grid.add_generator(bus=bus, api_obj=gen)
             else:
@@ -6226,7 +6380,8 @@ def _add_elmgenstat_devices(dgs_grid: DgsCircuit,
                     cubics_by_objid=cubics_by_objid,
                     bus_by_term_id=bus_by_term_id,
                     parallel_index=parallel_index,
-                    parallel_count=parallel_count
+                    parallel_count=parallel_count,
+                    Sbase=grid.Sbase
                 )
                 grid.add_static_generator(bus=bus, api_obj=stagen)
 
@@ -6351,6 +6506,16 @@ def _add_elmsvs_devices(dgs_grid: DgsCircuit,
             )
             grid.add_bus(dc_bus)
             grid.add_vsc(vsc)
+        elif elmsvs.i_ctrl == 1 and elmsvs.i_droop != 0:
+            # Keep the established VSC droop parameters without inventing a DC terminal for ABC.
+            bus: dev.Bus = get_injection_bus(elm_id=elmsvs.ID, stacubic_dict=stacubic_dict,
+                buses=grid.buses, cubics_by_objid=cubics_by_objid, bus_by_term_id=bus_by_term_id)
+            static_gen: dev.StaticGenerator = dev.StaticGenerator(
+                name=_get_non_empty_name(elmsvs.loc_name, f"SVS_{_ref_id(elmsvs.ID)}"),
+                idtag=_ref_id(elmsvs.ID), active=not bool(elmsvs.outserv), P=0.0, Q=0.0,
+                Snom=float(elmsvs.Srated), control_mode=StaticGeneratorControlMode.QVDroop,
+                vset=float(elmsvs.usetp), droop=float(elmsvs.ddroop))
+            grid.add_static_generator(bus=bus, api_obj=static_gen)
         else:
             bus, cshunt = convert_dgs_to_controllable_shunt_from_svs(
                 elmsvs=elmsvs,
@@ -6652,6 +6817,7 @@ def _add_elmtr3_transformers(dgs_grid: DgsCircuit,
                     trafo3w.winding3.group = branch_group
             grid.add_transformer3w(obj=trafo3w)
 
+
 def _add_elmtr4_transformers(dgs_grid: DgsCircuit,
                              grid: dev.MultiCircuit,
                              stacubic_dict: Dict[str, List[int]],
@@ -6874,49 +7040,20 @@ def _build_phase_map(stacubics: List[StaCubic], logger: Logger) -> PhaseMap:
     return phase_map
 
 
-def _get_source_dgs_id_from_api_idtag(api_idtag: str | None) -> str | None:
-    """Recover the source FID from an imported object, including parallel copies."""
-    if api_idtag is None or api_idtag == "":
-        return None
+def _build_graphics_positions(intgrfs: List[IntGrf]) -> Dict[str, Tuple[float, float]]:
+    """
+    Build object positions from DGS graphical records.
 
-    identifier_parts: List[str] = api_idtag.rsplit(":", maxsplit=1)
-    if len(identifier_parts) == 2 and identifier_parts[1].isdigit():
-        return identifier_parts[0]
-    return api_idtag
-
-
-def _build_diagram_api_objects_by_dgs_id(
-        grid: dev.MultiCircuit,
-) -> Dict[str, List[ALL_DEV_TYPES]]:
-    """Index only static drawable objects for schematic reconstruction."""
-    result: Dict[str, List[ALL_DEV_TYPES]] = dict()
-
-    for api_object in grid.get_all_elements_iter():
-        if not isinstance(
-                api_object,
-                (
-                    BranchParent,
-                    dev.Transformer3W,
-                    dev.TransformerNW,
-                    dev.Generator,
-                    dev.StaticGenerator,
-                    dev.Battery,
-                    dev.Load,
-                    dev.ExternalGrid,
-                    dev.Shunt,
-                    dev.ControllableShunt,
-                    dev.CurrentInjection,
-                ),
-        ):
-            continue
-
-        source_id: str | None = _get_source_dgs_id_from_api_idtag(api_object.idtag)
-        normalized_source_id: str | None = _ref_id(source_id)
-        if normalized_source_id is None or normalized_source_id == "":
-            continue
-        result.setdefault(normalized_source_id, list()).append(api_object)
-
-    return result
+    :param intgrfs: DGS graphical objects.
+    :return: Position indexed by referenced DGS object identifier.
+    """
+    pos_by_objid: Dict[str, Tuple[float, float]] = dict()
+    for graphic in intgrfs:
+        pos_by_objid[graphic.pDataObj] = (
+            float(graphic.rCenterX),
+            float(graphic.rCenterY),
+        )
+    return pos_by_objid
 
 
 def _add_elmzone_zones(dgs_grid: DgsCircuit, grid: dev.MultiCircuit) -> Dict[str, dev.Zone]:
@@ -6977,8 +7114,8 @@ def _add_elmbranch_groups(dgs_grid: DgsCircuit, grid: dev.MultiCircuit) -> Dict[
 
 
 def add_dgs_terminal_buses(dgs_grid: DgsCircuit,
-                       grid: dev.MultiCircuit,
-                       pos_by_objid: Dict[str, Tuple[float, float]]) -> Dict[str, dev.Bus]:
+                           grid: dev.MultiCircuit,
+                           pos_by_objid: Dict[str, Tuple[float, float]]) -> Dict[str, dev.Bus]:
     """
     Add buses only after every source terminal FID is proven unambiguous.
 
@@ -7113,7 +7250,7 @@ def _build_typlne_templates(
         dgs_grid: DgsCircuit,
         grid: dev.MultiCircuit,
         logger: Logger,
-) -> Tuple[Dict[str, dev.SequenceLineType], Dict[str, dev.DcCableType], Dict[str, TypLne]]:
+) -> Tuple[Dict[str, dev.SequenceLineType], Dict[str, dev.UndergroundLineType], Dict[str, TypLne]]:
     """
     Build typlne templates.
 
@@ -7123,7 +7260,7 @@ def _build_typlne_templates(
     :return: AC templates, complete DC cable templates, and parsed source types.
     """
     typlne_dict: Dict[str, dev.SequenceLineType] = dict()
-    dc_cable_type_dict: Dict[str, dev.DcCableType] = dict()
+    dc_cable_type_dict: Dict[str, dev.UndergroundLineType] = dict()
     source_line_type_dict: Dict[str, TypLne] = dict()
     for typlne in dgs_grid.typlnes:
         source_line_type_dict[typlne.ID] = typlne
@@ -7133,12 +7270,12 @@ def _build_typlne_templates(
         else:
             pass
         if int(typlne.systp) == 1:
-            dc_cable_type: dev.DcCableType | None = convert_dgs_to_dc_cable_type(
+            dc_cable_type: dev.UndergroundLineType | None = convert_dgs_to_dc_cable_type(
                 typlne=typlne,
                 logger=logger,
             )
             if dc_cable_type is not None:
-                grid.add_dc_cable_type(obj=dc_cable_type)
+                grid.add_underground_line(obj=dc_cable_type)
                 dc_cable_type_dict[typlne.ID] = dc_cable_type
                 normalized_type_id: str | None = _ref_id(typlne.ID)
                 if normalized_type_id is not None:
@@ -7175,8 +7312,8 @@ def _build_typcab_catalogue(dgs_grid: DgsCircuit,
         # PF retains material properties and thicknesses for disabled layers.
         # Only the explicit existence flags establish that armour is active.
         has_armour: bool = (
-            source_cable.has_arm not in (None, 0)
-            or source_cable.cHasEl_2 not in (None, 0)
+                source_cable.has_arm not in (None, 0)
+                or source_cable.cHasEl_2 not in (None, 0)
         )
         if has_armour:
             logger.add_warning(
@@ -7308,8 +7445,8 @@ def _build_typcabsys_templates(
                     coordinate_row: List[float] = source_system.xy_c[circuit_index]
                     coordinate_axis_width: int = int(source_system.cnphas)
                     if (
-                        cable_for_circuit is not None
-                        and len(coordinate_row) >= coordinate_axis_width + phase_count
+                            cable_for_circuit is not None
+                            and len(coordinate_row) >= coordinate_axis_width + phase_count
                     ):
                         local_phase: int
                         for local_phase in range(phase_count):
@@ -7543,6 +7680,7 @@ def _build_typtr3_dict(dgs_grid: DgsCircuit) -> Dict[str, TypTr3]:
             pass
     return typtr3_dict
 
+
 def _build_typtr4_dict(dgs_grid: DgsCircuit) -> Dict[str, TypTr4]:
     """
     Build typtr4 dict.
@@ -7700,7 +7838,7 @@ def _add_elmlne_lines(dgs_grid: DgsCircuit,
                       grid: dev.MultiCircuit,
                       stacubic_dict: Dict[str, List[int]],
                       typlne_dict: Dict[str, dev.SequenceLineType],
-                      dc_cable_type_dict: Dict[str, dev.DcCableType],
+                      dc_cable_type_dict: Dict[str, dev.UndergroundLineType],
                       source_line_type_dict: Dict[str, TypLne],
                       overhead_line_type_dict: Dict[str, dev.OverheadLineType],
                       underground_line_type_dict: Dict[str, dev.UndergroundLineType],
@@ -7823,7 +7961,8 @@ def _apply_elmtow_tower_coupling(dgs_grid: DgsCircuit,
                                  overhead_line_type_dict: Dict[str, dev.OverheadLineType],
                                  baseMVA: float,
                                  frequency: float,
-                                 logger: Logger) -> None:
+                                 logger: Logger,
+                                 grid: dev.MultiCircuit | None = None) -> None:
     """
     Apply elmtow tower coupling.
 
@@ -7833,6 +7972,7 @@ def _apply_elmtow_tower_coupling(dgs_grid: DgsCircuit,
     :param baseMVA: baseMVA parameter.
     :param frequency: frequency parameter.
     :param logger: logger parameter.
+    :param grid: Catalogue receiving physical phase-layout variants.
     :return: Function result.
     """
     for elmtow in dgs_grid.elmtows:
@@ -7868,6 +8008,52 @@ def _apply_elmtow_tower_coupling(dgs_grid: DgsCircuit,
             )
             continue
 
+        if len(elmtow.dphasing) < len(elmtow.plines):
+            logger.add_warning("Missing tower phase arrangement; assuming ABC. Export ElmTow e:dphasing.",
+                               device=elmtow.loc_name, device_class="ElmTow")
+        else:
+            pass
+        if any(code < 0 or code > 5 for code in elmtow.dphasing):
+            raise ValueError(f"{elmtow.loc_name}: unsupported ElmTow dphasing {elmtow.dphasing}")
+        else:
+            pass
+        complete_section: bool = not any(value != 0 for value in elmtow.ctransp) and len(elmtow.pGeo) == 1
+        if not complete_section:
+            logger.add_warning("Transposed or multi-section tower coupling is not supported; "
+                               "retaining independent line templates.",
+                               device=elmtow.loc_name, device_class="ElmTow")
+        else:
+            pass
+        if any(code != 0 for code in elmtow.dphasing):
+            # Relabel a catalogue variant; never change the geometry shared by other sections.
+            phase_labels: tuple[tuple[int, int, int], ...] = (
+                (1, 2, 3), (1, 3, 2), (2, 1, 3), (2, 3, 1), (3, 1, 2), (3, 2, 1))
+            original: dev.OverheadLineType = ohl_type
+            ohl_type = ohl_type.copy(forced_new_idtag=True)
+            ohl_type.wires_in_tower.data.clear()
+            ohl_type.name = f"{ohl_type.name} ({elmtow.loc_name})"
+            for relationship in original.wires_in_tower.data:
+                new_phase: int = relationship.phase
+                if relationship.phase > 0:
+                    circuit: int = (relationship.phase - 1) // 3
+                    phase: int = (relationship.phase - 1) % 3
+                    code: int = elmtow.dphasing[circuit] if circuit < len(elmtow.dphasing) else 0
+                    new_phase = 3 * circuit + phase_labels[code][phase]
+                else:
+                    pass
+                ohl_type.add_wire_relationship(wire=relationship.wire, xpos=relationship.xpos,
+                                              ypos=relationship.ypos, phase=new_phase)
+            # Existing per-circuit template accessors expect N, then electrical ABC blocks.
+            order: np.ndarray = np.argsort([wire.phase for wire in ohl_type.wires_in_tower.data], kind='stable')
+            ohl_type.wires_in_tower.data = [ohl_type.wires_in_tower.data[i] for i in order]
+            ohl_type.compute()
+            if grid is not None:
+                grid.overhead_line_types.append(ohl_type)
+            else:
+                pass
+        else:
+            pass
+
         for idx, line_ptr in enumerate(elmtow.plines):
             if line_ptr is None:
                 continue
@@ -7889,6 +8075,11 @@ def _apply_elmtow_tower_coupling(dgs_grid: DgsCircuit,
                 try:
                     api_line.set_circuit_idx(val=circuit_idx, obj=ohl_type)
                     api_line.apply_template(obj=ohl_type, Sbase=baseMVA, freq=frequency, logger=logger)
+                    if complete_section:
+                        api_line.coupling_group = str(elmtow.ID)
+                        api_line.coupling_reversed = idx < len(elmtow.dpolar) and elmtow.dpolar[idx] != 0
+                    else:
+                        pass
                 except ValueError as e:
                     logger.add_warning(
                         str(e).strip() or "Failed to apply tower template.",
@@ -7932,10 +8123,10 @@ def dgs_to_circuit(path: str,
         frequency = 50.0
 
     # StaCubic dictionaries
-    stacubic_dict, cubics_by_objid = _build_stacubic_mappings(stacubics=dgs_grid.stacubics)
+    sta_cubic_dict, cubics_by_objid = _build_stacubic_mappings(stacubics=dgs_grid.stacubics)
     phase_map = _build_phase_map(stacubics=dgs_grid.stacubics, logger=logger)
 
-    pos_by_objid: Dict[str, Tuple[float, float]] = build_preferred_position_by_object_id(dgs_grid=dgs_grid)
+    pos_by_objid: Dict[str, Tuple[float, float]] = _build_graphics_positions(intgrfs=dgs_grid.intgrfs)
     area_by_id: Dict[str, dev.Area] = _add_elmarea_areas(dgs_grid=dgs_grid, grid=grid)
     zone_by_id: Dict[str, dev.Zone] = _add_elmzone_zones(dgs_grid=dgs_grid, grid=grid)
     branch_group_by_id: Dict[str, dev.BranchGroup] = _add_elmbranch_groups(dgs_grid=dgs_grid, grid=grid)
@@ -7947,8 +8138,8 @@ def dgs_to_circuit(path: str,
     _assign_elmterm_area_references(dgs_grid=dgs_grid, bus_by_term_id=bus_by_term_id, area_by_id=area_by_id)
     _assign_elmterm_zone_references(dgs_grid=dgs_grid, bus_by_term_id=bus_by_term_id, zone_by_id=zone_by_id)
 
-    typsym_dict: Dict[str, TypSym] = _build_typsym_dict(dgs_grid=dgs_grid)
-    typasmo_dict: Dict[str, TypAsmo] = _build_typasmo_dict(dgs_grid=dgs_grid)
+    typ_sym_dict: Dict[str, TypSym] = _build_typsym_dict(dgs_grid=dgs_grid)
+    typ_asmo_dict: Dict[str, TypAsmo] = _build_typasmo_dict(dgs_grid=dgs_grid)
     typ_switch_dict: Dict[str, TypSwitch] = _build_typswitch_dict(dgs_grid=dgs_grid)
 
     # switches (PowerFactory/DGS: ElmCoup is the real device; StaCubic resolves connectivity)
@@ -7968,8 +8159,8 @@ def dgs_to_circuit(path: str,
     _add_elmsym_generators(
         dgs_grid=dgs_grid,
         grid=grid,
-        stacubic_dict=stacubic_dict,
-        typsym_dict=typsym_dict,
+        stacubic_dict=sta_cubic_dict,
+        typsym_dict=typ_sym_dict,
         baseMVA=baseMVA,
         logger=logger,
         cubics_by_objid=cubics_by_objid,
@@ -7978,8 +8169,8 @@ def dgs_to_circuit(path: str,
     _add_elmasm_generators(
         dgs_grid=dgs_grid,
         grid=grid,
-        stacubic_dict=stacubic_dict,
-        typasmo_dict=typasmo_dict,
+        stacubic_dict=sta_cubic_dict,
+        typasmo_dict=typ_asmo_dict,
         logger=logger,
         cubics_by_objid=cubics_by_objid,
         bus_by_term_id=bus_by_term_id,
@@ -7987,7 +8178,7 @@ def dgs_to_circuit(path: str,
     _add_elmvac_loads(
         dgs_grid=dgs_grid,
         grid=grid,
-        stacubic_dict=stacubic_dict,
+        stacubic_dict=sta_cubic_dict,
         logger=logger,
         cubics_by_objid=cubics_by_objid,
         bus_by_term_id=bus_by_term_id,
@@ -7995,7 +8186,7 @@ def dgs_to_circuit(path: str,
     _add_elmlod_loads(
         dgs_grid=dgs_grid,
         grid=grid,
-        stacubic_dict=stacubic_dict,
+        stacubic_dict=sta_cubic_dict,
         logger=logger,
         cubics_by_objid=cubics_by_objid,
         bus_by_term_id=bus_by_term_id,
@@ -8004,7 +8195,7 @@ def dgs_to_circuit(path: str,
     _add_elmgenstat_devices(
         dgs_grid=dgs_grid,
         grid=grid,
-        stacubic_dict=stacubic_dict,
+        stacubic_dict=sta_cubic_dict,
         use_vsc_for_injections=use_vsc_for_injections,
         logger=logger,
         cubics_by_objid=cubics_by_objid,
@@ -8033,7 +8224,7 @@ def dgs_to_circuit(path: str,
     _add_elmxnet_devices(
         dgs_grid=dgs_grid,
         grid=grid,
-        stacubic_dict=stacubic_dict,
+        stacubic_dict=sta_cubic_dict,
         logger=logger,
         cubics_by_objid=cubics_by_objid,
         bus_by_term_id=bus_by_term_id,
@@ -8041,7 +8232,7 @@ def dgs_to_circuit(path: str,
     _add_elmshnt_devices(
         dgs_grid=dgs_grid,
         grid=grid,
-        stacubic_dict=stacubic_dict,
+        stacubic_dict=sta_cubic_dict,
         logger=logger,
         cubics_by_objid=cubics_by_objid,
         bus_by_term_id=bus_by_term_id,
@@ -8051,7 +8242,7 @@ def dgs_to_circuit(path: str,
     _add_elmsvs_devices(
         dgs_grid=dgs_grid,
         grid=grid,
-        stacubic_dict=stacubic_dict,
+        stacubic_dict=sta_cubic_dict,
         use_vsc_for_injections=use_vsc_for_injections,
         logger=logger,
         cubics_by_objid=cubics_by_objid,
@@ -8065,10 +8256,10 @@ def dgs_to_circuit(path: str,
             device_class="ElmLodlv/ElmLodlvp",
         )
 
-    typlne_dict: Dict[str, dev.SequenceLineType]
-    dc_cable_type_dict: Dict[str, dev.DcCableType]
+    typ_lne_dict: Dict[str, dev.SequenceLineType]
+    dc_cable_type_dict: Dict[str, dev.UndergroundLineType]
     source_line_type_dict: Dict[str, TypLne]
-    typlne_dict, dc_cable_type_dict, source_line_type_dict = _build_typlne_templates(
+    typ_lne_dict, dc_cable_type_dict, source_line_type_dict = _build_typlne_templates(
         dgs_grid=dgs_grid,
         grid=grid,
         logger=logger,
@@ -8084,13 +8275,13 @@ def dgs_to_circuit(path: str,
         cable_type_dict=underground_cable_type_dict,
         logger=logger,
     )
-    typcon_raw_dict, wire_type_dict = _build_typcon_catalogues(dgs_grid=dgs_grid, grid=grid)
+    typ_con_raw_dict, wire_type_dict = _build_typcon_catalogues(dgs_grid=dgs_grid, grid=grid)
     overhead_line_type_dict: Dict[str, dev.OverheadLineType] = _add_typtow_templates(
         dgs_grid=dgs_grid,
         grid=grid,
-        typcon_raw_dict=typcon_raw_dict,
+        typcon_raw_dict=typ_con_raw_dict,
         wire_type_dict=wire_type_dict,
-        typlne_dict=typlne_dict,
+        typlne_dict=typ_lne_dict,
         cubics_by_objid=cubics_by_objid,
         phase_map=phase_map,
         frequency=frequency,
@@ -8099,7 +8290,7 @@ def dgs_to_circuit(path: str,
     typtr2_dict, typtr2_raw_dict = _build_typtr2_templates(dgs_grid=dgs_grid, grid=grid)
     typtr3_dict: Dict[str, TypTr3] = _build_typtr3_dict(dgs_grid=dgs_grid)
     typtr4_dict: Dict[str, TypTr4] = _build_typtr4_dict(dgs_grid=dgs_grid)
-    typsind_raw_dict: Dict[str, TypSind] = _build_typsind_dict(dgs_grid=dgs_grid)
+    typ_sind_raw_dict: Dict[str, TypSind] = _build_typsind_dict(dgs_grid=dgs_grid)
 
     # ------------------------------------------------------------
     # Fallback map: ElmLne.ID -> typ_id from ElmLnesec
@@ -8124,8 +8315,8 @@ def dgs_to_circuit(path: str,
     line_by_dgs_id: Dict[str, List[dev.Line]] = _add_elmlne_lines(
         dgs_grid=dgs_grid,
         grid=grid,
-        stacubic_dict=stacubic_dict,
-        typlne_dict=typlne_dict,
+        stacubic_dict=sta_cubic_dict,
+        typlne_dict=typ_lne_dict,
         dc_cable_type_dict=dc_cable_type_dict,
         source_line_type_dict=source_line_type_dict,
         overhead_line_type_dict=overhead_line_type_dict,
@@ -8148,13 +8339,14 @@ def dgs_to_circuit(path: str,
         baseMVA=baseMVA,
         frequency=frequency,
         logger=logger,
+        grid=grid,
     )
 
     _add_elmzpu_series_reactances(
         dgs_grid=dgs_grid,
         grid=grid,
         bus_by_term_id=bus_by_term_id,
-        stacubic_dict=stacubic_dict,
+        stacubic_dict=sta_cubic_dict,
         cubics_by_objid=cubics_by_objid,
         logger=logger,
         baseMVA=baseMVA,
@@ -8164,7 +8356,7 @@ def dgs_to_circuit(path: str,
         dgs_grid=dgs_grid,
         grid=grid,
         bus_by_term_id=bus_by_term_id,
-        stacubic_dict=stacubic_dict,
+        stacubic_dict=sta_cubic_dict,
         cubics_by_objid=cubics_by_objid,
         logger=logger,
         baseMVA=baseMVA,
@@ -8174,9 +8366,9 @@ def dgs_to_circuit(path: str,
         dgs_grid=dgs_grid,
         grid=grid,
         bus_by_term_id=bus_by_term_id,
-        stacubic_dict=stacubic_dict,
+        stacubic_dict=sta_cubic_dict,
         cubics_by_objid=cubics_by_objid,
-        typsind_raw_dict=typsind_raw_dict,
+        typsind_raw_dict=typ_sind_raw_dict,
         logger=logger,
         baseMVA=baseMVA,
         branch_group_by_id=branch_group_by_id,
@@ -8184,7 +8376,7 @@ def dgs_to_circuit(path: str,
     _add_elmtr2_transformers(
         dgs_grid=dgs_grid,
         grid=grid,
-        stacubic_dict=stacubic_dict,
+        stacubic_dict=sta_cubic_dict,
         typtr2_dict=typtr2_dict,
         typtr2_raw_dict=typtr2_raw_dict,
         frequency=frequency,
@@ -8199,7 +8391,7 @@ def dgs_to_circuit(path: str,
     _add_elmtr3_transformers(
         dgs_grid=dgs_grid,
         grid=grid,
-        stacubic_dict=stacubic_dict,
+        stacubic_dict=sta_cubic_dict,
         typtr3_dict=typtr3_dict,
         baseMVA=baseMVA,
         logger=logger,
@@ -8212,7 +8404,7 @@ def dgs_to_circuit(path: str,
     _add_elmtr4_transformers(
         dgs_grid=dgs_grid,
         grid=grid,
-        stacubic_dict=stacubic_dict,
+        stacubic_dict=sta_cubic_dict,
         typtr4_dict=typtr4_dict,
         baseMVA=baseMVA,
         logger=logger,
@@ -8220,21 +8412,6 @@ def dgs_to_circuit(path: str,
         bus_by_term_id=bus_by_term_id,
         switch_by_cubic_id=switch_by_cubic_id,
         branch_group_by_id=branch_group_by_id,
-    )
-
-    # PowerFactory control/block diagrams are deliberately never materialized.
-    # The schematic importer applies a strict ElmNet/ElmSite/ElmSubstat
-    # whitelist, independently of whether dynamic model data is requested.
-    diagram_api_objects_by_dgs_id: Dict[str, List[ALL_DEV_TYPES]] = (
-        _build_diagram_api_objects_by_dgs_id(grid=grid)
-    )
-    import_dgs_substations_and_schematic_diagrams(
-        dgs_grid=dgs_grid,
-        grid=grid,
-        bus_by_term_id=bus_by_term_id,
-        zone_by_id=zone_by_id,
-        api_objects_by_dgs_id=diagram_api_objects_by_dgs_id,
-        logger=logger,
     )
 
     if use_dynamic_information:
@@ -8289,23 +8466,23 @@ def dgs_to_circuit(path: str,
                         pass
                     else:
                         external_grid_source_ids.add(external_grid_source.ID)
-                elmgenstat_source_ids: Set[str] = set()
-                elmgenstat_source: ElmGenstat
-                for elmgenstat_source in dgs_grid.elmgenstats:
-                    if elmgenstat_source.ID == "":
+                elm_gen_stat_source_ids: Set[str] = set()
+                elm_gen_stat_source: ElmGenstat
+                for elm_gen_stat_source in dgs_grid.elmgenstats:
+                    if elm_gen_stat_source.ID == "":
                         pass
                     else:
-                        elmgenstat_source_ids.add(elmgenstat_source.ID)
-                elmsym_source_ids: Set[str] = set()
-                elmsym_reference_source_ids: Set[str] = set()
-                elmsym_source: ElmSym
-                for elmsym_source in dgs_grid.elmsyms:
-                    if elmsym_source.ID == "":
+                        elm_gen_stat_source_ids.add(elm_gen_stat_source.ID)
+                elm_sym_source_ids: Set[str] = set()
+                elm_sym_reference_source_ids: Set[str] = set()
+                elm_sym_source: ElmSym
+                for elm_sym_source in dgs_grid.elmsyms:
+                    if elm_sym_source.ID == "":
                         pass
                     else:
-                        elmsym_source_ids.add(elmsym_source.ID)
-                        if int(elmsym_source.ip_ctrl) == 1:
-                            elmsym_reference_source_ids.add(elmsym_source.ID)
+                        elm_sym_source_ids.add(elm_sym_source.ID)
+                        if int(elm_sym_source.ip_ctrl) == 1:
+                            elm_sym_reference_source_ids.add(elm_sym_source.ID)
                         else:
                             pass
                 typeless_elmlod_source_ids: Set[str] = set()
@@ -8322,9 +8499,9 @@ def dgs_to_circuit(path: str,
                     circuit=grid,
                     external_grid_source_ids=external_grid_source_ids,
                     logger=logger,
-                    elmgenstat_source_ids=elmgenstat_source_ids,
-                    elmsym_source_ids=elmsym_source_ids,
-                    elmsym_reference_source_ids=elmsym_reference_source_ids,
+                    elmgenstat_source_ids=elm_gen_stat_source_ids,
+                    elmsym_source_ids=elm_sym_source_ids,
+                    elmsym_reference_source_ids=elm_sym_reference_source_ids,
                     typeless_elmlod_source_ids=typeless_elmlod_source_ids,
                 )
                 # Passive shells exist now, so exported meter FIDs can place
@@ -8351,10 +8528,7 @@ def dgs_to_circuit(path: str,
                     templates_by_root_dgs_id=rms_templates_by_root_dgs_id,
                     logger=logger,
                 )
-                if (
-                        prepared_actuator_count > 0
-                        and bound_actuator_count == prepared_actuator_count
-                ):
+                if 0 < prepared_actuator_count == bound_actuator_count:
                     release_dgs_logical_actuator_import_context(circuit=grid)
                 else:
                     if bound_actuator_count != prepared_actuator_count:

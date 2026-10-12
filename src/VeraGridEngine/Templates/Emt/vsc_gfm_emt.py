@@ -112,10 +112,8 @@ def get_gfm_emt_template(vf: VarFactory, name: str = "VSC_GridForming") -> EmtMo
     phi_ref = vf.add_var(name=f"phi_ref")
 
     # Instantaneous algebraic expressions (used at runtime, NOT for init).
-    # Sign convention: ``i_A`` is the current from the bus into the
-    # converter (branch convention). With the standard three-phase per-unit
-    # current base, abc instantaneous sums are three times system-base power,
-    # so divide by 3 to report total three-phase p.u. power.
+    # Phase currents use the system three-phase current base. The abc sum
+    # is three times total three-phase per-unit power on that base.
     Pe_expr = -(i_A * v_A + i_B * v_B + i_C * v_C) / 3.0
     Qe_expr = (-(1.0 / np.sqrt(3.0)) * (
         (v_A - v_B) * i_C
@@ -173,8 +171,7 @@ def get_gfm_emt_template(vf: VarFactory, name: str = "VSC_GridForming") -> EmtMo
     # For balanced sinusoids in sin convention (sin(omega*t + phi_*)):
     #     i_a·v_a + i_b·v_b + i_c·v_c        = (3/2)·Vpk·Ipk·cos(phi)
     #     (1/√3)·Σ (v_a−v_b)·i_c            = -(3/2)·Vpk·Ipk·sin(phi)
-    # The model's algebraic equations divide abc sums by 3 to convert standard
-    # three-phase per-unit current samples back to total system-base power, so:
+    # Divide the abc sums by three to report total system-base power:
     #     Pe_steady = -(1/2)·Vpk·Ipk·cos(phi)
     #     Qe_steady = +(1/2)·Vpk·Ipk·sin(phi)
     # For generation, ``phi ≈ π`` so ``cos(phi) < 0`` and ``Pe > 0``;
@@ -235,11 +232,19 @@ def get_gfm_emt_template(vf: VarFactory, name: str = "VSC_GridForming") -> EmtMo
         VarPowerFlowReferenceType.v_A: v_A,
         VarPowerFlowReferenceType.v_B: v_B,
         VarPowerFlowReferenceType.v_C: v_C,
+        VarPowerFlowReferenceType.vt_A: v_A,
+        VarPowerFlowReferenceType.vt_B: v_B,
+        VarPowerFlowReferenceType.vt_C: v_C,
         VarPowerFlowReferenceType.i_A: i_A,
         VarPowerFlowReferenceType.i_B: i_B,
         VarPowerFlowReferenceType.i_C: i_C,
+        VarPowerFlowReferenceType.it_A: i_A,
+        VarPowerFlowReferenceType.it_B: i_B,
+        VarPowerFlowReferenceType.it_C: i_C,
         VarPowerFlowReferenceType.Vdc: v_dc,
+        VarPowerFlowReferenceType.Vf_dc: v_dc,
         VarPowerFlowReferenceType.Idc: i_dc,
+        VarPowerFlowReferenceType.If_dc: i_dc,
         VarPowerFlowReferenceType.Qf: Qf,
         VarPowerFlowReferenceType.Vpk: Vpk_ref,
         VarPowerFlowReferenceType.phi_v: phi_v_ref,
@@ -257,15 +262,17 @@ def get_gfm_emt_template(vf: VarFactory, name: str = "VSC_GridForming") -> EmtMo
     }
 
     converter_block.event_dict = {
-        omega_base: vf.add_const(2.0 * np.pi * 50.0),
-        R_s: vf.add_const(0.01),
-        X_s: vf.add_const(0.1),
         Kdp: vf.add_const(0.05),
         Kdq: vf.add_const(0.05),
         tau_omega: vf.add_const(0.05),
         tau_v: vf.add_const(0.05),
         omega_ref: vf.add_const(1.0),
     }
+    converter_block.parameters.update({
+        omega_base: vf.add_const(2.0 * np.pi * 50.0),
+        R_s: vf.add_const(0.01),
+        X_s: vf.add_const(0.1),
+    })
 
     # Runtime / PF-bound parameters.
     # ``Vpk_ref``, ``phi_v_ref``, ``Ipk_ref``, ``phi_ref`` are the canonical
@@ -338,7 +345,6 @@ def get_gfm_emt_template(vf: VarFactory, name: str = "VSC_GridForming") -> EmtMo
 
     templ.block.children.append(converter_block)
     templ.block.external_mapping = converter_block.external_mapping
-    templ.block.api_obj_mapping = converter_block.api_obj_mapping
     templ.block.in_vars = inputs
     templ.block.out_vars = converter_block.out_vars
 

@@ -379,8 +379,23 @@ $$
 $$
 
 $C_f$ is the conducting filling factor in percent, **not capacitance**. It accounts for the conducting fraction
-of the geometric cross-section. Resistance is calculated from material resistivity and geometry; the informational
-`core_dc_resistance` does not replace it.
+of the geometric cross-section. This expression applies to both conducting layers when the shared
+`resistance_input` selector is `Resistivity and filling factor`. Their DC resistances are derived as
+$R_{\mathrm{dc},c}=1000\rho_c/(\pi r_c^2)$ and
+$R_{\mathrm{dc},s}=1000\rho_s/[\pi(r_{so}^2-r_{si}^2)]$ in Ω/km.
+
+Alternatively, select `DC resistance` and supply **both** `core_dc_resistance` and `sheath_dc_resistance`
+at 20 °C in Ω/km. The effective resistivities used in the same equations below are then
+
+$$
+\rho_c=\frac{R_{\mathrm{dc},c}\pi r_c^2}{1000},\qquad
+\rho_s=\frac{R_{\mathrm{dc},s}\pi(r_{so}^2-r_{si}^2)}{1000}\quad[\Omega\,\mathrm m].
+$$
+
+The four material resistivity/filling-factor inputs are inactive in this mode; the numerical routine receives
+each effective resistivity with a 100% effective filling factor. One selector governs both layers, preventing
+two independent resistance definitions from competing. See the
+[cable catalogue](../modelling.md#undergroundcabletype) for editing, validation and file-compatibility details.
 
 Using modified Bessel functions $I_\nu$ and $K_\nu$, the solid-core surface impedance is
 
@@ -520,10 +535,14 @@ summarize diagonal sequence entries when available; they do not replace the full
 The following example uses three identical 10 kV cables with the construction defaults listed in
 [UndergroundCableType](../modelling.md#undergroundcabletype).
 
-1. In `Model / Database -> Catalogue -> Underground cable type`, add an entry named `Demo cable`.
+1. In `Model / Database -> Catalogue -> Cable`, add an entry named `Demo cable`.
    Set `nominal voltage` to 10 kV. Keep the default 10 mm core diameter, 5 mm main insulation thickness,
    1 mm sheath thickness and 30 mm overall cable diameter, with the remaining material defaults.
-2. In `Catalogue -> Underground line`, create `Buried circuit` and open its editor using the edit button.
+   Leave the common `resistance input` selector at `Resistivity and filling factor`: both layers' material
+   inputs are editable and their derived DC resistances are read-only. Alternatively choose `DC resistance`,
+   enter positive core and sheath values in Ω/km at 20 °C, and use the same geometry; all four material-input
+   cells become inactive.
+2. In `Catalogue -> Cable System`, create `Buried circuit` and open its editor using the edit button.
    Set voltage to 10 kV, frequency to 50 Hz, earth resistivity to 100 $\Omega$ m and rated current to 0.4 kA.
 3. Select `Demo cable` in the cable catalogue and press `+` three times. Set the composition rows to:
 
@@ -672,6 +691,8 @@ Profile-enabled properties: `active`, `rate`, `contingency_factor`, `protection_
 |tolerance                      |float              |%    |False    |         |Tolerance expected for the impedance values % is expected for transformers0% for lines.                                                                                                                                                  |False      |       |
 |circuit_idx                    |int                |     |False    |         |Circuit index, used for multiple circuits sharing towers (starts at zero)                                                                                                                                                                |False      |       |
 |length                         |float              |km   |False    |         |Length of the line (not used for calculation)                                                                                                                                                                                            |False      |       |
+|coupling_group                 |str                |     |False    |         |Physical tower section shared by coupled circuits; empty for independent lines.                                                                                                                                                          |False      |       |
+|coupling_reversed              |bool               |     |False    |         |The line runs opposite to the reference direction of its coupling group.                                                                                                                                                                 |False      |       |
 |template                       |Any line template  |     |False    |         |                                                                                                                                                                                                                                         |False      |       |
 |locations                      |Line locations     |     |False    |         |                                                                                                                                                                                                                                         |False      |       |
 |possible_tower_types           |AssociationsList   |     |False    |         |Possible overhead line types (>1 to denote association, cat=[PrpCat.PF]), - to denote no association                                                                                                                                     |False      |       |

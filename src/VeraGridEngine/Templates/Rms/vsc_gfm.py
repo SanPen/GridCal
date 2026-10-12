@@ -89,17 +89,13 @@ def build_gfm_converter_model(vfactory: VarFactory, inputs: List[Var],
     vd_ref = vfactory.add_var('vd_ref')
     vq_ref = vfactory.add_var('vq_ref')
     event_dict = {
-        Rf: vfactory.add_const(0.02),
-        Lf: vfactory.add_const(0.15),
         Cf: vfactory.add_const(0.05),
         Rc: vfactory.add_const(0.01),
         Lc: vfactory.add_const(0.1),
         Rcap: vfactory.add_const(1e6),  # Large value to effectively disable damping
         Kdp: vfactory.add_const(0.05),
         Kdq: vfactory.add_const(0.05),
-        omega_nom: vfactory.add_const(2 * math.pi * 50),
         omega_ref: vfactory.add_const(1.0),
-        fn: vfactory.add_const(50.0),
         Kp_icl: vfactory.add_const(0.05),
         Ki_icl: vfactory.add_const(50.0),
         tau_P: vfactory.add_const(0.01),
@@ -410,6 +406,7 @@ def build_gfm_converter_model(vfactory: VarFactory, inputs: List[Var],
         algebraic_vars=algebraic_vars,
         diff_vars=diff_vars,
         event_dict=event_dict,
+        parameters={omega_nom: vfactory.add_const(2 * math.pi * 50), fn: vfactory.add_const(50.0), Rf: vfactory.add_const(0.02), Lf: vfactory.add_const(0.15)},
         diff_init_eqs=diff_init_eqs,
         init_eqs={
             P: p_init,
@@ -454,7 +451,8 @@ def build_gfm_converter_model(vfactory: VarFactory, inputs: List[Var],
         external_mapping={
             VarPowerFlowReferenceType.P: P,
             VarPowerFlowReferenceType.Q: Q,
-        }
+        },
+        api_obj_mapping={ParamPowerFlowReferenceType.omega_base: omega_nom, ParamPowerFlowReferenceType.freq: fn},
     )
     res_block.add(core_block)
     res_block.unify_blocks()
@@ -514,11 +512,9 @@ def VscGfmLossBuild(vfactory: VarFactory, name: str = "Grid-forming VSC loss RMS
     a2 = vfactory.add_var('a2')
 
     event_dict = {
-        a0: vfactory.add_const(0.0),
-        a1: vfactory.add_const(0.0),
-        a2: vfactory.add_const(0.1),
         Qt_ref: vfactory.add_const(0.0),
     }
+    parameters = {a0: vfactory.add_const(0.0), a1: vfactory.add_const(0.0), a2: vfactory.add_const(0.1)}
 
     if reconstruct_filter_voltage:
         voltage_inputs = [Vm_c, Va_c, Vm_g, Va_g]
@@ -542,6 +538,7 @@ def VscGfmLossBuild(vfactory: VarFactory, name: str = "Grid-forming VSC loss RMS
         ],
         algebraic_vars=[Pt_vsc, Pf_vsc],
         event_dict=event_dict,
+        parameters=parameters,
         external_mapping={
             VarPowerFlowReferenceType.Vmt: Vm_c,
             VarPowerFlowReferenceType.Vat: Va_c,
@@ -559,6 +556,8 @@ def VscGfmLossBuild(vfactory: VarFactory, name: str = "Grid-forming VSC loss RMS
         out_vars=[Pt_vsc, Pf_vsc]
     )
 
+    gfm_block.external_mapping.pop(VarPowerFlowReferenceType.P, None)
+    gfm_block.external_mapping.pop(VarPowerFlowReferenceType.Q, None)
     vsc_wrapper.add(gfm_block)
     vsc_wrapper.name = 'gfm_block'
     vsc_wrapper.unify_blocks()  # Merge init_eqs from child blocks
@@ -566,13 +565,13 @@ def VscGfmLossBuild(vfactory: VarFactory, name: str = "Grid-forming VSC loss RMS
     vsc_wrapper.external_mapping.pop(VarPowerFlowReferenceType.Q, None)
     vsc_wrapper.init_eqs[Pf_vsc] = P_poly_loss - Pt_vsc
 
-    vsc_wrapper.api_obj_mapping = {
+    vsc_wrapper.api_obj_mapping.update({
         ParamPowerFlowReferenceType.R1: internals["Rf"],
         ParamPowerFlowReferenceType.X1: internals["L"],
         ParamPowerFlowReferenceType.alpha1: a0,
         ParamPowerFlowReferenceType.alpha2: a1,
         ParamPowerFlowReferenceType.alpha3: a2,
-    }
+    })
 
     templ.block = vsc_wrapper
     templ.comment = 'VSC grid-forming loss RMS block'
@@ -604,11 +603,9 @@ def VscGfmBuild(vfactory: VarFactory, name: str = "Grid-forming VSC RMS template
     Qf = vfactory.add_var('Qf')
 
     event_dict = {
-        a0: vfactory.add_const(0.0),
-        a1: vfactory.add_const(0.0),
-        a2: vfactory.add_const(0.1),
         Qf: vfactory.add_const(0.0),
     }
+    parameters = {a0: vfactory.add_const(0.0), a1: vfactory.add_const(0.0), a2: vfactory.add_const(0.1)}
 
     gfm_block, i_d, i_q, P, Q, internals = build_gfm_converter_model(vfactory=vfactory, inputs=[Vm, Va, Pt_vsc, Qt_vsc])
 
@@ -624,6 +621,7 @@ def VscGfmBuild(vfactory: VarFactory, name: str = "Grid-forming VSC RMS template
         ],
         algebraic_vars=[Pt_vsc, Qt_vsc, Pf_vsc],
         event_dict=event_dict,
+        parameters=parameters,
         external_mapping={
             VarPowerFlowReferenceType.Vmt: inputs[0],
             VarPowerFlowReferenceType.Vat: inputs[1],
@@ -642,18 +640,22 @@ def VscGfmBuild(vfactory: VarFactory, name: str = "Grid-forming VSC RMS template
         out_vars=[Pt_vsc, Qt_vsc, Pf_vsc]
     )
 
+    gfm_block.external_mapping.pop(VarPowerFlowReferenceType.P, None)
+    gfm_block.external_mapping.pop(VarPowerFlowReferenceType.Q, None)
     vsc_wrapper.add(gfm_block)
     vsc_wrapper.name = 'gfm_block'
     vsc_wrapper.unify_blocks()  # Merge init_eqs from child blocks
+    vsc_wrapper.external_mapping.pop(VarPowerFlowReferenceType.P, None)
+    vsc_wrapper.external_mapping.pop(VarPowerFlowReferenceType.Q, None)
     vsc_wrapper.init_eqs[Pf_vsc] = -P_conv
 
-    vsc_wrapper.api_obj_mapping = {
+    vsc_wrapper.api_obj_mapping.update({
         ParamPowerFlowReferenceType.R1: internals["Rf"],
         ParamPowerFlowReferenceType.X1: internals["L"],
         ParamPowerFlowReferenceType.alpha1: a0,
         ParamPowerFlowReferenceType.alpha2: a1,
         ParamPowerFlowReferenceType.alpha3: a2,
-    }
+    })
 
     templ.block = vsc_wrapper
     templ.comment = 'VSC grid-forming RMS model'

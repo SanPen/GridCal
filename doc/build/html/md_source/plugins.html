@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🧩 Plugins &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>🧩 Plugins &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -123,16 +123,16 @@ The files are:</p>
 </ul>
 <p>The content of <code class="docutils literal notranslate"><span class="pre">plugins.plugin.json</span></code> is:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my_plugin1&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;plugin1.py&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;icon_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;icon1.svg&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;main_fcn&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
-<span class="w">                        </span><span class="nt">&quot;alias&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my function 1&quot;</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"my_plugin1"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"plugin1.py"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"icon_path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"icon1.svg"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"main_fcn"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main"</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">"alias"</span><span class="p">:</span><span class="w"> </span><span class="s2">"my function 1"</span>
 <span class="w">                    </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;investments_fcn&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;investments&quot;</span><span class="p">,</span>
-<span class="w">                        </span><span class="nt">&quot;alias&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;investments function 1&quot;</span>
+<span class="w">        </span><span class="nt">"investments_fcn"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"investments"</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">"alias"</span><span class="p">:</span><span class="w"> </span><span class="s2">"investments function 1"</span>
 <span class="w">                    </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 </pre></div>
@@ -151,11 +151,11 @@ The files are:</p>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">gui_instance</span><span class="p">:</span> <span class="n">MainGUI</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Initial plugin function</span>
 <span class="sd">    :param gui_instance: Instance of the VeraGrid GUI object</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello from plugin1!&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Hello from plugin1!"</span><span class="p">)</span>
 
     <span class="n">grid</span> <span class="o">=</span> <span class="n">gui_instance</span><span class="o">.</span><span class="n">circuit</span>
 
@@ -164,10 +164,10 @@ The files are:</p>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">investments</span><span class="p">(</span><span class="n">driver</span><span class="p">:</span> <span class="n">InvestmentsEvaluationDriver</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Implement the logic that launches for my custom investment</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Investments driver name: &quot;</span> <span class="o">+</span> <span class="n">driver</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Investments driver name: "</span> <span class="o">+</span> <span class="n">driver</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This is a very simple example. However, the function that you set as the starting

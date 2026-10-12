@@ -11,7 +11,7 @@ from enum import Enum
 
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
-from VeraGridEngine.enumerations import DeviceType
+from VeraGridEngine.enumerations import ParamPowerFlowReferenceType, DeviceType
 from VeraGridEngine.enumerations import VarPowerFlowReferenceType
 from VeraGridEngine.Templates.Rms.genrou_exc_gov_rms_template import configure_tgov1_block
 from VeraGridEngine.Templates.Rms.genrou_exc_gov_rms_template import get_tgov1_rms_template
@@ -107,7 +107,9 @@ def get_gencls_rms_template(
     te_var: Var = vfactory.add_var("Te", shared_reference="te_reference")
     vf_var: Var = vfactory.add_var("Vf")
     block: Block = Block(name=name)
-    fn_var: Var = _add_parameter(block, vfactory, "fn", 60.0)
+    fn_var: Var = vfactory.add_var("fn")
+    block.parameters[fn_var] = vfactory.add_const(60.0)
+    block.api_obj_mapping[ParamPowerFlowReferenceType.freq] = fn_var
     d_var: Var = _add_parameter(block, vfactory, "D", 0.0)
     m_var: Var = _add_parameter(block, vfactory, "M", 6.0)
     ra_var: Var = _add_parameter(block, vfactory, "Ra", 0.0)
@@ -211,11 +213,12 @@ def configure_gencls_block(
     parameter_name: str
     parameter_value: float
     for parameter_name, parameter_value in zip(names, values):
+        destination = block.parameters if parameter_name == "fn" else block.event_dict
         matches: list[Var] = list(
-            variable for variable in block.event_dict if variable.name == parameter_name
+            variable for variable in destination if variable.name == parameter_name
         )
         if len(matches) == 1:
-            block.event_dict[matches[0]] = vfactory.add_const(
+            destination[matches[0]] = vfactory.add_const(
                 value=parameter_value,
                 name=parameter_name,
             )

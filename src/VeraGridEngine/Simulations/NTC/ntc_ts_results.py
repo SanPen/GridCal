@@ -161,7 +161,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 ],
                 ResultTypes.VscResults: [
                     ResultTypes.VscPowerFromPositive,
-                    ResultTypes.VscPowerFromNegative,
                 ],
                 ResultTypes.FlowReports: [
                     ResultTypes.NetTransferCapacity,
@@ -611,6 +610,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 transmission_reliability_margin=self.transmission_reliability_margin,
                 contingency_rates=self.contingency_rates,
                 loading_threshold_pct=self.loading_threshold_to_report,
+                total_slack_mw=self.get_total_slack_mw(),
                 vsc_names=self.vsc_names,
                 vsc_power=self.vsc_Pf,
                 hvdc_names=self.hvdc_names,

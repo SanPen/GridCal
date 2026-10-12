@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
-from VeraGridEngine.enumerations import DeviceType, VarPowerFlowReferenceType
+from VeraGridEngine.enumerations import DeviceType, VarPowerFlowReferenceType, ParamPowerFlowReferenceType
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Utils.Symbolic import symbolic as sym
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
@@ -49,9 +49,12 @@ def get_genrow3_rms_template(var_factory: VarFactory, name = "Genrow rms templat
     vf = var_factory.add_var("vf")
     tm0 = var_factory.add_var("tm0")
 
-    templ.block.event_dict[R1] = var_factory.add_const(0.0)
-    templ.block.event_dict[X1] = var_factory.add_const(0.3 * 100.0 / 900.0)
-    templ.block.event_dict[freq] = var_factory.add_const(60.0)
+    templ.block.parameters[R1] = var_factory.add_const(0.0)
+    templ.block.api_obj_mapping[ParamPowerFlowReferenceType.R1] = R1
+    templ.block.parameters[X1] = var_factory.add_const(0.3 * 100.0 / 900.0)
+    templ.block.api_obj_mapping[ParamPowerFlowReferenceType.X1] = X1
+    templ.block.parameters[freq] = var_factory.add_const(60.0)
+    templ.block.api_obj_mapping[ParamPowerFlowReferenceType.freq] = freq
     templ.block.event_dict[M] = var_factory.add_const(12.35 * 9.0)
     templ.block.event_dict[D] = var_factory.add_const(10.0 * 9.0)
     templ.block.event_dict[omega_ref] = var_factory.add_const(1.0)

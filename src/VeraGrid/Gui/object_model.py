@@ -543,23 +543,41 @@ class ObjectsModel(WrappableTableModel):
         self.layoutAboutToBeChanged.emit()
         self.layoutChanged.emit()
 
+    def _is_property_editable(self, obj_idx: int, prop: GCProp) -> bool:
+        """Use instance rules when available, otherwise the property's metadata.
+
+        Auxiliary table objects such as BusConnectionObject do not inherit
+        EditableDevice and need not provide an instance editability hook.
+        """
+        is_property_editable = getattr(self.objects[obj_idx], "is_property_editable", None)
+        if is_property_editable is None:
+            return prop.editable
+        return is_property_editable(prop)
+
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
         """
         Get the display mode
         :param index:
         :return:
         """
+        if not index.isValid():
+            return QtCore.Qt.ItemFlag.NoItemFlags
+
         if self.transposed:
             attr_idx = index.row()
+            obj_idx = index.column()
         else:
             attr_idx = index.column()
+            obj_idx = index.row()
 
         value: Any = self.data_with_type(index=index)
         is_empty_bus_reference: bool = self._is_bus_property_type(
             tpe=self.attribute_types[attr_idx],
         ) and value is None
 
-        if self.editable and (self.attributes[attr_idx] not in self.non_editable_attributes or is_empty_bus_reference):
+        instance_editable = self._is_property_editable(obj_idx, self.property_list[attr_idx])
+        if self.editable and ((self.attributes[attr_idx] not in self.non_editable_attributes
+                               and instance_editable) or is_empty_bus_reference):
             flags: QtCore.Qt.ItemFlag = (
                     QtCore.Qt.ItemFlag.ItemIsEditable
                     | QtCore.Qt.ItemFlag.ItemIsEnabled
@@ -770,6 +788,12 @@ class ObjectsModel(WrappableTableModel):
                 else:
                     pass
 
+            elif role == QtCore.Qt.ItemDataRole.ForegroundRole:
+                obj_idx = index.column() if self.transposed else index.row()
+                prop = self.property_list[attr_idx]
+                if prop.editable and not self._is_property_editable(obj_idx, prop):
+                    return QtGui.QColor('gray')
+
             elif role == QtCore.Qt.ItemDataRole.DecorationRole:
 
                 delegate_objects: List[ALL_DEV_TYPES] | None = self._get_delegate_objects_single_type(attr_idx)
@@ -812,6 +836,9 @@ class ObjectsModel(WrappableTableModel):
         if len(self.objects) == 0:
             return True
 
+        if not index.isValid():
+            return False
+
         if self.transposed:
             obj_idx = index.column()
             attr_idx = index.row()
@@ -837,27 +864,33 @@ class ObjectsModel(WrappableTableModel):
                 current_value: Any = self.objects[obj_idx].get_value(prop=prop, t_idx=self.time_index_)
                 is_empty_bus_reference: bool = self._is_bus_property_type(tpe=prop.tpe) and current_value is None
 
+                if not self._is_property_editable(obj_idx, prop) and not is_empty_bus_reference:
+                    return False
+
                 if self.attributes[attr_idx] not in self.non_editable_attributes or is_empty_bus_reference:
 
-                    if isinstance(value, str) and value != "":
-                        # try casting to the type
-                        value2 = prop.tpe(value)
-                    else:
-                        value2 = value
-
                     try:
+                        if isinstance(value, str) and value != "":
+                            value2 = prop.tpe(value)
+                        else:
+                            value2 = value
                         self.objects[obj_idx].set_value(prop=prop, t_idx=self.time_index_, value=value2)
+                        first = self.index(0, obj_idx) if self.transposed else self.index(obj_idx, 0)
+                        last = (self.index(self.rowCount() - 1, obj_idx) if self.transposed
+                                else self.index(obj_idx, self.columnCount() - 1))
                         self.dataChanged.emit(
-                            index,
-                            index,
+                            first,
+                            last,
                             [
                                 QtCore.Qt.ItemDataRole.DisplayRole,
                                 QtCore.Qt.ItemDataRole.EditRole,
                                 QtCore.Qt.ItemDataRole.CheckStateRole,
+                                QtCore.Qt.ItemDataRole.ForegroundRole,
                             ],
                         )
-                    except ValueError as e:
+                    except (TypeError, ValueError) as e:
                         self.report_error(str(e))
+                        return False
                 else:
                     pass  # the column cannot be edited
             else:
@@ -954,8 +987,10 @@ class ObjectsModel(WrappableTableModel):
                 obj_idx = row
                 attr_idx = col
 
-            if self.attributes[attr_idx] not in self.non_editable_attributes:
-                setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
+            prop = self.property_list[attr_idx]
+            if (self.attributes[attr_idx] not in self.non_editable_attributes
+                    and self._is_property_editable(obj_idx, prop)):
+                self.setData(self.index(row, col), value, QtCore.Qt.ItemDataRole.EditRole)
             else:
                 pass  # the column cannot be edited
 

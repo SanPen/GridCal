@@ -8,9 +8,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+import pytest
 from fmpy import simulate_fmu
 from fmpy.validation import validate_fmu
 
+from VeraGridEngine.IO.fmu.compiler import fmu_compiler_available
 from tests.FMI.fmi_test_support import (
     export_test_fmi_three_external_discontinuity_cs_fmu,
     export_test_fmi_three_state_event_me_fmu,
@@ -18,6 +20,7 @@ from tests.FMI.fmi_test_support import (
 )
 
 
+@pytest.mark.skipif(not fmu_compiler_available(), reason="No usable FMU compiler is configured")
 def test_fmi_three_external_discontinuity_cs(tmp_path: Path) -> None:
     """Apply one exact external step and compare the CS state with its oracle.
 
@@ -41,6 +44,7 @@ def test_fmi_three_external_discontinuity_cs(tmp_path: Path) -> None:
     np.testing.assert_allclose(result["x"], expected, rtol=0.0, atol=2.0e-7)
 
 
+@pytest.mark.skipif(not fmu_compiler_available(), reason="No usable FMU compiler is configured")
 def test_fmi_three_time_event_me(tmp_path: Path) -> None:
     """Verify that ME announces and applies one ordinary time event.
 
@@ -64,6 +68,7 @@ def test_fmi_three_time_event_me(tmp_path: Path) -> None:
     assert abs(float(result["x"][-1]) - 0.02) <= 2.0e-7
 
 
+@pytest.mark.skipif(not fmu_compiler_available(), reason="No usable FMU compiler is configured")
 def test_fmi_three_state_zero_crossing_me(tmp_path: Path) -> None:
     """Verify importer localization of one ME event-indicator zero crossing.
 

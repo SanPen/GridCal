@@ -13,8 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from VeraGridEngine.IO.fmu.importer.errors import FmuArchiveError
-from VeraGridEngine.IO.fmu.importer.inspection import (
+from VeraGridEngine.IO.fmu.Elements.inspection import (
     FmuArchiveInspectionPolicy,
     FmuInspectionResult,
     inspect_fmu,
@@ -152,7 +151,7 @@ def test_path_traversal_is_rejected(tmp_path: Path) -> None:
     fmu_path: Path = tmp_path / "traversal.fmu"
     _write_fmu(fmu_path, (("modelDescription.xml", _fmi_two_xml()), ("../escape.dll", b"x")))
 
-    with pytest.raises(FmuArchiveError, match="not normalized"):
+    with pytest.raises(ValueError, match="not normalized"):
         inspect_fmu(fmu_path)
 
 
@@ -171,7 +170,7 @@ def test_non_portable_paths_are_rejected(tmp_path: Path, entry_name: str) -> Non
     fmu_path: Path = tmp_path / "non-portable.fmu"
     _write_fmu(fmu_path, (("modelDescription.xml", _fmi_two_xml()), (entry_name, b"x")))
 
-    with pytest.raises(FmuArchiveError, match="non-portable|reserved|not normalized"):
+    with pytest.raises(ValueError, match="non-portable|reserved|not normalized"):
         inspect_fmu(fmu_path)
 
 
@@ -193,7 +192,7 @@ def test_raw_backslash_path_is_rejected_before_host_normalization(tmp_path: Path
     assert archive_bytes.count(portable_name) == 2
     fmu_path.write_bytes(archive_bytes.replace(portable_name, raw_name))
 
-    with pytest.raises(FmuArchiveError, match="non-portable path separator"):
+    with pytest.raises(ValueError, match="non-portable path separator"):
         inspect_fmu(fmu_path)
 
 
@@ -214,7 +213,7 @@ def test_casefolded_duplicate_path_is_rejected(tmp_path: Path) -> None:
         ),
     )
 
-    with pytest.raises(FmuArchiveError, match="duplicate portable path"):
+    with pytest.raises(ValueError, match="duplicate portable path"):
         inspect_fmu(fmu_path)
 
 
@@ -235,7 +234,7 @@ def test_unicode_normalized_duplicate_path_is_rejected(tmp_path: Path) -> None:
         ),
     )
 
-    with pytest.raises(FmuArchiveError, match="duplicate portable path"):
+    with pytest.raises(ValueError, match="duplicate portable path"):
         inspect_fmu(fmu_path)
 
 
@@ -256,7 +255,7 @@ def test_archive_file_cannot_be_another_entry_ancestor(tmp_path: Path) -> None:
         ),
     )
 
-    with pytest.raises(FmuArchiveError, match="file ancestor"):
+    with pytest.raises(ValueError, match="file ancestor"):
         inspect_fmu(fmu_path)
 
 
@@ -275,7 +274,7 @@ def test_symbolic_link_zip_entry_is_rejected(tmp_path: Path) -> None:
         link_info.external_attr = (stat.S_IFLNK | 0o777) << 16
         archive.writestr(link_info, "../../outside")
 
-    with pytest.raises(FmuArchiveError, match="links are not accepted"):
+    with pytest.raises(ValueError, match="links are not accepted"):
         inspect_fmu(fmu_path)
 
 
@@ -294,7 +293,7 @@ def test_regular_file_metadata_with_directory_path_is_rejected(tmp_path: Path) -
         file_info.external_attr = (stat.S_IFREG | 0o644) << 16
         archive.writestr(file_info, b"")
 
-    with pytest.raises(FmuArchiveError, match="file metadata conflicts"):
+    with pytest.raises(ValueError, match="file metadata conflicts"):
         inspect_fmu(fmu_path)
 
 
@@ -312,7 +311,7 @@ def test_unsupported_compression_method_is_rejected(tmp_path: Path) -> None:
         compression=zipfile.ZIP_BZIP2,
     )
 
-    with pytest.raises(FmuArchiveError, match="Unsupported ZIP compression method"):
+    with pytest.raises(ValueError, match="Unsupported ZIP compression method"):
         inspect_fmu(fmu_path)
 
 
@@ -334,7 +333,7 @@ def test_corrupt_payload_crc_is_rejected(tmp_path: Path) -> None:
     assert archive_bytes.count(payload) == 1
     fmu_path.write_bytes(archive_bytes.replace(payload, b"changed-crc-value!"))
 
-    with pytest.raises(FmuArchiveError, match="Could not inspect FMU archive"):
+    with pytest.raises(ValueError, match="Could not inspect FMU archive"):
         inspect_fmu(fmu_path)
 
 
@@ -390,7 +389,7 @@ def test_compression_ratio_limit_is_rejected(tmp_path: Path) -> None:
     )
     policy: FmuArchiveInspectionPolicy = FmuArchiveInspectionPolicy(max_compression_ratio=5.0)
 
-    with pytest.raises(FmuArchiveError, match="compression-ratio limit"):
+    with pytest.raises(ValueError, match="compression-ratio limit"):
         inspect_fmu(fmu_path, policy=policy)
 
 
@@ -405,7 +404,7 @@ def test_entry_count_limit_is_rejected(tmp_path: Path) -> None:
     _write_fmu(fmu_path, (("modelDescription.xml", _fmi_two_xml()), ("resources/a", b"a")))
     policy: FmuArchiveInspectionPolicy = FmuArchiveInspectionPolicy(max_entries=1)
 
-    with pytest.raises(FmuArchiveError, match="policy maximum"):
+    with pytest.raises(ValueError, match="policy maximum"):
         inspect_fmu(fmu_path, policy=policy)
 
 
@@ -425,7 +424,7 @@ def test_declared_entry_bomb_is_rejected_during_bounded_preflight(tmp_path: Path
     struct.pack_into("<H", archive_bytes, eocd_index + 10, 5000)
     fmu_path.write_bytes(bytes(archive_bytes))
 
-    with pytest.raises(FmuArchiveError, match="declares 5000 entries"):
+    with pytest.raises(ValueError, match="declares 5000 entries"):
         inspect_fmu(fmu_path)
 
 
@@ -449,7 +448,7 @@ def test_underdeclared_entry_count_cannot_bypass_preflight_limit(tmp_path: Path)
     fmu_path.write_bytes(bytes(archive_bytes))
     policy: FmuArchiveInspectionPolicy = FmuArchiveInspectionPolicy(max_entries=1)
 
-    with pytest.raises(FmuArchiveError, match="more than 1 central-file headers"):
+    with pytest.raises(ValueError, match="more than 1 central-file headers"):
         inspect_fmu(fmu_path, policy=policy)
 
 
@@ -466,7 +465,7 @@ def test_central_directory_byte_limit_is_rejected_before_zip_open(tmp_path: Path
         max_central_directory_bytes=1
     )
 
-    with pytest.raises(FmuArchiveError, match="central directory exceeds"):
+    with pytest.raises(ValueError, match="central directory exceeds"):
         inspect_fmu(fmu_path, policy=policy)
 
 
@@ -537,7 +536,7 @@ def test_model_description_size_limit_is_rejected(tmp_path: Path) -> None:
         max_model_description_bytes=32
     )
 
-    with pytest.raises(FmuArchiveError, match="modelDescription.xml exceeds"):
+    with pytest.raises(ValueError, match="modelDescription.xml exceeds"):
         inspect_fmu(fmu_path, policy=policy)
 
 
@@ -551,7 +550,7 @@ def test_root_model_description_is_required(tmp_path: Path) -> None:
     fmu_path: Path = tmp_path / "nested.fmu"
     _write_fmu(fmu_path, (("nested/modelDescription.xml", _fmi_two_xml()),))
 
-    with pytest.raises(FmuArchiveError, match="root modelDescription.xml"):
+    with pytest.raises(ValueError, match="root modelDescription.xml"):
         inspect_fmu(fmu_path)
 
 

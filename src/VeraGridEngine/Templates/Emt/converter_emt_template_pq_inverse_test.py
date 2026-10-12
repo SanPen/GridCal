@@ -207,8 +207,6 @@ def get_emt_ideal_converter(
     event_dict = {
         P_loss: vf.add_const(0.0),
         P0: vf.add_const(0.0),
-        omega_base: vf.add_const(2.0 * np.pi * 50.0),
-        sbase: vf.add_const(1.0),
         control1: vf.add_const(float(_converter_control_type_code(None))),
         control2: vf.add_const(float(_converter_control_type_code(None))),
         control1_val: vf.add_const(0.0),
@@ -292,6 +290,10 @@ def get_emt_ideal_converter(
         algebraic_eqs=algebraic_eqs,
         algebraic_vars=algebraic_vars,
         event_dict=event_dict,
+        parameters={
+            omega_base: vf.add_const(2.0 * np.pi * 50.0),
+            sbase: vf.add_const(1.0),
+        },
         init_eqs=init_eqs,
         diff_init_eqs={d_theta: omega_base},
         in_vars=inputs,
@@ -299,8 +301,6 @@ def get_emt_ideal_converter(
     )
     converter_block.api_obj_mapping = {
         ParamPowerFlowReferenceType.Sbase: sbase,
-        ParamPowerFlowReferenceType.converter_loss_power_0: P_loss,
-        # ParamPowerFlowReferenceType.P0: P0,
         ParamPowerFlowReferenceType.omega_base: omega_base,
         ParamPowerFlowReferenceType.converter_control_mode_1: control1,
         ParamPowerFlowReferenceType.converter_control_mode_2: control2,
@@ -469,13 +469,11 @@ def _build_pseudo_emt_converter_vsc_block(
         ],
         algebraic_vars=[P_ref, Q_ref, Vdc_ref, i_dc, P, Q, i_mag, P_loss, i_dc_conv, regulate_vdc_mode, regulate_q_mode, regulate_active_mode],
         event_dict={
-            sbase: vf.add_const(1.0),
-            P0_sched: vf.add_const(0.0),
             control1: vf.add_const(float(_converter_control_type_code(ConverterControlType.Vm_dc))),
             control2: vf.add_const(float(_converter_control_type_code(ConverterControlType.Qac))),
             control1_val: vf.add_const(1.0),
             control2_val: vf.add_const(0.0),
-            omega_base: vf.add_const(2.0 * np.pi * 50.0),
+            P0_sched: vf.add_const(0.0),
             phi_v: vf.add_const(0.0),
             Vpk: vf.add_const(np.sqrt(2.0)),
             Vdc_nom: vf.add_const(1.0),
@@ -494,12 +492,16 @@ def _build_pseudo_emt_converter_vsc_block(
             q_ki: vf.add_const(25.0),
             i_max: vf.add_const(max(1.2, 1e-6)),
             m_max: vf.add_const(max(0.95, 1e-6)),
-            P_loss0: vf.add_const(0.0),
             P_loss_i1: vf.add_const(0.01),
             P_loss_i2: vf.add_const(0.01),
             tau_meas: vf.add_const(max(0.01, 1e-6)),
             aw_gain: vf.add_const(1.0),
             vdc_floor: vf.add_const(max(0.05, 1e-6)),
+        },
+        parameters={
+            sbase: vf.add_const(1.0),
+            omega_base: vf.add_const(2.0 * np.pi * 50.0),
+            P_loss0: vf.add_const(0.0),
         },
         init_eqs={
             v_dc: v_dc0,
@@ -532,8 +534,7 @@ def _build_pseudo_emt_converter_vsc_block(
     )
     block.api_obj_mapping = {
         ParamPowerFlowReferenceType.Sbase: sbase,
-        ParamPowerFlowReferenceType.P0: P0_sched,
-        ParamPowerFlowReferenceType.converter_loss_power_0: P_loss0,
+        ParamPowerFlowReferenceType.alpha1: P_loss0,
         ParamPowerFlowReferenceType.omega_base: omega_base,
         ParamPowerFlowReferenceType.converter_control_mode_1: control1,
         ParamPowerFlowReferenceType.converter_control_mode_2: control2,
@@ -1045,6 +1046,4 @@ def get_full_pseudo_emt_converter(
         VarPowerFlowReferenceType.phi_v: vsc_block.out_vars[9],
         VarPowerFlowReferenceType.Vpk: vsc_block.out_vars[10],
     }
-    templ.block.api_obj_mapping = dict(vsc_block.api_obj_mapping)
-
     return templ

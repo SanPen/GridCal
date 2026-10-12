@@ -28,7 +28,7 @@ from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
 from VeraGridEngine.IO.file_open import FileOpen
 from VeraGridEngine.basic_structures import Logger
-from VeraGridEngine.enumerations import SimulationTypes
+from VeraGridEngine.enumerations import EngineType, MIPFramework, MIPSolvers, SimulationTypes, SolverType
 from tests.GUI.conftest import ModalDialogAutoCloser
 
 
@@ -208,6 +208,16 @@ def run_fluid_turbine_gui_flow(working_file_name: str, message_queue: Any) -> No
         assert reopened_circuit.turbines[-1].efficiency == 10.0
 
         message_queue.put("running OPF")
+        # Exercise the native hydro formulation independently of saved GUI preferences.
+        for combo, value in (
+            (gui.ui.engineComboBox, EngineType.VeraGrid),
+            (gui.ui.mip_framework_comboBox, MIPFramework.PuLP),
+            (gui.ui.mip_solver_comboBox, MIPSolvers.HIGHS),
+            (gui.ui.lpf_solver_comboBox, SolverType.LINEAR_OPF),
+        ):
+            index = combo.findData(value)
+            assert index >= 0, f"Required OPF option unavailable: {value}"
+            combo.setCurrentIndex(index)
         gui.ui.actionOPF.trigger()
         wait_for_simulation(gui=gui, app=app, simulation_type=SimulationTypes.OPF_run, timeout_s=180.0)
         message_queue.put("OPF finished")
@@ -216,7 +226,12 @@ def run_fluid_turbine_gui_flow(working_file_name: str, message_queue: Any) -> No
         opf_results: Any
         opf_driver, opf_results = gui.session.optimal_power_flow
         assert opf_driver is not None
-        assert opf_results is not None
+        opf_thread = gui.session.threads.get(SimulationTypes.OPF_run)
+        assert opf_results is not None, (
+            f"engine={opf_driver.engine}, solver={opf_driver.options.solver}, "
+            f"worker_failed={opf_thread.has_failed() if opf_thread is not None else None}\n"
+            f"{opf_thread.logger if opf_thread is not None else opf_driver.logger}"
+        )
     except Exception:
         message_queue.put(traceback.format_exc())
         raise

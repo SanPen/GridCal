@@ -105,6 +105,17 @@ class PlotDialogue(QtWidgets.QMainWindow):
         self.ui.actionAddPlot.triggered.connect(self._add_plot_from_toolbar)
         self.ui.plotTabs.tabCloseRequested.connect(self._close_plot_tab)
 
+    def open_from_context_menu(self) -> None:
+        """Present the retained window after the native context menu unwinds."""
+        QtCore.QTimer.singleShot(0, self, self._show_and_activate)
+
+    def _show_and_activate(self) -> None:
+        """Bring the plot forward unless it was closed before delivery."""
+        if not self._closed:
+            self.show()
+            self.raise_()
+            self.activateWindow()
+
     def done(self, result: int) -> None:
         """Release every tab buffer before Qt tears down the parent-child widgets.
 

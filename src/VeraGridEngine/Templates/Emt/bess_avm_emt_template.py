@@ -519,8 +519,4 @@ def get_bess_avm_grid_following_emt_template(
         VarPowerFlowReferenceType.Vpk: vsc_block.out_vars[10],
     }
 
-    # The static/API mapping remains exactly the one expected by the imported
-    # VSC block, so existing converter initialization code can keep working.
-    templ.block.api_obj_mapping = dict(vsc_block.api_obj_mapping)
-
     return templ

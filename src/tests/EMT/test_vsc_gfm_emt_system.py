@@ -175,6 +175,7 @@ def _find_name_in_block(name: str, block: Block) -> Any:
         block.algebraic_vars
         + block.state_vars
         + list(block.event_dict.keys())
+        + list(block.parameters.keys())
         + block.diff_vars
     ):
         if name == var.name:
@@ -325,8 +326,8 @@ def _build_dc_fed_gfm_island() -> tuple:
     R_s_var = _find_name_in_block("R_s", vsc_template.block)
     X_s_var = _find_name_in_block("X_s", vsc_template.block)
     assert R_s_var is not None and X_s_var is not None
-    vsc_template.block.event_dict[R_s_var] = grid.var_factory.add_const(1.0e-4)
-    vsc_template.block.event_dict[X_s_var] = grid.var_factory.add_const(1.0e-4)
+    vsc_template.block.children[0].parameters[R_s_var] = grid.var_factory.add_const(1.0e-4)
+    vsc_template.block.children[0].parameters[X_s_var] = grid.var_factory.add_const(1.0e-4)
     vsc_mdl = vsc_template.block
     line_mdl = get_bergeron_line_emt_template(
         vf=grid.var_factory,
@@ -365,12 +366,19 @@ def _build_dc_fed_gfm_island() -> tuple:
     # because the events overwrite the entry at the event time.
     def _override_shunt_r(template: Any, event_suffix: str,
                           G_total_pu: float) -> None:
-        G_per_phase_pu: float = G_total_pu / 3.0
-        R_pu: float = 1.0 / G_per_phase_pu
+        # EMT phase currents use the system three-phase current base.
+        # A phase resistor therefore sees the total per-unit conductance.
+        R_pu: float = 1.0 / G_total_pu
         for phase_label in ("A", "B", "C"):
             R_var = _find_name_in_block(f"R_{phase_label}_{event_suffix}", template)
             assert R_var is not None
-            template.event_dict[R_var] = grid.var_factory.add_const(R_pu)
+            # The resistance is owned by a child block. Replacing only the
+            # wrapper entry leaves the compiled runtime equation at 1e9 pu.
+            owners = [block for block in template.get_all_blocks()
+                      if any(var.uid == R_var.uid for var in block.event_dict)]
+            assert owners, f"No runtime owner for {R_var.name}"
+            for owner in owners:
+                owner.event_dict[R_var] = grid.var_factory.add_const(R_pu)
 
     _override_shunt_r(load_mdl, "Shunt_R_3ph",
                       G_total_pu=G_total_initial / grid.Sbase)
@@ -456,6 +464,29 @@ def test_vsc_gfm_emt_dc_fed_island_initializes_consistently() -> None:
     assert Pe_init > 0.1, (
         f"Steady-state Pe should be positive (converter generating into AC load), got {Pe_init:.6f}"
     )
+    expected_pe: float = float(-np.real(pf_results.St_vsc[0]) / grid.Sbase)
+    assert abs(Pe_init - expected_pe) < 1.0e-6, (
+        f"VSC Pe must match total AC PF export: {Pe_init:.6f} vs {expected_pe:.6f}"
+    )
+    p_ref_var = _find_name_in_block("P_ref", vsc.emt_model)
+    assert p_ref_var is not None
+    p_ref_idx = problem.uid2idx_event_params[p_ref_var.uid]
+    assert abs(float(problem.event_params_values[p_ref_idx]) - Pe_init) < 1.0e-6
+    # PF projection must give equal and opposite converter/filter current on
+    # the shared AC bus, using the same three-phase system current base.
+    i_a_var = _find_name_in_block("i_A", vsc.emt_model)
+    filter_if_a_var = _find_name_in_block("if_A_VSC_Filter", grid.lines[0].emt_model)
+    assert i_a_var is not None and filter_if_a_var is not None
+    assert abs(float(x0[problem.get_var_idx(i_a_var)] +
+                     x0[problem.get_var_idx(filter_if_a_var)])) < 1.0e-6
+
+    # Bergeron PF history sources must survive runtime-vector construction.
+    history = problem.history_models[0]
+    history_values = np.asarray([
+        problem.event_params_values[problem.uid2idx_event_params[var.uid]]
+        for var in (*history.Ih_f, *history.Ih_t)
+    ])
+    assert np.any(np.abs(history_values) > 1.0e-6)
 
 
 def test_vsc_gfm_emt_dc_fed_island_event_registration_and_update_path() -> None:
@@ -583,10 +614,9 @@ def test_vsc_gfm_emt_dc_fed_island_full_simulate_load_step_response() -> None:
 
     events_group: EmtEventsGroup = EmtEventsGroup(name="gfm_load_step_sim")
     grid.add_emt_events_group(events_group)
-    # The shunt-R template initializes ``R_phase`` to about 6 ohm at this
-    # operating point, so a 3 ohm post-event value cuts ``R`` in half and
-    # this means double conductance, raising the converter active power.
-    R_step_value: float = 3.0
+    # The system-base shunt resistance starts near 2 pu; halving it to
+    # 1 pu doubles conductance and raises converter active power.
+    R_step_value: float = 1.0
     event_time: float = 0.04
     for phase_R in (R_A, R_B, R_C):
         grid.add_emt_event(
@@ -656,6 +686,15 @@ def test_vsc_gfm_emt_dc_fed_island_full_simulate_load_step_response() -> None:
         f"omega should stay close to 1.0 pu; got range [{omega_min:.4f}, {omega_max:.4f}]"
     )
 
+    steady_window = (t >= 0.005) & (t <= event_time - 0.005)
+    pe_steady = y[steady_window, Pe_idx]
+    omega_steady = y[steady_window, omega_idx]
+    assert abs(float(np.mean(pe_steady)) - float(y[0, Pe_idx])) < 0.05, (
+        "VSC power must stay near the PF operating point before the load step"
+    )
+    assert float(np.max(np.abs(omega_steady - 1.0))) < 0.005, (
+        "GFM frequency must stay near nominal before the load step"
+    )
     pre_window = (t > event_time - 0.01) & (t < event_time)
     post_window = t > event_time + 0.04
     pe_pre: float = float(np.mean(y[pre_window, Pe_idx]))

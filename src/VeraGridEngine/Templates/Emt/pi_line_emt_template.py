@@ -25,6 +25,8 @@ class PiLineEmtTemplate(TemplateDefinition):
                 TemplateProp(name="phB", units="", descr="Whether phase B is active.", tpe=bool, value=True),
                 TemplateProp(name="phC", units="", descr="Whether phase C is active.", tpe=bool, value=True),
                 TemplateProp(name="name", units="", descr="Symbolic block name.", tpe=str, value="Pi"),
+                TemplateProp(name="G_damp", units="pu", descr="Terminal numerical damping conductance.",
+                             tpe=float, value=1.0e-5),
             ]
         )
 
@@ -34,9 +36,10 @@ class PiLineEmtTemplate(TemplateDefinition):
         phB: bool = self.get_value("phB")
         phC: bool = self.get_value("phC")
         name: str = self.get_value("name")
+        numerical_damping_conductance: float = self.get_value("G_damp")
 
         return get_pi_line_emt_template(
-            self.vf, phN, phA, phB, phC, name,
+            self.vf, phN, phA, phB, phC, name, numerical_damping_conductance,
         )
 
 def get_pi_line_emt_template(vf: VarFactory,
@@ -50,7 +53,7 @@ def get_pi_line_emt_template(vf: VarFactory,
     Build the EMT pi-line template with explicit API-mapped parameters.
 
     The line connection defines which phases are physically present, while the
-    EMT initializer later injects the electrical ``R``, ``Linv`` and ``C``
+    EMT initializer later injects the electrical ``R``, ``Linv``, ``C`` and physical ``G``
     values through the block ``api_obj_mapping`` using the full 4x4 NABC enum
     contract.
 
@@ -157,9 +160,16 @@ def get_pi_line_emt_template(vf: VarFactory,
     ])
 
     # -----------------------------
-    # Create the symbolic model block first.
-    # The wrapped editor contract keeps the equations in one child block, but the
-    # same symbolic variables must also be visible from the root wrapper later.
+    g_enums: list[list[ParamPowerFlowReferenceType]] = list([
+        list([ParamPowerFlowReferenceType.Gnn, ParamPowerFlowReferenceType.Gna, ParamPowerFlowReferenceType.Gnb, ParamPowerFlowReferenceType.Gnc]),
+        list([ParamPowerFlowReferenceType.Gan, ParamPowerFlowReferenceType.Gaa, ParamPowerFlowReferenceType.Gab, ParamPowerFlowReferenceType.Gac]),
+        list([ParamPowerFlowReferenceType.Gbn, ParamPowerFlowReferenceType.Gba, ParamPowerFlowReferenceType.Gbb, ParamPowerFlowReferenceType.Gbc]),
+        list([ParamPowerFlowReferenceType.Gcn, ParamPowerFlowReferenceType.Gca, ParamPowerFlowReferenceType.Gcb, ParamPowerFlowReferenceType.Gcc]),
+    ])
+
+    # Create the symbolic model block first. The child owns both its equations
+    # and static-parameter contract; problem assembly discovers it recursively,
+    # so the wrapper must not duplicate those declarations.
     # -----------------------------
     block: Block = Block()
 
@@ -183,6 +193,10 @@ def get_pi_line_emt_template(vf: VarFactory,
             block.api_obj_mapping[c_enums[i][j]] = var_c
             block.parameters[var_c] = vf.add_const(0.0)
 
+            var_g: Var = vf.add_var(f"G{phases[i]}{phases[j]}")
+            block.api_obj_mapping[g_enums[i][j]] = var_g
+            block.parameters[var_g] = vf.add_const(0.0)
+
     # -----------------------------
     # Reduce the full mapped matrices using the physical line phase mask.
     # This cleanly separates topology from parameters: line.ys chooses the
@@ -192,6 +206,7 @@ def get_pi_line_emt_template(vf: VarFactory,
     r_full: list[list[Var]] = list()
     linv_full: list[list[Var]] = list()
     c_full: list[list[Var]] = list()
+    g_full: np.ndarray = np.empty((4, 4), dtype=object)
 
     for i in range(4):
         r_row: list[Var] = list()
@@ -202,6 +217,7 @@ def get_pi_line_emt_template(vf: VarFactory,
             r_row.append(api_mapping[r_enums[i][j]])
             linv_row.append(api_mapping[linv_enums[i][j]])
             c_row.append(api_mapping[c_enums[i][j]])
+            g_full[i, j] = api_mapping[g_enums[i][j]]
 
         r_full.append(r_row)
         linv_full.append(linv_row)
@@ -210,6 +226,7 @@ def get_pi_line_emt_template(vf: VarFactory,
     R_red = list(list(r_full[i][j] for j in idx_global) for i in idx_global)
     Linv_red = list(list(linv_full[i][j] for j in idx_global) for i in idx_global)
     C_red = list(list(c_full[i][j] for j in idx_global) for i in idx_global)
+    g_reduced: np.ndarray = g_full[np.ix_(idx_global, idx_global)]
 
     # -----------------------------
     # Create ONLY active terminal voltage input vars
@@ -314,10 +331,20 @@ def get_pi_line_emt_template(vf: VarFactory,
             rhs_q = rhs_q + C_ab * vt_vars[b]
         alg_eqs.append(q_t[a] - rhs_q)
 
-    G_damp = float(numerical_damping_conductance)
+    G_damp = vf.add_var("G_damp")
+    block.parameters[G_damp] = vf.add_const(float(numerical_damping_conductance))
+    # Reuse the full physical half-shunt expressions in terminal and initial equations.
+    # Coupling and neutral entries follow the same active-coordinate reduction as C.
+    physical_current_f: np.ndarray = np.empty(m, dtype=object)
+    physical_current_t: np.ndarray = np.empty(m, dtype=object)
     for a in range(m):
-        alg_eqs.append(if_act[a] - (i_ser[a] + i_cap_f[a] + G_damp * vf_vars[a]))
-        alg_eqs.append(it_act[a] - (-i_ser[a] + i_cap_t[a] + G_damp * vt_vars[a]))
+        physical_current_f[a] = c0
+        physical_current_t[a] = c0
+        for b in range(m):
+            physical_current_f[a] += g_reduced[a, b] * vf_vars[b]
+            physical_current_t[a] += g_reduced[a, b] * vt_vars[b]
+        alg_eqs.append(if_act[a] - (i_ser[a] + i_cap_f[a] + physical_current_f[a] + G_damp * vf_vars[a]))
+        alg_eqs.append(it_act[a] - (-i_ser[a] + i_cap_t[a] + physical_current_t[a] + G_damp * vt_vars[a]))
 
     block.algebraic_eqs = alg_eqs
     block.out_vars = if_act + it_act
@@ -368,8 +395,8 @@ def get_pi_line_emt_template(vf: VarFactory,
         init_eqs[q_t[a]] = rhs_t
 
     for a in range(m):
-        i_ser_from = if_act[a] - i_cap_f[a] - G_damp * vf_vars[a]
-        i_ser_to = -it_act[a] + i_cap_t[a] + G_damp * vt_vars[a]
+        i_ser_from = if_act[a] - i_cap_f[a] - physical_current_f[a] - G_damp * vf_vars[a]
+        i_ser_to = -it_act[a] + i_cap_t[a] + physical_current_t[a] + G_damp * vt_vars[a]
         init_eqs[i_ser[a]] = 0.5 * (i_ser_from + i_ser_to)
 
     block.init_eqs = init_eqs
@@ -408,8 +435,6 @@ def get_pi_line_emt_template(vf: VarFactory,
 
     templ.block.children.append(block)
     templ.block.external_mapping = block.external_mapping
-    templ.block.api_obj_mapping = block.api_obj_mapping
-    templ.block.parameters = block.parameters
     templ.block.in_vars = block.in_vars
     templ.block.out_vars = block.out_vars
 

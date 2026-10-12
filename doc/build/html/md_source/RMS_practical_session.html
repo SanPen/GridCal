@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dynamic tool practical session: Creating an RMS model using VeraGrid &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>RMS practical session: building and simulating a dynamic model &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,12 +15,14 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="🔬 EMT simulations" href="emt_simulations.html" />
+    <link rel="prev" title="⏱️ RMS simulations" href="rms_simulations.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,7 +44,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">💽 Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="user_interface.html">📊 User interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="veragrid_scripting_guide.html">📑 VeraGrid scripting guide</a></li>
@@ -70,7 +72,32 @@
 <li class="toctree-l1"><a class="reference internal" href="nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="dynamic_simulations.html">🧲 Dynamic simulations</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dynamic_simulations.html#dynamic-simulation-theory">1. Dynamic simulation theory</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dynamic_theory.html">Dynamic simulation theory</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="rms_simulations.html">⏱️ RMS simulations</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">RMS practical session: building and simulating a dynamic model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rms_simulations.html#when-to-use-rms">When to use RMS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rms_simulations.html#rms-workflow">RMS workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rms_simulations.html#settings-available-in-the-gui">Settings available in the GUI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rms_simulations.html#events">Events</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rms_simulations.html#gui-example">GUI example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rms_simulations.html#results-in-the-gui">Results in the GUI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rms_simulations.html#results-from-the-api">Results from the API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rms_simulations.html#api-example">API example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rms_simulations.html#practical-checks">Practical checks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="emt_simulations.html">🔬 EMT simulations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dynamic_simulations.html#small-signal-stability">Small-signal stability</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-editor-and-model-construction">2. Dynamic editor and model construction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-model-library">3. Dynamic model library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#recommended-reading-paths">Recommended reading paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#end-to-end-workflow">End-to-end workflow</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">📜 License</a></li>
@@ -92,7 +119,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Dynamic tool practical session: Creating an RMS model using VeraGrid</li>
+          <li class="breadcrumb-item"><a href="dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+          <li class="breadcrumb-item"><a href="rms_simulations.html">⏱️ RMS simulations</a></li>
+      <li class="breadcrumb-item active">RMS practical session: building and simulating a dynamic model</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/md_source/RMS_practical_session.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -102,55 +131,18 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section class="tex2jax_ignore mathjax_ignore" id="dynamic-tool-practical-session-creating-an-rms-model-using-veragrid">
-<h1>Dynamic tool practical session: Creating an RMS model using VeraGrid<a class="headerlink" href="#dynamic-tool-practical-session-creating-an-rms-model-using-veragrid" title="Link to this heading"></a></h1>
-<p><strong>Date:</strong> 28-05-2026</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="rms-practical-session-building-and-simulating-a-dynamic-model">
+<h1>RMS practical session: building and simulating a dynamic model<a class="headerlink" href="#rms-practical-session-building-and-simulating-a-dynamic-model" title="Link to this heading"></a></h1>
+<p><strong>Updated:</strong> 06-10-2026</p>
 <section id="guide-contents">
 <h2>Guide contents<a class="headerlink" href="#guide-contents" title="Link to this heading"></a></h2>
-<ol class="arabic simple">
-<li><p><a class="reference internal" href="#1-veragrid"><span class="xref myst">VeraGrid</span></a></p>
-<ol class="arabic simple">
-<li><p><a class="reference internal" href="#11-veragrid-dynamic-tool"><span class="xref myst">VeraGrid dynamic tool</span></a></p></li>
-</ol>
-</li>
-<li><p><a class="reference internal" href="#2-objectives-of-the-session"><span class="xref myst">Objectives of the session</span></a></p></li>
-<li><p><a class="reference internal" href="#3-system-model"><span class="xref myst">System model</span></a></p>
-<ol class="arabic simple">
-<li><p><a class="reference internal" href="#31-modelling-conventions-and-per-unit-bases"><span class="xref myst">Modelling conventions and per-unit bases</span></a></p></li>
-</ol>
-</li>
-<li><p><a class="reference internal" href="#4-device-parameters"><span class="xref myst">Device parameters</span></a></p>
-<ol class="arabic simple">
-<li><p><a class="reference internal" href="#41-static-network-creation-and-simulation-settings"><span class="xref myst">Static network creation and simulation settings</span></a></p></li>
-<li><p><a class="reference internal" href="#42-static-model-assignment"><span class="xref myst">Static model assignment</span></a></p></li>
-<li><p><a class="reference internal" href="#43-dynamic-model-assignment"><span class="xref myst">Dynamic model assignment</span></a></p></li>
-<li><p><a class="reference internal" href="#44-rms-events"><span class="xref myst">RMS events</span></a></p></li>
-</ol>
-</li>
-<li><p><a class="reference internal" href="#5-rms-model-construction"><span class="xref myst">RMS model construction</span></a></p>
-<ol class="arabic simple">
-<li><p><a class="reference internal" href="#51-static-model-construction"><span class="xref myst">Static model construction</span></a></p></li>
-<li><p><a class="reference internal" href="#52-dynamic-model-construction"><span class="xref myst">Dynamic model construction</span></a></p></li>
-<li><p><a class="reference internal" href="#53-events"><span class="xref myst">Events</span></a></p></li>
-</ol>
-</li>
-<li><p><a class="reference internal" href="#6-simulation-and-post-processing"><span class="xref myst">Simulation and post-processing</span></a></p>
-<ol class="arabic simple">
-<li><p><a class="reference internal" href="#61-simulation"><span class="xref myst">Simulation</span></a></p></li>
-<li><p><a class="reference internal" href="#62-dynamic-results"><span class="xref myst">Dynamic results</span></a></p></li>
-</ol>
-</li>
-<li><p><a class="reference internal" href="#7-suggestions"><span class="xref myst">Suggestions</span></a></p></li>
-</ol>
 </section>
-<hr class="docutils" />
-<section id="veragrid">
-<h2>1. VeraGrid<a class="headerlink" href="#veragrid" title="Link to this heading"></a></h2>
-<p>VeraGrid is an open-source power-system modelling and simulation platform used to build, store, analyse and visualise electrical networks. It combines a graphical user interface with a calculation engine, so the same network model can be used for steady-state studies, grid validation and dynamic studies.</p>
-<p>In this practical session, VeraGrid is used as the environment where one can create the network, assign device parameters and launch the RMS simulation.</p>
-<section id="veragrid-dynamic-tool">
-<h3>1.1. VeraGrid dynamic tool<a class="headerlink" href="#veragrid-dynamic-tool" title="Link to this heading"></a></h3>
-<p>The VeraGrid dynamic tool is used to study the time-domain response of the network after changes such as faults, set-point changes or controller actions. In this session, it is used in RMS mode, where each device is represented through dynamic blocks, variables, parameters and equations.</p>
+<section id="about-this-session">
+<h2>1. About this session<a class="headerlink" href="#about-this-session" title="Link to this heading"></a></h2>
+<p>This exercise uses the VeraGrid GUI to build a static network, create and save RMS device models, define event scenarios, prepare plots, run the RMS driver, and inspect the results. Read <a class="reference internal" href="rms_simulations.html"><span class="std std-doc">RMS simulations</span></a> for the formulation and settings, and <a class="reference internal" href="dynamic_editor.html"><span class="std std-doc">Dynamic workspace and editors</span></a> for a complete description of every workspace page.</p>
+<section id="rms-scope">
+<h3>1.1. RMS scope<a class="headerlink" href="#rms-scope" title="Link to this heading"></a></h3>
+<p>RMS represents the electrical network with fundamental-frequency phasors and retains the dynamic states needed for electromechanical and controller studies. It is appropriate for this load-change exercise because instantaneous phase waveforms are not required.</p>
 </section>
 </section>
 <section id="objectives-of-the-session">
@@ -168,7 +160,7 @@
 <section id="system-model">
 <h2>3. System model<a class="headerlink" href="#system-model" title="Link to this heading"></a></h2>
 <p>The system represents a two-bus system with a generator connected to a load by means of a line.</p>
-<p><img alt="Two-bus system model" src="../_images/system_model.png" /></p>
+<p><img alt="Two-bus system model" src="../_images/static_grid_gen_load.png" /></p>
 <section id="modelling-conventions-and-per-unit-bases">
 <h3>3.1. Modelling conventions and per-unit bases<a class="headerlink" href="#modelling-conventions-and-per-unit-bases" title="Link to this heading"></a></h3>
 <table class="docutils align-default">
@@ -196,7 +188,7 @@
 </section>
 </section>
 <section id="device-parameters">
-<h2>4. Device parameters<a class="headerlink" href="#device-parameters" title="Link to this heading"></a></h2>
+<span id="rms-device-parameters"></span><h2>4. Device parameters<a class="headerlink" href="#device-parameters" title="Link to this heading"></a></h2>
 <section id="static-network-creation-and-simulation-settings">
 <h3>4.1. Static network creation and simulation settings<a class="headerlink" href="#static-network-creation-and-simulation-settings" title="Link to this heading"></a></h3>
 <section id="grid-and-bus-data">
@@ -218,24 +210,24 @@
 <td class="text-right"><p>50 Hz</p></td>
 </tr>
 <tr class="row-even"><td><p>Bus 0</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">Is_dc</span></code></p></td>
-<td class="text-right"><p>False</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">is_dc</span></code></p></td>
+<td class="text-right"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p>Bus 0</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">Is_slack</span></code></p></td>
-<td class="text-right"><p>True</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">is_slack</span></code></p></td>
+<td class="text-right"><p><code class="docutils literal notranslate"><span class="pre">True</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p>Bus 0</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">Vnom</span></code></p></td>
 <td class="text-right"><p>10 kV</p></td>
 </tr>
 <tr class="row-odd"><td><p>Bus 1</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">Is_dc</span></code></p></td>
-<td class="text-right"><p>False</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">is_dc</span></code></p></td>
+<td class="text-right"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p>Bus 1</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">Is_slack</span></code></p></td>
-<td class="text-right"><p>False</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">is_slack</span></code></p></td>
+<td class="text-right"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p>Bus 1</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">Vnom</span></code></p></td>
@@ -245,7 +237,7 @@
 </table>
 </section>
 <section id="simulation-settings">
-<h4>4.1.2. Simulation settings<a class="headerlink" href="#simulation-settings" title="Link to this heading"></a></h4>
+<span id="rms-simulation-settings"></span><h4>4.1.2. Simulation settings<a class="headerlink" href="#simulation-settings" title="Link to this heading"></a></h4>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Parameter</p></th>
@@ -359,7 +351,7 @@
 </section>
 </section>
 <section id="dynamic-model-assignment">
-<h3>4.3. Dynamic model assignment<a class="headerlink" href="#dynamic-model-assignment" title="Link to this heading"></a></h3>
+<span id="rms-dynamic-model-assignment"></span><h3>4.3. Dynamic model assignment<a class="headerlink" href="#dynamic-model-assignment" title="Link to this heading"></a></h3>
 <section id="generator-dynamic-model-complete-generator-rms-template">
 <h4>4.3.1. Generator dynamic model: complete generator RMS template<a class="headerlink" href="#generator-dynamic-model-complete-generator-rms-template" title="Link to this heading"></a></h4>
 <table class="docutils align-default">
@@ -453,7 +445,7 @@
 </tr>
 <tr class="row-even"><td><p>Generator 1</p></td>
 <td><p>Stabilizer</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">VPssMinPu</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">VPssMaxPu</span></code></p></td>
 <td class="text-right"><p>1</p></td>
 </tr>
 <tr class="row-odd"><td><p>Generator 1</p></td>
@@ -674,7 +666,7 @@
 </section>
 </section>
 <section id="rms-events">
-<h3>4.4. RMS events<a class="headerlink" href="#rms-events" title="Link to this heading"></a></h3>
+<span id="rms-events-section"></span><h3>4.4. RMS events<a class="headerlink" href="#rms-events" title="Link to this heading"></a></h3>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Event</p></th>
@@ -709,82 +701,87 @@
 <section id="static-model-construction">
 <h3>5.1. Static model construction<a class="headerlink" href="#static-model-construction" title="Link to this heading"></a></h3>
 <p>This is the built model:</p>
-<p><img alt="Static RMS model built in VeraGrid" src="../_images/static_model_built.png" /></p>
+<p><img alt="Static RMS model built in VeraGrid" src="../_images/static_grid_gen_load.png" /></p>
 <ol class="arabic simple">
 <li><p>Buses are added by dragging a bus from the Library, located in the left vertical bar, to the centre.</p></li>
 <li><p>Injections, such as generators and loads, are added by right-clicking on the bus.</p></li>
 </ol>
-<p><img alt="Add injection menu" src="../_images/add_injection_menu.png" /></p>
+<p><img alt="Add injection menu" src="../_images/add_devices_static.png" /></p>
 <ol class="arabic simple" start="3">
 <li><p>Drag a line connecting the buses to create the line.</p></li>
-<li><p>Add all static parameters in the left vertical bar for all devices. See the parameter values in <a class="reference internal" href="#4-device-parameters"><span class="xref myst">Section 4</span></a>.</p></li>
+<li><p>Add all static parameters in the left vertical bar for all devices. See the parameter values in <a class="reference internal" href="#rms-device-parameters"><span class="std std-ref">Section 4</span></a>.</p></li>
 <li><p>To check if the static model is correct, run a power flow by clicking on the corresponding icon in the upper bar. The result should be the following:</p></li>
 </ol>
-<p><img alt="RMS power-flow result" src="../_images/rms_power_flow_result.png" /></p>
+<p><img alt="RMS power-flow result" src="../_images/powerflow.png" /></p>
 </section>
 <section id="dynamic-model-construction">
 <h3>5.2. Dynamic model construction<a class="headerlink" href="#dynamic-model-construction" title="Link to this heading"></a></h3>
-<p>VeraGrid allows two different dynamic simulation modes: RMS and EMT. The following explanation works for both simulation types. There are two ways of setting dynamic models to a device:</p>
+<p>There are two ways to assign an RMS model:</p>
 <ol class="arabic simple">
-<li><p>Assigning a <code class="docutils literal notranslate"><span class="pre">rms_template</span></code> or <code class="docutils literal notranslate"><span class="pre">emt_template</span></code> from the Properties left vertical bar. This way, one cannot edit the dynamic parameters for now, so this mode is not recommended if one wants to correctly parametrise the controls and dynamic parameters. To do this, the default EMT/RMS catalogue must be added from <strong>Actions -&gt; Add default catalogue</strong>, selecting the templates to be added. The templates can be seen in <strong>Database -&gt; Templates -&gt; RMS/EMT Template</strong>.</p></li>
-<li><p>Opening the RMS/EMT editor and creating the model from there. This is the option used in this practice and explained below.</p></li>
+<li><p>Assign an existing <code class="docutils literal notranslate"><span class="pre">rms_template</span></code> in the device properties. Templates added with the default catalogue can be inspected under the RMS template database.</p></li>
+<li><p>Open the dynamic workspace and build or edit the device model in an <strong>RMS Editor</strong> tab. This is the workflow used here.</p></li>
 </ol>
-<p>To open the RMS/EMT editor, right-click on the device to be edited and click the editor to be used. In this case, select the RMS editor.</p>
-<p><img alt="Open RMS editor menu" src="../_images/open_emt_editor_menu.png" /></p>
-<p>For example, for the generator:</p>
-<p>The dynamic editor is divided into two main parts: the main page where the model is created by blocks, and the left bar with the library of blocks and devices available.</p>
+<p>Open the RMS editor from the selected device. The workspace keeps the device tree on the left and opens the model as a tab. Separate toolbar actions open RMS Events, RMS Compare, and RMS Plots.</p>
 <p><img alt="RMS editor with initial blocks" src="../_images/rms_editor_initial_blocks.png" /></p>
-<p>When opening the RMS editor, some blocks are already in the main page: these are the grid connection blocks. In order to dynamically connect the devices, the simulator needs the voltages and currents of the device. These blocks must be connected to the device to be created.</p>
-<p>Add the devices by dragging them from the library into the main page. To inspect the model, select it and then use the left vertical bar:</p>
+<p>The initial blocks are the device’s grid connection contract. Keep them in the model and connect the generator, line, or load blocks to the appropriate voltage and current ports.</p>
+<p>Add blocks by dragging them from the library to the canvas. Open <strong>Block Properties</strong> to inspect:</p>
 <ul class="simple">
-<li><p><strong>Variables:</strong> all variables of that block are classified here. Their initial value or equation can be seen and edited if needed.</p></li>
-<li><p><strong>Parameters:</strong> all parameters of the block are classified here. The value can be changed to fit the desired model. Here, parameters must be changed according to <a class="reference internal" href="#4-device-parameters"><span class="xref myst">Section 4</span></a>.</p></li>
-<li><p><strong>Equations:</strong> all state and algebraic equations of the block can be seen and edited if needed.</p></li>
+<li><p><strong>General options</strong> for ports, variables, parameters, and operating-point bindings.</p></li>
+<li><p><strong>DAE model</strong> for state, algebraic, and derivative variables, equations, and initialization expressions.</p></li>
+<li><p><strong>Runtime logic</strong> and block-specific settings when present.</p></li>
 </ul>
+<p>Set the parameters in <a class="reference internal" href="#rms-dynamic-model-assignment"><span class="std std-ref">Section 4.3</span></a>, connect all required ports, and validate the complete graph. Save the editor tab to apply its isolated working copy to the circuit. Events, Comparison, and Plots read the last saved model.</p>
 <p>This is the final model for the generator:</p>
 <p><img alt="Final RMS generator model" src="../_images/rms_generator_model.png" /></p>
 </section>
 <section id="events">
 <h3>5.3. Events<a class="headerlink" href="#events" title="Link to this heading"></a></h3>
-<p>Adding events to the dynamic simulations is the way to test different grid scenarios. In this case, the system will be energised and de-energised. In VeraGrid, there are two objects to consider when adding events:</p>
-<ul class="simple">
-<li><p><strong>RMS/EMT Events Group:</strong> this is the simulation where events are applied. Each event group is one different simulation. One can see and edit all event groups created in <strong>Database -&gt; Dynamic -&gt; Rms/Emt Events Group</strong>. This is useful to perform different simulations on the same grid, for example one with a short-circuit event and another with a fault.</p></li>
-<li><p><strong>RMS/EMT Events:</strong> this is what exactly happens to the parameter. One must select the parameter where the event is applied, its new value and the time of the event. There are two types of events available: steps and ramps. One can see and edit all events created in <strong>Database -&gt; Dynamic -&gt; Rms/Emt Event</strong>.</p></li>
-</ul>
-<p>To add an event from the static model, click on the device where the event is configured and go to <strong>Events -&gt; Add emt event to selected</strong>. Since there is no <code class="docutils literal notranslate"><span class="pre">EmtEventsGroup</span></code>, it must be created.</p>
-<p><img alt="Create EMT events group" src="../_images/create_emt_events_group.png" /></p>
-<p>Create the <code class="docutils literal notranslate"><span class="pre">EmtEventsGroup</span></code> by giving it a name, for example <code class="docutils literal notranslate"><span class="pre">simulation1</span></code>. After that, add the new events and parametrise them according to <a class="reference internal" href="#44-rms-events"><span class="xref myst">Section 4.4</span></a>.</p>
-<p><img alt="EMT event editor" src="../_images/emt_event_editor.png" /></p>
-<p>One can see and edit the RMS/EMT EventsGroup and RMS/EMT Events from <strong>Database -&gt; Dynamics</strong>.</p>
+<p>Open <strong>RMS Events</strong> in the dynamic workspace. The left tree contains the parameters exported by saved RMS models; the right tree contains scenario groups and their events.</p>
+<ol class="arabic simple">
+<li><p>Create an <code class="docutils literal notranslate"><span class="pre">RmsEventsGroup</span></code> named, for example, <code class="docutils literal notranslate"><span class="pre">load_change</span></code>.</p></li>
+<li><p>Locate <code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">1</span></code> and its <code class="docutils literal notranslate"><span class="pre">Pl0</span></code> parameter in the left tree.</p></li>
+<li><p>Drag <code class="docutils literal notranslate"><span class="pre">Pl0</span></code> into the new group and configure the step at <code class="docutils literal notranslate"><span class="pre">0.1</span> <span class="pre">s</span></code> with value <code class="docutils literal notranslate"><span class="pre">-0.06</span></code>.</p></li>
+<li><p>Add a ramp from <code class="docutils literal notranslate"><span class="pre">0.2</span> <span class="pre">s</span></code> to <code class="docutils literal notranslate"><span class="pre">0.3</span> <span class="pre">s</span></code> with final value <code class="docutils literal notranslate"><span class="pre">-0.1</span></code>.</p></li>
+<li><p>Confirm that the event names, transition type, times, and target values match <a class="reference internal" href="#rms-events-section"><span class="std std-ref">Section 4.4</span></a>.</p></li>
+</ol>
+<p>Each event group is simulated independently and receives its own result slice. A group with no events is also useful as a base-case reference.</p>
+</section>
+<section id="plot-preparation">
+<h3>5.4. Plot preparation<a class="headerlink" href="#plot-preparation" title="Link to this heading"></a></h3>
+<p>Open <strong>RMS Plots</strong> before running the simulation. Create a time-series group and drag the generator, bus, and load variables that should be compared into it. These plot definitions are saved with the circuit and also appear in the Results view.</p>
 </section>
 </section>
 <section id="simulation-and-post-processing">
 <h2>6. Simulation and post-processing<a class="headerlink" href="#simulation-and-post-processing" title="Link to this heading"></a></h2>
 <section id="simulation">
 <h3>6.1. Simulation<a class="headerlink" href="#simulation" title="Link to this heading"></a></h3>
-<p>To perform an RMS simulation, click the button in the upper bar. The simulation will last a few seconds.</p>
-<p><img alt="RMS simulation menu" src="../_images/emt_simulation_menu.png" /></p>
+<p>Open the RMS dynamic simulation command, verify the settings in <a class="reference internal" href="#rms-simulation-settings"><span class="std std-ref">Section 4.1.2</span></a>, and start the driver. Review the simulation log if initialization or convergence fails. The duration depends on the selected time step, model size, and number of event groups.</p>
 </section>
 <section id="dynamic-results">
 <h3>6.2. Dynamic results<a class="headerlink" href="#dynamic-results" title="Link to this heading"></a></h3>
-<p>To see the results, go to <strong>Results -&gt; RMS Dynamic</strong>. There, there are two main parts:</p>
+<p>Open <strong>Results → RMS Dynamic</strong> and select the <code class="docutils literal notranslate"><span class="pre">load_change</span></code> scenario. The results tree is organized by device and exported variable.</p>
 <ul class="simple">
-<li><p><strong>Dynamic results:</strong> all variables available to be plotted can be found here. By double-clicking on a variable, the plot appears.</p></li>
-<li><p><strong>Dynamic plots:</strong> these are used to create plots with more than one variable. Dynamic plots are added by clicking on the <code class="docutils literal notranslate"><span class="pre">+</span></code> sign in the upper-right corner. Variables from the dynamic results can be dragged to the plots and then plotted by double-clicking the plot.</p></li>
+<li><p>Double-click a variable to draw its time trajectory.</p></li>
+<li><p>Open the time-series group prepared in RMS Plots to compare several signals.</p></li>
+<li><p>Create an X-Y group when one signal must be plotted against another.</p></li>
+<li><p>Select a row to inspect its numerical samples in the table.</p></li>
 </ul>
-<p><img alt="RMS dynamic results" src="../_images/emt_dynamic_results.png" /></p>
+<p>Check that the selected event group produced data and that it was initialized and converged successfully. The load response should change at the step time and evolve over the ramp interval. If a curve is missing, confirm that the variable belongs to the saved model used for the run and that the scenario completed.</p>
 </section>
 </section>
 <section id="suggestions">
 <h2>7. Suggestions<a class="headerlink" href="#suggestions" title="Link to this heading"></a></h2>
-<p>The eRoots dynamic team is very happy to hear your suggestions. Do not be shy and tell us everything you think can be improved.</p>
+<p>After completing the exercise, note any unclear model, event, plot, or result workflow and report it to the eRoots dynamic team.</p>
 </section>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="rms_simulations.html" class="btn btn-neutral float-left" title="⏱️ RMS simulations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="emt_simulations.html" class="btn btn-neutral float-right" title="🔬 EMT simulations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

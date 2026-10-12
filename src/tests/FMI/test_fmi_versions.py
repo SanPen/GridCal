@@ -10,7 +10,7 @@ from typing import cast
 import pytest
 
 from VeraGridEngine.enumerations import FmiVersion
-from VeraGridEngine.IO.fmu.versions import normalize_fmi_export_version, parse_declared_fmi_version
+from VeraGridEngine.IO.fmu.config import normalize_fmi_export_version, parse_declared_fmi_version
 
 
 def test_fmi_version_members_have_stable_identity_and_order() -> None:

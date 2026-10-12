@@ -34,7 +34,8 @@ from VeraGridEngine.Simulations.LinearFactors.linear_analysis import (LinearAnal
 from VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha, compute_alpha_n1, \
     compute_dP
 from VeraGridEngine.IO.file_system import opf_file_path
-from VeraGridEngine.Simulations.NTC.ntc_compact import SolverProgress, CompactContingencies, add_clipped_flow
+from VeraGridEngine.Simulations.NTC.ntc_compact import (SolverProgress, CompactContingencies, add_clipped_flow,
+                                                        BranchVariables, ConverterVariables)
 
 
 def formulate_monitorization_logic(monitor_only_sensitive_branches: bool,
@@ -278,13 +279,26 @@ def get_exchange_proportions(power: Vec,
     :param bus_a2_idx: bus indices within area 2
     :param logger: logger instance
     :param decimals: Number of decimals to round to
-    :return: proportions (rounded)
+    :return: proportions (rounded), summing to exactly 1 in area 1 and -1 in area 2
     """
-    proportions_a1 = get_sensed_proportions(power=power, idx=bus_a1_idx, logger=logger)
-    proportions_a2 = get_sensed_proportions(power=power, idx=bus_a2_idx, logger=logger)
-    proportions = proportions_a1 - proportions_a2
+    proportions_a1: Vec = np.round(get_sensed_proportions(power=power, idx=bus_a1_idx, logger=logger), decimals)
+    proportions_a2: Vec = np.round(get_sensed_proportions(power=power, idx=bus_a2_idx, logger=logger), decimals)
 
-    return np.round(proportions, decimals)
+    # Rounding drops the smallest shares, so each area's total drifts from 1 by ~1e-5. Kirchhoff then
+    # makes the area 1 increase differ from the area 2 decrease by that amount. Correct it.
+    sum_a1: float = float(np.sum(proportions_a1))
+    if sum_a1 != 0.0:
+        proportions_a1 /= sum_a1
+    else:
+        pass  # no transferable injection in area 1
+
+    sum_a2: float = float(np.sum(proportions_a2))
+    if sum_a2 != 0.0:
+        proportions_a2 /= sum_a2
+    else:
+        pass  # no transferable injection in area 2
+
+    return proportions_a1 - proportions_a2
 
 
 def pmode3_formulation(prob, t_idx, m, rate, P0, droop, theta_f, theta_t,
@@ -1888,6 +1902,162 @@ def evaluate_corrective_flow_addons(multi_contingencies: List[LinearMultiConting
     return addons
 
 
+def add_absolute_value(prob: LpModel, expr: LpVar | LpExp, name: str) -> LpVar:
+    """
+    Declare a variable bounded below by the absolute value of an expression.
+    When it is minimised it equals that absolute value.
+
+    :param prob: linear problem the variable and constraints are added to
+    :param expr: expression whose magnitude is measured
+    :param name: unique name of the variable
+    :return: the absolute value variable
+    """
+    abs_var: LpVar = prob.add_var(lb=0.0, ub=prob.INFINITY, name=name)
+    prob.add_cst(cst=abs_var >= expr, name=name + "_pos")
+    prob.add_cst(cst=abs_var >= -expr, name=name + "_neg")
+    return abs_var
+
+
+def add_base_control_effort(prob: LpModel,
+                            t_idx: int,
+                            branch_data_t: PassiveBranchData,
+                            active_branch_data_t: ActiveBranchData,
+                            branch_vars: BranchVariables,
+                            vsc_vars: ConverterVariables,
+                            hvdc_vars: ConverterVariables,
+                            effort: List[LpExp]) -> None:
+    """
+    Append the N-state control effort terms in p.u. of power.
+
+    Phase shifter angles and free converter powers carry no cost in the transfer
+    objective, so many operating points reach the same TTC. Their effort is the
+    flow shifted by the angle change (|Δτ| / X) and the converter power |P|.
+    Each term is weighted 1 + 1e-3 x device index, so equal effort alternatives
+    (e.g. two identical corridors) resolve to the same device in every run.
+
+    :param prob: linear problem the effort variables are added to
+    :param t_idx: time index being formulated
+    :param branch_data_t: passive branch data, for the phase shifter reactance
+    :param active_branch_data_t: active branch data, for the scheduled tap angles
+    :param branch_vars: branch LP variable container
+    :param vsc_vars: VSC LP variable container
+    :param hvdc_vars: HVDC LP variable container
+    :param effort: output list the weighted absolute-value terms are appended to
+    :return: None
+    """
+    m: int
+    for m in range(branch_data_t.nelm):
+        tap: float | LpVar = branch_vars.tap_angles[t_idx, m]
+        if isinstance(tap, LpVar):
+            # same susceptance the flow equation uses
+            if branch_data_t.X[m] == 0.0:
+                bk: float = 1e-6
+            else:
+                bk = 1.0 / branch_data_t.X[m]
+            effort.append((1.0 + 1e-3 * m) * add_absolute_value(
+                prob=prob, expr=bk * (tap - active_branch_data_t.tap_angle[m]),
+                name=join("effort_tap_", [t_idx, m], "_")))
+        else:
+            pass  # fixed angle: not a control
+
+    k: int
+    for k in range(vsc_vars.flows.shape[1]):
+        if isinstance(vsc_vars.flows[t_idx, k], LpVar):
+            effort.append((1.0 + 1e-3 * k) * add_absolute_value(
+                prob=prob, expr=vsc_vars.flows[t_idx, k], name=join("effort_vsc_", [t_idx, k], "_")))
+        else:
+            pass  # fixed set-point: not a control
+
+    for k in range(hvdc_vars.flows.shape[1]):
+        if isinstance(hvdc_vars.flows[t_idx, k], LpVar):
+            effort.append((1.0 + 1e-3 * k) * add_absolute_value(
+                prob=prob, expr=hvdc_vars.flows[t_idx, k], name=join("effort_hvdc_", [t_idx, k], "_")))
+        else:
+            pass  # fixed set-point: not a control
+
+
+def add_corrective_control_effort(prob: LpModel,
+                                  vsc_delta_store: Dict[int, Dict[int, LpVar]],
+                                  hvdc_delta_store: Dict[int, Dict[int, LpVar]],
+                                  counted: Set[Tuple[int, int, int]],
+                                  effort: List[LpExp]) -> None:
+    """
+    Append |Δ| for every corrective converter set-point change not yet counted,
+    weighted 1 + 1e-3 x converter index to resolve equal-effort alternatives.
+
+    :param prob: linear problem the effort variables are added to
+    :param vsc_delta_store: per group position, the per-VSC Δ variables
+    :param hvdc_delta_store: per group position, the per-HVDC Δ variables
+    :param counted: (family, group, converter) keys already in the effort, updated in place
+    :param effort: output list the weighted absolute-value terms are appended to
+    :return: None
+    """
+    family: int
+    store: Dict[int, Dict[int, LpVar]]
+    c: int
+    deltas: Dict[int, LpVar]
+    d: int
+    delta: LpVar
+    for family, store in enumerate((vsc_delta_store, hvdc_delta_store)):
+        for c, deltas in store.items():
+            for d, delta in deltas.items():
+                key: Tuple[int, int, int] = (family, int(c), int(d))
+                if key in counted:
+                    pass  # this Δ is already measured
+                else:
+                    effort.append((1.0 + 1e-3 * (d + 0.5)) * add_absolute_value(
+                        prob=prob, expr=delta, name=join("effort_corr_", [family, c, d], "_")))
+                    counted.add(key)
+
+
+def solve_least_control_effort(prob: LpModel,
+                               objective: LpExp,
+                               transfer: LpVar,
+                               effort: List[LpExp],
+                               logger: Logger,
+                               robust: bool,
+                               show_logs: bool,
+                               progress_text: Union[None, Callable[[str], None]]) -> int:
+    """
+    Second stage. Among the solutions that reach the first stage TTC, take the one with the
+    least control effort. This makes the reported operating point and its limiting pairs
+    reproducible instead of an arbitrary optimal vertex.
+
+    The TTC is held exactly by fixing the transfer variable through its bounds, which the
+    solver honours without tolerance. The limit slack penalties stay in the objective and the
+    effort is added with a 1e-3 weight. A slack costs 1e4 per p.u., so 1 MW of limit relaxation
+    outweighs 1e7 MW of control effort. 
+
+    :param prob: linear problem solved at the first stage optimum
+    :param objective: first stage objective expression (transfer and limit slack penalties)
+    :param transfer: area 1 increase, the variable the TTC is maximised through, declared with bounds [0, inf)
+    :param effort: weighted absolute-value effort terms
+    :param logger: logger for the fallback warning
+    :param robust: robust solver mode
+    :param show_logs: display the solver logs
+    :param progress_text: GUI text callback
+    :return: solver status
+    """
+    # hold the transfer at its optimum
+    value: float = max(0.0, prob.get_value(transfer))
+    prob.set_var_bounds(var=transfer, lb=value, ub=value)
+
+    # keep the slacks minimal and, behind them, take the least control effort
+    prob.minimize(objective + 1e-3 * prob.sum(effort))
+    status: int = prob.solve(robust=robust, show_logs=show_logs, progress_text=progress_text)
+
+    if status == prob.OPTIMAL:
+        pass  # least effort optimum found
+    else:
+        # numerical trouble so keep the first stage optimum, which is valid but not unique
+        logger.add_warning("Least control effort stage not solved, keeping the first stage optimum",
+                           value=prob.status2string(status))
+        prob.set_var_bounds(var=transfer, lb=0.0, ub=prob.INFINITY)
+        prob.minimize(objective)
+        status = prob.solve(robust=robust, show_logs=show_logs, progress_text=progress_text)
+    return status
+
+
 def screen_contingency_violations(multi_contingencies: List[LinearMultiContingency],
                                   admitted_rows: Dict[int, BoolVec],
                                   f0: Vec,
@@ -1996,7 +2166,8 @@ def fill_worst_contingency_per_branch(grid: MultiCircuit,
     For every branch, keep the contingency group that maximises post-contingency loading.
 
     The N-state loading is the starting point. A group is recorded only when its N-1
-    loading is strictly worse, so an unaffected line keeps index -1 and N-1 flow = N flow.
+    loading is worse by more than 1e-4 p.u., so an unaffected line keeps index -1 and
+    N-1 flow = N flow. Ties go to the group that comes first in the grid.
 
     :param grid: circuit that owns the contingency groups
     :param multi_contingencies: formulated multi-contingencies, or None when N-1 is off
@@ -2044,15 +2215,25 @@ def fill_worst_contingency_per_branch(grid: MultiCircuit,
                 id_to_i[all_groups[i_g].idtag] = i_g
 
             used_groups = multi_contingencies.contingency_groups_used
+            result_indices: IntVec = np.empty(n_used, dtype=int)
             c: int
             for c in range(n_used):
-                contingency: LinearMultiContingency = multi_contingencies.multi_contingencies[c]
-
-                mapped_i = id_to_i.get(used_groups[c].idtag, None)
+                mapped_i: Union[int, None] = id_to_i.get(used_groups[c].idtag, None)
                 if mapped_i is None:
-                    result_idx_c: int = -1
+                    result_indices[c] = -1
                 else:
-                    result_idx_c = int(mapped_i)
+                    result_indices[c] = mapped_i
+
+            # Visit the groups in grid order and require a loading increase above the
+            # numerical noise, so equally loading outages resolve to the same group whatever
+            # the order they were selected in, and an N-limited line keeps index -1.
+            tie_tolerance: float = 1e-4
+            visit_order: IntVec = np.argsort(result_indices, kind="stable")
+            position: int
+            for position in range(n_used):
+                c = int(visit_order[position])
+                contingency: LinearMultiContingency = multi_contingencies.multi_contingencies[c]
+                result_idx_c: int = int(result_indices[c])
 
                 # the same linear N-1 combination as the lazy screening, evaluated in MW
                 fc: Vec = f0.copy()
@@ -2101,7 +2282,7 @@ def fill_worst_contingency_per_branch(grid: MultiCircuit,
                     pass  # Keep the contingency flow already calculated
 
                 loading_c: Vec = np.abs(fc) / (rates + 1e-20)
-                better: BoolVec = loading_c > worst_loading
+                better: BoolVec = loading_c > worst_loading + tie_tolerance
                 worst_loading[better] = loading_c[better]
                 worst_flow[better] = fc[better]
                 if result_idx_c >= 0:
@@ -2691,7 +2872,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                        verbose: int = 0,
                        robust: bool = False,
                        mip_framework: MIPFramework = MIPFramework.PuLP,
-                       max_lazy_rounds: int = 20) -> Tuple[NtcVars, LpModel]:
+                       max_lazy_rounds: int = 100) -> Tuple[NtcVars, LpModel]:
     """
 
     :param grid: MultiCircuit instance
@@ -2962,9 +3143,10 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                 # Other control modes retain the existing lazy flow-factor formulation.
                 report_mctg = mctg
                 if corrective_contingencies and has_pmode3:
+                    # the feasibility retry also absorbs every part a contingency cuts off
                     controlled_states = CompactContingencies(
                         nc=nc, base_vars=mip_vars, multi_contingencies=mctg,
-                        prob=lp_model, logger=logger)
+                        prob=lp_model, logger=logger, absorb_islands=slack_all_limits)
                 else:
                     lazy_mctg = mctg
                     lazy_alpha_n1 = alpha_n1
@@ -2996,10 +3178,34 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     hvdc_delta_store: Dict[int, Dict[int, LpVar]] = dict()
     preservation_done: Set[int] = set()
     n_rows_admitted = 0
+
+    # least control effort second stage, applied after every first stage solve
+    effort: List[LpExp] = list()
+    effort_counted: Set[Tuple[int, int, int]] = set()
+    transfer: LpVar = mip_vars.delta_1[t_idx]
+
+    # the N-1 screening never ran out of rounds unless proven otherwise
+    screening_certified: bool = True
+
     if controlled_states is not None:
         status = controlled_states.solve(f_obj, status, robust=robust, show_logs=verbose > 0,
                                          progress=SolverProgress(progress_text))
-    elif lazy_mctg is not None:
+    else:
+        add_base_control_effort(prob=lp_model, t_idx=t_idx,
+                                branch_data_t=nc.passive_branch_data,
+                                active_branch_data_t=nc.active_branch_data,
+                                branch_vars=mip_vars.branch_vars,
+                                vsc_vars=mip_vars.vsc_vars,
+                                hvdc_vars=mip_vars.hvdc_vars,
+                                effort=effort)
+        if status == lp_model.OPTIMAL and len(effort) > 0:
+            status = solve_least_control_effort(prob=lp_model, objective=f_obj, transfer=transfer, effort=effort,
+                                                logger=logger, robust=robust, show_logs=verbose > 0,
+                                                progress_text=progress_text)
+        else:
+            pass  # nothing to choose among the optima, or the first stage failed
+
+    if lazy_mctg is not None:
         monitorable_lazy = get_contingency_monitorable_branches(
             branch_data_t=nc.passive_branch_data,
             branch_vars=mip_vars.branch_vars,
@@ -3097,13 +3303,33 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                     mask_prev[rows_new] = True
                     n_rows_admitted += len(rows_new)
 
+                # first stage again, the new rows may lower the reachable transfer, so free it
+                lp_model.set_var_bounds(var=transfer, lb=0.0, ub=lp_model.INFINITY)
                 lp_model.minimize(f_obj)
                 status = lp_model.solve(robust=robust, show_logs=verbose > 0, progress_text=progress_text)
+
+                # second stage: also pin the new corrective Δ, so they cannot wander onto unchecked rows
+                add_corrective_control_effort(prob=lp_model, vsc_delta_store=vsc_delta_store,
+                                              hvdc_delta_store=hvdc_delta_store,
+                                              counted=effort_counted, effort=effort)
+                if status == lp_model.OPTIMAL and len(effort) > 0:
+                    status = solve_least_control_effort(prob=lp_model, objective=f_obj, transfer=transfer,
+                                                        effort=effort, logger=logger, robust=robust,
+                                                        show_logs=verbose > 0, progress_text=progress_text)
+                else:
+                    pass  # nothing to choose among the optima, or the first stage failed
                 lazy_round += 1
 
         if status == lp_model.OPTIMAL and not clean_pass:
-            logger.add_warning("Lazy contingency screening reached the round budget without a clean pass",
-                               value=f"{max_lazy_rounds} rounds, {n_rows_admitted} rows admitted")
+            # unchecked contingency rows may still be violated, so the hour is not certified
+            screening_certified = False
+            logger.add_error("N-1 screening did not converge within the round budget, the solution is not "
+                             "certified against every contingency",
+                             value=f"{max_lazy_rounds} rounds, {n_rows_admitted} rows admitted")
+        else:
+            pass  # certified by a clean screening pass, or the solve failed and is reported below
+    else:
+        pass  # no lazy contingency screening for this formulation
 
     if lazy_mctg is not None:
         logger.add_info("Lazy contingency formulation: groups/rows added",
@@ -3145,8 +3371,9 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     logger.add_info(msg="Status", value=lp_model.status2string(status))
 
     if status == lp_model.OPTIMAL:
-        logger.add_info("Objective function", value=lp_model.fobj_value())
-        mip_vars.acceptable_solution[t_idx] = True
+        # the transfer objective, not the second stage effort the model last minimised
+        logger.add_info("Objective function", value=lp_model.get_value(f_obj))
+        mip_vars.acceptable_solution[t_idx] = screening_certified
     else:
         logger.add_error('The problem does not have an optimal solution.')
         mip_vars.acceptable_solution[t_idx] = False
@@ -3209,20 +3436,25 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     # fill the power shift
     vars_v.power_shift = vars_v.bus_vars.delta_p[:, bus_a1_idx]
 
-    # register the slacks
-    if vars_v.delta_sl_1[t_idx] > 1e-6:
-        logger.add_error(msg="Inter area equality not fulfilled for area 1",
-                         value=vars_v.delta_sl_1[t_idx])
+    # The area 1 increase must equal the area 2 decrease. The balance slacks carry no cost, so only
+    # their difference (= delta_1 - delta_2) is a mismatch
+    area_mismatch_mw: float = abs(vars_v.delta_1[t_idx] - vars_v.delta_2[t_idx]) * grid.Sbase
+    if area_mismatch_mw > 1e-3:
+        logger.add_error(msg="Area 1 increase and area 2 decrease differ (MW)",
+                         value=area_mismatch_mw, expected_value=0.0)
+    else:
+        pass  # both areas moved the same power
 
-    if vars_v.delta_sl_2[t_idx] > 1e-6:
-        logger.add_error(msg="Inter area equality not fulfilled for area 2",
-                         value=vars_v.delta_sl_2[t_idx])
-
-    for i in range(nb):
-        if abs(vars_v.bus_vars.Pbalance[t_idx, i]) > 1e-8:
-            logger.add_error(msg="Inter area equality not fulfilled for area 2",
-                             device=f"Bus {i}",
-                             value=vars_v.bus_vars.Pbalance[t_idx, i])
+    # Kirchhoff balance of every networked bus (MW). Isolated buses were reported when formulated
+    bus_k: int
+    for bus_k in range(nc.bus_data.nbus):
+        if isinstance(mip_vars.bus_vars.Pbalance[t_idx, bus_k], (int, float)):
+            pass  # isolated bus, no balance equation
+        elif abs(vars_v.bus_vars.Pbalance[t_idx, bus_k]) > 1e-3:
+            logger.add_error(msg="Nodal balance not fulfilled (MW)", device=nc.bus_data.names[bus_k],
+                             value=vars_v.bus_vars.Pbalance[t_idx, bus_k], expected_value=0.0)
+        else:
+            pass  # balanced within tolerance
 
     # add the model logger to the main logger
     logger += lp_model.logger
@@ -3240,8 +3472,8 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     inter_area_hvdc_sense = [x[1] for x in inter_info_hvdc]
 
     inter_info_vsc = nc.vsc_data.get_inter_areas(bus_idx_from=bus_a1_idx, bus_idx_to=bus_a2_idx)
-    inter_area_vsc_idx = [x[0] for x in inter_info_vsc]
-    inter_area_vsc_sense = [x[2] for x in inter_info_vsc]
+    inter_area_vsc_idx: List[int] = [x[0] for x in inter_info_vsc]
+    inter_area_vsc_sense: List[float] = [x[1] for x in inter_info_vsc]
 
     for k in inter_area_branch_idx:
         logger.add_info("Inter area branch", device=f"({k}) - {nc.passive_branch_data.names[k]}",

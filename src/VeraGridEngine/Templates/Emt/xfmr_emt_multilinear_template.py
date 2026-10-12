@@ -64,6 +64,15 @@ def get_xfmr_emt_template_multilinear(
     templ.block.api_obj_mapping[ParamPowerFlowReferenceType.transformer_short_circuit_voltage_pct] = xfmr_sc_voltage_pct
     templ.block.api_obj_mapping[ParamPowerFlowReferenceType.transformer_short_circuit_loss_kw] = xfmr_sc_loss_kw
     templ.block.api_obj_mapping[ParamPowerFlowReferenceType.transformer_tap_ratio] = xfmr_tap_module
+    templ.block.parameters.update({
+        omega_base: vf.add_const(None),
+        xfmr_s_rated_mva: vf.add_const(None),
+        xfmr_oc_current_pct: vf.add_const(None),
+        xfmr_oc_loss_kw: vf.add_const(None),
+        xfmr_sc_voltage_pct: vf.add_const(None),
+        xfmr_sc_loss_kw: vf.add_const(None),
+        xfmr_tap_module: vf.add_const(None),
+    })
 
     # ------------------------------------------------------------------
     # Mapped winding-connection matrices.
@@ -116,6 +125,8 @@ def get_xfmr_emt_template_multilinear(
 
             templ.block.api_obj_mapping[cf_enums[i][j]] = c_f_var
             templ.block.api_obj_mapping[ct_enums[i][j]] = c_t_var
+            templ.block.parameters[c_f_var] = vf.add_const(None)
+            templ.block.parameters[c_t_var] = vf.add_const(None)
 
             c_f_row.append(c_f_var)
             c_t_row.append(c_t_var)

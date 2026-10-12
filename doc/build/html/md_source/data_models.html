@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Data Models &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>Data Models &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -91,7 +91,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#controllableshunt">ControllableShunt</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#country">Country</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#currentinjection">CurrentInjection</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dccabletype">DcCableType</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dcline">DcLine</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dynamicplot">DynamicPlot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dynamicplotentry">DynamicPlotEntry</a></li>
@@ -116,6 +115,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#itmeasurement">ItMeasurement</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#line">Line</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#load">Load</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#manufacturernativemodel">ManufacturerNativeModel</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#marketunit">MarketUnit</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#modellingauthority">ModellingAuthority</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#municipality">Municipality</a></li>
@@ -1369,7 +1369,7 @@
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Set voltage. This is used for controlled generators.</p></td>
+<td><p>Voltage setpoint for controlled generators; positive-sequence magnitude in three-phase power flow.</p></td>
 <td><p>True</p></td>
 <td><p></p></td>
 </tr>
@@ -1441,7 +1441,7 @@
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total zero sequence resistance.</p></td>
+<td><p>Total zero sequence resistance on system base; used in U1 power flow for a grounded connection.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -1450,7 +1450,7 @@
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total zero sequence reactance.</p></td>
+<td><p>Total zero sequence reactance on system base; used in U1 power flow for a grounded connection.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -1459,7 +1459,7 @@
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total negative sequence resistance.</p></td>
+<td><p>Total negative sequence resistance on system base; used automatically in U1 power flow.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -1468,7 +1468,7 @@
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total negative sequence reactance.</p></td>
+<td><p>Total negative sequence reactance on system base; used automatically in U1 power flow.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -4742,276 +4742,6 @@
 </tbody>
 </table>
 </section>
-<section id="dccabletype">
-<h3>DcCableType<a class="headerlink" href="#dccabletype" title="Link to this heading"></a></h3>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>name</p></th>
-<th class="head"><p>class_type</p></th>
-<th class="head"><p>unit</p></th>
-<th class="head"><p>mandatory</p></th>
-<th class="head"><p>max_chars</p></th>
-<th class="head"><p>descriptions</p></th>
-<th class="head"><p>has_profile</p></th>
-<th class="head"><p>comment</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>idtag</p></td>
-<td><p>str</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Unique ID</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p>name</p></td>
-<td><p>str</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Name of the device.</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p>code</p></td>
-<td><p>str</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Secondary ID</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p>rdfid</p></td>
-<td><p>str</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>RDF ID for further compatibility</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p>action</p></td>
-<td><p>enum ActionType</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Object action to perform. Only used for model merging.</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p>selected_to_merge</p></td>
-<td><p>bool</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Whether this object should be applied during diff merge.</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p>comment</p></td>
-<td><p>str</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>User comment</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p>diff_changes</p></td>
-<td><p>MergeInformation</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p>modelling_authority</p></td>
-<td><p>Modelling Authority</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Modelling authority of this asset</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p>commissioned_date</p></td>
-<td><p>int</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Commissioned date of the asset</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p>decommissioned_date</p></td>
-<td><p>int</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Decommissioned date of the asset</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p>build_status</p></td>
-<td><p>enum BuildStatus</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Device build status. Used in expansion planning.</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p>owners</p></td>
-<td><p>AssociationsList</p></td>
-<td><p>p.u.</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Owners associations to injections</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p>rms_model</p></td>
-<td><p>DaeBlock</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>RMS dynamic model</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p>emt_model</p></td>
-<td><p>DaeBlock</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>EMT dynamic model</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p>rms_template</p></td>
-<td><p>RMS template</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Native RMS template used. Assigning it clears rms_fmu_template.</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p>emt_template</p></td>
-<td><p>EMT template</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Native EMT template used. Assigning it clears emt_fmu_template.</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p>rms_fmu_template</p></td>
-<td><p>FMU template</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>RMS FMU template used only by RMS simulations. Assigning it clears rms_template.</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p>emt_fmu_template</p></td>
-<td><p>FMU template</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>EMT FMU template used only by EMT simulations. Assigning it clears emt_template.</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p>rms_fmu_import_config</p></td>
-<td><p>str</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Serialized FMU Co-Simulation RMS configuration</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p>emt_fmu_import_config</p></td>
-<td><p>str</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Serialized FMU Co-Simulation EMT configuration</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p>rms_fmu_me_import_config</p></td>
-<td><p>str</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Serialized FMU Model Exchange RMS configuration</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p>emt_fmu_me_import_config</p></td>
-<td><p>str</p></td>
-<td><p></p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Serialized FMU Model Exchange EMT configuration</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p>Vnom</p></td>
-<td><p>float</p></td>
-<td><p>kV</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Rated DC voltage of the cable.</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p>Imax</p></td>
-<td><p>float</p></td>
-<td><p>kA</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Continuous current rating of the represented DC cable path.</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p>R</p></td>
-<td><p>float</p></td>
-<td><p>Ohm/km</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Series resistance per kilometre.</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p>L</p></td>
-<td><p>float</p></td>
-<td><p>H/km</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Series inductance per kilometre.</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p>C</p></td>
-<td><p>float</p></td>
-<td><p>F/km</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-<td><p>Equivalent shunt capacitance per kilometre of the represented DC cable path.</p></td>
-<td><p>False</p></td>
-<td><p></p></td>
-</tr>
-</tbody>
-</table>
-</section>
 <section id="dcline">
 <h3>DcLine<a class="headerlink" href="#dcline" title="Link to this heading"></a></h3>
 <table class="docutils align-default">
@@ -5423,7 +5153,16 @@
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p>R</p></td>
+<tr class="row-even"><td><p>dc_conductor</p></td>
+<td><p>int</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Global conductor number in the Cable System (one-based).</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>R</p></td>
 <td><p>float</p></td>
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
@@ -5432,7 +5171,7 @@
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p>length</p></td>
+<tr class="row-even"><td><p>length</p></td>
 <td><p>float</p></td>
 <td><p>km</p></td>
 <td><p>False</p></td>
@@ -5441,7 +5180,7 @@
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p>r_fault</p></td>
+<tr class="row-odd"><td><p>r_fault</p></td>
 <td><p>float</p></td>
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
@@ -5450,7 +5189,7 @@
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p>fault_pos</p></td>
+<tr class="row-even"><td><p>fault_pos</p></td>
 <td><p>float</p></td>
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
@@ -5459,16 +5198,16 @@
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p>template</p></td>
-<td><p>DC cable type</p></td>
+<tr class="row-odd"><td><p>template</p></td>
+<td><p>Underground line</p></td>
 <td><p></p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Physical DC cable type applied to this line.</p></td>
+<td><p>Cable System applied to this DC line.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p>locations</p></td>
+<tr class="row-even"><td><p>locations</p></td>
 <td><p>Line locations</p></td>
 <td><p></p></td>
 <td><p>False</p></td>
@@ -8740,7 +8479,7 @@
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Set voltage. This is used for controlled generators.</p></td>
+<td><p>Voltage setpoint for controlled generators; positive-sequence magnitude in three-phase power flow.</p></td>
 <td><p>True</p></td>
 <td><p></p></td>
 </tr>
@@ -8812,7 +8551,7 @@
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total zero sequence resistance.</p></td>
+<td><p>Total zero sequence resistance on system base; used in U1 power flow for a grounded connection.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -8821,7 +8560,7 @@
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total zero sequence reactance.</p></td>
+<td><p>Total zero sequence reactance on system base; used in U1 power flow for a grounded connection.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -8830,7 +8569,7 @@
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total negative sequence resistance.</p></td>
+<td><p>Total negative sequence resistance on system base; used automatically in U1 power flow.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -8839,7 +8578,7 @@
 <td><p>p.u.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Total negative sequence reactance.</p></td>
+<td><p>Total negative sequence reactance on system base; used automatically in U1 power flow.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -10733,6 +10472,24 @@
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-odd"><td><p>coupling_group</p></td>
+<td><p>str</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Physical tower section shared by coupled circuits; empty for independent lines.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>coupling_reversed</p></td>
+<td><p>bool</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>The line runs opposite to the reference direction of its coupling group.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-odd"><td><p>template</p></td>
 <td><p>Any line template</p></td>
 <td><p></p></td>
@@ -11423,6 +11180,132 @@
 <td><p>False</p></td>
 <td><p></p></td>
 <td><p>Nominal contracted power</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="manufacturernativemodel">
+<h3>ManufacturerNativeModel<a class="headerlink" href="#manufacturernativemodel" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>name</p></th>
+<th class="head"><p>class_type</p></th>
+<th class="head"><p>unit</p></th>
+<th class="head"><p>mandatory</p></th>
+<th class="head"><p>max_chars</p></th>
+<th class="head"><p>descriptions</p></th>
+<th class="head"><p>has_profile</p></th>
+<th class="head"><p>comment</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>idtag</p></td>
+<td><p>str</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Unique ID</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>name</p></td>
+<td><p>str</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Name of the device.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>code</p></td>
+<td><p>str</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Secondary ID</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>rdfid</p></td>
+<td><p>str</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>RDF ID for further compatibility</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>action</p></td>
+<td><p>enum ActionType</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Object action to perform. Only used for model merging.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>selected_to_merge</p></td>
+<td><p>bool</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Whether this object should be applied during diff merge.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>comment</p></td>
+<td><p>str</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>User comment</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>diff_changes</p></td>
+<td><p>MergeInformation</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>native_interface</p></td>
+<td><p>enum NativeModelInterface</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Native manufacturer interface contract</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>model_info_schema_version</p></td>
+<td><p>int</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>VeraGrid canonical ModelInfo schema version</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>model_info</p></td>
+<td><p>IEEE CIGRE DLL ModelInfo</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Exact canonical IEEE/CIGRE ModelInfo bytes</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>model_info_sha256</p></td>
+<td><p>str</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>SHA-256 of the exact canonical ModelInfo bytes</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -16187,12 +16070,93 @@
 <td><p>True</p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-even"><td><p>R0</p></td>
+<td><p>float</p></td>
+<td><p>p.u.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Zero-sequence resistance on the system base; used by grounded sequence injections.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>X0</p></td>
+<td><p>float</p></td>
+<td><p>p.u.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Zero-sequence reactance on the system base; used by grounded sequence injections.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>R2</p></td>
+<td><p>float</p></td>
+<td><p>p.u.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Negative-sequence resistance on the system base. R2=X2=0 omits the passive response.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>X2</p></td>
+<td><p>float</p></td>
+<td><p>p.u.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Negative-sequence reactance on the system base. R2=X2=0 omits the passive response.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-even"><td><p>Snom</p></td>
 <td><p>float</p></td>
 <td><p>MVA</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 <td><p>Nominal power.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>control_mode</p></td>
+<td><p>enum StaticGeneratorControlMode</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Fixed P/Q or the VSC Q-V droop law; ABC control uses positive-sequence voltage.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>Vset</p></td>
+<td><p>float</p></td>
+<td><p>p.u.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Droop voltage reference.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>droop</p></td>
+<td><p>float</p></td>
+<td><p>%</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Voltage droop on Snom; must be positive in Q-V droop mode.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>Vset_min</p></td>
+<td><p>float</p></td>
+<td><p>p.u.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Lower clamp on the voltage used by the droop curve.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>Vset_max</p></td>
+<td><p>float</p></td>
+<td><p>p.u.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Upper clamp on the voltage used by the droop curve.</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -19580,12 +19544,30 @@
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p>core_dc_resistance</p></td>
+<tr class="row-odd"><td><p>resistance_input</p></td>
+<td><p>enum CableResistanceInput</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Choose the resistance inputs for both core and sheath at 20 degrees Celsius: DC resistances, or resistivities and filling factors</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>core_dc_resistance</p></td>
 <td><p>float</p></td>
 <td><p>Ohm/km</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Imported core DC resistance at 20 degrees Celsius; informational, not used by the geometric calculation</p></td>
+<td><p>Core DC resistance at 20 degrees Celsius: input in DC resistance mode, otherwise calculated from resistivity, filling factor and diameter</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>sheath_dc_resistance</p></td>
+<td><p>float</p></td>
+<td><p>Ohm/km</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Sheath DC resistance at 20 degrees Celsius: input in DC resistance mode, otherwise calculated from resistivity, filling factor and annular area</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -19639,7 +19621,7 @@
 <td><p>uOhm*cm</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Core resistivity at 20 degrees Celsius (PowerFactory crho[0])</p></td>
+<td><p>Core resistivity at 20 degrees Celsius (PowerFactory crho[0]); inactive in DC resistance mode</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -19648,7 +19630,7 @@
 <td><p>uOhm*cm</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Sheath resistivity at 20 degrees Celsius (PowerFactory crho[1])</p></td>
+<td><p>Sheath resistivity at 20 degrees Celsius (PowerFactory crho[1]); inactive in DC resistance mode</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -19657,7 +19639,7 @@
 <td><p>%</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Core conducting filling factor (PowerFactory Cf[0])</p></td>
+<td><p>Core conducting filling factor (PowerFactory Cf[0]); inactive in DC resistance mode</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -19666,7 +19648,7 @@
 <td><p>%</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Sheath conducting filling factor (PowerFactory Cf[1])</p></td>
+<td><p>Sheath conducting filling factor (PowerFactory Cf[1]); inactive in DC resistance mode</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from VeraGridEngine.IO.fmu.importer.bindings import (
+from VeraGridEngine.IO.fmu.Elements.bindings import (
     FmiThreeFloat64BindingLayout,
     FmiThreeFloat64VariableCardinalityPlan,
     FmuImportConfig,
@@ -16,12 +16,7 @@ from VeraGridEngine.IO.fmu.importer.bindings import (
     resolve_fmi_three_scalar_int32_binding_references,
     resolve_fmi_three_variable_serialized_value_count,
 )
-from VeraGridEngine.IO.fmu.importer.errors import (
-    FmuArchiveError,
-    FmuBindingError,
-    FmuModeError,
-)
-from VeraGridEngine.IO.fmu.importer.model_description import (
+from VeraGridEngine.IO.fmu.model_description import (
     FmuInterfaceMode,
     FmuModelDescription,
     FmuVariableDescription,
@@ -29,12 +24,12 @@ from VeraGridEngine.IO.fmu.importer.model_description import (
     choose_fmu_mode,
     read_fmu_model_description,
 )
-from VeraGridEngine.IO.fmu.importer.model_description_metadata import (
+from VeraGridEngine.IO.fmu.Elements.description import (
     FmiThreeCoSimulationCapabilities,
     FmiThreeModelExchangeCapabilities,
     FmiThreeVariableDimension,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_profile import (
+from VeraGridEngine.IO.fmu.profile import (
     FmiThreeWorkerFloat64Profile,
     resolve_fmi_three_configuration_float64_writable_references,
     resolve_fmi_three_configuration_uint64_writable_references,
@@ -43,7 +38,7 @@ from VeraGridEngine.IO.fmu.importer.runtime_profile import (
     validate_fmi_three_co_simulation_worker_profile,
     validate_fmi_three_model_exchange_worker_profile,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_worker import (
+from VeraGridEngine.IO.fmu.workers import (
     _resolve_fmi_three_worker_access_controls,
 )
 from VeraGridEngine.enumerations import FmiVersion
@@ -254,7 +249,7 @@ def test_fmi_three_constant_array_dimensions_preserve_order_and_start_values(
         config.resolve_execution_mode(metadata)
         == FmuInterfaceMode.CO_SIMULATION
     )
-    with pytest.raises(FmuModeError, match="arrays are outside"):
+    with pytest.raises(RuntimeError, match="arrays are outside"):
         validate_fmi_three_co_simulation_worker_profile(
             metadata=metadata,
             preferred_mode=config.preferred_mode,
@@ -292,7 +287,7 @@ def test_fmi_three_referenced_dimension_preserves_typed_uint64_owner(
         resolve_fmi_three_worker_float64_profile(metadata)
         == FmiThreeWorkerFloat64Profile.CONFIGURABLE_ARRAY
     )
-    with pytest.raises(FmuBindingError, match="Configuration Mode dimension"):
+    with pytest.raises(ValueError, match="Configuration Mode dimension"):
         resolve_fmi_three_variable_serialized_value_count(
             variable=matrix,
             maximum_serialized_value_count=64,
@@ -349,7 +344,7 @@ def test_fmi_three_configurable_array_layout_recalculates_and_vanishes(
     )
     assert vanished_layout.serialized_value_counts == (0, 1)
     assert vanished_layout.serialized_value_count == 1
-    with pytest.raises(FmuBindingError, match="serialized value bound"):
+    with pytest.raises(ValueError, match="serialized value bound"):
         resolve_fmi_three_configured_float64_binding_layout(
             layout=readable_layout,
             configuration_uint64_value_references=(100,),
@@ -470,7 +465,7 @@ def test_fmi_three_referenced_dimension_rejects_invalid_owner(
         ),
     )
 
-    with pytest.raises(FmuArchiveError, match=expected_error):
+    with pytest.raises(ValueError, match=expected_error):
         read_fmu_model_description(fmu_path)
 
 
@@ -581,7 +576,7 @@ def test_fmi_three_constant_array_binding_layout_rejects_value_bound(
     )
     metadata: FmuModelDescription = read_fmu_model_description(fmu_path)
 
-    with pytest.raises(FmuBindingError, match="serialized value bound"):
+    with pytest.raises(ValueError, match="serialized value bound"):
         resolve_fmi_three_constant_float64_binding_layouts(
             metadata=metadata,
             readable_variable_names=("matrix",),
@@ -771,7 +766,7 @@ def test_fmi_three_worker_profile_rejects_int32_array(tmp_path: Path) -> None:
         tmp_path / "array-int32-parser",
         array_int32_xml,
     )
-    with pytest.raises(FmuArchiveError, match="Int32 variable.*must be scalar"):
+    with pytest.raises(ValueError, match="Int32 variable.*must be scalar"):
         read_fmu_model_description(array_path)
 
     cs_path: Path = _write_extracted_fmi3_model_description(
@@ -804,13 +799,13 @@ def test_fmi_three_worker_profile_rejects_int32_array(tmp_path: Path) -> None:
 
     float64_profile: FmiThreeWorkerFloat64Profile
     for float64_profile in FmiThreeWorkerFloat64Profile:
-        with pytest.raises(FmuModeError, match="arrays|scalar Int32"):
+        with pytest.raises(RuntimeError, match="arrays|scalar Int32"):
             validate_fmi_three_co_simulation_worker_profile(
                 metadata=cs_metadata,
                 preferred_mode=FmuInterfaceMode.CO_SIMULATION,
                 float64_profile=float64_profile,
             )
-        with pytest.raises(FmuModeError, match="arrays|scalar Int32"):
+        with pytest.raises(RuntimeError, match="arrays|scalar Int32"):
             validate_fmi_three_model_exchange_worker_profile(
                 metadata=me_metadata,
                 preferred_mode=FmuInterfaceMode.MODEL_EXCHANGE,
@@ -904,7 +899,7 @@ def test_fmi_three_constant_array_rejects_invalid_dimension_metadata(
         invalid_xml,
     )
 
-    with pytest.raises(FmuArchiveError, match=expected_error):
+    with pytest.raises(ValueError, match=expected_error):
         read_fmu_model_description(fmu_path)
 
 
@@ -931,7 +926,7 @@ def test_fmi_three_constant_array_rejects_wrong_start_cardinality(
         invalid_xml,
     )
 
-    with pytest.raises(FmuArchiveError, match="start cardinality"):
+    with pytest.raises(ValueError, match="start cardinality"):
         read_fmu_model_description(fmu_path)
 
 
@@ -1003,7 +998,7 @@ def test_fmi_three_array_event_indicator_rejects_adversarial_cardinality(
         adversarial_xml,
     )
 
-    with pytest.raises(FmuArchiveError, match="unsigned 64-bit size_t limit"):
+    with pytest.raises(ValueError, match="unsigned 64-bit size_t limit"):
         read_fmu_model_description(fmu_path)
 
 
@@ -1131,7 +1126,7 @@ def test_fmi_three_scalar_binding_references_reject_invalid_targets(
     )
     metadata: FmuModelDescription = read_fmu_model_description(fmu_path)
 
-    with pytest.raises(FmuBindingError, match=expected_error):
+    with pytest.raises(ValueError, match=expected_error):
         resolve_fmi_three_scalar_binding_references(
             metadata=metadata,
             readable_variable_names=readable_variable_names,
@@ -1283,7 +1278,7 @@ def test_fmi_three_rejects_intermediate_early_return_without_intermediate_update
     )
 
     with pytest.raises(
-        FmuArchiveError,
+        ValueError,
         match="requires providesIntermediateUpdate=true",
     ):
         read_fmu_model_description(fmu_path)
@@ -1314,7 +1309,7 @@ def test_fmi_three_worker_profile_rejects_required_external_execution_tool(
         config.resolve_execution_mode(metadata)
         == FmuInterfaceMode.CO_SIMULATION
     )
-    with pytest.raises(FmuModeError, match="external execution tool"):
+    with pytest.raises(RuntimeError, match="external execution tool"):
         validate_fmi_three_co_simulation_worker_profile(
             metadata=metadata,
             preferred_mode=config.preferred_mode,
@@ -1345,7 +1340,7 @@ def test_fmi_three_worker_profile_rejects_float32(
         float32_config.resolve_execution_mode(float32_metadata)
         == FmuInterfaceMode.CO_SIMULATION
     )
-    with pytest.raises(FmuModeError, match="supports Float64 variables"):
+    with pytest.raises(RuntimeError, match="supports Float64 variables"):
         validate_fmi_three_co_simulation_worker_profile(
             metadata=float32_metadata,
             preferred_mode=float32_config.preferred_mode,
@@ -1816,7 +1811,7 @@ def test_fmi3_rejects_invalid_log_categories(
         invalid_xml,
     )
 
-    with pytest.raises(FmuArchiveError, match=expected_error):
+    with pytest.raises(ValueError, match=expected_error):
         read_fmu_model_description(fmu_path)
 
 
@@ -1932,7 +1927,7 @@ def test_fmi3_rejects_invalid_scalar_identity_and_lexical_values(
         tmp_path / "invalid-scalar",
         invalid_xml,
     )
-    with pytest.raises(FmuArchiveError, match=expected_error):
+    with pytest.raises(ValueError, match=expected_error):
         read_fmu_model_description(fmu_path)
 
 
@@ -1965,7 +1960,7 @@ def test_fmi3_rejects_unknown_variable_metadata_references(
         tmp_path / "unrepresented-variable",
         invalid_xml,
     )
-    with pytest.raises(FmuArchiveError, match=expected_error):
+    with pytest.raises(ValueError, match=expected_error):
         read_fmu_model_description(fmu_path)
 
 
@@ -2045,7 +2040,7 @@ def test_fmi3_rejects_invalid_model_structure_dependencies(
         tmp_path / "invalid-dependencies", invalid_xml
     )
 
-    with pytest.raises(FmuArchiveError, match=expected_error):
+    with pytest.raises(ValueError, match=expected_error):
         read_fmu_model_description(fmu_path)
 
 
@@ -2079,7 +2074,7 @@ def test_fmi3_rejects_invalid_float_bounds(
         tmp_path / "invalid-float-bounds", invalid_xml
     )
 
-    with pytest.raises(FmuArchiveError, match=expected_error):
+    with pytest.raises(ValueError, match=expected_error):
         read_fmu_model_description(fmu_path)
 
 
@@ -2235,7 +2230,7 @@ def test_fmi3_rejects_invalid_unit_and_type_metadata(
         invalid_xml,
     )
 
-    with pytest.raises(FmuArchiveError, match=expected_error):
+    with pytest.raises(ValueError, match=expected_error):
         read_fmu_model_description(fmu_path)
 
 
@@ -2276,7 +2271,7 @@ def test_fmi3_rejects_invalid_variable_semantics(
         tmp_path / "invalid-semantics",
         invalid_xml,
     )
-    with pytest.raises(FmuArchiveError, match=expected_error):
+    with pytest.raises(ValueError, match=expected_error):
         read_fmu_model_description(fmu_path)
 
 
@@ -2314,7 +2309,7 @@ def test_fmi3_rejects_inconsistent_model_structure(
         tmp_path / "invalid-model-structure",
         invalid_xml,
     )
-    with pytest.raises(FmuArchiveError, match=expected_error):
+    with pytest.raises(ValueError, match=expected_error):
         read_fmu_model_description(fmu_path)
 
 
@@ -2336,7 +2331,7 @@ def test_fmi3_rejects_scheduled_execution_metadata(tmp_path: Path) -> None:
         tmp_path / "scheduled-execution",
         scheduled_xml,
     )
-    with pytest.raises(FmuArchiveError, match="ScheduledExecution is outside"):
+    with pytest.raises(ValueError, match="ScheduledExecution is outside"):
         read_fmu_model_description(scheduled_path)
 
 
@@ -2364,7 +2359,7 @@ def test_fmi3_external_tool_requirement_cannot_bypass_execution_gate(
         config.resolve_execution_mode(metadata)
         == FmuInterfaceMode.CO_SIMULATION
     )
-    with pytest.raises(FmuModeError, match="external execution tool"):
+    with pytest.raises(RuntimeError, match="external execution tool"):
         validate_fmi_three_co_simulation_worker_profile(
             metadata=metadata,
             preferred_mode=config.preferred_mode,
@@ -2387,7 +2382,7 @@ def test_fmi3_validates_fixed_internal_step_size(tmp_path: Path) -> None:
         tmp_path / "invalid-fixed-step",
         invalid_xml,
     )
-    with pytest.raises(FmuArchiveError, match="must be finite and positive"):
+    with pytest.raises(ValueError, match="must be finite and positive"):
         read_fmu_model_description(fmu_path)
 
 
@@ -2429,5 +2424,5 @@ def test_fmi3_rejects_namespaced_root(tmp_path: Path) -> None:
         tmp_path / "namespaced-root",
         namespaced_root_xml,
     )
-    with pytest.raises(FmuArchiveError, match="XML namespaces are not accepted"):
+    with pytest.raises(ValueError, match="XML namespaces are not accepted"):
         read_fmu_model_description(namespaced_root_path)

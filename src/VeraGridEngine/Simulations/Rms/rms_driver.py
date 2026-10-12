@@ -24,6 +24,8 @@ from VeraGridEngine.enumerations import EngineType, SimulationTypes, DynamicInte
 from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
 from VeraGridEngine.basic_structures import Vec, StrVec
 from VeraGridEngine.enumerations import PlotSimulationType, RmsProblemTypes
+from VeraGridEngine.IO.manufacturer_native.runtime_session import ManufacturerNativeRuntimeSession
+from VeraGridEngine.IO.native_runtime import NativeWorkerLimits
 
 
 def _collect_rms_group_parameter_values(problem: RmsProblemDae | RmsProblemDaeVec,
@@ -151,7 +153,7 @@ class RmsSimulationDriver(DriverTemplate):
         # downstream code can preserve stable event-group identities. The extra
         # availability mask records which of those declared groups are actually
         # simulated in this run, which is the information the plot binder needs.
-        has_event_group_results: np.ndarray = np.array([bool(elm.active) for elm in rms_events_groups], dtype=bool)
+        has_event_group_results: np.ndarray = np.zeros(len(rms_events_groups), dtype=bool)
         self.results = RmsResults(
             time_array=pd.DatetimeIndex(pd.to_datetime(t * 1e9)),
             rms_events_group_names=rms_events_group_names,
@@ -217,6 +219,17 @@ class RmsSimulationDriver(DriverTemplate):
                             cancel_checker=self.is_cancel,
                         )
 
+                    elif self.options.problem_type == RmsProblemTypes.PowerBalanceFullVectorized:
+                        solver = BackEulerImplicitIntegrationFullVec(
+                            problem=problem,
+                            t0=0,
+                            t_end=self.options.simulation_time,
+                            h=self.options.time_step,
+                            max_iter=self.options.max_iter,
+                            tolerance=self.options.tolerance,
+                            cancel_checker=self.is_cancel,
+                        )
+
                 else:
                     self.logger.add_info("Falling back to DAE-BackEuler method")
 
@@ -245,7 +258,33 @@ class RmsSimulationDriver(DriverTemplate):
                             tolerance=self.options.tolerance,
                             cancel_checker=self.is_cancel,
                         )
+
+                    elif self.options.problem_type == RmsProblemTypes.PowerBalanceFullVectorized:
+                        solver = BackEulerImplicitIntegrationFullVec(
+                            problem=problem,
+                            t0=0,
+                            t_end=self.options.simulation_time,
+                            h=self.options.time_step,
+                            max_iter=self.options.max_iter,
+                            tolerance=self.options.tolerance,
+                            cancel_checker=self.is_cancel,
+                        )
                 
+                native_session: ManufacturerNativeRuntimeSession | None = None
+                if len(self.grid.manufacturer_native_models) > 0:
+                    native_session = ManufacturerNativeRuntimeSession(
+                        providers=self.grid.manufacturer_native_models,
+                        platform=None,
+                        limits=NativeWorkerLimits(),
+                        logger=self.logger,
+                    )
+                    try:
+                        problem._set_manufacturer_native_runtime_session(native_session)
+                    except BaseException:
+                        native_session.close()
+                        raise
+                else:
+                    pass
                 _t_start = time.time()
                 # Capture the complete scalar state before the solver applies
                 # any step or ramp belonging to this event group.
@@ -253,7 +292,14 @@ class RmsSimulationDriver(DriverTemplate):
                     problem=problem,
                     grid=self.grid,
                 )
-                t, y, well_initialized, converged = solver.simulate()
+                try:
+                    t, y, well_initialized, converged = solver.simulate()
+                finally:
+                    problem._set_manufacturer_native_runtime_session(None)
+                    if native_session is not None:
+                        native_session.close()
+                    else:
+                        pass
                 _t_end = time.time()
                 # print(f"RMS simulation time: {_t_end - _t_start:.4f} s")
 
@@ -265,6 +311,9 @@ class RmsSimulationDriver(DriverTemplate):
                 self.results.well_initialized[group_idx] = well_initialized
                 sample_count: int = min(self.results.values.shape[0], y.shape[0])
                 self.results.values[:sample_count, :, group_idx] = y[:sample_count, :]
+                if sample_count < self.results.values.shape[0]:
+                    self.results.values[sample_count:, :, group_idx] = np.nan
+                self.results.has_event_group_results[group_idx] = sample_count > 0
                 self.results.parameter_value_maps[group_idx] = _collect_rms_group_parameter_values(
                     problem=problem,
                     grid=self.grid,
@@ -274,7 +323,11 @@ class RmsSimulationDriver(DriverTemplate):
                     self.logger.add_warning("Not well initialized", device=rms_events_group.name)
 
                 if not converged:
-                    self.logger.add_warning("Not converged", device=rms_events_group.name)
+                    self.logger.add_warning(
+                        f"RMS stopped after {sample_count} accepted samples; "
+                        f"last completed time is {t[sample_count - 1]:g} s",
+                        device=rms_events_group.name,
+                    )
 
                 self.progress_signal.emit(90)
 

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EMT fault &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>EMT fault &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -73,39 +73,19 @@
 <li class="toctree-l1"><a class="reference internal" href="../../reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../dynamic_simulations.html">🧲 Dynamic simulations</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../../rms_simulations.html">⏱️ RMS simulations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../emt_simulations.html">🔬 EMT simulations</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="../../dynamic_model_library_index.html">📚 Dynamic model library</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="../../dynamic_model_library_index.html#authoring-models">Authoring models</a></li>
-<li class="toctree-l3 current"><a class="reference internal" href="../../dynamic_model_library_index.html#device-templates">Device templates</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="../RMS/index.html">RMS device templates</a></li>
-<li class="toctree-l4 current"><a class="reference internal" href="index.html">EMT device templates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#dynamic-simulation-theory">1. Dynamic simulation theory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#dynamic-editor-and-model-construction">2. Dynamic editor and model construction</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../dynamic_simulations.html#dynamic-model-library">3. Dynamic model library</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../dynamic_model_library_index.html">📚 Dynamic model library</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../dynamic_model_library_index.html#authoring-models">Authoring models</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../dynamic_model_library_index.html#device-templates">Device templates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../dynamic_model_library_index.html#reusable-blocks-and-logic">Reusable blocks and logic</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="../../dynamic_model_library_index.html#reusable-blocks-and-logic">Reusable blocks and logic</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#why-dynamic-simulations-are-different-from-static-simulations">Why dynamic simulations are different from static simulations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#rms-and-emt">RMS and EMT</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#dae-formulation">DAE formulation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#from-blocks-to-equations-in-veragrid">From blocks to equations in VeraGrid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#symbolic-numeric-approach">Symbolic-numeric approach</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#dynamic-blocks-in-veragrid">Dynamic blocks in VeraGrid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#initialization">Initialization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#initialization-references">Initialization references</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#solvers-and-integration-methods">Solvers and integration methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#events-and-simulation-scenarios">Events and simulation scenarios</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#settings">Settings</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#results">Results</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#api-workflow-overview">API workflow overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#rms-example-from-scripting">RMS example from scripting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#emt-example-from-scripting">EMT example from scripting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#working-with-templates-and-model-editors">Working with templates and model editors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#importing-dynamic-models-from-external-tools">Importing dynamic models from external tools</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#benchmarks-and-validation">Benchmarks and validation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#best-practices">Best practices</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#common-pitfalls">Common pitfalls</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#references">References</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#recommended-reading-paths">Recommended reading paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#end-to-end-workflow">End-to-end workflow</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../development.html">💻 Development</a></li>
@@ -145,61 +125,171 @@
   <section class="tex2jax_ignore mathjax_ignore" id="emt-fault">
 <h1>EMT fault<a class="headerlink" href="#emt-fault" title="Link to this heading"></a></h1>
 <!-- veragrid-block-introduction:start -->
-<p><strong>EMT fault</strong> represents passive network physics through resistance, inductance, capacitance, coupling, or switching topology. Its equations enforce voltage-current constitutive relations and therefore affect energy storage, damping, propagation, fault current, or grounding behavior.</p>
+<p><strong>EMT fault</strong> inserts a switchable low-impedance path at an internal node of a
+composed EMT branch model. Its algebraic equations preserve the series voltage
+path and split the through current from the selected fault current.</p>
 <section id="typical-use">
 <h2>Typical use<a class="headerlink" href="#typical-use" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Use it to reproduce the electrical path between sources, converters, machines, and loads.</p></li>
-<li><p>Keep phases, terminal orientation, connection type, and SI/per-unit parameter bases consistent.</p></li>
+<li><p>Insert it inside an EMT line or other explicitly composed branch model.</p></li>
+<li><p>Select a phase mask consistent with the requested fault topology.</p></li>
+<li><p>Keep all resistance and conductance settings on the parent EMT per-unit base.</p></li>
 </ul>
 <!-- veragrid-block-introduction:end -->
-<p>The EMT fault block inserts a configurable low-impedance path between selected
-conductors or between conductors and ground. It is intended for transient fault
-events and can be placed on either terminal side of the edited device.</p>
+<p>The <strong>EMT fault</strong> is an internal branch-composition block for inserting a
+switchable low-impedance path at a three-phase EMT node. It is available from
+the dynamic editor library under <strong>Faults</strong> only while the editor is in EMT
+mode. It is not an RMS model and it is not mapped directly to a network device;
+it must be wired inside a parent EMT branch model, such as a line composition.</p>
 </section>
-<section id="characteristic-relation">
-<h2>Characteristic relation<a class="headerlink" href="#characteristic-relation" title="Link to this heading"></a></h2>
-<p>For a fault resistance <code class="docutils literal notranslate"><span class="pre">R_f</span></code>, each active fault path follows</p>
-<div class="math">
-<p><img src="../../../_images/math/1763ba90c7731fbe62b000207cfd3be35d0ef5ef.svg" alt="v_f = R_f i_f"/></p>
-</div></section>
-<section id="general-options">
-<h2>General options<a class="headerlink" href="#general-options" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p>Enabled phases and neutral/ground participation.</p></li>
-<li><p>Fault topology, such as phase-to-phase or three-phase fault.</p></li>
-<li><p>Placement on the from or to side of the host branch.</p></li>
-<li><p>Event and impedance parameters exposed by the selected template.</p></li>
-</ul>
-</section>
-<section id="interface-table">
-<h2>Interface table<a class="headerlink" href="#interface-table" title="Link to this heading"></a></h2>
+<section id="supported-topologies">
+<h2>Supported topologies<a class="headerlink" href="#supported-topologies" title="Link to this heading"></a></h2>
 <table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"><p>Category</p></th>
-<th class="head"><p>Name</p></th>
+<tr class="row-odd"><th class="head"><p>Topology</p></th>
+<th class="head"><p>Required phases</p></th>
+<th class="head"><p>Electrical representation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">LG</span></code></p></td>
+<td><p>Exactly one of A, B or C</p></td>
+<td><p>Selected phase to ground through <code class="docutils literal notranslate"><span class="pre">fault_rg</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">LL</span></code></p></td>
+<td><p>Exactly two phases</p></td>
+<td><p>One phase-to-phase path through <code class="docutils literal notranslate"><span class="pre">fault_r</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">LLG</span></code></p></td>
+<td><p>Exactly two phases</p></td>
+<td><p>Each phase to a common node through <code class="docutils literal notranslate"><span class="pre">fault_r</span></code>, then the node to ground through <code class="docutils literal notranslate"><span class="pre">fault_rg</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">LLL</span></code></p></td>
+<td><p>A, B and C</p></td>
+<td><p>Three equal paths through <code class="docutils literal notranslate"><span class="pre">fault_r</span></code> to one floating common node</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">LLLG</span></code></p></td>
+<td><p>A, B and C</p></td>
+<td><p>Each phase independently to ground through <code class="docutils literal notranslate"><span class="pre">fault_rg</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>An invalid phase/topology combination is rejected when the template is built.</p>
+</section>
+<section id="series-insertion-interface">
+<h2>Series-insertion interface<a class="headerlink" href="#series-insertion-interface" title="Link to this heading"></a></h2>
+<p>For every selected phase <code class="docutils literal notranslate"><span class="pre">X</span></code>, the block exposes four ports:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Direction</p></th>
+<th class="head"><p>Port</p></th>
 <th class="head"><p>Meaning</p></th>
 <th class="head"><p>Units</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Input</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">v_X</span></code></p></td>
-<td><p>Conductor voltage at the fault point</p></td>
-<td><p>V or p.u.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">v_outer_X</span></code></p></td>
+<td><p>Voltage arriving from the outer/upstream segment</p></td>
+<td><p>p.u.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Input</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">i_inner_X</span></code></p></td>
+<td><p>Current arriving from the inner/downstream segment</p></td>
+<td><p>p.u.</p></td>
+</tr>
+<tr class="row-even"><td><p>Output</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">v_inner_X</span></code></p></td>
+<td><p>Voltage passed to the inner/downstream segment</p></td>
+<td><p>p.u.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Output</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">i_X</span></code></p></td>
-<td><p>Fault current injected into the conductor</p></td>
-<td><p>A or p.u.</p></td>
-</tr>
-<tr class="row-even"><td><p>Parameter</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">R_f</span></code></p></td>
-<td><p>Fault-path resistance</p></td>
-<td><p>ohm or p.u.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">i_outer_X</span></code></p></td>
+<td><p>Current returned to the outer/upstream segment</p></td>
+<td><p>p.u.</p></td>
 </tr>
 </tbody>
 </table>
+<p>The block owns both equations needed at its split node:</p>
+<div class="math">
+<p><img src="../../../_images/math/b8292ab087d9ddd72e539b48cdcff13d3272f572.svg" alt="v_{inner,X} - v_{outer,X} = 0"/></p>
+</div><div class="math">
+<p><img src="../../../_images/math/d0645a8c1bf60673b9a8df1c681e4c6e90505bda.svg" alt="i_{outer,X} - i_{inner,X} - i_{fault,X} = 0"/></p>
+</div><p>Consequently, the parent composition only connects these explicit ports; it
+must not add a second voltage-continuity equation.</p>
+</section>
+<section id="fault-paths-and-switching">
+<h2>Fault paths and switching<a class="headerlink" href="#fault-paths-and-switching" title="Link to this heading"></a></h2>
+<p>The binary mode <code class="docutils literal notranslate"><span class="pre">fault_closed_mode</span></code> selects the effective conductance. For a
+phase path and a ground path respectively,</p>
+<div class="math">
+<p><img src="../../../_images/math/af0fc87dbdd39c783aa75728b648d3ff7ff6fc5d.svg" alt="G_f = m\frac{1}{R_f} + (1-m)G_{open}"/></p>
+</div><div class="math">
+<p><img src="../../../_images/math/6e24bc7b5a1f2969c92f1229c3593d319bee3ad8.svg" alt="G_g = m\frac{1}{R_g} + (1-m)G_{open}"/></p>
+</div><p>where <code class="docutils literal notranslate"><span class="pre">m</span></code> is <code class="docutils literal notranslate"><span class="pre">fault_closed_mode</span></code>, <code class="docutils literal notranslate"><span class="pre">R_f</span></code> is <code class="docutils literal notranslate"><span class="pre">fault_r</span></code>, <code class="docutils literal notranslate"><span class="pre">R_g</span></code> is <code class="docutils literal notranslate"><span class="pre">fault_rg</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">G_open</span></code> is <code class="docutils literal notranslate"><span class="pre">fault_open_g</span></code>. All resistance and conductance values are per-unit
+on the parent EMT model base; the block performs no SI/base conversion.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">LLG</span></code>, positive phase currents enter the common node and the ground current
+leaves it, so the common-node equation is</p>
+<div class="math">
+<p><img src="../../../_images/math/7dd690f3af2e96aac94c35ae7152ecd9dd81923e.svg" alt="i_{AN} + i_{BN} - G_g v_N = 0."/></p>
+</div></section>
+<section id="control-and-parameters">
+<h2>Control and parameters<a class="headerlink" href="#control-and-parameters" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Setting</p></th>
+<th class="head"><p>Meaning</p></th>
+<th class="head"><p>Units/default</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">initial_closed</span></code></p></td>
+<td><p>Initial value of <code class="docutils literal notranslate"><span class="pre">fault_closed_mode</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fault_resistance</span></code></p></td>
+<td><p>Closed phase-path resistance <code class="docutils literal notranslate"><span class="pre">R_f</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0.01</span> <span class="pre">p.u.</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ground_resistance</span></code></p></td>
+<td><p>Closed ground-path resistance <code class="docutils literal notranslate"><span class="pre">R_g</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0.01</span> <span class="pre">p.u.</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">open_conductance</span></code></p></td>
+<td><p>Leakage conductance while open</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1e-8</span> <span class="pre">p.u.</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">signal_controlled</span></code></p></td>
+<td><p>Adds the <code class="docutils literal notranslate"><span class="pre">fault_cmd</span></code> input and sampled mode update</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">command_threshold</span></code></p></td>
+<td><p>Fault closes when <code class="docutils literal notranslate"><span class="pre">fault_cmd</span> <span class="pre">&gt;=</span> <span class="pre">threshold</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0.5</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fault_time_constant</span></code></p></td>
+<td><p>Saved compatibility parameter; not used by the present algebraic model</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1e-4</span> <span class="pre">s</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>Resistances and the compatibility time constant must be finite and positive;
+the open conductance must be finite and non-negative.</p>
+<p>When signal control is disabled, events may change <code class="docutils literal notranslate"><span class="pre">fault_closed_mode</span></code>
+directly. When it is enabled, the procedural logic samples <code class="docutils literal notranslate"><span class="pre">fault_cmd</span></code> and
+writes the mode according to <code class="docutils literal notranslate"><span class="pre">command_threshold</span></code>.</p>
+</section>
+<section id="placement-side">
+<h2>Placement side<a class="headerlink" href="#placement-side" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">FromSide</span></code> and <code class="docutils literal notranslate"><span class="pre">ToSide</span></code> describe where the user intends to place the fault in a
+composed branch. The setting is retained in the internal editor projection and
+is restored after saving and reopening. It does not automatically discover or
+rewire a neighbouring line block: the outer and inner ports remain explicit,
+so the parent model author controls the actual connection.</p>
+<p>The internal diagram mirrors the selected topology, including the series port
+path, phase-to-phase link, floating common node, or grounded common node as
+applicable.</p>
 </section>
 </section>
 

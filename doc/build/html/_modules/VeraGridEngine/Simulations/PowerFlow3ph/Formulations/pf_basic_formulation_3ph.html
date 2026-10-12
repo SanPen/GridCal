@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -69,7 +69,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -109,13 +109,15 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Callable</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numba</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nb</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">lil_matrix</span><span class="p">,</span> <span class="n">csc_matrix</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">lil_matrix</span><span class="p">,</span> <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">vstack</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">splu</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.DataStructures.numerical_circuit</span><span class="w"> </span><span class="kn">import</span> <span class="n">NumericalCircuit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.power_flow_results</span><span class="w"> </span><span class="kn">import</span> <span class="n">NumericPowerFlowResults</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.power_flow_options</span><span class="w"> </span><span class="kn">import</span> <span class="n">PowerFlowOptions</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.Derivatives.ac_jacobian</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_J_vc_csc</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">compute_fx_error</span><span class="p">,</span> <span class="n">power_flow_post_process_nonlinear_3ph</span><span class="p">,</span> <span class="n">floating_star_currents</span><span class="p">,</span> <span class="n">floating_star_powers</span>
+    <span class="n">compute_fx_error</span><span class="p">,</span> <span class="n">power_flow_post_process_nonlinear_3ph</span><span class="p">,</span> <span class="n">floating_star_currents</span><span class="p">,</span> <span class="n">floating_star_powers</span><span class="p">,</span>
+    <span class="n">asynchronous_gen_currents</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">control_q_inside_method</span><span class="p">,</span>
                                                                                      <span class="n">compute_slack_distribution</span><span class="p">)</span>
@@ -128,20 +130,21 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Topology.simulation_indices</span><span class="w"> </span><span class="kn">import</span> <span class="n">compile_types</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.basic_structures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">CxMat</span><span class="p">,</span> <span class="n">BoolVec</span><span class="p">,</span> <span class="n">Logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Sparse.csc2</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">CSC</span><span class="p">,</span> <span class="n">scipy_to_mat</span><span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">BusMode</span><span class="p">,</span> <span class="n">WindingType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">BusMode</span><span class="p">,</span> <span class="n">WindingType</span><span class="p">,</span> <span class="n">GeneratorType</span><span class="p">,</span> <span class="n">ShuntConnectionType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow3ph.Formulations.positive_sequence_control</span><span class="w"> </span><span class="kn">import</span> <span class="n">PositiveSequenceControl</span>
 
 
 <div class="viewcode-block" id="lookup_from_mask">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.lookup_from_mask">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">lookup_from_mask</span><span class="p">(</span><span class="n">mask</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function builds the lookup vector based on the information provided by the mask vector.</span>
 <span class="sd">    The mask is a boolean vector with True for existing buses and False for non-existing buses.</span>
 <span class="sd">    The lookup vector will save a -1 for non-existing buses and will order the existing buses from 0 to n.</span>
 <span class="sd">    :param mask: Boolean vector with True for existing buses and False for non-existing buses.</span>
 <span class="sd">    :return: lookup</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">lookup</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
     <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
@@ -156,12 +159,12 @@
 <div class="viewcode-block" id="compute_ybus_generator">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.compute_ybus_generator">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_ybus_generator</span><span class="p">(</span><span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">csc_matrix</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the Ybus matrix for a generator in a 3-phase system with neutral.</span>
 <span class="sd">    It is used only during the short-circuit analysis, not in power flow simulations.</span>
 <span class="sd">    :param nc: NumericalCircuit</span>
 <span class="sd">    :return: Ybus</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">nbus</span>
     <span class="n">m</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">nelm</span>
@@ -191,7 +194,7 @@
 <div class="viewcode-block" id="compute_ybus">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.compute_ybus">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_ybus</span><span class="p">(</span><span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">BoolVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute admittances and masks</span>
 
 <span class="sd">    The mask is a boolean vector that indicates which bus phases are active</span>
@@ -211,7 +214,7 @@
 
 <span class="sd">    :param nc: NumericalCircuit</span>
 <span class="sd">    :return: Ybus, Yf, Yt, Yshunt_bus, mask, bus_idx_lookup</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">nbus</span>
     <span class="n">m</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">nelm</span>
@@ -244,6 +247,13 @@
 
         <span class="n">Cf</span><span class="p">[</span><span class="n">k4</span><span class="p">,</span> <span class="n">f4</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">Ct</span><span class="p">[</span><span class="n">k4</span><span class="p">,</span> <span class="n">t4</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">Ycoupling3</span><span class="o">.</span><span class="n">nnz</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">mutual</span><span class="p">:</span> <span class="n">csc_matrix</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">Ycoupling3</span> <span class="o">@</span> <span class="n">vstack</span><span class="p">((</span><span class="n">Cf</span><span class="p">,</span> <span class="n">Ct</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'csc'</span><span class="p">)</span>
+        <span class="n">Yf</span> <span class="o">+=</span> <span class="n">mutual</span><span class="p">[:</span><span class="mi">4</span> <span class="o">*</span> <span class="n">m</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">Yt</span> <span class="o">+=</span> <span class="n">mutual</span><span class="p">[</span><span class="mi">4</span> <span class="o">*</span> <span class="n">m</span><span class="p">:,</span> <span class="p">:]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
 
     <span class="n">zero_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">R</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">Cfcopy</span> <span class="o">=</span> <span class="n">Cf</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -364,7 +374,7 @@
                        <span class="n">P</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                        <span class="n">Q</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                        <span class="n">control_mode_int</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param bus_idx:</span>
 <span class="sd">    :param bus_lookup:</span>
@@ -373,7 +383,7 @@
 <span class="sd">    :param Q:</span>
 <span class="sd">    :param control_mode_int:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
     <span class="n">nelm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bus_idx</span><span class="p">)</span>
     <span class="n">Igen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
@@ -393,9 +403,10 @@
         <span class="n">b2</span> <span class="o">=</span> <span class="n">bus_lookup</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
         <span class="n">c2</span> <span class="o">=</span> <span class="n">bus_lookup</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
 
-        <span class="n">Igen</span><span class="p">[</span><span class="n">a2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">((</span><span class="n">P</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">Q</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">/</span> <span class="n">V</span><span class="p">[</span><span class="n">a2</span><span class="p">])</span>
-        <span class="n">Igen</span><span class="p">[</span><span class="n">b2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">((</span><span class="n">P</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">Q</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">/</span> <span class="n">V</span><span class="p">[</span><span class="n">b2</span><span class="p">])</span>
-        <span class="n">Igen</span><span class="p">[</span><span class="n">c2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">((</span><span class="n">P</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">Q</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">/</span> <span class="n">V</span><span class="p">[</span><span class="n">c2</span><span class="p">])</span>
+        <span class="c1"># Fixed-power units can share a terminal with each other and a U1 regulator.</span>
+        <span class="n">Igen</span><span class="p">[</span><span class="n">a2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">((</span><span class="n">P</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">Q</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">/</span> <span class="n">V</span><span class="p">[</span><span class="n">a2</span><span class="p">])</span>
+        <span class="n">Igen</span><span class="p">[</span><span class="n">b2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">((</span><span class="n">P</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">Q</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">/</span> <span class="n">V</span><span class="p">[</span><span class="n">b2</span><span class="p">])</span>
+        <span class="n">Igen</span><span class="p">[</span><span class="n">c2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">((</span><span class="n">P</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">Q</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">/</span> <span class="n">V</span><span class="p">[</span><span class="n">c2</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">Igen</span></div>
 
@@ -410,7 +421,7 @@
                           <span class="n">Istar</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                           <span class="n">Idelta</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                           <span class="n">Ifloating</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param bus_idx:</span>
 <span class="sd">    :param bus_lookup:</span>
@@ -419,7 +430,7 @@
 <span class="sd">    :param Idelta:</span>
 <span class="sd">    :param Ifloating:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
     <span class="n">nelm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bus_idx</span><span class="p">)</span>
 
@@ -700,7 +711,7 @@
                         <span class="n">Sstar</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                         <span class="n">Sfloating</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                         <span class="n">Sdelta</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param bus_idx:</span>
 <span class="sd">    :param bus_lookup:</span>
@@ -709,7 +720,7 @@
 <span class="sd">    :param Sfloating:</span>
 <span class="sd">    :param Sdelta:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
     <span class="n">nelm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bus_idx</span><span class="p">)</span>
 
@@ -973,7 +984,7 @@
 <div class="viewcode-block" id="calc_autodiff_jacobian">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.calc_autodiff_jacobian">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calc_autodiff_jacobian</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Vec</span><span class="p">],</span> <span class="n">Vec</span><span class="p">],</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the Jacobian matrix of `func` at `x` using finite differences.</span>
 <span class="sd">    df/dx = (f(x+h) - f(x)) / h</span>
 
@@ -982,7 +993,7 @@
 <span class="sd">    :param x: Point at which to evaluate the Jacobian (numpy array).</span>
 <span class="sd">    :param h: Small step for finite difference.</span>
 <span class="sd">    :return: Jacobian matrix as a CSC matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="n">f0</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
@@ -1007,11 +1018,11 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.expand3ph">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">expand3ph</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Expands a numpy array to 3-pase copying the same values</span>
 <span class="sd">    :param x:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="n">idx4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
     <span class="n">x4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
@@ -1026,12 +1037,12 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.slice_indices">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">slice_indices</span><span class="p">(</span><span class="n">pq</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_lookup</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Slice the indices based on the bus_lookup</span>
 <span class="sd">    :param pq: original bus indices</span>
 <span class="sd">    :param bus_lookup: mapping between original and sliced bus indices</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pq</span><span class="p">)</span>
     <span class="n">vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">max_nnz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
@@ -1050,11 +1061,11 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.expand_indices_3ph">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">expand_indices_3ph</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Expands a numpy array to 3-pase copying the same values</span>
 <span class="sd">    :param x:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="n">idx4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
     <span class="n">x4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
@@ -1070,12 +1081,12 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.expand_slice_indices_3ph">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">expand_slice_indices_3ph</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">bus_lookup</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Expands and slices a numpy array to 3-phase copying the same values</span>
 <span class="sd">    :param x:</span>
 <span class="sd">    :param bus_lookup:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">x3</span> <span class="o">=</span> <span class="n">expand_indices_3ph</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
     <span class="n">x3_final</span> <span class="o">=</span> <span class="n">slice_indices</span><span class="p">(</span><span class="n">x3</span><span class="p">,</span> <span class="n">bus_lookup</span><span class="p">)</span>
@@ -1087,11 +1098,11 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.expandVoltage3ph">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">expandVoltage3ph</span><span class="p">(</span><span class="n">V0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Expands a numpy array to 3-pase copying the same values</span>
 <span class="sd">    :param V0: array of bus voltages in positive sequence</span>
 <span class="sd">    :return: Array of three-phase voltages in 3-phase ABC</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">V0</span><span class="p">)</span>
     <span class="n">idx4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
 
@@ -1113,13 +1124,13 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.expand_magnitudes">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">expand_magnitudes</span><span class="p">(</span><span class="n">magnitude</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">lookup</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Expands the masked magnitude using the lookup saving zeros where the lookup is -1,</span>
 <span class="sd">    which means that this bus did not exist, and it was previously eliminated.</span>
 <span class="sd">    :param magnitude: The magnitude to expand, for instance, the voltage vector at each bus</span>
 <span class="sd">    :param lookup: The vector which contains the information about the existing and eliminated buses</span>
 <span class="sd">    :return: magnitude_expanded</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_buses_total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lookup</span><span class="p">)</span>
     <span class="n">magnitude_expanded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_buses_total</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lookup</span><span class="p">):</span>
@@ -1136,7 +1147,7 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.expand_matrix">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">expand_matrix</span><span class="p">(</span><span class="n">magnitude</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">lookup</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Expands a matrix by adding zero rows and columns based on the lookup indices.</span>
 <span class="sd">    If a lookup value is negative, the corresponding row and column in the matrix</span>
 <span class="sd">    will be replaced by zeros.</span>
@@ -1144,7 +1155,7 @@
 <span class="sd">    :param magnitude: 2D numpy array (matrix to expand)</span>
 <span class="sd">    :param lookup: List of indices for lookup</span>
 <span class="sd">    :return: Expanded matrix with zeros in the rows and columns where lookup values are negative</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_buses_total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lookup</span><span class="p">)</span>
 
     <span class="c1"># Initialize the expanded matrix as a zero matrix of the same size as the lookup</span>
@@ -1160,35 +1171,80 @@
 
 
 
+<div class="viewcode-block" id="passive_neutral_reduction">
+<a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.passive_neutral_reduction">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">passive_neutral_reduction</span><span class="p">(</span><span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">,</span> <span class="n">ybus</span><span class="p">:</span> <span class="n">csc_matrix</span><span class="p">,</span>
+                              <span class="n">mask</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">csc_matrix</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Eliminate only linear, zero-injection neutral equations by exact Schur reduction.</span>
+
+<span class="sd">    The voltage map reconstructs neutral voltages; no neutral is grounded and no</span>
+<span class="sd">    phase common mode is constrained. Singular neutral blocks remain explicit.</span>
+
+<span class="sd">    :param nc: Compiled network and nonlinear injection connections.</span>
+<span class="sd">    :param ybus: Admittance matrix after removing absent or grounded conductors.</span>
+<span class="sd">    :param mask: Full NABC conductor mask corresponding to ybus.</span>
+<span class="sd">    :return: Retained indices and optional full-voltage reconstruction matrix.</span>
+<span class="sd">    """</span>
+    <span class="n">candidates</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="n">protected</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="c1"># Explicit star P/I loads need their neutral voltage during each iteration.</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">load_data</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">nc</span><span class="o">.</span><span class="n">load_data</span><span class="o">.</span><span class="n">S3_star</span><span class="p">[</span><span class="mi">4</span> <span class="o">*</span> <span class="n">k</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">nc</span><span class="o">.</span><span class="n">load_data</span><span class="o">.</span><span class="n">I3_star</span><span class="p">[</span><span class="mi">4</span> <span class="o">*</span> <span class="n">k</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">protected</span><span class="p">[</span><span class="n">nc</span><span class="o">.</span><span class="n">load_data</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="n">candidates</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">protected</span><span class="p">,</span> <span class="mi">4</span><span class="p">)[</span><span class="n">mask</span><span class="p">]</span>
+    <span class="n">keep</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="o">~</span><span class="n">candidates</span><span class="p">)</span>
+    <span class="n">neutral</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">neutral</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">keep</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">=</span> <span class="o">-</span><span class="n">splu</span><span class="p">(</span><span class="n">ybus</span><span class="p">[</span><span class="n">neutral</span><span class="p">,</span> <span class="p">:][:,</span> <span class="n">neutral</span><span class="p">]</span><span class="o">.</span><span class="n">tocsc</span><span class="p">())</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span>
+                <span class="n">ybus</span><span class="p">[</span><span class="n">neutral</span><span class="p">,</span> <span class="p">:][:,</span> <span class="n">keep</span><span class="p">]</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
+        <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ybus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lift</span><span class="p">:</span> <span class="n">lil_matrix</span> <span class="o">=</span> <span class="n">lil_matrix</span><span class="p">((</span><span class="n">ybus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">keep</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+            <span class="n">lift</span><span class="p">[</span><span class="n">keep</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">keep</span><span class="p">))]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">lift</span><span class="p">[</span><span class="n">neutral</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">response</span>
+            <span class="k">return</span> <span class="n">keep</span><span class="p">,</span> <span class="n">lift</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span></div>
+
+
+
 <div class="viewcode-block" id="PfBasicFormulation3Ph">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.PfBasicFormulation3Ph">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PfBasicFormulation3Ph</span><span class="p">(</span><span class="n">PfFormulationTemplate</span><span class="p">):</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;Ybus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Yf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Yt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Yshunt_bus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mask&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_lookup&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;branch_lookup&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Un_floating_current&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Un_floating_power&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;logger&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;S0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qmin&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qmax&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vd&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pq&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pv&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pqv&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;p&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;no_slack&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_dVa&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_dVm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_dP&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_dQ&quot;</span><span class="p">,</span>
+        <span class="s2">"Ybus"</span><span class="p">,</span>
+        <span class="s2">"Yf"</span><span class="p">,</span>
+        <span class="s2">"Yt"</span><span class="p">,</span>
+        <span class="s2">"Yshunt_bus"</span><span class="p">,</span>
+        <span class="s2">"mask"</span><span class="p">,</span>
+        <span class="s2">"bus_lookup"</span><span class="p">,</span>
+        <span class="s2">"branch_lookup"</span><span class="p">,</span>
+        <span class="s2">"full_admittances"</span><span class="p">,</span>
+        <span class="s2">"retained"</span><span class="p">,</span>
+        <span class="s2">"voltage_lift"</span><span class="p">,</span>
+        <span class="s2">"Un_floating_current"</span><span class="p">,</span>
+        <span class="s2">"Un_floating_power"</span><span class="p">,</span>
+        <span class="s2">"logger"</span><span class="p">,</span>
+        <span class="s2">"nc"</span><span class="p">,</span>
+        <span class="s2">"S0"</span><span class="p">,</span>
+        <span class="s2">"Qmin"</span><span class="p">,</span>
+        <span class="s2">"Qmax"</span><span class="p">,</span>
+        <span class="s2">"vd"</span><span class="p">,</span>
+        <span class="s2">"pq"</span><span class="p">,</span>
+        <span class="s2">"pv"</span><span class="p">,</span>
+        <span class="s2">"pqv"</span><span class="p">,</span>
+        <span class="s2">"p"</span><span class="p">,</span>
+        <span class="s2">"no_slack"</span><span class="p">,</span>
+        <span class="s2">"idx_dVa"</span><span class="p">,</span>
+        <span class="s2">"idx_dVm"</span><span class="p">,</span>
+        <span class="s2">"idx_dP"</span><span class="p">,</span>
+        <span class="s2">"idx_dQ"</span><span class="p">,</span>
+        <span class="s2">"positive_sequence"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -1199,7 +1255,7 @@
                  <span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">,</span>
                  <span class="n">options</span><span class="p">:</span> <span class="n">PowerFlowOptions</span><span class="p">,</span>
                  <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        PfBasicFormulation3Ph</span>
 <span class="sd">        :param V0: Array of nodal initial solution (3N)</span>
 <span class="sd">        :param S0: Array of power injections (3N)</span>
@@ -1207,8 +1263,22 @@
 <span class="sd">        :param Qmax: Array of bus reactive power lower limit (N, not 3N)</span>
 <span class="sd">        :param nc: NumericalCircuit</span>
 <span class="sd">        :param options: PowerFlowOptions</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Yf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Yt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Yshunt_bus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_lookup</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">branch_lookup</span> <span class="o">=</span> <span class="n">compute_ybus</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">full_admittances</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">compute_ybus</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Yf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Yt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Yshunt_bus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_lookup</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">branch_lookup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_admittances</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retained</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltage_lift</span> <span class="o">=</span> <span class="n">passive_neutral_reduction</span><span class="p">(</span><span class="n">nc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltage_lift</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Schur complement of passive N equations, using the existing solver unchanged.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">retained</span><span class="p">,</span> <span class="p">:]</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltage_lift</span><span class="p">)</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Yf</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Yf</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltage_lift</span><span class="p">)</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Yt</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Yt</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltage_lift</span><span class="p">)</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Yshunt_bus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Yshunt_bus</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retained</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">retained</span><span class="p">)]</span>
+            <span class="n">retained_full</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">retained</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">retained_full</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bus_lookup</span> <span class="o">=</span> <span class="n">lookup_from_mask</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
         <span class="n">V0new</span> <span class="o">=</span> <span class="n">V0</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">Un_floating_current</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">V0new</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
@@ -1218,13 +1288,18 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nc</span> <span class="o">=</span> <span class="n">nc</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">S0</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="n">S0</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="p">:</span> <span class="n">PositiveSequenceControl</span> <span class="o">=</span> <span class="n">PositiveSequenceControl</span><span class="p">(</span><span class="n">nc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_lookup</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">Qmin</span> <span class="o">=</span> <span class="n">expand3ph</span><span class="p">(</span><span class="n">Qmin</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span> <span class="o">*</span> <span class="mf">100e6</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Qmax</span> <span class="o">=</span> <span class="n">expand3ph</span><span class="p">(</span><span class="n">Qmax</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span> <span class="o">*</span> <span class="mf">100e6</span>
 
+        <span class="c1"># U1 regulation retains all phase balance equations; its extra Q unknown</span>
+        <span class="c1"># and voltage constraint replace the three fixed phase magnitudes.</span>
+        <span class="n">bus_types</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">bus_types</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">BusMode</span><span class="o">.</span><span class="n">PQ_tpe</span><span class="o">.</span><span class="n">value</span>
         <span class="n">vd</span><span class="p">,</span> <span class="n">pq</span><span class="p">,</span> <span class="n">pv</span><span class="p">,</span> <span class="n">pqv</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">no_slack</span> <span class="o">=</span> <span class="n">compile_types</span><span class="p">(</span>
             <span class="n">Pbus</span><span class="o">=</span><span class="n">S0</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
-            <span class="n">types</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span>
+            <span class="n">types</span><span class="o">=</span><span class="n">bus_types</span>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">vd</span> <span class="o">=</span> <span class="n">expand_slice_indices_3ph</span><span class="p">(</span><span class="n">vd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_lookup</span><span class="p">)</span>
@@ -1242,42 +1317,44 @@
 <div class="viewcode-block" id="PfBasicFormulation3Ph.x2var">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.PfBasicFormulation3Ph.x2var">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">x2var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert X to decision variables</span>
 <span class="sd">        :param x: solution vector</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">a</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">)</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">)</span>
 
         <span class="c1"># update the vectors</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">a</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Vm</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Vm</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">q</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">b</span><span class="p">:]</span></div>
 
 
 <div class="viewcode-block" id="PfBasicFormulation3Ph.var2x">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.PfBasicFormulation3Ph.var2x">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">var2x</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert the internal decision variables into the vector</span>
 <span class="sd">        :return: Vector</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Vm</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Vm</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">q</span>
         <span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="PfBasicFormulation3Ph.update_bus_types">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.PfBasicFormulation3Ph.update_bus_types">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_bus_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pqv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param pq:</span>
 <span class="sd">        :param pv:</span>
 <span class="sd">        :param pqv:</span>
 <span class="sd">        :param p:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pq</span> <span class="o">=</span> <span class="n">pq</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pv</span> <span class="o">=</span> <span class="n">pv</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pqv</span> <span class="o">=</span> <span class="n">pqv</span>
@@ -1292,21 +1369,79 @@
 <div class="viewcode-block" id="PfBasicFormulation3Ph.size">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.PfBasicFormulation3Ph.size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Size of the jacobian matrix</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">q</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PfBasicFormulation3Ph.generator_currents">
+<a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.PfBasicFormulation3Ph.generator_currents">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generator_currents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voltage</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Combine legacy injections and U1 sources with their passive sequence responses.</span>
+
+<span class="sd">        :param voltage: Retained phase voltages in pu.</span>
+<span class="sd">        :param q: U1 regulator reactive powers in system pu.</span>
+<span class="sd">        :return: Generator currents in MW / pu voltage.</span>
+<span class="sd">        """</span>
+        <span class="n">regular</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">regular_idx</span>
+        <span class="n">asynchronous</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">regular</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">tpe_int</span><span class="p">[</span><span class="n">regular</span><span class="p">]</span> <span class="o">==</span> <span class="n">GeneratorType</span><span class="o">.</span><span class="n">Asynchronous</span><span class="o">.</span><span class="n">idx</span><span class="p">()]</span>
+        <span class="n">regular</span> <span class="o">=</span> <span class="n">regular</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">tpe_int</span><span class="p">[</span><span class="n">regular</span><span class="p">]</span> <span class="o">!=</span> <span class="n">GeneratorType</span><span class="o">.</span><span class="n">Asynchronous</span><span class="o">.</span><span class="n">idx</span><span class="p">()]</span>
+        <span class="n">currents</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="n">compute_generators</span><span class="p">(</span>
+            <span class="n">bus_idx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">[</span><span class="n">regular</span><span class="p">],</span>
+            <span class="n">bus_lookup</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_lookup</span><span class="p">,</span>
+            <span class="n">V</span><span class="o">=</span><span class="n">voltage</span><span class="p">,</span>
+            <span class="n">P</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">regular</span><span class="p">],</span>
+            <span class="n">Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">q</span><span class="p">[</span><span class="n">regular</span><span class="p">],</span>
+            <span class="n">control_mode_int</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">control_mode_int</span><span class="p">[</span><span class="n">regular</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="c1"># Asynchronous machines replace the fixed PQ injection, including on a</span>
+        <span class="c1"># bus shared with a voltage regulator. Their reactive power is not a setpoint.</span>
+        <span class="n">gen</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="k">for</span> <span class="n">gen</span> <span class="ow">in</span> <span class="n">asynchronous</span><span class="p">:</span>
+            <span class="n">phases</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_lookup</span><span class="p">[</span><span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">[</span><span class="n">gen</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))]</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">phases</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Asynchronous generator requires all three phases: '</span>
+                                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">gen</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="n">y0</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="mi">0</span><span class="n">j</span>
+            <span class="n">connection</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">conn</span><span class="p">[</span><span class="n">gen</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">connection</span> <span class="o">==</span> <span class="n">ShuntConnectionType</span><span class="o">.</span><span class="n">GroundedStar</span><span class="o">.</span><span class="n">idx</span><span class="p">():</span>
+                <span class="n">z0</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">r0</span><span class="p">[</span><span class="n">gen</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">x0</span><span class="p">[</span><span class="n">gen</span><span class="p">])</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">z0</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">z0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-12</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Asynchronous generator Z0 must be finite and nonzero for Yg: '</span>
+                                     <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">gen</span><span class="p">])</span> <span class="o">+</span> <span class="s1">'. Check R0/X0 and grounding data.'</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># R0/X0 use the system base; the equivalent uses the machine base.</span>
+                    <span class="n">y0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">snom</span><span class="p">[</span><span class="n">gen</span><span class="p">]</span> <span class="o">*</span> <span class="n">z0</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">connection</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ShuntConnectionType</span><span class="o">.</span><span class="n">Delta</span><span class="o">.</span><span class="n">idx</span><span class="p">(),</span> <span class="n">ShuntConnectionType</span><span class="o">.</span><span class="n">FloatingStar</span><span class="o">.</span><span class="n">idx</span><span class="p">()):</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Asynchronous generator with an explicit neutral is not supported in ABC: '</span>
+                                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">gen</span><span class="p">]))</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">currents</span><span class="p">[</span><span class="n">phases</span><span class="p">]</span> <span class="o">+=</span> <span class="n">asynchronous_gen_currents</span><span class="p">(</span>
+                    <span class="n">voltage</span><span class="o">=</span><span class="n">voltage</span><span class="p">[</span><span class="n">phases</span><span class="p">],</span> <span class="n">Rs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">Rs</span><span class="p">[</span><span class="n">gen</span><span class="p">],</span>
+                    <span class="n">Xs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">Xs</span><span class="p">[</span><span class="n">gen</span><span class="p">],</span> <span class="n">Xm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">Xm</span><span class="p">[</span><span class="n">gen</span><span class="p">],</span>
+                    <span class="n">Rr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">Rr</span><span class="p">[</span><span class="n">gen</span><span class="p">],</span> <span class="n">Xr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">Xr</span><span class="p">[</span><span class="n">gen</span><span class="p">],</span>
+                    <span class="n">P</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">gen</span><span class="p">],</span> <span class="n">Sr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">snom</span><span class="p">[</span><span class="n">gen</span><span class="p">],</span> <span class="n">y0</span><span class="o">=</span><span class="n">y0</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">gen</span><span class="p">])</span> <span class="o">+</span> <span class="s1">': '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">add_currents</span><span class="p">(</span><span class="n">currents</span><span class="p">,</span> <span class="n">voltage</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">currents</span></div>
 
 
 <div class="viewcode-block" id="PfBasicFormulation3Ph.compute_f">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.PfBasicFormulation3Ph.compute_f">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the function residual</span>
 <span class="sd">        :param x: Solution vector</span>
 <span class="sd">        :return: f</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">a</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">)</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">)</span>
@@ -1324,14 +1459,7 @@
         <span class="c1"># compute the function residual</span>
         <span class="c1"># Assumes the internal vars were updated already with self.x2var()</span>
 
-        <span class="n">Igen</span> <span class="o">=</span> <span class="n">compute_generators</span><span class="p">(</span>
-            <span class="n">bus_idx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span>
-            <span class="n">bus_lookup</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_lookup</span><span class="p">,</span>
-            <span class="n">V</span><span class="o">=</span><span class="n">V</span><span class="p">,</span>
-            <span class="n">P</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
-            <span class="n">Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">q</span><span class="p">,</span>
-            <span class="n">control_mode_int</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">control_mode_int</span>
-        <span class="p">)</span>
+        <span class="n">Igen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator_currents</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="n">b</span><span class="p">:])</span>
 
         <span class="p">(</span><span class="n">Ipower</span><span class="p">,</span>
          <span class="n">Y_power_linear</span><span class="p">,</span>
@@ -1361,7 +1489,8 @@
         <span class="n">dI</span> <span class="o">=</span> <span class="p">(</span><span class="n">Icalc</span> <span class="o">-</span> <span class="n">Ibus</span><span class="p">)</span>  <span class="c1"># compute the mismatch</span>
         <span class="n">_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span>
             <span class="n">dI</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dP</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
-            <span class="n">dI</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dQ</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span>
+            <span class="n">dI</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dQ</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">residual</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="n">b</span><span class="p">:])</span>
         <span class="p">]</span>
 
         <span class="k">return</span> <span class="n">_f</span></div>
@@ -1370,11 +1499,11 @@
 <div class="viewcode-block" id="PfBasicFormulation3Ph.check_error">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.PfBasicFormulation3Ph.check_error">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">check_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check error of the solution without affecting the problem</span>
 <span class="sd">        :param x: Solution vector</span>
 <span class="sd">        :return: error</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">a</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">)</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">)</span>
 
@@ -1390,14 +1519,7 @@
         <span class="c1"># compute the function residual</span>
         <span class="c1"># Assumes the internal vars were updated already with self.x2var()</span>
 
-        <span class="n">Igen</span> <span class="o">=</span> <span class="n">compute_generators</span><span class="p">(</span>
-            <span class="n">bus_idx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span>
-            <span class="n">bus_lookup</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_lookup</span><span class="p">,</span>
-            <span class="n">V</span><span class="o">=</span><span class="n">V</span><span class="p">,</span>
-            <span class="n">P</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
-            <span class="n">Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">q</span><span class="p">,</span>
-            <span class="n">control_mode_int</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">control_mode_int</span>
-        <span class="p">)</span>
+        <span class="n">Igen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator_currents</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="n">b</span><span class="p">:])</span>
 
         <span class="p">(</span><span class="n">Ipower</span><span class="p">,</span>
          <span class="n">Y_power_linear</span><span class="p">,</span>
@@ -1420,13 +1542,14 @@
         <span class="n">Ibus</span> <span class="o">=</span> <span class="p">(</span><span class="n">Igen</span> <span class="o">+</span> <span class="n">Ipower</span> <span class="o">+</span> <span class="n">Icurrent</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">V</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">V</span><span class="p">))</span>
         <span class="n">Icalc</span> <span class="o">=</span> <span class="n">compute_current</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">V</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">V</span><span class="p">))</span>
 
-        <span class="c1"># print(&#39;\nIbus =&#39;, abs(Ibus))</span>
-        <span class="c1"># print(&#39;Icalc =&#39;, abs(Icalc))</span>
+        <span class="c1"># print('\nIbus =', abs(Ibus))</span>
+        <span class="c1"># print('Icalc =', abs(Icalc))</span>
 
         <span class="n">dI</span> <span class="o">=</span> <span class="p">(</span><span class="n">Icalc</span> <span class="o">-</span> <span class="n">Ibus</span><span class="p">)</span>  <span class="c1"># compute the mismatch</span>
         <span class="n">_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span>
             <span class="n">dI</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dP</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
-            <span class="n">dI</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dQ</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span>
+            <span class="n">dI</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dQ</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">residual</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="n">b</span><span class="p">:])</span>
         <span class="p">]</span>
 
         <span class="c1"># compute the error</span>
@@ -1436,12 +1559,12 @@
 <div class="viewcode-block" id="PfBasicFormulation3Ph.update">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.PfBasicFormulation3Ph.update">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">update_controls</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Update step</span>
 <span class="sd">        :param x: Solution vector</span>
 <span class="sd">        :param update_controls:</span>
 <span class="sd">        :return: error, converged?, x</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># set the problem state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x2var</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
@@ -1451,14 +1574,7 @@
         <span class="c1"># compute the function residual</span>
         <span class="c1"># Assumes the internal vars were updated already with self.x2var()</span>
 
-        <span class="n">Igen</span> <span class="o">=</span> <span class="n">compute_generators</span><span class="p">(</span>
-            <span class="n">bus_idx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span>
-            <span class="n">bus_lookup</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_lookup</span><span class="p">,</span>
-            <span class="n">V</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">,</span>
-            <span class="n">P</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
-            <span class="n">Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">q</span><span class="p">,</span>
-            <span class="n">control_mode_int</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">control_mode_int</span>
-        <span class="p">)</span>
+        <span class="n">Igen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator_currents</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">q</span><span class="p">)</span>
 
         <span class="p">(</span><span class="n">Ipower</span><span class="p">,</span>
          <span class="n">Y_power_linear</span><span class="p">,</span>
@@ -1485,7 +1601,8 @@
         <span class="n">dI</span> <span class="o">=</span> <span class="p">(</span><span class="n">Icalc</span> <span class="o">-</span> <span class="n">Ibus</span><span class="p">)</span>  <span class="c1"># compute the mismatch</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span>
             <span class="n">dI</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dP</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
-            <span class="n">dI</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dQ</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span>
+            <span class="n">dI</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dQ</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">residual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">q</span><span class="p">)</span>
         <span class="p">]</span>
 
         <span class="c1"># compute the error</span>
@@ -1496,7 +1613,10 @@
         <span class="c1"># since with higher errors, the Q values may be far from realistic</span>
         <span class="c1"># finally, the Q control only makes sense if there are pv nodes</span>
         <span class="k">if</span> <span class="n">update_controls</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_error</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controls_tol</span><span class="p">:</span>
-            <span class="n">any_change</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">control_Q</span><span class="p">:</span>
+                <span class="n">any_change</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">enforce_limits</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">any_change</span> <span class="o">=</span> <span class="kc">False</span>
 
             <span class="c1"># update Q limits control</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">control_Q</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pv</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -1547,22 +1667,15 @@
 <div class="viewcode-block" id="PfBasicFormulation3Ph.fx">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.PfBasicFormulation3Ph.fx">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fx</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        # Scalc = V · (Y x V - I)^*</span>
 <span class="sd">        # Sbus = S0 + I0*Vm + Y0*Vm^2</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># NOTE: Assumes the internal vars were updated already with self.x2var()</span>
 
-        <span class="n">Igen</span> <span class="o">=</span> <span class="n">compute_generators</span><span class="p">(</span>
-            <span class="n">bus_idx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span>
-            <span class="n">bus_lookup</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_lookup</span><span class="p">,</span>
-            <span class="n">V</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">,</span>
-            <span class="n">P</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
-            <span class="n">Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">q</span><span class="p">,</span>
-            <span class="n">control_mode_int</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">control_mode_int</span>
-        <span class="p">)</span>
+        <span class="n">Igen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator_currents</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">q</span><span class="p">)</span>
 
         <span class="n">Ipower</span><span class="p">,</span> <span class="n">Y_power_linear</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Un_floating_power</span> <span class="o">=</span> <span class="n">compute_power_loads</span><span class="p">(</span><span class="n">bus_idx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">load_data</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span>
                                                                              <span class="n">bus_lookup</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_lookup</span><span class="p">,</span>
@@ -1581,7 +1694,8 @@
         <span class="n">Ibus</span> <span class="o">=</span> <span class="p">(</span><span class="n">Igen</span> <span class="o">+</span> <span class="n">Ipower</span> <span class="o">+</span> <span class="n">Icurrent</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">))</span>
         <span class="n">Icalc</span> <span class="o">=</span> <span class="n">compute_current</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">))</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_f</span> <span class="o">=</span> <span class="n">compute_fx</span><span class="p">(</span><span class="n">Icalc</span><span class="p">,</span> <span class="n">Ibus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dQ</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">compute_fx</span><span class="p">(</span><span class="n">Icalc</span><span class="p">,</span> <span class="n">Ibus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dQ</span><span class="p">),</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">residual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">q</span><span class="p">)]</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span></div>
 
@@ -1589,17 +1703,17 @@
 <div class="viewcode-block" id="PfBasicFormulation3Ph.Jacobian">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.PfBasicFormulation3Ph.Jacobian">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">Jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">autodiff</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param autodiff: If True, use autodiff to compute the Jacobian</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># Assumes the internal vars were updated already with self.x2var()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">format</span> <span class="o">!=</span> <span class="s1">&#39;csc&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">format</span> <span class="o">!=</span> <span class="s1">'csc'</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">autodiff</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">autodiff</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">q</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">J</span> <span class="o">=</span> <span class="n">calc_autodiff_jacobian</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_f</span><span class="p">,</span>
                                        <span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var2x</span><span class="p">(),</span>
                                        <span class="n">h</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span>
@@ -1619,12 +1733,13 @@
 <div class="viewcode-block" id="PfBasicFormulation3Ph.get_x_names">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.PfBasicFormulation3Ph.get_x_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_x_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Names matching x</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;dVa </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">]</span>
-        <span class="n">cols</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;dVm </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'dVa </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">]</span>
+        <span class="n">cols</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'dVm </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">]</span>
+        <span class="n">cols</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'Q U1 bus </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">cols</span></div>
 
@@ -1632,12 +1747,13 @@
 <div class="viewcode-block" id="PfBasicFormulation3Ph.get_fx_names">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.PfBasicFormulation3Ph.get_fx_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_fx_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Names matching fx</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;dP </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dP</span><span class="p">]</span>
-        <span class="n">rows</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;dQ </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dQ</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'dP </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dP</span><span class="p">]</span>
+        <span class="n">rows</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'dQ </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dQ</span><span class="p">]</span>
+        <span class="n">rows</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'U1 or Q limit bus </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_sequence</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">rows</span></div>
 
@@ -1645,29 +1761,39 @@
 <div class="viewcode-block" id="PfBasicFormulation3Ph.get_solution">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow3ph.Formulations.html#VeraGridEngine.Simulations.PowerFlow3ph.Formulations.pf_basic_formulation_3ph.PfBasicFormulation3Ph.get_solution">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elapsed</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">iterations</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumericPowerFlowResults</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the problem solution</span>
 <span class="sd">        :param elapsed: Elapsed seconds</span>
 <span class="sd">        :param iterations: Iteration number</span>
 <span class="sd">        :return: NumericPowerFlowResults</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
+        <span class="c1"># Reconstruct passive neutrals before the existing full-network post-processing.</span>
+        <span class="n">ybus</span><span class="p">,</span> <span class="n">yf</span><span class="p">,</span> <span class="n">yt</span><span class="p">,</span> <span class="n">ysh</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">lookup</span><span class="p">,</span> <span class="n">branch_lookup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_admittances</span>
+        <span class="n">voltage</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span>
+        <span class="n">floating</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Un_floating_current</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Un_floating_power</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltage_lift</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">voltage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltage_lift</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span>
+            <span class="n">floating</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">voltage</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+            <span class="n">floating</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">retained</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Un_floating_current</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Un_floating_power</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
         <span class="c1"># Compute the Branches power and the slack buses power</span>
         <span class="n">Sf</span><span class="p">,</span> <span class="n">St</span><span class="p">,</span> <span class="n">If</span><span class="p">,</span> <span class="n">It</span><span class="p">,</span> <span class="n">Vbranch</span><span class="p">,</span> <span class="n">loading</span><span class="p">,</span> <span class="n">losses</span><span class="p">,</span> <span class="n">Sbus</span><span class="p">,</span> <span class="n">V_expanded</span> <span class="o">=</span> <span class="n">power_flow_post_process_nonlinear_3ph</span><span class="p">(</span>
             <span class="n">Sbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Scalc</span><span class="p">,</span>
-            <span class="n">V</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">,</span>
-            <span class="n">Vn_floating</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Un_floating_current</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Un_floating_power</span><span class="p">),</span>
+            <span class="n">V</span><span class="o">=</span><span class="n">voltage</span><span class="p">,</span>
+            <span class="n">Vn_floating</span><span class="o">=</span><span class="n">floating</span><span class="p">,</span>
             <span class="n">F</span><span class="o">=</span><span class="n">expand_indices_3ph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">F</span><span class="p">),</span>
             <span class="n">T</span><span class="o">=</span><span class="n">expand_indices_3ph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>
-            <span class="n">pv</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pv</span><span class="p">,</span>
-            <span class="n">vd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vd</span><span class="p">,</span>
-            <span class="n">Ybus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span><span class="p">,</span>
-            <span class="n">Yf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Yf</span><span class="p">,</span>
-            <span class="n">Yt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Yt</span><span class="p">,</span>
-            <span class="n">Yshunt_bus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Yshunt_bus</span><span class="p">,</span>
+            <span class="n">pv</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">retained</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pv</span><span class="p">],</span>
+            <span class="n">vd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">retained</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">vd</span><span class="p">],</span>
+            <span class="n">Ybus</span><span class="o">=</span><span class="n">ybus</span><span class="p">,</span>
+            <span class="n">Yf</span><span class="o">=</span><span class="n">yf</span><span class="p">,</span>
+            <span class="n">Yt</span><span class="o">=</span><span class="n">yt</span><span class="p">,</span>
+            <span class="n">Yshunt_bus</span><span class="o">=</span><span class="n">ysh</span><span class="p">,</span>
             <span class="n">branch_rates</span><span class="o">=</span><span class="n">expand3ph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">rates</span><span class="p">),</span>
             <span class="n">Sbase</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span><span class="p">,</span>
-            <span class="n">bus_lookup</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_lookup</span><span class="p">,</span>
-            <span class="n">branch_lookup</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_lookup</span>
+            <span class="n">bus_lookup</span><span class="o">=</span><span class="n">lookup</span><span class="p">,</span>
+            <span class="n">branch_lookup</span><span class="o">=</span><span class="n">branch_lookup</span>
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">NumericPowerFlowResults</span><span class="p">(</span>

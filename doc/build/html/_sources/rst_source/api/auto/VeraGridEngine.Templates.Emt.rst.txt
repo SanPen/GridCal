@@ -44,14 +44,6 @@ VeraGridEngine.Templates.Emt.bess\_avm\_emt\_template module
    :show-inheritance:
    :undoc-members:
 
-VeraGridEngine.Templates.Emt.bridge\_2level\_3ph\_emt\_mti\_template module
----------------------------------------------------------------------------
-
-.. automodule:: VeraGridEngine.Templates.Emt.bridge_2level_3ph_emt_mti_template
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 VeraGridEngine.Templates.Emt.bridge\_2level\_3ph\_emt\_multilinear\_template module
 -----------------------------------------------------------------------------------
 
@@ -84,14 +76,6 @@ VeraGridEngine.Templates.Emt.bridge\_2level\_3ph\_emt\_template module
    :show-inheritance:
    :undoc-members:
 
-VeraGridEngine.Templates.Emt.bridge\_filter\_2level\_3ph\_emt\_mti\_template module
------------------------------------------------------------------------------------
-
-.. automodule:: VeraGridEngine.Templates.Emt.bridge_filter_2level_3ph_emt_mti_template
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 VeraGridEngine.Templates.Emt.bridge\_filter\_2level\_3ph\_emt\_multilinear\_template module
 -------------------------------------------------------------------------------------------
 
@@ -112,14 +96,6 @@ VeraGridEngine.Templates.Emt.bridge\_filter\_2level\_3ph\_soft\_emt\_template mo
 ------------------------------------------------------------------------------------
 
 .. automodule:: VeraGridEngine.Templates.Emt.bridge_filter_2level_3ph_soft_emt_template
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-VeraGridEngine.Templates.Emt.bridge\_filter\_control\_2level\_3ph\_emt\_mti\_template module
---------------------------------------------------------------------------------------------
-
-.. automodule:: VeraGridEngine.Templates.Emt.bridge_filter_control_2level_3ph_emt_mti_template
    :members:
    :show-inheritance:
    :undoc-members:
@@ -176,14 +152,6 @@ VeraGridEngine.Templates.Emt.converter\_soft\_switched\_emt\_template module
 ----------------------------------------------------------------------------
 
 .. automodule:: VeraGridEngine.Templates.Emt.converter_soft_switched_emt_template
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-VeraGridEngine.Templates.Emt.converter\_switched\_emt\_mti\_template module
----------------------------------------------------------------------------
-
-.. automodule:: VeraGridEngine.Templates.Emt.converter_switched_emt_mti_template
    :members:
    :show-inheritance:
    :undoc-members:

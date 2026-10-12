@@ -66,6 +66,8 @@ class Line(BranchParent):
         '_temp_oper_prof',
         'alpha',
         '_circuit_idx',
+        'coupling_group',
+        'coupling_reversed',
         'template',
         'possible_tower_types',
         'possible_underground_line_types',
@@ -210,6 +212,20 @@ class Line(BranchParent):
             definition='Length of the line (not used for calculation)',
             cat=[PrpCat.TP],
             dyn_ref=ParamPowerFlowReferenceType.line_length_km,
+        ),
+        GCProp(
+            prop_name='coupling_group',
+            units='',
+            tpe=str,
+            definition='Physical tower section shared by coupled circuits; empty for independent lines.',
+            cat=[PrpCat.PF3],
+        ),
+        GCProp(
+            prop_name='coupling_reversed',
+            units='',
+            tpe=bool,
+            definition='The line runs opposite to the reference direction of its coupling group.',
+            cat=[PrpCat.PF3],
         ),
         GCProp(
             prop_name='template',
@@ -386,6 +402,8 @@ class Line(BranchParent):
         self._ysh = AdmittanceMatrix()
 
         self._circuit_idx: int = int(circuit_idx)
+        self.coupling_group: str = ''
+        self.coupling_reversed: bool = False
 
         # type template
         self.template: OverheadLineType | SequenceLineType | UndergroundLineType | None = template
@@ -685,10 +703,15 @@ class Line(BranchParent):
             raise ValueError(f'{val} is not a AdmittanceMatrix')
 
     def change_base(self, Sbase_old: float, Sbase_new: float) -> None:
-        """
-        Change the impedance base
-        :param Sbase_old: old base (MVA)
-        :param Sbase_new: new base (MVA)
+        """Refer the same physical line to another system power base.
+
+        Voltage bases stay fixed. Sequence impedances scale with power base,
+        while shunts and stored phase admittances scale with its reciprocal.
+        Invalid bases leave the line unchanged; ratios and transformed values
+        must remain within the representable floating-point range.
+
+        :param Sbase_old: Existing three-phase system power base in MVA.
+        :param Sbase_new: Requested three-phase system power base in MVA.
         :return: None.
         """
         has_valid_base_change: bool = (
@@ -698,13 +721,28 @@ class Line(BranchParent):
             and Sbase_new > 0.0
         )
         if has_valid_base_change:
-            b: float = Sbase_new / Sbase_old
-            self.R *= b
-            self.X *= b
-            self.B *= b
-            self.G *= b
-            self.G0 *= b
-            self.G2 *= b
+            impedance_ratio: float = Sbase_new / Sbase_old
+            admittance_ratio: float = Sbase_old / Sbase_new
+
+            # Preserve ohmic impedances independently in all stored sequences.
+            self.R *= impedance_ratio
+            self.X *= impedance_ratio
+            self.R0 *= impedance_ratio
+            self.X0 *= impedance_ratio
+            self.R2 *= impedance_ratio
+            self.X2 *= impedance_ratio
+
+            # Physical shunts use the reciprocal ratio, without sequence fallbacks.
+            self.B *= admittance_ratio
+            self.G *= admittance_ratio
+            self.B0 *= admittance_ratio
+            self.G0 *= admittance_ratio
+            self.B2 *= admittance_ratio
+            self.G2 *= admittance_ratio
+
+            # Avoid lazy getters: rebuilding would discard custom phase coupling.
+            self._ys.values *= admittance_ratio
+            self._ysh.values *= admittance_ratio
         else:
             pass
 
@@ -790,22 +828,21 @@ class Line(BranchParent):
                                    Vnom=line_voltage_kv)
 
             self.template = obj
-            self.rms_template = obj.rms_template
-            self.emt_template = obj.emt_template
+            self.rms_template, self.emt_template = obj.get_branch_dynamic_templates(
+                device_type=self.device_type, logger=logger)
 
         elif isinstance(obj, SequenceLineType):
-            (self.R, self.X, self.B,
-             self.R0, self.X0, self.B0,
+            (self.R, self.X, self.B, self.G,
+             self.R0, self.X0, self.B0, self.G0,
              self.rate) = obj.get_values(Sbase=Sbase,
                                          freq=freq,
                                          length=self.length,
                                          line_Vnom=self.get_max_bus_nominal_voltage(),
                                          decimals_rounding=decimals_rounding)
 
-            self.ys = obj.get_ys_nabc()
-            self.ysh = obj.get_ysh_nabc()
-
             self.template = obj
+            # Reuse total per-unit sequence values, including length, base and frequency conversion.
+            self.fill_3_phase_from_sequence()
             self.rms_template = obj.rms_template
             self.emt_template = obj.emt_template
 
@@ -1006,7 +1043,8 @@ class Line(BranchParent):
 
         # Line impedances are already in p.u.; the compiler converts stored shunts by 1e-6.
         obj: SequenceLineType = SequenceLineType(R=self.R, R0=r0, X=self.X, X0=x0,
-                                                 B=self.B * 1e6, B0=b0 * 1e6)
+                                                 B=self.B * 1e6, B0=b0 * 1e6,
+                                                 G=self.G * 1e6, G0=self.G0 * 1e6)
         stored: AdmittanceMatrix
         rebuilt: AdmittanceMatrix
         for stored, rebuilt in ((self._ys, obj.get_ys_nabc()), (self._ysh, obj.get_ysh_nabc())):

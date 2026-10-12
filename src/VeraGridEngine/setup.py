@@ -12,26 +12,46 @@ https://github.com/pypa/sampleproject
 # Always prefer setuptools over distutils
 import ast
 from pathlib import Path
+from typing import Dict, List, Tuple
+
 from setuptools import setup, find_packages
 
-description = 'VeraGrid is a Power Systems simulation program intended for professional use and research'
+description: str = 'VeraGrid is a Power Systems simulation program intended for professional use and research'
 
 
 def read_module_constant(constant_name: str) -> str:
-    src_root = Path(__file__).resolve().parent
+    """
+    Read one literal constant without importing the package being built.
 
-    for candidate in (
+    This keeps the isolated ``pip`` build independent from an existing
+    VeraGridEngine installation.
+
+    :param constant_name: Name of the literal assignment to read.
+    :return: String representation of the assigned literal value.
+    """
+    src_root: Path = Path(__file__).resolve().parent
+    candidates: Tuple[Path, ...] = (
         src_root / '__version__.py',
         src_root / 'VeraGridEngine' / '__version__.py',
-    ):
+    )
+    candidate: Path
+    node: ast.stmt
+    target: ast.expr
+    for candidate in candidates:
         if candidate.exists():
-            module_ast = ast.parse(candidate.read_text(encoding='utf-8'), filename=str(candidate))
-
+            module_ast: ast.Module = ast.parse(
+                candidate.read_text(encoding='utf-8'),
+                filename=str(candidate),
+            )
             for node in module_ast.body:
                 if isinstance(node, ast.Assign):
                     for target in node.targets:
                         if isinstance(target, ast.Name) and target.id == constant_name:
                             return str(ast.literal_eval(node.value))
+                        else:
+                            pass
+                else:
+                    pass
         else:
             pass
 
@@ -39,41 +59,57 @@ def read_module_constant(constant_name: str) -> str:
 
 
 def read_long_description() -> str:
-    src_root = Path(__file__).resolve().parent
+    """
+    Read the nearest available package description.
 
-    for candidate in (
+    :return: Markdown description used by the package metadata.
+    """
+    src_root: Path = Path(__file__).resolve().parent
+    candidates: Tuple[Path, ...] = (
         src_root / 'README.md',
         src_root.parent / 'README.md',
         src_root.parent.parent / 'README.md',
-    ):
+    )
+    candidate: Path
+    for candidate in candidates:
         if candidate.exists():
             return candidate.read_text(encoding='utf-8')
+        else:
+            pass
 
     return description
 
 
-long_description = read_long_description()
-__VeraGridEngine_VERSION__ = read_module_constant('__VeraGridEngine_VERSION__')
+long_description: str = read_long_description()
+__VeraGridEngine_VERSION__: str = read_module_constant('__VeraGridEngine_VERSION__')
+src_root: Path = Path(__file__).resolve().parent
+excluded_packages: Tuple[str, ...] = (
+    'docs', 'docs.*', 'research', 'research.*', 'tests', 'tests.*',
+    'tutorials', 'tutorials.*', 'VeraGrid', 'VeraGrid.*',
+)
+discovered_packages: List[str] = find_packages(where=str(src_root), exclude=excluded_packages)
+package_names: List[str] = [''] * (len(discovered_packages) + 1)
+package_names[0] = 'VeraGridEngine'
+package_index: int
+package: str
+for package_index, package in enumerate(discovered_packages):
+    package_names[package_index + 1] = 'VeraGridEngine.' + package
+package_data: Dict[str, List[str]] = {
+    'VeraGridEngine': [
+        'LICENSE.txt',
+        'setup.py',
+        'data/fmu/**/*.c',
+        'data/fmu/**/*.h',
+    ],
+    'VeraGridEngine.IO.manufacturer_native': [
+        'native_worker/source/*.c',
+        'native_worker/source/*.h',
+        'native_worker/windows_x86/*.exe',
+        'native_worker/windows_x86/*.json',
+    ],
+}
 
-pkgs_to_exclude = ['docs', 'research', 'tests', 'tutorials', 'VeraGrid']
-
-packages = find_packages(exclude=pkgs_to_exclude)
-
-# ... so we have to do the filtering ourselves
-packages2 = list()
-for package in packages:
-    elms = package.split('.')
-    excluded = False
-    for exclude in pkgs_to_exclude:
-        if exclude in elms:
-            excluded = True
-
-    if not excluded:
-        packages2.append(package)
-
-package_data = {'VeraGridEngine': ['LICENSE.txt', 'setup.py'], }
-
-dependencies = ["numpy>=2.2.0",
+dependencies: List[str] = ["numpy>=2.2.0",
                 "autograd>=1.7.0",
                 "scipy>=1.10.0",
                 "networkx>=3.6.1",
@@ -88,7 +124,6 @@ dependencies = ["numpy>=2.2.0",
                 "h5py>=3.12.0",
                 "cbcbox>=2.935",
                 "numba>=0.61",  # to compile routines natively
-                "clang-tool-chain>=1.5.9",
                 "pyproj>=3.7.2",
                 "pulp>=4.0.0",
                 "pyarrow>=23.0.1",
@@ -100,10 +135,9 @@ dependencies = ["numpy>=2.2.0",
                 "brotli>=1.2.0",
                 "opencv-python>=4.10.0.84",
                 "fmpy>=0.3.22",
-                "clang-tool-chain>=1.5.9"
                 ]
 
-extras_require = {
+extras_require: Dict[str, List[str]] = {
     'gch5 files': ["tables"]  # this is for h5 compatibility
 }
 # Arguments marked as "Required" below must be included for upload to PyPI.
@@ -123,8 +157,8 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     keywords='power systems planning',  # Optional
-    packages=packages2,  # Required
-    package_dir={'': '.'},
+    packages=package_names,  # Required
+    package_dir={'VeraGridEngine': '.'},
     include_package_data=True,
     python_requires='>=3.8',
     install_requires=dependencies,

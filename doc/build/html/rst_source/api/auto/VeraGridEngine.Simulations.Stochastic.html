@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Stochastic package &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.Stochastic package &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -196,7 +196,7 @@ are uniformly spaced between zero and one.</p>
 </pre></div>
 </div>
 <p>A 2-factor design with 5 centered samples:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lhs</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lhs</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s1">'center'</span><span class="p">)</span>
 <span class="go">array([[ 0.3,  0.5],</span>
 <span class="go">       [ 0.7,  0.9],</span>
 <span class="go">       [ 0.1,  0.3],</span>
@@ -206,7 +206,7 @@ are uniformly spaced between zero and one.</p>
 </div>
 <p>A 3-factor design with 4 samples where the minimum distance between
 all samples has been maximized:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lhs</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s1">&#39;maximin&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lhs</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s1">'maximin'</span><span class="p">)</span>
 <span class="go">array([[ 0.02642564,  0.55576963,  0.50261649],</span>
 <span class="go">       [ 0.51606589,  0.88933259,  0.34040838],</span>
 <span class="go">       [ 0.98431735,  0.0380364 ,  0.01621717],</span>
@@ -215,7 +215,7 @@ all samples has been maximized:</p>
 </div>
 <p>A 4-factor design with 5 samples where the samples are as uncorrelated
 as possible (within 10 iterations):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lhs</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s1">&#39;correlate&#39;</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lhs</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s1">'correlate'</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

@@ -5,13 +5,15 @@
 from typing import Tuple, List, Callable
 import numba as nb
 import numpy as np
-from scipy.sparse import lil_matrix, csc_matrix
+from scipy.sparse import lil_matrix, csc_matrix, vstack
+from scipy.sparse.linalg import splu
 from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
 from VeraGridEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from VeraGridEngine.Simulations.Derivatives.ac_jacobian import create_J_vc_csc
 from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (
-    compute_fx_error, power_flow_post_process_nonlinear_3ph, floating_star_currents, floating_star_powers
+    compute_fx_error, power_flow_post_process_nonlinear_3ph, floating_star_currents, floating_star_powers,
+    asynchronous_gen_currents
 )
 from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import (control_q_inside_method,
                                                                                      compute_slack_distribution)
@@ -24,7 +26,9 @@ from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions impo
 from VeraGridEngine.Topology.simulation_indices import compile_types
 from VeraGridEngine.basic_structures import Vec, IntVec, CxVec, CxMat, BoolVec, Logger
 from VeraGridEngine.Utils.Sparse.csc2 import (CSC, scipy_to_mat)
-from VeraGridEngine.enumerations import BusMode, WindingType
+from VeraGridEngine.enumerations import BusMode, WindingType, GeneratorType, ShuntConnectionType
+from VeraGridEngine.Simulations.PowerFlow3ph.Formulations.positive_sequence_control import PositiveSequenceControl
+from VeraGridEngine.Simulations.PowerFlow3ph.Formulations.common_mode_control import CommonModeControl
 
 
 @nb.jit(cache=True)
@@ -132,6 +136,13 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
 
         Cf[k4, f4] = 1
         Ct[k4, t4] = 1
+
+    if nc.passive_branch_data.Ycoupling3.nnz > 0:
+        mutual: csc_matrix = nc.passive_branch_data.Ycoupling3 @ vstack((Cf, Ct), format='csc')
+        Yf += mutual[:4 * m, :]
+        Yt += mutual[4 * m:, :]
+    else:
+        pass
 
     zero_mask = (R == 0)
     Cfcopy = Cf.copy()
@@ -278,9 +289,10 @@ def compute_generators(bus_idx: IntVec,
         b2 = bus_lookup[b]
         c2 = bus_lookup[c]
 
-        Igen[a2] = np.conj((P[k] + Q[k] * 1j) / 3 / V[a2])
-        Igen[b2] = np.conj((P[k] + Q[k] * 1j) / 3 / V[b2])
-        Igen[c2] = np.conj((P[k] + Q[k] * 1j) / 3 / V[c2])
+        # Fixed-power units can share a terminal with each other and a U1 regulator.
+        Igen[a2] += np.conj((P[k] + Q[k] * 1j) / 3 / V[a2])
+        Igen[b2] += np.conj((P[k] + Q[k] * 1j) / 3 / V[b2])
+        Igen[c2] += np.conj((P[k] + Q[k] * 1j) / 3 / V[c2])
 
     return Igen
 
@@ -1014,6 +1026,44 @@ def expand_matrix(magnitude: np.ndarray, lookup: IntVec) -> CxMat:
     return magnitude_expanded
 
 
+def passive_neutral_reduction(nc: NumericalCircuit, ybus: csc_matrix,
+                              mask: BoolVec) -> Tuple[IntVec, csc_matrix | None]:
+    """Eliminate only linear, zero-injection neutral equations by exact Schur reduction.
+
+    The voltage map reconstructs neutral voltages; no neutral is grounded and no
+    phase common mode is constrained. Singular neutral blocks remain explicit.
+
+    :param nc: Compiled network and nonlinear injection connections.
+    :param ybus: Admittance matrix after removing absent or grounded conductors.
+    :param mask: Full NABC conductor mask corresponding to ybus.
+    :return: Retained indices and optional full-voltage reconstruction matrix.
+    """
+    candidates: BoolVec = np.flatnonzero(mask) % 4 == 0
+    protected: BoolVec = np.zeros(nc.nbus, dtype=bool)
+    # Explicit star P/I loads need their neutral voltage during each iteration.
+    for k in range(nc.load_data.nelm):
+        if nc.load_data.S3_star[4 * k] != 0 or nc.load_data.I3_star[4 * k] != 0:
+            protected[nc.load_data.bus_idx[k]] = True
+        else:
+            pass
+    candidates &= ~np.repeat(protected, 4)[mask]
+    keep: IntVec = np.flatnonzero(~candidates)
+    neutral: IntVec = np.flatnonzero(candidates)
+    if len(neutral) == 0:
+        return keep, None
+    else:
+        try:
+            response: CxMat = -splu(ybus[neutral, :][:, neutral].tocsc()).solve(
+                ybus[neutral, :][:, keep].toarray())
+        except RuntimeError:
+            return np.arange(ybus.shape[0]), None
+        else:
+            lift: lil_matrix = lil_matrix((ybus.shape[0], len(keep)), dtype=complex)
+            lift[keep, np.arange(len(keep))] = 1.0
+            lift[neutral, :] = response
+            return keep, lift.tocsc()
+
+
 class PfBasicFormulation3Ph(PfFormulationTemplate):
 
     __slots__ = (
@@ -1024,6 +1074,9 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         "mask",
         "bus_lookup",
         "branch_lookup",
+        "full_admittances",
+        "retained",
+        "voltage_lift",
         "Un_floating_current",
         "Un_floating_power",
         "logger",
@@ -1041,6 +1094,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         "idx_dVm",
         "idx_dP",
         "idx_dQ",
+        "positive_sequence",
+        "common_mode",
     )
 
     def __init__(self,
@@ -1060,7 +1115,21 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         :param nc: NumericalCircuit
         :param options: PowerFlowOptions
         """
-        self.Ybus, self.Yf, self.Yt, self.Yshunt_bus, self.mask, self.bus_lookup, self.branch_lookup = compute_ybus(nc)
+        self.full_admittances: tuple = compute_ybus(nc)
+        self.Ybus, self.Yf, self.Yt, self.Yshunt_bus, self.mask, self.bus_lookup, self.branch_lookup = self.full_admittances
+        self.retained, self.voltage_lift = passive_neutral_reduction(nc, self.Ybus, self.mask)
+        if self.voltage_lift is not None:
+            # Schur complement of passive N equations, using the existing solver unchanged.
+            self.Ybus = (self.Ybus[self.retained, :] @ self.voltage_lift).tocsc()
+            self.Yf = (self.Yf @ self.voltage_lift).tocsc()
+            self.Yt = (self.Yt @ self.voltage_lift).tocsc()
+            self.Yshunt_bus = self.Yshunt_bus[np.ix_(self.retained, self.retained)]
+            retained_full: IntVec = np.flatnonzero(self.mask)[self.retained]
+            self.mask = np.zeros_like(self.mask)
+            self.mask[retained_full] = True
+            self.bus_lookup = lookup_from_mask(self.mask)
+        else:
+            pass
         V0new = V0[self.mask]
 
         self.Un_floating_current = np.zeros(len(V0new), dtype=complex)
@@ -1070,13 +1139,18 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self.logger = logger
         self.nc = nc
         self.S0: CxVec = S0[self.mask].copy()
+        self.positive_sequence: PositiveSequenceControl = PositiveSequenceControl(nc, self.bus_lookup)
 
         self.Qmin = expand3ph(Qmin)[self.mask] * 100e6
         self.Qmax = expand3ph(Qmax)[self.mask] * 100e6
 
+        # U1 regulation retains all phase balance equations; its extra Q unknown
+        # and voltage constraint replace the three fixed phase magnitudes.
+        bus_types: IntVec = self.nc.bus_data.bus_types.copy()
+        bus_types[self.positive_sequence.bus_idx] = BusMode.PQ_tpe.value
         vd, pq, pv, pqv, p, no_slack = compile_types(
             Pbus=S0.real,
-            types=self.nc.bus_data.bus_types
+            types=bus_types
         )
 
         self.vd = expand_slice_indices_3ph(vd, self.bus_lookup)
@@ -1091,6 +1165,9 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self.idx_dP = self.idx_dVa
         self.idx_dQ = np.r_[self.pq, self.pqv]
 
+        self.common_mode: CommonModeControl = CommonModeControl(
+            nc, self.full_admittances, self.bus_lookup, self.idx_dP, self.idx_dQ, self.positive_sequence)
+
     def x2var(self, x: Vec) -> None:
         """
         Convert X to decision variables
@@ -1102,6 +1179,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         # update the vectors
         self.Va[self.idx_dVa] = x[0:a]
         self.Vm[self.idx_dVm] = x[a:b]
+        self.positive_sequence.q[:] = x[b:]
 
     def var2x(self) -> Vec:
         """
@@ -1110,7 +1188,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         """
         return np.r_[
             self.Va[self.idx_dVa],
-            self.Vm[self.idx_dVm]
+            self.Vm[self.idx_dVm],
+            self.positive_sequence.q
         ]
 
     def update_bus_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec) -> None:
@@ -1132,12 +1211,70 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         self.idx_dP = self.idx_dVa
         self.idx_dQ = np.r_[self.pq, self.pqv]
 
+        self.common_mode = CommonModeControl(
+            self.nc, self.full_admittances, self.bus_lookup, self.idx_dP, self.idx_dQ, self.positive_sequence)
+
     def size(self) -> int:
         """
         Size of the jacobian matrix
         :return:
         """
-        return len(self.idx_dVa) + len(self.idx_dVm)
+        return len(self.idx_dVa) + len(self.idx_dVm) + len(self.positive_sequence.q)
+
+    def generator_currents(self, voltage: CxVec, q: Vec) -> CxVec:
+        """Combine legacy injections and U1 sources with their passive sequence responses.
+
+        :param voltage: Retained phase voltages in pu.
+        :param q: U1 regulator reactive powers in system pu.
+        :return: Generator currents in MW / pu voltage.
+        """
+        regular: IntVec = self.positive_sequence.regular_idx
+        asynchronous: IntVec = regular[
+            self.nc.generator_data.tpe_int[regular] == GeneratorType.Asynchronous.idx()]
+        regular = regular[self.nc.generator_data.tpe_int[regular] != GeneratorType.Asynchronous.idx()]
+        currents: CxVec = compute_generators(
+            bus_idx=self.nc.generator_data.bus_idx[regular],
+            bus_lookup=self.bus_lookup,
+            V=voltage,
+            P=self.nc.generator_data.p[regular],
+            Q=self.nc.generator_data.q[regular],
+            control_mode_int=self.nc.generator_data.control_mode_int[regular]
+        )
+        # Asynchronous machines replace the fixed PQ injection, including on a
+        # bus shared with a voltage regulator. Their reactive power is not a setpoint.
+        gen: int
+        for gen in asynchronous:
+            phases: IntVec = self.bus_lookup[4 * self.nc.generator_data.bus_idx[gen] + np.array((1, 2, 3))]
+            if np.any(phases < 0):
+                raise ValueError('Asynchronous generator requires all three phases: '
+                                 + str(self.nc.generator_data.names[gen]))
+            else:
+                pass
+            y0: complex = 0j
+            connection: int = self.nc.generator_data.conn[gen]
+            if connection == ShuntConnectionType.GroundedStar.idx():
+                z0: complex = complex(self.nc.generator_data.r0[gen], self.nc.generator_data.x0[gen])
+                if not np.isfinite(z0) or abs(z0) < 1e-12:
+                    raise ValueError('Asynchronous generator Z0 must be finite and nonzero for Yg: '
+                                     + str(self.nc.generator_data.names[gen]) + '. Check R0/X0 and grounding data.')
+                else:
+                    # R0/X0 use the system base; the equivalent uses the machine base.
+                    y0 = self.nc.Sbase / (self.nc.generator_data.snom[gen] * z0)
+            elif connection in (ShuntConnectionType.Delta.idx(), ShuntConnectionType.FloatingStar.idx()):
+                pass
+            else:
+                raise ValueError('Asynchronous generator with an explicit neutral is not supported in ABC: '
+                                 + str(self.nc.generator_data.names[gen]))
+            try:
+                currents[phases] += asynchronous_gen_currents(
+                    voltage=voltage[phases], Rs=self.nc.generator_data.Rs[gen],
+                    Xs=self.nc.generator_data.Xs[gen], Xm=self.nc.generator_data.Xm[gen],
+                    Rr=self.nc.generator_data.Rr[gen], Xr=self.nc.generator_data.Xr[gen],
+                    P=self.nc.generator_data.p[gen], Sr=self.nc.generator_data.snom[gen], y0=y0)
+            except ValueError as error:
+                raise ValueError(str(self.nc.generator_data.names[gen]) + ': ' + str(error)) from error
+        self.positive_sequence.add_currents(currents, voltage, q)
+        return currents
 
     def compute_f(self, x: Vec) -> Vec:
         """
@@ -1162,14 +1299,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         # compute the function residual
         # Assumes the internal vars were updated already with self.x2var()
 
-        Igen = compute_generators(
-            bus_idx=self.nc.generator_data.bus_idx,
-            bus_lookup=self.bus_lookup,
-            V=V,
-            P=self.nc.generator_data.p,
-            Q=self.nc.generator_data.q,
-            control_mode_int=self.nc.generator_data.control_mode_int
-        )
+        Igen = self.generator_currents(V, x[b:])
 
         (Ipower,
          Y_power_linear,
@@ -1199,9 +1329,11 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         dI = (Icalc - Ibus)  # compute the mismatch
         _f = np.r_[
             dI[self.idx_dP].real,
-            dI[self.idx_dQ].imag
+            dI[self.idx_dQ].imag,
+            self.positive_sequence.residual(V, x[b:])
         ]
 
+        self.common_mode.apply(V, _f)
         return _f
 
     def check_error(self, x: Vec) -> Tuple[float, Vec]:
@@ -1225,14 +1357,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         # compute the function residual
         # Assumes the internal vars were updated already with self.x2var()
 
-        Igen = compute_generators(
-            bus_idx=self.nc.generator_data.bus_idx,
-            bus_lookup=self.bus_lookup,
-            V=V,
-            P=self.nc.generator_data.p,
-            Q=self.nc.generator_data.q,
-            control_mode_int=self.nc.generator_data.control_mode_int
-        )
+        Igen = self.generator_currents(V, x[b:])
 
         (Ipower,
          Y_power_linear,
@@ -1261,11 +1386,14 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         dI = (Icalc - Ibus)  # compute the mismatch
         _f = np.r_[
             dI[self.idx_dP].real,
-            dI[self.idx_dQ].imag
+            dI[self.idx_dQ].imag,
+            self.positive_sequence.residual(V, x[b:])
         ]
 
         # compute the error
-        return compute_fx_error(_f), x
+        original_error: float = compute_fx_error(_f)
+        self.common_mode.apply(V, _f)
+        return max(original_error, compute_fx_error(_f)), x
 
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:
         """
@@ -1283,14 +1411,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         # compute the function residual
         # Assumes the internal vars were updated already with self.x2var()
 
-        Igen = compute_generators(
-            bus_idx=self.nc.generator_data.bus_idx,
-            bus_lookup=self.bus_lookup,
-            V=self.V,
-            P=self.nc.generator_data.p,
-            Q=self.nc.generator_data.q,
-            control_mode_int=self.nc.generator_data.control_mode_int
-        )
+        Igen = self.generator_currents(self.V, self.positive_sequence.q)
 
         (Ipower,
          Y_power_linear,
@@ -1317,18 +1438,25 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         dI = (Icalc - Ibus)  # compute the mismatch
         self._f = np.r_[
             dI[self.idx_dP].real,
-            dI[self.idx_dQ].imag
+            dI[self.idx_dQ].imag,
+            self.positive_sequence.residual(self.V, self.positive_sequence.q)
         ]
 
-        # compute the error
-        self._error = compute_fx_error(self._f)
+        # Keep every original KCL/control equation in the convergence check. A reference
+        # must never hide an incompatible injection in the replaced equation.
+        original_error: float = compute_fx_error(self._f)
+        self.common_mode.apply(self.V, self._f)
+        self._error = max(original_error, compute_fx_error(self._f))
 
         # review reactive power limits
         # it is only worth checking Q limits with a low error
         # since with higher errors, the Q values may be far from realistic
         # finally, the Q control only makes sense if there are pv nodes
         if update_controls and self._error < self._controls_tol:
-            any_change = False
+            if self.options.control_Q:
+                any_change = self.positive_sequence.enforce_limits()
+            else:
+                any_change = False
 
             # update Q limits control
             if self.options.control_Q and (len(self.pv) + len(self.p)) > 0:
@@ -1368,7 +1496,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
                 self._f = self.fx()
 
                 # compute the error
-                self._error = compute_fx_error(self._f)
+                self._error, _ = self.check_error(x)
 
         # converged?
         self._converged = self._error < self.options.tolerance
@@ -1384,14 +1512,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         # NOTE: Assumes the internal vars were updated already with self.x2var()
 
-        Igen = compute_generators(
-            bus_idx=self.nc.generator_data.bus_idx,
-            bus_lookup=self.bus_lookup,
-            V=self.V,
-            P=self.nc.generator_data.p,
-            Q=self.nc.generator_data.q,
-            control_mode_int=self.nc.generator_data.control_mode_int
-        )
+        Igen = self.generator_currents(self.V, self.positive_sequence.q)
 
         Ipower, Y_power_linear, self.Un_floating_power = compute_power_loads(bus_idx=self.nc.load_data.bus_idx,
                                                                              bus_lookup=self.bus_lookup,
@@ -1410,8 +1531,10 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         Ibus = (Igen + Ipower + Icurrent) / (self.nc.Sbase / 3) / (self.V / np.abs(self.V))
         Icalc = compute_current(self.Ybus, self.V) / (self.V / np.abs(self.V))
 
-        self._f = compute_fx(Icalc, Ibus, self.idx_dP, self.idx_dQ)
+        self._f = np.r_[compute_fx(Icalc, Ibus, self.idx_dP, self.idx_dQ),
+                        self.positive_sequence.residual(self.V, self.positive_sequence.q)]
 
+        self.common_mode.apply(self.V, self._f)
         return self._f
 
     def Jacobian(self, autodiff: bool = True) -> CSC:
@@ -1425,7 +1548,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         if self.Ybus.format != 'csc':
             self.Ybus = self.Ybus.tocsc()
 
-        if autodiff:
+        if autodiff or len(self.positive_sequence.q) > 0 or len(self.common_mode.phases) > 0:
             J = calc_autodiff_jacobian(func=self.compute_f,
                                        x=self.var2x(),
                                        h=1e-8)
@@ -1448,6 +1571,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         """
         cols = [f'dVa {i}' for i in self.idx_dVa]
         cols += [f'dVm {i}' for i in self.idx_dVm]
+        cols += [f'Q U1 bus {i}' for i in self.positive_sequence.bus_idx]
 
         return cols
 
@@ -1458,6 +1582,7 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         """
         rows = [f'dP {i}' for i in self.idx_dP]
         rows += [f'dQ {i}' for i in self.idx_dQ]
+        rows += [f'U1 or Q limit bus {i}' for i in self.positive_sequence.bus_idx]
 
         return rows
 
@@ -1468,23 +1593,33 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         :param iterations: Iteration number
         :return: NumericPowerFlowResults
         """
+        # Reconstruct passive neutrals before the existing full-network post-processing.
+        ybus, yf, yt, ysh, mask, lookup, branch_lookup = self.full_admittances
+        voltage: CxVec = self.V
+        floating: CxVec = self.Un_floating_current + self.Un_floating_power
+        if self.voltage_lift is not None:
+            voltage = self.voltage_lift @ self.V
+            floating = np.zeros(len(voltage), dtype=complex)
+            floating[self.retained] = self.Un_floating_current + self.Un_floating_power
+        else:
+            pass
         # Compute the Branches power and the slack buses power
         Sf, St, If, It, Vbranch, loading, losses, Sbus, V_expanded = power_flow_post_process_nonlinear_3ph(
             Sbus=self.Scalc,
-            V=self.V,
-            Vn_floating=(self.Un_floating_current + self.Un_floating_power),
+            V=voltage,
+            Vn_floating=floating,
             F=expand_indices_3ph(self.nc.passive_branch_data.F),
             T=expand_indices_3ph(self.nc.passive_branch_data.T),
-            pv=self.pv,
-            vd=self.vd,
-            Ybus=self.Ybus,
-            Yf=self.Yf,
-            Yt=self.Yt,
-            Yshunt_bus=self.Yshunt_bus,
+            pv=self.retained[self.pv],
+            vd=self.retained[self.vd],
+            Ybus=ybus,
+            Yf=yf,
+            Yt=yt,
+            Yshunt_bus=ysh,
             branch_rates=expand3ph(self.nc.passive_branch_data.rates),
             Sbase=self.nc.Sbase,
-            bus_lookup=self.bus_lookup,
-            branch_lookup=self.branch_lookup
+            bus_lookup=lookup,
+            branch_lookup=branch_lookup
         )
 
         return NumericPowerFlowResults(

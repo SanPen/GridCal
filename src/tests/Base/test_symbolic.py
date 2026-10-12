@@ -11,17 +11,25 @@ from VeraGridEngine.Utils.Symbolic.compiled_functions import SymbolicJacobian
 from VeraGridEngine.Utils.Symbolic.jit_compiler import SubexpressionAnalyzer
 from VeraGridEngine.Utils.Symbolic.block import (
     Block,
+    DynamicModelContract,
     RmsPhysicalMeasurementPoint,
     RmsPhysicalMeterKind,
     RmsTerminalPowerContribution,
     RmsTerminalSide,
     collect_rms_physical_measurement_points,
 )
-from VeraGridEngine.Utils.Symbolic.symbolic_io import (duplicate_block, expr_to_dict, parse_expr,
-                                                       BlockSaver, BlockParser)
+from VeraGridEngine.Utils.Symbolic.symbolic_io import (
+    duplicate_block,
+    duplicate_block_across_factories,
+    duplicate_block_vars_uid,
+    expr_to_dict,
+    parse_expr,
+    BlockSaver,
+    BlockParser,
+)
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.Devices.Diagrams.block_diagram import BlockDiagram
-from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
+from VeraGridEngine.Devices.Dynamic.var_factory import Connection, VarFactory
 from VeraGridEngine.enumerations import ParamPowerFlowReferenceType, VarPowerFlowReferenceType
 from VeraGridEngine.Utils.procedural_logic import AnalogFlipFlopLogic, ProceduralLogicCodec, aflipflop
 
@@ -534,6 +542,130 @@ def test_block_deepcopy_preserves_editor_structure_metadata() -> None:
     assert copied_block.tpe_uid == 73
 
 
+def test_duplicate_block_vars_uid_creates_isolated_factory_graph() -> None:
+    """Verify editor cloning preserves identities without sharing symbolic state.
+
+    :return: None.
+    """
+    source_vf: VarFactory = VarFactory()
+    source_var: sym.Var = source_vf.add_var(name="source")
+    target_var: sym.Var = source_vf.add_var(name="target", shared_reference="shared_signal")
+    parameter_var: sym.Var = source_vf.add_var(name="gain")
+    parameter_const: sym.Const = source_vf.add_const(value=2.0, name="gain_value")
+    source_vf.add_connection(var_to_subs=target_var, incoming_var=source_var)
+    owner: object = object()
+    source_vf.register_var(dev=owner, var=target_var)
+    source_block: Block = Block(
+        algebraic_vars=list((source_var, target_var)),
+        algebraic_eqs=list((source_var, target_var)),
+        parameters=dict(((parameter_var, parameter_const),)),
+        in_vars=list((target_var,)),
+        out_vars=list((source_var,)),
+        name="source_block",
+    )
+    target_vf: VarFactory = VarFactory()
+
+    duplicated_block: Block = duplicate_block_vars_uid(
+        block=source_block,
+        source_var_factory=source_vf,
+        target_var_factory=target_vf,
+    )
+    duplicated_source: sym.Var = duplicated_block.out_vars[0]
+    duplicated_target: sym.Var = duplicated_block.in_vars[0]
+
+    assert duplicated_block is not source_block
+    assert duplicated_block.uid == source_block.uid
+    assert duplicated_source is not source_var
+    assert duplicated_target is not target_var
+    assert duplicated_source.uid == source_var.uid
+    assert duplicated_source.non_mutable_uid == source_var.non_mutable_uid
+    assert duplicated_target.uid == target_var.uid
+    assert duplicated_target.non_mutable_uid == target_var.non_mutable_uid
+    assert duplicated_block.algebraic_eqs[0] is duplicated_source
+    assert duplicated_block.algebraic_eqs[1] is duplicated_target
+    duplicated_parameter_var: sym.Var = next(iter(duplicated_block.parameters.keys()))
+    duplicated_parameter_const: sym.Const = duplicated_block.parameters[duplicated_parameter_var]
+    assert duplicated_parameter_var.uid == parameter_var.uid
+    assert duplicated_parameter_const.uid == parameter_const.uid
+    assert duplicated_parameter_const is not parameter_const
+    assert target_vf.get_var(duplicated_source.non_mutable_uid) is duplicated_source
+    assert target_vf.get_var(duplicated_target.non_mutable_uid) is duplicated_target
+    assert target_vf.get_connections_dict() is not source_vf.get_connections_dict()
+    assert len(target_vf.get_connections_dict()[duplicated_source.non_mutable_uid]) == 1
+
+    target_vf.remove_connection(
+        var_to_disconnect=duplicated_target,
+        outgoing_var=duplicated_source,
+    )
+
+    assert duplicated_source.non_mutable_uid not in target_vf.get_connections_dict()
+    assert source_var.non_mutable_uid in source_vf.get_connections_dict()
+
+    source_vf.merge_editor_var_factory(working_var_factory=target_vf)
+
+    assert source_vf.get_var(duplicated_source.non_mutable_uid) is duplicated_source
+    assert source_vf.get_var(duplicated_target.non_mutable_uid) is duplicated_target
+    assert source_vf.get_const(parameter_const.uid) is duplicated_parameter_const
+    assert source_vf.vars_info[owner][0] is duplicated_target
+    assert duplicated_target.shared_ref is source_vf.get_references_dict()["shared_signal"]
+    assert duplicated_source.non_mutable_uid not in source_vf.get_connections_dict()
+
+
+def test_duplicate_block_across_factories_copies_only_internal_graph() -> None:
+    """Clone internal aliases without sharing source variables or references.
+
+    :return: None.
+    """
+    source_vf: VarFactory = VarFactory()
+    source_var: sym.Var = source_vf.add_var(name="source")
+    target_var: sym.Var = source_vf.add_var(
+        name="target",
+        shared_reference="shared_signal",
+    )
+    external_var: sym.Var = source_vf.add_var(name="external")
+    source_vf.add_connection(
+        var_to_subs=target_var,
+        incoming_var=source_var,
+    )
+    source_vf.add_connection(
+        var_to_subs=external_var,
+        incoming_var=source_var,
+    )
+    source_block: Block = Block(
+        algebraic_vars=list((source_var, target_var)),
+        in_vars=list((target_var,)),
+        out_vars=list((source_var,)),
+    )
+    target_vf: VarFactory = VarFactory()
+
+    duplicated_block: Block = duplicate_block_across_factories(
+        block=source_block,
+        source_var_factory=source_vf,
+        target_var_factory=target_vf,
+    )
+    duplicated_source: sym.Var = duplicated_block.out_vars[0]
+    duplicated_target: sym.Var = duplicated_block.in_vars[0]
+    duplicated_connections: list[Connection] = target_vf.get_connections_dict()[
+        duplicated_source.non_mutable_uid
+    ]
+
+    assert duplicated_source is not source_var
+    assert duplicated_target is not target_var
+    assert duplicated_source.non_mutable_uid != source_var.non_mutable_uid
+    assert duplicated_target.non_mutable_uid != target_var.non_mutable_uid
+    assert duplicated_target.uid == duplicated_source.uid
+    assert duplicated_target.name == duplicated_source.name
+    assert target_var.shared_ref is not None
+    assert duplicated_target.shared_ref is not None
+    assert duplicated_target.shared_ref is not target_var.shared_ref
+    assert duplicated_target.shared_ref is target_vf.get_references_dict()["shared_signal"]
+    assert duplicated_target.shared_ref.uid == target_var.shared_ref.uid
+    assert len(duplicated_connections) == 1
+    assert duplicated_connections[0].non_mutable_uid == duplicated_target.non_mutable_uid
+    assert external_var.non_mutable_uid not in target_vf.get_vars_dict()
+    assert len(source_vf.get_connections_dict()[source_var.non_mutable_uid]) == 2
+
+
 def test_duplicate_block_preserves_parent_child_variable_links_with_new_uids() -> None:
     """
     Check that block duplication keeps parent and child references coherent.
@@ -790,7 +922,7 @@ def test_block_saver_parser_roundtrip_preserves_declarative_procedural_logic() -
 
 
 def test_rms_terminal_power_contract_roundtrips_and_fails_closed() -> None:
-    """Persist typed terminal references without copying symbolic variables.
+    """Discard obsolete RMS terminal metadata while validating old payloads.
 
     :return: None.
     """
@@ -807,7 +939,7 @@ def test_rms_terminal_power_contract_roundtrips_and_fails_closed() -> None:
             (VarPowerFlowReferenceType.Qt, ac_reactive_power),
         )),
     )
-    block.dynamic_model_contract.rms_terminal_power_contributions = list((
+    legacy_contributions = list((
         RmsTerminalPowerContribution(
             terminal_side=RmsTerminalSide.FROM,
             active_power_reference=VarPowerFlowReferenceType.Pf,
@@ -821,10 +953,11 @@ def test_rms_terminal_power_contract_roundtrips_and_fails_closed() -> None:
     ))
 
     persisted_data: dict[str, object] = block.to_dict()
+    contract_data = persisted_data["dynamic_model_contract"]
+    assert isinstance(contract_data, dict)
+    assert contract_data["version"] == 6
+    assert "rms_terminal_power_contributions" not in contract_data
     restored: Block = Block.parse(data=persisted_data)
-    restored_contributions: list[RmsTerminalPowerContribution] = (
-        restored.dynamic_model_contract.rms_terminal_power_contributions
-    )
     copied: Block = copy.deepcopy(block)
     saver: BlockSaver = BlockSaver(var_factory)
     saver.save_block(block, main=True)
@@ -837,42 +970,17 @@ def test_rms_terminal_power_contract_roundtrips_and_fails_closed() -> None:
         main_block_uid=block.uid,
     )
 
-    assert len(restored_contributions) == 2
-    assert restored_contributions[0].get_terminal_side() is RmsTerminalSide.FROM
-    assert (
-        restored_contributions[0].get_active_power_reference()
-        is VarPowerFlowReferenceType.Pf
-    )
-    assert restored_contributions[0].get_reactive_power_reference() is None
-    assert restored_contributions[1].get_terminal_side() is RmsTerminalSide.TO
-    assert (
-        restored_contributions[1].get_reactive_power_reference()
-        is VarPowerFlowReferenceType.Qt
-    )
-    assert (
-        copied.dynamic_model_contract.rms_terminal_power_contributions[0]
-        is not block.dynamic_model_contract.rms_terminal_power_contributions[0]
-    )
-    assert (
-        symbolic_io_restored.dynamic_model_contract
-        .rms_terminal_power_contributions[1].get_active_power_reference()
-        is VarPowerFlowReferenceType.Pt
-    )
+    assert "rms_terminal_power_contributions" not in DynamicModelContract.__slots__
 
     # Version 1 predates both formulation-specific terminal contracts.
     legacy_data: dict[str, object] = block.to_dict()
     legacy_contract: object = legacy_data["dynamic_model_contract"]
     assert isinstance(legacy_contract, dict)
     legacy_contract["version"] = 1
-    legacy_contract.pop("rms_terminal_power_contributions")
     legacy_contract.pop("emt_terminal_current_contributions")
     legacy_contract.pop("emt_internal_grounding_link")
     legacy_contract.pop("rms_physical_measurement_point")
     legacy_restored: Block = Block.parse(data=legacy_data)
-    assert (
-        legacy_restored.dynamic_model_contract.rms_terminal_power_contributions
-        == list()
-    )
     assert (
         legacy_restored.dynamic_model_contract.emt_terminal_current_contributions
         == list()
@@ -883,13 +991,13 @@ def test_rms_terminal_power_contract_roundtrips_and_fails_closed() -> None:
     version_two_contract: object = version_two_data["dynamic_model_contract"]
     assert isinstance(version_two_contract, dict)
     version_two_contract["version"] = 2
+    version_two_contract["rms_terminal_power_contributions"] = [
+        contribution.to_data() for contribution in legacy_contributions
+    ]
     version_two_contract.pop("emt_terminal_current_contributions")
     version_two_contract.pop("emt_internal_grounding_link")
     version_two_contract.pop("rms_physical_measurement_point")
     version_two_restored: Block = Block.parse(data=version_two_data)
-    assert len(
-        version_two_restored.dynamic_model_contract.rms_terminal_power_contributions
-    ) == 2
     assert (
         version_two_restored.dynamic_model_contract.emt_terminal_current_contributions
         == list()
@@ -900,6 +1008,9 @@ def test_rms_terminal_power_contract_roundtrips_and_fails_closed() -> None:
     version_three_contract: object = version_three_data["dynamic_model_contract"]
     assert isinstance(version_three_contract, dict)
     version_three_contract["version"] = 3
+    version_three_contract["rms_terminal_power_contributions"] = [
+        contribution.to_data() for contribution in legacy_contributions
+    ]
     version_three_contract.pop("emt_internal_grounding_link")
     version_three_contract.pop("rms_physical_measurement_point")
     version_three_restored: Block = Block.parse(data=version_three_data)
@@ -910,6 +1021,9 @@ def test_rms_terminal_power_contract_roundtrips_and_fails_closed() -> None:
     version_four_contract: object = version_four_data["dynamic_model_contract"]
     assert isinstance(version_four_contract, dict)
     version_four_contract["version"] = 4
+    version_four_contract["rms_terminal_power_contributions"] = [
+        contribution.to_data() for contribution in legacy_contributions
+    ]
     version_four_contract.pop("rms_physical_measurement_point")
     version_four_restored: Block = Block.parse(data=version_four_data)
     assert version_four_restored.dynamic_model_contract.rms_physical_measurement_point is None
@@ -917,6 +1031,10 @@ def test_rms_terminal_power_contract_roundtrips_and_fails_closed() -> None:
     malformed_data: dict[str, object] = block.to_dict()
     malformed_contract: object = malformed_data["dynamic_model_contract"]
     assert isinstance(malformed_contract, dict)
+    malformed_contract["version"] = 5
+    malformed_contract["rms_terminal_power_contributions"] = [
+        contribution.to_data() for contribution in legacy_contributions
+    ]
     malformed_contributions: object = malformed_contract[
         "rms_terminal_power_contributions"
     ]
@@ -1184,6 +1302,56 @@ def test_block_parse_rejects_malformed_structural_fields() -> None:
     malformed_name_data["name"] = 17
     with pytest.raises(TypeError, match="field 'name' must be a string"):
         Block.parse(data=malformed_name_data)
+
+
+def test_block_parsers_migrate_legacy_frequency_mapping() -> None:
+    """Migrate persisted ``fn`` API mappings to the canonical ``freq`` key.
+
+    :return: Nothing.
+    """
+    source_factory: VarFactory = VarFactory()
+    frequency: sym.Var = source_factory.add_var("frequency")
+    source_block: Block = Block(
+        algebraic_vars=list([frequency]),
+        api_obj_mapping=dict({ParamPowerFlowReferenceType.freq: frequency}),
+        name="legacy_frequency_mapping",
+    )
+
+    # Exercise the declarative Block parser after replacing the current key
+    # with the spelling emitted by older saved dynamic-model files.
+    declarative_data: Dict[str, Any] = source_block.to_dict()
+    declarative_mapping: Dict[str, Any] = declarative_data["api_obj_mapping"]
+    declarative_mapping["fn"] = declarative_mapping.pop(ParamPowerFlowReferenceType.freq.value)
+    declarative_restored: Block = Block.parse(data=declarative_data)
+    declarative_frequency: sym.Var | None = declarative_restored.api_obj_mapping.get(
+        ParamPowerFlowReferenceType.freq,
+        None,
+    )
+
+    assert declarative_frequency is not None
+    assert declarative_frequency.uid == frequency.uid
+
+    # Exercise the legacy UID-based parser because historical project files
+    # use this second persistence representation as well.
+    saver: BlockSaver = BlockSaver(source_factory)
+    saver.save_block(source_block, main=True)
+    legacy_blocks: Dict[int, Dict[str, Any]] = copy.deepcopy(saver.get_blocks())
+    legacy_block_data: Dict[str, Any] = legacy_blocks[source_block.uid]
+    legacy_mapping: Dict[str, int | None] = legacy_block_data["api_obj_mapping"]
+    legacy_mapping["fn"] = legacy_mapping.pop(ParamPowerFlowReferenceType.freq.value)
+
+    legacy_parser: BlockParser = BlockParser(VarFactory(), logger=Logger())
+    legacy_parser.parse_consts(saver.get_const_to_save())
+    legacy_parser.parse_vars(saver.get_vars_to_save())
+    legacy_parser.parse_diff_vars(saver.get_diff_vars_to_save())
+    legacy_restored: Block = legacy_parser.parse_block(legacy_blocks, source_block.uid)
+    legacy_frequency: sym.Var | None = legacy_restored.api_obj_mapping.get(
+        ParamPowerFlowReferenceType.freq,
+        None,
+    )
+
+    assert legacy_frequency is not None
+    assert legacy_frequency.uid == frequency.uid
 
 
 def test_block_parser_only_warns_for_broken_optional_mapping_references() -> None:

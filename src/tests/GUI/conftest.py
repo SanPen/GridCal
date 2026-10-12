@@ -1,41 +1,8 @@
-import hashlib
-import os
 import sys
-import tempfile
-from pathlib import Path
-
-if sys.platform.startswith("win"):
-    _REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
-    _REPOSITORY_KEY = hashlib.sha256(str(_REPOSITORY_ROOT).encode("utf-8")).hexdigest()[:12]
-    _TEST_STATE_ROOT = Path(tempfile.gettempdir()) / "veragrid-pytest-gui" / _REPOSITORY_KEY
-    _TEST_TEMP_ROOT = _TEST_STATE_ROOT / "temp"
-    _TEST_HOME_ROOT = _TEST_STATE_ROOT / "home"
-    _TEST_BASE_TEMP_ROOT = _TEST_STATE_ROOT / "basetemp"
-    _TEST_TEMP_ROOT.mkdir(parents=True, exist_ok=True)
-    _TEST_HOME_ROOT.mkdir(parents=True, exist_ok=True)
-    _TEST_BASE_TEMP_ROOT.mkdir(parents=True, exist_ok=True)
-    os.environ["TMP"] = str(_TEST_TEMP_ROOT)
-    os.environ["TEMP"] = str(_TEST_TEMP_ROOT)
-    os.environ["USERPROFILE"] = str(_TEST_HOME_ROOT)
-    os.environ["HOME"] = str(_TEST_HOME_ROOT)
-    tempfile.tempdir = str(_TEST_TEMP_ROOT)
 
 import pytest
 from PySide6 import QtCore
 from PySide6 import QtWidgets
-
-
-def pytest_configure(config: pytest.Config) -> None:
-    """
-    Keep Windows GUI test temporary paths inside one known writable directory.
-
-    :param config: Active pytest configuration.
-    :return: None.
-    """
-    if sys.platform.startswith("win") and config.option.basetemp is None:
-        config.option.basetemp = str(_TEST_BASE_TEMP_ROOT)
-    else:
-        pass
 
 
 class ModalDialogAutoCloser(QtCore.QObject):

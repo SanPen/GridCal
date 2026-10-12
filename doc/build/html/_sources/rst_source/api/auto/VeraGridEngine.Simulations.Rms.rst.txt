@@ -61,14 +61,6 @@ VeraGridEngine.Simulations.Rms.rms\_results module
    :show-inheritance:
    :undoc-members:
 
-VeraGridEngine.Simulations.Rms.rms\_worker module
--------------------------------------------------
-
-.. automodule:: VeraGridEngine.Simulations.Rms.rms_worker
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Module contents
 ---------------
 

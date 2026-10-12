@@ -81,9 +81,7 @@ def _build_pf_consistent_bindings(name: str) -> Dict[str, float]:
     e_B: float = Epk_init * np.sin(theta - two_pi_over_3)
     e_C: float = Epk_init * np.sin(theta + two_pi_over_3)
 
-    # Average 3-ph active / reactive power for balanced sinusoidal steady
-    # state. The runtime equations divide abc instantaneous sums by 3, so
-    # ``Pe = -(1/2)·Vpk·Ipk·cos(phi)`` and ``Qe = +(1/2)·Vpk·Ipk·sin(phi)``.
+    # Total three-phase active/reactive power on the system base.
     Pe: float = -0.5 * Vpk * Ipk * np.cos(phi)
     Qe: float = 0.5 * Vpk * Ipk * np.sin(phi)
 
@@ -166,7 +164,7 @@ def test_vsc_gfm_emt_template_exposes_expected_structure() -> None:
 def test_vsc_gfm_emt_template_can_be_loaded_into_generic_problem() -> None:
     """
     Verify the template plugs into the generic EMT problem template
-    without errors and exposes the expected runtime parameters.
+    and keeps static API values separate from runtime parameters.
 
     :return: None.
     """
@@ -181,8 +179,11 @@ def test_vsc_gfm_emt_template_can_be_loaded_into_generic_problem() -> None:
     )
     runtime_parameter_names = [var.name for var in problem.get_variable_parameters()]
 
-    for expected in ["omega_base", "R_s", "X_s", "Kdp", "Kdq"]:
+    for expected in ["Kdp", "Kdq"]:
         assert expected in runtime_parameter_names
+    for expected in ["omega_base", "R_s", "X_s"]:
+        assert expected in [var.name for var in model.parameters]
+        assert expected not in runtime_parameter_names
 
 
 def test_vsc_gfm_emt_template_init_residual_is_small() -> None:

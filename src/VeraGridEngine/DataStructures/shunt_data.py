@@ -24,6 +24,7 @@ class ShuntData:
         "idtag",
         "active",
         "grounds_neutral",
+        "conn",
         "control_mode_int",
         "Y",
         "Y3_star",
@@ -63,6 +64,7 @@ class ShuntData:
 
         self.active: BoolVec = np.zeros(nelm, dtype=bool)
         self.grounds_neutral: BoolVec = np.zeros(nelm, dtype=bool)
+        self.conn: IntVec = np.zeros(nelm, dtype=int)
 
         self.control_mode_int: IntVec = np.zeros(self.nelm, dtype=int)
 
@@ -124,6 +126,7 @@ class ShuntData:
 
         data.active = self.active[elm_idx]
         data.grounds_neutral = self.grounds_neutral[elm_idx]
+        data.conn = self.conn[elm_idx]
 
         data.control_mode_int = self.control_mode_int[elm_idx]
 
@@ -197,6 +200,7 @@ class ShuntData:
         data.idtag = self.idtag.copy()
         data.active = self.active.copy()
         data.grounds_neutral = self.grounds_neutral.copy()
+        data.conn = self.conn.copy()
         data.control_mode_int = self.control_mode_int.copy()
 
         data.Y = self.Y.copy()

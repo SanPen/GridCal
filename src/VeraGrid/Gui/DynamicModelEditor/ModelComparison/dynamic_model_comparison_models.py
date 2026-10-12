@@ -531,8 +531,8 @@ def collect_parameter_descriptors(block: Block) -> List[ComparisonParameterDescr
     owner_path: tuple[int, ...]
     owner: Block
     for owner_path, owner in block_paths:
-        # Static columns retain every declared parameter so malformed templates
-        # expose their missing mapping instead of silently hiding the parameter.
+        # Immutable columns retain every declared parameter. The device mapping
+        # is optional because a concrete local literal is also a valid source.
         static_reference: ParamPowerFlowReferenceType
         static_parameter: Var | None
         static_ordinal: int
@@ -564,7 +564,9 @@ def collect_parameter_descriptors(block: Block) -> List[ComparisonParameterDescr
         # api_obj_mapping. Add those mapping-only symbols after declared ones.
         mapping_ordinal: int
         for mapping_ordinal, (static_reference, static_parameter) in enumerate(owner.api_obj_mapping.items()):
-            if isinstance(static_parameter, Var) and static_parameter not in owner.parameters:
+            if (isinstance(static_parameter, Var)
+                    and static_parameter not in owner.parameters
+                    and static_parameter not in owner.event_dict):
                 static_ordinal = len(owner.parameters) + mapping_ordinal
                 mapped_header: str = _build_parameter_header(
                     owner=owner,
@@ -585,8 +587,8 @@ def collect_parameter_descriptors(block: Block) -> List[ComparisonParameterDescr
                 )
             else:
                 pass
-        # Event parameters remain model-owned expressions and therefore retain
-        # the editable value behavior used by the comparison table.
+        # Event parameters remain model-owned expressions. Their optional API
+        # mapping is part of the same initialization contract as for constants.
         event_parameter: Var
         event_ordinal: int
         for event_ordinal, event_parameter in enumerate(owner.event_dict.keys()):
@@ -602,7 +604,10 @@ def collect_parameter_descriptors(block: Block) -> List[ComparisonParameterDescr
                     owner_name=owner.name,
                     variable=event_parameter,
                     is_event_parameter=True,
-                    static_reference=None,
+                    static_reference=get_parameter_static_reference(
+                        block=owner,
+                        variable=event_parameter,
+                    ),
                     ordinal=event_ordinal,
                     header=event_header,
                 )
@@ -675,8 +680,8 @@ class ComparisonParameterBinding:
 
         :param owner: Block that owns the authoritative mapping.
         :param variable: Symbolic parameter referenced by the mapping.
-        :param expression: Event expression, or ``None`` for a static reference.
-        :param static_reference: Static device-property key, or ``None`` for an event parameter.
+        :param expression: Local parameter expression, or ``None`` for a mapping-only legacy target.
+        :param static_reference: Optional static device-property initialization source.
         :return: None.
         """
         self.owner: Block = owner
@@ -708,7 +713,10 @@ def find_parameter_owner_by_uid(
                         owner=owner,
                         variable=variable,
                         expression=expression,
-                        static_reference=None,
+                        static_reference=get_parameter_static_reference(
+                            block=owner,
+                            variable=variable,
+                        ),
                     )
                 else:
                     pass
@@ -725,7 +733,7 @@ def find_parameter_owner_by_uid(
                     return ComparisonParameterBinding(
                         owner=owner,
                         variable=declared_static_variable,
-                        expression=None,
+                        expression=owner.parameters[declared_static_variable],
                         static_reference=member_static_reference,
                     )
                 else:
@@ -772,7 +780,10 @@ def find_parameter_owner_by_descriptor(
                 owner=owner,
                 variable=variable,
                 expression=expression,
-                static_reference=None,
+                static_reference=get_parameter_static_reference(
+                    block=owner,
+                    variable=variable,
+                ),
             )
         else:
             matching_variable: Var
@@ -782,7 +793,10 @@ def find_parameter_owner_by_descriptor(
                         owner=owner,
                         variable=matching_variable,
                         expression=owner.event_dict[matching_variable],
-                        static_reference=None,
+                        static_reference=get_parameter_static_reference(
+                            block=owner,
+                            variable=matching_variable,
+                        ),
                     )
                 else:
                     pass
@@ -846,7 +860,7 @@ def find_parameter_owner_by_descriptor(
             return ComparisonParameterBinding(
                 owner=owner,
                 variable=resolved_static_variable,
-                expression=None,
+                expression=owner.parameters.get(resolved_static_variable, None),
                 static_reference=resolved_static_reference,
             )
         else:
@@ -855,7 +869,7 @@ def find_parameter_owner_by_descriptor(
 
 
 class ComparisonValueCell:
-    """Expose one static reference or stage one editable event parameter."""
+    """Expose one device source or stage one editable local parameter."""
 
     __slots__ = (
         "owner",
@@ -879,7 +893,7 @@ class ComparisonValueCell:
 
         :param owner: Complete-tree block owning the parameter mapping.
         :param variable: Parameter key.
-        :param expression: Current event expression, or ``None`` for a static reference.
+        :param expression: Current local parameter expression, when declared.
         :param is_event_parameter: Whether the owner is ``event_dict``.
         :param static_reference: Static device-property key, when applicable.
         :return: None.
@@ -893,11 +907,11 @@ class ComparisonValueCell:
         self._changed: bool = False
 
     def is_editable(self) -> bool:
-        """Return whether this cell contains an editable event constant.
+        """Return whether this cell contains an editable local constant.
 
-        :return: ``True`` only for constant-backed event parameters.
+        :return: ``True`` only for an unmapped constant-backed parameter.
         """
-        editable: bool = self.is_event_parameter and isinstance(self.expression, Const)
+        editable: bool = self.static_reference is None and isinstance(self.expression, Const)
         return editable
 
     def get_value(self) -> NUMBER | None | str:
@@ -907,8 +921,6 @@ class ComparisonValueCell:
         """
         if self.static_reference is not None:
             return self.static_reference.value
-        elif not self.is_event_parameter:
-            return "Missing PF mapping"
         elif isinstance(self.expression, Const):
             return self._pending_value
         elif isinstance(self.expression, Expr):
@@ -939,13 +951,16 @@ class ComparisonValueCell:
         return self._changed
 
     def apply(self) -> None:
-        """Replace the saved event expression with its staged constant.
+        """Replace the saved local parameter expression with its staged constant.
 
         :return: None.
         """
-        if self._changed and self.is_event_parameter:
+        if self._changed and isinstance(self.expression, Const):
             new_expression: Const = Const(self._pending_value)
-            self.owner.event_dict[self.variable] = new_expression
+            if self.is_event_parameter:
+                self.owner.event_dict[self.variable] = new_expression
+            else:
+                self.owner.parameters[self.variable] = new_expression
             self.expression = new_expression
             self._changed = False
         else:
@@ -1125,8 +1140,8 @@ class DynamicModelComparisonTableModel(QtCore.QAbstractTableModel):
                     )
                 elif not cell.is_event_parameter:
                     return (
-                        "Template issue: static parameters require api_obj_mapping. "
-                        "The symbolic constant is only a template placeholder."
+                        f"Fixed local parameter: {cell.variable.name}. "
+                        "It has no grid-device initialization mapping."
                     )
                 elif cell.is_editable():
                     return f"Event parameter: {cell.variable.name}"
@@ -1161,7 +1176,7 @@ class DynamicModelComparisonTableModel(QtCore.QAbstractTableModel):
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 return descriptor.header
             else:
-                parameter_kind: str = "event_dict" if descriptor.is_event_parameter else "api_obj_mapping"
+                parameter_kind: str = "event_dict" if descriptor.is_event_parameter else "parameters"
                 return f"{descriptor.owner_name}: {descriptor.variable.name} ({parameter_kind})"
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
@@ -1227,11 +1242,13 @@ class DynamicModelComparisonTableModel(QtCore.QAbstractTableModel):
         :return: String for device names and complex-capable numeric type otherwise.
         """
         if column_index == 0:
-            return str
-        elif not self.descriptors[column_index - 1].is_event_parameter:
-            return str
+            column_type: type = str
         else:
-            return complex
+            # Mapped cells are read-only labels, so every editable parameter
+            # cell in these columns is a local numeric value regardless of
+            # whether another compared model uses a device mapping.
+            column_type = complex
+        return column_type
 
     def fill_column_from_row(self, column_index: int, source_row: int) -> int:
         """Stage one source value for every editable cell in its parameter column.

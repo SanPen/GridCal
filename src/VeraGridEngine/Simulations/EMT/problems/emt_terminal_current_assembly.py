@@ -3,93 +3,36 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-"""Assemble declared EMT device currents into topology-owned KCL balances.
-
-The assembler resolves typed device terminals and conductors through the
-assigned VeraGrid topology. Visible symbolic ports remain signal interfaces
-and never determine electrical ownership.
-"""
+"""Assemble canonical EMT current mappings into topology-owned KCL balances."""
 
 from typing import Dict, List, Tuple
 
-from VeraGridEngine.Utils.Symbolic.block import (
-    Block,
-    EmtTerminalConductor,
-    EmtTerminalCurrentContribution,
-    EmtTerminalSide,
-    validate_emt_terminal_current_contributions,
-)
+from VeraGridEngine.enumerations import VarPowerFlowReferenceType
+from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
 
 
-def _resolve_emt_terminal_topology(
-        terminal_side: EmtTerminalSide,
-        bus_from_index: int | None,
-        bus_to_index: int | None,
-        bus_from_is_dc: bool | None,
-        bus_to_is_dc: bool | None,
-        bus_index: int | None,
-        bus_is_dc: bool | None,
-) -> Tuple[int, bool, float]:
-    """Resolve one declared EMT terminal against physical network topology.
-
-    :param terminal_side: Declared device terminal.
-    :param bus_from_index: From-side bus index for a two-terminal device.
-    :param bus_to_index: To-side bus index for a two-terminal device.
-    :param bus_from_is_dc: Whether the from-side bus is DC.
-    :param bus_to_is_dc: Whether the to-side bus is DC.
-    :param bus_index: Bus index for a one-terminal device.
-    :param bus_is_dc: Whether the one-terminal bus is DC.
-    :return: Bus index, DC-domain flag, and nodal sign.
-    """
-    if terminal_side is EmtTerminalSide.BUS:
-        if bus_index is not None and bus_is_dc is not None:
-            result: Tuple[int, bool, float] = (bus_index, bus_is_dc, 1.0)
-        else:
-            raise ValueError("EMT bus terminal lacks one-terminal topology")
-    else:
-        if terminal_side is EmtTerminalSide.FROM:
-            if bus_from_index is not None and bus_from_is_dc is not None:
-                result = (bus_from_index, bus_from_is_dc, -1.0)
-            else:
-                raise ValueError("EMT from terminal lacks branch topology")
-        else:
-            if terminal_side is EmtTerminalSide.TO:
-                if bus_to_index is not None and bus_to_is_dc is not None:
-                    result = (bus_to_index, bus_to_is_dc, -1.0)
-                else:
-                    raise ValueError("EMT to terminal lacks branch topology")
-            else:
-                raise TypeError("EMT terminal side must be an EmtTerminalSide")
-    return result
+_BUS_AC_CURRENT_REFERENCES = (
+    VarPowerFlowReferenceType.i_N,
+    VarPowerFlowReferenceType.i_A,
+    VarPowerFlowReferenceType.i_B,
+    VarPowerFlowReferenceType.i_C,
+)
+_FROM_AC_CURRENT_REFERENCES = (
+    VarPowerFlowReferenceType.if_N,
+    VarPowerFlowReferenceType.if_A,
+    VarPowerFlowReferenceType.if_B,
+    VarPowerFlowReferenceType.if_C,
+)
+_TO_AC_CURRENT_REFERENCES = (
+    VarPowerFlowReferenceType.it_N,
+    VarPowerFlowReferenceType.it_A,
+    VarPowerFlowReferenceType.it_B,
+    VarPowerFlowReferenceType.it_C,
+)
 
 
-def _get_emt_conductor_phase_index(conductor: EmtTerminalConductor) -> int:
-    """Return the KCL vector index of one EMT conductor.
-
-    :param conductor: Declared EMT terminal conductor.
-    :return: DC or NABC KCL vector index.
-    """
-    if conductor is EmtTerminalConductor.DC:
-        phase_index: int = 0
-    else:
-        if conductor is EmtTerminalConductor.NEUTRAL:
-            phase_index = 0
-        else:
-            if conductor is EmtTerminalConductor.PHASE_A:
-                phase_index = 1
-            else:
-                if conductor is EmtTerminalConductor.PHASE_B:
-                    phase_index = 2
-                else:
-                    if conductor is EmtTerminalConductor.PHASE_C:
-                        phase_index = 3
-                    else:
-                        raise ValueError("Unsupported EMT terminal conductor")
-    return phase_index
-
-
-def assemble_emt_terminal_current_contributions(
+def assemble_emt_mapped_current_references(
         model: Block,
         current_balance: Dict[int, List[Expr | Var | Const]],
         bus_from_index: int | None = None,
@@ -98,83 +41,82 @@ def assemble_emt_terminal_current_contributions(
         bus_to_is_dc: bool | None = None,
         bus_index: int | None = None,
         bus_is_dc: bool | None = None,
-) -> None:
-    """Assemble one EMT device into topology-owned instantaneous KCL.
+) -> bool:
+    """Assemble mapped currents using topology supplied by the static device."""
+    mapping = model.external_mapping
+    mapped = {
+        reference: model.E(reference)
+        for reference in mapping
+        if isinstance(model.E(reference), Var)
+    }
 
-    The contract is hidden electrical metadata. Visible block ports and diagram
-    connections do not participate in nodal ownership. Validation completes for
-    every declaration before the first KCL entry is mutated.
-
-    :param model: Canonical EMT block owning current variables and declarations.
-    :param current_balance: Per-bus DC or NABC current accumulators.
-    :param bus_from_index: From-side bus index for a two-terminal device.
-    :param bus_to_index: To-side bus index for a two-terminal device.
-    :param bus_from_is_dc: Whether the from-side bus is DC.
-    :param bus_to_is_dc: Whether the to-side bus is DC.
-    :param bus_index: Bus index for a one-terminal device.
-    :param bus_is_dc: Whether the one-terminal bus is DC.
-    :return: None.
-    """
-    validate_emt_terminal_current_contributions(block=model)
-    contributions: List[EmtTerminalCurrentContribution] = (
-        model.dynamic_model_contract.emt_terminal_current_contributions
+    bus_references = (VarPowerFlowReferenceType.Idc,) + _BUS_AC_CURRENT_REFERENCES
+    from_references = (VarPowerFlowReferenceType.If_dc,) + _FROM_AC_CURRENT_REFERENCES
+    to_references = (VarPowerFlowReferenceType.It_dc,) + _TO_AC_CURRENT_REFERENCES
+    has_bus_mapping = any(reference in mapped for reference in bus_references)
+    has_branch_mapping = any(
+        reference in mapped for reference in from_references + to_references
     )
-    if len(contributions) > 0:
-        pass
-    else:
-        raise ValueError("EMT model has no declared terminal current contributions")
-
-    resolved_contributions: List[Tuple[int, int, float, Var]] = list()
-    contribution: EmtTerminalCurrentContribution
-    for contribution in contributions:
-        terminal_side: EmtTerminalSide = contribution.get_terminal_side()
-        conductor: EmtTerminalConductor = contribution.get_conductor()
-        resolved_bus_index: int
-        resolved_bus_is_dc: bool
-        sign: float
-        resolved_bus_index, resolved_bus_is_dc, sign = _resolve_emt_terminal_topology(
-            terminal_side=terminal_side,
-            bus_from_index=bus_from_index,
-            bus_to_index=bus_to_index,
-            bus_from_is_dc=bus_from_is_dc,
-            bus_to_is_dc=bus_to_is_dc,
-            bus_index=bus_index,
-            bus_is_dc=bus_is_dc,
-        )
-        if conductor is EmtTerminalConductor.DC:
-            conductor_is_dc: bool = True
+    terminal_specs: List[
+        Tuple[int, bool, float, Tuple[VarPowerFlowReferenceType, ...]]
+    ]
+    if bus_index is not None and has_bus_mapping:
+        if bus_index is None or bus_is_dc is None:
+            raise ValueError("EMT bus terminal lacks one-terminal topology")
         else:
-            conductor_is_dc = False
-        if conductor_is_dc == resolved_bus_is_dc:
             pass
+        terminal_specs = [(bus_index, bus_is_dc, 1.0, bus_references)]
+    elif bus_from_index is not None and bus_to_index is not None and has_branch_mapping:
+        has_from_mapping = any(reference in mapped for reference in from_references)
+        has_to_mapping = any(reference in mapped for reference in to_references)
+        if has_from_mapping and (bus_from_index is None or bus_from_is_dc is None):
+            raise ValueError("EMT from terminal lacks branch topology")
         else:
-            raise ValueError(
-                "EMT terminal conductor does not match the connected bus domain"
-            )
-        phase_index: int = _get_emt_conductor_phase_index(conductor=conductor)
-        if phase_index < len(current_balance[resolved_bus_index]):
             pass
+        if has_to_mapping and (bus_to_index is None or bus_to_is_dc is None):
+            raise ValueError("EMT to terminal lacks branch topology")
         else:
-            raise ValueError("EMT terminal conductor is absent from the bus shell")
-        current_var: Var = model.E(contribution.get_current_reference())
-        resolved_contributions.append((
-            resolved_bus_index,
-            phase_index,
-            sign,
-            current_var,
-        ))
+            pass
+        terminal_specs = list()
+        if has_from_mapping:
+            terminal_specs.append((bus_from_index, bus_from_is_dc, -1.0, from_references))
+        else:
+            pass
+        if has_to_mapping:
+            terminal_specs.append((bus_to_index, bus_to_is_dc, -1.0, to_references))
+        else:
+            pass
     else:
-        pass
+        if has_bus_mapping or has_branch_mapping:
+            raise ValueError("EMT current mappings lack matching device topology")
+        return False
 
-    resolved_contribution: Tuple[int, int, float, Var]
-    for resolved_contribution in resolved_contributions:
-        target_bus_index: int = resolved_contribution[0]
-        target_phase_index: int = resolved_contribution[1]
-        target_sign: float = resolved_contribution[2]
-        target_current: Var = resolved_contribution[3]
-        current_balance[target_bus_index][target_phase_index] = (
-            current_balance[target_bus_index][target_phase_index]
-            + target_sign * target_current
+    resolved: List[Tuple[int, int, float, Var]] = list()
+    for terminal_bus_index, terminal_is_dc, sign, references in terminal_specs:
+        dc_reference = references[0]
+        ac_references = references[1:]
+        if terminal_is_dc:
+            if any(reference in mapped for reference in ac_references):
+                raise ValueError(
+                    "EMT terminal conductor does not match the connected bus domain"
+                )
+            selected_references = (dc_reference,)
+        else:
+            if dc_reference in mapped:
+                raise ValueError(
+                    "EMT terminal conductor does not match the connected bus domain"
+                )
+            selected_references = ac_references
+        for phase_index, reference in enumerate(selected_references):
+            if reference in mapped:
+                if phase_index >= len(current_balance[terminal_bus_index]):
+                    raise ValueError("EMT terminal conductor is absent from the bus shell")
+                else:
+                    pass
+                resolved.append((terminal_bus_index, phase_index, sign, mapped[reference]))
+
+    for target_bus_index, phase_index, sign, current in resolved:
+        current_balance[target_bus_index][phase_index] = (
+            current_balance[target_bus_index][phase_index] + sign * current
         )
-    else:
-        pass
+    return len(resolved) > 0

@@ -12,41 +12,36 @@ from unittest.mock import Mock
 
 import pytest
 
-from VeraGridEngine.IO.fmu.importer.bindings import (
+from VeraGridEngine.IO.fmu.Elements.bindings import (
     FmiThreeFloat64SessionValueSelector,
     FmuImportConfig,
     FmuRefBinding,
     resolve_fmi_three_float64_session_value_selectors,
 )
-from VeraGridEngine.IO.fmu.importer.errors import (
-    FmuBindingError,
-    FmuImportError,
-    FmuModeError,
-)
-from VeraGridEngine.IO.fmu.importer.runtime_protocol import (
+from VeraGridEngine.IO.fmu.Elements.protocol import (
     FmiThreeWorkerCompletedIntegratorStepResult,
     FmiThreeWorkerDiscreteStatesResult,
     FmiThreeWorkerDoStepResult,
     validate_fmi_three_worker_float64_frame_capacity,
     validate_fmi_three_worker_initialization_frame_capacity,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_profile import (
+from VeraGridEngine.IO.fmu.profile import (
     FmiThreeWorkerFloat64Profile,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_coordinator import (
+from VeraGridEngine.IO.fmu.coordinator import (
     FmiThreeModelExchangeCoordinator,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_session import (
+from VeraGridEngine.IO.fmu.Elements.session import (
     FmiThreeNumericSession,
     open_fmi_three_numeric_session,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_worker_host import (
+from VeraGridEngine.IO.fmu.worker_host import (
     FmiThreeWorkerHostLimits,
 )
-from VeraGridEngine.IO.fmu.importer.model_description import (
+from VeraGridEngine.IO.fmu.model_description import (
     read_fmu_model_description,
 )
-from VeraGridEngine.IO.fmu.importer.model_description_metadata import (
+from VeraGridEngine.IO.fmu.Elements.description import (
     FmuModelDescription,
     FmuVariableDescription,
 )
@@ -238,7 +233,7 @@ def test_fmi_three_initialization_layout_recomputes_configurable_cardinality_ato
         float64_profile=FmiThreeWorkerFloat64Profile.CONFIGURABLE_ARRAY,
     )
     try:
-        with pytest.raises(FmuBindingError, match="serialized value bound"):
+        with pytest.raises(ValueError, match="serialized value bound"):
             session.configure_uint64(configuration_uint64_values=(7,))
         session.configure_uint64(configuration_uint64_values=(2,))
         initialized_values: tuple[float, ...] = (
@@ -452,7 +447,7 @@ def test_fmi_three_scalar_session_runs_ordered_consumer_operations(
     try:
         assert session.supports_fmu_state_checkpoint()
         assert not session.supports_serialized_fmu_state()
-        with pytest.raises(FmuModeError, match="requires Model Exchange"):
+        with pytest.raises(RuntimeError, match="requires Model Exchange"):
             session.needs_completed_integrator_step()
         initialized_values: tuple[float, ...] = session.initialize_co_simulation_and_read(
             start_time=0.0,
@@ -669,7 +664,7 @@ def test_fmi_three_model_exchange_session_evaluates_without_integrating(
         )
         assert not completed_result.enter_event_mode
         assert not completed_result.terminate_simulation
-        with pytest.raises(FmuModeError, match="requires Co-Simulation"):
+        with pytest.raises(RuntimeError, match="requires Co-Simulation"):
             session.advance_co_simulation(
                 current_communication_point=0.25,
                 communication_step_size=0.1,
@@ -859,7 +854,7 @@ def test_fmi_three_model_exchange_coordinator_bounds_event_iterations(
             continuous_state_values=(3.0,),
             writable_values=(9.0,),
         )
-        with pytest.raises(FmuModeError, match="exceeded its iteration bound"):
+        with pytest.raises(RuntimeError, match="exceeded its iteration bound"):
             coordinator.accept_candidate(importer_detected_event=False)
         assert coordinator.has_pending_candidate()
         coordinator.reject_candidate()
@@ -896,7 +891,7 @@ def test_fmi_three_model_exchange_rejects_nonprogressing_time_events() -> None:
                 maximum_event_iterations=4,
             )
         )
-        with pytest.raises(FmuModeError, match="follow Event Mode entry"):
+        with pytest.raises(RuntimeError, match="follow Event Mode entry"):
             initial_coordinator.initialize(
                 start_time=0.0,
                 stop_time=3.0,
@@ -970,7 +965,7 @@ def test_fmi_three_model_exchange_rejects_nonprogressing_time_events() -> None:
             continuous_state_values=tuple(),
             writable_values=tuple(),
         )
-        with pytest.raises(FmuModeError, match="follow Event Mode entry"):
+        with pytest.raises(RuntimeError, match="follow Event Mode entry"):
             candidate_coordinator.accept_candidate(importer_detected_event=False)
         assert candidate_session.save_checkpoint.call_count == 1
 
@@ -1139,7 +1134,7 @@ def test_fmi_three_no_checkpoint_reconstruction_rejects_observable_state_leakage
             writable_values=(2.0,),
         )
         with pytest.raises(
-            FmuImportError,
+            RuntimeError,
             match="unsupported observable state leakage",
         ):
             coordinator.reject_candidate()
@@ -1226,7 +1221,7 @@ def test_fmi_three_constant_array_session_runs_one_to_six_native_access(
             initial_writable_float64_values=initial_input_values,
         )
         assert initialized_values == pytest.approx((0.0,) * 6)
-        with pytest.raises(FmuModeError, match="requires supported Step"):
+        with pytest.raises(RuntimeError, match="requires supported Step"):
             session.save_checkpoint()
         step_result: FmiThreeWorkerDoStepResult
         readable_values: tuple[float, ...]
@@ -1354,7 +1349,7 @@ def test_fmi_three_session_selects_row_major_device_values(
         )
     )
     try:
-        with pytest.raises(FmuBindingError, match="exceeds array cardinality"):
+        with pytest.raises(ValueError, match="exceeds array cardinality"):
             configurable_session.configure_uint64(
                 configuration_uint64_values=(2,)
             )
@@ -1524,9 +1519,9 @@ def test_fmi_three_scalar_session_configures_structural_values_natively(
         )
         assert step_result.last_successful_time == pytest.approx(0.25)
         assert readable_values == pytest.approx((6.25,))
-        with pytest.raises(FmuModeError, match="READY state"):
+        with pytest.raises(RuntimeError, match="READY state"):
             session.configure(configuration_float64_values=(4.0,))
-        with pytest.raises(FmuModeError, match="READY state"):
+        with pytest.raises(RuntimeError, match="READY state"):
             session.configure_uint64(configuration_uint64_values=(7,))
     finally:
         session.close()
@@ -1589,7 +1584,7 @@ def test_fmi_three_scalar_session_rejects_binding_before_staging(
         extraction_root=staging_parent,
     )
 
-    with pytest.raises(FmuBindingError, match="was not found"):
+    with pytest.raises(ValueError, match="was not found"):
         open_fmi_three_numeric_session(
             config=config,
             instance_name="veragrid-fmi-three-invalid-binding",
@@ -1746,7 +1741,7 @@ def test_fmi_three_scalar_session_returns_final_readable_values_before_close(
         )
         assert termination_result.terminate_simulation
         assert final_values == pytest.approx((9.25, 0.25, 9.0))
-        with pytest.raises(FmuModeError, match="requires Step Mode"):
+        with pytest.raises(RuntimeError, match="requires Step Mode"):
             session.advance_co_simulation(
                 current_communication_point=0.25,
                 communication_step_size=0.25,

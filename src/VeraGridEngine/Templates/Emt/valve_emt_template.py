@@ -14,6 +14,7 @@ from VeraGridEngine.enumerations import (
 )
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var, abs
+from VeraGridEngine.Utils.procedural_logic import ValveStateLogic
 
 
 def _get_valve_type_code(valve_tpe: ValveEmtType) -> float:
@@ -121,6 +122,7 @@ def get_valve_emt_template(
         model_variant: ValveEmtModelVariant = ValveEmtModelVariant.Ideal,
         initial_state: ValveInitializationState = ValveInitializationState.Blocked,
         antiparallel_diode: bool = True,
+        internal_name_suffix: str | None = None,
 ) -> EmtModelTemplate:
     """
     Build a generic two-terminal EMT valve template.
@@ -142,59 +144,96 @@ def get_valve_emt_template(
     :param model_variant: Valve EMT modelling variant.
     :param initial_state: Startup policy for the conduction state.
     :param antiparallel_diode: Enable the reverse freewheeling path.
+    :param internal_name_suffix: Optional suffix that makes every internal
+        variable unique when several valve blocks share one composite model.
+        ``None`` preserves the legacy standalone variable names.
     :return: Reusable EMT valve template.
     """
-    from VeraGridEngine.Utils.procedural_logic import ValveStateLogic
-
     templ: EmtModelTemplate = EmtModelTemplate()
     templ.tpe = DeviceType.DynamicModelHostDevice
     templ.name = name
     templ.block.name = name
 
+    # Standalone valve models keep their established public variable names.
+    # Composite devices opt into a suffix because procedural logic is bound
+    # against the complete system block and therefore requires unique names.
+    symbolic_suffix: str
+    if internal_name_suffix is None:
+        symbolic_suffix = ""
+    else:
+        symbolic_suffix = f"_{internal_name_suffix}"
+
     # ------------------------------------------------------------------
     # Terminal inputs.
     # ------------------------------------------------------------------
-    v_f_dc: Var = vf.add_var(name=f"v_f_dc", reference=VarPowerFlowReferenceType.Vf_dc)
-    v_t_dc: Var = vf.add_var(name=f"v_t_dc", reference=VarPowerFlowReferenceType.Vt_dc)
+    v_f_dc: Var = vf.add_var(
+        name=f"v_f_dc{symbolic_suffix}",
+        reference=VarPowerFlowReferenceType.Vf_dc,
+    )
+    v_t_dc: Var = vf.add_var(
+        name=f"v_t_dc{symbolic_suffix}",
+        reference=VarPowerFlowReferenceType.Vt_dc,
+    )
 
     # ------------------------------------------------------------------
     # Runtime parameters.
     # ------------------------------------------------------------------
-    valve_type_code: Var = vf.add_var(name=f"valve_type_code")
-    model_variant_code: Var = vf.add_var(name=f"model_variant_code")
-    antiparallel_diode_enabled: Var = vf.add_var(name=f"antiparallel_diode_enabled")
-    rated_current: Var = vf.add_var(name=f"rated_current")
-    forward_voltage: Var = vf.add_var(name=f"forward_voltage")
-    on_resistance: Var = vf.add_var(name=f"on_resistance")
-    off_conductance: Var = vf.add_var(name=f"off_conductance")
-    gate_fired: Var = vf.add_var(name=f"gate_fired")
-    initial_state_code: Var = vf.add_var(name=f"initial_state_code")
-    snubber_enabled: Var = vf.add_var(name=f"snubber_enabled")
-    snubber_capacitance: Var = vf.add_var(name=f"snubber_capacitance")
-    snubber_conductance: Var = vf.add_var(name=f"snubber_conductance")
-    voltage_eps: Var = vf.add_var(name=f"voltage_eps")
-    current_eps: Var = vf.add_var(name=f"current_eps")
-    path_mode_pf_seed: Var = vf.add_var(name=f"path_mode_pf_seed")
+    valve_type_code: Var = vf.add_var(name=f"valve_type_code{symbolic_suffix}")
+    model_variant_code: Var = vf.add_var(name=f"model_variant_code{symbolic_suffix}")
+    antiparallel_diode_enabled: Var = vf.add_var(
+        name=f"antiparallel_diode_enabled{symbolic_suffix}",
+    )
+    rated_current: Var = vf.add_var(name=f"rated_current{symbolic_suffix}")
+    forward_voltage: Var = vf.add_var(name=f"forward_voltage{symbolic_suffix}")
+    on_resistance: Var = vf.add_var(name=f"on_resistance{symbolic_suffix}")
+    off_conductance: Var = vf.add_var(name=f"off_conductance{symbolic_suffix}")
+    gate_fired: Var = vf.add_var(name=f"gate_fired{symbolic_suffix}")
+    initial_state_code: Var = vf.add_var(name=f"initial_state_code{symbolic_suffix}")
+    snubber_enabled: Var = vf.add_var(name=f"snubber_enabled{symbolic_suffix}")
+    snubber_capacitance: Var = vf.add_var(
+        name=f"snubber_capacitance{symbolic_suffix}",
+    )
+    snubber_conductance: Var = vf.add_var(
+        name=f"snubber_conductance{symbolic_suffix}",
+    )
+    voltage_eps: Var = vf.add_var(name=f"voltage_eps{symbolic_suffix}")
+    current_eps: Var = vf.add_var(name=f"current_eps{symbolic_suffix}")
+    path_mode_pf_seed: Var = vf.add_var(name=f"path_mode_pf_seed{symbolic_suffix}")
 
     # ------------------------------------------------------------------
     # Retained runtime mode.
     # ------------------------------------------------------------------
-    path_mode: Var = vf.add_var(name=f"path_mode")
+    path_mode: Var = vf.add_var(name=f"path_mode{symbolic_suffix}")
 
     # ------------------------------------------------------------------
     # Dynamic and algebraic variables.
     # ------------------------------------------------------------------
-    q_snubber: Var = vf.add_var(name=f"q_snubber")
-    d_q_snubber: Var = vf.add_diff_var(name=f"d_q_snubber", base_var=q_snubber)
+    q_snubber: Var = vf.add_var(name=f"q_snubber{symbolic_suffix}")
+    d_q_snubber: Var = vf.add_diff_var(
+        name=f"d_q_snubber{symbolic_suffix}",
+        base_var=q_snubber,
+    )
 
-    v_valve: Var = vf.add_var(name=f"v_valve")
-    i_static: Var = vf.add_var(name=f"i_static")
-    i_capacitive: Var = vf.add_var(name=f"i_capacitive")
-    i_f_dc: Var = vf.add_var(name=f"i_f_dc", reference=VarPowerFlowReferenceType.If_dc)
-    i_t_dc: Var = vf.add_var(name=f"i_t_dc", reference=VarPowerFlowReferenceType.It_dc)
-    p_f: Var = vf.add_var(name=f"p_f", reference=VarPowerFlowReferenceType.Pf)
-    p_t: Var = vf.add_var(name=f"p_t", reference=VarPowerFlowReferenceType.Pt)
-    i_rating_margin: Var = vf.add_var(name=f"i_rating_margin")
+    v_valve: Var = vf.add_var(name=f"v_valve{symbolic_suffix}")
+    i_static: Var = vf.add_var(name=f"i_static{symbolic_suffix}")
+    i_capacitive: Var = vf.add_var(name=f"i_capacitive{symbolic_suffix}")
+    i_f_dc: Var = vf.add_var(
+        name=f"i_f_dc{symbolic_suffix}",
+        reference=VarPowerFlowReferenceType.If_dc,
+    )
+    i_t_dc: Var = vf.add_var(
+        name=f"i_t_dc{symbolic_suffix}",
+        reference=VarPowerFlowReferenceType.It_dc,
+    )
+    p_f: Var = vf.add_var(
+        name=f"p_f{symbolic_suffix}",
+        reference=VarPowerFlowReferenceType.Pf,
+    )
+    p_t: Var = vf.add_var(
+        name=f"p_t{symbolic_suffix}",
+        reference=VarPowerFlowReferenceType.Pt,
+    )
+    i_rating_margin: Var = vf.add_var(name=f"i_rating_margin{symbolic_suffix}")
 
     # ------------------------------------------------------------------
     # Fixed numerical safeguards.
@@ -311,7 +350,7 @@ def get_valve_emt_template(
                 current_eps_var_name=current_eps.name,
                 valve_voltage_var_name=v_valve.name,
                 valve_current_var_name=i_f_dc.name,
-                name=f"valve_state_logic",
+                name=f"valve_state_logic{symbolic_suffix}",
             ),
         ]),
     )

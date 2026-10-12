@@ -155,9 +155,7 @@ def get_pll_transform_rms(vfactory: VarFactory, name: str = "Pll_transform_rms")
     Ki_pll = vfactory.add_var('Ki_pll')
     fn = vfactory.add_var('fn')
 
-    res_event_dict = {
-        fn: vfactory.add_const(50),
-    }
+    res_event_dict = {}
 
     PI_event_dict = {
         Kp_pll: vfactory.add_const(0.001),
@@ -180,6 +178,8 @@ def get_pll_transform_rms(vfactory: VarFactory, name: str = "Pll_transform_rms")
             vd: inputs[0] * sym.sin(inputs[1] - theta),
             vq: inputs[0] * sym.cos(inputs[1] - theta),
         },
+        api_obj_mapping={ParamPowerFlowReferenceType.freq: fn},
+        parameters={fn: vfactory.add_const(50)},
     )
 
     PI_block, omega = tf_to_block(vfactory,
@@ -212,7 +212,6 @@ def pll_transform_rms(vfactory: VarFactory, Vm, Va, name:str = ''):
     fn = vfactory.add_var('fn')
 
     event_dict = {
-        fn: vfactory.add_const(50),
         Kp_pll: vfactory.add_const(0.001),
         Ki_pll: vfactory.add_const(0.1),
     }
@@ -237,7 +236,9 @@ def pll_transform_rms(vfactory: VarFactory, Vm, Va, name:str = ''):
             vd: Vm * sym.sin(Va - theta),
             vq: Vm * sym.cos(Va - theta),
         },
-        children = [PI_block]
+        children = [PI_block],
+        api_obj_mapping={ParamPowerFlowReferenceType.freq: fn},
+        parameters={fn: vfactory.add_const(50)},
     )
 
     outputs = [vd, vq, theta, omega]
@@ -360,8 +361,6 @@ def build_gfl_converter_model(vfactory: VarFactory, inputs,
         Ki_vdc: vfactory.add_const(0.1),
         Kp_vac: vfactory.add_const(0.1),
         Ki_vac: vfactory.add_const(1.0),
-        R: vfactory.add_const(0.01),
-        L: vfactory.add_const(0.05),
         P_ref: P,
         Q_ref: Q,
         Vdc_ref: v_dc,
@@ -532,6 +531,7 @@ def build_gfl_converter_model(vfactory: VarFactory, inputs,
         algebraic_eqs=algebraic_eqs,
         algebraic_vars=algebraic_vars,
         event_dict= event_dict,
+        parameters={R: vfactory.add_const(0.01), L: vfactory.add_const(0.05)},
         init_eqs=init_eqs,
         external_mapping={
             VarPowerFlowReferenceType.P:P,
@@ -660,10 +660,8 @@ def VscGflBuild(vfactory: VarFactory, name: str = "",
         Qf: vfactory.add_const(0.0),
         bt: vfactory.add_const(0.0),
         gt: vfactory.add_const(0.1),
-        a0: vfactory.add_const(0.0),
-        a1: vfactory.add_const(0.0),
-        a2: vfactory.add_const(0.0),
     }
+    parameters = {a0: vfactory.add_const(0.0), a1: vfactory.add_const(0.0), a2: vfactory.add_const(0.0)}
     
     Im = sym.sqrt(i_d**2 + i_q**2 + vfactory.add_const(1e-11))
     P_conv = internals["v_q_c"] * i_q + internals["v_d_c"] * i_d
@@ -679,6 +677,7 @@ def VscGflBuild(vfactory: VarFactory, name: str = "",
             # ash: sym.atan((-gt*exp1 - bt*exp2)/(bt*exp1 - gt*exp2)),
         },
         event_dict= event_dict,
+        parameters=parameters,
         external_mapping={
             VarPowerFlowReferenceType.P: P,
             VarPowerFlowReferenceType.Q: Q,
@@ -695,15 +694,24 @@ def VscGflBuild(vfactory: VarFactory, name: str = "",
         VarPowerFlowReferenceType.Pf: Pf_vsc,
         VarPowerFlowReferenceType.Qf: Qf,
     }
-    vsc_block.api_obj_mapping = {
-        ParamPowerFlowReferenceType.R1: internals["R"],
-        ParamPowerFlowReferenceType.X1: internals["L"],
+    vsc_block.api_obj_mapping.update({
         ParamPowerFlowReferenceType.alpha1: a0,
         ParamPowerFlowReferenceType.alpha2: a1,
         ParamPowerFlowReferenceType.alpha3: a2,
-    }
+    })
+    # The flattened converter child owns the filter impedance parameters.
+    # Recursive static mapping reaches it directly, so the outer loss wrapper
+    # must expose only the loss parameters declared in its own storage.
+    gfl_block.api_obj_mapping.update({
+        ParamPowerFlowReferenceType.R1: internals["R"],
+        ParamPowerFlowReferenceType.X1: internals["L"],
+    })
 
+    gfl_block.external_mapping.pop(VarPowerFlowReferenceType.P, None)
+    gfl_block.external_mapping.pop(VarPowerFlowReferenceType.Q, None)
     vsc_block.add(gfl_block)
+    vsc_block.external_mapping.pop(VarPowerFlowReferenceType.P, None)
+    vsc_block.external_mapping.pop(VarPowerFlowReferenceType.Q, None)
     vsc_block.name = 'gfl_block'
 
     templ._block = vsc_block
@@ -748,10 +756,8 @@ def TrafoGflBuild(vfactory: VarFactory, name: str = "",
 
     event_dict = {
         Qf: vfactory.add_const(0.0),
-        a0: vfactory.add_const(0.0),
-        a1: vfactory.add_const(0.0),
-        a2: vfactory.add_const(0.0),
     }
+    parameters = {a0: vfactory.add_const(0.0), a1: vfactory.add_const(0.0), a2: vfactory.add_const(0.0)}
 
     #Im = sym.sqrt(i_d**2 + i_q**2 + vfactory.add_const(1e-11))
     Im = sym.sqrt(Pt_vsc * Pt_vsc + Qt_vsc * Qt_vsc) / (Vm_t)
@@ -771,6 +777,7 @@ def TrafoGflBuild(vfactory: VarFactory, name: str = "",
             Qf_vsc: Qf,
         },
         event_dict=event_dict,
+        parameters=parameters,
         in_vars=inputs,
         out_vars=[Pf_vsc, Pt_vsc, Qt_vsc, Im_out],
     )
@@ -786,15 +793,23 @@ def TrafoGflBuild(vfactory: VarFactory, name: str = "",
         VarPowerFlowReferenceType.Pf: Pf_vsc,
         VarPowerFlowReferenceType.Qf: Qf_vsc,
     }
-    vsc_block.api_obj_mapping = {
-        ParamPowerFlowReferenceType.R1: internals["R"],
-        ParamPowerFlowReferenceType.X1: internals["L"],
+    vsc_block.api_obj_mapping.update({
         ParamPowerFlowReferenceType.alpha1: a0,
         ParamPowerFlowReferenceType.alpha2: a1,
         ParamPowerFlowReferenceType.alpha3: a2,
-    }
+    })
+    # Keep the line impedance mapping on the flattened converter child that
+    # owns both symbolic parameter targets.
+    gfl_block.api_obj_mapping.update({
+        ParamPowerFlowReferenceType.R1: internals["R"],
+        ParamPowerFlowReferenceType.X1: internals["L"],
+    })
 
+    gfl_block.external_mapping.pop(VarPowerFlowReferenceType.P, None)
+    gfl_block.external_mapping.pop(VarPowerFlowReferenceType.Q, None)
     vsc_block.add(gfl_block)
+    vsc_block.external_mapping.pop(VarPowerFlowReferenceType.P, None)
+    vsc_block.external_mapping.pop(VarPowerFlowReferenceType.Q, None)
     vsc_block.name = 'trafo_gfl_block'
 
     templ._block = vsc_block

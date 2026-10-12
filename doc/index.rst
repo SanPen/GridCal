@@ -93,6 +93,7 @@ Contents
 
 
     md_source/dynamic_simulations.md
+    md_source/fmu.md
 
     md_source/development.md
     md_source/plugins.md

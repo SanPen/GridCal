@@ -11,7 +11,7 @@ import cv2
 from PySide6 import QtCore
 from PySide6.QtGui import QIcon, QImage
 from PySide6.QtWidgets import (QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame, QSplitter, QAbstractItemView,
-                               QGraphicsItem, QToolBox, QComboBox, QDialog)
+                               QGraphicsItem, QToolBox, QComboBox, QDialog, QLabel, QGraphicsView)
 
 from VeraGrid.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 from VeraGridEngine.Devices.types import ALL_DEV_TYPES
@@ -268,6 +268,114 @@ class BaseDiagramWidget(QSplitter):
         # video pointer
         self._video: Union[None, cv2.VideoWriter] = None
         self._video_export_active: bool = False
+        self._video_time_label: QLabel | None = None
+        self._video_time_label_view: QGraphicsView | None = None
+        self._video_time_label_position: QtCore.Qt.AlignmentFlag = QtCore.Qt.AlignmentFlag.AlignBottom | QtCore.Qt.AlignmentFlag.AlignRight
+
+    def register_video_time_label_canvas(self, view: QGraphicsView) -> None:
+        """
+        Register the canvas that will temporarily host the video timestamp.
+
+        :param view: Graphics canvas captured for video frames.
+        :return: None.
+        """
+        self._video_time_label_view = view
+
+    def set_video_time_label_position(self, position: QtCore.Qt.AlignmentFlag) -> None:
+        """
+        Set the timestamp corner on the canvas.
+
+        :param position: Horizontal and vertical alignment flags.
+        :return: None.
+        """
+        self._video_time_label_position = position
+        self._position_video_time_label()
+
+    def _position_video_time_label(self) -> None:
+        """
+        Position the timestamp label inside its canvas.
+
+        :return: None.
+        """
+        if self._video_time_label is not None and self._video_time_label_view is not None:
+            label: QLabel = self._video_time_label
+            view: QGraphicsView = self._video_time_label_view
+            label.adjustSize()
+            margin: int = 12
+            x: int = margin
+            y: int = margin
+            if self._video_time_label_position & QtCore.Qt.AlignmentFlag.AlignRight:
+                x = view.width() - label.width() - margin
+            else:
+                pass
+            if self._video_time_label_position & QtCore.Qt.AlignmentFlag.AlignBottom:
+                y = view.height() - label.height() - margin
+            else:
+                pass
+            label.move(max(x, margin), max(y, margin))
+        else:
+            pass
+
+    def _set_video_time_label_index(self, time_index: int | None) -> None:
+        """
+        Update the temporary timestamp label for one video frame.
+
+        :param time_index: Time-series index.
+        :return: None.
+        """
+        if self._video_time_label is not None and time_index is not None:
+            time_values: object = self.circuit.get_time_array()
+            if time_values is not None and 0 <= time_index < len(time_values):
+                self._video_time_label.setText(time_values[time_index].strftime("%Y-%m-%d %H:%M:%S"))
+                self._position_video_time_label()
+                self._video_time_label.show()
+            else:
+                self._video_time_label.hide()
+        elif self._video_time_label is not None:
+            self._video_time_label.hide()
+        else:
+            pass
+
+    def set_video_time_index(self, time_index: int | None) -> None:
+        """
+        Set the timestamp shown in the current video frame.
+
+        :param time_index: Time-series index.
+        :return: None.
+        """
+        self._set_video_time_label_index(time_index=time_index)
+
+    def _create_video_time_label(self) -> None:
+        """
+        Create the temporary timestamp widget immediately before recording.
+
+        :return: None.
+        """
+        if self._video_time_label is None and self._video_time_label_view is not None:
+            self._video_time_label = QLabel(self._video_time_label_view)
+            self._video_time_label.setAttribute(QtCore.Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+            self._video_time_label.setStyleSheet(
+                "QLabel { background-color: rgba(0, 0, 0, 170); color: white; "
+                "padding: 4px 8px; border-radius: 3px; }"
+            )
+            font = self._video_time_label.font()
+            font.setPointSize(16)
+            self._video_time_label.setFont(font)
+            self._video_time_label.hide()
+        else:
+            pass
+
+    def remove_video_time_label(self) -> None:
+        """
+        Delete the temporary timestamp widget after video rendering.
+
+        :return: None.
+        """
+        if self._video_time_label is not None:
+            self._video_time_label.deleteLater()
+            self._video_time_label = None
+        else:
+            pass
 
     def changeEvent(self, event: QtCore.QEvent) -> None:
         """
@@ -593,6 +701,7 @@ class BaseDiagramWidget(QSplitter):
         :param time_index: None or integer value
         """
         self._time_index = time_index
+        self._set_video_time_label_index(time_index=time_index)
 
         mdl = self.object_editor_table.model()
         if isinstance(mdl, ObjectsModel):
@@ -709,7 +818,7 @@ class BaseDiagramWidget(QSplitter):
             plot_dialogue.select_default_catalog_series()
             plot_dialogue.set_series_selector_visible(visible=True)
             self.gui.register_open_plot_dialog(plot_dialogue)
-            plot_dialogue.show()
+            plot_dialogue.open_from_context_menu()
         else:
             plot_dialogue.reject()
             info_msg(self.tr("This device has no numeric profiles or time-series results to plot."), dialog_title)
@@ -950,6 +1059,7 @@ class BaseDiagramWidget(QSplitter):
         Release widget-owned state before the Qt widget itself is destroyed.
         """
         self.clear()
+        self.remove_video_time_label()
         self.object_editor_table.setModel(None)
         self.api_object = None
         self.results_dictionary.clear()
@@ -1174,6 +1284,8 @@ class BaseDiagramWidget(QSplitter):
         """
         if logger is None:
             logger = Logger()
+
+        self._create_video_time_label()
 
         image = self.get_image()
         w = image.width()

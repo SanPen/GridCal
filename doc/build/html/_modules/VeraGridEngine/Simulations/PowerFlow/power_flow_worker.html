@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.power_flow_worker &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.power_flow_worker &mdash; VeraGrid 6.7.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=5747e02a"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -69,7 +69,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -132,6 +132,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.multi_circuit</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultiCircuit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Compilers.circuit_to_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">compile_numerical_circuit_at</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_slack_distribution</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.NumericalMethods.static_generator_droop</span><span class="w"> </span><span class="kn">import</span> <span class="n">StaticGeneratorDroop</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Substation.bus</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bus</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Aggregation.area</span><span class="w"> </span><span class="kn">import</span> <span class="n">Area</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.basic_structures</span><span class="w"> </span><span class="kn">import</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Vec</span>
@@ -141,9 +142,9 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_generator_q_for_split</span><span class="p">(</span><span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return generator Q setpoints for result splitting, including voltage-dependent asynchronous machines.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">q0_gen</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">q_async</span> <span class="o">=</span> <span class="n">compute_asynchronous_generator_q</span><span class="p">(</span><span class="n">V</span><span class="o">=</span><span class="n">V</span><span class="p">,</span>
                                                <span class="n">gen_bus_idx</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">,</span>
@@ -168,12 +169,12 @@
 <div class="viewcode-block" id="voltage_guess_is_usable">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_worker.voltage_guess_is_usable">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">voltage_guess_is_usable</span><span class="p">(</span><span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check whether a voltage guess can safely seed nonlinear sparse solvers.</span>
 
 <span class="sd">    :param V: Voltage vector.</span>
 <span class="sd">    :return: True if the voltage vector is finite and numerically bounded.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">usable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">V</span><span class="p">))</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">V</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.0e6</span><span class="p">))</span>
 
@@ -187,9 +188,9 @@
                                     <span class="n">V0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                                     <span class="n">S0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                                     <span class="n">logger</span><span class="o">=</span><span class="n">Logger</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NumericPowerFlowResults</span><span class="p">,</span> <span class="n">ConvergenceReport</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run a power flow simulation using the selected method (no outer loop controls).</span>
-<span class="sd">    This routine supports all controls, VSC&#39;s and Hvdc links</span>
+<span class="sd">    This routine supports all controls, VSC's and Hvdc links</span>
 <span class="sd">    Does not require grids to be split by HvdcLines</span>
 <span class="sd">    :param nc: SnapshotData circuit, this ensures on-demand admittances computation</span>
 <span class="sd">    :param indices: SimulationIndices</span>
@@ -198,9 +199,9 @@
 <span class="sd">    :param S0: Array of power Injections</span>
 <span class="sd">    :param logger: Logger</span>
 <span class="sd">    :return: NumericPowerFlowResults</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">&#39;Using the complete support power flow method&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">'Using the complete support power flow method'</span><span class="p">)</span>
 
     <span class="n">report</span> <span class="o">=</span> <span class="n">ConvergenceReport</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">retry_with_other_methods</span><span class="p">:</span>
@@ -253,14 +254,14 @@
 
         <span class="c1"># method, converged: bool, error: float, elapsed: float, iterations: int</span>
         <span class="n">report</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">SolverType</span><span class="o">.</span><span class="n">NoSolver</span><span class="p">,</span> <span class="n">converged</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">elapsed</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">&#39;Not solving power flow because there is no slack bus&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">'Not solving power flow because there is no slack bus'</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">solution</span><span class="p">,</span> <span class="n">report</span>
 
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">voltage_guess_is_usable</span><span class="p">(</span><span class="n">V</span><span class="o">=</span><span class="n">V0</span><span class="p">):</span>
             <span class="n">V0</span> <span class="o">=</span> <span class="n">V0</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Ignoring unusable power flow voltage guess&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Ignoring unusable power flow voltage guess"</span><span class="p">)</span>
             <span class="n">V0</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span>
 
         <span class="n">final_solution</span> <span class="o">=</span> <span class="n">NumericPowerFlowResults</span><span class="p">(</span><span class="n">V</span><span class="o">=</span><span class="n">V0</span><span class="p">,</span>
@@ -379,7 +380,7 @@
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># for any other method, raise exception</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">&#39;Solver not supported in power flow mode&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">'Solver not supported in power flow mode'</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
                 <span class="n">problem</span> <span class="o">=</span> <span class="n">PfAcDcWithNegativePoles</span><span class="p">(</span><span class="n">V0</span><span class="o">=</span><span class="n">final_solution</span><span class="o">.</span><span class="n">V</span><span class="p">,</span>
                                                   <span class="n">S0</span><span class="o">=</span><span class="n">S0</span><span class="p">,</span>
                                                   <span class="n">I0</span><span class="o">=</span><span class="n">I0</span><span class="p">,</span>
@@ -424,24 +425,24 @@
                     <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
                         <span class="n">final_solution</span> <span class="o">=</span> <span class="n">solution</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">&#39;Tried solution is garbage&#39;</span><span class="p">,</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">'Tried solution is garbage'</span><span class="p">,</span>
                                         <span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                        <span class="n">value</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:.4e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">),</span>
+                                        <span class="n">value</span><span class="o">=</span><span class="s2">"</span><span class="si">{:.4e}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">),</span>
                                         <span class="n">expected_value</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">&#39;Tried solver but it did not improve the solution&#39;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">'Tried solver but it did not improve the solution'</span><span class="p">,</span>
                                 <span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">value</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:.4e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">),</span>
+                                <span class="n">value</span><span class="o">=</span><span class="s2">"</span><span class="si">{:.4e}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">),</span>
                                 <span class="n">expected_value</span><span class="o">=</span><span class="n">final_solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">)</span>
 
             <span class="c1"># next solver</span>
             <span class="n">solver_idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">final_solution</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">&#39;Did not converge, even after retry!&#39;</span><span class="p">,</span>
-                             <span class="n">device</span><span class="o">=</span><span class="s1">&#39;Error&#39;</span><span class="p">,</span>
-                             <span class="n">value</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:.4e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">final_solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">),</span>
-                             <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">'Did not converge, even after retry!'</span><span class="p">,</span>
+                             <span class="n">device</span><span class="o">=</span><span class="s1">'Error'</span><span class="p">,</span>
+                             <span class="n">value</span><span class="o">=</span><span class="s2">"</span><span class="si">{:.4e}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">final_solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">),</span>
+                             <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"&lt;</span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">final_solution</span><span class="o">.</span><span class="n">tap_module</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">final_solution</span><span class="o">.</span><span class="n">tap_module</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">active_branch_data</span><span class="o">.</span><span class="n">tap_module</span>
@@ -459,7 +460,7 @@
                                    <span class="n">S_base</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                                    <span class="n">Shvdc</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                    <span class="n">logger</span><span class="o">=</span><span class="n">Logger</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NumericPowerFlowResults</span><span class="p">,</span> <span class="n">ConvergenceReport</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run a power flow simulation using the selected method (no outer loop controls).</span>
 <span class="sd">    This routine supports delete voltage controls,and Hvdc links through external injections (Shvdc)</span>
 <span class="sd">    Also requires grids to be split by HvdcLines</span>
@@ -471,9 +472,9 @@
 <span class="sd">    :param Shvdc: Array of power injections due t the HVDC lines (only used in some algorithms)</span>
 <span class="sd">    :param logger: Logger</span>
 <span class="sd">    :return: NumericPowerFlowResults </span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">&#39;Using the limited support power flow method&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">'Using the limited support power flow method'</span><span class="p">)</span>
 
     <span class="n">report</span> <span class="o">=</span> <span class="n">ConvergenceReport</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">retry_with_other_methods</span><span class="p">:</span>
@@ -531,14 +532,14 @@
 
         <span class="c1"># method, converged: bool, error: float, elapsed: float, iterations: int</span>
         <span class="n">report</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">SolverType</span><span class="o">.</span><span class="n">NoSolver</span><span class="p">,</span> <span class="n">converged</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">elapsed</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">&#39;Not solving power flow because there is no slack bus&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">'Not solving power flow because there is no slack bus'</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">solution</span><span class="p">,</span> <span class="n">report</span>
 
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">voltage_guess_is_usable</span><span class="p">(</span><span class="n">V</span><span class="o">=</span><span class="n">V0</span><span class="p">):</span>
             <span class="n">V0</span> <span class="o">=</span> <span class="n">V0</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Ignoring unusable power flow voltage guess&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Ignoring unusable power flow voltage guess"</span><span class="p">)</span>
             <span class="n">V0</span> <span class="o">=</span> <span class="n">island</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span>
 
         <span class="n">adm</span> <span class="o">=</span> <span class="n">island</span><span class="o">.</span><span class="n">get_admittance_matrices</span><span class="p">()</span>
@@ -784,7 +785,7 @@
                                              <span class="n">verbose</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
                                              <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
 
-            <span class="c1"># Powell&#39;s Dog Leg (full)</span>
+            <span class="c1"># Powell's Dog Leg (full)</span>
             <span class="k">elif</span> <span class="n">solver_type</span> <span class="o">==</span> <span class="n">SolverType</span><span class="o">.</span><span class="n">PowellDogLeg</span><span class="p">:</span>
                 <span class="n">problem</span> <span class="o">=</span> <span class="n">PfBasicFormulation</span><span class="p">(</span><span class="n">V0</span><span class="o">=</span><span class="n">final_solution</span><span class="o">.</span><span class="n">V</span><span class="p">,</span>
                                              <span class="n">S0</span><span class="o">=</span><span class="n">S_base</span><span class="p">,</span>
@@ -828,7 +829,7 @@
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># for any other method, raise exception</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="s1">&#39; Not supported in power flow mode&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="s1">' Not supported in power flow mode'</span><span class="p">)</span>
 
             <span class="c1"># record the solution type</span>
             <span class="n">solution</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">solver_type</span>
@@ -857,24 +858,24 @@
                     <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.1</span> <span class="ow">or</span> <span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">retry_with_other_methods</span> <span class="o">==</span> <span class="kc">False</span><span class="p">):</span>
                         <span class="n">final_solution</span> <span class="o">=</span> <span class="n">solution</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">&#39;Tried solution is garbage&#39;</span><span class="p">,</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">'Tried solution is garbage'</span><span class="p">,</span>
                                         <span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                        <span class="n">value</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:.4e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">),</span>
+                                        <span class="n">value</span><span class="o">=</span><span class="s2">"</span><span class="si">{:.4e}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">),</span>
                                         <span class="n">expected_value</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">&#39;Tried solver but it did not improve the solution&#39;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">'Tried solver but it did not improve the solution'</span><span class="p">,</span>
                                 <span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">value</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:.4e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">),</span>
+                                <span class="n">value</span><span class="o">=</span><span class="s2">"</span><span class="si">{:.4e}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">),</span>
                                 <span class="n">expected_value</span><span class="o">=</span><span class="n">final_solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">)</span>
 
             <span class="c1"># next solver</span>
             <span class="n">solver_idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">final_solution</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">&#39;Did not converge, even after retry!&#39;</span><span class="p">,</span>
-                             <span class="n">device</span><span class="o">=</span><span class="s1">&#39;Error&#39;</span><span class="p">,</span>
-                             <span class="n">value</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:.4e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">final_solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">),</span>
-                             <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">'Did not converge, even after retry!'</span><span class="p">,</span>
+                             <span class="n">device</span><span class="o">=</span><span class="s1">'Error'</span><span class="p">,</span>
+                             <span class="n">value</span><span class="o">=</span><span class="s2">"</span><span class="si">{:.4e}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">final_solution</span><span class="o">.</span><span class="n">norm_f</span><span class="p">),</span>
+                             <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"&lt;</span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">final_solution</span><span class="o">.</span><span class="n">tap_module</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">final_solution</span><span class="o">.</span><span class="n">tap_module</span> <span class="o">=</span> <span class="n">island</span><span class="o">.</span><span class="n">active_branch_data</span><span class="o">.</span><span class="n">tap_module</span>
@@ -890,7 +891,7 @@
                                           <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                           <span class="n">V_guess</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                           <span class="n">Sbus_input</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PowerFlowResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Multiple islands power flow (this is the most generic power flow function)</span>
 
 <span class="sd">    multi_island_pf</span>
@@ -906,7 +907,7 @@
 <span class="sd">    :param V_guess: voltage guess</span>
 <span class="sd">    :param Sbus_input: Use this power injections if provided</span>
 <span class="sd">    :return: PowerFlowResults instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
@@ -969,7 +970,7 @@
             <span class="n">results</span><span class="o">.</span><span class="n">convergence_reports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">report</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">&#39;No slack nodes in the island&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">'No slack nodes in the island'</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">results</span>
 
@@ -979,7 +980,7 @@
                                          <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                          <span class="n">V_guess</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                          <span class="n">Sbus_input</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PowerFlowResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Multiple islands power flow (this is the most generic power flow function)</span>
 
 <span class="sd">    multi_island_pf</span>
@@ -995,7 +996,7 @@
 <span class="sd">    :param V_guess: voltage guess</span>
 <span class="sd">    :param Sbus_input: Use this power injections if provided</span>
 <span class="sd">    :return: PowerFlowResults instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
@@ -1019,7 +1020,7 @@
     <span class="p">)</span>
 
     <span class="c1"># compose the HVDC power Injections</span>
-    <span class="c1"># since the power flow methods don&#39;t support HVDC directly, we need this step</span>
+    <span class="c1"># since the power flow methods don't support HVDC directly, we need this step</span>
     <span class="n">Shvdc</span><span class="p">,</span> <span class="n">Losses_hvdc</span><span class="p">,</span> <span class="n">Pf_hvdc</span><span class="p">,</span> <span class="n">Pt_hvdc</span><span class="p">,</span> <span class="n">loading_hvdc</span><span class="p">,</span> <span class="n">n_free</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">hvdc_data</span><span class="o">.</span><span class="n">get_power</span><span class="p">(</span>
         <span class="n">Sbase</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span><span class="p">,</span>
         <span class="n">theta</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">nbus</span><span class="p">),</span>
@@ -1064,11 +1065,11 @@
             <span class="n">results</span><span class="o">.</span><span class="n">convergence_reports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">report</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">&#39;No slack nodes in the island&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">'No slack nodes in the island'</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
 
     <span class="c1"># Compile HVDC results (available for the complete grid since HVDC line as</span>
     <span class="c1"># formulated are split objects</span>
-    <span class="c1"># Pt is the &quot;generation&quot; at the sending point</span>
+    <span class="c1"># Pt is the "generation" at the sending point</span>
     <span class="n">results</span><span class="o">.</span><span class="n">Pf_hvdc</span> <span class="o">=</span> <span class="o">-</span> <span class="n">Pf_hvdc</span> <span class="o">*</span> <span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span>  <span class="c1"># we change the sign to keep the sign convention with AC lines</span>
     <span class="n">results</span><span class="o">.</span><span class="n">Pt_hvdc</span> <span class="o">=</span> <span class="o">-</span> <span class="n">Pt_hvdc</span> <span class="o">*</span> <span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span>  <span class="c1"># we change the sign to keep the sign convention with AC lines</span>
     <span class="n">results</span><span class="o">.</span><span class="n">loading_hvdc</span> <span class="o">=</span> <span class="n">loading_hvdc</span>
@@ -1084,7 +1085,7 @@
                        <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                        <span class="n">V_guess</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                        <span class="n">Sbus_input</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PowerFlowResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Multiple islands power flow (this is the most generic power flow function)</span>
 <span class="sd">    :param nc: SnapshotData instance</span>
 <span class="sd">    :param options: PowerFlowOptions instance</span>
@@ -1092,7 +1093,7 @@
 <span class="sd">    :param V_guess: voltage guess</span>
 <span class="sd">    :param Sbus_input: Use this power injections if provided (in p.u.)</span>
 <span class="sd">    :return: PowerFlowResults instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
@@ -1117,10 +1118,12 @@
             <span class="k">if</span> <span class="n">voltage_guess_is_usable</span><span class="p">(</span><span class="n">V</span><span class="o">=</span><span class="n">V0</span><span class="p">):</span>
                 <span class="n">V0</span> <span class="o">=</span> <span class="n">V0</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Ignoring unusable power flow voltage guess&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Ignoring unusable power flow voltage guess"</span><span class="p">)</span>
                 <span class="n">V0</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span>
 
-    <span class="k">if</span> <span class="n">nc</span><span class="o">.</span><span class="n">active_branch_data</span><span class="o">.</span><span class="n">any_pf_control</span> <span class="ow">and</span> <span class="n">options</span><span class="o">.</span><span class="n">solver_type</span> <span class="o">!=</span> <span class="n">SolverType</span><span class="o">.</span><span class="n">HELM</span><span class="p">:</span>
+    <span class="n">static_droop</span><span class="p">:</span> <span class="n">StaticGeneratorDroop</span> <span class="o">=</span> <span class="n">StaticGeneratorDroop</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span>
+    <span class="n">has_static_droop</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">static_droop</span><span class="o">.</span><span class="n">idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">has_static_droop</span> <span class="ow">or</span> <span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">active_branch_data</span><span class="o">.</span><span class="n">any_pf_control</span> <span class="ow">and</span> <span class="n">options</span><span class="o">.</span><span class="n">solver_type</span> <span class="o">!=</span> <span class="n">SolverType</span><span class="o">.</span><span class="n">HELM</span><span class="p">):</span>
 
         <span class="n">results</span> <span class="o">=</span> <span class="n">__multi_island_pf_nc_complete_support</span><span class="p">(</span>
             <span class="n">nc</span><span class="o">=</span><span class="n">nc</span><span class="p">,</span>
@@ -1130,15 +1133,15 @@
             <span class="n">Sbus_input</span><span class="o">=</span><span class="n">Sbus_input</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">results</span><span class="o">.</span><span class="n">converged</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">has_static_droop</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span>
-                <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Control-aware power flow did not converge; falling back to the &quot;</span>
-                    <span class="s2">&quot;limited-support solver, which does NOT enforce branch/VSC/HVDC &quot;</span>
-                    <span class="s2">&quot;controls (tap module, phase shift, converter set-points). &quot;</span>
-                    <span class="s2">&quot;The returned solution may not honour those control targets.&quot;</span><span class="p">,</span>
-                <span class="n">device</span><span class="o">=</span><span class="s2">&quot;PowerFlow&quot;</span><span class="p">,</span>
-                <span class="n">value</span><span class="o">=</span><span class="s2">&quot;control-aware solver failed&quot;</span><span class="p">,</span>
-                <span class="n">expected_value</span><span class="o">=</span><span class="s2">&quot;converged solution with controls enforced&quot;</span>
+                <span class="n">msg</span><span class="o">=</span><span class="s2">"Control-aware power flow did not converge; falling back to the "</span>
+                    <span class="s2">"limited-support solver, which does NOT enforce branch/VSC/HVDC "</span>
+                    <span class="s2">"controls (tap module, phase shift, converter set-points). "</span>
+                    <span class="s2">"The returned solution may not honour those control targets."</span><span class="p">,</span>
+                <span class="n">device</span><span class="o">=</span><span class="s2">"PowerFlow"</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="s2">"control-aware solver failed"</span><span class="p">,</span>
+                <span class="n">expected_value</span><span class="o">=</span><span class="s2">"converged solution with controls enforced"</span>
             <span class="p">)</span>
             <span class="n">results</span> <span class="o">=</span> <span class="n">__multi_island_pf_nc_limited_support</span><span class="p">(</span>
                 <span class="n">nc</span><span class="o">=</span><span class="n">nc</span><span class="p">,</span>
@@ -1154,6 +1157,11 @@
 
         <span class="n">V_for_q</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">voltage</span><span class="p">[</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">original_idx</span><span class="p">]</span> <span class="k">if</span> <span class="n">nc</span><span class="o">.</span><span class="n">topology_performed</span> <span class="k">else</span> <span class="n">results</span><span class="o">.</span><span class="n">voltage</span>
         <span class="n">q0_gen</span> <span class="o">=</span> <span class="n">_get_generator_q_for_split</span><span class="p">(</span><span class="n">nc</span><span class="o">=</span><span class="n">nc</span><span class="p">,</span> <span class="n">V</span><span class="o">=</span><span class="n">V_for_q</span><span class="p">)</span>
+        <span class="n">droop_q</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">static_droop</span><span class="o">.</span><span class="n">delta_q_bus</span><span class="p">(</span><span class="n">V_for_q</span><span class="p">)</span> <span class="o">*</span> <span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span>
+        <span class="k">if</span> <span class="n">nc</span><span class="o">.</span><span class="n">topology_performed</span><span class="p">:</span>
+            <span class="n">droop_q</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">propagate_bus_result</span><span class="p">(</span><span class="n">droop_q</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
 
         <span class="n">vm_abs</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">voltage</span><span class="p">)</span>
         <span class="n">slack_bus_mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span>
@@ -1170,10 +1178,12 @@
             <span class="n">nc</span><span class="o">.</span><span class="n">shunt_data</span><span class="o">.</span><span class="n">get_injections_per_bus</span><span class="p">()</span> <span class="o">*</span> <span class="n">results</span><span class="o">.</span><span class="n">voltage</span>
         <span class="p">)</span>
         <span class="n">fixed_non_generator_bus</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="n">fixed_load_bus</span> <span class="o">+</span> <span class="n">fixed_shunt_bus</span>
+        <span class="n">fixed_non_generator_bus</span> <span class="o">+=</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">droop_q</span>
         <span class="n">qfixed_bus</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">q_fixed</span>
                 <span class="o">-</span> <span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">ii_fixed</span> <span class="o">+</span> <span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">b_fixed</span> <span class="o">*</span> <span class="n">vm_abs</span><span class="p">)</span> <span class="o">*</span> <span class="n">vm_abs</span>
         <span class="p">)</span>
+        <span class="n">qfixed_bus</span> <span class="o">+=</span> <span class="n">droop_q</span>
 
         <span class="c1"># Reconstruct the fixed shunt-like device reactive power from the final</span>
         <span class="c1"># solved voltage so the reported device values remain in nodal balance.</span>
@@ -1411,7 +1421,7 @@
                     <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(),</span>
                     <span class="n">bus_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Bus</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">areas_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Area</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PowerFlowResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Multiple islands power flow (this is the most generic power flow function)</span>
 <span class="sd">    :param multi_circuit: MultiCircuit instance</span>
 <span class="sd">    :param options: PowerFlowOptions instance</span>
@@ -1421,7 +1431,7 @@
 <span class="sd">    :param bus_dict: Dus object to index dictionary</span>
 <span class="sd">    :param areas_dict: Area to area index dictionary</span>
 <span class="sd">    :return: PowerFlowResults instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">nc</span> <span class="o">=</span> <span class="n">compile_numerical_circuit_at</span><span class="p">(</span>
         <span class="n">circuit</span><span class="o">=</span><span class="n">multi_circuit</span><span class="p">,</span>

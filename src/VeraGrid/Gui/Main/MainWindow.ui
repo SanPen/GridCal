@@ -377,8 +377,8 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>262</width>
-                            <height>362</height>
+                            <width>382</width>
+                            <height>360</height>
                            </rect>
                           </property>
                           <attribute name="icon">
@@ -772,8 +772,8 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>174</width>
-                            <height>240</height>
+                            <width>396</width>
+                            <height>316</height>
                            </rect>
                           </property>
                           <attribute name="icon">
@@ -923,8 +923,8 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>124</width>
-                            <height>188</height>
+                            <width>396</width>
+                            <height>316</height>
                            </rect>
                           </property>
                           <attribute name="icon">
@@ -2444,8 +2444,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>226</width>
-                 <height>85</height>
+                 <width>274</width>
+                 <height>520</height>
                 </rect>
                </property>
                <attribute name="icon">
@@ -2500,7 +2500,7 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>86</width>
+                 <width>98</width>
                  <height>88</height>
                 </rect>
                </property>
@@ -11168,6 +11168,8 @@ QProgressBar::chunk{
      <addaction name="actionImport_bus_coordinates"/>
      <addaction name="actionImport_contingencies"/>
      <addaction name="actionAdd_custom_catalogue"/>
+     <addaction name="actionImport_FMU"/>
+     <addaction name="actionImport_IEEE_CIGRE_DLL"/>
     </widget>
     <addaction name="actionNew_project"/>
     <addaction name="actiongrid_Generator"/>
@@ -11913,6 +11915,30 @@ QProgressBar::chunk{
    </property>
    <property name="shortcut">
     <string>Ctrl+N, Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionImport_FMU">
+   <property name="icon">
+    <iconset resource="../Icons/icons.qrc">
+     <normaloff>:/Icons/icons/fmi.png</normaloff>:/Icons/icons/fmi.png</iconset>
+   </property>
+   <property name="text">
+    <string>FMU</string>
+   </property>
+   <property name="toolTip">
+    <string>Import a manufacturer FMU as a reusable dynamic model</string>
+   </property>
+  </action>
+  <action name="actionImport_IEEE_CIGRE_DLL">
+   <property name="icon">
+    <iconset resource="../Icons/icons.qrc">
+     <normaloff>:/Icons/icons/gear.png</normaloff>:/Icons/icons/gear.png</iconset>
+   </property>
+   <property name="text">
+    <string>Native library (IEEE/CIGRE or IEC ESE)...</string>
+   </property>
+   <property name="toolTip">
+    <string>Import a manufacturer supplied native model library</string>
    </property>
   </action>
   <action name="actionSync">

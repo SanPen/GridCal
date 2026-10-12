@@ -28,14 +28,6 @@ VeraGridEngine.Templates.Rms.bus\_phasor\_rms\_template module
    :show-inheritance:
    :undoc-members:
 
-VeraGridEngine.Templates.Rms.common module
-------------------------------------------
-
-.. automodule:: VeraGridEngine.Templates.Rms.common
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 VeraGridEngine.Templates.Rms.dc\_voltage\_source module
 -------------------------------------------------------
 

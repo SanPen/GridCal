@@ -146,6 +146,10 @@ def _posix_process_group_exists(process_group_id: int) -> bool:
         group_exists: bool = True
     except ProcessLookupError:
         group_exists = False
+    except PermissionError:
+        # A zombie-only Darwin group can briefly deny signal-zero inspection.
+        # Denial cannot prove absence, so retain the existing bounded polling.
+        group_exists = True
     return group_exists
 
 

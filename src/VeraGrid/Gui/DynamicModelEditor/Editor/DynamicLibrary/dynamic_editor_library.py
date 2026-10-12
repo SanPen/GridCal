@@ -20,7 +20,6 @@ from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Templates.BasicBlockCatalog import BasicBlockTemplateDescriptor, \
     get_editor_ready_basic_block_catalog_descriptors
-from VeraGridEngine.Templates.BasicBlockCatalog.catalog import build_basic_block_catalog_branch_skeleton
 from VeraGridEngine.Templates.ProceduralLogicCatalog import (
     ProceduralBlockParameterSpec,
     ProceduralBlockTemplateDescriptor,
@@ -447,6 +446,8 @@ def build_native_device_description(
         description: str = (
             "Complete synchronous-generator RMS model with GENQEC machine, exciter, governor, and stabilizer"
         )
+    elif source == DynamicDeviceTemplateType.RMS_GENCLS:
+        description = "Classical two-state synchronous-generator GENCLS RMS model"
     elif source == BlockType.GENQEC:
         description = "Synchronous-generator GENQEC RMS model with quadratic magnetic saturation"
     elif source == BlockType.GENRAW:
@@ -628,6 +629,9 @@ def build_rms_native_device_specs() -> List[LibraryDeviceTemplateSpec]:
         _build_native_device_spec("Complete generator", DynamicDeviceTemplateType.RMS_COMPLETE_GENERATOR,
                                   DynamicSimulationMode.RMS, DeviceType.GeneratorDevice,
                                   "Generators and sources", DynamicDeviceTemplateType.RMS_COMPLETE_GENERATOR.value),
+        _build_native_device_spec("Generator GENCLS", DynamicDeviceTemplateType.RMS_GENCLS,
+                                  DynamicSimulationMode.RMS, DeviceType.GeneratorDevice,
+                                  "Generators and sources", DynamicDeviceTemplateType.RMS_GENCLS.value),
         _build_native_device_spec("Generator QEC", BlockType.GENQEC,
                                   DynamicSimulationMode.RMS, DeviceType.GeneratorDevice,
                                   "Generators and sources", DynamicDeviceTemplateType.RMS_GENQEC.value),
@@ -1327,12 +1331,22 @@ def build_dynamic_library_structure(
     """
     structure: Dict[str, object] = dict()
     structure["Basic"] = build_basic_library_branch()
+    if mode == DynamicSimulationMode.EMT:
+        # Fault insertion is a mode-wide composition tool rather than a full
+        # network-device drawing. Keep it near the top of the visible Library
+        # so the large device and control trees cannot obscure its presence.
+        structure["Faults"] = list((LibraryLeafSpec(
+            label="Fault EMT",
+            payload=BlockType.FAULT_EMT,
+            search_text="EMT fault short circuit LG LL LLG LLL LLLG ground",
+        ),))
+    else:
+        pass
     structure["Devices"] = build_device_library_branch(mode=mode, device_type=device_type)
     if mode == DynamicSimulationMode.RMS:
         structure["Controls"] = build_rms_control_library_branch()
     elif mode == DynamicSimulationMode.EMT:
         structure["Controls"] = build_emt_control_library_branch()
-        structure["Faults"] = list((LibraryLeafSpec("Fault EMT", BlockType.FAULT_EMT),))
     else:
         pass
     structure["Procedural logic"] = build_procedural_library_branch()
@@ -1430,6 +1444,8 @@ def build_dynamic_library_device_template(
             template = None
     elif source == DynamicDeviceTemplateType.RMS_COMPLETE_GENERATOR:
         template = tem.get_complete_generator_template_rms(var_factory)
+    elif source == DynamicDeviceTemplateType.RMS_GENCLS:
+        template = tem.get_gencls_rms_template(var_factory)
     elif source == DynamicDeviceTemplateType.RMS_GENQEC:
         template = tem.get_genqec_rms(var_factory)
     elif source == DynamicDeviceTemplateType.RMS_GENROW:
@@ -1517,52 +1533,443 @@ def build_dynamic_library_device_template(
     return template
 
 
-def build_basic_library_branch() -> Dict[str, object]:
+def build_basic_native_branch_skeleton() -> Dict[str, object]:
+    """Build the canonical empty hierarchy for ``Basic / Native``.
+
+    The hierarchy lives beside the ``Devices`` and ``Controls`` registrations
+    so the complete dynamic-editor library can be inspected and maintained in
+    one module. Empty leaf collections are intentional: they reserve the
+    requested semantic location for blocks added in the future.
+
+    :return: Ordered category tree whose leaf nodes are empty lists.
     """
-    Build the nested Basic branch used by both RMS and EMT editors.
+    # Mathematical operations are separated by behavior rather than by the
+    # implementation family from which a block happened to originate.
+    mathematical_functions: Dict[str, object] = dict((
+        ("Sum", list()),
+        ("Product", list()),
+        ("Gain", list()),
+        ("Bias / Affine", list()),
+        ("Minimum/Maximum", list()),
+        ("Absolute value", list()),
+        ("Sign", list()),
+        ("Square root", list()),
+        ("Power", list()),
+        ("Exponential and logarithms", list()),
+        ("Rounding and modulo", list()),
+        ("Trigonometric functions", list()),
+        ("Constants", list()),
+    ))
+
+    # State-bearing continuous blocks are kept apart from discrete memory so
+    # their numerical meaning is evident from the library path.
+    continuous_dynamics: Dict[str, object] = dict((
+        ("Integrators", list()),
+        ("Derivatives", list()),
+        ("Transfer functions", list()),
+        ("Filters", list()),
+        ("Delay approximations", list()),
+    ))
+    memory_and_discrete_time: Dict[str, object] = dict((
+        ("Sample and hold", list()),
+        ("Previous value", list()),
+        ("Exact time delay", list()),
+        ("Moving average", list()),
+        ("Discrete integrator", list()),
+    ))
+
+    # Event-generating comparators are distinguished from ordinary algebraic
+    # comparisons and from the switches that consume their results.
+    logic_and_events: Dict[str, object] = dict((
+        ("Logic gate", list()),
+        ("Comparator", list()),
+        ("Timed comparator", list()),
+        ("Selector / Switch", list()),
+        ("Edge detector", list()),
+        ("Latches and flip-flops", list()),
+        ("Timers", list()),
+    ))
+    limits_and_nonlinearities: Dict[str, object] = dict((
+        ("Saturation", list()),
+        ("Deadband", list()),
+        ("Rate limiter", list()),
+        ("Hysteresis", list()),
+        ("Piecewise function", list()),
+    ))
+
+    # Sources are classified by the waveform users look for, independently of
+    # whether a particular implementation uses parameters or signal inputs.
+    sources: Dict[str, object] = dict((
+        ("Constant", list()),
+        ("Simulation time", list()),
+        ("Step", list()),
+        ("Ramp", list()),
+        ("Pulse", list()),
+        ("Sine", list()),
+        ("Square", list()),
+        ("Triangle", list()),
+        ("Sawtooth", list()),
+    ))
+    lookup_tables: Dict[str, object] = dict((
+        ("1D lookup table", list()),
+        ("Inverse 1D lookup table", list()),
+        ("2D lookup table", list()),
+    ))
+    transforms: Dict[str, object] = dict((
+        ("Clarke", list()),
+        ("Park / dq0", list()),
+        ("Sequence components", list()),
+        ("RMS conversions", list()),
+    ))
+    complex_numbers: Dict[str, object] = dict((
+        ("Cartesian / polar conversion", list()),
+        ("Magnitude and angle", list()),
+        ("Conjugate", list()),
+        ("Arithmetic", list()),
+    ))
+    mechanical: Dict[str, object] = dict((("Drive train", list()),))
+
+    return dict((
+        ("Mathematical functions", mathematical_functions),
+        ("Continuous dynamics", continuous_dynamics),
+        ("Memory and discrete-time", memory_and_discrete_time),
+        ("Logic and events", logic_and_events),
+        ("Limits and nonlinearities", limits_and_nonlinearities),
+        ("Sources", sources),
+        ("Lookup tables", lookup_tables),
+        ("Transforms", transforms),
+        ("Complex numbers", complex_numbers),
+        ("Measurements", list()),
+        ("Mechanical", mechanical),
+    ))
+
+
+def get_basic_lookup_table_category_path(descriptor: BasicBlockTemplateDescriptor) -> tuple[str, ...]:
+    """Return the dimensional lookup-table category for one descriptor.
+
+    :param descriptor: Basic-block descriptor being classified.
+    :return: Path below ``Basic / Native`` for the lookup implementation.
+    """
+    normalized_name: str = f"{descriptor.template_key} {descriptor.display_label}".lower()
+    if "inverse" in normalized_name or "invlapprox" in normalized_name:
+        category_path: tuple[str, ...] = ("Lookup tables", "Inverse 1D lookup table")
+    elif "matrix" in normalized_name:
+        category_path = ("Lookup tables", "2D lookup table")
+    else:
+        category_path = ("Lookup tables", "1D lookup table")
+    return category_path
+
+
+def get_basic_mathematical_category_path(descriptor: BasicBlockTemplateDescriptor,
+                                         source_category: str) -> tuple[str, ...]:
+    """Classify a descriptor from the legacy mathematical families.
+
+    :param descriptor: Basic-block descriptor being classified.
+    :param source_category: Legacy second-level mathematical category.
+    :return: Path below ``Basic / Native`` for the mathematical behavior.
+    """
+    template_key: str = descriptor.template_key.lower()
+    label: str = descriptor.display_label.lower()
+    trigonometric_keys: tuple[str, ...] = (
+        "acos", "asin", "atan", "atan2", "atan2d", "atand",
+        "cos", "cosd", "cosh", "coshd", "sin", "sind",
+        "sinh", "sinhd", "tan", "tand", "tanh", "tanhd",
+    )
+
+    if source_category == "Constants and Scaling":
+        category_path: tuple[str, ...] = ("Mathematical functions", "Constants")
+    elif source_category == "Scaling and Products":
+        if template_key in ("bias", "mx_n"):
+            category_path = ("Mathematical functions", "Bias / Affine")
+        elif template_key in ("a_x_c1_x_c2", "ax_2_bx_c"):
+            category_path = ("Mathematical functions", "Power")
+        else:
+            category_path = ("Mathematical functions", "Gain")
+    elif template_key == "equal":
+        category_path = ("Logic and events", "Comparator")
+    elif template_key == "abs":
+        category_path = ("Mathematical functions", "Absolute value")
+    elif template_key == "sign":
+        category_path = ("Mathematical functions", "Sign")
+    elif template_key == "sqrt":
+        category_path = ("Mathematical functions", "Square root")
+    elif template_key in ("exp", "ln", "log"):
+        category_path = ("Mathematical functions", "Exponential and logarithms")
+    elif template_key in ("ceil", "floor", "frac", "modulo", "round"):
+        category_path = ("Mathematical functions", "Rounding and modulo")
+    elif template_key in trigonometric_keys:
+        category_path = ("Mathematical functions", "Trigonometric functions")
+    elif template_key in ("reciprocal", "reciprocal_fb", "x_2", "x_p") or "^" in label:
+        category_path = ("Mathematical functions", "Power")
+    else:
+        category_path = ("Mathematical functions", "Power")
+    return category_path
+
+
+def get_basic_waveform_category_path(descriptor: BasicBlockTemplateDescriptor,
+                                     source_category: str) -> tuple[str, ...]:
+    """Classify waveform, clock, and event-pulse descriptors.
+
+    :param descriptor: Basic-block descriptor being classified.
+    :param source_category: Legacy waveform category.
+    :return: Path below ``Basic / Native`` for the source or event behavior.
+    """
+    template_key: str = descriptor.template_key.lower()
+    if "sawtooth" in template_key:
+        category_path: tuple[str, ...] = ("Sources", "Sawtooth")
+    elif "triangle" in template_key:
+        category_path = ("Sources", "Triangle")
+    elif "square" in template_key:
+        category_path = ("Sources", "Square")
+    elif "sine" in template_key:
+        category_path = ("Sources", "Sine")
+    elif template_key == "pulse":
+        category_path = ("Sources", "Pulse")
+    elif source_category == "Time Sources and Timers" and template_key.startswith("time"):
+        category_path = ("Sources", "Simulation time")
+    elif source_category == "Time Sources and Timers" and template_key.startswith("clock"):
+        category_path = ("Sources", "Step")
+    elif source_category == "Time Sources and Timers":
+        category_path = ("Logic and events", "Timers")
+    elif template_key.startswith("yi") or template_key.startswith("abs_in"):
+        category_path = ("Logic and events", "Timed comparator")
+    else:
+        category_path = ("Logic and events", "Logic gate")
+    return category_path
+
+
+def get_basic_continuous_category_path(descriptor: BasicBlockTemplateDescriptor,
+                                       source_category: str) -> tuple[str, ...]:
+    """Classify legacy continuous-time descriptors by numerical behavior.
+
+    :param descriptor: Basic-block descriptor being classified.
+    :param source_category: Legacy continuous-time category.
+    :return: Path below ``Basic / Native`` for the continuous behavior.
+    """
+    template_key: str = descriptor.template_key.lower()
+    label: str = descriptor.display_label.lower()
+    if source_category == "Delays and Memory":
+        if "movingavg" in template_key:
+            category_path: tuple[str, ...] = ("Memory and discrete-time", "Moving average")
+        elif "lastvalue" in template_key:
+            category_path = ("Memory and discrete-time", "Previous value")
+        elif "pade" in template_key:
+            category_path = ("Continuous dynamics", "Delay approximations")
+        else:
+            category_path = ("Memory and discrete-time", "Exact time delay")
+    elif source_category == "Integrators and Derivatives":
+        if template_key.startswith("s_") or template_key.startswith("st_"):
+            category_path = ("Continuous dynamics", "Derivatives")
+        else:
+            category_path = ("Continuous dynamics", "Integrators")
+    elif template_key.startswith("max") or template_key.startswith("min"):
+        category_path = ("Mathematical functions", "Minimum/Maximum")
+    elif template_key.startswith("multiply"):
+        category_path = ("Mathematical functions", "Gain")
+    elif "butterworth" in template_key or "filter" in label or template_key.startswith("h0w0"):
+        category_path = ("Continuous dynamics", "Filters")
+    else:
+        category_path = ("Continuous dynamics", "Transfer functions")
+    return category_path
+
+
+def get_basic_logic_category_path(descriptor: BasicBlockTemplateDescriptor,
+                                  source_category: str) -> tuple[str, ...]:
+    """Classify legacy logical and event descriptors.
+
+    :param descriptor: Basic-block descriptor being classified.
+    :param source_category: Legacy logical category.
+    :return: Path below ``Basic / Native`` for the logical behavior.
+    """
+    template_key: str = descriptor.template_key.lower()
+    if source_category == "Comparators":
+        category_path: tuple[str, ...] = ("Logic and events", "Comparator")
+    elif source_category == "Switching and Selection" or template_key.startswith("switch"):
+        category_path = ("Logic and events", "Selector / Switch")
+    elif source_category == "Timers and Enables":
+        category_path = ("Logic and events", "Timers")
+    elif "edge" in template_key:
+        category_path = ("Logic and events", "Edge detector")
+    elif "flipflop" in template_key or template_key in ("bistable", "monostable"):
+        category_path = ("Logic and events", "Latches and flip-flops")
+    else:
+        category_path = ("Logic and events", "Logic gate")
+    return category_path
+
+
+def get_basic_limit_category_path(descriptor: BasicBlockTemplateDescriptor,
+                                  source_category: str) -> tuple[str, ...]:
+    """Classify limiter and nonlinearity descriptors.
+
+    :param descriptor: Basic-block descriptor being classified.
+    :param source_category: Legacy limit category.
+    :return: Path below ``Basic / Native`` for the nonlinear behavior.
+    """
+    template_key: str = descriptor.template_key.lower()
+    if "deadband" in template_key:
+        category_path: tuple[str, ...] = ("Limits and nonlinearities", "Deadband")
+    elif "backlash" in template_key:
+        category_path = ("Limits and nonlinearities", "Hysteresis")
+    elif "rate" in template_key or "grad" in template_key:
+        category_path = ("Limits and nonlinearities", "Rate limiter")
+    elif source_category == "Deadbands and Rate Limiters":
+        category_path = ("Limits and nonlinearities", "Deadband")
+    else:
+        category_path = ("Limits and nonlinearities", "Saturation")
+    return category_path
+
+
+def get_basic_transform_category_path(descriptor: BasicBlockTemplateDescriptor) -> tuple[str, ...]:
+    """Classify coordinate, sequence, and RMS transform descriptors.
+
+    :param descriptor: Basic-block descriptor being classified.
+    :return: Path below ``Basic / Native`` for the transform behavior.
+    """
+    template_key: str = descriptor.template_key.lower()
+    if "clarke" in template_key:
+        category_path: tuple[str, ...] = ("Transforms", "Clarke")
+    elif "park" in template_key or "dq0" in template_key:
+        category_path = ("Transforms", "Park / dq0")
+    elif template_key == "rms" or "rms_value" in template_key:
+        category_path = ("Transforms", "RMS conversions")
+    else:
+        category_path = ("Transforms", "Sequence components")
+    return category_path
+
+
+def get_basic_complex_category_path(descriptor: BasicBlockTemplateDescriptor) -> tuple[str, ...]:
+    """Classify complex-number descriptors by their visible operation.
+
+    :param descriptor: Basic-block descriptor being classified.
+    :return: Path below ``Basic / Native`` for the complex operation.
+    """
+    template_key: str = descriptor.template_key.lower()
+    if template_key.startswith("to_polar") or template_key.startswith("to_rectangular"):
+        category_path: tuple[str, ...] = ("Complex numbers", "Cartesian / polar conversion")
+    elif template_key.startswith("mag") or template_key.startswith("angle"):
+        category_path = ("Complex numbers", "Magnitude and angle")
+    elif template_key.startswith("conj"):
+        category_path = ("Complex numbers", "Conjugate")
+    else:
+        category_path = ("Complex numbers", "Arithmetic")
+    return category_path
+
+
+def get_basic_library_category_path(descriptor: BasicBlockTemplateDescriptor) -> tuple[str, ...]:
+    """Translate catalog metadata into the canonical ``Basic / Native`` tree.
+
+    The catalog retains its stable import metadata while this GUI-owned mapping
+    controls only where a draggable leaf is presented. This keeps persistence
+    and template materialization independent from library organization.
+
+    :param descriptor: Editor-ready catalog descriptor to place in the tree.
+    :return: Canonical path below ``Basic / Native``.
+    """
+    source_path: tuple[str, ...] = tuple(descriptor.category_path)
+    if len(source_path) > 0 and source_path[0] == "Native":
+        source_path = source_path[1:]
+    else:
+        pass
+
+    if len(source_path) > 0:
+        primary_category: str = source_path[0]
+    else:
+        primary_category = ""
+    if len(source_path) > 1:
+        secondary_category: str = source_path[1]
+    else:
+        secondary_category = ""
+
+    if primary_category in ("Arrays and Matrices", "Lookup and Tables"):
+        category_path: tuple[str, ...] = get_basic_lookup_table_category_path(descriptor=descriptor)
+    elif primary_category == "Math and Functions":
+        category_path = get_basic_mathematical_category_path(
+            descriptor=descriptor,
+            source_category=secondary_category,
+        )
+    elif primary_category == "Waveforms and Time":
+        category_path = get_basic_waveform_category_path(
+            descriptor=descriptor,
+            source_category=secondary_category,
+        )
+    elif primary_category == "Continuous":
+        category_path = get_basic_continuous_category_path(
+            descriptor=descriptor,
+            source_category=secondary_category,
+        )
+    elif primary_category == "Logic and Events":
+        category_path = get_basic_logic_category_path(
+            descriptor=descriptor,
+            source_category=secondary_category,
+        )
+    elif primary_category == "Limits and Nonlinearities":
+        category_path = get_basic_limit_category_path(
+            descriptor=descriptor,
+            source_category=secondary_category,
+        )
+    elif primary_category == "Transforms":
+        category_path = get_basic_transform_category_path(descriptor=descriptor)
+    elif primary_category == "Complex":
+        category_path = get_basic_complex_category_path(descriptor=descriptor)
+    elif primary_category == "Mechanical":
+        category_path = ("Mechanical", "Drive train")
+    elif primary_category == "Control and Measurement" and secondary_category == "Controllers":
+        category_path = ("Continuous dynamics", "Transfer functions")
+    else:
+        # Measurement and unit-conversion blocks intentionally remain direct
+        # children because the requested hierarchy leaves this branch open.
+        category_path = ("Measurements",)
+    return category_path
+
+
+def build_basic_library_branch() -> Dict[str, object]:
+    """Build the complete categorized ``Basic / Native`` library branch.
+
+    Every editor-ready catalog descriptor is inserted exactly once after the
+    native structural blocks, so the reorganization cannot discard or clone a
+    materializable block.
 
     :return: Nested branch data consumed by :class:`DynamicEditorLibrary`.
     """
-    # build native branch
-    native_branch: Dict[str, object] = dict((("Arithmetic", list((LibraryLeafSpec("Const", BlockType.CONST),
-                                                                  LibraryLeafSpec("Gain", BlockType.GAIN),
-                                                                  LibraryLeafSpec("Sum", BlockType.SUM),
-                                                                  LibraryLeafSpec("Product", BlockType.PRODUCT),
-                                                                  LibraryLeafSpec("Abs", BlockType.ABS),))),
-                                             ("Arrays and matrices", list((LibraryLeafSpec("Inverse Lookup array (linear)", BlockType.INVERSE_LOOKUP_ARRAY),
-                                                                           LibraryLeafSpec("Lookup array (linear)", BlockType.LOOKUP_ARRAY_LINEAR),
-                                                                           LibraryLeafSpec("Lookup array (spline)", BlockType.LOOKUP_ARRAY_SPLINE),
-                                                                           LibraryLeafSpec("Lookup matrix (linear)", BlockType.LOOKUP_MATRIX_LINEAR),
-                                                                           LibraryLeafSpec("Lookup matrix (spline)", BlockType.LOOKUP_MATRIX_SPLINE),))),))
+    native_branch: Dict[str, object] = build_basic_native_branch_skeleton()
+    native_blocks: tuple[tuple[tuple[str, ...], LibraryLeafSpec], ...] = (
+        (("Sources", "Constant"), LibraryLeafSpec("Const", BlockType.CONST)),
+        (("Mathematical functions", "Gain"), LibraryLeafSpec("Gain", BlockType.GAIN)),
+        (("Mathematical functions", "Sum"), LibraryLeafSpec("Sum", BlockType.SUM)),
+        (("Mathematical functions", "Product"), LibraryLeafSpec("Product", BlockType.PRODUCT)),
+        (("Mathematical functions", "Absolute value"), LibraryLeafSpec("Abs", BlockType.ABS)),
+        (("Lookup tables", "Inverse 1D lookup table"),
+         LibraryLeafSpec("Inverse Lookup array (linear)", BlockType.INVERSE_LOOKUP_ARRAY)),
+        (("Lookup tables", "1D lookup table"),
+         LibraryLeafSpec("Lookup array (linear)", BlockType.LOOKUP_ARRAY_LINEAR)),
+        (("Lookup tables", "1D lookup table"),
+         LibraryLeafSpec("Lookup array (spline)", BlockType.LOOKUP_ARRAY_SPLINE)),
+        (("Lookup tables", "2D lookup table"),
+         LibraryLeafSpec("Lookup matrix (linear)", BlockType.LOOKUP_MATRIX_LINEAR)),
+        (("Lookup tables", "2D lookup table"),
+         LibraryLeafSpec("Lookup matrix (spline)", BlockType.LOOKUP_MATRIX_SPLINE)),
+    )
+    native_entry: tuple[tuple[str, ...], LibraryLeafSpec]
+    for native_entry in native_blocks:
+        insert_library_leaf(
+            branch=native_branch,
+            category_path=native_entry[0],
+            leaf=native_entry[1],
+        )
 
-    # build catalogue branch
-    branch: Dict[str, object] = build_basic_block_catalog_branch_skeleton()
-
+    # Catalog descriptors carry stable import identities. Only their visible
+    # paths are translated here, beside the rest of the Library registrations.
     descriptor: BasicBlockTemplateDescriptor
     for descriptor in get_editor_ready_basic_block_catalog_descriptors():
-        category_path: tuple[str, ...] = descriptor.category_path[1:] if descriptor.category_path and \
-                                                                         descriptor.category_path[
-                                                                             0] == "Native" else descriptor.category_path
-        if len(category_path) == 0:
-            category_path = ("Miscellaneous", "Other")
-        else:
-            pass
-
         insert_library_leaf(
-            branch=branch,
-            category_path=category_path,
+            branch=native_branch,
+            category_path=get_basic_library_category_path(descriptor=descriptor),
             leaf=LibraryLeafSpec(
                 label=descriptor.display_label,
                 payload=descriptor,
                 search_text=descriptor.search_text,
             ),
         )
-
-    if len(branch["Miscellaneous"]["Other"]) == 0:
-        del branch["Miscellaneous"]
-    else:
-        pass
-    native_branch.update(branch)
 
     return dict((("Native", native_branch),))
 

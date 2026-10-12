@@ -193,19 +193,6 @@ class BasicBlockCatalogStaticRecord:
         """
         return self._module_filename
 
-    @property
-    def is_editor_ready(self) -> bool:
-        """
-        Return whether the record is ready for editor exposure.
-
-        :returns: ``True`` when the record is editor-ready.
-        """
-        if len(self._unsupported_lines) == 0:
-            return True
-        else:
-            return False
-
-
 def build_basic_block_catalog_pending_template_reason() -> str:
     """
     Return the canonical pending reason for non-executable templates.
@@ -213,47 +200,6 @@ def build_basic_block_catalog_pending_template_reason() -> str:
     :returns: Pending reason.
     """
     return "template_has_no_executable_content"
-
-
-def build_basic_block_catalog_branch_skeleton() -> dict[str, dict[str, list[object]]]:
-    """
-    Build the static Basic library branch skeleton used by the editor.
-
-    :returns: Fresh category tree with empty leaf lists.
-    """
-    branch: dict[str, dict[str, list[object]]] = dict()
-    branch['Continuous'] = dict()
-    branch['Continuous']['Transfer Functions and Filters'] = list()
-    branch['Continuous']['Integrators and Derivatives'] = list()
-    branch['Continuous']['Delays and Memory'] = list()
-    branch['Control and Measurement'] = dict()
-    branch['Control and Measurement']['Controllers'] = list()
-    branch['Control and Measurement']['Measurements and Units'] = list()
-    branch['Logic and Events'] = dict()
-    branch['Logic and Events']['Comparators'] = list()
-    branch['Logic and Events']['Gates and Memory'] = list()
-    branch['Logic and Events']['Switching and Selection'] = list()
-    branch['Logic and Events']['Timers and Enables'] = list()
-    branch['Limits and Nonlinearities'] = dict()
-    branch['Limits and Nonlinearities']['Limiters'] = list()
-    branch['Limits and Nonlinearities']['Deadbands and Rate Limiters'] = list()
-    branch['Math and Functions'] = dict()
-    branch['Math and Functions']['Scaling and Products'] = list()
-    branch['Math and Functions']['Elementary Functions'] = list()
-    branch['Math and Functions']['Constants and Scaling'] = list()
-    branch['Transforms'] = dict()
-    branch['Transforms']['Clarke, Park and dq0'] = list()
-    branch['Transforms']['RMS and Sequence'] = list()
-    branch['Complex'] = dict()
-    branch['Complex']['Operations'] = list()
-    branch['Waveforms and Time'] = dict()
-    branch['Waveforms and Time']['Signal Generators'] = list()
-    branch['Waveforms and Time']['Time Sources and Timers'] = list()
-    branch['Mechanical'] = dict()
-    branch['Mechanical']['Drive Train'] = list()
-    branch['Miscellaneous'] = dict()
-    branch['Miscellaneous']['Other'] = list()
-    return branch
 
 
 @lru_cache(maxsize=1)

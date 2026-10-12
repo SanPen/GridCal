@@ -83,7 +83,8 @@ def build_emt_solver(options: EmtOptions,
                           sparse_solver_backend_provider=sparse_backend_provider,
                           newton_diag_config=newton_diag_config,
                           progress_signal=progress_signal,
-                          cancel_checker=cancel_checker)
+                          cancel_checker=cancel_checker,
+                          newton_tolerance=options.tolerance)
     elif options.solver_type == EmtSolverTypes.StructuralAD:
         sparse_backend_provider = resolve_emt_sparse_solver_backend_provider(
             solver_type=options.sparse_solver,
@@ -100,7 +101,8 @@ def build_emt_solver(options: EmtOptions,
                           sparse_solver_backend_provider=sparse_backend_provider,
                           newton_diag_config=newton_diag_config,
                           progress_signal=progress_signal,
-                          cancel_checker=cancel_checker)
+                          cancel_checker=cancel_checker,
+                          newton_tolerance=options.tolerance)
     else:
         return solver_cls(problem=problem,
                           t0=t0,
@@ -110,4 +112,5 @@ def build_emt_solver(options: EmtOptions,
                           newton_max_iter=options.init_newton_max_iter,
                           newton_diag_config=newton_diag_config,
                           progress_signal=progress_signal,
-                          cancel_checker=cancel_checker)
+                          cancel_checker=cancel_checker,
+                          newton_tolerance=options.tolerance)

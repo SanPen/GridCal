@@ -20,6 +20,7 @@ from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls imp
                                                                                      QvDroopControlState,
                                                                                      compute_slack_distribution)
 from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
+from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.static_generator_droop import StaticGeneratorDroop
 from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
 from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
@@ -765,6 +766,7 @@ class PfAcDcWithNegativePoles(PfFormulationTemplate):
         "adm",
         "discrete_shunt_control",
         "qv_droop_control",
+        "static_droop",
     )
 
     def __init__(self, V0: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
@@ -898,6 +900,7 @@ class PfAcDcWithNegativePoles(PfFormulationTemplate):
         # numerical work to the existing Numba kernels.
         self.discrete_shunt_control = DiscreteShuntControlState(nc=self.nc)
         self.qv_droop_control = QvDroopControlState(S0=self.S0, nc=self.nc)
+        self.static_droop: StaticGeneratorDroop = StaticGeneratorDroop(self.nc)
 
         # On a flat start the negative DC poles sit at +1 instead
         # of -1 and the grounded buses at 1 instead of 0. Init them correctly
@@ -2362,6 +2365,7 @@ class PfAcDcWithNegativePoles(PfFormulationTemplate):
         # Use V instead of Vm (not a device-centered axis). Thus avoid compute_zip_power()
         # We add self.Y0 despite it being zero
         Sbus = self.S0 + 1j * Qag / self.nc.Sbase + V * np.conj(self.I0) + V * np.conj(V) * np.conj(self.Y0)
+        Sbus += 1j * self.static_droop.delta_q_bus(V)
         Scalc_passive = compute_power(adm_.Ybus, V)
 
         Pf_cbr = calcSf(k=self.k_cbr_pf,
@@ -2984,6 +2988,7 @@ class PfAcDcWithNegativePoles(PfFormulationTemplate):
 
         V = polar_to_rect(self.Vm, self.Va)
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
+        Sbus += 1j * self.static_droop.delta_q_bus(V)
         Imax_vsc = self.nc.vsc_data.rates / self.nc.Sbase
 
         # Update Ybus with the new taps

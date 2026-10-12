@@ -8,8 +8,10 @@ import numpy as np
 import pytest
 
 import VeraGridEngine.Devices as dev
+from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.IO.dgs.dgs_circuit import parse_header
-from VeraGridEngine.IO.dgs.dgs_objects import TypCab
+from VeraGridEngine.IO.dgs.dgs_objects import ElmLne, TypCab
+from VeraGridEngine.IO.dgs.dgs_to_veragrid import convert_dgs_to_line
 from VeraGridEngine.IO.file_open import FileOpen
 
 
@@ -95,3 +97,62 @@ def test_dgs_missing_armour_columns_remain_unknown() -> None:
     cable: TypCab = TypCab.parse_line(line='1;Legacy cable', header_map=header_map)
     assert cable.has_arm is None
     assert cable.cHasEl_2 is None
+
+
+def test_dgs_scalar_zero_sequence_link_remains_reducible() -> None:
+    """Keep historical reduction for non-physical zero-impedance links.
+
+    :return: None.
+    """
+    # Build the smallest declarative DGS line that resolves to a sequence
+    # template, so the converter owns the classification under test.
+    source_line: ElmLne = ElmLne()
+    source_line.ID = 'scalar-zero-line'
+    source_line.loc_name = 'Scalar zero link'
+    source_line.typ_id = 'scalar-zero-type'
+    source_line.dline = 1.0
+    buses: list[dev.Bus] = list((
+        dev.Bus(name='From', Vnom=10.0),
+        dev.Bus(name='To', Vnom=10.0),
+    ))
+    sequence_template: dev.SequenceLineType = dev.SequenceLineType(
+        name='Scalar zero type',
+        R=0.0,
+        X=0.0,
+        B=0.0,
+        R0=0.0,
+        X0=0.0,
+        B0=0.0,
+    )
+    terminal_indices: dict[str, list[int]] = dict((
+        ('scalar-zero-line', list((0, 1))),
+    ))
+    sequence_templates: dict[str, dev.SequenceLineType] = dict((
+        ('scalar-zero-type', sequence_template),
+    ))
+
+    # Empty optional mappings make the sequence template the only valid owner;
+    # the resulting scalar-zero branch must therefore preserve legacy reduction.
+    converted_line: dev.Line | dev.DcLine = convert_dgs_to_line(
+        lne=source_line,
+        buses=buses,
+        stacubic_dict=terminal_indices,
+        sequence_templates_dict=sequence_templates,
+        dc_cable_type_dict=dict(),
+        source_line_type_dict=dict(),
+        overhead_line_type_dict=dict(),
+        underground_line_type_dict=dict(),
+        line_type_by_line_id=dict(),
+        line_sections_by_line_id=dict(),
+        tower_template_by_line_id=dict(),
+        freq=50.0,
+        baseMVA=100.0,
+        logger=Logger(),
+        cubics_by_objid=dict(),
+        bus_by_term_id=dict(),
+        phase_map=dict(),
+    )
+
+    assert isinstance(converted_line, dev.Line)
+    assert isinstance(converted_line.template, dev.SequenceLineType)
+    assert converted_line.reducible

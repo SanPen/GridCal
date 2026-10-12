@@ -40,7 +40,7 @@ def stability_kundur_no_shunt():
     # Build VeraGrid object
     ###########################################################################################################################
 
-    grid = gce.MultiCircuit()
+    grid = gce.MultiCircuit(fbase=60.0)
 
     # Buses
     bus1 = Bus(name="Bus1", Vnom=20)

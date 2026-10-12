@@ -328,6 +328,7 @@ def _restore_version_three_grounding_block(
     legacy_contract: object = legacy_data["dynamic_model_contract"]
     assert isinstance(legacy_contract, dict)
     legacy_contract["version"] = 3
+    legacy_contract["rms_terminal_power_contributions"] = []
     legacy_contract.pop("emt_internal_grounding_link")
     legacy_contract.pop("rms_physical_measurement_point")
     legacy_children_data: object = legacy_data["children"]
@@ -338,6 +339,7 @@ def _restore_version_three_grounding_block(
         legacy_child_contract: object = legacy_child_data["dynamic_model_contract"]
         assert isinstance(legacy_child_contract, dict)
         legacy_child_contract["version"] = 3
+        legacy_child_contract["rms_terminal_power_contributions"] = []
         legacy_child_contract.pop("emt_internal_grounding_link")
         legacy_child_contract.pop("rms_physical_measurement_point")
     else:
@@ -712,7 +714,7 @@ def test_switched_vsc_emt_passes_validation_and_switches_gates() -> None:
     set_emt_model(device=dc_load, model=dc_load_mdl, var_factory=grid.var_factory)
 
     switched_options = get_switched_converter_emt_options()
-    problem = EmtProblemDae(grid=grid, options=switched_options, pf_results=pf_results, pf_results_3Ph=pf_res_3ph)
+    problem = EmtProblemDae(grid=grid, options=switched_options, pf_results=pf_results, pf_results_3ph=pf_res_3ph)
     assert problem is not None
 
     gate_a_var = _find_name_in_block("gate_a", vsc.emt_model)
@@ -848,7 +850,7 @@ def test_dc_line_emt_passes_validation_and_initializes_branch_currents():
     set_emt_model(device=dc_line, model=dc_line_mdl, var_factory=grid.var_factory)
     set_emt_model(device=dc_load, model=dc_load_mdl, var_factory=grid.var_factory)
 
-    problem = EmtProblemDae(grid=grid, options=get_default_emt_options(), pf_results=pf_results, pf_results_3Ph=pf_res_3ph)
+    problem = EmtProblemDae(grid=grid, options=get_default_emt_options(), pf_results=pf_results, pf_results_3ph=pf_res_3ph)
     assert problem is not None
 
     if_dc_var = dc_line.emt_model.E(VarPowerFlowReferenceType.If_dc)

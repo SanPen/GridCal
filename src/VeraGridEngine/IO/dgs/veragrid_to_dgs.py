@@ -680,21 +680,23 @@ def convert_sequence_line(seq: dev.SequenceLineType, new_id: str) -> TypLne:
     return typlne
 
 
-def convert_dc_cable_type(cable_type: dev.DcCableType,
+def convert_dc_cable_type(cable_type: dev.UndergroundLineType,
                           new_id: str,
-                          frequency_hz: float) -> TypLne:
+                          frequency_hz: float, conductor: int = 1) -> TypLne:
     """
-    Convert one physical VeraGrid DC cable type to PowerFactory quantities.
+    Convert one Cable System DC equivalent to PowerFactory quantities.
 
     The DGS representation stores inductive and capacitive construction data
     as reactance and susceptance at its declared reference frequency. VeraGrid
-    keeps the inverse representation in physical H/km and F/km.
+    obtains H/km and F/km from the common Cable System DC parameter API.
 
-    :param cable_type: Physical DC cable catalogue asset.
+    :param cable_type: Common Cable System.
+    :param conductor: One-based global conductor number.
     :param new_id: Destination DGS identifier.
     :param frequency_hz: Positive DGS reference frequency in Hz.
     :return: PowerFactory DC line type.
     """
+    resistance, inductance, capacitance = cable_type.get_dc_parameters(conductor)
     typlne: TypLne = TypLne()
     typlne.ID = new_id
     typlne.loc_name = cable_type.name
@@ -702,7 +704,10 @@ def convert_dc_cable_type(cable_type: dev.DcCableType,
     typlne.sline = float(cable_type.Imax)
     typlne.InomAir = float(cable_type.Imax)
     typlne.aohl_ = "cab"
-    typlne.rline = float(cable_type.R)
+    typlne.aohl_declared = True
+    typlne.cohl_ = 0
+    typlne.cohl_declared = True
+    typlne.rline = resistance
     typlne.systp = 1
     typlne.nlnph = 1
     typlne.frnom = float(frequency_hz)
@@ -713,10 +718,10 @@ def convert_dc_cable_type(cable_type: dev.DcCableType,
     )
     if has_valid_frequency:
         angular_frequency: float = 2.0 * math.pi * frequency_hz
-        typlne.xline = angular_frequency * float(cable_type.L)
-        typlne.cline = float(cable_type.C) * 1.0e6
+        typlne.xline = angular_frequency * inductance
+        typlne.cline = capacitance * 1.0e6
         typlne.bline = (
-            angular_frequency * float(cable_type.C) * 1.0e6
+            angular_frequency * capacitance * 1.0e6
         )
     else:
         typlne.xline = None
@@ -885,6 +890,7 @@ def _build_typtr3_and_elmtr3(
         element_id: str,
         fold_id: str,
         t: int | None,
+        sbase_mva: float = 100.0,
 ) -> Tuple[TypTr3, ElmTr3, List[dev.Bus]]:
     """
     Convert a VeraGrid 3W transformer into DGS ``TypTr3`` and ``ElmTr3`` objects.
@@ -893,6 +899,8 @@ def _build_typtr3_and_elmtr3(
     :param type_id: DGS type ID
     :param element_id: DGS element ID
     :param fold_id: Parent folder ID
+    :param t: Optional profile index.
+    :param sbase_mva: Network power base, MVA.
     :return: Tuple with TypTr3, ElmTr3, and the ordered buses [HV, MV, LV]
     """
     ordered_sides: List[Tuple[dev.Bus, dev.Winding, float, float, float, float, float, float]] = list()
@@ -926,12 +934,23 @@ def _build_typtr3_and_elmtr3(
     typtr3.uktr3_h = vsc_hv
     typtr3.uktr3_m = vsc_mv
     typtr3.uktr3_l = vsc_lv
-    typtr3.tr3cn_h = _winding_type_to_pf_code(winding_hv.conn_t)
-    typtr3.tr3cn_m = _winding_type_to_pf_code(winding_mv.conn_t)
-    typtr3.tr3cn_l = _winding_type_to_pf_code(winding_lv.conn_t)
+    typtr3.tr3cn_h = _winding_type_to_pf_code(winding_hv.get_winding_connections()[0])
+    typtr3.tr3cn_m = _winding_type_to_pf_code(winding_mv.get_winding_connections()[0])
+    typtr3.tr3cn_l = _winding_type_to_pf_code(winding_lv.get_winding_connections()[0])
     typtr3.nt3ag_h = float(winding_hv.vector_group_number)
     typtr3.nt3ag_m = float(winding_mv.vector_group_number)
     typtr3.nt3ag_l = float(winding_lv.vector_group_number)
+
+    # PF stores pairwise tests, whereas the existing Winding objects store legs.
+    z0_hm: complex = complex(winding_hv.R0 + winding_mv.R0, winding_hv.X0 + winding_mv.X0)
+    z0_ml: complex = complex(winding_mv.R0 + winding_lv.R0, winding_mv.X0 + winding_lv.X0)
+    z0_hl: complex = complex(winding_hv.R0 + winding_lv.R0, winding_hv.X0 + winding_lv.X0)
+    base_hm: float = 100.0 * min(rated_power_hv, rated_power_mv) / sbase_mva
+    base_ml: float = 100.0 * min(rated_power_mv, rated_power_lv) / sbase_mva
+    base_hl: float = 100.0 * min(rated_power_hv, rated_power_lv) / sbase_mva
+    typtr3.uk0hm, typtr3.ur0hm = abs(z0_hm) * base_hm, z0_hm.real * base_hm
+    typtr3.uk0ml, typtr3.ur0ml = abs(z0_ml) * base_ml, z0_ml.real * base_ml
+    typtr3.uk0hl, typtr3.ur0hl = abs(z0_hl) * base_hl, z0_hl.real * base_hl
 
     hv_current_position, hv_minimum_position, hv_maximum_position, hv_neutral_position, hv_step_percent, hv_phase_angle = (
         _get_tr3_winding_tap_fields_from_vgrid(winding=winding_hv)
@@ -975,7 +994,7 @@ def _build_typtr3_and_elmtr3(
     elmtr3.t3ldc = 0
     elmtr3.usp_low = 0.99
     elmtr3.usp_up = 1.01
-    elmtr3.i3loc = 0
+    typtr3.i3loc = 0
 
     controlled_side: int | None = None
     for side_index, winding in enumerate((winding_hv, winding_mv, winding_lv)):
@@ -1384,19 +1403,10 @@ def circuit_to_dgs(
         dgs_grid.typlnes.append(typtr2)
         seq2typlne_dict[seq] = typtr2
 
-    # DC cable providers are emitted before the DcLine consumers that point to
-    # them, preserving the same dependency order as VeraGrid persistence.
-    dc_cable2typlne_dict: Dict[dev.DcCableType, TypLne] = dict()
-    dc_cable_type: dev.DcCableType
-    for dc_cable_type in grid.dc_cable_types:
-        dc_typlne: TypLne = convert_dc_cable_type(
-            cable_type=dc_cable_type,
-            new_id=dgs_grid.new_id(),
-            frequency_hz=float(grid.fBase),
-        )
-        dc_typlne.fold_id = net.ID
-        dgs_grid.typlnes.append(dc_typlne)
-        dc_cable2typlne_dict[dc_cable_type] = dc_typlne
+    # Export a DC equivalent only for systems used by a DC branch. Each
+    # selected conductor has its own equivalent; AC catalogue entries are not
+    # incorrectly exported as DC types.
+    dc_cable2typlne_dict: Dict[tuple[dev.UndergroundLineType, int], TypLne] = dict()
 
     # transformer types (base types)
     for trt in grid.transformer_types:
@@ -1435,20 +1445,21 @@ def circuit_to_dgs(
             dgs_buses=[bus2term_dict[line.bus_from], bus2term_dict[line.bus_to]]
         )
 
-    # DC lines use only DC cable types. A line without a physical template is
+    # DC lines export their selected Cable System equivalent. A line without a template is
     # still exportable, but its L/C fields remain blank rather than persisting
     # the runtime resistive reduction as measured cable data.
     dc_line: dev.DcLine
     for dc_line in grid.dc_lines:
-        dc_typlne = dc_cable2typlne_dict.get(dc_line.template, None)
+        dc_typlne = dc_cable2typlne_dict.get((dc_line.template, dc_line.dc_conductor), None)
         if dc_typlne is None:
             if dc_line.template is not None:
                 dc_typlne = convert_dc_cable_type(
                     cable_type=dc_line.template,
                     new_id=dgs_grid.new_id(),
                     frequency_hz=float(grid.fBase),
+                    conductor=dc_line.dc_conductor,
                 )
-                dc_cable2typlne_dict[dc_line.template] = dc_typlne
+                dc_cable2typlne_dict[(dc_line.template, dc_line.dc_conductor)] = dc_typlne
             else:
                 dc_typlne = build_resistive_dc_line_type(
                     line=dc_line,
@@ -1601,6 +1612,7 @@ def circuit_to_dgs(
             element_id=dgs_grid.new_id(),
             fold_id=net.ID,
             t=export_t_idx,
+            sbase_mva=float(grid.Sbase),
         )
         dgs_grid.typtr3s.append(typtr3)
         dgs_grid.elmtr3s.append(elmtr3)

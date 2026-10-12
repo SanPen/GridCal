@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+import hashlib
 import json
 import zipfile
 try:
@@ -12,19 +13,170 @@ except ImportError:
 
 from io import StringIO, TextIOWrapper, BytesIO, BufferedReader
 import os
+import tempfile
 from pathlib import Path
 import numpy as np
 import pandas as pd
 
 from warnings import warn
-from typing import List, Dict, Union, Callable, Tuple, Any
+from typing import BinaryIO, List, Dict, Union, Callable, Tuple, Any
 from VeraGridEngine.Devices.types import VERAGRID_FILE_TYPE
+from VeraGridEngine.enumerations import IeeeCigreDllPlatform
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.IO.veragrid.generic_io_functions import parse_config_df, CustomJSONizer
 from VeraGridEngine.Simulations.driver_template import DriverToSave
 from VeraGridEngine.IO.veragrid.pack_unpack import gather_model_as_data_frames, gather_model_as_jsons
 import VeraGridEngine.Devices as dev
 
+
+def _validate_manufacturer_native_member_name(variant: dev.ManufacturerNativeBinaryVariant) -> None:
+    """Validate one content-addressed native archive member.
+
+    :param variant: Persistent platform variant whose member is checked.
+    :return: None.
+    """
+    expected_name: str = (
+        "native_models/manufacturer/by_sha256/"
+        + variant.content_sha256
+        + variant.extension
+    )
+    platform_name: str = (
+        "native_models/manufacturer/"
+        + variant.platform.value
+        + "/"
+        + variant.content_sha256
+        + variant.extension
+    )
+    legacy_name: str = (
+        "native_models/manufacturer/ieee_cigre_v1_1/"
+        + variant.platform.value
+        + "/"
+        + variant.content_sha256
+        + variant.extension
+    )
+    path: Path = Path(variant.zip_member)
+    if (
+            variant.zip_member not in (expected_name, platform_name, legacy_name)
+            or path.is_absolute()
+            or ".." in path.parts
+            or "\\" in variant.zip_member
+    ):
+        raise ValueError("Manufacturer native ZIP member is not canonical")
+    else:
+        pass
+
+
+def _stream_manufacturer_native_member(f_zip_ptr: zipfile.ZipFile,
+                                   variant: dev.ManufacturerNativeBinaryVariant,
+                                   source: dev.ManufacturerNativeBinarySource) -> None:
+    """Stream one verified source into its content-addressed ZIP member.
+
+    :param f_zip_ptr: Open temporary target archive.
+    :param variant: Expected content identity and destination member.
+    :param source: Nonpersistent file or source-archive locator.
+    :return: None.
+    """
+    _validate_manufacturer_native_member_name(variant)
+    if source.platform != variant.platform:
+        raise ValueError("Manufacturer native source platform does not match its variant")
+    else:
+        pass
+    source_stream: BinaryIO
+    source_zip: zipfile.ZipFile | None = None
+    if len(source.file_path) > 0:
+        source_stream = open(source.file_path, "rb")
+    else:
+        source_zip = zipfile.ZipFile(source.archive_path, "r")
+        if source.archive_member != variant.zip_member:
+            source_zip.close()
+            raise ValueError("Manufacturer native source archive member does not match its variant")
+        else:
+            source_stream = source_zip.open(source.archive_member, "r")
+    digest = hashlib.sha256()
+    byte_count: int = 0
+    try:
+        with f_zip_ptr.open(variant.zip_member, "w", force_zip64=True) as target_stream:
+            while True:
+                chunk: bytes = source_stream.read(1024 * 1024)
+                if len(chunk) == 0:
+                    break
+                else:
+                    byte_count += len(chunk)
+                    if byte_count > 512 * 1024 * 1024:
+                        raise ValueError("Manufacturer native binary exceeds 512 MiB")
+                    else:
+                        digest.update(chunk)
+                        target_stream.write(chunk)
+    finally:
+        source_stream.close()
+        if source_zip is not None:
+            source_zip.close()
+        else:
+            pass
+    if byte_count != variant.byte_size or digest.hexdigest() != variant.content_sha256:
+        raise ValueError("Manufacturer native source bytes do not match the persisted size and SHA-256")
+    else:
+        pass
+
+
+def _write_manufacturer_native_members(f_zip_ptr: zipfile.ZipFile,
+                                   circuit: dev.MultiCircuit) -> None:
+    """Write every unique provider variant owned by one circuit.
+
+    :param f_zip_ptr: Open temporary target archive.
+    :param circuit: Circuit whose provider bytes must be embedded.
+    :return: None.
+    """
+    written_members: set[str] = set(f_zip_ptr.namelist())
+    provider: dev.ManufacturerNativeModel
+    platform: IeeeCigreDllPlatform
+    for provider in circuit.manufacturer_native_models:
+        for platform in (
+                IeeeCigreDllPlatform.WINDOWS_X86,
+                IeeeCigreDllPlatform.WINDOWS_X64,
+                IeeeCigreDllPlatform.LINUX_X64,
+        ):
+            variant: dev.ManufacturerNativeBinaryVariant | None = provider.get_platform_variant(platform)
+            if variant is not None:
+                if variant.zip_member not in written_members:
+                    source: dev.ManufacturerNativeBinarySource | None = provider.get_binary_source(platform)
+                    if source is None:
+                        raise ValueError(
+                            f"Manufacturer native provider {provider.idtag} has no source for {platform.value}"
+                        )
+                    else:
+                        _stream_manufacturer_native_member(f_zip_ptr, variant, source)
+                        written_members.add(variant.zip_member)
+                else:
+                    pass
+            else:
+                pass
+
+
+def _rebind_manufacturer_native_sources(circuit: dev.MultiCircuit, archive_path: str) -> None:
+    """Rebind every saved provider source after atomic replacement succeeds.
+
+    :param circuit: Circuit whose provider locators are updated.
+    :param archive_path: Successful target VeraGrid archive.
+    :return: None.
+    """
+    provider: dev.ManufacturerNativeModel
+    platform: IeeeCigreDllPlatform
+    for provider in circuit.manufacturer_native_models:
+        for platform in (
+                IeeeCigreDllPlatform.WINDOWS_X86,
+                IeeeCigreDllPlatform.WINDOWS_X64,
+                IeeeCigreDllPlatform.LINUX_X64,
+        ):
+            variant: dev.ManufacturerNativeBinaryVariant | None = provider.get_platform_variant(platform)
+            if variant is not None:
+                provider.set_binary_source(dev.ManufacturerNativeBinarySource(
+                    platform=platform,
+                    archive_path=archive_path,
+                    archive_member=variant.zip_member,
+                ))
+            else:
+                pass
 
 def _get_active_multiverse_grid_idtag(zip_file_pointer: zipfile.ZipFile) -> str | None:
     """
@@ -239,6 +391,8 @@ def save_multiverse_data_to_zip(f_zip_ptr: zipfile.ZipFile,
             tree_filename = f"{base_path}/diagrams/tree.json"
             f_zip_ptr.writestr(tree_filename, json.dumps(diff_grid.diagrams.get_data_dict(), indent=4))
 
+        _write_manufacturer_native_members(f_zip_ptr=f_zip_ptr, circuit=diff_grid)
+
 
 def save_single_circuit_data_to_zip(f_zip_ptr: zipfile.ZipFile,
                                     circuit: dev.MultiCircuit,
@@ -281,8 +435,10 @@ def save_single_circuit_data_to_zip(f_zip_ptr: zipfile.ZipFile,
                         text_func=text_func,
                         progress_func=progress_func)
 
+    _write_manufacturer_native_members(f_zip_ptr=f_zip_ptr, circuit=circuit)
 
-def save_veragrid_data_to_zip(filename_zip: str,
+
+def _save_veragrid_data_to_zip_file(filename_zip: str,
                               circuit: dev.MultiCircuit,
                               sessions_data: List[DriverToSave],
                               json_files: Dict[str, dict],
@@ -365,7 +521,54 @@ def save_veragrid_data_to_zip(filename_zip: str,
         print('Failed to pickle several profiles, but saved them as csv.\nFor improved speed install Pandas >= 1.2')
 
 
-def save_veragrid_multiverse_data_to_zip(filename_zip: str,
+def save_veragrid_data_to_zip(filename_zip: str,
+                              circuit: dev.MultiCircuit,
+                              sessions_data: List[DriverToSave],
+                              json_files: Dict[str, dict],
+                              text_func: Union[None, Callable[[str], None]] = None,
+                              progress_func: Union[None, Callable[[float], None]] = None,
+                              logger=Logger()) -> None:
+    """Atomically save a VeraGrid archive and then rebind native byte sources.
+
+    :param filename_zip: Final archive path.
+    :param circuit: Circuit to persist.
+    :param sessions_data: Simulation result payloads.
+    :param json_files: Additional JSON configuration files.
+    :param text_func: Optional textual progress callback.
+    :param progress_func: Optional numeric progress callback.
+    :param logger: Save diagnostic logger.
+    :return: None.
+    """
+    target_path: Path = Path(filename_zip).resolve()
+    temporary_fd: int
+    temporary_name: str
+    temporary_fd, temporary_name = tempfile.mkstemp(
+        prefix=target_path.name + ".",
+        suffix=".tmp",
+        dir=str(target_path.parent),
+    )
+    os.close(temporary_fd)
+    replaced: bool = False
+    try:
+        _save_veragrid_data_to_zip_file(
+            filename_zip=temporary_name,
+            circuit=circuit,
+            sessions_data=sessions_data,
+            json_files=json_files,
+            text_func=text_func,
+            progress_func=progress_func,
+            logger=logger,
+        )
+        os.replace(temporary_name, target_path)
+        replaced = True
+    finally:
+        if not replaced and os.path.exists(temporary_name):
+            os.remove(temporary_name)
+        else:
+            pass
+    _rebind_manufacturer_native_sources(circuit=circuit, archive_path=str(target_path))
+
+def _save_veragrid_multiverse_data_to_zip_file(filename_zip: str,
                                          json_files: Dict[str, dict],
                                          multiverse: dev.MultiVerse,
                                          active_grid_idtag: str | None = None,
@@ -405,6 +608,62 @@ def save_veragrid_multiverse_data_to_zip(filename_zip: str,
     if n_failed:
         print('Failed to pickle several profiles, but saved them as csv.\nFor improved speed install Pandas >= 1.2')
 
+
+def save_veragrid_multiverse_data_to_zip(filename_zip: str,
+                                         json_files: Dict[str, dict],
+                                         multiverse: dev.MultiVerse,
+                                         active_grid_idtag: str | None = None,
+                                         active_sessions_data: List[DriverToSave] | None = None,
+                                         text_func: Union[None, Callable[[str], None]] = None,
+                                         progress_func: Union[None, Callable[[float], None]] = None,
+                                         logger=Logger()) -> None:
+    """Atomically save a multiverse archive and rebind all saved provider sources.
+
+    :param filename_zip: Final archive path.
+    :param json_files: Additional JSON configuration files.
+    :param multiverse: Multiverse to persist.
+    :param active_grid_idtag: Active circuit identity.
+    :param active_sessions_data: Active circuit result payloads.
+    :param text_func: Optional textual progress callback.
+    :param progress_func: Optional numeric progress callback.
+    :param logger: Save diagnostic logger.
+    :return: None.
+    """
+    target_path: Path = Path(filename_zip).resolve()
+    temporary_fd: int
+    temporary_name: str
+    temporary_fd, temporary_name = tempfile.mkstemp(
+        prefix=target_path.name + ".",
+        suffix=".tmp",
+        dir=str(target_path.parent),
+    )
+    os.close(temporary_fd)
+    replaced: bool = False
+    try:
+        _save_veragrid_multiverse_data_to_zip_file(
+            filename_zip=temporary_name,
+            json_files=json_files,
+            multiverse=multiverse,
+            active_grid_idtag=active_grid_idtag,
+            active_sessions_data=active_sessions_data,
+            text_func=text_func,
+            progress_func=progress_func,
+            logger=logger,
+        )
+        os.replace(temporary_name, target_path)
+        replaced = True
+    finally:
+        if not replaced and os.path.exists(temporary_name):
+            os.remove(temporary_name)
+        else:
+            pass
+    multiverse_metadata: Dict[str, Any]
+    saved_circuits: Dict[str, dev.MultiCircuit]
+    saved_drivers: Dict[str, List[DriverToSave] | None]
+    multiverse_metadata, saved_circuits, saved_drivers = multiverse.get_save_data()
+    circuit: dev.MultiCircuit
+    for circuit in saved_circuits.values():
+        _rebind_manufacturer_native_sources(circuit=circuit, archive_path=str(target_path))
 
 def save_results_only(filename_zip: str,
                       sessions_data: List[DriverToSave],
@@ -520,6 +779,7 @@ def get_frames_from_zip(file_name_zip: str,
             'model_data': dict(),
             'symbolic_data': dict()
         }
+        zip_file_pointer.close()
         return data, json_files, has_multiverse_data
 
     names = zip_file_pointer.namelist()
@@ -623,6 +883,7 @@ def get_frames_from_zip(file_name_zip: str,
                     df = pd.read_csv(file_pointer, index_col=0)
                     data[name] = parse_config_df(df, data)
 
+        zip_file_pointer.close()
         return data, json_files, has_multiverse_data
 
     else:
@@ -710,6 +971,7 @@ def get_frames_from_zip(file_name_zip: str,
             except zipfile.BadZipFile:
                 logger.add_error("Bad zip file error", device=file_pointer.name)
 
+        zip_file_pointer.close()
         return data, json_files, has_multiverse_data
 
 

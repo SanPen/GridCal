@@ -7,15 +7,15 @@ from __future__ import annotations
 
 import math
 import uuid
-from typing import Dict, List, Optional, TYPE_CHECKING, Tuple
+from typing import Dict, List, Optional, TYPE_CHECKING, Tuple, TypeAlias
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import QPointF, Qt
 from PySide6.QtGui import QColor, QBrush, QPainter, QPainterPath, QPen, QAction, QPolygonF
 from PySide6.QtWidgets import QAbstractGraphicsShapeItem, QApplication, QColorDialog, QGraphicsEllipseItem, \
     QGraphicsItem, \
-    QGraphicsPathItem, QGraphicsPolygonItem, QGraphicsRectItem, QGraphicsScene, QGraphicsTextItem, \
-    QGraphicsView, QMenu, QWidget
+    QGraphicsPathItem, QGraphicsPolygonItem, QGraphicsRectItem, QGraphicsScene, \
+    QGraphicsTextItem, QGraphicsView, QMenu, QWidget
 
 from PySide6.QtCore import Signal
 
@@ -31,6 +31,7 @@ if TYPE_CHECKING:
     from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor import DynamicBlockEditorGUI
 else:
     pass
+
 
 
 def _build_port_tooltip(direction: str, index: int, variable_name: str) -> str:
@@ -169,13 +170,40 @@ def duplicate_paired_item(original: PairedItem) -> PairedItem | None:
 
     # The editor normalizes the symbolic variable object and migrates any
     # VarFactory propagation edges owned by a legacy output identity.
-    editor._bind_signal_pair_items(
-        signal_input_item=signal_input_item,
-        signal_output_items=list((new_item,)),
-    )
+
+    # Not necessary at all
+    ################################################################################3
+    # editor._bind_signal_pair_items(
+    #     signal_input_item=signal_input_item,
+    #     signal_output_items=list((new_item,)),
+    # )
+
+    #####################################################################################
+    # we only need this:
+
+    signal_input_item.set_paired_item(new_item)
+    new_item.set_paired_item(signal_input_item)
+
+
 
     editor.mark_unapplied_changes()
     return new_item
+
+def bind_signal_pair_items(
+        signal_input_item: PairedItem,
+        signal_output_items: List[PairedItem],
+) -> None:
+    """
+    Bind one From tag and its To tags to one authoritative signal variable.
+
+    :param signal_input_item: From/input tag that owns the canonical variable.
+    :param signal_output_items: To/output tags exposing the same signal.
+    :return: None.
+    """
+
+    for signal_output_item in signal_output_items:
+        signal_input_item.set_paired_item(signal_output_item)
+        signal_output_item.set_paired_item(signal_input_item)
 
 
 def truncate_port_label(text: str, max_chars: int) -> str:
@@ -854,7 +882,6 @@ class PortItem(QAbstractGraphicsShapeItem):
         "index",
         "total",
         "base_var",
-        "_validation_highlighted",
     )
 
     _CORNER_RADIUS: float = 2.0
@@ -890,7 +917,6 @@ class PortItem(QAbstractGraphicsShapeItem):
         self.index: int = index
         self.total: int = total
         self.base_var: Var | None = None
-        self._validation_highlighted: bool = False
 
         self.setPos(0, 0)
 
@@ -1008,21 +1034,6 @@ class PortItem(QAbstractGraphicsShapeItem):
             self.setVisible(False)
         else:
             self.setVisible(True)
-
-    def set_validation_highlighted(self, val: bool) -> None:
-        """
-        Toggle the validation overlay state for this port.
-
-        :param val: Whether the port should be shown as a validation issue.
-        :return: None.
-        """
-        self._validation_highlighted = val
-
-        if self._validation_highlighted:
-            self.setBrush(QBrush(EditorGraphicsCommonFeatures.VALIDATION_HICHLIGHTED_BORDER))
-        else:
-            self.setBrush(self.brush())
-
 
 class BranchingItem(QGraphicsEllipseItem):
     """Movable junction used to branch one visible dynamic connection."""
@@ -5102,11 +5113,11 @@ class DiagramScene(QGraphicsScene):
             pass
 
         source_block: BlockItem | GenericBlockItem | PairedItem | \
-            RoundBaseArithmeticOpItem | RectBaseArithmeticOpItem = source_port.subsystem
+            RoundBaseArithmeticOpItem | RectBaseArithmeticOpItem | MeasurementsItem = source_port.subsystem
         target_block: BlockItem | GenericBlockItem | PairedItem | \
-            RoundBaseArithmeticOpItem | RectBaseArithmeticOpItem = target_port.subsystem
+            RoundBaseArithmeticOpItem | RectBaseArithmeticOpItem | MeasurementsItem = target_port.subsystem
 
-        if source_block.subsys is not None and target_block.subsys is not None:
+        if source_block.subsys is not None and target_block.subsys is not None and self.editor is not None:
             connection: ConnectionItem = ConnectionItem(
                 source_port=source_port,
                 target_port=target_port,
@@ -5119,3 +5130,18 @@ class DiagramScene(QGraphicsScene):
             self.editor.attach_new_connection_item(item=connection)
         else:
             pass
+
+
+DynamicBlockGraphicsItem: TypeAlias = (
+        BlockItem
+        | GenericBlockItem
+        | RoundBaseArithmeticOpItem
+        | RectBaseArithmeticOpItem
+        | UnOpItem
+        | PairedItem
+        | MeasurementsItem
+)
+DynamicColorableBlockGraphicsItem: TypeAlias = (
+        DynamicBlockGraphicsItem
+        | MeasurementsItem
+)

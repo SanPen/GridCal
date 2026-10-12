@@ -8,7 +8,25 @@ import numpy as np
 from scipy.sparse import csc_matrix
 from VeraGridEngine.basic_structures import Vec, CxVec, IntVec, CscMat, CxMat, BoolVec
 from VeraGridEngine.enumerations import GeneratorType
+from VeraGridEngine.Utils.NumericalMethods.common import fortescue_012_to_abc
 from typing import Tuple
+
+
+def asynchronous_impedance(slip: float, Rs: float, Xs: float, Xm: float,
+                          Rr: float, Xr: float) -> complex:
+    """Return the existing single-cage equivalent on the machine base.
+
+    :param slip: Sequence slip (s for positive sequence, 2-s for negative).
+    :param Rs: Stator resistance in pu.
+    :param Xs: Stator reactance in pu.
+    :param Xm: Magnetising reactance in pu.
+    :param Rr: Rotor resistance in pu.
+    :param Xr: Rotor reactance in pu.
+    :return: Terminal sequence impedance in pu.
+    """
+    zr: complex = Rr / slip + 1j * Xr
+    zpar: complex = (1j * Xm * zr) / (1j * Xm + zr)
+    return Rs + 1j * Xs + zpar
 
 
 def active_power_mismatch(slip: float,
@@ -33,11 +51,9 @@ def active_power_mismatch(slip: float,
     :param Sr:
     :return:
     """
-    Zr = Rr / slip + 1j * Xr
-    Zpar = (1j * Xm * Zr) / (1j * Xm + Zr)
-    z = Rs + 1j * Xs + Zpar
-    i = u / z
-    s = -u * np.conj(i)
+    z: complex = asynchronous_impedance(slip, Rs, Xs, Xm, Rr, Xr)
+    i: complex = u / z
+    s: complex = -u * np.conj(i)
     return s.real - P / Sr
 
 
@@ -106,12 +122,44 @@ def asynchronous_gen_q(u: complex,
     slip = solve_slip(f=active_power_mismatch,
                       a=-0.05, b=-1e-6, tol=1e-10, max_iter=200,
                       u=u, Rs=Rs, Xs=Xs, Xm=Xm, Rr=Rr, Xr=Xr, P=P, Sr=Sr)
-    Zr = Rr / slip + 1j * Xr
-    Zpar = (1j * Xm * Zr) / (1j * Xm + Zr)
-    z = Rs + 1j * Xs + Zpar
+    z: complex = asynchronous_impedance(slip, Rs, Xs, Xm, Rr, Xr)
     i = u / z
     s = -u * np.conj(i)
     return s.imag * Sr
+
+
+def asynchronous_gen_currents(voltage: CxVec, Rs: float, Xs: float, Xm: float,
+                              Rr: float, Xr: float, P: float, Sr: float,
+                              y0: complex = 0j) -> CxVec:
+    """Compute ABC injections with one slip and the existing single-cage model.
+
+    :param voltage: Three phase-to-ground voltages in pu.
+    :param Rs: Stator resistance in machine pu.
+    :param Xs: Stator reactance in machine pu.
+    :param Xm: Magnetising reactance in machine pu.
+    :param Rr: Rotor resistance in machine pu.
+    :param Xr: Rotor reactance in machine pu.
+    :param P: Positive-sequence electrical active injection in MW, as in PF AS mode.
+    :param Sr: Machine rated power in MVA.
+    :param y0: Effective zero-sequence admittance in machine pu (zero for D/Y).
+    :return: Phase current injections in MW / pu voltage, as used by the ABC residual.
+    """
+    if not np.all(np.isfinite((Rs, Xs, Xm, Rr, Xr, P, Sr, y0))) or Sr <= 0.0 or Xm <= 0.0 or Rr <= 0.0:
+        raise ValueError('Asynchronous generator requires finite parameters, Snom > 0, Xm > 0 and Rr > 0.')
+    else:
+        pass
+    rotation: CxVec = np.exp(-2j * np.pi / 3 * np.arange(3))
+    u1: complex = voltage @ rotation.conj() / 3.0
+    # Keep the established positive-sequence P/slip law. PF AS mode adds passive
+    # negative/zero-sequence losses to the terminal power without redispatching P1.
+    slip: float = solve_slip(f=active_power_mismatch, a=-0.05, b=-1e-6,
+                             tol=1e-10, max_iter=200, u=u1, Rs=Rs, Xs=Xs, Xm=Xm,
+                             Rr=Rr, Xr=Xr, P=P, Sr=Sr)
+    z1: complex = asynchronous_impedance(slip, Rs, Xs, Xm, Rr, Xr)
+    z2: complex = asynchronous_impedance(2.0-slip, Rs, Xs, Xm, Rr, Xr)
+    # Fortescue preserves terminal coupling. This voltage-dependent injection is
+    # evaluated in the residual, not added again as a constant Ybus shunt.
+    return -(fortescue_012_to_abc(y0, 1.0/z1, 1.0/z2) @ voltage) * Sr / 3.0
 
 
 def compute_asynchronous_generator_q(
@@ -414,25 +462,6 @@ def compute_current(Ybus: csc_matrix, V: CxVec) -> CxVec:
     :return: Calculated current injections
     """
     return Ybus @ V
-
-
-def fortescue_012_to_abc(z0: complex, z1: complex, z2: complex) -> CxMat:
-    """
-    Convert 012 to abc
-    :param z0: zero-sequence impedance
-    :param z1: positive-sequence impedance
-    :param z2: negative-sequence impedance
-    :return: abc impedance matrix
-    """
-
-    a = 1.0 * np.exp(1j * 2 * np.pi / 3)
-    Zabc = 1 / 3 * np.array([
-        [z0 + z1 + z2, z0 + a * z1 + a ** 2 * z2, z0 + a ** 2 * z1 + a * z2],
-        [z0 + a ** 2 * z1 + a * z2, z0 + z1 + z2, z0 + a * z1 + a ** 2 * z2],
-        [z0 + a * z1 + a ** 2 * z2, z0 + a ** 2 * z1 + a * z2, z0 + z1 + z2]
-    ])
-
-    return Zabc
 
 
 @nb.jit(cache=True, fastmath=True)

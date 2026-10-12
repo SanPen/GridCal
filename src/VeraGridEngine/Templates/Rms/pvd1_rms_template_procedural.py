@@ -5,6 +5,7 @@
 
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
+from VeraGridEngine.enumerations import ParamPowerFlowReferenceType
 from VeraGridEngine.enumerations import DeviceType, VarPowerFlowReferenceType
 from VeraGridEngine.Utils.Symbolic.block import Block
 import VeraGridEngine.Utils.Symbolic.symbolic as sym
@@ -216,8 +217,8 @@ def get_pvd1_complete_rms_template(vfactory: VarFactory, name: str = "PVD1 compl
     - recovery multipliers with separate frequency/voltage enable flags.
 
     Notes:
-    - Frequency is represented by ``f_hz`` as a model variable initialized to nominal value.
-      A direct bus-frequency external mapping is not available in current RMS interfaces.
+    - ``fn`` is a static parameter mapped to the grid nominal frequency.
+      ``f_hz`` is the local frequency measured by the PLL.
     - True latching tripping behavior (frflag/vrflag in the original ANDES formulation)
       is approximated by continuous enable factors; it does not implement memory latching.
     """
@@ -512,7 +513,6 @@ def get_pvd1_complete_rms_template(vfactory: VarFactory, name: str = "PVD1 compl
             plim: vfactory.add_const(1.0),
             fdbd: vfactory.add_const(-0.017),
             ddn: vfactory.add_const(0.0),
-            fn: vfactory.add_const(60.0),
             kp_pll: vfactory.add_const(5.0),
             ki_pll: vfactory.add_const(50.0),
             ft0: vfactory.add_const(59.5),
@@ -526,6 +526,8 @@ def get_pvd1_complete_rms_template(vfactory: VarFactory, name: str = "PVD1 compl
         },
         mode_dict=mode_dict,
         procedural_logic=procedural_logic,
+        api_obj_mapping={ParamPowerFlowReferenceType.freq: fn},
+        parameters={fn: vfactory.add_const(60.0)},
     )
 
     block.name = name

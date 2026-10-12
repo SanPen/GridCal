@@ -177,7 +177,6 @@ def get_simple_generator_emt_template_trig_transform(
         Lmq: vf.add_const(1.55),
         Lf: vf.add_const(0.10),
         Rf: vf.add_const(0.017),
-        R0: vf.add_const(0.001),
         omega_ref: vf.add_const(1.0),
         Kp: vf.add_const(2.0),
         Ki: vf.add_const(2.0),
@@ -190,7 +189,15 @@ def get_simple_generator_emt_template_trig_transform(
         delta: sym.atan((Ra * Ipk * sym.sin(phi) - omega * (Lmq + La) * Ipk * sym.cos(phi)) / (Vpk + Ra * Ipk * sym.cos(phi) + omega * (Lmq + La) * Ipk * sym.sin(phi))),
     }
 
+    templ.block.parameters.update({
+        R0: vf.add_const(0.001),
+        omega_base: vf.add_const(None),
+        Ra: vf.add_const(None),
+        Ld: vf.add_const(None),
+        L0: vf.add_const(None),
+    })
     templ.block.api_obj_mapping = {
+        ParamPowerFlowReferenceType.generator_r0_pu: R0,
         ParamPowerFlowReferenceType.omega_base: omega_base,
         ParamPowerFlowReferenceType.R1: Ra,
         ParamPowerFlowReferenceType.X1: Ld,
@@ -299,13 +306,6 @@ def get_simple_multilinear_generator_reference_template(
         VarPowerFlowReferenceType.d_v_A: None,
         VarPowerFlowReferenceType.d_v_B: None,
         VarPowerFlowReferenceType.d_v_C: None,
-    }
-
-    templ.block.api_obj_mapping = {
-        ParamPowerFlowReferenceType.omega_base: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.omega_base],
-        ParamPowerFlowReferenceType.R1: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.R1],
-        ParamPowerFlowReferenceType.X1: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.X1],
-        ParamPowerFlowReferenceType.X0: gen_mdl.api_obj_mapping[ParamPowerFlowReferenceType.X0],
     }
 
     templ.block.in_vars = [gen_mdl.in_vars[0], gen_mdl.in_vars[1], gen_mdl.in_vars[2]]

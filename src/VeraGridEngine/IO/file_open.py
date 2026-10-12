@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 import os
+import zipfile
 import json
 import pathlib
 
@@ -31,7 +32,12 @@ from VeraGridEngine.IO.epc.epc_parser import PowerWorldParser
 from VeraGridEngine.IO.cim.cim16.cim_parser import CIMImport
 from VeraGridEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from VeraGridEngine.IO.cim.cgmes.cgmes_to_veragrid import cgmes_to_veragrid
-from VeraGridEngine.IO.veragrid.zip_interface import get_frames_from_zip
+from VeraGridEngine.IO.veragrid.zip_interface import (
+    _validate_manufacturer_native_member_name,
+    get_frames_from_zip,
+)
+from VeraGridEngine.Devices.Dynamic.manufacturer_native_model import ManufacturerNativeBinarySource
+from VeraGridEngine.enumerations import IeeeCigreDllPlatform
 from VeraGridEngine.IO.veragrid.sqlite_interface import open_data_frames_from_sqlite
 from VeraGridEngine.IO.veragrid.h5_interface import open_h5
 from VeraGridEngine.IO.raw.rawx_parser_writer import parse_rawx
@@ -723,6 +729,45 @@ class FileOpen:
 
         else:
             # This acts as a safety net if a new member is added to the Enum later
+            pass
+
+        if (
+                self.file_type in (FileType.VeraGrid, FileType.VeraGrid_delta)
+                and isinstance(self.file_name, str)
+                and self.circuit is not None
+        ):
+            # Reconstruct only operational locators after declarative parsing; opening never loads native code.
+            archive_path: str = str(pathlib.Path(self.file_name).resolve())
+            with zipfile.ZipFile(archive_path, "r") as archive:
+                member_names: set[str] = set(archive.namelist())
+                for provider in self.circuit.manufacturer_native_models:
+                    for platform in (
+                            IeeeCigreDllPlatform.WINDOWS_X86,
+                            IeeeCigreDllPlatform.WINDOWS_X64,
+                            IeeeCigreDllPlatform.LINUX_X64,
+                    ):
+                        variant = provider.get_platform_variant(platform)
+                        if variant is not None:
+                            _validate_manufacturer_native_member_name(variant)
+                            if variant.zip_member not in member_names:
+                                raise ValueError(
+                                    f"Manufacturer native archive member is missing: {variant.zip_member}"
+                                )
+                            else:
+                                member_info: zipfile.ZipInfo = archive.getinfo(variant.zip_member)
+                            if member_info.file_size != variant.byte_size:
+                                raise ValueError(
+                                    f"Manufacturer native archive member size is stale: {variant.zip_member}"
+                                )
+                            else:
+                                provider.set_binary_source(ManufacturerNativeBinarySource(
+                                    platform=platform,
+                                    archive_path=archive_path,
+                                    archive_member=variant.zip_member,
+                                ))
+                        else:
+                            pass
+        else:
             pass
 
         return self.circuit

@@ -47,9 +47,10 @@ def get_load_phasor_current_rms_template(
     vr_aux = vfactory.add_var("vr_aux")
     vi_aux = vfactory.add_var("vi_aux")
 
-    # Initialized from power-flow current/voltage during startup
-    templ.block.event_dict[Pl0] = inputs[0] * Ir + inputs[1] * Ii
-    templ.block.event_dict[Ql0] = inputs[1] * Ir - inputs[0] * Ii
+    # Load.P/Q is the exclusive initial source. Runtime storage remains mutable
+    # so scheduled events can replace either set-point after initialization.
+    templ.block.event_dict[Pl0] = vfactory.add_const(None)
+    templ.block.event_dict[Ql0] = vfactory.add_const(None)
 
     templ.block.algebraic_vars = [Ir, Ii, vr_aux, vi_aux]
     

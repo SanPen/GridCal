@@ -3,6 +3,8 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
+from __future__ import annotations
+
 from typing import Callable, Dict, List, Tuple, Union, Optional, Any
 import numpy as np
 import numba as nb
@@ -21,8 +23,6 @@ from collections import defaultdict, deque
 # from VeraGridEngine.Simulations.Rms.problems import Any
 from VeraGridEngine.Simulations.Rms.rms_options import RmsOptions
 from VeraGridEngine.enumerations import EmtInitializationMethod, EmtInitializationStatus, RmsInitializationMethod
-from VeraGridEngine.Simulations.EMT.emt_options import EmtOptions
-from VeraGridEngine.Simulations.EMT.problems.emt_problem_template import EmtProblemTemplate
 from VeraGridEngine.Utils.Symbolic.compiled_functions import SymbolicJacobian, SymbolicVector
 from VeraGridEngine.Utils.Symbolic.jit_compiler import RMSCompiler
 from VeraGridEngine.Utils.Symbolic.symbolic import expression2numba, get_expression_vars
@@ -1523,63 +1523,47 @@ def collect_reduced_initialization_problem(
     :return: Tuple ``(unknown_vars, residual_eqs, state_unknown_mask)`` or ``None``.
     :rtype: Tuple[List[Var], List[Expr], np.ndarray] | None
     """
-    unknowns: List[Var] = list()
-    unknown_vars: List[Var] = list()
-    unknown_events: List[Var] = list()
-    residual_eqs: List[Expr] = list()
-    state_unknown_flags: List[float] = list()
+    state_unknown_vars: List[Var] = list()
+    state_residual_eqs: List[Expr] = list()
+    algebraic_unknown_vars: List[Var] = list()
+    algebraic_residual_eqs: List[Expr] = list()
     state_eq_lookup: Dict[int, Expr] = build_state_equation_lookup(problem)
     init_eq_lookup: Dict[Var, Expr] = problem.sys_block.init_eqs
     algebraic_vars: List[Var] = problem.algebraic_vars
     algebraic_eqs: List[Expr] = problem.algebraic_eqs
-    variable_parameters: List[Var] = problem.variable_parameters
-    event_params_eqs: List[Expr] = problem.event_parameters_eqs
-    alg_idx: int = 0
-    evt_params_idx: int = 0
-
-    # Todo: Improve logic
-
     for state_var in problem.state_vars:
         if state_var.uid not in problem.init_guess:
-            unknown_vars.append(state_var)
-            state_unknown_flags.append(1.0)
+            state_unknown_vars.append(state_var)
 
             if state_var in init_eq_lookup:
-                residual_eqs.append(state_var - init_eq_lookup[state_var])
+                state_residual_eqs.append(state_var - init_eq_lookup[state_var])
             elif allow_state_equilibrium and state_var.uid in state_eq_lookup:
-                residual_eqs.append(state_eq_lookup[state_var.uid])
+                state_residual_eqs.append(state_eq_lookup[state_var.uid])
             else:
-                residual_eqs.append(state_var)
+                state_residual_eqs.append(state_var)
 
+    # Algebraic PF/explicit values are seeds, not fixed values. Consistent
+    # initialization must enforce every assembled network/device residual.
+    algebraic_unknown_vars.extend(algebraic_vars)
+    algebraic_residual_eqs.extend(algebraic_eqs)
 
-    while alg_idx < len(algebraic_vars):
-        algebraic_var: Var = algebraic_vars[alg_idx]
-        if algebraic_var.uid not in problem.init_guess:
-            unknown_vars.append(algebraic_var)
-            unknowns.append(algebraic_var)
-            residual_eqs.append(algebraic_eqs[alg_idx])
-            state_unknown_flags.append(0.0)
-        alg_idx += 1
-
-
-    while evt_params_idx < len(variable_parameters):
-        evnt_param: Var = variable_parameters[evt_params_idx]
-        if evnt_param.uid not in problem.event_params_init_dict:
-            unknown_events.append(evnt_param)
-            unknowns.append(evnt_param)
-            residual_eqs.append(event_params_eqs[evt_params_idx])
-            state_unknown_flags.append(0.0)
-
-        evt_params_idx += 1
-
-
-
-
+    unknown_vars: List[Var] = state_unknown_vars + algebraic_unknown_vars
+    residual_eqs: List[Expr] = state_residual_eqs + algebraic_residual_eqs
+    state_unknown_flags: List[float] = (
+        [1.0] * len(state_unknown_vars)
+        + [0.0] * len(algebraic_unknown_vars)
+    )
 
     if len(unknown_vars) == 0:
         return None
     else:
-        return unknowns, unknown_vars, unknown_events, residual_eqs, np.asarray(state_unknown_flags, dtype=np.float64)
+        return (
+            unknown_vars,
+            unknown_vars,
+            [],
+            residual_eqs,
+            np.asarray(state_unknown_flags, dtype=np.float64),
+        )
 
 
 def evaluate_initialization_residual(
@@ -1699,13 +1683,13 @@ def run_reduced_newton_initialization(
     """
     reduced_x: np.ndarray = extract_unknown_vector(problem, reduced_system.unknown_vars, x)
     reduced_event_x: np.ndarray = extract_unknown_events_vector(problem, reduced_system.unknown_events, event_x)
-    max_iter: int = 1000
-    tol: float = 1e-8
+    max_iter: int = max(1, int(problem.options.max_iter))
+    tol: float = max(float(problem.options.tolerance), 1e-10)
 
     iter_idx: int = 0
     while iter_idx < max_iter:
         scatter_unknown_vector(problem, reduced_system.unknown_vars, x, reduced_x)
-        scatter_unknown_event_vector(problem, reduced_system.unknown_events, x, reduced_event_x)
+        scatter_unknown_event_vector(problem, reduced_system.unknown_events, event_x, reduced_event_x)
         residual: np.ndarray = evaluate_initialization_residual(reduced_system, problem, x, dx, event_x, constant_params)
         res_norm: float = _max_abs_value(residual)
 
@@ -1842,13 +1826,8 @@ def apply_solution_to_problem(problem: Any, x: np.ndarray, event_x: np.ndarray) 
     :return: None
     """
     all_vars: List[Var] = list(problem.state_vars) + list(problem.algebraic_vars)
-    event_params = problem.variable_parameters
     for var in all_vars:
         problem.init_guess[var.uid] = float(x[problem.uid2idx_vars[var.uid]])
-
-    for var in event_params:
-        problem.event_params_init_dict[var.uid] = float(event_x[problem.uid2idx_event_params[var.uid]])
-        problem.event_parameters_eqs0[problem.uid2idx_event_params[var.uid]] = float(event_x[problem.uid2idx_event_params[var.uid]])
 
 # def compute_missing_dx0(problem: Any,
 #                         x_full: np.ndarray | None = None,
@@ -1945,19 +1924,26 @@ def _build_initialization_system_if_needed(
     return reduced_system
 
 
-def run_rms_native_initialization(problem: Any, options: RmsOptions):
+def run_rms_native_initialization(problem: Any, options: RmsOptions) -> bool:
     """
-    Run the EMT-native initialization stages after PF projection and explicit init.
+    Run RMS consistent-Newton initialization after PF projection and explicit initialization.
 
     The workflow keeps the current PF/explicit seeds intact, then solves only the
     unresolved subset with a reduced consistent Newton method. When Newton fails,
     the workflow may fall back to a pseudo-transient continuation. Missing
     differential initial values are computed automatically from the state equations.
 
-    :param problem: EMT problem being initialized.
-    :param options: EMT simulation options.
-    :return: Initialization report.
+    :param problem: Fully assembled RMS DAE problem being initialized.
+    :param options: RMS simulation options.
+    :return: ``True`` when the reduced consistency system converges or is empty.
     """
+    if options.initialization_method != RmsInitializationMethod.ConsistentNewton:
+        raise ValueError(
+            "run_rms_native_initialization requires ConsistentNewton"
+        )
+    else:
+        pass
+
     x: np.ndarray = problem.get_x0()
     event_x: np.ndarray = problem.get_eventparams0()
     x_seed: np.ndarray = x.copy()
@@ -1969,11 +1955,11 @@ def run_rms_native_initialization(problem: Any, options: RmsOptions):
     constant_params: np.ndarray
     reduced_problem_payload: Tuple[List[Var], List[Var], List[Var], List[Expr], np.ndarray] | None
 
-    newton_init = True
     reduced_problem_payload = collect_reduced_initialization_problem(
         problem=problem,
-        # Todo: maby allow_state_equilibrium = False doesn't work
-        allow_state_equilibrium= False,
+        # Missing state init equations are completed from steady-state dynamics:
+        # dx/dt = f(x, y, p) becomes the initialization residual f(x, y, p) = 0.
+        allow_state_equilibrium=True,
     )
 
     if reduced_problem_payload is not None:
@@ -1990,28 +1976,21 @@ def run_rms_native_initialization(problem: Any, options: RmsOptions):
             )
 
             if reduced_system is not None:
-                if newton_init:
-                    converged = run_reduced_newton_initialization(
-                        reduced_system=reduced_system,
-                        problem=problem,
-                        x=x,
-                        event_x=event_x,
-                        dx=dx,
-                        constant_params=constant_params,
-                    )
-                else:
-                    converged = run_reduced_pseudo_transient_initialization(
-                        reduced_system=reduced_system,
-                        problem=problem,
-                        x=x,
-                        event_x=event_x,
-                        dx=dx,
-                        constant_params=constant_params,
-                    )
+                converged = run_reduced_newton_initialization(
+                    reduced_system=reduced_system,
+                    problem=problem,
+                    x=x,
+                    event_x=event_x,
+                    dx=dx,
+                    constant_params=constant_params,
+                )
 
                 if converged:
                     apply_solution_to_problem(problem, x, event_x)
+                    return True
+                else:
+                    raise RuntimeError(
+                        "RMS consistent Newton initialization did not converge"
+                    )
 
-
-
-
+    return True

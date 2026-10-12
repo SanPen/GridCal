@@ -19,10 +19,14 @@ from VeraGridEngine.enumerations import VarPowerFlowReferenceType, RmsInitializa
 from VeraGridEngine.basic_structures import Vec, ObjVec, BoolVec, Logger
 from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
 from VeraGridEngine.Simulations.Rms.rms_options import RmsOptions
-from VeraGridEngine.Simulations.Rms.initialization import init_explicit, init_pseudo_transient
+from VeraGridEngine.Simulations.Rms.initialization import init_pseudo_transient
+from VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic import (
+    build_rms_single_equation_compiler,
+    init_explicit_common,
+)
 from VeraGridEngine.Simulations.Rms.problems.rms_problem_template import RmsProblemTemplate
 from VeraGridEngine.Simulations.Rms.problems.rms_terminal_power_assembly import (
-    assemble_rms_terminal_power_contributions,
+    assemble_rms_mapped_power_references,
     convert_rms_ac_power_balance_to_current_balance,
 )
 from VeraGridEngine.Devices.Events.rms_events_group import RmsEventsGroup
@@ -31,13 +35,13 @@ from VeraGridEngine.Devices.Substation.bus import Bus
 from VeraGridEngine.Utils.Symbolic.jit_compiler import RMSCompiler
 from VeraGridEngine.Devices.Branches.transformer import Transformer2W
 from VeraGridEngine.Simulations.driver_template import DummySignal
-from VeraGridEngine.IO.fmu.importer.co_simulation import (
+from VeraGridEngine.IO.fmu.co_simulation import (
     advance_rms_fmu_cs_devices,
     close_rms_fmu_cs_devices,
     initialize_rms_fmu_cs_devices,
     register_rms_fmu_cs_device,
 )
-from VeraGridEngine.IO.fmu.importer.model_exchange import (
+from VeraGridEngine.IO.fmu.model_exchange import (
     advance_rms_fmu_me_devices,
     close_rms_fmu_me_devices,
     get_next_rms_fmu_me_event_time,
@@ -46,7 +50,7 @@ from VeraGridEngine.IO.fmu.importer.model_exchange import (
     register_rms_fmu_me_device,
     resolve_rms_fmu_me_devices,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_profile import FmuMeEvaluationBudget
+from VeraGridEngine.IO.fmu.profile import FmuMeEvaluationBudget
 
 
 def _tic():
@@ -129,8 +133,6 @@ class RmsProblemPhasor(RmsProblemTemplate):
         "init_guess",
         "Sf",
         "St",
-        "_dt",
-        "_delta",
         "_state_vars",
         "_algebraic_vars",
         "_diff_vars",
@@ -267,6 +269,43 @@ class RmsProblemPhasor(RmsProblemTemplate):
         self._n_params = 0
         self._n_event_params = 0
         self._n_diff = 0
+
+        event_params_init_dict: Dict[int, float | int | complex | None] = dict()
+        diff_init_guess: Dict[int, float | int | complex | None] = dict()
+
+        def run_explicit_initialization(mdl: Block) -> None:
+            """Initialize one phasor model through the shared symbolic core."""
+            nonlocal diff_init_guess
+            sys_diff_vars: Dict[int, Var] = {
+                diff_var.uid: diff_var for diff_var in self._diff_vars
+            }
+            rms_compiler_init = RMSCompiler(
+                variables=list(self.sys_vars.values()),
+                diff_vars=list(sys_diff_vars.values()),
+                v_params=self._variable_parameters,
+                c_params=self._constant_parameters,
+                compiler_names_dict=self._compiler_names_dict,
+            )
+            self.init_guess, diff_init_guess = init_explicit_common(
+                mdl=mdl,
+                sys_vars=self.sys_vars,
+                sys_diff_vars=sys_diff_vars,
+                variable_parameters=self._variable_parameters,
+                event_parameters_eqs=self._event_parameters_eqs,
+                constant_parameters=self._constant_parameters,
+                init_guess=self.init_guess,
+                event_param_init_dict=event_params_init_dict,
+                diff_init_guess=diff_init_guess,
+                uid2idx_vars=self._uid2idx_vars,
+                uid2idx_diff=self._uid2idx_diff,
+                uid2idx_params=self._uid2idx_params,
+                uid2idx_event_params=self._uid2idx_event_params,
+                params_array=self._parameters_values,
+                compile_single_equation=build_rms_single_equation_compiler(
+                    rms_compiler=rms_compiler_init,
+                ),
+                verbose=bool(self.options.verbose > 0),
+            )
 
         ######################################## Initialize devices ########################################
 
@@ -407,23 +446,7 @@ class RmsProblemPhasor(RmsProblemTemplate):
                 if isinstance(elm, Transformer2W):
 
                     if self.options.initialization_method == RmsInitializationMethod.Explicit:
-                        init_explicit(mdl=elm.rms_model,
-                                      sys_vars=self.sys_vars,
-                                      variable_parameters=self._variable_parameters,
-                                      event_parameters_eqs=self._event_parameters_eqs,
-                                      constant_parameters=self._constant_parameters,
-                                      init_guess=self.init_guess,
-                                      uid2idx_vars=self.uid2idx_vars,
-                                      uid2idx_params=self._uid2idx_params,
-                                      uid2idx_event_params=self._uid2idx_event_params,
-                                      compiler_names_dict=self._compiler_names_dict,
-                                      alias_names_dict=self._alias_names_dict,
-                                      VARIABLE_PARAMS_NAME=self.VARIABLE_PARAMS_NAME,
-                                      TIME_NAME=self.TIME_NAME,
-                                      VARS_NAME=self.VARS_NAME,
-                                      DIFF_NAME=self.DIFF_NAME,
-                                      CONSTANT_PARAMS_NAME=self.CONSTANT_PARAMS_NAME
-                                      )
+                        run_explicit_initialization(mdl=elm.rms_model)
 
                 # add model to system block
                 self.sys_block.add(elm.rms_model)
@@ -432,27 +455,24 @@ class RmsProblemPhasor(RmsProblemTemplate):
                 f = bus_dict[elm.bus_from]
                 t = bus_dict[elm.bus_to]
 
-                if len(elm.rms_model.dynamic_model_contract.rms_terminal_power_contributions) > 0:
-                    # A declared equipment power interface is converted to KCL
-                    # only after every physical device has been assembled.
-                    assemble_rms_terminal_power_contributions(
-                        model=elm.rms_model,
-                        bus_from_index=f,
-                        bus_to_index=t,
-                        bus_from_is_dc=elm.bus_from.is_dc,
-                        bus_to_is_dc=elm.bus_to.is_dc,
-                        active_power_balance=P,
-                        active_power_balance_used=P_used,
-                        reactive_power_balance=Q,
-                        reactive_power_balance_used=Q_used,
-                    )
-                else:
-                    # Preserve native phasor-current templates that have not
-                    # migrated to the hidden terminal-power contract.
+                assembled_power = assemble_rms_mapped_power_references(
+                    model=elm.rms_model,
+                    bus_from_index=f,
+                    bus_to_index=t,
+                    bus_from_is_dc=elm.bus_from.is_dc,
+                    bus_to_is_dc=elm.bus_to.is_dc,
+                    active_power_balance=P,
+                    active_power_balance_used=P_used,
+                    reactive_power_balance=Q,
+                    reactive_power_balance_used=Q_used,
+                )
+                if not assembled_power:
                     setIr(Ir, Ir_used, f, -elm.rms_model.E(VarPowerFlowReferenceType.Irf))
                     setIr(Ir, Ir_used, t, -elm.rms_model.E(VarPowerFlowReferenceType.Irt))
                     setIi(Ii, Ii_used, f, -elm.rms_model.E(VarPowerFlowReferenceType.Iif))
                     setIi(Ii, Ii_used, t, -elm.rms_model.E(VarPowerFlowReferenceType.Iit))
+                else:
+                    pass
 
         # Populating VSCs init guess
         for i, elm in enumerate(self.grid.get_vsc()):
@@ -491,26 +511,17 @@ class RmsProblemPhasor(RmsProblemTemplate):
                     VarPowerFlowReferenceType.Idc,
                     dc_current_init,
                 )
-                if len(mdl.dynamic_model_contract.rms_terminal_power_contributions) > 0:
-                    # New templates declare their physical terminal powers
-                    # independently from selectable signal ports.
-                    assemble_rms_terminal_power_contributions(
-                        model=mdl,
-                        bus_from_index=f,
-                        bus_to_index=t,
-                        bus_from_is_dc=elm.bus_from.is_dc,
-                        bus_to_is_dc=elm.bus_to.is_dc,
-                        active_power_balance=P,
-                        active_power_balance_used=P_used,
-                        reactive_power_balance=Q,
-                        reactive_power_balance_used=Q_used,
-                    )
-                else:
-                    # Version-one and custom legacy VSC models retain their
-                    # historical power-reference coupling during migration.
-                    setP(P, P_used, f, -mdl.E(VarPowerFlowReferenceType.Pf))
-                    setP(P, P_used, t, -mdl.E(VarPowerFlowReferenceType.Pt))
-                    setQ(Q, Q_used, t, -mdl.E(VarPowerFlowReferenceType.Qt))
+                assemble_rms_mapped_power_references(
+                    model=mdl,
+                    bus_from_index=f,
+                    bus_to_index=t,
+                    bus_from_is_dc=elm.bus_from.is_dc,
+                    bus_to_is_dc=elm.bus_to.is_dc,
+                    active_power_balance=P,
+                    active_power_balance_used=P_used,
+                    reactive_power_balance=Q,
+                    reactive_power_balance_used=Q_used,
+                )
                 self.sys_block.add(mdl)
 
         # Populating HVDC init guess (similar to VSCs)
@@ -534,23 +545,17 @@ class RmsProblemPhasor(RmsProblemTemplate):
 
                 f = bus_dict[elm.bus_from]
                 t = bus_dict[elm.bus_to]
-                if len(mdl.dynamic_model_contract.rms_terminal_power_contributions) > 0:
-                    assemble_rms_terminal_power_contributions(
-                        model=mdl,
-                        bus_from_index=f,
-                        bus_to_index=t,
-                        bus_from_is_dc=elm.bus_from.is_dc,
-                        bus_to_is_dc=elm.bus_to.is_dc,
-                        active_power_balance=P,
-                        active_power_balance_used=P_used,
-                        reactive_power_balance=Q,
-                        reactive_power_balance_used=Q_used,
-                    )
-                else:
-                    setP(P, P_used, f, -mdl.E(VarPowerFlowReferenceType.Pf))
-                    setP(P, P_used, t, -mdl.E(VarPowerFlowReferenceType.Pt))
-                    setQ(Q, Q_used, f, -mdl.E(VarPowerFlowReferenceType.Qf))
-                    setQ(Q, Q_used, t, -mdl.E(VarPowerFlowReferenceType.Qt))
+                assemble_rms_mapped_power_references(
+                    model=mdl,
+                    bus_from_index=f,
+                    bus_to_index=t,
+                    bus_from_is_dc=elm.bus_from.is_dc,
+                    bus_to_is_dc=elm.bus_to.is_dc,
+                    active_power_balance=P,
+                    active_power_balance_used=P_used,
+                    reactive_power_balance=Q,
+                    reactive_power_balance_used=Q_used,
+                )
                 self.sys_block.add(mdl)
 
         # initialize injections
@@ -568,23 +573,7 @@ class RmsProblemPhasor(RmsProblemTemplate):
 
                 # find init values for the variables of this model
                 if self.options.initialization_method == RmsInitializationMethod.Explicit:
-                    init_explicit(mdl=elm.rms_model,
-                                  sys_vars=self.sys_vars,
-                                  variable_parameters=self._variable_parameters,
-                                  event_parameters_eqs=self._event_parameters_eqs,
-                                  constant_parameters=self._constant_parameters,
-                                  init_guess=self.init_guess,
-                                  uid2idx_vars=self.uid2idx_vars,
-                                  uid2idx_params=self._uid2idx_params,
-                                  uid2idx_event_params=self._uid2idx_event_params,
-                                  compiler_names_dict=self._compiler_names_dict,
-                                  alias_names_dict=self._alias_names_dict,
-                                  VARIABLE_PARAMS_NAME=self.VARIABLE_PARAMS_NAME,
-                                  TIME_NAME=self.TIME_NAME,
-                                  VARS_NAME=self.VARS_NAME,
-                                  DIFF_NAME=self.DIFF_NAME,
-                                  CONSTANT_PARAMS_NAME=self.CONSTANT_PARAMS_NAME
-                                  )
+                    run_explicit_initialization(mdl=elm.rms_model)
                 else:
                     raise ValueError("Not implemented initialization method")
                 # add model to system block
@@ -719,23 +708,16 @@ class RmsProblemPhasor(RmsProblemTemplate):
                         self.set_init_guess(elm.rms_model, VarPowerFlowReferenceType.Q, Sdev.imag)
 
                 k = bus_dict[elm.bus]
-                if len(elm.rms_model.dynamic_model_contract.rms_terminal_power_contributions) > 0:
-                    assemble_rms_terminal_power_contributions(
-                        model=elm.rms_model,
-                        bus_from_index=None,
-                        bus_to_index=None,
-                        bus_from_is_dc=None,
-                        bus_to_is_dc=None,
-                        active_power_balance=P,
-                        active_power_balance_used=P_used,
-                        reactive_power_balance=Q,
-                        reactive_power_balance_used=Q_used,
-                        bus_index=k,
-                        bus_is_dc=elm.bus.is_dc,
-                    )
-                else:
-                    # Legacy phasor models contribute their selected current
-                    # outputs directly until they declare a power terminal.
+                assembled_power = assemble_rms_mapped_power_references(
+                    model=elm.rms_model,
+                    active_power_balance=P,
+                    active_power_balance_used=P_used,
+                    reactive_power_balance=Q,
+                    reactive_power_balance_used=Q_used,
+                    bus_index=k,
+                    bus_is_dc=elm.bus.is_dc,
+                )
+                if not assembled_power:
                     if VarPowerFlowReferenceType.Ir in elm.rms_model.external_mapping:
                         setIr(Ir, Ir_used, k, elm.rms_model.E(VarPowerFlowReferenceType.Ir))
                     else:
@@ -744,27 +726,11 @@ class RmsProblemPhasor(RmsProblemTemplate):
                         setIi(Ii, Ii_used, k, elm.rms_model.E(VarPowerFlowReferenceType.Ii))
                     else:
                         pass
+                else:
+                    pass
 
                 if self.options.initialization_method == RmsInitializationMethod.Explicit:
-
-                    init_explicit(
-                        mdl=elm.rms_model,
-                        sys_vars=self.sys_vars,
-                        variable_parameters=self._variable_parameters,
-                        event_parameters_eqs=self._event_parameters_eqs,
-                        constant_parameters=self._constant_parameters,
-                        init_guess=self.init_guess,
-                        uid2idx_vars=self.uid2idx_vars,
-                        uid2idx_params=self._uid2idx_params,
-                        uid2idx_event_params=self._uid2idx_event_params,
-                        compiler_names_dict=self._compiler_names_dict,
-                        alias_names_dict=self._alias_names_dict,
-                        VARIABLE_PARAMS_NAME=self.VARIABLE_PARAMS_NAME,
-                        TIME_NAME=self.TIME_NAME,
-                        VARS_NAME=self.VARS_NAME,
-                        DIFF_NAME=self.DIFF_NAME,
-                        CONSTANT_PARAMS_NAME=self.CONSTANT_PARAMS_NAME
-                    )
+                    run_explicit_initialization(mdl=elm.rms_model)
 
                 elif self.options.initialization_method == RmsInitializationMethod.PseudoTransient:
                     init_pseudo_transient(
@@ -851,25 +817,6 @@ class RmsProblemPhasor(RmsProblemTemplate):
         #     for param, constant in b.parameters.items():
         #         self._constant_parameters.append(param)
         #         self._parameters_values.append(constant)
-
-        # We define the parameter dt and delta
-        self._dt = Var(name='dt')
-        self._delta = Var(name='delta')
-        self._variable_parameters.append(self._dt)
-        self._variable_parameters.append(self._delta)
-        self._event_parameters_eqs.append(Const(1e-3))
-        self._event_parameters_eqs.append(Const(1))
-
-        # add these parameters, m is for variable parameters
-        self._compiler_names_dict[self._dt.uid] = f"{self.VARIABLE_PARAMS_NAME}[{self._n_event_params}]"
-        self._alias_names_dict[self._dt.uid] = f"{self.VARIABLE_PARAMS_NAME}_{self._n_event_params}"
-        self._uid2idx_event_params[self._dt.uid] = self._n_event_params
-        self._n_event_params += 1
-
-        self._compiler_names_dict[self._delta.uid] = f"{self.VARIABLE_PARAMS_NAME}[{self._n_event_params}]"
-        self._alias_names_dict[self._delta.uid] = f"{self.VARIABLE_PARAMS_NAME}_{self._n_event_params}"
-        self._uid2idx_event_params[self._delta.uid] = self._n_event_params
-        self._n_event_params += 1
 
         ##################### To be removed when order is preserved in the first part #############################
         self._state_algeb_vars = list(self.sys_vars.values())
@@ -968,7 +915,6 @@ class RmsProblemPhasor(RmsProblemTemplate):
             diff_vars=self._diff_vars,
             v_params=self._variable_parameters,
             c_params=self._constant_parameters,
-            dt_var=self._dt,
             compiler_names_dict=self._compiler_names_dict
         )
         timings["Compiler Setup"] = _toc(t0)
@@ -1475,12 +1421,8 @@ class RmsProblemPhasor(RmsProblemTemplate):
                            self._constant_params,
                            h)
 
-    def get_dt(self):
-        return self._dt
-
     def get_dt_value(self):
-        dt_value = self._variable_parameters_values[-2]
-        return dt_value
+        return self.options.time_step
 
     def set_events_group(self, rms_events_group: RmsEventsGroup):
         """
@@ -1521,7 +1463,6 @@ class RmsProblemPhasor(RmsProblemTemplate):
             diff_vars=self._diff_vars,
             v_params=self._variable_parameters,
             c_params=self._constant_parameters,
-            dt_var=self._dt,
             compiler_names_dict=self._compiler_names_dict
         )
         self._event_params_fn = rms_compiler.compile_event_params_fn(

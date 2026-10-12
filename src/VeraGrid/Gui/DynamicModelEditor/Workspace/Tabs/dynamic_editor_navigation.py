@@ -73,6 +73,14 @@ class DynamicEditorNavigation:
         """
         self._path.append(block)
 
+    def reset(self) -> None:
+        """
+        Reset navigation to the current working root owned by the document.
+
+        :return: None.
+        """
+        self._path = list((self._document.working_root_block,))
+
     def go_to(self, block: Block) -> None:
         """
         Jump to any block in the current path.

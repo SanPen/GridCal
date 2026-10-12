@@ -663,7 +663,6 @@ class DynamicModelContract:
         "dgs_open_resistance_ohm",
         "rms_conduction_status_var_uid",
         "rms_topology_constraint_status_var_uid",
-        "rms_terminal_power_contributions",
         "rms_physical_measurement_point",
         "emt_terminal_current_contributions",
         "emt_internal_grounding_link",
@@ -716,7 +715,6 @@ class DynamicModelContract:
         self.dgs_open_resistance_ohm: float | None = None
         self.rms_conduction_status_var_uid: int | None = None
         self.rms_topology_constraint_status_var_uid: int | None = None
-        self.rms_terminal_power_contributions: List[RmsTerminalPowerContribution] = list()
         self.rms_physical_measurement_point: RmsPhysicalMeasurementPoint | None = None
         self.emt_terminal_current_contributions: List[EmtTerminalCurrentContribution] = list()
         self.emt_internal_grounding_link: bool = False
@@ -750,7 +748,7 @@ class DynamicModelContract:
         :return: Data-only contract suitable for canonical block persistence.
         """
         return {
-            "version": 5,
+            "version": 6,
             "dgs_elmsym_runtime_adapter": self.dgs_elmsym_runtime_adapter,
             "dgs_elmsym_runtime_adapter_pending": self.dgs_elmsym_runtime_adapter_pending,
             "dgs_elmsym_round_rotor": self.dgs_elmsym_round_rotor,
@@ -767,10 +765,6 @@ class DynamicModelContract:
             "dgs_open_resistance_ohm": self.dgs_open_resistance_ohm,
             "rms_conduction_status_var_uid": self.rms_conduction_status_var_uid,
             "rms_topology_constraint_status_var_uid": self.rms_topology_constraint_status_var_uid,
-            "rms_terminal_power_contributions": list(
-                contribution.to_data()
-                for contribution in self.rms_terminal_power_contributions
-            ),
             "rms_physical_measurement_point": (
                 None
                 if self.rms_physical_measurement_point is None
@@ -1126,15 +1120,15 @@ def dynamic_model_contract_from_data(data: Dict[str, object]) -> DynamicModelCon
         version_number: int = version
     else:
         raise TypeError("Dynamic-model contract version must be an integer")
-    if version_number in (1, 2, 3, 4, 5):
+    if version_number in (1, 2, 3, 4, 5, 6):
         pass
     else:
         raise ValueError("Unsupported dynamic-model contract version")
 
     result: DynamicModelContract = DynamicModelContract()
     expected_keys: set[str] = set(result.to_data().keys())
-    if version_number == 1:
-        expected_keys.remove("rms_terminal_power_contributions")
+    if version_number in (2, 3, 4, 5):
+        expected_keys.add("rms_terminal_power_contributions")
     else:
         pass
     if version_number in (1, 2):
@@ -1209,12 +1203,12 @@ def dynamic_model_contract_from_data(data: Dict[str, object]) -> DynamicModelCon
     result.rms_topology_constraint_status_var_uid = _read_nullable_dynamic_contract_symbolic_uid(
         data, "rms_topology_constraint_status_var_uid"
     )
-    if version_number == 1:
-        result.rms_terminal_power_contributions = list()
+    if version_number in (2, 3, 4, 5):
+        # Validate and discard obsolete terminal-power metadata. Runtime
+        # assembly derives terminal ownership from canonical mapped references.
+        _read_rms_terminal_power_contributions(data)
     else:
-        result.rms_terminal_power_contributions = (
-            _read_rms_terminal_power_contributions(data)
-        )
+        pass
     if version_number in (1, 2, 3, 4):
         result.rms_physical_measurement_point = None
     else:
@@ -1442,65 +1436,6 @@ def _collect_contract_reachable_uids(
     return result
 
 
-def validate_rms_terminal_power_contributions(block: "Block") -> None:
-    """Reject ambiguous or unresolved RMS terminal power declarations.
-
-    :param block: Canonical symbolic block owning the declarations.
-    :return: None.
-    """
-    contract: DynamicModelContract = block.dynamic_model_contract
-    # Terminal declarations resolve semantic references through the owning
-    # block. No copied Var is retained, and duplicate topology sides fail
-    # before the network assembler can count one device twice.
-    terminal_sides: set[RmsTerminalSide] = set()
-    terminal_contribution: RmsTerminalPowerContribution
-    for terminal_contribution in contract.rms_terminal_power_contributions:
-        if isinstance(terminal_contribution, RmsTerminalPowerContribution):
-            pass
-        else:
-            raise TypeError(
-                "RMS terminal power contract contains an invalid declaration"
-            )
-        terminal_side: RmsTerminalSide = terminal_contribution.get_terminal_side()
-        if terminal_side in terminal_sides:
-            raise ValueError(
-                f"RMS terminal power contract duplicates side '{terminal_side.value}'"
-            )
-        else:
-            terminal_sides.add(terminal_side)
-
-        active_reference: VarPowerFlowReferenceType = (
-            terminal_contribution.get_active_power_reference()
-        )
-        active_variable: Var | None = block.external_mapping.get(
-            active_reference,
-            None,
-        )
-        if active_variable is None:
-            raise ValueError(
-                "RMS terminal power contract references an absent active-power variable"
-            )
-        else:
-            pass
-
-        reactive_reference: VarPowerFlowReferenceType | None = (
-            terminal_contribution.get_reactive_power_reference()
-        )
-        if reactive_reference is None:
-            pass
-        else:
-            reactive_variable: Var | None = block.external_mapping.get(
-                reactive_reference,
-                None,
-            )
-            if reactive_variable is None:
-                raise ValueError(
-                    "RMS terminal power contract references an absent reactive-power variable"
-                )
-            else:
-                pass
-
-
 def validate_emt_terminal_current_contributions(block: "Block") -> None:
     """Reject duplicate or unresolved EMT terminal current declarations.
 
@@ -1551,7 +1486,6 @@ def validate_dynamic_model_contract(block: "Block") -> None:
     """
     reachable_uids: set[int] = _collect_contract_reachable_uids(block)
     contract: DynamicModelContract = block.dynamic_model_contract
-    validate_rms_terminal_power_contributions(block=block)
     validate_emt_terminal_current_contributions(block=block)
     if contract.rms_physical_measurement_point is None:
         pass
@@ -2543,7 +2477,14 @@ def _parse_api_object_mapping(
             reference: ParamPowerFlowReferenceType = raw_reference
         else:
             if isinstance(raw_reference, str):
-                reference = ParamPowerFlowReferenceType(raw_reference)
+                # Files saved before ``freq`` became the single canonical
+                # frequency reference used the legacy serialized key ``fn``.
+                # Convert that persisted spelling while keeping it out of the
+                # live enum and every newly saved model.
+                if raw_reference == "fn":
+                    reference = ParamPowerFlowReferenceType.freq
+                else:
+                    reference = ParamPowerFlowReferenceType(raw_reference)
             else:
                 raise TypeError(
                     "Persisted API-mapping keys must be device-property references"
@@ -2664,7 +2605,7 @@ class Block:
         :param procedural_logic: Runtime procedural-logic objects attached to the block.
         :param connection_intents: Semantic dynamic connections retained across interface reconstruction.
         :param external_mapping: Variables initialized from power-flow result references.
-        :param api_obj_mapping: Static parameters mapped to properties of the associated grid device.
+        :param api_obj_mapping: Parameter initial values mapped to properties of the associated grid device.
         :param is_decomposable: Whether the editor and compiler may expose the block's internal structure.
         :param name: Human-readable block name.
         :param uid: Stable block identifier, or ``None`` to allocate a new identifier.
@@ -3387,8 +3328,7 @@ class Block:
                 not self.boolean_guards and
                 not self.procedural_logic and
                 not self.external_mapping and
-                not self.api_obj_mapping and
-                not self.name
+                not self.api_obj_mapping
         )
 
     def empty(self) -> bool:
@@ -4518,3 +4458,57 @@ def build_name_to_vars_lookup(block: Block) -> Dict[str, List[Var]]:
                             seen_uids.add(variable.uid)
 
     return lookup
+
+
+def flatten_block(block: Block) -> Block:
+    """Create one flat block from a hierarchical block tree.
+
+    The source block remains unchanged. Every primitive block is visited in
+    depth-first order so declarations and equations retain the hierarchy's
+    existing deterministic order while the returned block owns independent
+    aggregate containers.
+
+    :param block: Root block whose child hierarchy is to be flattened.
+    :return: New block containing the declarations from the full hierarchy.
+    """
+    flat_block: Block = Block(name=block.name, uid=block.uid)
+    flat_block.diagram = block.diagram.to_dict()
+    known_input_uids: set[int] = set()
+    known_output_uids: set[int] = set()
+
+    for current_block in block.get_all_blocks():
+        flat_block.state_vars.extend(current_block.state_vars)
+        flat_block.state_eqs.extend(current_block.state_eqs)
+        flat_block.algebraic_vars.extend(current_block.algebraic_vars)
+        flat_block.algebraic_eqs.extend(current_block.algebraic_eqs)
+        flat_block.inequalities.extend(current_block.inequalities)
+        flat_block.diff_vars.extend(current_block.diff_vars)
+        flat_block.reformulated_vars.extend(current_block.reformulated_vars)
+        flat_block.differential_eqs.extend(current_block.differential_eqs)
+        for variable in current_block.in_vars:
+            if variable.uid not in known_input_uids:
+                flat_block.in_vars.append(variable)
+                known_input_uids.add(variable.uid)
+        for variable in current_block.out_vars:
+            if variable.uid not in known_output_uids:
+                flat_block.out_vars.append(variable)
+                known_output_uids.add(variable.uid)
+        flat_block.parameters.update(current_block.parameters)
+        flat_block.init_values.update(current_block.init_values)
+        flat_block.init_eqs.update(current_block.init_eqs)
+        flat_block.diff_init_eqs.update(current_block.diff_init_eqs)
+        flat_block.discrete_eqs.update(current_block.discrete_eqs)
+        flat_block.post_init_seed_eqs.update(current_block.post_init_seed_eqs)
+        flat_block.event_dict.update(current_block.event_dict)
+        flat_block.mode_dict.update(current_block.mode_dict)
+        flat_block.boolean_guards.update(current_block.boolean_guards)
+        flat_block.external_mapping.update(current_block.external_mapping)
+        flat_block.api_obj_mapping.update(current_block.api_obj_mapping)
+        flat_block.procedural_logic.extend(current_block.procedural_logic)
+
+    flat_block.children = list()
+    flat_block.var_mapping = {
+        variable.name: variable
+        for variable in flat_block.algebraic_vars + flat_block.state_vars + flat_block.diff_vars
+    }
+    return flat_block

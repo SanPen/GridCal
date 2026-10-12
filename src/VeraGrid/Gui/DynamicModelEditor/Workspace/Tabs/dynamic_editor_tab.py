@@ -21,7 +21,10 @@ from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.enumerations import DynamicSimulationMode, BlockType, DynEditorGraphicsModes
 from VeraGridEngine.Utils.Symbolic.block import Block
-from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_models import clone_block_for_editing, copy_block_state
+from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_models import (
+    clone_block_and_create_vf_for_editor,
+    copy_block_state,
+)
 
 from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor import DynamicBlockEditorGUI
 from VeraGrid.Gui.DynamicModelEditor.Workspace.dynamic_editor_entries import DynamicEditorEntry
@@ -84,13 +87,14 @@ class DynamicEditorDocument:
     """
     Represents a single editing document opened in a tab.
 
-    A document owns exactly two block trees:
+    A document owns two block trees and one private symbolic factory:
 
     * ``original_root_block`` — the authoritative model as it was when the
       document was opened.  Never mutated during editing.
-    * ``working_root_block`` — a deep copy of the original that the editors
-      modify directly.  All navigation, scene building, and in-place edits
-      operate exclusively on this tree.
+    * ``working_root_block`` — an identity-preserving structural copy that the
+      editors modify directly.
+    * ``working_var_factory`` — an isolated factory owning every variable and
+      internal connection used by the working tree.
 
     The document also provides lifecycle operations:
 
@@ -100,20 +104,32 @@ class DynamicEditorDocument:
     * :meth:`is_dirty` — whether the working tree has unsaved changes.
     """
 
-    __slots__ = ("_original_root_block", "_working_root_block")
+    __slots__ = (
+        "_original_root_block",
+        "_source_var_factory",
+        "_working_root_block",
+        "_working_var_factory",
+    )
 
-    def __init__(self, original_root_block: Block) -> None:
+    def __init__(self,
+                 original_root_block: Block,
+                 source_var_factory: VarFactory) -> None:
         """
         Create a new document from the original (persistent) block tree.
 
-        A single deep copy is made immediately; all subsequent edits
-        target the copy.
+        An isolated structural copy and private factory are created immediately;
+        all subsequent edits target that working state.
 
         :param original_root_block: The authoritative block tree to edit.
+        :param source_var_factory: Factory owning the persistent symbolic graph.
         :return: None.
         """
         self._original_root_block: Block = original_root_block
-        self._working_root_block: Block = clone_block_for_editing(original_root_block)
+        self._source_var_factory: VarFactory = source_var_factory
+        self._working_root_block, self._working_var_factory = clone_block_and_create_vf_for_editor(
+            block=original_root_block,
+            source_var_factory=source_var_factory,
+        )
 
     # ------------------------------------------------------------------
     # Read-only properties
@@ -133,6 +149,24 @@ class DynamicEditorDocument:
         """
         return self._working_root_block
 
+    @property
+    def working_var_factory(self) -> VarFactory:
+        """
+        Return the private symbolic factory owned by this editing document.
+
+        :return: Factory isolated from the persistent circuit state.
+        """
+        return self._working_var_factory
+
+    @property
+    def source_var_factory(self) -> VarFactory:
+        """
+        Return the persistent circuit variable factory.
+
+        :return: Factory receiving accepted editor transactions.
+        """
+        return self._source_var_factory
+
     # ------------------------------------------------------------------
     # Lifecycle
     # ------------------------------------------------------------------
@@ -151,6 +185,25 @@ class DynamicEditorDocument:
             source_block=self._working_root_block,
             target_block=self._original_root_block,
         )
+        self._source_var_factory.merge_editor_var_factory(
+            working_var_factory=self._working_var_factory,
+        )
+
+    def rebuild_working_state(self) -> None:
+        """
+        Recreate an isolated editing session from the committed circuit state.
+
+        This step runs after bus and device reconciliation so the next editor
+        observes the final persistent identities produced by the save workflow.
+
+        :return: None.
+        """
+        working_state: tuple[Block, VarFactory] = clone_block_and_create_vf_for_editor(
+            block=self._original_root_block,
+            source_var_factory=self._source_var_factory,
+        )
+        self._working_root_block = working_state[0]
+        self._working_var_factory = working_state[1]
 
     def discard(self) -> None:
         """
@@ -159,7 +212,7 @@ class DynamicEditorDocument:
 
         :return: None.
         """
-        self._working_root_block = clone_block_for_editing(self._original_root_block)
+        self.rebuild_working_state()
 
     def is_dirty(self) -> bool:
         """
@@ -228,8 +281,14 @@ class DynamicEditorTab(QtWidgets.QWidget):
         self._prepared_to_delete: bool = False
 
         # ---- Document + Navigation ----
-        document = DynamicEditorDocument(block)
-        prepare_block_for_editing(document.working_root_block, var_factory)
+        document: DynamicEditorDocument = DynamicEditorDocument(
+            original_root_block=block,
+            source_var_factory=var_factory,
+        )
+        prepare_block_for_editing(
+            document.working_root_block,
+            document.working_var_factory,
+        )
         self._navigation = DynamicEditorNavigation(document)
 
         self._layout = QtWidgets.QVBoxLayout(self)
@@ -377,7 +436,10 @@ class DynamicEditorTab(QtWidgets.QWidget):
             return
         else:
             pass
-        content_block, self._block2blocktype = prepare_block_for_editing(content_block, self._var_factory)
+        content_block, self._block2blocktype = prepare_block_for_editing(
+            content_block,
+            self._navigation.document.working_var_factory,
+        )
         self._navigation.open_child(content_block)
         self._replace_editor()
 
@@ -398,6 +460,34 @@ class DynamicEditorTab(QtWidgets.QWidget):
         :return: None.
         """
         self._refresh_breadcrumb()
+
+    def apply_changes(self) -> None:
+        """
+        Persist the active editor and synchronously rebuild its working state.
+
+        Persistence returns before the old editor is disposed, preventing Qt
+        from destroying an object while one of its methods is still active.
+        The replacement editor then receives a new isolated block tree and
+        variable factory copied from the final persistent circuit state.
+
+        :return: None.
+        """
+        editor: DynamicBlockEditorGUI | None = self._editor
+        if editor is not None and not self._prepared_to_delete:
+            # Complete the persistent block and factory transaction while the
+            # editor that owns the save action remains fully alive.
+            editor.persist_changes_only()
+
+            # Bus and device reconciliation is now complete, so the fresh
+            # working copy observes the definitive persistent connection graph.
+            self._navigation.document.rebuild_working_state()
+            self._navigation.reset()
+
+            # Persistence has returned and the previous editor can now be
+            # replaced without leaving a deferred Qt callback behind.
+            self._replace_editor()
+        else:
+            pass
 
     # ------------------------------------------------------------------
     # Editor delegation — forward commonly accessed attributes
@@ -446,7 +536,7 @@ class DynamicEditorTab(QtWidgets.QWidget):
         :return: None.
         """
         self._editor = DynamicBlockEditorGUI(
-            var_factory=self._var_factory,
+            var_factory=self._navigation.document.working_var_factory,
             root_block=self._navigation.root_block,
             current_block=block,
             api_object=self._api_object,

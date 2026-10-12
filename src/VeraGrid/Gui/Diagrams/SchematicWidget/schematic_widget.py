@@ -690,6 +690,7 @@ class SchematicWidget(BaseDiagramWidget):
 
         # add the actual editor
         self.editor_graphics_view = CustomGraphicsView(self.diagram_scene, parent=self)
+        self.register_video_time_label_canvas(view=self.editor_graphics_view)
 
         # override events
         self.editor_graphics_view.dragEnterEvent = self.graphicsDragEnterEvent

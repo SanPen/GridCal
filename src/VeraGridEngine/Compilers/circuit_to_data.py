@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 import numpy as np
+from scipy.sparse import lil_matrix
 from cmath import rect
 from typing import Dict, Union, TYPE_CHECKING
 
@@ -14,7 +15,8 @@ from VeraGridEngine.Devices.Fluid.fluid_injection_template import FluidInjection
 from VeraGridEngine.Devices.Aggregation.area import Area
 from VeraGridEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode, DeviceType,
                                          TapModuleControl, TapPhaseControl, HvdcControlType, ConverterControlType,
-                                         ShuntConnectionType, ShuntControlMode, GeneratorControlMode)
+                                         ShuntConnectionType, ShuntControlMode, GeneratorControlMode, WindingType,
+                                         StaticGeneratorControlMode)
 from VeraGridEngine.basic_structures import BoolVec, IntVec
 from VeraGridEngine.Devices.types import BRANCH_TYPES
 from VeraGridEngine.DataStructures.battery_data import BatteryData
@@ -32,6 +34,7 @@ from VeraGridEngine.DataStructures.fluid_pump_data import FluidPumpData
 from VeraGridEngine.DataStructures.fluid_p2x_data import FluidP2XData
 from VeraGridEngine.DataStructures.fluid_path_data import FluidPathData
 from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
+from VeraGridEngine.Utils.NumericalMethods.common import fortescue_012_to_abc
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from VeraGridEngine.Devices.multi_circuit import MultiCircuit
@@ -649,30 +652,87 @@ def get_load_data(data: LoadData,
             data.cost[ii] = elm.get_Cost_at(t_idx)
             data.shift_key[ii] = elm.get_shift_key_at(t_idx)
 
-            if fill_three_phase:
+            if elm.control_mode == StaticGeneratorControlMode.QVDroop and data.active[ii]:
+                if (not np.all(np.isfinite((elm.Snom, elm.droop, elm.Vset, elm.Vset_min, elm.Vset_max)))
+                        or elm.Snom <= 0.0 or elm.droop <= 0.0
+                        or elm.Vset_min <= 0.0 or elm.Vset_min >= elm.Vset_max):
+                    raise ValueError('Static generator Q-V droop requires positive Snom/droop and valid voltage clamps: '
+                                     + elm.name)
+                elif elm.bus.is_dc or not (elm.phA and elm.phB and elm.phC):
+                    raise ValueError('Static generator Q-V droop requires an AC bus and all ABC phases: ' + elm.name)
+                else:
+                    data.q_droop[ii] = elm.droop
+                    data.q_droop_snom[ii] = elm.Snom / 1000.0 if elm.use_kw else elm.Snom
+                    data.q_droop_vset[ii] = elm.Vset
+                    data.q_droop_vmin[ii] = elm.Vset_min
+                    data.q_droop_vmax[ii] = elm.Vset_max
+            else:
+                pass
+
+            # Controlled units inject I1 in the ABC formulation, not three fixed phase powers.
+            if fill_three_phase and data.active[ii] and data.q_droop[ii] == 0.0:
                 # Distribute missing P and Q independently, preserving explicit phase values.
                 phase_power: np.ndarray = np.array((elm.get_Sa_at(t_idx),
                                                     elm.get_Sb_at(t_idx),
                                                     elm.get_Sc_at(t_idx)), dtype=complex)
-                if not np.any(phase_power.real):
-                    phase_power.real = elm.get_P_at(t_idx) / 3.0
+                sequence_model: bool = (elm.conn == ShuntConnectionType.FloatingStar
+                                        or any((elm.R0, elm.X0, elm.R2, elm.X2)))
+                if sequence_model and not np.any(phase_power):
+                    if elm.bus.is_dc or not (elm.phA and elm.phB and elm.phC):
+                        raise ValueError('Static generator sequence model requires all AC phases: ' + elm.name)
+                    else:
+                        pass
+                    z0: complex = complex(elm.R0, elm.X0)
+                    z2: complex = complex(elm.R2, elm.X2)
+                    if not np.isfinite(z0) or not np.isfinite(z2):
+                        raise ValueError('Static generator Z0/Z2 must be finite: ' + elm.name)
+                    else:
+                        pass
+                    y0: complex = 0j
+                    if elm.conn == ShuntConnectionType.GroundedStar:
+                        if abs(z0) < 1e-12:
+                            raise ValueError('Grounded static generator needs nonzero Z0 (R0/X0): ' + elm.name)
+                        else:
+                            y0 = 1.0 / z0
+                    elif elm.conn in (ShuntConnectionType.Delta, ShuntConnectionType.FloatingStar):
+                        pass
+                    else:
+                        raise ValueError('Static generator sequence model does not support an explicit neutral: '
+                                         + elm.name)
+                    y2: complex = 1.0 / z2 if abs(z2) >= 1e-12 else 0j
+                    # Keep the passive response in the existing ABC admittance storage.
+                    # The positive sequence is a power source, never a passive shunt.
+                    data.Y3_star[4 * ii + 1:4 * ii + 4, 1:4] = (
+                        fortescue_012_to_abc(y0, 0j, y2) * circuit.Sbase / 3.0)
+                    data.is_positive_sequence[ii] = True
                 else:
                     pass
 
-                if not np.any(phase_power.imag):
-                    phase_power.imag = elm.get_Q_at(t_idx) / 3.0
+                if not sequence_model or np.any(phase_power):
+                    # Explicit phase powers keep their original connection and profiles.
+                    if not np.any(phase_power.real):
+                        phase_power.real = elm.get_P_at(t_idx) / 3.0
+                    else:
+                        pass
+
+                    if not np.any(phase_power.imag):
+                        phase_power.imag = elm.get_Q_at(t_idx) / 3.0
+                    else:
+                        pass
+
+                    if elm.conn == ShuntConnectionType.GroundedStar:
+                        data.S3_star[4 * ii + 1:4 * ii + 4] -= phase_power
+                    elif elm.conn == ShuntConnectionType.Delta:
+                        data.S3_delta[4 * ii + 1:4 * ii + 4] -= phase_power
+                    elif elm.conn == ShuntConnectionType.FloatingStar:
+                        data.S3_floatingstar[4 * ii + 1:4 * ii + 4] -= phase_power
+                    else:
+                        raise ValueError(f'Unhandled static generator connection {elm.conn}: {elm.name}')
                 else:
                     pass
 
-                # Each device occupies N, A, B, C; generation has the negative load sign.
-                if elm.conn == ShuntConnectionType.GroundedStar:
-                    data.S3_star[4 * ii + 1:4 * ii + 4] -= phase_power
-
-                elif elm.conn == ShuntConnectionType.Delta:
-                    data.S3_delta[4 * ii + 1:4 * ii + 4] -= phase_power
-
-                else:
-                    raise Exception(f"Unhandled connection type {elm.conn}")
+            else:
+                pass
 
             if elm.use_kw:
                 # pass kW to MW
@@ -681,7 +741,10 @@ def get_load_data(data: LoadData,
 
             # reactive power sharing data
             if data.active[ii]:
-                bus_data.q_fixed[i] += data.S[ii].imag
+                if data.q_droop[ii] > 0.0:
+                    bus_data.q_fixed[i] -= data.S[ii].imag
+                else:
+                    bus_data.q_fixed[i] += data.S[ii].imag
                 # bus_data.ii_fixed[i] += data.I[ii].imag
                 # bus_data.b_fixed[i] += data.Y[ii].imag
 
@@ -860,6 +923,7 @@ def get_shunt_data(
 
             data.active[k] = elm.get_active_at(t_idx)
             data.grounds_neutral[k] = elm.phN and elm.conn == ShuntConnectionType.GroundedStar
+            data.conn[k] = elm.conn.idx()
             data.Y[k] = elm.get_Y_at(t_idx)
 
             if fill_three_phase:
@@ -970,8 +1034,9 @@ def get_shunt_data(
             data.mttr[ii] = elm.mttr
 
             data.control_mode_int[ii] = elm.control_mode.idx()
+            data.conn[ii] = elm.conn.idx()
 
-            data.vset[ii] = elm.Vset
+            data.vset[ii] = elm.get_Vset_at(t_idx)
             data.vmin[ii] = elm.Vmin
             data.vmax[ii] = elm.Vmax
             if elm.control_mode == ShuntControlMode.Continuous:
@@ -1004,7 +1069,31 @@ def get_shunt_data(
                 data.Y[ii] += complex(cum_g[s], cum_b[s])
 
             if fill_three_phase:
-                if elm.conn == ShuntConnectionType.GroundedStar:
+                if elm.control_mode == ShuntControlMode.Continuous:
+                    # U1 control solves a common susceptance in the existing controller.
+                    # Keep only conductance here, avoiding a second fixed B contribution.
+                    if elm.conn == ShuntConnectionType.GroundedStar:
+                        pattern: np.ndarray = np.eye(3, dtype=complex)
+                    elif elm.conn in (ShuntConnectionType.Delta, ShuntConnectionType.FloatingStar):
+                        pattern = fortescue_012_to_abc(0j, 1+0j, 1+0j)
+                    else:
+                        raise ValueError('Continuous shunt U1 control does not support an explicit neutral: '
+                                         + elm.name)
+                    admittance: complex = complex(data.Y[ii].real)
+                    if bus_data.bus_types[i] == BusMode.Slack_tpe.value:
+                        # The ideal slack supplies voltage control; retain this shunt's fixed step.
+                        admittance = data.Y[ii]
+                    else:
+                        pass
+                    if elm.use_kw:
+                        admittance /= 1000.0
+                    else:
+                        pass
+                    data.Y3_star[4 * ii + 1:4 * ii + 4, 1:4] = (
+                        pattern * admittance * data.active[ii] / 3.0)
+                    data.qmin[ii] /= 1000.0 if elm.use_kw else 1.0
+                    data.qmax[ii] /= 1000.0 if elm.use_kw else 1.0
+                elif elm.conn == ShuntConnectionType.GroundedStar:
 
                     data.Y3_star[3 * ii + 0, 1] = elm.get_Ya_at(t_idx)
                     data.Y3_star[3 * ii + 1, 2] = elm.get_Yb_at(t_idx)
@@ -1021,7 +1110,7 @@ def get_shunt_data(
                 else:
                     raise Exception(f"Unhandled connection type {elm.conn}")
 
-            if elm.control_mode == ShuntControlMode.Continuous and elm.active:
+            if elm.control_mode == ShuntControlMode.Continuous and data.active[ii]:
                 if elm.control_bus is not None:
                     remote_control = True
                     j = bus_dict[elm.control_bus]
@@ -1101,6 +1190,7 @@ def fill_generator_parent(
 
     control_mode: GeneratorControlMode = elm.get_control_mode_prof_at(t_idx)
     data.control_mode_int[k] = control_mode.idx()
+    data.conn[k] = elm.conn.idx()
     data.installed_p[k] = elm.Snom
     bus_data.installed_power[i] += elm.Snom
 
@@ -1630,10 +1720,13 @@ def get_branch_data(
 
         data.X[ii] = elm.X
         data.B[ii] = elm.B
+        # Keep the physical line shunt in the existing sequence data owners.
+        data.G[ii] = elm.G
 
         data.R0[ii] = elm.R0
         data.X0[ii] = elm.X0
         data.B0[ii] = elm.B0
+        data.G0[ii] = elm.G0
 
         data.R2[ii] = elm.R2
         data.X2[ii] = elm.X2
@@ -1811,9 +1904,21 @@ def get_branch_data(
             data.G2[ii] = elm.G2
             data.B2[ii] = elm.B2
 
+            if fill_three_phase:
+                k4 = 4 * ii + idx4
+                (data.Yff3[k4, :], data.Yft3[k4, :],
+                 data.Ytf3[k4, :], data.Ytt3[k4, :]) = elm.transformer_admittance(
+                    vtap_f=data.virtual_tap_f[ii], vtap_t=data.virtual_tap_t[ii], logger=logger)
+                data.phN[ii], data.phA[ii], data.phB[ii], data.phC[ii] = elm.transformer_phases(logger)
+            else:
+                pass
+
             data.conn[ii] = elm.conn.idx()
-            data.conn_f[ii] = elm.conn_f.idx()
-            data.conn_t[ii] = elm.conn_t.idx()
+            winding_conn_f: WindingType
+            winding_conn_t: WindingType
+            winding_conn_f, winding_conn_t = elm.get_winding_connections()
+            data.conn_f[ii] = winding_conn_f.idx()
+            data.conn_t[ii] = winding_conn_t.idx()
             data.m_taps[ii] = elm.tap_changer.tap_modules_array
             data.tau_taps[ii] = elm.tap_changer.tap_angles_array
 
@@ -1898,6 +2003,29 @@ def get_branch_data(
         data.R2[ii] = elm.R2
         data.X2[ii] = elm.X2
 
+        if fill_three_phase:
+            # Reuse the sequence transformation; a reactor has no shunt branch.
+            # As for legacy lines, unspecified sequence data inherit Z1.
+            z1: complex = complex(data.R[ii], data.X[ii])
+            z0: complex = complex(data.R0[ii], data.X0[ii])
+            z2: complex = complex(data.R2[ii], data.X2[ii])
+            z0 = z0 if abs(z0) > 1e-10 else z1
+            z2 = z2 if abs(z2) > 1e-10 else z1
+            k4 = 4 * ii + idx4
+            ys: np.ndarray = np.zeros((4, 4), dtype=complex)
+            if abs(z1) > 0.0:
+                ys[1:, 1:] = fortescue_012_to_abc(1.0 / z0, 1.0 / z1, 1.0 / z2)
+            else:
+                # Ideal links are handled by the existing topology reduction.
+                pass
+            data.Yff3[k4, :] = ys
+            data.Yft3[k4, :] = -ys
+            data.Ytf3[k4, :] = -ys
+            data.Ytt3[k4, :] = ys
+            data.phA[ii] = data.phB[ii] = data.phC[ii] = True
+        else:
+            pass
+
         # store for later
         branch_dict[elm] = ii
 
@@ -1935,7 +2063,99 @@ def get_branch_data(
 
         ii += 1
 
+    if fill_three_phase:
+        compile_line_couplings(circuit=circuit, data=data)
+    else:
+        pass
     return branch_dict
+
+
+def compile_line_couplings(circuit: MultiCircuit, data: PassiveBranchData) -> None:
+    """Stamp complete physical tower sections, including mutual circuit admittances.
+
+    :param circuit: Device model; only explicitly associated lines are coupled.
+    :param data: Compiled branches, with lines occupying the first rows.
+    :return: None.
+    """
+    groups: dict[str, list[int]] = dict()
+    for k, line in enumerate(circuit.lines):
+        if line.coupling_group and data.active[k]:
+            groups.setdefault(line.coupling_group, list()).append(k)
+        else:
+            pass
+    mutual: lil_matrix = lil_matrix((8 * data.nelm, 8 * data.nelm), dtype=complex)
+    for name, indices in groups.items():
+        first: dev.Line = circuit.lines[indices[0]]
+        tower: dev.OverheadLineType
+        if not isinstance(first.template, dev.OverheadLineType):
+            raise ValueError(f"Line coupling {name}: an overhead tower template is required")
+        else:
+            tower = first.template
+        if not tower.is_computed():
+            tower.compute()
+        else:
+            pass
+        phases: IntVec = np.empty(3 * len(indices), dtype=int)
+        lengths: np.ndarray = np.empty(3 * len(indices))
+        for i, k in enumerate(indices):
+            line: dev.Line = circuit.lines[k]
+            if line.template is not tower:
+                raise ValueError(f"Line coupling {name}: circuits must share a template")
+            else:
+                pass
+            lengths[3 * i:3 * i + 3] = line.length
+            for p in range(3):
+                positions: IntVec = np.flatnonzero(tower.z_phases_abc == 3 * (line.circuit_idx - 1) + p + 1)
+                if len(positions) != 1:
+                    raise ValueError(f"Line coupling {name}: each circuit must contain A, B and C")
+                else:
+                    phases[3 * i + p] = positions[0]
+        if len(np.unique(phases)) != len(phases) or np.any(~np.isfinite(lengths) | (lengths <= 0)):
+            raise ValueError(f"Line coupling {name}: repeated circuit index or invalid section length")
+        else:
+            pass
+        # Use the existing earth-wire reduction. A guard wire is not a load neutral.
+        # Select active circuits before inversion: absent circuits carry no series current.
+        # Self blocks retain each circuit's length; mutual blocks span the shorter circuit.
+        section_lengths: np.ndarray = np.minimum.outer(lengths, lengths)
+        ys: np.ndarray = np.linalg.inv(tower.z_abc[np.ix_(phases, phases)] * section_lengths)
+        yh: np.ndarray = tower.y_abc[np.ix_(phases, phases)] * section_lengths
+        for i, k in enumerate(indices):
+            line = circuit.lines[k]
+            rows: IntVec = 4 * k + np.arange(1, 4)
+            block: slice = slice(3 * i, 3 * i + 3)
+            zbase: float = line.get_max_bus_nominal_voltage() ** 2 / circuit.Sbase
+            data.Yff3[4 * k:4 * k + 4, :] = 0.0
+            data.Yft3[4 * k:4 * k + 4, :] = 0.0
+            data.Ytf3[4 * k:4 * k + 4, :] = 0.0
+            data.Ytt3[4 * k:4 * k + 4, :] = 0.0
+            data.Yff3[rows, 1:4] = (ys[block, block] + yh[block, block] / 2) * zbase
+            data.Ytt3[rows, 1:4] = data.Yff3[rows, 1:4]
+            data.Yft3[rows, 1:4] = -ys[block, block] * zbase
+            data.Ytf3[rows, 1:4] = data.Yft3[rows, 1:4]
+            data.phN[k] = False
+            data.phA[k] = data.phB[k] = data.phC[k] = True
+            for j, peer in enumerate(indices):
+                if i != j:
+                    other: dev.Line = circuit.lines[peer]
+                    columns: IntVec = 4 * peer + np.arange(1, 4)
+                    peer_block: slice = slice(3 * j, 3 * j + 3)
+                    base: float = (line.get_max_bus_nominal_voltage() *
+                                   other.get_max_bus_nominal_voltage() / circuit.Sbase)
+                    series: np.ndarray = ys[block, peer_block] * base
+                    shunt: np.ndarray = yh[block, peer_block] * base / 2
+                    # Reversed lines swap physical terminals, preserving their public from/to orientation.
+                    f: IntVec = rows + (4 * data.nelm if line.coupling_reversed else 0)
+                    t: IntVec = rows + (0 if line.coupling_reversed else 4 * data.nelm)
+                    pf: IntVec = columns + (4 * data.nelm if other.coupling_reversed else 0)
+                    pt: IntVec = columns + (0 if other.coupling_reversed else 4 * data.nelm)
+                    mutual[np.ix_(f, pf)] = series + shunt
+                    mutual[np.ix_(f, pt)] = -series
+                    mutual[np.ix_(t, pf)] = -series
+                    mutual[np.ix_(t, pt)] = series + shunt
+                else:
+                    pass
+    data.Ycoupling3 = mutual.tocsc()
 
 
 def set_control_dev(k: int,

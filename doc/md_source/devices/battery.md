@@ -9,97 +9,97 @@ This device connects to a bus and contributes power, current, or admittance to t
 ### Registered properties
 Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pmin`, `Pmax`, `Q`, `Qmin`, `Qmax`, `control_mode`, `Pf`, `Vset`, `Cost2`, `Cost0`, `enabled_dispatch`, `must_run`, `srap_enabled`.
 
-|          name          |       class_type        | unit  |mandatory|max_chars|                                  descriptions                                  |has_profile|comment|
-|------------------------|-------------------------|-------|---------|---------|--------------------------------------------------------------------------------|-----------|-------|
-|idtag                   |str                      |       |False    |         |Unique ID                                                                       |False      |       |
-|name                    |str                      |       |False    |         |Name of the device.                                                             |False      |       |
-|code                    |str                      |       |False    |         |Secondary ID                                                                    |False      |       |
-|rdfid                   |str                      |       |False    |         |RDF ID for further compatibility                                                |False      |       |
-|action                  |enum ActionType          |       |False    |         |Object action to perform. Only used for model merging.                          |False      |       |
-|selected_to_merge       |bool                     |       |False    |         |Whether this object should be applied during diff merge.                        |False      |       |
-|comment                 |str                      |       |False    |         |User comment                                                                    |False      |       |
-|diff_changes            |MergeInformation         |       |False    |         |                                                                                |False      |       |
-|modelling_authority     |Modelling Authority      |       |False    |         |Modelling authority of this asset                                               |False      |       |
-|commissioned_date       |int                      |       |False    |         |Commissioned date of the asset                                                  |False      |       |
-|decommissioned_date     |int                      |       |False    |         |Decommissioned date of the asset                                                |False      |       |
-|build_status            |enum BuildStatus         |       |False    |         |Device build status. Used in expansion planning.                                |False      |       |
-|owners                  |AssociationsList         |p.u.   |False    |         |Owners associations to injections                                               |False      |       |
-|rms_model               |DaeBlock                 |       |False    |         |RMS dynamic model                                                               |False      |       |
-|emt_model               |DaeBlock                 |       |False    |         |EMT dynamic model                                                               |False      |       |
-|rms_template            |RMS template             |       |False    |         |Native RMS template used. Assigning it clears rms_fmu_template.                 |False      |       |
-|emt_template            |EMT template             |       |False    |         |Native EMT template used. Assigning it clears emt_fmu_template.                 |False      |       |
-|rms_fmu_template        |FMU template             |       |False    |         |RMS FMU template used only by RMS simulations. Assigning it clears rms_template.|False      |       |
-|emt_fmu_template        |FMU template             |       |False    |         |EMT FMU template used only by EMT simulations. Assigning it clears emt_template.|False      |       |
-|rms_fmu_import_config   |str                      |       |False    |         |Serialized FMU Co-Simulation RMS configuration                                  |False      |       |
-|emt_fmu_import_config   |str                      |       |False    |         |Serialized FMU Co-Simulation EMT configuration                                  |False      |       |
-|rms_fmu_me_import_config|str                      |       |False    |         |Serialized FMU Model Exchange RMS configuration                                 |False      |       |
-|emt_fmu_me_import_config|str                      |       |False    |         |Serialized FMU Model Exchange EMT configuration                                 |False      |       |
-|bus                     |Bus                      |       |False    |         |Connection bus                                                                  |False      |       |
-|active                  |bool                     |       |False    |         |Is the load active?                                                             |True       |       |
-|color                   |str                      |       |False    |         |Color to paint the element in the map diagram                                   |False      |       |
-|mttf                    |float                    |h      |False    |         |Mean time to failure                                                            |False      |       |
-|mttr                    |float                    |h      |False    |         |Mean time to recovery                                                           |False      |       |
-|capex                   |float                    |e/MW   |False    |         |Cost of investment. Used in expansion planning.                                 |False      |       |
-|opex                    |float                    |e/MWh  |False    |         |Cost of operation. Used in expansion planning.                                  |False      |       |
-|Cost                    |float                    |e/MWh  |False    |         |Cost of not served energy. Used in OPF.                                         |True       |       |
-|facility                |Facility                 |       |False    |         |Facility where this is located                                                  |False      |       |
-|technologies            |AssociationsList         |p.u.   |False    |         |Technologies associations to injections                                         |False      |       |
-|scalable                |bool                     |       |False    |         |Is the injection scalable?                                                      |False      |       |
-|shift_key               |float                    |       |False    |         |Shift key for net transfer capacity                                             |True       |       |
-|longitude               |float                    |deg    |False    |         |longitude of the injection.                                                     |False      |       |
-|latitude                |float                    |deg    |False    |         |latitude of the injection.                                                      |False      |       |
-|use_kw                  |bool                     |       |False    |         |Consider the injections in kW and kVAr?                                         |False      |       |
-|conn                    |enum ShuntConnectionType |       |False    |         |Connection type for 3-phase studies                                             |False      |       |
-|phN                     |bool                     |       |False    |         |Is the neutral connected?                                                       |False      |       |
-|phA                     |bool                     |       |False    |         |Is phase A connected?                                                           |False      |       |
-|phB                     |bool                     |       |False    |         |Is phase B connected?                                                           |False      |       |
-|phC                     |bool                     |       |False    |         |Is phase C connected?                                                           |False      |       |
-|bus_pos                 |int                      |       |False    |         |Aid to locate devices on a busbar                                               |False      |       |
-|P                       |float                    |MW     |False    |         |Active power                                                                    |True       |       |
-|Pmin                    |float                    |MW     |False    |         |Minimum active power. Used in OPF.                                              |True       |       |
-|Pmax                    |float                    |MW     |False    |         |Maximum active power. Used in OPF.                                              |True       |       |
-|Q                       |float                    |MVAr   |False    |         |Reactive power                                                                  |True       |       |
-|Qmin                    |float                    |MVAr   |False    |         |Minimum reactive power.                                                         |True       |       |
-|Qmax                    |float                    |MVAr   |False    |         |Maximum reactive power.                                                         |True       |       |
-|control_mode            |enum GeneratorControlMode|       |False    |         |Generator control mode                                                          |True       |       |
-|control_bus             |Bus                      |       |False    |         |Control bus                                                                     |False      |       |
-|Pf                      |float                    |       |False    |         |Power factor (cos(phi)). This is used for non-controlled generators.            |True       |       |
-|Vset                    |float                    |p.u.   |False    |         |Set voltage. This is used for controlled generators.                            |True       |       |
-|k_droop                 |float                    |       |False    |         |QV droop constant.                                                              |False      |       |
-|dead_band               |float                    |kV     |False    |         |Droop dead band.                                                                |False      |       |
-|Snom                    |float                    |MVA    |False    |         |Nominal power.                                                                  |False      |       |
-|use_reactive_power_curve|bool                     |       |False    |         |Use the reactive power capability curve?                                        |False      |       |
-|q_curve                 |Generator Q curve        |MVAr   |False    |         |Capability curve data (double click on the generator to edit)                   |False      |       |
-|R1                      |float                    |p.u.   |False    |         |Total positive sequence resistance.                                             |False      |       |
-|X1                      |float                    |p.u.   |False    |         |Total positive sequence reactance.                                              |False      |       |
-|R0                      |float                    |p.u.   |False    |         |Total zero sequence resistance.                                                 |False      |       |
-|X0                      |float                    |p.u.   |False    |         |Total zero sequence reactance.                                                  |False      |       |
-|R2                      |float                    |p.u.   |False    |         |Total negative sequence resistance.                                             |False      |       |
-|X2                      |float                    |p.u.   |False    |         |Total negative sequence reactance.                                              |False      |       |
-|Rs                      |float                    |p.u.   |False    |         |Stator winding resistance (AG).                                                 |False      |       |
-|Xs                      |float                    |p.u.   |False    |         |Stator leakage reactance (AG).                                                  |False      |       |
-|Xm                      |float                    |p.u.   |False    |         |Magnetizing reactance (AG).                                                     |False      |       |
-|Rr                      |float                    |p.u.   |False    |         |Rotor resistance (AG).                                                          |False      |       |
-|Xr                      |float                    |p.u.   |False    |         |Rotor reactance (AG).                                                           |False      |       |
-|Cost2                   |float                    |e/MW²/h|False    |         |Generation quadratic cost. Used in OPF.                                         |True       |       |
-|Cost0                   |float                    |e/h    |False    |         |Generation constant cost. Used in OPF.                                          |True       |       |
-|startup_cost            |float                    |e/h    |False    |         |Generation start-up cost. Used in OPF.                                          |False      |       |
-|shutdown_cost           |float                    |e/h    |False    |         |Generation shut-down cost. Used in OPF.                                         |False      |       |
-|min_time_up             |float                    |h      |False    |         |Minimum time that the generator has to be on when started. Used in OPF.         |False      |       |
-|min_time_down           |float                    |h      |False    |         |Minimum time that the generator has to be off when shut down. Used in OPF.      |False      |       |
-|ramp_up                 |float                    |MW/h   |False    |         |Maximum amount of generation increase per hour.                                 |False      |       |
-|ramp_down               |float                    |MW/h   |False    |         |Maximum amount of generation decrease per hour.                                 |False      |       |
-|enabled_dispatch        |bool                     |       |False    |         |Enabled for dispatch? Used in OPF.                                              |True       |       |
-|must_run                |bool                     |       |False    |         |P >= Pmin constraint. Used in OPF with unit commitment active.                  |True       |       |
-|emissions               |AssociationsList         |t/MWh  |False    |         |List of emissions                                                               |False      |       |
-|fuels                   |AssociationsList         |t/MWh  |False    |         |List of fuels                                                                   |False      |       |
-|srap_enabled            |bool                     |       |False    |         |Is the unit available for SRAP participation?                                   |True       |       |
-|tpe                     |enum GeneratorType       |       |False    |         |Machine type of the generator.                                                  |False      |       |
-|is_static_generator     |bool                     |       |False    |         |Use the static generator short-circuit model.                                   |False      |       |
-|Enom                    |float                    |MWh    |False    |         |Nominal energy capacity.                                                        |False      |       |
-|max_soc                 |float                    |p.u.   |False    |         |Minimum state of charge.                                                        |False      |       |
-|min_soc                 |float                    |p.u.   |False    |         |Maximum state of charge.                                                        |False      |       |
-|soc_0                   |float                    |p.u.   |False    |         |Initial state of charge.                                                        |False      |       |
-|charge_efficiency       |float                    |p.u.   |False    |         |Charging efficiency.                                                            |False      |       |
-|discharge_efficiency    |float                    |p.u.   |False    |         |Discharge efficiency.                                                           |False      |       |
-|discharge_per_cycle     |float                    |p.u.   |False    |         |                                                                                |False      |       |
+|          name          |       class_type        | unit  |mandatory|max_chars|                                           descriptions                                           |has_profile|comment|
+|------------------------|-------------------------|-------|---------|---------|--------------------------------------------------------------------------------------------------|-----------|-------|
+|idtag                   |str                      |       |False    |         |Unique ID                                                                                         |False      |       |
+|name                    |str                      |       |False    |         |Name of the device.                                                                               |False      |       |
+|code                    |str                      |       |False    |         |Secondary ID                                                                                      |False      |       |
+|rdfid                   |str                      |       |False    |         |RDF ID for further compatibility                                                                  |False      |       |
+|action                  |enum ActionType          |       |False    |         |Object action to perform. Only used for model merging.                                            |False      |       |
+|selected_to_merge       |bool                     |       |False    |         |Whether this object should be applied during diff merge.                                          |False      |       |
+|comment                 |str                      |       |False    |         |User comment                                                                                      |False      |       |
+|diff_changes            |MergeInformation         |       |False    |         |                                                                                                  |False      |       |
+|modelling_authority     |Modelling Authority      |       |False    |         |Modelling authority of this asset                                                                 |False      |       |
+|commissioned_date       |int                      |       |False    |         |Commissioned date of the asset                                                                    |False      |       |
+|decommissioned_date     |int                      |       |False    |         |Decommissioned date of the asset                                                                  |False      |       |
+|build_status            |enum BuildStatus         |       |False    |         |Device build status. Used in expansion planning.                                                  |False      |       |
+|owners                  |AssociationsList         |p.u.   |False    |         |Owners associations to injections                                                                 |False      |       |
+|rms_model               |DaeBlock                 |       |False    |         |RMS dynamic model                                                                                 |False      |       |
+|emt_model               |DaeBlock                 |       |False    |         |EMT dynamic model                                                                                 |False      |       |
+|rms_template            |RMS template             |       |False    |         |Native RMS template used. Assigning it clears rms_fmu_template.                                   |False      |       |
+|emt_template            |EMT template             |       |False    |         |Native EMT template used. Assigning it clears emt_fmu_template.                                   |False      |       |
+|rms_fmu_template        |FMU template             |       |False    |         |RMS FMU template used only by RMS simulations. Assigning it clears rms_template.                  |False      |       |
+|emt_fmu_template        |FMU template             |       |False    |         |EMT FMU template used only by EMT simulations. Assigning it clears emt_template.                  |False      |       |
+|rms_fmu_import_config   |str                      |       |False    |         |Serialized FMU Co-Simulation RMS configuration                                                    |False      |       |
+|emt_fmu_import_config   |str                      |       |False    |         |Serialized FMU Co-Simulation EMT configuration                                                    |False      |       |
+|rms_fmu_me_import_config|str                      |       |False    |         |Serialized FMU Model Exchange RMS configuration                                                   |False      |       |
+|emt_fmu_me_import_config|str                      |       |False    |         |Serialized FMU Model Exchange EMT configuration                                                   |False      |       |
+|bus                     |Bus                      |       |False    |         |Connection bus                                                                                    |False      |       |
+|active                  |bool                     |       |False    |         |Is the load active?                                                                               |True       |       |
+|color                   |str                      |       |False    |         |Color to paint the element in the map diagram                                                     |False      |       |
+|mttf                    |float                    |h      |False    |         |Mean time to failure                                                                              |False      |       |
+|mttr                    |float                    |h      |False    |         |Mean time to recovery                                                                             |False      |       |
+|capex                   |float                    |e/MW   |False    |         |Cost of investment. Used in expansion planning.                                                   |False      |       |
+|opex                    |float                    |e/MWh  |False    |         |Cost of operation. Used in expansion planning.                                                    |False      |       |
+|Cost                    |float                    |e/MWh  |False    |         |Cost of not served energy. Used in OPF.                                                           |True       |       |
+|facility                |Facility                 |       |False    |         |Facility where this is located                                                                    |False      |       |
+|technologies            |AssociationsList         |p.u.   |False    |         |Technologies associations to injections                                                           |False      |       |
+|scalable                |bool                     |       |False    |         |Is the injection scalable?                                                                        |False      |       |
+|shift_key               |float                    |       |False    |         |Shift key for net transfer capacity                                                               |True       |       |
+|longitude               |float                    |deg    |False    |         |longitude of the injection.                                                                       |False      |       |
+|latitude                |float                    |deg    |False    |         |latitude of the injection.                                                                        |False      |       |
+|use_kw                  |bool                     |       |False    |         |Consider the injections in kW and kVAr?                                                           |False      |       |
+|conn                    |enum ShuntConnectionType |       |False    |         |Connection type for 3-phase studies                                                               |False      |       |
+|phN                     |bool                     |       |False    |         |Is the neutral connected?                                                                         |False      |       |
+|phA                     |bool                     |       |False    |         |Is phase A connected?                                                                             |False      |       |
+|phB                     |bool                     |       |False    |         |Is phase B connected?                                                                             |False      |       |
+|phC                     |bool                     |       |False    |         |Is phase C connected?                                                                             |False      |       |
+|bus_pos                 |int                      |       |False    |         |Aid to locate devices on a busbar                                                                 |False      |       |
+|P                       |float                    |MW     |False    |         |Active power                                                                                      |True       |       |
+|Pmin                    |float                    |MW     |False    |         |Minimum active power. Used in OPF.                                                                |True       |       |
+|Pmax                    |float                    |MW     |False    |         |Maximum active power. Used in OPF.                                                                |True       |       |
+|Q                       |float                    |MVAr   |False    |         |Reactive power                                                                                    |True       |       |
+|Qmin                    |float                    |MVAr   |False    |         |Minimum reactive power.                                                                           |True       |       |
+|Qmax                    |float                    |MVAr   |False    |         |Maximum reactive power.                                                                           |True       |       |
+|control_mode            |enum GeneratorControlMode|       |False    |         |Generator control mode                                                                            |True       |       |
+|control_bus             |Bus                      |       |False    |         |Control bus                                                                                       |False      |       |
+|Pf                      |float                    |       |False    |         |Power factor (cos(phi)). This is used for non-controlled generators.                              |True       |       |
+|Vset                    |float                    |p.u.   |False    |         |Voltage setpoint for controlled generators; positive-sequence magnitude in three-phase power flow.|True       |       |
+|k_droop                 |float                    |       |False    |         |QV droop constant.                                                                                |False      |       |
+|dead_band               |float                    |kV     |False    |         |Droop dead band.                                                                                  |False      |       |
+|Snom                    |float                    |MVA    |False    |         |Nominal power.                                                                                    |False      |       |
+|use_reactive_power_curve|bool                     |       |False    |         |Use the reactive power capability curve?                                                          |False      |       |
+|q_curve                 |Generator Q curve        |MVAr   |False    |         |Capability curve data (double click on the generator to edit)                                     |False      |       |
+|R1                      |float                    |p.u.   |False    |         |Total positive sequence resistance.                                                               |False      |       |
+|X1                      |float                    |p.u.   |False    |         |Total positive sequence reactance.                                                                |False      |       |
+|R0                      |float                    |p.u.   |False    |         |Total zero sequence resistance on system base; used in U1 power flow for a grounded connection.   |False      |       |
+|X0                      |float                    |p.u.   |False    |         |Total zero sequence reactance on system base; used in U1 power flow for a grounded connection.    |False      |       |
+|R2                      |float                    |p.u.   |False    |         |Total negative sequence resistance on system base; used automatically in U1 power flow.           |False      |       |
+|X2                      |float                    |p.u.   |False    |         |Total negative sequence reactance on system base; used automatically in U1 power flow.            |False      |       |
+|Rs                      |float                    |p.u.   |False    |         |Stator winding resistance (AG).                                                                   |False      |       |
+|Xs                      |float                    |p.u.   |False    |         |Stator leakage reactance (AG).                                                                    |False      |       |
+|Xm                      |float                    |p.u.   |False    |         |Magnetizing reactance (AG).                                                                       |False      |       |
+|Rr                      |float                    |p.u.   |False    |         |Rotor resistance (AG).                                                                            |False      |       |
+|Xr                      |float                    |p.u.   |False    |         |Rotor reactance (AG).                                                                             |False      |       |
+|Cost2                   |float                    |e/MW²/h|False    |         |Generation quadratic cost. Used in OPF.                                                           |True       |       |
+|Cost0                   |float                    |e/h    |False    |         |Generation constant cost. Used in OPF.                                                            |True       |       |
+|startup_cost            |float                    |e/h    |False    |         |Generation start-up cost. Used in OPF.                                                            |False      |       |
+|shutdown_cost           |float                    |e/h    |False    |         |Generation shut-down cost. Used in OPF.                                                           |False      |       |
+|min_time_up             |float                    |h      |False    |         |Minimum time that the generator has to be on when started. Used in OPF.                           |False      |       |
+|min_time_down           |float                    |h      |False    |         |Minimum time that the generator has to be off when shut down. Used in OPF.                        |False      |       |
+|ramp_up                 |float                    |MW/h   |False    |         |Maximum amount of generation increase per hour.                                                   |False      |       |
+|ramp_down               |float                    |MW/h   |False    |         |Maximum amount of generation decrease per hour.                                                   |False      |       |
+|enabled_dispatch        |bool                     |       |False    |         |Enabled for dispatch? Used in OPF.                                                                |True       |       |
+|must_run                |bool                     |       |False    |         |P >= Pmin constraint. Used in OPF with unit commitment active.                                    |True       |       |
+|emissions               |AssociationsList         |t/MWh  |False    |         |List of emissions                                                                                 |False      |       |
+|fuels                   |AssociationsList         |t/MWh  |False    |         |List of fuels                                                                                     |False      |       |
+|srap_enabled            |bool                     |       |False    |         |Is the unit available for SRAP participation?                                                     |True       |       |
+|tpe                     |enum GeneratorType       |       |False    |         |Machine type of the generator.                                                                    |False      |       |
+|is_static_generator     |bool                     |       |False    |         |Use the static generator short-circuit model.                                                     |False      |       |
+|Enom                    |float                    |MWh    |False    |         |Nominal energy capacity.                                                                          |False      |       |
+|max_soc                 |float                    |p.u.   |False    |         |Minimum state of charge.                                                                          |False      |       |
+|min_soc                 |float                    |p.u.   |False    |         |Maximum state of charge.                                                                          |False      |       |
+|soc_0                   |float                    |p.u.   |False    |         |Initial state of charge.                                                                          |False      |       |
+|charge_efficiency       |float                    |p.u.   |False    |         |Charging efficiency.                                                                              |False      |       |
+|discharge_efficiency    |float                    |p.u.   |False    |         |Discharge efficiency.                                                                             |False      |       |
+|discharge_per_cycle     |float                    |p.u.   |False    |         |                                                                                                  |False      |       |

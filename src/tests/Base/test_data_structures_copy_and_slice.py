@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from scipy.sparse import csc_matrix
 
 from VeraGridEngine.DataStructures.active_branch_data import ActiveBranchData
 from VeraGridEngine.DataStructures.battery_data import BatteryData
@@ -255,6 +256,13 @@ def _is_data_structure_instance(value) -> bool:
 
 
 def _assert_value_equal(expected, actual, name: str) -> None:
+    if isinstance(expected, csc_matrix):
+        assert isinstance(actual, csc_matrix), name
+        assert actual.shape == expected.shape, name
+        assert (actual != expected).nnz == 0, name
+        return
+    else:
+        pass
     if isinstance(expected, np.ndarray):
         assert isinstance(actual, np.ndarray), name
         assert np.array_equal(actual, expected), name
@@ -283,6 +291,8 @@ def _assert_deep_copy(source, copied) -> None:
 
         if isinstance(value, np.ndarray):
             assert copied_value is not value, name
+        elif isinstance(value, csc_matrix):
+            assert not np.shares_memory(copied_value.data, value.data), name
         elif isinstance(value, SparseObjectArray):
             assert copied_value is not value, name
             assert copied_value.get_map() is not value.get_map(), name
@@ -293,6 +303,12 @@ def _assert_deep_copy(source, copied) -> None:
 
 
 def _expected_slice_value(source, name: str, value, *, bus_only: bool):
+    if name == 'Ycoupling3':
+        terminal_indices: np.ndarray = (4 * TEST_ELM_IDX[:, None] + np.arange(4)).ravel()
+        terminal_indices = np.r_[terminal_indices, 4 * source.nelm + terminal_indices]
+        return value[terminal_indices, :][:, terminal_indices].tocsc()
+    else:
+        pass
     if isinstance(value, np.ndarray):
         if bus_only:
             if name == "original_idx":

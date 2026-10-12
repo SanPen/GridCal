@@ -8,8 +8,6 @@ from VeraGridEngine.Devices.Branches.vsc import VSC
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Utils.Symbolic.block import (
     Block,
-    RmsTerminalPowerContribution,
-    RmsTerminalSide,
     build_name_to_vars_lookup,
 )
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
@@ -925,20 +923,6 @@ def build_dgs_elmvscmono_rms_runtime_template(
             (dc_conversion_power, -ac_active_power + converter_loss),
         ]),
     )
-    # The converter declares which physical terminal owns each power flow.
-    # Bus identity still comes exclusively from the associated VSC topology.
-    wrapper_block.dynamic_model_contract.rms_terminal_power_contributions = list([
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.FROM,
-            active_power_reference=VarPowerFlowReferenceType.Pf,
-            reactive_power_reference=None,
-        ),
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.TO,
-            active_power_reference=VarPowerFlowReferenceType.Pt,
-            reactive_power_reference=VarPowerFlowReferenceType.Qt,
-        ),
-    ])
     _normalize_unowned_interface_initializers(block=wrapper_block)
     result: RmsModelTemplate = RmsModelTemplate(name=control_template.name)
     result.name = control_template.name
@@ -1397,21 +1381,6 @@ def build_dgs_elmvsc_rms_runtime_template(
             ParamPowerFlowReferenceType.alpha3: quadratic_loss,
         },
     )
-    # The converter declares which physical terminal owns each power flow.
-    # Bus identity still comes exclusively from the associated VSC topology.
-    wrapper_block.dynamic_model_contract.rms_terminal_power_contributions = list([
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.FROM,
-            active_power_reference=VarPowerFlowReferenceType.Pf,
-            reactive_power_reference=None,
-        ),
-        RmsTerminalPowerContribution(
-            terminal_side=RmsTerminalSide.TO,
-            active_power_reference=VarPowerFlowReferenceType.Pt,
-            reactive_power_reference=VarPowerFlowReferenceType.Qt,
-        ),
-    ])
-
     # A current controller commonly anchors the limiter output cable with
     # ``inc(i1d_ref)=i1d`` and ``inc(i1q_ref)=i1q``. Preserve those exact
     # exported UID assignments at the outer shell. Otherwise an earlier,

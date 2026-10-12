@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 import numpy as np
+from scipy.sparse import csc_matrix
 
 from VeraGridEngine.DataStructures.branch_parent_data import BranchParentData
 from VeraGridEngine.Utils.Sparse.sparse_array import SparseObjectArray
@@ -45,6 +46,7 @@ class PassiveBranchData(BranchParentData):
         "Yft3",
         "Ytf3",
         "Ytt3",
+        "Ycoupling3",
     )
 
     def __init__(self, nelm: int, nbus: int):
@@ -84,6 +86,8 @@ class PassiveBranchData(BranchParentData):
         self.Yft3 = np.zeros((self.nelm * 4, 4), dtype=complex)
         self.Ytf3 = np.zeros((self.nelm * 4, 4), dtype=complex)
         self.Ytt3 = np.zeros((self.nelm * 4, 4), dtype=complex)
+        # Mutual terminal admittances: all from NABC rows, then all to NABC rows.
+        self.Ycoupling3: csc_matrix = csc_matrix((8 * nelm, 8 * nelm), dtype=complex)
 
         self.phN: BoolVec = np.zeros(self.nelm, dtype=bool)
         self.phA: BoolVec = np.zeros(self.nelm, dtype=bool)
@@ -142,6 +146,8 @@ class PassiveBranchData(BranchParentData):
         data.Yft3 = self.Yft3[elm_idx_4, :]
         data.Ytt3 = self.Ytt3[elm_idx_4, :]
         data.Ytf3 = self.Ytf3[elm_idx_4, :]
+        terminal_idx: IntVec = np.r_[elm_idx_4, 4 * self.nelm + elm_idx_4]
+        data.Ycoupling3 = self.Ycoupling3[terminal_idx, :][:, terminal_idx].tocsc()
 
         data.phN = self.phN[elm_idx]
         data.phA = self.phA[elm_idx]
@@ -186,6 +192,7 @@ class PassiveBranchData(BranchParentData):
         data.Yft3 = self.Yft3.copy()
         data.Ytf3 = self.Ytf3.copy()
         data.Ytt3 = self.Ytt3.copy()
+        data.Ycoupling3 = self.Ycoupling3.copy()
 
         data.phN = self.phN.copy()
         data.phA = self.phA.copy()

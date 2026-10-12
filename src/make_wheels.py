@@ -30,6 +30,18 @@ if __name__ == "__main__":
 
     if __VeraGridEngine_VERSION__ == __VeraGrid_VERSION__:  # both packages' versions must be exactly the same
         veragrid_extra_files: list[str] = list()
+        veragrid_engine_extra_files: list[str] = collect_extra_package_files(
+            pkg_name='VeraGridEngine',
+            relative_folder=os.path.join('data', 'fmu'),
+            suffixes=['.c', '.h'],
+        )
+        veragrid_engine_extra_files.extend(
+            collect_extra_package_files(
+                pkg_name='VeraGridEngine',
+                relative_folder=os.path.join('IO', 'manufacturer_native', 'native_worker'),
+                suffixes=['.c', '.h', '.exe', '.json'],
+            )
+        )
         veragrid_translation_files: list[str] = collect_extra_package_files(
             pkg_name='VeraGrid',
             relative_folder=os.path.join('Gui', 'translations'),
@@ -96,7 +108,8 @@ if __name__ == "__main__":
                     requires_pyhon=_requires_pyhon,
                     description_content_type=_description_content_type,
                     provides_extra=_provides_extra,
-                    long_description=_long_description
+                    long_description=_long_description,
+                    extra_files=veragrid_engine_extra_files
                     )
 
         build_wheel(pkg_name='VeraGridServer',

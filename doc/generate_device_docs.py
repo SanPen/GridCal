@@ -129,13 +129,13 @@ DEVICE_NOTES = {
     "Generator": "A `Generator` models a controllable bus-connected source. In steady state it behaves as a power injection, and for short-circuit studies it also exposes sequence impedance data.",
     "Battery": "A `Battery` extends generator-style injection modelling with energy-capacity and state-of-charge parameters for storage studies.",
     "Load": "A `Load` implements the ZIP formulation and supports single-phase, two-phase, three-phase, star, and delta modelling patterns.",
-    "StaticGenerator": "A `StaticGenerator` represents a fixed injection without the full control surface of a synchronous generator.",
+    "StaticGenerator": "A `StaticGenerator` represents a fixed P/Q injection or an optional VSC-equivalent Q-V droop control.",
     "ExternalGrid": "An `ExternalGrid` represents an equivalent network connection used to model an upstream or boundary system.",
     "Shunt": "A `Shunt` represents a bus-connected admittance used for reactive support, compensation, and unbalanced admittance modelling.",
     "ControllableShunt": "A `ControllableShunt` extends shunt modelling with discrete or controllable reactive support behaviour.",
     "CurrentInjection": "A `CurrentInjection` injects current directly at a bus and is useful when the source model is expressed naturally in current form.",
     "Line": "A `Line` is the standard AC branch model. It supports positive-sequence and phase-domain formulations, templates, and geometric line-data workflows.",
-    "DcLine": "A `DcLine` models a physical line inside a detailed DC grid, unlike the aggregated `HvdcLine` transfer model.",
+    "DcLine": "A `DcLine` models a physical line inside a detailed DC grid. It applies the common [Cable System](underground_line_type.md#applying-cable-system-to-a-dc-line) catalogue, selecting one conductor with `dc_conductor`. The system supplies DC resistance and dynamic L/C; length and rating belong to the branch. A branch without a template remains a resistive line.",
     "Winding": "A `Winding` is one terminal element of a multi-winding transformer representation and is primarily used inside transformer assemblies.",
     "Transformer2W": "A `Transformer2W` is the standard two-winding transformer model used in steady-state, short-circuit, and catalogue-driven workflows.",
     "Transformer3W": "A `Transformer3W` stores a three-winding transformer and its associated winding objects.",
@@ -216,6 +216,7 @@ def fix_device_relative_assets(text: str) -> str:
     text = text.replace("](figures/", "](../figures/")
     text = text.replace('src="figures/', 'src="../figures/')
     text = text.replace("](modelling.md#", "](../modelling.md#")
+    text = text.replace("](file_operations.md#", "](../file_operations.md#")
     return text
 
 
@@ -384,6 +385,7 @@ def generate_device_docs() -> None:
     data_models_text = DATA_MODELS_FILE.read_text(encoding="utf-8")
     source_text = MODELLING_SOURCE_FILE.read_text(encoding="utf-8")
     cable_source: str = (DEVICES_DIR / "_underground_catalogue_source.md").read_text(encoding="utf-8")
+    transformer3w_source: str = (DEVICES_DIR / "_transformer_3w_source.md").read_text(encoding="utf-8")
 
     tables = parse_veragrid_tables(data_models_text)
     legacy = build_legacy_sections(source_text)
@@ -391,9 +393,12 @@ def generate_device_docs() -> None:
     root_sections: Dict[str, str] = {
         "Line": legacy["line"],
         "Transformer2W": legacy["transformer_2w"],
+        "Transformer3W": transformer3w_source,
         "Load": legacy["load"],
         "Shunt": legacy["shunt"],
         "Generator": legacy["generator"],
+        "StaticGenerator": (DEVICES_DIR / "_static_generator_source.md").read_text(encoding="utf-8"),
+        "ControllableShunt": (DEVICES_DIR / "_controllable_shunt_source.md").read_text(encoding="utf-8"),
         "HvdcLine": legacy["hvdc_line"],
         "VSC": legacy["vsc"],
         "UndergroundCableType": extract_between(cable_source, "## UndergroundCableType", "## UndergroundLineType"),

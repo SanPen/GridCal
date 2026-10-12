@@ -12,6 +12,7 @@ from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory, build_persisted_identity_lookup
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic_io import BlockParser, BlockSaver, expr_to_dict, parse_expr, parse_expr_list
+from VeraGridEngine.enumerations import LogSeverity, ParamPowerFlowReferenceType
 
 
 def test_shared_expression_roundtrip_preserves_expr_ref_identity() -> None:
@@ -134,6 +135,607 @@ def test_block_roundtrip_shares_expression_registry_across_fields() -> None:
     assert restored_event_expression is restored_expression
     assert restored_mode_expression is restored_expression
     assert restored_discrete_expression is restored_expression
+
+
+def test_legacy_mapping_only_static_target_is_restored_as_parameter() -> None:
+    """Backfill one historical mapping-only static target and report an info entry.
+
+    :return: None.
+    """
+    source_factory: VarFactory = VarFactory()
+    parameter: sym.Var = source_factory.add_var("legacy_static_parameter")
+    source_block: Block = Block(
+        name="legacy static block",
+        api_obj_mapping=dict(((ParamPowerFlowReferenceType.dc_line_r_pu, parameter),)),
+    )
+    saver: BlockSaver = BlockSaver(source_factory)
+    saver.save_block(source_block, main=True)
+    logger: Logger = Logger()
+    parser: BlockParser = BlockParser(VarFactory(), logger=logger)
+    parser.parse_consts(saver.get_const_to_save())
+    parser.parse_vars(saver.get_vars_to_save())
+    parser.parse_diff_vars(saver.get_diff_vars_to_save())
+
+    restored_blocks: List[Block] = parser.parse_blocks(
+        blocks_data=saver.get_blocks(),
+        main_block_uids=list((source_block.uid,)),
+    )
+    restored_block: Block = restored_blocks[0]
+    restored_parameter: sym.Var | None = restored_block.api_obj_mapping.get(
+        ParamPowerFlowReferenceType.dc_line_r_pu,
+        None,
+    )
+
+    assert restored_parameter is not None
+    assert restored_parameter in restored_block.parameters
+    assert restored_block.parameters[restored_parameter].value is None
+    assert logger.entries[-1].msg == "Migrated legacy dynamic parameter declarations"
+    assert logger.entries[-1].value == "1"
+    assert logger.entries[-1].severity == LogSeverity.Information
+
+
+def test_legacy_parent_child_static_parameter_copy_keeps_only_child_owner() -> None:
+    """Repair the wrapper copy written by historical EMT editor save paths.
+
+    :return: None.
+    """
+    source_factory: VarFactory = VarFactory()
+    parameter: sym.Var = source_factory.add_var("Rnn")
+    mapping_key: ParamPowerFlowReferenceType = ParamPowerFlowReferenceType.Rnn
+    child_block: Block = Block(
+        name="pi_line_equations",
+        parameters=dict(((parameter, sym.Const(None)),)),
+        api_obj_mapping=dict(((mapping_key, parameter),)),
+    )
+    root_block: Block = Block(
+        name="pi_line_wrapper",
+        children=list((child_block,)),
+        parameters=dict(((parameter, sym.Const(None)),)),
+        api_obj_mapping=dict(((mapping_key, parameter),)),
+    )
+    saver: BlockSaver = BlockSaver(source_factory)
+    saver.save_block(root_block, main=True)
+    logger: Logger = Logger()
+    parser: BlockParser = BlockParser(VarFactory(), logger=logger)
+    parser.parse_consts(saver.get_const_to_save())
+    parser.parse_vars(saver.get_vars_to_save())
+    parser.parse_diff_vars(saver.get_diff_vars_to_save())
+
+    restored_root: Block = parser.parse_block(saver.get_blocks(), root_block.uid)
+    restored_child: Block = restored_root.children[0]
+    restored_parameter: sym.Var | None = restored_child.api_obj_mapping.get(mapping_key, None)
+
+    assert restored_parameter is not None
+    assert restored_root.parameters == dict()
+    assert restored_root.api_obj_mapping == dict()
+    assert restored_parameter in restored_child.parameters
+    assert logger.entries[-1].msg == "Migrated legacy dynamic parameter declarations"
+    assert logger.entries[-1].severity == LogSeverity.Information
+
+
+def test_legacy_parent_mapping_is_moved_to_child_parameter_owner() -> None:
+    """Move a wrapper-only mapping onto its descendant parameter declaration.
+
+    :return: None.
+    """
+    source_factory: VarFactory = VarFactory()
+    parameter: sym.Var = source_factory.add_var("Linv_aa")
+    mapping_key: ParamPowerFlowReferenceType = ParamPowerFlowReferenceType.Linv_aa
+    child_block: Block = Block(
+        name="pi_line_equations",
+        parameters=dict(((parameter, sym.Const(None)),)),
+    )
+    root_block: Block = Block(
+        name="pi_line_wrapper",
+        children=list((child_block,)),
+        api_obj_mapping=dict(((mapping_key, parameter),)),
+    )
+    saver: BlockSaver = BlockSaver(source_factory)
+    saver.save_block(root_block, main=True)
+    parser: BlockParser = BlockParser(VarFactory())
+    parser.parse_consts(saver.get_const_to_save())
+    parser.parse_vars(saver.get_vars_to_save())
+    parser.parse_diff_vars(saver.get_diff_vars_to_save())
+
+    restored_root: Block = parser.parse_block(saver.get_blocks(), root_block.uid)
+    restored_child: Block = restored_root.children[0]
+    restored_parameter: sym.Var | None = restored_child.api_obj_mapping.get(mapping_key, None)
+
+    assert restored_parameter is not None
+    assert restored_root.api_obj_mapping == dict()
+    assert restored_parameter in restored_child.parameters
+
+
+def test_legacy_parent_event_mapping_is_localized_without_changing_role() -> None:
+    """Move a copied wrapper mapping onto its runtime child declaration.
+
+    Old non-recursive initialization stored a child's API mapping on its parent.
+    The recursive contract must retain the child as owner without changing the
+    storage role declared by ``event_dict``.
+
+    :return: None.
+    """
+    source_factory: VarFactory = VarFactory()
+    parameter: sym.Var = source_factory.add_var("Pmin")
+    fallback_value: float = -1.0
+    mapping_key: ParamPowerFlowReferenceType = ParamPowerFlowReferenceType.Pmin
+    child_block: Block = Block(
+        name="legacy governor equations",
+        event_dict=dict(((parameter, sym.Const(fallback_value)),)),
+    )
+    root_block: Block = Block(
+        name="legacy governor wrapper",
+        children=list((child_block,)),
+        api_obj_mapping=dict(((mapping_key, parameter),)),
+    )
+    saver: BlockSaver = BlockSaver(source_factory)
+    saver.save_block(root_block, main=True)
+    logger: Logger = Logger()
+    parser: BlockParser = BlockParser(VarFactory(), logger=logger)
+    parser.parse_consts(saver.get_const_to_save())
+    parser.parse_vars(saver.get_vars_to_save())
+    parser.parse_diff_vars(saver.get_diff_vars_to_save())
+
+    restored_root: Block = parser.parse_block(saver.get_blocks(), root_block.uid)
+    restored_child: Block = restored_root.children[0]
+    restored_parameter: sym.Var | None = restored_child.api_obj_mapping.get(mapping_key, None)
+
+    assert restored_parameter is not None
+    assert restored_root.api_obj_mapping == dict()
+    assert restored_parameter in restored_child.event_dict
+    assert restored_parameter not in restored_child.parameters
+    assert restored_child.event_dict[restored_parameter].value == fallback_value
+    assert logger.entries[-1].msg == "Migrated legacy dynamic parameter declarations"
+    assert logger.entries[-1].value == "1"
+    assert logger.entries[-1].severity == LogSeverity.Information
+
+
+@pytest.mark.parametrize(
+    "mapping_key",
+    tuple((ParamPowerFlowReferenceType.Pmin, ParamPowerFlowReferenceType.R1)),
+)
+def test_mapped_event_target_preserves_runtime_storage(
+        mapping_key: ParamPowerFlowReferenceType,
+) -> None:
+    """Keep a mapped event target runtime regardless of its enum key.
+
+    The target collection declares mutability. A constant fallback inside
+    ``event_dict`` remains event-capable even when its initial value can be
+    supplied by a static-device property.
+
+    :param mapping_key: Static reference to exercise outside the governor signature.
+    :return: None.
+    """
+    source_factory: VarFactory = VarFactory()
+    parameter: sym.Var = source_factory.add_var(mapping_key.value)
+    fallback_value: float = -1.0
+    source_block: Block = Block(
+        name="legacy governor",
+        event_dict=dict(((parameter, sym.Const(fallback_value)),)),
+        api_obj_mapping=dict(((mapping_key, parameter),)),
+    )
+    saver: BlockSaver = BlockSaver(source_factory)
+    saver.save_block(source_block, main=True)
+    logger: Logger = Logger()
+    parser: BlockParser = BlockParser(VarFactory(), logger=logger)
+    parser.parse_consts(saver.get_const_to_save())
+    parser.parse_vars(saver.get_vars_to_save())
+    parser.parse_diff_vars(saver.get_diff_vars_to_save())
+
+    restored_blocks: List[Block] = parser.parse_blocks(
+        blocks_data=saver.get_blocks(),
+        main_block_uids=list((source_block.uid,)),
+    )
+    restored_block: Block = restored_blocks[0]
+    restored_parameter: sym.Var | None = restored_block.api_obj_mapping.get(
+        mapping_key,
+        None,
+    )
+
+    assert restored_parameter is not None
+    assert restored_parameter in restored_block.event_dict
+    assert restored_block.event_dict[restored_parameter].value == fallback_value
+    assert restored_parameter not in restored_block.parameters
+    assert len(logger.entries) == 0
+
+
+def test_legacy_governor_mapping_separates_dynamic_and_static_parameters() -> None:
+    """Restore the complete parameter ownership used by old Kundur governors.
+
+    The historical files mapped all eleven governor settings through
+    ``api_obj_mapping``. Only ``Pmin`` and ``Pmax`` belong to the static
+    generator; the remaining values are editable dynamic-model parameters and
+    must stay in ``event_dict`` without a static API mapping.
+
+    :return: None.
+    """
+    source_factory: VarFactory = VarFactory()
+    dynamic_references: tuple[ParamPowerFlowReferenceType, ...] = (
+        ParamPowerFlowReferenceType.K,
+        ParamPowerFlowReferenceType.Uc,
+        ParamPowerFlowReferenceType.Uo,
+        ParamPowerFlowReferenceType.T_aux,
+        ParamPowerFlowReferenceType.Kp,
+        ParamPowerFlowReferenceType.Ki,
+        ParamPowerFlowReferenceType.omega_ref,
+        ParamPowerFlowReferenceType.p0,
+        ParamPowerFlowReferenceType.P0,
+    )
+    dynamic_variables: Dict[ParamPowerFlowReferenceType, sym.Var] = dict()
+    dynamic_values: Dict[ParamPowerFlowReferenceType, sym.Const] = dict()
+    event_values: Dict[sym.Var, sym.Expr] = dict()
+    api_obj_mapping: Dict[ParamPowerFlowReferenceType, sym.Var] = dict()
+    reference_index: int
+    dynamic_reference: ParamPowerFlowReferenceType
+    for reference_index, dynamic_reference in enumerate(dynamic_references):
+        dynamic_variable: sym.Var = source_factory.add_var(dynamic_reference.value)
+        dynamic_value: sym.Const = sym.Const(float(reference_index + 1))
+        dynamic_variables[dynamic_reference] = dynamic_variable
+        dynamic_values[dynamic_reference] = dynamic_value
+        event_values[dynamic_variable] = dynamic_value
+        api_obj_mapping[dynamic_reference] = dynamic_variable
+
+    # Also cover files saved after the incomplete migration: they can already
+    # contain one of these model-owned values in the static collection.
+    misclassified_parameters: Dict[sym.Var, sym.Const] = dict()
+    misclassified_variable: sym.Var = dynamic_variables[ParamPowerFlowReferenceType.K]
+    misclassified_parameters[misclassified_variable] = dynamic_values[ParamPowerFlowReferenceType.K]
+    del event_values[misclassified_variable]
+
+    pmin_variable: sym.Var = source_factory.add_var("Pmin")
+    pmax_variable: sym.Var = source_factory.add_var("Pmax")
+    pmin_fallback: float = -1.0
+    pmax_fallback: float = 12.0
+    event_values[pmin_variable] = sym.Const(pmin_fallback)
+    event_values[pmax_variable] = sym.Const(pmax_fallback)
+    # Also represent an intermediate compatibility save which duplicated a
+    # mapped limit into parameters as Const(None) without removing event_dict.
+    misclassified_parameters[pmin_variable] = sym.Const(None)
+    api_obj_mapping[ParamPowerFlowReferenceType.Pmin] = pmin_variable
+    api_obj_mapping[ParamPowerFlowReferenceType.Pmax] = pmax_variable
+    source_block: Block = Block(
+        name="legacy governor",
+        event_dict=event_values,
+        parameters=misclassified_parameters,
+        api_obj_mapping=api_obj_mapping,
+    )
+    saver: BlockSaver = BlockSaver(source_factory)
+    saver.save_block(source_block, main=True)
+    logger: Logger = Logger()
+    parser: BlockParser = BlockParser(VarFactory(), logger=logger)
+    parser.parse_consts(saver.get_const_to_save())
+    parser.parse_vars(saver.get_vars_to_save())
+    parser.parse_diff_vars(saver.get_diff_vars_to_save())
+
+    restored_blocks: List[Block] = parser.parse_blocks(
+        blocks_data=saver.get_blocks(),
+        main_block_uids=list((source_block.uid,)),
+    )
+    restored_block: Block = restored_blocks[0]
+    restored_event_variables: Dict[int, sym.Var] = dict()
+    restored_event_variable: sym.Var
+    for restored_event_variable in restored_block.event_dict:
+        restored_event_variables[restored_event_variable.non_mutable_uid] = restored_event_variable
+
+    for dynamic_reference in dynamic_references:
+        source_dynamic_variable: sym.Var = dynamic_variables[dynamic_reference]
+        restored_dynamic_variable: sym.Var | None = restored_event_variables.get(
+            source_dynamic_variable.non_mutable_uid,
+            None,
+        )
+        assert restored_dynamic_variable is not None
+        assert dynamic_reference not in restored_block.api_obj_mapping
+        assert restored_dynamic_variable not in restored_block.parameters
+        assert (
+            restored_block.event_dict[restored_dynamic_variable].eval()
+            == dynamic_values[dynamic_reference].eval()
+        )
+
+    restored_pmin: sym.Var | None = restored_block.api_obj_mapping.get(
+        ParamPowerFlowReferenceType.Pmin,
+        None,
+    )
+    restored_pmax: sym.Var | None = restored_block.api_obj_mapping.get(
+        ParamPowerFlowReferenceType.Pmax,
+        None,
+    )
+    assert restored_pmin is not None
+    assert restored_pmax is not None
+    assert restored_block.parameters[restored_pmin].value == pmin_fallback
+    assert restored_block.parameters[restored_pmax].value == pmax_fallback
+    assert restored_pmin not in restored_block.event_dict
+    assert restored_pmax not in restored_block.event_dict
+    assert len(logger.entries) == 1
+    assert logger.entries[0].msg == "Migrated legacy dynamic parameter declarations"
+    assert logger.entries[0].value == "11"
+    assert logger.entries[0].severity == LogSeverity.Information
+
+
+@pytest.mark.parametrize(
+    "mapping_key",
+    tuple((
+        ParamPowerFlowReferenceType.generator_share_p_ref,
+        ParamPowerFlowReferenceType.P0,
+        ParamPowerFlowReferenceType.converter_control_mode_1,
+        ParamPowerFlowReferenceType.converter_control_mode_2,
+        ParamPowerFlowReferenceType.converter_control_target_1,
+        ParamPowerFlowReferenceType.converter_control_target_2,
+    )),
+)
+def test_legacy_runtime_mapping_target_is_not_promoted_to_static(
+        mapping_key: ParamPowerFlowReferenceType,
+) -> None:
+    """Keep a mapped event target in runtime storage during legacy loading.
+
+    :param mapping_key: Persisted runtime reference being round-tripped.
+    :return: None.
+    """
+    source_factory: VarFactory = VarFactory()
+    runtime_parameter: sym.Var = source_factory.add_var("legacy_runtime_parameter")
+    source_block: Block = Block(
+        name="legacy runtime block",
+        event_dict=dict(((runtime_parameter, sym.Const(1.0)),)),
+        api_obj_mapping=dict(((mapping_key, runtime_parameter),)),
+    )
+    saver: BlockSaver = BlockSaver(source_factory)
+    saver.save_block(source_block, main=True)
+    parser: BlockParser = BlockParser(VarFactory())
+    parser.parse_consts(saver.get_const_to_save())
+    parser.parse_vars(saver.get_vars_to_save())
+    parser.parse_diff_vars(saver.get_diff_vars_to_save())
+
+    restored_block: Block = parser.parse_block(saver.get_blocks(), source_block.uid)
+    restored_runtime_parameter: sym.Var | None = restored_block.api_obj_mapping.get(
+        mapping_key,
+        None,
+    )
+
+    assert restored_runtime_parameter is not None
+    assert restored_runtime_parameter in restored_block.event_dict
+    assert restored_runtime_parameter not in restored_block.parameters
+
+
+@pytest.mark.parametrize(
+    "mapping_key",
+    tuple((
+        ParamPowerFlowReferenceType.P0,
+        ParamPowerFlowReferenceType.converter_control_target_1,
+    )),
+)
+def test_intermediate_converter_static_migration_is_restored_to_runtime(
+        mapping_key: ParamPowerFlowReferenceType,
+) -> None:
+    """Repair converter runtime values misclassified by an older migration.
+
+    :param mapping_key: Converter runtime reference being repaired.
+    :return: None.
+    """
+    source_factory: VarFactory = VarFactory()
+    runtime_parameter: sym.Var = source_factory.add_var(mapping_key.value)
+    source_block: Block = Block(
+        name="intermediate converter migration",
+        parameters=dict(((runtime_parameter, sym.Const(2.0)),)),
+        api_obj_mapping=dict(((mapping_key, runtime_parameter),)),
+    )
+    saver: BlockSaver = BlockSaver(source_factory)
+    saver.save_block(source_block, main=True)
+    parser: BlockParser = BlockParser(VarFactory())
+    parser.parse_consts(saver.get_const_to_save())
+    parser.parse_vars(saver.get_vars_to_save())
+    parser.parse_diff_vars(saver.get_diff_vars_to_save())
+
+    restored_block: Block = parser.parse_block(saver.get_blocks(), source_block.uid)
+    restored_runtime_parameter: sym.Var | None = restored_block.api_obj_mapping.get(
+        mapping_key,
+        None,
+    )
+
+    assert restored_runtime_parameter is not None
+    assert restored_runtime_parameter in restored_block.event_dict
+    assert restored_block.event_dict[restored_runtime_parameter].value == 2.0
+    assert restored_runtime_parameter not in restored_block.parameters
+
+
+def test_legacy_converter_loss_parameter_uses_static_alpha1_mapping() -> None:
+    """Translate the old no-load loss alias without changing its static owner.
+
+    :return: None.
+    """
+    source_factory: VarFactory = VarFactory()
+    loss_parameter: sym.Var = source_factory.add_var("P_loss0")
+    source_block: Block = Block(
+        name="legacy converter loss parameter",
+        parameters=dict(((loss_parameter, sym.Const(0.01)),)),
+        api_obj_mapping=dict(((ParamPowerFlowReferenceType.converter_loss_power_0, loss_parameter),)),
+    )
+    saver: BlockSaver = BlockSaver(source_factory)
+    saver.save_block(source_block, main=True)
+    parser: BlockParser = BlockParser(VarFactory())
+    parser.parse_consts(saver.get_const_to_save())
+    parser.parse_vars(saver.get_vars_to_save())
+    parser.parse_diff_vars(saver.get_diff_vars_to_save())
+
+    restored_block: Block = parser.parse_block(saver.get_blocks(), source_block.uid)
+    restored_loss_parameter: sym.Var | None = restored_block.api_obj_mapping.get(
+        ParamPowerFlowReferenceType.alpha1,
+        None,
+    )
+
+    assert (
+        ParamPowerFlowReferenceType.converter_loss_power_0
+        not in restored_block.api_obj_mapping
+    )
+    assert restored_loss_parameter is not None
+    assert restored_loss_parameter in restored_block.parameters
+    assert restored_block.parameters[restored_loss_parameter].value == 0.01
+    assert restored_loss_parameter not in restored_block.event_dict
+
+
+def test_legacy_converter_operating_loss_mapping_is_removed() -> None:
+    """Keep calculated converter loss as runtime data without an obsolete mapping.
+
+    :return: None.
+    """
+    source_factory: VarFactory = VarFactory()
+    loss_parameter: sym.Var = source_factory.add_var("P_loss")
+    source_block: Block = Block(
+        name="legacy converter operating loss",
+        event_dict=dict(((loss_parameter, sym.Const(0.0)),)),
+        api_obj_mapping=dict(((ParamPowerFlowReferenceType.converter_loss_power_0, loss_parameter),)),
+    )
+    saver: BlockSaver = BlockSaver(source_factory)
+    saver.save_block(source_block, main=True)
+    parser: BlockParser = BlockParser(VarFactory())
+    parser.parse_consts(saver.get_const_to_save())
+    parser.parse_vars(saver.get_vars_to_save())
+    parser.parse_diff_vars(saver.get_diff_vars_to_save())
+
+    restored_block: Block = parser.parse_block(saver.get_blocks(), source_block.uid)
+    restored_runtime_parameters: List[sym.Var] = list(restored_block.event_dict.keys())
+
+    assert (
+        ParamPowerFlowReferenceType.converter_loss_power_0
+        not in restored_block.api_obj_mapping
+    )
+    assert len(restored_runtime_parameters) == 1
+    assert restored_runtime_parameters[0].name == "P_loss"
+    assert restored_runtime_parameters[0] not in restored_block.parameters
+
+
+def test_legacy_parent_converter_runtime_mapping_moves_to_event_owner() -> None:
+    """Move a wrapper runtime mapping to the child that declares the event.
+
+    :return: None.
+    """
+    source_factory: VarFactory = VarFactory()
+    runtime_parameter: sym.Var = source_factory.add_var("control1")
+    child_block: Block = Block(
+        name="converter equations",
+        event_dict=dict(((runtime_parameter, sym.Const(1.0)),)),
+    )
+    source_block: Block = Block(
+        name="legacy converter wrapper",
+        children=list((child_block,)),
+        api_obj_mapping=dict(((ParamPowerFlowReferenceType.converter_control_mode_1, runtime_parameter),)),
+    )
+    saver: BlockSaver = BlockSaver(source_factory)
+    saver.save_block(source_block, main=True)
+    parser: BlockParser = BlockParser(VarFactory())
+    parser.parse_consts(saver.get_const_to_save())
+    parser.parse_vars(saver.get_vars_to_save())
+    parser.parse_diff_vars(saver.get_diff_vars_to_save())
+
+    restored_root: Block = parser.parse_block(saver.get_blocks(), source_block.uid)
+    restored_child: Block = restored_root.children[0]
+    restored_runtime_parameter: sym.Var | None = restored_child.api_obj_mapping.get(
+        ParamPowerFlowReferenceType.converter_control_mode_1,
+        None,
+    )
+
+    assert restored_root.api_obj_mapping == dict()
+    assert restored_runtime_parameter is not None
+    assert restored_runtime_parameter in restored_child.event_dict
+    assert restored_runtime_parameter not in restored_child.parameters
+
+
+def test_legacy_parent_mapping_to_child_runtime_parameter_is_removed() -> None:
+    """Remove a wrapper mapping that would override a child event expression.
+
+    Historical RMS load models stored ``Pl0`` and ``Ql0`` in a child
+    ``event_dict`` while mapping the same identities from the wrapper. The
+    current recursive ownership contract keeps the event expression and removes
+    that redundant static mapping when the file is opened.
+
+    :return: None.
+    """
+    source_factory: VarFactory = VarFactory()
+    operating_point: sym.Var = source_factory.add_var("Ql")
+    runtime_parameter: sym.Var = source_factory.add_var("Ql0")
+    child_block: Block = Block(
+        name="legacy RMS load equations",
+        algebraic_vars=list((operating_point,)),
+        event_dict=dict(((runtime_parameter, operating_point),)),
+    )
+    source_block: Block = Block(
+        name="legacy RMS load wrapper",
+        children=list((child_block,)),
+        api_obj_mapping=dict(((ParamPowerFlowReferenceType.Ql0, runtime_parameter),)),
+    )
+    saver: BlockSaver = BlockSaver(source_factory)
+    saver.save_block(source_block, main=True)
+    logger: Logger = Logger()
+    parser: BlockParser = BlockParser(VarFactory(), logger=logger)
+    parser.parse_consts(saver.get_const_to_save())
+    parser.parse_vars(saver.get_vars_to_save())
+    parser.parse_diff_vars(saver.get_diff_vars_to_save())
+
+    restored_block: Block = parser.parse_block(saver.get_blocks(), source_block.uid)
+    restored_child: Block = restored_block.children[0]
+    restored_parameters: List[sym.Var] = list(restored_child.event_dict.keys())
+    restored_runtime_parameter: sym.Var = restored_parameters[0]
+    restored_expression: sym.Expr = restored_child.event_dict[restored_runtime_parameter]
+
+    assert restored_block.api_obj_mapping == dict()
+    assert restored_runtime_parameter.name == "Ql0"
+    assert isinstance(restored_expression, sym.Var)
+    assert restored_expression.name == "Ql"
+    assert restored_runtime_parameter not in restored_child.parameters
+    assert logger.entries[-1].msg == "Migrated legacy dynamic parameter declarations"
+    assert logger.entries[-1].value == "1"
+    assert logger.entries[-1].severity == LogSeverity.Information
+
+
+@pytest.mark.parametrize(
+    "mapping_key",
+    tuple((
+        ParamPowerFlowReferenceType.generator_share_p_ref,
+        ParamPowerFlowReferenceType.P0,
+        ParamPowerFlowReferenceType.converter_control_mode_1,
+        ParamPowerFlowReferenceType.converter_control_mode_2,
+        ParamPowerFlowReferenceType.converter_control_target_1,
+        ParamPowerFlowReferenceType.converter_control_target_2,
+    )),
+)
+def test_legacy_mapping_only_runtime_target_is_restored_as_runtime(
+        mapping_key: ParamPowerFlowReferenceType,
+) -> None:
+    """Restore an old mapping-only operating reference to runtime storage.
+
+    Historical predefined EMT generators persisted sharing references without an
+    explicit parameter owner, and old converter files did the same for controls
+    and operating values. Their value comes from runtime initialization, so file
+    loading must not reinterpret them as required static device properties.
+
+    :param mapping_key: Persisted runtime reference being repaired.
+    :return: None.
+    """
+    source_factory: VarFactory = VarFactory()
+    runtime_parameter: sym.Var = source_factory.add_var("legacy_mapping_only_share_reference")
+    source_block: Block = Block(
+        name="legacy mapping-only runtime block",
+        api_obj_mapping=dict(((mapping_key, runtime_parameter),)),
+    )
+    saver: BlockSaver = BlockSaver(source_factory)
+    saver.save_block(source_block, main=True)
+    logger: Logger = Logger()
+    parser: BlockParser = BlockParser(VarFactory(), logger=logger)
+    parser.parse_consts(saver.get_const_to_save())
+    parser.parse_vars(saver.get_vars_to_save())
+    parser.parse_diff_vars(saver.get_diff_vars_to_save())
+
+    restored_block: Block = parser.parse_block(saver.get_blocks(), source_block.uid)
+    restored_runtime_parameter: sym.Var | None = restored_block.api_obj_mapping.get(
+        mapping_key,
+        None,
+    )
+
+    assert restored_runtime_parameter is not None
+    assert restored_runtime_parameter in restored_block.event_dict
+    assert restored_block.event_dict[restored_runtime_parameter].value is None
+    assert restored_runtime_parameter not in restored_block.parameters
+    assert logger.entries[-1].msg == "Migrated legacy dynamic parameter declarations"
+    assert logger.entries[-1].value == "1"
+    assert logger.entries[-1].severity == LogSeverity.Information
 
 
 def test_legacy_block_instance_without_model_family_name_uses_empty_default() -> None:

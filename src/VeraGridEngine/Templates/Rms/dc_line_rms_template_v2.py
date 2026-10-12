@@ -71,9 +71,11 @@ def build_dc_line_rms_v2(
     powers follow the branch sign convention ``Pf = Vdc_f I_dc`` and
     ``Pt = -Vdc_t I_dc``.
 
-    The root block owns the device interface and static-parameter mapping. A
-    child block owns the equations so the model remains visible and editable
-    in the Dynamic Editor without requiring equation decomposition on open.
+    The root block owns the device interface. A child block owns the equations,
+    parameter declarations and static-parameter mapping so every mapping target
+    belongs to the same block that declares it. This keeps the model visible and
+    editable in the Dynamic Editor without requiring equation decomposition on
+    open.
 
     :param vfactory: Variable factory used to construct the symbolic model.
     :param name: Root block and template display name.
@@ -103,6 +105,12 @@ def build_dc_line_rms_v2(
         # constant registers the required compile-time parameter without
         # inventing an independent dynamic-model value.
         parameters=dict(((resistance_parameter, vfactory.add_const(None)),)),
+        # Keep the static-device source beside its parameter declaration. The
+        # recursive RMS mapper visits this child and injects DcLine.R_corrected
+        # without requiring the root to duplicate a child-owned mapping.
+        api_obj_mapping=dict((
+            (ParamPowerFlowReferenceType.dc_line_r_pu, resistance_parameter),
+        )),
         # Inductance has no static-device counterpart. Keep it as an editable
         # runtime parameter whose default belongs exclusively to this model.
         event_dict=dict(((inductance_parameter, vfactory.add_const(0.05)),)),
@@ -136,9 +144,6 @@ def build_dc_line_rms_v2(
             (VarPowerFlowReferenceType.If_dc, current_from),
             (VarPowerFlowReferenceType.Pf, power_from),
             (VarPowerFlowReferenceType.Pt, power_to),
-        )),
-        api_obj_mapping=dict((
-            (ParamPowerFlowReferenceType.dc_line_r_pu, resistance_parameter),
         )),
     )
 

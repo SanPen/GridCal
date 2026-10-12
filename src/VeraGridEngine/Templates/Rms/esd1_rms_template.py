@@ -177,17 +177,19 @@ def get_esd1_rms_template(vfactory: VarFactory, name: str = "ESD1 RMS template")
             p_ch_max: vfactory.add_const(1.0),
             qmax: vfactory.add_const(1.0),
             qmin: vfactory.add_const(-1.0),
-            soc_min: vfactory.add_const(0.1),
-            soc_max: vfactory.add_const(0.95),
             soc_db: vfactory.add_const(0.02),
-            soc0: vfactory.add_const(0.5),
-            ecap_h: vfactory.add_const(2.0),
-            eta_ch: vfactory.add_const(0.95),
-            eta_dis: vfactory.add_const(0.95),
             ialim: vfactory.add_const(1.3),
             pqflag: vfactory.add_const(1.0),
             tip: vfactory.add_const(0.02),
             tiq: vfactory.add_const(0.02),
+        },
+        parameters={
+            soc_min: vfactory.add_const(0.1),
+            soc_max: vfactory.add_const(0.95),
+            soc0: vfactory.add_const(0.5),
+            ecap_h: vfactory.add_const(2.0),
+            eta_ch: vfactory.add_const(0.95),
+            eta_dis: vfactory.add_const(0.95),
         },
     )
 
@@ -211,7 +213,6 @@ def get_esd1_rms_template(vfactory: VarFactory, name: str = "ESD1 RMS template")
     templ.block.children.append(block)
     templ.block.name = name
     templ.block.external_mapping = block.external_mapping
-    templ.block.api_obj_mapping = block.api_obj_mapping
     templ.block.in_vars = inputs
     templ.block.out_vars = block.out_vars
     templ.comment = 'Battery ESD1 RMS model'

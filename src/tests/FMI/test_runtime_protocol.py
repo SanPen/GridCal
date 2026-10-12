@@ -13,12 +13,11 @@ import struct
 
 import pytest
 
-from VeraGridEngine.IO.fmu.importer.errors import FmuArchiveError
-from VeraGridEngine.IO.fmu.importer.inspection import (
+from VeraGridEngine.IO.fmu.Elements.inspection import (
     FmuInspectionReceipt,
     inspect_fmu,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_protocol import (
+from VeraGridEngine.IO.fmu.Elements.protocol import (
     FmiThreeWorkerCompletedIntegratorStepRequest,
     FmiThreeWorkerCompletedIntegratorStepResult,
     FmiThreeWorkerConfigureFloat64Request,
@@ -60,7 +59,7 @@ from VeraGridEngine.IO.fmu.importer.runtime_protocol import (
     validate_fmi_three_worker_minimum_start_frame_capacity,
     validate_fmi_three_worker_staging_identity,
 )
-from VeraGridEngine.IO.fmu.importer.runtime_profile import (
+from VeraGridEngine.IO.fmu.profile import (
     FmiThreeWorkerFloat64Profile,
 )
 from VeraGridEngine.enumerations import FmuInterfaceMode
@@ -1964,7 +1963,7 @@ def test_fmi_three_worker_staging_identity_binds_fresh_inspection(
     child_receipt: FmuInspectionReceipt = inspect_fmu(staged_fmu_directory).receipt
     assert child_receipt.source_size == parent_receipt.source_size
     assert child_receipt.entry_count == parent_receipt.entry_count
-    with pytest.raises(FmuArchiveError, match="identity changed"):
+    with pytest.raises(ValueError, match="identity changed"):
         validate_fmi_three_worker_staging_identity(expected, child_receipt)
 
 

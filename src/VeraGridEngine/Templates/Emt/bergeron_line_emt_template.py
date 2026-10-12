@@ -231,8 +231,6 @@ def get_bergeron_line_emt_template(
 
     templ.block.children.append(block)
     templ.block.external_mapping = block.external_mapping
-    templ.block.api_obj_mapping = block.api_obj_mapping
-    templ.block.parameters = block.parameters
     templ.block.in_vars = block.in_vars
     templ.block.out_vars = block.out_vars
 
@@ -530,3 +528,26 @@ class BergeronHistoryRuntime:
             self.buf_vt[k, :] = v_t0_red
             self.buf_if[k, :] = i_f0_red
             self.buf_it[k, :] = i_t0_red
+
+    def initialize_buffers_from_phasors(
+            self,
+            v_f: np.ndarray,
+            v_t: np.ndarray,
+            i_f: np.ndarray,
+            i_t: np.ndarray,
+            frequency_hz: float,
+    ) -> None:
+        """Fill the delay ring with a periodic waveform in the EMT sine convention.
+
+        Slot zero holds t=0. Slots 1..n_delay hold samples from
+        -n_delay*h through -h, as read by update_history at startup.
+        Phasors are RMS values on the system three-phase current base.
+        """
+        phasors = (v_f, v_t, i_f, i_t)
+        buffers = (self.buf_vf, self.buf_vt, self.buf_if, self.buf_it)
+        omega = 2.0 * np.pi * frequency_hz
+        for k in range(self.n_delay + 1):
+            sample_time = 0.0 if k == 0 else (k - self.n_delay - 1) * self.h
+            rotation = np.exp(1j * omega * sample_time)
+            for buffer, phasor in zip(buffers, phasors):
+                buffer[k, :] = np.sqrt(2.0) * np.imag(phasor * rotation)

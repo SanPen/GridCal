@@ -586,28 +586,6 @@ class PseudoTransient:
 
         return debug_items
 
-    def _debug_check_x_new(self, x_new: Vec, step_idx: int, tries: int, dtau: float) -> None:
-        if not self.debug_check_x_new:
-            return
-
-        bad_idx = np.where(~np.isfinite(x_new))[0]
-        if bad_idx.size > 0:
-            bad_vals = x_new[bad_idx]
-            raise ValueError(
-                "NaN or Inf in x_new"
-                f" (step={step_idx}, try={tries}, dtau={dtau:.3e}, "
-                f"bad_idx={bad_idx.tolist()}, bad_vals={bad_vals.tolist()})"
-            )
-
-        large_idx = np.where(np.abs(x_new) > self.debug_x_new_abs_max)[0]
-        if large_idx.size > 0:
-            large_vals = x_new[large_idx]
-            raise ValueError(
-                "x_new magnitude too large"
-                f" (step={step_idx}, try={tries}, dtau={dtau:.3e}, abs_max={self.debug_x_new_abs_max:.3e}, "
-                f"large_idx={large_idx.tolist()}, large_vals={large_vals.tolist()})"
-            )
-
     def _problem_algebraic_vars(self):
         if isinstance(self.problem, RmsProblemDae):
             return list(self.problem.algebraic_vars)
@@ -625,15 +603,6 @@ class PseudoTransient:
                 return list(self.problem.state_vars())
             else:
                 return list(self.problem._state_vars)
-
-    def _problem_diff_vars(self):
-        if isinstance(self.problem, RmsProblemDae):
-            return list(self.problem.get_diff_vars())
-        else:
-            if isinstance(self.problem, RmsProblemTemplate):
-                return list()
-            else:
-                return list(self.problem._diff_vars)
 
     def _artificial_algebraic_mass_diag(self, n_rows: int, n_cols: int, h: float) -> sp.csc_matrix:
         """
@@ -667,58 +636,11 @@ class PseudoTransient:
 
         return sp.diags(values, offsets=0, shape=(n_rows, n_cols), format="csc")
 
-    def _find_reference_pin_indices(self) -> list[int]:
-        return list()
-
     def _var_index_name(self, idx: int) -> str:
         vars_all = self._problem_state_vars() + self._problem_algebraic_vars()
         if 0 <= idx < len(vars_all):
             return vars_all[idx].name
         return f"x[{idx}]"
-
-    def _report_selected_var_values(self, x: Vec, labels: tuple[str, ...]) -> None:
-        vars_all = self._problem_state_vars() + self._problem_algebraic_vars()
-        if len(vars_all) == 0 or x.size == 0:
-            return
-
-        matches: list[str] = []
-        used_idx: set[int] = set()
-        for token in labels:
-            token_l = token.lower()
-            hit_idx = None
-
-            # Prefer exact/canonical prefix match before falling back to substring matches.
-            for i, var in enumerate(vars_all):
-                name = var.name.strip()
-                if i in used_idx:
-                    continue
-                if name.lower().startswith(token_l):
-                    hit_idx = i
-                    break
-
-            # Fallback: contains token when prefix is unavailable.
-            if hit_idx is None:
-                for i, var in enumerate(vars_all):
-                    name = var.name.strip()
-                    if i in used_idx:
-                        continue
-                    if token_l in name.lower():
-                        hit_idx = i
-                        break
-
-            if hit_idx is not None:
-                used_idx.add(hit_idx)
-                name = vars_all[hit_idx].name
-                val = float(x[hit_idx]) if 0 <= hit_idx < x.size else float("nan")
-                matches.append(f"{name}={val:+.6e}")
-            else:
-                matches.append(f"{token}=<not found>")
-
-        if matches:
-            print(
-                f"[PseudoTransient][Singular] selected vars: {matches}",
-                file=sys.stderr,
-            )
 
     def _report_piecewise_activity(self, rhs: Vec) -> None:
         if rhs.size == 0 or not np.all(np.isfinite(rhs)):
@@ -941,68 +863,6 @@ class PseudoTransient:
         except Exception as exc:
             emit(f"[SVD] {context}: diagnostics failed ({exc})")
 
-    def _rhs_implicit(self,
-                      x: Vec,
-                      dx: Vec,
-                      xn: Vec,
-                      h: float) -> Vec:
-        """
-        Return 𝑑x/dt given the current *state* vector.
-        :param x: get the right-hand-side give a state vector
-        :param dx:
-        :param xn:
-        :return f_state_update or f_algeb
-        """
-        f_algeb = self.problem.rhs_algebraic(x, dx)
-
-        if self.problem.get_states_number() > 0:
-            f_state = self.problem.rhs_state(x, dx)
-            f_state_update = x[:self.problem.get_states_number()] - xn[:self.problem.get_states_number()] - h * f_state
-            return np.r_[f_state_update, f_algeb]
-
-        else:
-            return f_algeb
-
-    def _jacobian_implicit(self,
-                           x: Vec,
-                           dx: Vec,
-                           h: float) -> sp.csc_matrix:
-        """
-        :param x: vector or variables' values
-        :param dx: vector of diff values
-        :param h: step
-        :return:
-        """
-
-        """
-                  state Var    algeb var
-        state eq |I - h * J11 | - h* J12  |    | ∆ state var|    | ∆ state eq |
-                 |            |           |    |            |    |            |
-                 -------------------------- x  |------------|  = |------------|
-        algeb eq |J21         | J22       |    | ∆ algeb var|    | ∆ algeb eq |
-                 |            |           |    |            |    |            |
-        """
-
-        # returns only j22 if no states, returns J if states
-        if self.problem.get_states_number() == 0:
-            j22: sp.csc_matrix = self.problem.get_j22(x, dx, h)
-            return j22
-
-        j11_val: csc_matrix = self.problem.get_j11(x, dx, h)
-        j12_val: csc_matrix = self.problem.get_j12(x, dx, h)
-        j21_val: csc_matrix = self.problem.get_j21(x, dx, h)
-        j22_val: csc_matrix = self.problem.get_j22(x, dx, h)
-
-        I = sp.eye(m=self.problem.get_states_number(), n=self.problem.get_states_number())
-        j11: sp.csc_matrix = (I - h * j11_val).tocsc()
-        j12: sp.csc_matrix = - h * j12_val
-        j21: sp.csc_matrix = j21_val
-        j22: sp.csc_matrix = j22_val
-
-        J = pack_4_by_4_scipy(j11, j12, j21, j22)
-
-        return J
-
     def _jacobian_pseudo_transient(self, x: Vec, dx: Vec, h: float) -> sp.csc_matrix:
         """
         Jacobian for pseudo-transient residual:
@@ -1163,51 +1023,6 @@ class PseudoTransient:
 
         return np.asarray(delta, dtype=float)
 
-    def _newton_polish(self, x: Vec, tol: float, max_iter: int = 8) -> tuple[Vec, float]:
-        dx = np.zeros(self.problem.get_diff_var_number(), dtype=float)
-        for k in range(max_iter):
-            rhs = self._rhs_steady(x, dx)
-            if not np.all(np.isfinite(rhs)):
-                self._dbg(f"newton polish abort: non-finite rhs at iter={k + 1}")
-                break
-
-            res_inf = float(np.linalg.norm(rhs, np.inf)) if rhs.size > 0 else 0.0
-            if res_inf <= tol:
-                self._dbg(f"newton polish converged at iter={k + 1}, residual_inf={res_inf:.3e}")
-                return x, res_inf
-
-            J = self._jacobian_steady(x, dx)
-            delta = self._solve_linear_system(J, rhs, x=x, context=f"newton_polish iter={k + 1}")
-            solved = np.all(np.isfinite(delta))
-            if not solved:
-                self._dbg(f"newton polish abort: linear solve failed at iter={k + 1}")
-                break
-
-            trial_scales = (1.0)
-            best_x = x
-            best_res = np.inf
-            for scale in trial_scales:
-                xt = x + scale * delta
-                rt = self._rhs_steady(xt, dx)
-                if not np.all(np.isfinite(rt)):
-                    continue
-                rinf = float(np.linalg.norm(rt, np.inf)) if rt.size > 0 else 0.0
-                if rinf < best_res:
-                    best_res = rinf
-                    best_x = xt
-                if rinf <= res_inf * (1.0 - 1e-4 * scale):
-                    break
-
-            x = best_x
-            self._dbg(
-                f"newton polish iter={k + 1}: residual_inf={res_inf:.3e}->{best_res:.3e}, "
-                f"|delta|_2={np.linalg.norm(delta):.3e}"
-            )
-
-        rhs_final = self._rhs_steady(x, dx)
-        final_inf = float(np.linalg.norm(rhs_final, np.inf)) if rhs_final.size > 0 and np.all(np.isfinite(rhs_final)) else np.inf
-        return x, final_inf
-    
     def _rhs_pseudo_transient(self, x: Vec, xn: Vec, dx: Vec, h: float) -> Vec:
         """
         Return 𝑑x/dt given the current *state* vector.
